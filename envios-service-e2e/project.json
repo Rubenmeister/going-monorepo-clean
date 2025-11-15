@@ -1,0 +1,17 @@
+{
+  "name": "envios-service-e2e",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "implicitDependencies": ["envios-service"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "options": {
+        "jestConfig": "envios-service-e2e/jest.config.cts",
+        "passWithNoTests": true
+      },
+      "dependsOn": ["envios-service:build", "envios-service:serve"]
+    }
+  }
+}
