@@ -1,0 +1,57 @@
+name: CI (Pruebas Automatizadas)
+
+on:
+  # Se ejecuta en cada 'push' a la rama 'main'
+  push:
+    branches:
+      - main
+  # Y en cada 'pull request' (solicitud de cambio) a 'main'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Probar y Construir Proyectos Afectados
+    runs-on: ubuntu-latest # Usar una máquina virtual de Linux
+    
+    steps:
+      # 1. Obtener el código del repositorio
+      - name: Checkout (Obtener código)
+        uses: actions/checkout@v4
+        with:
+          # Necesario para que Nx pueda comparar los cambios
+          fetch-depth: 0 
+
+      # 2. Configurar Nx (El paso más importante)
+      # Esto instala 'nx' y restaura el caché si existe
+      - name: Setup Nx (Configurar Nx)
+        uses: nx/setup-nx@v5
+        with:
+          # (Opcional) Si configuraste Nx Cloud, pon tu token aquí
+          # nx-cloud-access-token: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+          
+      # 3. Configurar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Usar Node 20
+          cache: 'npm' # Usar el caché de npm
+
+      # 4. Instalar todas las dependencias
+      - name: Install dependencies (Instalar dependencias)
+        run: npm install
+
+      # 5. Ejecutar las pruebas SOLO de los proyectos "afectados"
+      # Nx compara tu rama con 'main' y encuentra qué cambió
+      - name: Run affected tests (Ejecutar pruebas afectadas)
+        run: npx nx affected:test --head=HEAD --base=main --parallel
+
+      # 6. Ejecutar el linter SOLO de los proyectos "afectados"
+      - name: Run affected lint (Ejecutar linter afectado)
+        run: npx nx affected:lint --head=HEAD --base=main --parallel
+
+      # 7. Construir el código SOLO de los proyectos "afectados"
+      # Esto asegura que el código compile correctamente
+      - name: Run affected build (Construir proyectos afectados)
+        run: npx nx affected:build --head=HEAD --base=main --parallel
