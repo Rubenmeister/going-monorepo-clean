@@ -1,0 +1,26 @@
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(private readonly configService: ConfigService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get('JWT_SECRET'),
+    });
+  }
+
+  // Esto se ejecuta después de validar el token
+  // El 'payload' es el contenido del JWT (id, email, roles)
+  // NestJS lo inyectará en 'req.user'
+  async validate(payload: any) {
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      roles: payload.roles,
+    };
+  }
+}
