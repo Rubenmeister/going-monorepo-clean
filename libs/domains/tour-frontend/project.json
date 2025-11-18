@@ -1,0 +1,19 @@
+{
+  "name": "tour-frontend",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/tour-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/tour-frontend",
+        "main": "libs/domains/tour-frontend/src/index.ts",
+        "tsConfig": "libs/domains/tour-frontend/tsconfig.lib.json",
+        "assets": ["libs/domains/tour-frontend/*.md"]
+      }
+    }
+  }
+}
