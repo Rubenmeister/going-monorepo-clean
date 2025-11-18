@@ -1,0 +1,19 @@
+{
+  "name": "payment-frontend",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/payment-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/payment-frontend",
+        "main": "libs/domains/payment-frontend/src/index.ts",
+        "tsConfig": "libs/domains/payment-frontend/tsconfig.lib.json",
+        "assets": ["libs/domains/payment-frontend/*.md"]
+      }
+    }
+  }
+}

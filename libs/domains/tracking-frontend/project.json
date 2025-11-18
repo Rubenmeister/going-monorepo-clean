@@ -1,0 +1,19 @@
+{
+  "name": "tracking-frontend",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/tracking-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/tracking-frontend",
+        "main": "libs/domains/tracking-frontend/src/index.ts",
+        "tsConfig": "libs/domains/tracking-frontend/tsconfig.lib.json",
+        "assets": ["libs/domains/tracking-frontend/*.md"]
+      }
+    }
+  }
+}
