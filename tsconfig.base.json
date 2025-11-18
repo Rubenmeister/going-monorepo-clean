@@ -29,7 +29,8 @@
       "tracking-frontend": ["libs/domains/tracking-frontend/src/index.ts"],
       "notification-frontend": [
         "libs/domains/notification-frontend/src/index.ts"
-      ]
+      ],
+      "experience-frontend": ["libs/domains/experience-frontend/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
