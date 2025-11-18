@@ -15,7 +15,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "user": ["libs/domains/user/src/index.ts"]
+      "user": ["libs/domains/user/src/index.ts"],
+      "user-frontend": ["libs/domains/user-frontend/src/index.ts"],
+      "frontend": ["libs/frontend/src/index.ts"],
+      "booking-frontend": ["libs/domains/booking-frontend/src/index.ts"],
+      "transport-frontend": ["libs/domains/transport-frontend/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

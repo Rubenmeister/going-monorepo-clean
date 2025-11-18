@@ -1,0 +1,19 @@
+{
+  "name": "booking-frontend",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/booking-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/booking-frontend",
+        "main": "libs/domains/booking-frontend/src/index.ts",
+        "tsConfig": "libs/domains/booking-frontend/tsconfig.lib.json",
+        "assets": ["libs/domains/booking-frontend/*.md"]
+      }
+    }
+  }
+}

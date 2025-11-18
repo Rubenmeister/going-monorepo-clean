@@ -1,0 +1,19 @@
+{
+  "name": "user-frontend",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/user-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/user-frontend",
+        "main": "libs/domains/user-frontend/src/index.ts",
+        "tsConfig": "libs/domains/user-frontend/tsconfig.lib.json",
+        "assets": ["libs/domains/user-frontend/*.md"]
+      }
+    }
+  }
+}
