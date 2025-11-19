@@ -1,0 +1,9 @@
+{
+  "name": "mobile-driver-app",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "mobile-driver-app/src",
+  "projectType": "application",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project mobile-driver-app --web",
+  "targets": {}
+}

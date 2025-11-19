@@ -1,84 +1,52 @@
 import {
+  // Puertos de Core (User Auth)
   IAuthRepository,
 } from '@going-monorepo-clean/domains-user-frontend-core';
+// (Importaciones de todos los demás Puertos omitidas por brevedad)
+// ...
 import {
-  IBookingRepository,
-} from '@going-monorepo-clean/domains-booking-frontend-core';
-import {
-  ITripRepository,
-} from '@going-monorepo-clean/domains-transport-frontend-core'; // <--- NUEVO
+  IPaymentGateway, // <-- NUEVO: Puerto para Payment
+} from '@going-monorepo-clean/domains-payment-frontend-core';
 
+// (Importaciones de todos los Casos de Uso omitidas por brevedad)
+// ...
 import {
-  LoginUseCase,
-  LoadSessionUseCase,
-} from '@going-monorepo-clean/domains-user-frontend-application';
-import {
-  CreateBookingUseCase,
-  FindUserBookingsUseCase,
-} from '@going-monorepo-clean/domains-booking-frontend-application';
-import {
-  RequestTripUseCase,
-  GetActiveTripUseCase, // Asumiendo que creaste este caso de uso
-} from '@going-monorepo-clean/domains-transport-frontend-application'; // <--- NUEVO
+  RequestPaymentIntentUseCase, // <-- NUEVO: Caso de Uso de Payment
+} from '@going-monorepo-clean/domains-payment-frontend-application';
 
-import {
-  HttpAuthRepository,
-} from '@going-monorepo-clean/domains-user-frontend-infrastructure';
-import {
-  HttpBookingRepository,
-} from '@going-monorepo-clean/domains-booking-frontend-infrastructure';
-import {
-  HttpTripRepository,
-} from '@going-monorepo-clean/domains-transport-frontend-infrastructure'; // <--- NUEVO
+// (Importaciones de todos los Adaptadores omitidas por brevedad)
+// ...
+import { HttpPaymentGateway } from '@going-monorepo-clean/domains-payment-frontend-infrastructure'; // <-- NUEVO: Adaptador HTTP
+
+// ... (El resto de importaciones de Booking, Transport, Tracking, etc.) ...
+
 
 class DependencyProvider {
-  // --- Repositorios ---
-  public readonly authRepository: IAuthRepository;
-  public readonly bookingRepository: IBookingRepository;
-  public readonly tripRepository: ITripRepository; // <--- NUEVO
+  // --- Repositorios (Adaptadores) ---
+  // ... (otros repositorios) ...
+  public readonly paymentGateway: IPaymentGateway; // <-- Añadido
 
-  // --- Casos de Uso: User ---
-  public readonly loginUseCase: LoginUseCase;
-  public readonly loadSessionUseCase: LoadSessionUseCase;
+  // --- Casos de Uso (Application) ---
+  // ... (otros casos de uso) ...
+  public readonly requestPaymentIntentUseCase: RequestPaymentIntentUseCase; // <-- Añadido
 
-  // --- Casos de Uso: Booking ---
-  public readonly createBookingUseCase: CreateBookingUseCase;
-  public readonly findUserBookingsUseCase: FindUserBookingsUseCase;
-
-  // --- Casos de Uso: Transport ---
-  public readonly requestTripUseCase: RequestTripUseCase; // <--- NUEVO
-  public readonly getActiveTripUseCase: GetActiveTripUseCase; // <--- NUEVO
+  // ... (otros Casos de Uso) ...
 
   constructor() {
-    // 1. Instanciar Adaptadores
-    this.authRepository = new HttpAuthRepository();
-    this.bookingRepository = new HttpBookingRepository();
-    this.tripRepository = new HttpTripRepository(); // <--- NUEVO
+    // 1. Instanciar Adaptadores de Infraestructura
+    // ... (otros repositorios) ...
+    this.paymentGateway = new HttpPaymentGateway(); // <-- Añadido
 
-    // 2. Inyectar en User
-    this.loginUseCase = new LoginUseCase(this.authRepository);
-    this.loadSessionUseCase = new LoadSessionUseCase(this.authRepository);
+    // 2. Inyectar dependencias en los Casos de Uso
+    // ... (User, Booking, Transport, etc.) ...
 
-    // 3. Inyectar en Booking
-    this.createBookingUseCase = new CreateBookingUseCase(
-      this.bookingRepository,
-      this.authRepository
-    );
-    this.findUserBookingsUseCase = new FindUserBookingsUseCase(
-      this.bookingRepository,
-      this.authRepository
-    );
-
-    // 4. Inyectar en Transport
-    this.requestTripUseCase = new RequestTripUseCase(
-      this.tripRepository,
-      this.authRepository
-    );
-    this.getActiveTripUseCase = new GetActiveTripUseCase(
-      this.tripRepository,
+    // Payment (necesita token de Auth)
+    this.requestPaymentIntentUseCase = new RequestPaymentIntentUseCase(
+      this.paymentGateway,
       this.authRepository
     );
   }
 }
 
+// Exporta una única instancia (Singleton) para toda la app
 export const dependencyProvider = new DependencyProvider();
