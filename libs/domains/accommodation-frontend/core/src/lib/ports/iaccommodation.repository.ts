@@ -1,7 +1,6 @@
 import { Result } from 'neverthrow';
 import { Accommodation } from '../entities/accommodation.entity';
 import { UUID } from '@going-monorepo-clean/shared-domain';
-import { LocationDto } from '@going-monorepo-clean/shared-domain';
 
 export interface SearchFilters {
   city?: string;

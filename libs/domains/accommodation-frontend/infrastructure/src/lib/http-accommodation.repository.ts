@@ -12,9 +12,7 @@ export class HttpAccommodationRepository implements IAccommodationRepository {
   
   async search(filters: SearchFilters): Promise<Result<Accommodation[], Error>> {
     try {
-      const params = new URLSearchParams();
-      if (filters.city) params.append('city', filters.city);
-      if (filters.guests) params.append('capacity', filters.guests.toString());
+      const params = new URLSearchParams(filters as any);
       
       const response = await fetch(`${API_GATEWAY}/accommodations/search?${params}`);
       const data = await response.json();
@@ -23,7 +21,7 @@ export class HttpAccommodationRepository implements IAccommodationRepository {
       
       return ok(data.map((item: any) => Accommodation.fromPrimitives(item)));
     } catch (error) {
-      return err(error);
+      return err(new Error(error.message || 'Error de red al buscar alojamientos'));
     }
   }
 
@@ -37,7 +35,7 @@ export class HttpAccommodationRepository implements IAccommodationRepository {
 
       return ok(Accommodation.fromPrimitives(data));
     } catch (error) {
-      return err(error);
+      return err(new Error(error.message || 'Error de red al obtener alojamiento'));
     }
   }
 }

@@ -8,29 +8,27 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2020",
     "module": "esnext",
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
+    // === ESTO ES LO CRÍTICO: El mapa de rutas ===
     "paths": {
-      "user": ["libs/domains/user/src/index.ts"],
-      "user-frontend": ["libs/domains/user-frontend/src/index.ts"],
-      "frontend": ["libs/frontend/src/index.ts"],
-      "booking-frontend": ["libs/domains/booking-frontend/src/index.ts"],
-      "transport-frontend": ["libs/domains/transport-frontend/src/index.ts"],
-      "accommodation-frontend": [
-        "libs/domains/accommodation-frontend/src/index.ts"
-      ],
-      "tour-frontend": ["libs/domains/tour-frontend/src/index.ts"],
-      "parcel-frontend": ["libs/domains/parcel-frontend/src/index.ts"],
-      "payment-frontend": ["libs/domains/payment-frontend/src/index.ts"],
-      "tracking-frontend": ["libs/domains/tracking-frontend/src/index.ts"],
-      "notification-frontend": [
-        "libs/domains/notification-frontend/src/index.ts"
-      ],
-      "experience-frontend": ["libs/domains/experience-frontend/src/index.ts"]
+      // Shared (Base para todos los dominios)
+      "@going-monorepo-clean/shared-domain": ["libs/shared/domain/src/index.ts"],
+      
+      // Dominio User
+      "@going-monorepo-clean/domains-user-core": ["libs/domains/user/core/src/index.ts"],
+      "@going-monorepo-clean/domains-user-application": ["libs/domains/user/application/src/index.ts"],
+      
+      // (Aquí añadirías todas las demás libs de domains/.../core y .../application)
+      // Ej: "@going-monorepo-clean/domains-payment-core": ["libs/domains/payment/core/src/index.ts"]
+      
+      // Frontend Providers (Hooks y Context)
+      "@going-monorepo-clean/frontend-providers": ["libs/frontend/providers/src/index.ts"],
+      "@going-monorepo-clean/shared-ui": ["libs/shared/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
