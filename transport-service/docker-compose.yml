@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # --- 1. BASE DE DATOS Y CACHÉ ---
+
+  mongodb:
+    image: mongo:latest
+    container_name: going_mongodb
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    restart: always
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: going_redis
+    ports:
+      - "6379:6379"
+    restart: always
+    command: redis-server --appendonly yes
+
+  # --- 2. MICROSERVICIOS DE BACKEND (Ejemplo) ---
+
+  user-auth-service:
+    build:
+      context: . # Usa la raíz del monorepo como contexto de build
+      dockerfile: apps/user-auth-service/Dockerfile
+      args:
+        SERVICE_NAME: user-auth-service
+    container_name: user-auth-service
+    environment:
+      # Las URLs de DB apuntan al nombre del contenedor (mongodb)
+      USER_DB_URL: mongodb://mongodb:27017/user-auth-db
+      # Las variables de JWT
+      JWT_SECRET: tu_secreto_jwt_muy_largo_y_seguro
+      JWT_EXPIRES_IN: 1d
+      PORT: 3009
+    ports:
+      - "3009:3009"
+    depends_on:
+      - mongodb
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/payment-service/Dockerfile
+      args:
+        SERVICE_NAME: payment-service
+    container_name: payment-service
+    environment:
+      PAYMENT_DB_URL: mongodb://mongodb:27017/payment-db
+      STRIPE_SECRET_KEY: sk_test_... # Usa la clave real
+      STRIPE_WEBHOOK_SECRET: whsec_...
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      
+  # --- 3. API GATEWAY ---
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+    container_name: api-gateway
+    environment:
+      # URLs para el Proxy (apuntan al nombre del contenedor)
+      USER_AUTH_SERVICE_URL: http://user-auth-service:3009
+      PAYMENT_SERVICE_URL: http://payment-service:3001
+      # ... (añadir todas las demás URLs de microservicios)
+      
+      JWT_SECRET: tu_secreto_jwt_muy_largo_y_seguro # Debe coincidir con user-auth
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-auth-service
+      - payment-service
+
+volumes:
+  mongodb_data:

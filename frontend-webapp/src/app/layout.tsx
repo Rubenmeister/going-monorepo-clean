@@ -1,5 +1,5 @@
 import { AuthProvider } from '@going-monorepo-clean/frontend-providers'; 
-// Asegúrate de que este path y el del global.css sean correctos para tu app Next.js
+// Asegúrate de que este path es correcto y que tu global.css existe:
 import './global.css'; 
 
 export const metadata = {
