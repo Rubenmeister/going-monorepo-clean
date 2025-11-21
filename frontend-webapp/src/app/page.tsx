@@ -8,13 +8,17 @@ export default function HomePage() {
   
   const handleTestLogin = () => {
     // 2. Llamada directa al Caso de Uso de Login
-    domain.auth.login({ email: 'test@example.com', password: 'password123' });
+    domain.auth.login({ email: 'user@test.com', password: 'password123' });
+  };
+  
+  const handleTestSearch = () => {
+    // 3. Llamada a un Caso de Uso de Búsqueda
+    domain.search.accommodations({ city: 'Quito', guests: 2 });
   };
   
   const handleTestTrip = () => {
-    // 3. Llamada directa a un Caso de Uso de Transport
+    // 3. Llamada a un Caso de Uso de Transporte
     if (auth.user) {
-        // Los datos deben venir de un formulario real en la UI
         domain.transport.requestTrip({
             userId: auth.user.id,
             origin: { address: 'Quito', city: 'Quito', country: 'EC', latitude: -0.18, longitude: -78.47 },
@@ -25,8 +29,8 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen p-24">
-      <h1 className="text-4xl font-bold text-[#0033A0]">
+    <main className="min-h-screen p-12 bg-gray-50">
+      <h1 className="text-4xl font-extrabold text-[#0033A0] mb-6">
         Going Monorepo Web App
       </h1>
       
@@ -40,7 +44,10 @@ export default function HomePage() {
             <p className="text-xl">¡Bienvenido, {auth.user.firstName}!</p>
             <p className="text-sm">Tu rol: {auth.user.roles.join(', ')}</p>
             <Button onClick={handleTestTrip} variant="accent" className="mr-4">
-                Solicitar Viaje de Prueba
+                Solicitar Viaje (Test)
+            </Button>
+            <Button onClick={handleTestSearch} variant="primary" className="mr-4">
+                Buscar Alojamiento (Test)
             </Button>
             <Button onClick={auth.logout} variant="secondary">
                 Cerrar Sesión

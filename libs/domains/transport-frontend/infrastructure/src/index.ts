@@ -1,1 +1,0 @@
-export * from './lib/http-trip.repository';
