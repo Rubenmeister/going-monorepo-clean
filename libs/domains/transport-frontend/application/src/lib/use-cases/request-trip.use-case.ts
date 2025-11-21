@@ -1,49 +1,57 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result, err } from 'neverthrow';
-import {
-  Trip,
-  ITripRepository,
-  RequestTripData,
-} from '@going-monorepo-clean/domains-transport-core'; // Reemplaza con tu scope
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
-import { Money, Location, UUID } from '@going-monorepo-clean/shared-domain';
+import { Injectable } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
 import { RequestTripDto } from '../dto/request-trip.dto';
+import { TransportApiClient } from '@going-monorepo-clean/transport-api-client'; // <--- NUEVA DEPENDENCIA
+import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
+import { Money, Location } from '@going-monorepo-clean/shared-domain';
+
+// --- View Model (Nuevo Modelo Simple para la UI) ---
+export interface TripViewModel {
+    id: string;
+    status: string;
+    originCity: string;
+    destinationCity: string;
+    price: number; // En dólares
+}
 
 @Injectable()
 export class RequestTripUseCase {
-  constructor(
-    @Inject(ITripRepository)
-    private readonly tripRepository: ITripRepository,
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: TransportApiClient;
 
-  public async execute(dto: RequestTripDto): Promise<Result<Trip, Error>> {
-    // 1. Obtener el token de la sesión actual
-    const sessionResult = await this.authRepository.loadSession();
-    if (sessionResult.isErr() || !sessionResult.value) {
-      return err(new Error('No estás autenticado. Por favor, inicia sesión.'));
+    constructor(authRepository: IAuthRepository /* Añade inyección real si usas DI */) {
+        this.apiClient = new TransportApiClient(); 
     }
-    const token = sessionResult.value.token;
 
-    // 2. Convertir el DTO a los Value Objects del dominio
-    const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
-    const originVOResult = Location.create(dto.origin);
-    const destinationVOResult = Location.create(dto.destination);
+    async execute(dto: RequestTripDto, token: string): Promise<Result<TripViewModel, Error>> {
+        // 1. Validaciones de DTO a VOs (Manejo de la lógica del View Model)
+        const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
+        if (priceVOResult.isErr()) return err(priceVOResult.error);
 
-    if (priceVOResult.isErr()) return err(priceVOResult.error);
-    if (originVOResult.isErr()) return err(originVOResult.error);
-    if (destinationVOResult.isErr()) return err(destinationVOResult.error);
+        // 2. Crear el Request DTO
+        const requestData: RequestTripRequest = {
+            userId: dto.userId,
+            origin: dto.origin,
+            destination: dto.destination,
+            price: priceVOResult.value.toPrimitives(),
+        };
 
-    // 3. Crear el objeto de datos para el repositorio
-    const tripData: RequestTripData = {
-      userId: dto.userId,
-      origin: originVOResult.value,
-      destination: destinationVOResult.value,
-      price: priceVOResult.value,
-    };
+        // 3. Llamar al Adaptador (API Client)
+        const result = await this.apiClient.requestTrip(requestData, token);
 
-    // 4. Llamar al "Puerto" del repositorio (que hará la llamada HTTP)
-    return this.tripRepository.request(tripData, token);
-  }
+        if (result.isErr()) {
+            return err(result.error);
+        }
+        
+        // 4. Mapear DTOs simples a View Models (Transformación)
+        const tripDto = result.value;
+        const viewModel: TripViewModel = {
+            id: tripDto.id,
+            status: tripDto.status,
+            originCity: tripDto.origin.city,
+            destinationCity: tripDto.destination.city,
+            price: tripDto.price.amount / 100,
+        };
+
+        return ok(viewModel);
+    }
 }

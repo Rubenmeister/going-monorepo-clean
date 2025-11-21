@@ -1,28 +1,41 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result } from 'neverthrow';
-import {
-  IAuthRepository,
-  AuthResponse,
-  LoginCredentials,
-} from '@going-monorepo-clean/domains-user-frontend-core'; // Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
+import { UserApiClient } from '@going-monorepo-clean/user-api-client'; // <--- NUEVA DEPENDENCIA
+import { LoginDto } from '../dto/login.dto';
+
+// --- View Model (Nuevo Modelo Simple para la UI) ---
+export interface AuthViewModel {
+    token: string;
+    userId: string;
+    firstName: string;
+    roles: string[];
+}
 
 @Injectable()
 export class LoginUseCase {
-  constructor(
-    // 1. Inyecta el "Puerto" del core
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: UserApiClient;
 
-  /**
-   * Ejecuta el caso de uso de login.
-   * Su trabajo es llamar al repositorio (que hará la llamada HTTP)
-   * y devolver el resultado.
-   */
-  public async execute(
-    credentials: LoginCredentials,
-  ): Promise<Result<AuthResponse, Error>> {
-    // 2. Llama al método del puerto
-    return this.authRepository.login(credentials);
-  }
+    constructor() {
+        this.apiClient = new UserApiClient(); 
+    }
+
+    async execute(dto: LoginDto): Promise<Result<AuthViewModel, Error>> {
+        // 1. Llamar al Adaptador (API Client)
+        const result = await this.apiClient.login(dto);
+
+        if (result.isErr()) {
+            return err(result.error);
+        }
+        
+        // 2. Mapear DTO a View Model (Transformación)
+        const authDto = result.value;
+        const viewModel: AuthViewModel = {
+            token: authDto.token,
+            userId: authDto.user.id,
+            firstName: authDto.user.firstName,
+            roles: authDto.user.roles,
+        };
+
+        return ok(viewModel);
+    }
 }

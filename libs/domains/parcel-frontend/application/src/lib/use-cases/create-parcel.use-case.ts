@@ -1,46 +1,60 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result, err } from 'neverthrow';
-import {
-  Parcel,
-  IParcelRepository,
-  CreateParcelData,
-} from '@going-monorepo-clean/domains-parcel-frontend-core';
+import { Injectable } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
+import { ParcelApiClient } from '@going-monorepo-clean/parcel-api-client';
 import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
-import { Money, Location } from '@going-monorepo-clean/shared-domain';
 import { CreateParcelDto } from '../dto/create-parcel.dto';
+import { Money, Location } from '@going-monorepo-clean/shared-domain';
+
+// --- View Model (Nuevo Modelo Simple para la UI) ---
+export interface ParcelViewModel {
+    id: string;
+    status: string;
+    price: number;
+}
 
 @Injectable()
 export class CreateParcelUseCase {
-  constructor(
-    @Inject(IParcelRepository)
-    private readonly parcelRepository: IParcelRepository,
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: ParcelApiClient;
+    private readonly authRepository: IAuthRepository;
 
-  public async execute(dto: CreateParcelDto): Promise<Result<Parcel, Error>> {
-    const sessionResult = await this.authRepository.loadSession();
-    if (sessionResult.isErr() || !sessionResult.value) {
-      return err(new Error('No estás autenticado. Por favor, inicia sesión.'));
+    constructor(authRepository: IAuthRepository) {
+        this.apiClient = new ParcelApiClient();
+        this.authRepository = authRepository;
     }
-    const token = sessionResult.value.token;
 
-    const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
-    const originVOResult = Location.create(dto.origin);
-    const destinationVOResult = Location.create(dto.destination);
+    async execute(dto: CreateParcelDto): Promise<Result<ParcelViewModel, Error>> {
+        const sessionResult = await this.authRepository.loadSession();
+        if (sessionResult.isErr() || !sessionResult.value) {
+            return err(new Error('No estás autenticado.'));
+        }
+        const token = sessionResult.value.token;
 
-    if (priceVOResult.isErr()) return err(priceVOResult.error);
-    if (originVOResult.isErr()) return err(originVOResult.error);
-    if (destinationVOResult.isErr()) return err(destinationVOResult.error);
+        const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
+        if (priceVOResult.isErr()) return err(priceVOResult.error);
 
-    const parcelData: CreateParcelData = {
-      userId: dto.userId,
-      origin: originVOResult.value,
-      destination: destinationVOResult.value,
-      description: dto.description,
-      price: priceVOResult.value,
-    };
+        const originVOResult = Location.create(dto.origin);
+        const destinationVOResult = Location.create(dto.destination);
+        if (originVOResult.isErr() || destinationVOResult.isErr()) return err(new Error("Ubicación inválida."));
 
-    return this.parcelRepository.create(parcelData, token);
-  }
+        const requestData: CreateParcelRequest = {
+            userId: dto.userId,
+            origin: originVOResult.value.toPrimitives(),
+            destination: destinationVOResult.value.toPrimitives(),
+            description: dto.description,
+            price: priceVOResult.value.toPrimitives(),
+        };
+
+        const result = await this.apiClient.create(requestData, token);
+
+        if (result.isErr()) return err(result.error);
+        
+        const parcelDto = result.value;
+        const viewModel: ParcelViewModel = {
+            id: parcelDto.id,
+            status: parcelDto.status,
+            price: parcelDto.price.amount / 100,
+        };
+
+        return ok(viewModel);
+    }
 }

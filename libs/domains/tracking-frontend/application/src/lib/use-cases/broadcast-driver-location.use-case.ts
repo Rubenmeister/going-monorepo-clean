@@ -1,39 +1,34 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result, err } from 'neverthrow';
-import {
-  IDriverLocationRepository,
-  LocationData,
-} from '@going-monorepo-clean/domains-tracking-frontend-core';
+import { Injectable } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
+import { TrackingApiClient } from '@going-monorepo-clean/tracking-api-client'; // <--- NUEVA DEPENDENCIA
 import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
-import { Location } from '@going-monorepo-clean/shared-domain';
 import { LocationUpdateDto } from '../dto/location-update.dto';
 
 @Injectable()
 export class BroadcastDriverLocationUseCase {
-  constructor(
-    @Inject(IDriverLocationRepository)
-    private readonly repository: IDriverLocationRepository,
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: TrackingApiClient;
+    private readonly authRepository: IAuthRepository;
 
-  public async execute(dto: LocationUpdateDto): Promise<Result<void, Error>> {
-    const sessionResult = await this.authRepository.loadSession();
-    if (sessionResult.isErr() || !sessionResult.value) {
-      return err(new Error('No estás autenticado.'));
+    constructor(authRepository: IAuthRepository /* La inyección real de tu provider */) {
+        this.apiClient = new TrackingApiClient(); 
+        this.authRepository = authRepository;
     }
-    const token = sessionResult.value.token;
 
-    const locationVOResult = Location.create(dto);
-    if (locationVOResult.isErr()) {
-      return err(locationVOResult.error);
+    async execute(dto: LocationUpdateDto): Promise<Result<void, Error>> {
+        const sessionResult = await this.authRepository.loadSession();
+        if (sessionResult.isErr() || !sessionResult.value) {
+            return err(new Error('No estás autenticado.'));
+        }
+        const token = sessionResult.value.token;
+
+        // El DTO de entrada ya es casi lo que el API necesita.
+        const requestData: LocationUpdateData = {
+            driverId: dto.driverId,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+        };
+
+        // 3. Llamar al Adaptador (API Client)
+        return this.apiClient.updateLocation(requestData, token);
     }
-    
-    const locationData: LocationData = {
-      driverId: dto.driverId,
-      location: locationVOResult.value,
-    };
-
-    return this.repository.sendLocation(locationData, token);
-  }
 }
