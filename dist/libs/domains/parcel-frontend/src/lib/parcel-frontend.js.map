@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../../libs/domains/parcel-frontend/src/lib/parcel-frontend.ts"],"sourcesContent":["export function parcelFrontend(): string {\r\n  return 'parcel-frontend';\r\n}\r\n"],"names":["parcelFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

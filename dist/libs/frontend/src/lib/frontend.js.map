@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../libs/frontend/src/lib/frontend.ts"],"sourcesContent":["export function frontend(): string {\r\n  return 'frontend';\r\n}\r\n"],"names":["frontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

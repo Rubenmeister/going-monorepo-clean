@@ -1,0 +1,19 @@
+{
+  "name": "domains-parcel-frontend-core",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "domains-parcel-frontend-core/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/domains-parcel-frontend-core",
+        "main": "domains-parcel-frontend-core/src/index.ts",
+        "tsConfig": "domains-parcel-frontend-core/tsconfig.lib.json",
+        "assets": ["domains-parcel-frontend-core/*.md"]
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../libs/domains/parcel-frontend/src/index.ts"],"sourcesContent":["export * from './lib/parcel-frontend';\r\n"],"names":[],"rangeMappings":";;;;;","mappings":";;;;;uBAAc"}

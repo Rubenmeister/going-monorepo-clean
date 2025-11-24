@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../libs/transport/src/lib/transport.ts"],"sourcesContent":["export function transport(): string {\r\n  return 'transport';\r\n}\r\n"],"names":["transport"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

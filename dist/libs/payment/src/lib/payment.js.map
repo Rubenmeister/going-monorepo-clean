@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../libs/payment/src/lib/payment.ts"],"sourcesContent":["export function payment(): string {\r\n  return 'payment';\r\n}\r\n"],"names":["payment"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}
