@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../../libs/domains/tour-frontend/src/lib/tour-frontend.ts"],"sourcesContent":["export function tourFrontend(): string {\r\n  return 'tour-frontend';\r\n}\r\n"],"names":["tourFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

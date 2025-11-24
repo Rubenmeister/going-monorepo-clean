@@ -3,7 +3,7 @@
 /* 0 */
 /***/ (() => {
 
-throw new Error("Module build failed (from ../node_modules/ts-loader/index.js):\nError: \u001b[31merror while parsing tsconfig.json\u001b[39m\n    at Object.loader (/workspaces/going-monorepo-clean/node_modules/ts-loader/dist/index.js:18:18)");
+throw new Error("Module build failed (from ../node_modules/ts-loader/index.js):\nError: \u001b[31merror while parsing tsconfig.json\u001b[39m\n    at Object.loader (C:\\Users\\USER1\\going-monorepo-clean\\node_modules\\ts-loader\\dist\\index.js:18:18)");
 
 /***/ })
 /******/ 	]);

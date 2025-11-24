@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../../../libs/domains/experience-frontend/src/lib/experience-frontend.ts"],"sourcesContent":["export function experienceFrontend(): string {\r\n  return 'experience-frontend';\r\n}\r\n"],"names":["experienceFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

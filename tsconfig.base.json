@@ -33,7 +33,10 @@
       "tour": ["libs/tour/src/index.ts"],
       "payment": ["libs/payment/src/index.ts"],
       "experience": ["libs/experience/src/index.ts"],
-      "parcel": ["libs/parcel/src/index.ts"]
+      "parcel": ["libs/parcel/src/index.ts"],
+      "domains-parcel-frontend-core": [
+        "domains-parcel-frontend-core/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
