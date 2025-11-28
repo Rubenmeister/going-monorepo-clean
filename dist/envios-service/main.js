@@ -16,10 +16,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const infrastructure_module_1 = __webpack_require__(5);
-const parcel_controller_1 = __webpack_require__(9);
+const config_1 = __webpack_require__(5);
+const mongoose_1 = __webpack_require__(6);
+const infrastructure_module_1 = __webpack_require__(7);
+const parcel_controller_1 = __webpack_require__(12);
 const domains_parcel_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-parcel-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let AppModule = class AppModule {
 };
@@ -56,6 +56,18 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/mongoose");
+
+/***/ }),
+/* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -63,10 +75,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.InfrastructureModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const mongoose_1 = __webpack_require__(6);
 const domains_parcel_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-parcel-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_parcel_repository_1 = __webpack_require__(6);
-const parcel_schema_1 = __webpack_require__(8);
+const mongoose_parcel_repository_1 = __webpack_require__(8);
+const parcel_schema_1 = __webpack_require__(11);
 let InfrastructureModule = class InfrastructureModule {
 };
 exports.InfrastructureModule = InfrastructureModule;
@@ -89,7 +101,7 @@ exports.InfrastructureModule = InfrastructureModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -98,11 +110,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseParcelRepository = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const neverthrow_1 = __webpack_require__(7);
+const mongoose_1 = __webpack_require__(6);
+const mongoose_2 = __webpack_require__(9);
+const neverthrow_1 = __webpack_require__(10);
 const domains_parcel_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-parcel-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const parcel_schema_1 = __webpack_require__(8);
+const parcel_schema_1 = __webpack_require__(11);
 let MongooseParcelRepository = class MongooseParcelRepository {
     constructor(model) {
         this.model = model;
@@ -168,13 +180,19 @@ exports.MongooseParcelRepository = MongooseParcelRepository = tslib_1.__decorate
 
 
 /***/ }),
-/* 7 */
+/* 9 */
+/***/ ((module) => {
+
+module.exports = require("mongoose");
+
+/***/ }),
+/* 10 */
 /***/ ((module) => {
 
 module.exports = require("neverthrow");
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -182,7 +200,7 @@ var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ParcelSchema = exports.ParcelModelSchema = void 0;
 const tslib_1 = __webpack_require__(3);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const mongoose_1 = __webpack_require__(6);
 const domains_parcel_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-parcel-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let MoneySchema = class MoneySchema {
 };
@@ -260,7 +278,7 @@ exports.ParcelSchema = mongoose_1.SchemaFactory.createForClass(ParcelModelSchema
 
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -270,7 +288,7 @@ exports.ParcelController = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
 const domains_parcel_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-parcel-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const shared_domain_1 = __webpack_require__(10);
+const shared_domain_1 = __webpack_require__(13);
 let ParcelController = class ParcelController {
     constructor(createParcelUseCase, findParcelsByUserUseCase) {
         this.createParcelUseCase = createParcelUseCase;
@@ -311,7 +329,7 @@ exports.ParcelController = ParcelController = tslib_1.__decorate([
 
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -319,27 +337,27 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.err = exports.ok = exports.Result = void 0;
 const tslib_1 = __webpack_require__(3);
 // Exporta los Value Objects
-tslib_1.__exportStar(__webpack_require__(11), exports);
-tslib_1.__exportStar(__webpack_require__(13), exports);
 tslib_1.__exportStar(__webpack_require__(14), exports);
+tslib_1.__exportStar(__webpack_require__(16), exports);
+tslib_1.__exportStar(__webpack_require__(17), exports);
 // Exporta los DTOs compartidos
-tslib_1.__exportStar(__webpack_require__(15), exports);
+tslib_1.__exportStar(__webpack_require__(18), exports);
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
-var neverthrow_1 = __webpack_require__(7);
+var neverthrow_1 = __webpack_require__(10);
 Object.defineProperty(exports, "Result", ({ enumerable: true, get: function () { return neverthrow_1.Result; } }));
 Object.defineProperty(exports, "ok", ({ enumerable: true, get: function () { return neverthrow_1.ok; } }));
 Object.defineProperty(exports, "err", ({ enumerable: true, get: function () { return neverthrow_1.err; } }));
 
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UUID = void 0;
-const uuid_1 = __webpack_require__(12);
+const uuid_1 = __webpack_require__(15);
 // Un namespace/objeto para las funciones de utilidad
 exports.UUID = {
     generate: () => {
@@ -352,19 +370,19 @@ exports.UUID = {
 
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ ((module) => {
 
 module.exports = require("uuid");
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Money = void 0;
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(10);
 class Money {
     constructor(props) {
         this.amount = props.amount;
@@ -401,13 +419,13 @@ exports.Money = Money;
 
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Location = void 0;
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(10);
 class Location {
     constructor(props) {
         this.address = props.address;
@@ -440,7 +458,7 @@ exports.Location = Location;
 
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 

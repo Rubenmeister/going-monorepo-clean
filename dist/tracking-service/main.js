@@ -16,10 +16,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const infrastructure_module_1 = __webpack_require__(5);
-const tracking_controller_1 = __webpack_require__(9);
-const tracking_gateway_1 = __webpack_require__(10);
+const config_1 = __webpack_require__(5);
+const infrastructure_module_1 = __webpack_require__(6);
+const tracking_controller_1 = __webpack_require__(10);
+const tracking_gateway_1 = __webpack_require__(11);
 const domains_tracking_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-tracking-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let AppModule = class AppModule {
 };
@@ -56,6 +56,12 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -65,10 +71,10 @@ const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
 const cache_manager_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/cache-manager'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 const cache_manager_redis_yet_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'cache-manager-redis-yet'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const config_1 = __webpack_require__(5);
 const domains_tracking_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-tracking-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const redis_tracking_repository_1 = __webpack_require__(6);
-const socket_io_tracking_gateway_1 = __webpack_require__(8);
+const redis_tracking_repository_1 = __webpack_require__(7);
+const socket_io_tracking_gateway_1 = __webpack_require__(9);
 let InfrastructureModule = class InfrastructureModule {
 };
 exports.InfrastructureModule = InfrastructureModule;
@@ -106,7 +112,7 @@ exports.InfrastructureModule = InfrastructureModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -117,7 +123,7 @@ const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
 const cache_manager_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/cache-manager'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 const cache_manager_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'cache-manager'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(8);
 const domains_tracking_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-tracking-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 const DRIVER_KEY_PREFIX = 'driver:location:';
 const ACTIVE_DRIVERS_SET = 'drivers:active';
@@ -177,46 +183,40 @@ exports.RedisTrackingRepository = RedisTrackingRepository = tslib_1.__decorate([
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ ((module) => {
 
 module.exports = require("neverthrow");
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SocketIoTrackingGateway = void 0;
+exports.SocketIoLocationGateway = void 0;
 const tslib_1 = __webpack_require__(3);
-const websockets_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/websockets'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const socket_io_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'socket.io'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const neverthrow_1 = __webpack_require__(7);
-let SocketIoTrackingGateway = class SocketIoTrackingGateway {
-    async broadcastLocationUpdate(location) {
-        const primitives = location.toPrimitives();
-        this.server.emit('driverLocationUpdated', primitives);
-        return (0, neverthrow_1.ok)(undefined);
+const common_1 = __webpack_require__(4);
+const tracking_gateway_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '../api/tracking.gateway'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+let SocketIoLocationGateway = class SocketIoLocationGateway {
+    constructor(trackingGateway) {
+        this.trackingGateway = trackingGateway;
     }
-    async broadcastToRoom(room, event, data) {
-        this.server.to(room).emit(event, data);
-        return (0, neverthrow_1.ok)(undefined);
+    async broadcastLocation(location) {
+        // Llama al método del gateway para emitir la actualización
+        this.trackingGateway.emitLocationUpdate(location);
     }
 };
-exports.SocketIoTrackingGateway = SocketIoTrackingGateway;
-tslib_1.__decorate([
-    (0, websockets_1.WebSocketServer)(),
-    tslib_1.__metadata("design:type", typeof (_a = typeof socket_io_1.Server !== "undefined" && socket_io_1.Server) === "function" ? _a : Object)
-], SocketIoTrackingGateway.prototype, "server", void 0);
-exports.SocketIoTrackingGateway = SocketIoTrackingGateway = tslib_1.__decorate([
-    (0, websockets_1.WebSocketGateway)({ cors: { origin: '*' } })
-], SocketIoTrackingGateway);
+exports.SocketIoLocationGateway = SocketIoLocationGateway;
+exports.SocketIoLocationGateway = SocketIoLocationGateway = tslib_1.__decorate([
+    (0, common_1.Injectable)(),
+    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof tracking_gateway_1.TrackingGateway !== "undefined" && tracking_gateway_1.TrackingGateway) === "function" ? _a : Object])
+], SocketIoLocationGateway);
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -248,7 +248,7 @@ exports.TrackingController = TrackingController = tslib_1.__decorate([
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -257,7 +257,7 @@ var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TrackingGateway = void 0;
 const tslib_1 = __webpack_require__(3);
-const websockets_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/websockets'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const websockets_1 = __webpack_require__(12);
 const common_1 = __webpack_require__(4);
 const domains_tracking_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-tracking-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let TrackingGateway = TrackingGateway_1 = class TrackingGateway {
@@ -299,6 +299,12 @@ exports.TrackingGateway = TrackingGateway = TrackingGateway_1 = tslib_1.__decora
     tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof domains_tracking_application_1.UpdateLocationUseCase !== "undefined" && domains_tracking_application_1.UpdateLocationUseCase) === "function" ? _a : Object])
 ], TrackingGateway);
 
+
+/***/ }),
+/* 12 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/websockets");
 
 /***/ })
 /******/ 	]);

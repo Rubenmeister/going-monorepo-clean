@@ -1,19 +1,2 @@
-/******/ (() => { // webpackBootstrap
-/******/ 	var __webpack_modules__ = ([
-/* 0 */
-/***/ (() => {
-
-throw new Error("Module build failed (from ../node_modules/ts-loader/index.js):\nError: \u001b[31merror while parsing tsconfig.json\u001b[39m\n    at Object.loader (C:\\Users\\USER1\\going-monorepo-clean\\node_modules\\ts-loader\\dist\\index.js:18:18)");
-
-/***/ })
-/******/ 	]);
-/************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module doesn't tell about it's top-level declarations so it can't be inlined
-/******/ 	var __webpack_exports__ = {};
-/******/ 	__webpack_modules__[0]();
-/******/ 	
-/******/ })()
-;
+(()=>{"use strict";require("reflect-metadata");const e=require("@nestjs/common"),t=require("@nestjs/core"),o=require("tslib"),r=require("@nestjs/config"),a=require("@nestjs/mongoose"),s=require("mongoose");let n=class User{};(0,o.__decorate)([(0,a.Prop)({required:!0}),(0,o.__metadata)("design:type",String)],n.prototype,"name",void 0),(0,o.__decorate)([(0,a.Prop)({required:!0,unique:!0}),(0,o.__metadata)("design:type",String)],n.prototype,"email",void 0),(0,o.__decorate)([(0,a.Prop)({required:!0}),(0,o.__metadata)("design:type",String)],n.prototype,"password",void 0),n=(0,o.__decorate)([(0,a.Schema)()],n);const i=a.SchemaFactory.createForClass(n);var c;let d=class AuthService{constructor(e){this.userModel=e}async register(e){return new this.userModel(e).save()}async login(t){const o=await this.userModel.findOne({email:t.email});if(!o)throw new e.UnauthorizedException("Usuario no encontrado");if(o.password!==t.password)throw new e.UnauthorizedException("Contrase\xf1a incorrecta");return{message:"Login exitoso",user:{id:o._id,name:o.name,email:o.email,role:"CONDUCTOR"},access_token:"token_falso_demo_123"}}async findAll(){return this.userModel.find().exec()}};var l;d=(0,o.__decorate)([(0,e.Injectable)(),(0,o.__param)(0,(0,a.InjectModel)(n.name)),(0,o.__metadata)("design:paramtypes",["function"==typeof(c=void 0!==s.Model&&s.Model)?c:Object])],d);let u=class AuthController{constructor(e){this.authService=e}async register(e){return this.authService.register(e)}async login(e){return this.authService.login(e)}async getUsers(){return this.authService.findAll()}};(0,o.__decorate)([(0,e.Post)("register"),(0,o.__param)(0,(0,e.Body)()),(0,o.__metadata)("design:type",Function),(0,o.__metadata)("design:paramtypes",[Object]),(0,o.__metadata)("design:returntype",Promise)],u.prototype,"register",null),(0,o.__decorate)([(0,e.Post)("login"),(0,e.HttpCode)(e.HttpStatus.OK),(0,o.__param)(0,(0,e.Body)()),(0,o.__metadata)("design:type",Function),(0,o.__metadata)("design:paramtypes",[Object]),(0,o.__metadata)("design:returntype",Promise)],u.prototype,"login",null),(0,o.__decorate)([(0,e.Get)("users"),(0,o.__metadata)("design:type",Function),(0,o.__metadata)("design:paramtypes",[]),(0,o.__metadata)("design:returntype",Promise)],u.prototype,"getUsers",null),u=(0,o.__decorate)([(0,e.Controller)("auth"),(0,o.__metadata)("design:paramtypes",["function"==typeof(l=void 0!==d&&d)?l:Object])],u);let _=class AuthModule{};_=(0,o.__decorate)([(0,e.Module)({imports:[a.MongooseModule.forFeature([{name:n.name,schema:i}])],controllers:[u],providers:[d]})],_);let p=class AppModule{};p=(0,o.__decorate)([(0,e.Module)({imports:[r.ConfigModule.forRoot({isGlobal:!0,envFilePath:".env"}),a.MongooseModule.forRootAsync({imports:[r.ConfigModule],useFactory:async e=>({uri:e.get("MONGO_URI")}),inject:[r.ConfigService]}),_],controllers:[],providers:[]})],p),async function(){const o=new e.Logger("Bootstrap");try{const r=await t.NestFactory.create(p);r.enableCors(),r.setGlobalPrefix("api"),r.useGlobalPipes(new e.ValidationPipe({whitelist:!0,transform:!0}));const a=process.env.PORT||3333;await r.listen(a),o.log(`\ud83d\ude80 BACKEND LISTO en: http://localhost:${a}/api`)}catch(r){o.error("\u274c ERROR FATAL:",r),process.exit(1)}}()})();
+//# sourceMappingURL=main.js.map

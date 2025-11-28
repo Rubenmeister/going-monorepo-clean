@@ -1,7 +1,8 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import * as passport from 'passport'; // Necesario para el middleware de Auth
+// ✅ BIEN (Funciona en producción y desarrollo)
+import passport from 'passport';
 
 @Module({})
 export class ProxyModule implements NestModule {

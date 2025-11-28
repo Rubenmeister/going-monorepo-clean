@@ -1,39 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { UserStatus } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+// libs/domains/user/application/src/index.ts
 
-@Schema({ timestamps: true, _id: false })
-export class UserModelSchema {
-  @Prop({ required: true, unique: true })
-  id: string;
+// 1. Exportar DTOs
+// (Asegúrate de que estos archivos existan en estas rutas, si no, ajusta la ruta)
+export * from './lib/dto/register-user.dto';
+export * from './lib/dto/login-user.dto';
 
-  @Prop({ required: true, unique: true, index: true })
-  email: string;
+// 2. Exportar Casos de Uso (Use Cases)
+export * from './lib/use-cases/register-user.use-case';
+export * from './lib/use-cases/login-user.use-case';
 
-  @Prop({ required: true })
-  passwordHash: string;
-
-  @Prop({ required: true })
-  firstName: string;
-
-  @Prop({ required: true })
-  lastName: string;
-
-  @Prop()
-  phone?: string;
-
-  @Prop([String])
-  roles: string[];
-
-  @Prop({ required: true, enum: ['pending_verification', 'active', 'suspended'] })
-  status: UserStatus;
-
-  @Prop()
-  createdAt: Date;
-
-  @Prop({ index: true })
-  verificationToken?: string;
-}
-
-export type UserDocument = UserModelSchema & Document;
-export const UserSchema = SchemaFactory.createForClass(UserModelSchema);
+// 3. Exportar cualquier otra cosa que necesites (Interfaces, etc.)
+// export * from './lib/ports/...';

@@ -1,35 +1,24 @@
 import { Result, ok, err } from 'neverthrow';
-
-export type RoleType = 'admin' | 'user' | 'driver' | 'host';
+// Importamos el RoleType desde la entidad para mantener consistencia
+import { RoleType } from '../entities/user.entity';
 
 export class Role {
-  readonly value: RoleType;
+  private constructor(public readonly value: RoleType) {}
 
-  private constructor(value: RoleType) {
-    this.value = value;
-  }
-
-  public static create(value: string): Result<Role, Error> {
-    const role = value.toLowerCase() as RoleType;
-    if (!['admin', 'user', 'driver', 'host'].includes(role)) {
-      return err(new Error('Invalid role'));
+  public static create(value: string | RoleType): Result<Role, Error> {
+    // Validación simple: verificamos si el valor está en el Enum
+    if (!Object.values(RoleType).includes(value as RoleType)) {
+      return err(new Error(`Invalid role: ${value}`));
     }
-    return ok(new Role(role));
+    return ok(new Role(value as RoleType));
   }
 
-  public isAdmin(): boolean {
-    return this.value === 'admin';
-  }
-  
-  public isDriver(): boolean {
-    return this.value === 'driver';
-  }
-  
-  public toPrimitives(): string {
-    return this.value;
-  }
-  
+  // Método helper para recuperar desde primitivos (Base de datos)
   public static fromPrimitives(value: string): Role {
     return new Role(value as RoleType);
+  }
+
+  public toPrimitives(): string {
+    return this.value;
   }
 }

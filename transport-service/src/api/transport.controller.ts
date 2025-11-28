@@ -1,31 +1,29 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
-import {
-  RequestTripDto,
-  RequestTripUseCase,
-  AcceptTripUseCase,
-} from '@going-monorepo-clean/domains-transport-application';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+// ... otros imports
+
+interface ObtenerHorariosDto {
+  origen: string; // Ej: "Terminal Norte"
+  destino: string; // Ej: "Terminal Sur"
+  tipoVehiculo: 'VAN';
+}
 
 @Controller('transport')
 export class TransportController {
-  constructor(
-    private readonly requestTripUseCase: RequestTripUseCase,
-    private readonly acceptTripUseCase: AcceptTripUseCase,
-  ) {}
+  // ... otros métodos
 
-  @Post('request')
-  // @UseGuards(AuthGuard('jwt')) // Protegido por el API Gateway
-  async requestTrip(@Body() dto: RequestTripDto): Promise<any> {
-    return this.requestTripUseCase.execute(dto);
-  }
+  @Get('schedules')
+  async obtenerHorarios(@Query() query: ObtenerHorariosDto): Promise<{ horarios: Date[] }> {
+    // Lógica para calcular horarios fijos o dinámicos basados en la ruta
+    // Por ejemplo, VAN de Quito a Ambato sale cada 5 horas
+    const frecuenciaMinutos = query.tipoVehiculo === 'VAN' ? 300 : 60; // 5h o 1h
 
-  @Patch(':tripId/accept')
-  // @UseGuards(AuthGuard('jwt')) // Protegido por el API Gateway
-  async acceptTrip(
-    @Param('tripId') tripId: UUID,
-    @Body('driverId') driverId: UUID, // El Gateway pasará el ID del conductor
-  ): Promise<any> {
-    await this.acceptTripUseCase.execute(tripId, driverId);
-    return { message: 'Trip accepted' };
+    const ahora = new Date();
+    const horarios = [];
+    for (let i = 0; i < 5; i++) { // Próximas 5 salidas
+      const proxima = new Date(ahora.getTime() + (frecuenciaMinutos * i * 60000));
+      horarios.push(proxima);
+    }
+
+    return { horarios };
   }
 }

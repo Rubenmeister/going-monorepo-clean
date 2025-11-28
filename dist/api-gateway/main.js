@@ -16,10 +16,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const auth_module_1 = __webpack_require__(5);
-const proxy_module_1 = __webpack_require__(7);
-const tracking_module_1 = __webpack_require__(9);
+const config_1 = __webpack_require__(5);
+const auth_module_1 = __webpack_require__(6);
+const proxy_module_1 = __webpack_require__(11);
+const tracking_module_1 = __webpack_require__(14);
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,6 +49,12 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -56,10 +62,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AuthModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const passport_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/passport'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const jwt_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/jwt'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const jwt_strategy_1 = __webpack_require__(6);
+const passport_1 = __webpack_require__(7);
+const jwt_1 = __webpack_require__(8);
+const config_1 = __webpack_require__(5);
+const jwt_strategy_1 = __webpack_require__(9);
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -83,7 +89,19 @@ exports.AuthModule = AuthModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 6 */
+/* 7 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/passport");
+
+/***/ }),
+/* 8 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/jwt");
+
+/***/ }),
+/* 9 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -92,9 +110,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JwtStrategy = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const passport_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/passport'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const passport_jwt_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'passport-jwt'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const passport_1 = __webpack_require__(7);
+const passport_jwt_1 = __webpack_require__(10);
+const config_1 = __webpack_require__(5);
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(configService) {
         super({
@@ -123,7 +141,13 @@ exports.JwtStrategy = JwtStrategy = tslib_1.__decorate([
 
 
 /***/ }),
-/* 7 */
+/* 10 */
+/***/ ((module) => {
+
+module.exports = require("passport-jwt");
+
+/***/ }),
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -132,9 +156,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProxyModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const http_proxy_middleware_1 = __webpack_require__(8);
-const passport = tslib_1.__importStar(__webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'passport'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()))); // Necesario para el middleware de Auth
+const config_1 = __webpack_require__(5);
+const http_proxy_middleware_1 = __webpack_require__(12);
+const passport = tslib_1.__importStar(__webpack_require__(13)); // Necesario para el middleware de Auth
 let ProxyModule = class ProxyModule {
     constructor(configService) {
         this.configService = configService;
@@ -193,13 +217,19 @@ exports.ProxyModule = ProxyModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 8 */
+/* 12 */
 /***/ ((module) => {
 
 module.exports = require("http-proxy-middleware");
 
 /***/ }),
-/* 9 */
+/* 13 */
+/***/ ((module) => {
+
+module.exports = require("passport");
+
+/***/ }),
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -207,8 +237,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TrackingModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const axios_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/axios'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const tracking_gateway_1 = __webpack_require__(10);
+const axios_1 = __webpack_require__(15);
+const tracking_gateway_1 = __webpack_require__(16);
 let TrackingModule = class TrackingModule {
 };
 exports.TrackingModule = TrackingModule;
@@ -221,7 +251,13 @@ exports.TrackingModule = TrackingModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 10 */
+/* 15 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/axios");
+
+/***/ }),
+/* 16 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -230,12 +266,12 @@ var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TrackingGateway = void 0;
 const tslib_1 = __webpack_require__(3);
-const websockets_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/websockets'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const axios_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/axios'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const websockets_1 = __webpack_require__(17);
+const axios_1 = __webpack_require__(15);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const socket_io_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'socket.io'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const rxjs_1 = __webpack_require__(11);
+const config_1 = __webpack_require__(5);
+const socket_io_1 = __webpack_require__(18);
+const rxjs_1 = __webpack_require__(19);
 let TrackingGateway = TrackingGateway_1 = class TrackingGateway {
     constructor(httpService, configService) {
         this.httpService = httpService;
@@ -287,7 +323,19 @@ exports.TrackingGateway = TrackingGateway = TrackingGateway_1 = tslib_1.__decora
 
 
 /***/ }),
-/* 11 */
+/* 17 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/websockets");
+
+/***/ }),
+/* 18 */
+/***/ ((module) => {
+
+module.exports = require("socket.io");
+
+/***/ }),
+/* 19 */
 /***/ ((module) => {
 
 module.exports = require("rxjs");

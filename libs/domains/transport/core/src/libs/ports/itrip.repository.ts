@@ -1,15 +1,11 @@
-import { Result } from 'neverthrow';
 import { Trip } from '../entities/trip.entity';
-import { UUID } from '@going-monorepo-clean/shared-domain';
-
-// Symbol para inyección de dependencias
-export const ITripRepository = Symbol('ITripRepository');
+import { UUIDVO } from '@myorg/shared/domain/uuid.vo';
+import { LocationVO } from '@myorg/shared/domain/location.vo';
 
 export interface ITripRepository {
-  save(trip: Trip): Promise<Result<void, Error>>;
-  update(trip: Trip): Promise<Result<void, Error>>;
-  findById(id: UUID): Promise<Result<Trip | null, Error>>;
-  findActiveTripsByDriver(driverId: UUID): Promise<Result<Trip[], Error>>;
-  findTripsByUser(userId: UUID): Promise<Result<Trip[], Error>>;
-  findPendingTrips(): Promise<Result<Trip[], Error>>;
+  save(trip: Trip): Promise<void>;
+  findById(id: UUIDVO): Promise<Trip | null>;
+  findAvailableSharedTrips(origen: LocationVO, destino: LocationVO, tipoVehiculo: 'SUV' | 'VAN'): Promise<Trip[]>;
+  findTripsByDriverId(driverId: string): Promise<Trip[]>;
+  update(trip: Trip): Promise<void>;
 }

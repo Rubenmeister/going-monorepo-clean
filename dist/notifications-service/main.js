@@ -16,10 +16,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const infrastructure_module_1 = __webpack_require__(5);
-const notification_controller_1 = __webpack_require__(10);
+const config_1 = __webpack_require__(5);
+const mongoose_1 = __webpack_require__(6);
+const infrastructure_module_1 = __webpack_require__(7);
+const notification_controller_1 = __webpack_require__(13);
 const domains_notification_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-notification-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let AppModule = class AppModule {
 };
@@ -56,6 +56,18 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/mongoose");
+
+/***/ }),
+/* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -63,11 +75,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.InfrastructureModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const mongoose_1 = __webpack_require__(6);
 const domains_notification_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-notification-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_notification_repository_1 = __webpack_require__(6);
-const notification_schema_1 = __webpack_require__(8);
-const log_notification_gateway_1 = __webpack_require__(9);
+const mongoose_notification_repository_1 = __webpack_require__(8);
+const notification_schema_1 = __webpack_require__(11);
+const log_notification_gateway_1 = __webpack_require__(12);
 let InfrastructureModule = class InfrastructureModule {
 };
 exports.InfrastructureModule = InfrastructureModule;
@@ -97,7 +109,7 @@ exports.InfrastructureModule = InfrastructureModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -106,11 +118,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseNotificationRepository = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const neverthrow_1 = __webpack_require__(7);
+const mongoose_1 = __webpack_require__(6);
+const mongoose_2 = __webpack_require__(9);
+const neverthrow_1 = __webpack_require__(10);
 const domains_notification_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-notification-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const notification_schema_1 = __webpack_require__(8);
+const notification_schema_1 = __webpack_require__(11);
 let MongooseNotificationRepository = class MongooseNotificationRepository {
     constructor(model) {
         this.model = model;
@@ -180,13 +192,19 @@ exports.MongooseNotificationRepository = MongooseNotificationRepository = tslib_
 
 
 /***/ }),
-/* 7 */
+/* 9 */
+/***/ ((module) => {
+
+module.exports = require("mongoose");
+
+/***/ }),
+/* 10 */
 /***/ ((module) => {
 
 module.exports = require("neverthrow");
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -194,7 +212,7 @@ var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.NotificationSchema = exports.NotificationModelSchema = void 0;
 const tslib_1 = __webpack_require__(3);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const mongoose_1 = __webpack_require__(6);
 const domains_notification_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-notification-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let NotificationModelSchema = class NotificationModelSchema {
 };
@@ -242,7 +260,7 @@ exports.NotificationSchema = mongoose_1.SchemaFactory.createForClass(Notificatio
 
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -251,7 +269,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LogNotificationGateway = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(10);
 /**
  * Adaptador Simulado. Reemplazar por FirebaseGateway, SendGridGateway, etc.
  */
@@ -276,7 +294,7 @@ exports.LogNotificationGateway = LogNotificationGateway = LogNotificationGateway
 
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -286,7 +304,7 @@ exports.NotificationController = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
 const domains_notification_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-notification-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const shared_domain_1 = __webpack_require__(11);
+const shared_domain_1 = __webpack_require__(14);
 let NotificationController = class NotificationController {
     constructor(sendNotificationUseCase, getUserNotificationsUseCase) {
         this.sendNotificationUseCase = sendNotificationUseCase;
@@ -325,7 +343,7 @@ exports.NotificationController = NotificationController = tslib_1.__decorate([
 
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -333,27 +351,27 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.err = exports.ok = exports.Result = void 0;
 const tslib_1 = __webpack_require__(3);
 // Exporta los Value Objects
-tslib_1.__exportStar(__webpack_require__(12), exports);
-tslib_1.__exportStar(__webpack_require__(14), exports);
 tslib_1.__exportStar(__webpack_require__(15), exports);
+tslib_1.__exportStar(__webpack_require__(17), exports);
+tslib_1.__exportStar(__webpack_require__(18), exports);
 // Exporta los DTOs compartidos
-tslib_1.__exportStar(__webpack_require__(16), exports);
+tslib_1.__exportStar(__webpack_require__(19), exports);
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
-var neverthrow_1 = __webpack_require__(7);
+var neverthrow_1 = __webpack_require__(10);
 Object.defineProperty(exports, "Result", ({ enumerable: true, get: function () { return neverthrow_1.Result; } }));
 Object.defineProperty(exports, "ok", ({ enumerable: true, get: function () { return neverthrow_1.ok; } }));
 Object.defineProperty(exports, "err", ({ enumerable: true, get: function () { return neverthrow_1.err; } }));
 
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UUID = void 0;
-const uuid_1 = __webpack_require__(13);
+const uuid_1 = __webpack_require__(16);
 // Un namespace/objeto para las funciones de utilidad
 exports.UUID = {
     generate: () => {
@@ -366,19 +384,19 @@ exports.UUID = {
 
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ ((module) => {
 
 module.exports = require("uuid");
 
 /***/ }),
-/* 14 */
+/* 17 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Money = void 0;
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(10);
 class Money {
     constructor(props) {
         this.amount = props.amount;
@@ -415,13 +433,13 @@ exports.Money = Money;
 
 
 /***/ }),
-/* 15 */
+/* 18 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Location = void 0;
-const neverthrow_1 = __webpack_require__(7);
+const neverthrow_1 = __webpack_require__(10);
 class Location {
     constructor(props) {
         this.address = props.address;
@@ -454,7 +472,7 @@ exports.Location = Location;
 
 
 /***/ }),
-/* 16 */
+/* 19 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 

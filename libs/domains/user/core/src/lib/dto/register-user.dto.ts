@@ -1,5 +1,7 @@
 import { IsNotEmpty, IsString, IsEmail, MinLength, IsOptional, IsEnum } from 'class-validator';
-import { RoleType } from '@going-monorepo-clean/domains-user-core'; // Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
+//✅ BIEN (Ajusta la ruta según donde tengas definido RoleType)
+import { RoleType } from '../entities/user.entity'; 
+// O si está en types: import { RoleType } from '../types/role.type';/ Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
 
 export class RegisterUserDto {
   @IsNotEmpty()
