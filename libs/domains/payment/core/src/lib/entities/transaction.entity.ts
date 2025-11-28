@@ -1,88 +1,57 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Result, ok, err } from 'neverthrow';
-import { UUID, Money } from '@going-monorepo-clean/shared-domain';
+import { MoneyVO } from '@myorg/shared/domain/money.vo';
+import { UUIDVO } from '@myorg/shared/domain/uuid.vo';
+import { UserId } from '@myorg/domains/user/core'; // Asumiendo que ya existe
+import { TripId } from '@myorg/domains/transport/core'; // Asumiendo que ya existe
 
-export type TransactionStatus = 'pending' | 'succeeded' | 'failed';
-
-export interface TransactionProps {
-  id: UUID;
-  userId: UUID;
-  referenceId: UUID; // ej. tripId, bookingId
-  paymentIntentId?: string;
-  amount: Money;
-  status: TransactionStatus;
-  createdAt: Date;
-}
+export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
 export class Transaction {
-  readonly id: UUID;
-  readonly userId: UUID;
-  readonly referenceId: UUID;
-  readonly paymentIntentId?: string;
-  readonly amount: Money;
-  readonly status: TransactionStatus;
-  readonly createdAt: Date;
+  id: UUIDVO;
+  userId: UserId; // El que paga
+  tripId?: TripId; // Opcional: si es pago de viaje
+  amount: MoneyVO;
+  status: TransactionStatus;
+  paymentIntentId?: string; // ID de Stripe o proveedor
+  createdAt: Date;
+  updatedAt: Date;
 
-  private constructor(props: TransactionProps) {
+  constructor(props: {
+    id: UUIDVO;
+    userId: UserId;
+    amount: MoneyVO;
+    tripId?: TripId;
+  }) {
     this.id = props.id;
     this.userId = props.userId;
-    this.referenceId = props.referenceId;
-    this.paymentIntentId = props.paymentIntentId;
     this.amount = props.amount;
-    this.status = props.status;
-    this.createdAt = props.createdAt;
+    this.tripId = props.tripId;
+    this.status = 'PENDING';
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 
-  public static create(props: {
-    userId: UUID;
-    referenceId: UUID;
-    amount: Money;
-  }): Result<Transaction, Error> {
-    if (!props.amount.isPositive()) {
-      return err(new Error('Amount must be positive'));
+  confirm(paymentIntentId: string): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Solo transacciones pendientes pueden confirmarse.');
     }
-
-    const transaction = new Transaction({
-      id: uuidv4(),
-      ...props,
-      status: 'pending',
-      createdAt: new Date(),
-    });
-    return ok(transaction);
+    this.status = 'CONFIRMED';
+    this.paymentIntentId = paymentIntentId;
+    this.updatedAt = new Date();
   }
 
-  public toPrimitives(): any {
-    return {
-      id: this.id,
-      userId: this.userId,
-      referenceId: this.referenceId,
-      paymentIntentId: this.paymentIntentId,
-      amount: this.amount.toPrimitives(),
-      status: this.status,
-      createdAt: this.createdAt,
-    };
-  }
-
-  public static fromPrimitives(props: any): Transaction {
-    return new Transaction({
-      ...props,
-      amount: Money.fromPrimitives(props.amount),
-    });
-  }
-
-  public setPaymentIntent(paymentIntentId: string): void {
-    (this as any).paymentIntentId = paymentIntentId;
-  }
-
-  public succeed(): void {
-    if (this.status === 'pending') {
-      (this as any).status = 'succeeded';
+  fail(): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Solo transacciones pendientes pueden fallar.');
     }
+    this.status = 'FAILED';
+    this.updatedAt = new Date();
   }
 
-  public fail(): void {
-    if (this.status === 'pending') {
-      (this as any).status = 'failed';
+  cancel(): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Solo transacciones pendientes pueden cancelarse.');
     }
+    this.status = 'CANCELLED';
+    this.updatedAt = new Date();
   }
 }

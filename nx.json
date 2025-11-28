@@ -3,8 +3,7 @@
     "version": "22.0.3"
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "nxCloudId": "6917d377bd06835f3b2d7464",
-  "targetDefaults": {
+    "targetDefaults": {
     "test": {
       "cache": true
     },

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../../domains-parcel-frontend-core/src/lib/domains-parcel-frontend-core.ts"],"sourcesContent":["export function domainsParcelFrontendCore(): string {\n  return 'domains-parcel-frontend-core';\n}\n"],"names":["domainsParcelFrontendCore"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

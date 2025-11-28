@@ -1,10 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Result, ok, err } from 'neverthrow';
-import { UUID } from '@going-monorepo-clean/shared-domain'; // Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
-import { Role, RoleType } from '../value-objects/role.vo';
-import { IPasswordHasher } from '../ports/ipassword-hasher';
+// Si tienes problemas con esta librería, cambia UUID por string.
+import { UUID } from '@going-monorepo-clean/shared-domain'; 
+import { Role } from '../value-objects/role.vo';
+import { IPasswordHasher } from '../ports/ipassword-hasher'; // Asegúrate que este nombre de archivo coincida
 
 export type UserStatus = 'pending_verification' | 'active' | 'suspended';
+
+// ✅ DEFINIMOS Y EXPORTAMOS EL ENUM AQUÍ PARA QUE LOS DTOs LO ENCUENTREN
+export enum RoleType {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  DRIVER = 'DRIVER',
+  HOST = 'HOST'
+}
 
 export interface UserProps {
   id: UUID;
@@ -76,7 +85,8 @@ export class User {
       firstName: this.firstName,
       lastName: this.lastName,
       phone: this.phone,
-      roles: this.roles.map(role => role.toPrimitives()),
+      // Asumimos que Role tiene un método toPrimitives o usamos .value
+      roles: this.roles.map(role => role.value), 
       status: this.status,
       createdAt: this.createdAt,
       verificationToken: this.verificationToken,
@@ -86,7 +96,8 @@ export class User {
   public static fromPrimitives(props: any): User {
     return new User({
       ...props,
-      roles: props.roles.map((role: string) => Role.fromPrimitives(role)),
+      // Asumimos que Role.create devuelve un Result o una instancia
+      roles: props.roles.map((role: string) => Role.create(role as RoleType)._unsafeUnwrap ? Role.create(role as RoleType)._unsafeUnwrap() : Role.create(role as RoleType)),
     });
   }
 

@@ -1,48 +1,27 @@
-import { UUID } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope
-import { Location } from '../value-objects/location.vo';
-
-export interface DriverLocationProps {
-  driverId: UUID;
-  location: Location;
-  updatedAt: Date;
-}
+import { LocationVO } from '@myorg/shared/domain/location.vo';
+import { DriverId } from './driver.entity'; // Asumiendo que existe
+import { TripId } from '@myorg/domains/transport/core'; // Importar desde transport
 
 export class DriverLocation {
-  readonly driverId: UUID;
-  readonly location: Location;
-  readonly updatedAt: Date;
+  driverId: DriverId;
+  tripId?: TripId; // Opcional: puede no estar en un viaje
+  location: LocationVO;
+  timestamp: Date;
+  speed?: number; // km/h
+  heading?: number; // grados
 
-  private constructor(props: DriverLocationProps) {
+  constructor(props: {
+    driverId: DriverId;
+    location: LocationVO;
+    tripId?: TripId;
+    speed?: number;
+    heading?: number;
+  }) {
     this.driverId = props.driverId;
     this.location = props.location;
-    this.updatedAt = props.updatedAt;
-  }
-
-  // "Factory method" para crear o actualizar una ubicación
-  public static create(props: {
-    driverId: UUID;
-    location: Location;
-  }): DriverLocation {
-    return new DriverLocation({
-      ...props,
-      updatedAt: new Date(),
-    });
-  }
-
-  // --- Métodos de Persistencia ---
-  
-  public toPrimitives(): any {
-    return {
-      driverId: this.driverId,
-      location: this.location.toPrimitives(),
-      updatedAt: this.updatedAt,
-    };
-  }
-
-  public static fromPrimitives(props: any): DriverLocation {
-    return new DriverLocation({
-      ...props,
-      location: Location.fromPrimitives(props.location),
-    });
+    this.tripId = props.tripId;
+    this.timestamp = new Date();
+    this.speed = props.speed;
+    this.heading = props.heading;
   }
 }

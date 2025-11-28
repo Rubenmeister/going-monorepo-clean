@@ -1,0 +1,64 @@
+# ==========================================
+2 # ETAPA 1: BUILDER
+3 # ==========================================
+4 FROM node:18-alpine AS builder
+5
+6 # Instalar dependencias del sistema
+7 RUN apk add --no-cache libc6-compat
+8
+9 WORKDIR /app
+10
+11 # Copiamos archivos de configuración clave
+12 COPY package*.json nx.json tsconfig.base.json ./
+13
+14 # Instalamos dependencias (Legacy peer deps para evitar conflictos)
+15 RUN npm install --legacy-peer-deps
+16
+17 # Copiamos el código fuente
+18 COPY . .
+19
+20 # --- LIMPIEZA FORZADA (CRÍTICO) ---
+21 # Borramos el frontend y los tests E2E para que Nx compile el backend en paz
+22 RUN rm -rf mobile-driver-app mobile-user-app admin-dashboard *-e2e
+23
+24 # Argumento para la app
+25 ARG APP_NAME=api-gateway
+26
+27 # Desactivamos el Daemon de Nx para estabilidad en Docker
+28 ENV NX_DAEMON=false
+29 # Aumentamos memoria para evitar crasheos
+30 ENV NODE_OPTIONS="--max-old-space-size=4096"
+31
+32 # Construimos la app
+33 RUN npx nx build ${APP_NAME} --prod
+34
+35 # ==========================================
+36 # ETAPA 2: RUNNER (PRODUCCIÓN)
+37 # ==========================================
+38 FROM node:18-alpine AS runner
+39
+40 WORKDIR /app
+41
+42 # Herramientas de proceso
+43 RUN apk add --no-cache dumb-init
+44
+45 # Crear usuario
+46 RUN addgroup -g 1001 -S nodejs && \
+47 adduser -S nestjs -u 1001
+48
+49 ARG APP_NAME=api-gateway
+50
+51 # 1. Copiamos el package.json generado
+52 COPY --from=builder --chown=nestjs:nodejs /app/dist/${APP_NAME}/package*.json ./
+53
+54 # 2. Instalamos dependencias y FORZAMOS las que suelen faltar
+55 RUN npm install --omit=dev --ignore-scripts && \
+56 npm install class-validator class-transformer @nestjs/platform-socket.io socket.io
+57
+58 # 3. Copiamos el código compilado
+59 COPY --from=builder --chown=nestjs:nodejs /app/dist/${APP_NAME} ./
+60
+61 USER nestjs
+62 EXPOSE 3000
+63 ENTRYPOINT ["dumb-init", "--"]
+64 CMD ["node", "main.js"]

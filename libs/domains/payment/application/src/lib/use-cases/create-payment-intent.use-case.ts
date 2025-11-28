@@ -1,49 +1,52 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Result } from 'neverthrow';
-import {
-  Transaction,
-  ITransactionRepository,
-  IPaymentGateway,
-} from '@going-monorepo-clean/domains-payment-core';
-import { Money } from '@going-monorepo-clean/shared-domain';
-import { CreatePaymentIntentDto } from '../dto/create-payment-intent.dto';
+import { Transaction, TransactionStatus } from '../entities/transaction.entity';
+import { IPaymentRepository } from '../ports/itransaction.repository';
+import { IPaymentGateway } from '../ports/ipayment.gateway';
+import { PaymentMethodVO } from '../value-objects/payment-method.vo';
+import { MoneyVO } from '@myorg/shared/domain/money.vo';
+import { Trip } from '@myorg/domains/transport/core'; // Importar desde transport
+import { UserId } from '@myorg/domains/user/core';
 
-@Injectable()
+interface CreatePaymentIntentCommand {
+  userId: UserId;
+  tripId: string; // ID del viaje compartido
+  amount: MoneyVO; // El precio final por pasajero
+  paymentMethod: PaymentMethodVO;
+}
+
 export class CreatePaymentIntentUseCase {
   constructor(
-    @Inject(IPaymentGateway)
-    private readonly paymentGateway: IPaymentGateway,
-    @Inject(ITransactionRepository)
-    private readonly transactionRepo: ITransactionRepository,
+    private paymentRepo: IPaymentRepository,
+    private paymentGateway: IPaymentGateway,
   ) {}
 
-  async execute(dto: CreatePaymentIntentDto): Promise<{ clientSecret: string }> {
-    const amountVO = new Money(dto.price.amount, dto.price.currency);
+  async execute(command: CreatePaymentIntentCommand): Promise<{ transactionId: string, client_secret: string }> {
+    const { userId, tripId, amount, paymentMethod } = command;
 
-    const transactionResult = Transaction.create({
-      amount: amountVO,
-      userId: dto.userId,
-      referenceId: dto.referenceId,
+    // 1. Crear la transacción en estado PENDING
+    const transaction = new Transaction({
+      id: UUIDVO.generate(), // Asumiendo que UUIDVO.generate() existe
+      userId,
+      amount,
+      tripId,
     });
 
-    if (transactionResult.isErr()) {
-      throw new InternalServerErrorException(transactionResult.error.message);
-    }
-    const transaction = transactionResult.value;
+    // 2. Llamar al gateway de pagos para crear la intención
+    const gatewayResult = await this.paymentGateway.createPaymentIntent(
+      amount.toCents(), // Por ejemplo, 1500 para $15.00
+      'USD', // O dinámico
+      paymentMethod
+    );
 
-    const intentResult = await this.paymentGateway.createPaymentIntent(amountVO);
-    if (intentResult.isErr()) {
-      throw new InternalServerErrorException(intentResult.error.message);
-    }
-    const intent = intentResult.value;
+    // 3. Confirmar la transacción con el ID del gateway
+    transaction.confirm(gatewayResult.id);
 
-    transaction.setPaymentIntent(intent.paymentIntentId);
+    // 4. Guardar la transacción en la base de datos
+    await this.paymentRepo.save(transaction);
 
-    const saveResult = await this.transactionRepo.save(transaction);
-    if (saveResult.isErr()) {
-      throw new InternalServerErrorException(saveResult.error.message);
-    }
-
-    return { clientSecret: intent.clientSecret };
+    // 5. Devolver el client_secret para que el frontend lo confirme
+    return {
+      transactionId: transaction.id.value,
+      client_secret: gatewayResult.client_secret,
+    };
   }
 }

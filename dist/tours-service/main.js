@@ -17,10 +17,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const config_1 = __webpack_require__(5);
+const mongoose_1 = __webpack_require__(6);
 const infrastructure_module_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module './infrastructure/infrastructure.module'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const tour_controller_1 = __webpack_require__(5);
+const tour_controller_1 = __webpack_require__(7);
 const domains_tour_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-tour-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let AppModule = class AppModule {
 };
@@ -57,6 +57,20 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("@nestjs/mongoose");
+
+/***/ }),
+/* 7 */
 /***/ (() => {
 
 

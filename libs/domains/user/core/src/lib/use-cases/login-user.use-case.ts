@@ -1,62 +1,51 @@
-import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
 import {
   IUserRepository,
   IPasswordHasher,
   ITokenService,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+  User
+} from '@going-monorepo-clean/domains-user-core';
 import { LoginUserDto } from '../dto/login-user.dto';
 
-export type LoginResponseDto = {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    roles: string[];
-  };
-};
-
-@Injectable()
 export class LoginUserUseCase {
   constructor(
-    @Inject(IUserRepository)
-    private readonly userRepo: IUserRepository,
-    @Inject(IPasswordHasher)
+    private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,
-    @Inject(ITokenService)
-    private readonly tokenService: ITokenService,
+    private readonly tokenService: ITokenService
   ) {}
 
-  async execute(dto: LoginUserDto): Promise<LoginResponseDto> {
-    const userResult = await this.userRepo.findByEmail(dto.email);
+  async execute(dto: LoginUserDto): Promise<Result<{ user: User; token: string }, Error>> {
+    // 1. Buscar usuario por email (Devuelve una "Caja" Result)
+    const userResult = await this.userRepository.findByEmail(dto.email);
+
+    // 2. Verificar si la caja trae error (Usuario no encontrado)
     if (userResult.isErr()) {
-      throw new InternalServerErrorException(userResult.error.message);
+       return err(new Error('Invalid credentials'));
     }
+
+    // 3. ¡DESEMPAQUETAR! Aquí sacamos el usuario real de la caja
     const user = userResult.value;
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
 
-    if (user.status !== 'active') {
-      throw new UnauthorizedException('Account is not active');
-    }
+    // 4. Verificar password (ahora sí podemos usar user.passwordHash)
+    const isPasswordValid = await this.passwordHasher.compare(
+      dto.password,
+      user.passwordHash
+    );
 
-    const isPasswordValid = await user.checkPassword(dto.password, this.passwordHasher);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      return err(new Error('Invalid credentials'));
     }
 
-    const roles = user.roles.map(r => r.toPrimitives());
-    const token = this.tokenService.generateAuthToken(user.id, user.email, roles);
-
-    return {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        roles: roles,
-      },
+    // 5. Generar Token
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      // Verificamos si el rol es string o ValueObject para evitar errores
+      role: typeof user.roles[0] === 'string' ? user.roles[0] : user.roles[0].value 
     };
+
+    const token = this.tokenService.sign(payload);
+
+    return ok({ user, token });
   }
 }

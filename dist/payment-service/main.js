@@ -16,11 +16,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AppModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const infrastructure_module_1 = __webpack_require__(5);
-const payment_controller_1 = __webpack_require__(10);
-const webhook_controller_1 = __webpack_require__(11);
+const config_1 = __webpack_require__(5);
+const mongoose_1 = __webpack_require__(6);
+const infrastructure_module_1 = __webpack_require__(7);
+const payment_controller_1 = __webpack_require__(14);
+const webhook_controller_1 = __webpack_require__(15);
 const domains_payment_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-payment-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let AppModule = class AppModule {
 };
@@ -58,6 +58,18 @@ module.exports = require("@nestjs/common");
 
 /***/ }),
 /* 5 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/config");
+
+/***/ }),
+/* 6 */
+/***/ ((module) => {
+
+module.exports = require("@nestjs/mongoose");
+
+/***/ }),
+/* 7 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -65,12 +77,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.InfrastructureModule = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const config_1 = __webpack_require__(5);
+const mongoose_1 = __webpack_require__(6);
 const domains_payment_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-payment-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_transaction_repository_1 = __webpack_require__(6);
-const transaction_schema_1 = __webpack_require__(8);
-const stripe_gateway_1 = __webpack_require__(9);
+const mongoose_transaction_repository_1 = __webpack_require__(8);
+const transaction_schema_1 = __webpack_require__(11);
+const stripe_gateway_1 = __webpack_require__(12);
 let InfrastructureModule = class InfrastructureModule {
 };
 exports.InfrastructureModule = InfrastructureModule;
@@ -101,7 +113,7 @@ exports.InfrastructureModule = InfrastructureModule = tslib_1.__decorate([
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -110,11 +122,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseTransactionRepository = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const neverthrow_1 = __webpack_require__(7);
+const mongoose_1 = __webpack_require__(6);
+const mongoose_2 = __webpack_require__(9);
+const neverthrow_1 = __webpack_require__(10);
 const domains_payment_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-payment-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const transaction_schema_1 = __webpack_require__(8);
+const transaction_schema_1 = __webpack_require__(11);
 let MongooseTransactionRepository = class MongooseTransactionRepository {
     constructor(model) {
         this.model = model;
@@ -171,13 +183,19 @@ exports.MongooseTransactionRepository = MongooseTransactionRepository = tslib_1.
 
 
 /***/ }),
-/* 7 */
+/* 9 */
+/***/ ((module) => {
+
+module.exports = require("mongoose");
+
+/***/ }),
+/* 10 */
 /***/ ((module) => {
 
 module.exports = require("neverthrow");
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -185,7 +203,7 @@ var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TransactionSchema = exports.TransactionModelSchema = void 0;
 const tslib_1 = __webpack_require__(3);
-const mongoose_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/mongoose'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const mongoose_1 = __webpack_require__(6);
 const domains_payment_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-payment-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 let MoneySchema = class MoneySchema {
 };
@@ -238,7 +256,7 @@ exports.TransactionSchema = mongoose_1.SchemaFactory.createForClass(TransactionM
 
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -248,9 +266,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.StripeGateway = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@nestjs/config'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const stripe_1 = tslib_1.__importDefault(__webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'stripe'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())));
-const neverthrow_1 = __webpack_require__(7);
+const config_1 = __webpack_require__(5);
+const stripe_1 = tslib_1.__importDefault(__webpack_require__(13));
+const neverthrow_1 = __webpack_require__(10);
 let StripeGateway = StripeGateway_1 = class StripeGateway {
     constructor(configService) {
         this.configService = configService;
@@ -300,7 +318,13 @@ exports.StripeGateway = StripeGateway = StripeGateway_1 = tslib_1.__decorate([
 
 
 /***/ }),
-/* 10 */
+/* 13 */
+/***/ ((module) => {
+
+module.exports = require("stripe");
+
+/***/ }),
+/* 14 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -309,36 +333,83 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PaymentController = void 0;
 const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
-const domains_payment_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-payment-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@myorg/domains/payment/application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const application_2 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@myorg/domains/payment/application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+const application_3 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@myorg/domains/payment/application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())); // Añadir import
+const money_vo_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@myorg/shared/domain/money.vo'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())); // Añadir import
+const core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@myorg/domains/payment/core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }())); // Añadir import
 let PaymentController = class PaymentController {
-    constructor(createPaymentIntentUseCase) {
+    constructor(createPaymentIntentUseCase, confirmPaymentUseCase, requestRefundUseCase) {
         this.createPaymentIntentUseCase = createPaymentIntentUseCase;
+        this.confirmPaymentUseCase = confirmPaymentUseCase;
+        this.requestRefundUseCase = requestRefundUseCase;
     }
     async createPaymentIntent(dto) {
-        try {
-            return await this.createPaymentIntentUseCase.execute(dto);
-        }
-        catch (error) {
-            throw new common_1.BadRequestException(error.message);
-        }
+        const command = {
+            userId: dto.userId,
+            tripId: dto.tripId,
+            amount: money_vo_1.MoneyVO.fromCents(dto.amount), // Asumiendo que MoneyVO tiene este método
+            paymentMethod: new core_1.PaymentMethodVO(dto.paymentMethod.type, dto.paymentMethod.token),
+        };
+        return this.createPaymentIntentUseCase.execute(command);
+    }
+    async confirmPayment(transactionId) {
+        const command = { transactionId };
+        return this.confirmPaymentUseCase.execute(command);
+    }
+    // --- Añadir este método aquí ---
+    async requestRefund(dto) {
+        const command = {
+            transactionId: dto.transactionId,
+            amount: dto.amount ? money_vo_1.MoneyVO.fromCents(dto.amount) : undefined,
+            reason: dto.reason,
+        };
+        return this.requestRefundUseCase.execute(command);
+    }
+    // --- Fin del nuevo método ---
+    // Endpoint para webhooks (Stripe, etc.)
+    async handleWebhook(payload) {
+        // Lógica para manejar eventos de pago (éxito, fracaso, etc.)
+        // Puede llamar a un caso de uso como `HandlePaymentWebhookUseCase`
     }
 };
 exports.PaymentController = PaymentController;
 tslib_1.__decorate([
-    (0, common_1.Post)('intent'),
+    (0, common_1.Post)('create-intent'),
     tslib_1.__param(0, (0, common_1.Body)()),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [typeof (_b = typeof domains_payment_application_1.CreatePaymentIntentDto !== "undefined" && domains_payment_application_1.CreatePaymentIntentDto) === "function" ? _b : Object]),
-    tslib_1.__metadata("design:returntype", typeof (_c = typeof Promise !== "undefined" && Promise) === "function" ? _c : Object)
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
 ], PaymentController.prototype, "createPaymentIntent", null);
+tslib_1.__decorate([
+    (0, common_1.Post)('confirm'),
+    tslib_1.__param(0, (0, common_1.Body)('transactionId')),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String]),
+    tslib_1.__metadata("design:returntype", Promise)
+], PaymentController.prototype, "confirmPayment", null);
+tslib_1.__decorate([
+    (0, common_1.Post)('refund'),
+    tslib_1.__param(0, (0, common_1.Body)()),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], PaymentController.prototype, "requestRefund", null);
+tslib_1.__decorate([
+    (0, common_1.Post)('webhook'),
+    tslib_1.__param(0, (0, common_1.Body)()),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [Object]),
+    tslib_1.__metadata("design:returntype", Promise)
+], PaymentController.prototype, "handleWebhook", null);
 exports.PaymentController = PaymentController = tslib_1.__decorate([
-    (0, common_1.Controller)('payments'),
-    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof domains_payment_application_1.CreatePaymentIntentUseCase !== "undefined" && domains_payment_application_1.CreatePaymentIntentUseCase) === "function" ? _a : Object])
+    (0, common_1.Controller)('payment'),
+    tslib_1.__metadata("design:paramtypes", [typeof (_a = typeof application_1.CreatePaymentIntentUseCase !== "undefined" && application_1.CreatePaymentIntentUseCase) === "function" ? _a : Object, typeof (_b = typeof application_2.ConfirmPaymentUseCase !== "undefined" && application_2.ConfirmPaymentUseCase) === "function" ? _b : Object, typeof (_c = typeof application_3.RequestRefundUseCase !== "undefined" && application_3.RequestRefundUseCase) === "function" ? _c : Object])
 ], PaymentController);
 
 
 /***/ }),
-/* 11 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
