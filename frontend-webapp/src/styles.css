@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PRUEBA DE CONEXIÓN */
 body {
-  background-color: blue !important; /* ¡ESTO TIENE QUE VERSE! */
+  background-color: #f3f4f6; /* Gris suave profesional */
+  font-family: 'Nunito Sans', sans-serif;
+  margin: 0;
 }
