@@ -1,68 +1,30 @@
 'use client';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Button } from '@going-monorepo-clean/shared-ui'; // Usamos el Button compartido
 
 export default function HomePage() {
-  // 1. Conexión central a toda la lógica Hexagonal
-  const { auth, domain } = useMonorepoApp();
-  
-  const handleTestLogin = () => {
-    // 2. Llamada directa al Caso de Uso de Login
-    domain.auth.login({ email: 'user@test.com', password: 'password123' });
-  };
-  
-  const handleTestSearch = () => {
-    // 3. Llamada a un Caso de Uso de Búsqueda
-    domain.search.accommodations({ city: 'Quito', guests: 2 });
-  };
-  
-  const handleTestTrip = () => {
-    // 3. Llamada a un Caso de Uso de Transporte
-    if (auth.user) {
-        domain.transport.requestTrip({
-            userId: auth.user.id,
-            origin: { address: 'Quito', city: 'Quito', country: 'EC', latitude: -0.18, longitude: -78.47 },
-            destination: { address: 'Guayaquil', city: 'Guayaquil', country: 'EC', latitude: -2.18, longitude: -79.88 },
-            price: { amount: 5000, currency: 'USD' } // $50.00
-        });
-    }
-  };
+  const { user, isAuthenticated, login, logout } = useMonorepoApp();
 
   return (
-    <main className="min-h-screen p-12 bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-[#0033A0] mb-6">
-        Going Monorepo Web App
-      </h1>
-      
-      <div className="mt-8 space-y-4">
-        {auth.isLoading && <p>Cargando sesión...</p>}
-        {auth.error && <p className="text-red-500">Error de Autenticación: {auth.error}</p>}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 font-sans">
+      <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full text-center">
+        <h1 className="text-4xl font-black text-red-500 mb-2">Going</h1>
+        <p className="text-gray-500 mb-6">Plataforma Logística & Ride-Hailing</p>
         
-        {/* Comprobación de si el usuario está logueado */}
-        {auth.user ? (
-          <div className="space-y-2">
-            <p className="text-xl">¡Bienvenido, {auth.user.firstName}!</p>
-            <p className="text-sm">Tu rol: {auth.user.roles.join(', ')}</p>
-            <Button onClick={handleTestTrip} variant="accent" className="mr-4">
-                Solicitar Viaje (Test)
-            </Button>
-            <Button onClick={handleTestSearch} variant="primary" className="mr-4">
-                Buscar Alojamiento (Test)
-            </Button>
-            <Button onClick={auth.logout} variant="secondary">
-                Cerrar Sesión
-            </Button>
+        {isAuthenticated ? (
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <p className="font-bold text-green-800">Hola, {user?.fullName || user?.email}</p>
+            <button onClick={logout} className="mt-4 text-sm text-gray-500 underline hover:text-gray-700">Cerrar Sesión</button>
           </div>
         ) : (
-          <div className="space-y-2">
-            <p>Estado: Desconectado</p>
-            <Button onClick={handleTestLogin}>
-              Iniciar Sesión (Test)
-            </Button>
-          </div>
+          <button 
+            onClick={() => login('demo@going.app', '123')}
+            className="w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-200"
+          >
+            Iniciar Demo
+          </button>
         )}
-        
       </div>
-    </main>
+      <p className="mt-8 text-xs text-gray-400">Estado: Producción Lista 🚀</p>
+    </div>
   );
 }

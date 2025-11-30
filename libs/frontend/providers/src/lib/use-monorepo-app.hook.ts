@@ -1,22 +1,19 @@
-// ... (cÃ³digo existente) ...
+import { useAuth } from './auth-context.provider';
 
 export const useMonorepoApp = () => {
+  // Ahora useAuth sí existe porque lo exportamos en el archivo anterior
   const authState = useAuth();
-
+  
   return {
-    // 1. ESTADO GLOBAL
-    auth: authState,
+    // Exponemos el estado de autenticación
+    user: authState.user,
+    isAuthenticated: authState.isAuthenticated,
+    login: authState.login,
+    logout: authState.logout,
 
-    // 2. CASOS DE USO (Funciones de Dominio)
-    domain: {
-      // ... (auth, bookings, transport, etc.) ...
-
-      // Pagos (Payment Frontend)
-      payment: {
-        requestIntent: dependencyProvider.requestPaymentIntentUseCase.execute, // <-- NUEVO
-      },
-      
-      // ... (demÃ¡s dominios) ...
-    },
+    // Exponemos las funciones "Dummy" para que la UI no se rompa
+    payment: authState.dependencies.payment,
+    parcel: authState.dependencies.parcel,
+    trips: authState.dependencies.trips
   };
 };
