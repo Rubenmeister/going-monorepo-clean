@@ -10,8 +10,7 @@
       "options": {
         "jestConfig": "transport-service-e2e/jest.config.cts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["transport-service:build", "transport-service:serve"]
-    }
+      }
+      }
   }
 }

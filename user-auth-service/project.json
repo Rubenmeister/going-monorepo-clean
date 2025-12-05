@@ -45,6 +45,14 @@
           "buildTarget": "user-auth-service:build:production"
         }
       }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/user-auth-service"],
+      "options": {
+        "jestConfig": "user-auth-service/jest.config.cts",
+        "passWithNoTests": true
+      }
     }
   }
 }

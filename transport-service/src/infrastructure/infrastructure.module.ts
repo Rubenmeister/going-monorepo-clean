@@ -1,24 +1,28 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
-import { MongooseTripRepository } from './persistence/mongoose-trip.repository';
-import {
-  TripModelSchema,
-  TripSchema,
-} from './persistence/schemas/trip.schema';
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
+// Shared Prisma Module
+import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+
+// Domain Ports
+import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
+
+// Repository Implementation
+import { PrismaTransportRepository } from './persistence/prisma-transport.repository';
+
+@Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: TripModelSchema.name, schema: TripSchema },
-    ]),
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
   ],
   providers: [
     {
       provide: ITripRepository,
-      useClass: MongooseTripRepository,
+      useClass: PrismaTransportRepository,
     },
+    PrismaTransportRepository,
   ],
-  exports: [ITripRepository],
+  exports: [ITripRepository, PrismaTransportRepository],
 })
 export class InfrastructureModule {}

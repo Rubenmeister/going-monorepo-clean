@@ -1,0 +1,10 @@
+{
+  "parcel": {
+    "not_found": "Envío no encontrado",
+    "invalid_status": "Estado de envío inválido"
+  },
+  "auth": {
+    "invalid_credentials": "Credenciales inválidas",
+    "token_expired": "Token expirado"
+  }
+}

@@ -9,6 +9,8 @@ import {
   IsIn,
   IsLatitude,
   IsLongitude,
+  IsOptional,
+  IsDateString,
 } from 'class-validator';
 
 class PriceDto {
@@ -23,6 +25,10 @@ class PriceDto {
 }
 
 class LocationDto {
+  @IsNotEmpty()
+  @IsString()
+  city: string;
+
   @IsNotEmpty()
   @IsString()
   address: string;
@@ -40,6 +46,22 @@ export class RequestTripDto {
   @IsNotEmpty()
   @IsUUID()
   userId: string;
+
+  @IsOptional()
+  @IsUUID()
+  driverId?: string;
+
+  @IsOptional()
+  @IsIn(['SUV', 'VAN'])
+  vehicleType?: string;
+
+  @IsOptional()
+  @IsIn(['DOOR_TO_DOOR', 'POINT_TO_POINT'])
+  mode?: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  departureTime: string;
 
   @IsNotEmpty()
   @ValidateNested()

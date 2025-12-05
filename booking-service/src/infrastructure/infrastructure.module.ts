@@ -1,26 +1,27 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { IBookingRepository } from '@going-monorepo-clean/domains-booking-core';
-import { MongooseBookingRepository } from './persistence/mongoose-booking.repository';
-import {
-  BookingModelSchema,
-  BookingSchema,
-} from './persistence/schemas/booking.schema';
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
+// Shared Prisma Module
+import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+
+// Repository
+import { PrismaBookingRepository } from './persistence/prisma-booking.repository';
+
+export const I_BOOKING_REPOSITORY = Symbol('IBookingRepository');
+
+@Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: BookingModelSchema.name, schema: BookingSchema },
-    ]),
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
   ],
   providers: [
+    PrismaBookingRepository,
     {
-      provide: IBookingRepository, // El Symbol/Token
-      useClass: MongooseBookingRepository, // La implementación concreta
+      provide: I_BOOKING_REPOSITORY,
+      useClass: PrismaBookingRepository,
     },
   ],
-  exports: [
-    IBookingRepository, // Exportamos el Símbolo
-  ],
+  exports: [I_BOOKING_REPOSITORY, PrismaBookingRepository, PrismaService],
 })
 export class InfrastructureModule {}

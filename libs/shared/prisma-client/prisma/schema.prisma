@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER DOMAIN ====================
+
+enum RoleType {
+  ADMIN
+  USER
+  HOST
+  DRIVER
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          RoleType  @default(USER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  parcelsAsSender    Parcel[]       @relation("SenderParcels")
+  parcelsAsReceiver  Parcel[]       @relation("ReceiverParcels")
+  hostProfile        Host?
+  bookings           Booking[]
+  payments           Payment[]      @relation("UserPayments")
+  sentMessages       Message[]      @relation("SentMessages")
+  receivedMessages   Message[]      @relation("ReceivedMessages")
+  notifications      Notification[]
+}
+
+// ==================== HOST DOMAIN ====================
+
+model Host {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  phone       String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  accommodations  Accommodation[]
+  experiences     Experience[]
+}
+
+// ==================== ACCOMMODATION DOMAIN ====================
+
+enum AccommodationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Accommodation {
+  id            String              @id @default(uuid())
+  hostId        String
+  host          Host                @relation(fields: [hostId], references: [id])
+  title         String
+  description   String
+  pricePerNight Decimal             @db.Decimal(10, 2)
+  currency      String              @default("USD")
+  capacity      Int
+  city          String
+  country       String
+  address       String
+  latitude      Float?
+  longitude     Float?
+  status        AccommodationStatus @default(DRAFT)
+  amenities     String[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  // Relations
+  bookings  Booking[]
+}
+
+// ==================== EXPERIENCE DOMAIN ====================
+
+enum ExperienceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Experience {
+  id              String           @id @default(uuid())
+  hostId          String
+  host            Host             @relation(fields: [hostId], references: [id])
+  title           String
+  description     String
+  pricePerPerson  Decimal          @db.Decimal(10, 2)
+  currency        String           @default("USD")
+  maxCapacity     Int
+  durationHours   Int
+  location        String
+  status          ExperienceStatus @default(DRAFT)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  bookings  Booking[]
+}
+
+// ==================== PARCEL DOMAIN ====================
+
+enum ParcelStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model Parcel {
+  id              String       @id @default(uuid())
+  senderId        String
+  sender          User         @relation("SenderParcels", fields: [senderId], references: [id])
+  receiverId      String
+  receiver        User         @relation("ReceiverParcels", fields: [receiverId], references: [id])
+  driverId        String?      // Assigned driver
+  description     String
+  weight          Decimal      @db.Decimal(10, 2)
+  price           Decimal      @db.Decimal(10, 2)
+  currency        String       @default("USD")
+  originCity      String
+  originAddress   String
+  destCity        String
+  destAddress     String
+  status          ParcelStatus @default(PENDING)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  trackingEvents  TrackingEvent[]
+  payment         Payment?
+}
+
+model TrackingEvent {
+  id          String   @id @default(uuid())
+  parcelId    String
+  parcel      Parcel   @relation(fields: [parcelId], references: [id])
+  status      String
+  location    String?
+  description String?
+  timestamp   DateTime @default(now())
+}
+
+// ==================== BOOKING DOMAIN ====================
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum BookingType {
+  ACCOMMODATION
+  EXPERIENCE
+  TRANSPORT
+  TOUR
+}
+
+model Booking {
+  id                String        @id @default(uuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+  type              BookingType
+  accommodationId   String?
+  accommodation     Accommodation? @relation(fields: [accommodationId], references: [id])
+  experienceId      String?
+  experience        Experience?   @relation(fields: [experienceId], references: [id])
+  transportId       String?
+  transport         Transport?    @relation(fields: [transportId], references: [id])
+  tourId            String?
+  tour              Tour?         @relation(fields: [tourId], references: [id])
+  startDate         DateTime
+  endDate           DateTime?
+  guests            Int           @default(1)
+  totalPrice        Decimal       @db.Decimal(10, 2)
+  currency          String        @default("USD")
+  status            BookingStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  payment  Payment?
+}
+
+// ==================== TRANSPORT DOMAIN ====================
+
+enum TransportStatus {
+  AVAILABLE
+  IN_SERVICE
+  MAINTENANCE
+  INACTIVE
+}
+
+model Transport {
+  id           String          @id @default(uuid())
+  driverId     String
+  vehicleType  String
+  licensePlate String
+  capacity     Int
+  pricePerKm   Decimal         @db.Decimal(10, 2)
+  currency     String          @default("USD")
+  status       TransportStatus @default(AVAILABLE)
+  originCity   String?
+  originAddress String?
+  destCity     String?
+  destAddress  String?
+  departureTime DateTime?
+  arrivalTime  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relations
+  bookings    Booking[]
+  routes      Route[]
+}
+
+model Route {
+  id            String    @id @default(uuid())
+  transportId   String
+  transport     Transport @relation(fields: [transportId], references: [id])
+  originCity    String
+  destCity      String
+  distance      Decimal   @db.Decimal(10, 2)
+  estimatedTime Int       // minutes
+  departureTime DateTime
+  arrivalTime   DateTime?
+  createdAt     DateTime  @default(now())
+}
+
+// ==================== TOUR DOMAIN ====================
+
+enum TourStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Tour {
+  id              String     @id @default(uuid())
+  hostId          String
+  title           String
+  description     String
+  pricePerPerson  Decimal    @db.Decimal(10, 2)
+  currency        String     @default("USD")
+  maxCapacity     Int
+  durationHours   Int
+  location        String
+  meetingPoint    String
+  status          TourStatus @default(DRAFT)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  bookings  Booking[]
+}
+
+// ==================== PAYMENT DOMAIN ====================
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  WALLET
+  CASH
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation("UserPayments", fields: [userId], references: [id])
+  bookingId     String?       @unique
+  booking       Booking?      @relation(fields: [bookingId], references: [id])
+  parcelId      String?       @unique
+  parcel        Parcel?       @relation(fields: [parcelId], references: [id])
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD")
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  transactionId String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// ==================== NOTIFICATION DOMAIN ====================
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  PARCEL_STATUS_UPDATE
+  MESSAGE_RECEIVED
+  SYSTEM_ALERT
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  content   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ==================== COMMUNICATION DOMAIN ====================
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([senderId, receiverId])
+}

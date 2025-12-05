@@ -158,7 +158,8 @@ const tslib_1 = __webpack_require__(3);
 const common_1 = __webpack_require__(4);
 const config_1 = __webpack_require__(5);
 const http_proxy_middleware_1 = __webpack_require__(12);
-const passport = tslib_1.__importStar(__webpack_require__(13)); // Necesario para el middleware de Auth
+// ✅ BIEN (Funciona en producción y desarrollo)
+const passport_1 = tslib_1.__importDefault(__webpack_require__(13));
 let ProxyModule = class ProxyModule {
     constructor(configService) {
         this.configService = configService;
@@ -189,7 +190,7 @@ let ProxyModule = class ProxyModule {
         // Aplica el guardia de JWT primero, y luego el proxy
         const applyAuthProxy = (path, targetService) => {
             consumer
-                .apply(passport.authenticate('jwt', { session: false }), // 1. Valida el JWT
+                .apply(passport_1.default.authenticate('jwt', { session: false }), // 1. Valida el JWT
             (0, http_proxy_middleware_1.createProxyMiddleware)({
                 target: targetService,
                 changeOrigin: true,

@@ -1,41 +1,27 @@
-import { Module } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import {
-  ITrackingRepository,
-  ITrackingGateway,
-} from '@going-monorepo-clean/domains-tracking-core';
-import { RedisTrackingRepository } from './persistence/redis-tracking.repository';
-import { SocketIoTrackingGateway } from './gateways/socket-io-tracking.gateway';
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
+// Shared Prisma Module
+import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+
+// Repository
+import { PrismaTrackingRepository } from './persistence/prisma-tracking.repository';
+
+export const I_TRACKING_REPOSITORY = Symbol('ITrackingRepository');
+
+@Global()
 @Module({
   imports: [
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        store: await redisStore({
-          url: configService.get('REDIS_URL'), // .env
-        }),
-      }),
-      isGlobal: true,
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
   ],
   providers: [
+    PrismaTrackingRepository,
     {
-      provide: ITrackingRepository,
-      useClass: RedisTrackingRepository,
+      provide: I_TRACKING_REPOSITORY,
+      useClass: PrismaTrackingRepository,
     },
-    {
-      provide: ITrackingGateway,
-      useClass: SocketIoTrackingGateway,
-    },
-    SocketIoTrackingGateway, 
   ],
-  exports: [
-    ITrackingRepository,
-    ITrackingGateway,
-  ],
+  exports: [I_TRACKING_REPOSITORY, PrismaTrackingRepository, PrismaService],
 })
 export class InfrastructureModule {}

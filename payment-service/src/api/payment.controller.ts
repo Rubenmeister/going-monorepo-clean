@@ -1,71 +1,64 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
-import { CreatePaymentIntentUseCase } from '@myorg/domains/payment/application';
-import { ConfirmPaymentUseCase } from '@myorg/domains/payment/application';
-import { RequestRefundUseCase } from '@myorg/domains/payment/application'; // Añadir import
-import { Trip } from '@myorg/domains/transport/core'; // Importar desde transport
-import { MoneyVO } from '@myorg/shared/domain/money.vo'; // Añadir import
-import { PaymentMethodVO } from '@myorg/domains/payment/core'; // Añadir import
+import { Controller, Post, Body, Get, Param, Logger } from '@nestjs/common';
+import { PrismaPaymentRepository } from '../infrastructure/repositories/prisma-payment.repository';
+import { StripeGateway } from '../infrastructure/gateways/stripe.gateway';
 
-interface CreatePaymentIntentDto {
-  userId: string;
-  tripId: string;
-  amount: number; // En centavos o la unidad que uses
-  currency: string;
-  paymentMethod: {
-    type: 'CARD' | 'WALLET';
-    token: string;
-  };
-}
-
-interface RequestRefundDto {
-  transactionId: string;
-  amount?: number; // En centavos
-  reason?: string;
-}
-
-@Controller('payment')
+@Controller('payments')
 export class PaymentController {
+  private readonly logger = new Logger(PaymentController.name);
+
   constructor(
-    private createPaymentIntentUseCase: CreatePaymentIntentUseCase,
-    private confirmPaymentUseCase: ConfirmPaymentUseCase,
-    private requestRefundUseCase: RequestRefundUseCase, // Añadir inyección
+    private readonly paymentRepository: PrismaPaymentRepository,
+    private readonly stripeGateway: StripeGateway,
   ) {}
 
-  @Post('create-intent')
-  async createPaymentIntent(@Body() dto: CreatePaymentIntentDto) {
-    const command = {
-      userId: dto.userId,
-      tripId: dto.tripId,
-      amount: MoneyVO.fromCents(dto.amount), // Asumiendo que MoneyVO tiene este método
-      paymentMethod: new PaymentMethodVO(dto.paymentMethod.type, dto.paymentMethod.token),
-    };
+  @Post()
+  async createPayment(@Body() body: {
+    userId: string;
+    amount: number;
+    currency?: string;
+    bookingId?: string;
+    parcelId?: string;
+    method?: 'CREDIT_CARD' | 'DEBIT_CARD' | 'BANK_TRANSFER' | 'WALLET' | 'CASH';
+  }) {
+    // Create payment record
+    const payment = await this.paymentRepository.createPayment({
+      userId: body.userId,
+      amount: body.amount,
+      currency: body.currency || 'USD',
+      bookingId: body.bookingId,
+      parcelId: body.parcelId,
+      method: body.method || 'CREDIT_CARD',
+    });
 
-    return this.createPaymentIntentUseCase.execute(command);
+    // Create Stripe payment intent for card payments
+    if (body.method === 'CREDIT_CARD' || body.method === 'DEBIT_CARD') {
+      try {
+        const intent = await this.stripeGateway.createPaymentIntent(
+          body.amount,
+          body.currency || 'USD',
+        );
+
+        return {
+          paymentId: payment.id,
+          clientSecret: intent.clientSecret,
+          paymentIntentId: intent.paymentIntentId,
+        };
+      } catch (error) {
+        this.logger.warn(`Stripe not available: ${error.message}`);
+        return { paymentId: payment.id };
+      }
+    }
+
+    return { paymentId: payment.id };
   }
 
-  @Post('confirm')
-  async confirmPayment(@Body('transactionId') transactionId: string) {
-    const command = { transactionId };
-    return this.confirmPaymentUseCase.execute(command);
+  @Get('user/:userId')
+  async getPaymentsByUser(@Param('userId') userId: string) {
+    return this.paymentRepository.findPaymentsByUser(userId);
   }
 
-  // --- Añadir este método aquí ---
-  @Post('refund')
-  async requestRefund(@Body() dto: RequestRefundDto) {
-    const command = {
-      transactionId: dto.transactionId,
-      amount: dto.amount ? MoneyVO.fromCents(dto.amount) : undefined,
-      reason: dto.reason,
-    };
-
-    return this.requestRefundUseCase.execute(command);
-  }
-  // --- Fin del nuevo método ---
-
-  // Endpoint para webhooks (Stripe, etc.)
-  @Post('webhook')
-  async handleWebhook(@Body() payload: any) {
-    // Lógica para manejar eventos de pago (éxito, fracaso, etc.)
-    // Puede llamar a un caso de uso como `HandlePaymentWebhookUseCase`
+  @Get(':id')
+  async getPayment(@Param('id') id: string) {
+    return this.paymentRepository.findPaymentById(id);
   }
 }

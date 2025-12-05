@@ -1,0 +1,24 @@
+// Modelo de Prisma para el Payment-Service
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") 
+}
+
+model Transaction {
+  id                    String     @id @default(uuid()) @db.Uuid
+  bookingId             String     @unique @db.Uuid // Asegura que solo haya un pago por reserva
+  userId                String     @db.Uuid
+  amount                Float
+  currency              String     
+  externalTransactionId String?    // Puede ser null hasta que la pasarela responda
+  status                String     @default("pending") // Mapea a PaymentStatus (pending, succeeded, failed, refunded)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  @@index([userId])
+}

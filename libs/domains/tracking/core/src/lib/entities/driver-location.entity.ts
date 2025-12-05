@@ -1,27 +1,27 @@
-import { LocationVO } from '@myorg/shared/domain/location.vo';
-import { DriverId } from './driver.entity'; // Asumiendo que existe
-import { TripId } from '@myorg/domains/transport/core'; // Importar desde transport
+// libs/domains-tracking/core/src/lib/entities/driver-location.entity.ts
+import { UUID } from '@going-monorepo-clean/shared-domain';
+
+export interface DriverLocationProps {
+  driverId: UUID;
+  latitude: number;
+  longitude: number;
+  timestamp: Date;
+}
 
 export class DriverLocation {
-  driverId: DriverId;
-  tripId?: TripId; // Opcional: puede no estar en un viaje
-  location: LocationVO;
-  timestamp: Date;
-  speed?: number; // km/h
-  heading?: number; // grados
-
-  constructor(props: {
-    driverId: DriverId;
-    location: LocationVO;
-    tripId?: TripId;
-    speed?: number;
-    heading?: number;
-  }) {
-    this.driverId = props.driverId;
-    this.location = props.location;
-    this.tripId = props.tripId;
-    this.timestamp = new Date();
-    this.speed = props.speed;
-    this.heading = props.heading;
+  // ... constructor y lógica para crear/actualizar ...
+  // [CRÍTICO]: Debe tener los métodos toPrimitives y fromPrimitives
+  // que el RedisTrackingRepository utiliza.
+  public toPrimitives(): any { 
+      return { 
+          driverId: this.driverId.toString(), 
+          latitude: this.latitude,
+          longitude: this.longitude,
+          timestamp: this.timestamp.toISOString()
+      }; 
+  }
+  
+  public static fromPrimitives(primitives: any): DriverLocation {
+      // ... lógica de mapeo inverso ...
   }
 }

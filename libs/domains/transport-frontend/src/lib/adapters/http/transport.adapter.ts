@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common'; // O usar fetch si es cliente
-import { ITripRepository } from '@myorg/domains/transport/core';
+import { Injectable } from '@nestjs/common';
+import { ITripRepository, Trip } from '@going-monorepo-clean/domains-transport-core';
+import { Location } from '@going-monorepo-clean/shared-domain';
 
 @Injectable()
 export class HttpTransportAdapter implements ITripRepository {
@@ -8,5 +9,16 @@ export class HttpTransportAdapter implements ITripRepository {
     await fetch('/api/transport/create', { method: 'POST', body: JSON.stringify(trip) });
   }
 
-  // ... implementar otros métodos
+  async findById(id: string): Promise<Trip | null> {
+    throw new Error('Method not implemented.');
+  }
+  async findAvailableSharedTrips(origen: Location, destino: Location, tipoVehiculo: 'SUV' | 'VAN'): Promise<Trip[]> {
+    throw new Error('Method not implemented.');
+  }
+  async findTripsByDriverId(driverId: string): Promise<Trip[]> {
+    throw new Error('Method not implemented.');
+  }
+  async update(trip: Trip): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

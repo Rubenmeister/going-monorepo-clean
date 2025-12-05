@@ -17,7 +17,7 @@ export default function HomePage() {
           </div>
         ) : (
           <button 
-            onClick={() => login('demo@going.app', '123')}
+            onClick={() => login('fake-jwt-token')}
             className="w-full bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-200"
           >
             Iniciar Demo

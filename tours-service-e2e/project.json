@@ -10,8 +10,7 @@
       "options": {
         "jestConfig": "tours-service-e2e/jest.config.cts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["tours-service:build", "tours-service:serve"]
-    }
+      }
+      }
   }
 }

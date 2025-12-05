@@ -2,6 +2,7 @@ import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common
 import {
   Parcel,
   IParcelRepository,
+  I_PARCEL_REPOSITORY,
 } from '@going-monorepo-clean/domains-parcel-core';
 import { Money, Location } from '@going-monorepo-clean/shared-domain';
 import { CreateParcelDto } from '../dto/create-parcel.dto';
@@ -9,12 +10,17 @@ import { CreateParcelDto } from '../dto/create-parcel.dto';
 @Injectable()
 export class CreateParcelUseCase {
   constructor(
-    @Inject(IParcelRepository)
+    @Inject(I_PARCEL_REPOSITORY)
     private readonly parcelRepo: IParcelRepository,
   ) {}
 
   async execute(dto: CreateParcelDto): Promise<{ id: string }> {
-    const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
+    // Use Money.create() factory method
+    const priceResult = Money.create(dto.price.amount, dto.price.currency);
+    if (priceResult.isErr()) {
+      throw new InternalServerErrorException(priceResult.error.message);
+    }
+    
     const originVOResult = Location.create(dto.origin);
     const destinationVOResult = Location.create(dto.destination);
 
@@ -30,7 +36,7 @@ export class CreateParcelUseCase {
       origin: originVOResult.value,
       destination: destinationVOResult.value,
       description: dto.description,
-      price: priceVO,
+      price: priceResult.value,
     });
 
     if (parcelResult.isErr()) {

@@ -1,35 +1,27 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  INotificationRepository,
-  INotificationGateway,
-} from '@going-monorepo-clean/domains-notification-core';
-import { MongooseNotificationRepository } from './persistence/mongoose-notification.repository';
-import {
-  NotificationModelSchema,
-  NotificationSchema,
-} from './persistence/schemas/notification.schema';
-import { LogNotificationGateway } from './gateways/log-notification.gateway';
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
+// Shared Prisma Module
+import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+
+// Repository
+import { PrismaNotificationRepository } from './persistence/prisma-notification.repository';
+
+export const I_NOTIFICATION_REPOSITORY = Symbol('INotificationRepository');
+
+@Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: NotificationModelSchema.name, schema: NotificationSchema },
-    ]),
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
   ],
   providers: [
+    PrismaNotificationRepository,
     {
-      provide: INotificationRepository,
-      useClass: MongooseNotificationRepository,
-    },
-    {
-      provide: INotificationGateway,
-      useClass: LogNotificationGateway,
+      provide: I_NOTIFICATION_REPOSITORY,
+      useClass: PrismaNotificationRepository,
     },
   ],
-  exports: [
-    INotificationRepository,
-    INotificationGateway,
-  ],
+  exports: [I_NOTIFICATION_REPOSITORY, PrismaNotificationRepository, PrismaService],
 })
 export class InfrastructureModule {}

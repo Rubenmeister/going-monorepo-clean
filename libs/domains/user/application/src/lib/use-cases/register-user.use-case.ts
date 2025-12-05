@@ -1,3 +1,4 @@
+import { Injectable, Inject } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import {
   User,
@@ -11,10 +12,11 @@ import {
 // Si Role no se exporta desde el index del core, ajusta esta línea:
 import { Role } from '../../../../core/src/lib/value-objects/role.vo'; 
 
+@Injectable()
 export class RegisterUserUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly passwordHasher: IPasswordHasher
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IPasswordHasher) private readonly passwordHasher: IPasswordHasher
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<Result<User, Error>> {
@@ -51,7 +53,11 @@ export class RegisterUserUseCase {
     const user = userResult.value;
 
     // 5. Guardar en repositorio
-    await this.userRepository.save(user);
+    const saveResult = await this.userRepository.save(user);
+    
+    if (saveResult.isErr()) {
+      return err(saveResult.error);
+    }
 
     return ok(user);
   }

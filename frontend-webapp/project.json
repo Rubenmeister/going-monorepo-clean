@@ -13,8 +13,12 @@
         "outputPath": "dist/frontend-webapp"
       },
       "configurations": {
-        "development": { "mode": "development" },
-        "production": { "mode": "production" }
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production"
+        }
       }
     },
     "serve": {

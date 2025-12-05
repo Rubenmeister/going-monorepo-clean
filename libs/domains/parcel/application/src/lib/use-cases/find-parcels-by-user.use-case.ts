@@ -1,5 +1,6 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { IParcelRepository, ParcelStatus } from '@going-monorepo-clean/domains-parcel-core';
+import { I_PARCEL_REPOSITORY, ParcelStatus } from '@going-monorepo-clean/domains-parcel-core';
+import type { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 export type UserParcelDto = {
@@ -16,7 +17,7 @@ export type UserParcelDto = {
 @Injectable()
 export class FindParcelsByUserUseCase {
   constructor(
-    @Inject(IParcelRepository)
+    @Inject(I_PARCEL_REPOSITORY)
     private readonly parcelRepo: IParcelRepository,
   ) {}
 

@@ -1,127 +1,203 @@
-import { LocationVO } from '@myorg/shared/domain/location.vo';
-import { MoneyVO } from '@myorg/shared/domain/money.vo';
-import { UUIDVO } from '@myorg/shared/domain/uuid.vo';
-import { DriverId } from './driver.entity'; // Asumiendo que ya existe
-import { UserId } from './user.entity'; // Asumiendo que ya existe
+import { Location, Money } from '@going-monorepo-clean/shared-domain';
 
-export type TripStatus = 'PROGRAMADO' | 'ESPERANDO_PASAJEROS' | 'EN_RUTA' | 'FINALIZADO' | 'CANCELADO';
+export type TripStatus = 'SCHEDULED' | 'WAITING_PASSENGERS' | 'IN_TRANSIT' | 'COMPLETED' | 'CANCELLED';
+export type VehicleType = 'SUV' | 'VAN';
+export type TravelMode = 'DOOR_TO_DOOR' | 'POINT_TO_POINT';
 
-export type TipoVehiculo = 'SUV' | 'VAN';
-export type ModoViaje = 'PUERTA_A_PUERTA' | 'PUNTO_A_PUNTO';
+// Passenger in a shared trip
+interface TripPassenger {
+  userId: string;
+  originCity: string;
+  originAddress: string;
+  destCity: string;
+  destAddress: string;
+  pricePaid: number;
+  currency: string;
+  frontSeat: boolean; // Only for SUV
+}
 
-// Representa un pasajero en un viaje compartido
-interface PasajeroEnViaje {
-  userId: UserId;
-  origen: LocationVO;
-  destino: LocationVO;
-  precioPagado: MoneyVO;
-  asientoDelantero: boolean; // Solo aplica para SUV
+export interface TripProps {
+  id: string;
+  driverId: string;
+  vehicleType: VehicleType;
+  mode: TravelMode;
+  status: TripStatus;
+  passengers: TripPassenger[];
+  originCity: string;
+  originAddress: string;
+  destCity: string;
+  destAddress: string;
+  stationOrigin?: string; // For VAN only
+  stationDest?: string; // For VAN only
+  departureTime: Date;
+  estimatedArrivalTime: Date;
+  basePrice: number;
+  pricePerPassenger: number;
+  currency: string;
+  createdAt: Date;
 }
 
 export class Trip {
-  id: UUIDVO;
-  conductorId: DriverId;
-  tipoVehiculo: TipoVehiculo;
-  modo: ModoViaje;
-  estado: TripStatus;
-  pasajeros: PasajeroEnViaje[];
-  origen: LocationVO; // Para PUNTO_A_PUNTO
-  destino: LocationVO; // Para PUNTO_A_PUNTO
-  estacionOrigen?: string; // Solo para VAN
-  estacionDestino?: string; // Solo para VAN
-  rutaOptimizada: LocationVO[]; // Calculada por el sistema
-  horaSalidaProgramada: Date;
-  horaLlegadaEstimada: Date;
-  precioBase: MoneyVO; // Precio total antes de compartir
-  precioPorPasajero: MoneyVO; // Precio final por pasajero
+  id: string;
+  driverId: string;
+  vehicleType: VehicleType;
+  mode: TravelMode;
+  status: TripStatus;
+  passengers: TripPassenger[];
+  originCity: string;
+  originAddress: string;
+  destCity: string;
+  destAddress: string;
+  stationOrigin?: string;
+  stationDest?: string;
+  departureTime: Date;
+  estimatedArrivalTime: Date;
+  basePrice: number;
+  pricePerPassenger: number;
+  currency: string;
+  readonly createdAt: Date;
 
-  constructor(props: {
-    id: UUIDVO;
-    conductorId: DriverId;
-    tipoVehiculo: TipoVehiculo;
-    modo: ModoViaje;
-    origen: LocationVO;
-    destino: LocationVO;
-    estacionOrigen?: string;
-    estacionDestino?: string;
-    horaSalidaProgramada: Date;
-    precioBase: MoneyVO;
-  }) {
+  private constructor(props: TripProps) {
     this.id = props.id;
-    this.conductorId = props.conductorId;
-    this.tipoVehiculo = props.tipoVehiculo;
-    this.modo = props.modo;
-    this.estado = 'PROGRAMADO';
-    this.pasajeros = [];
-    this.origen = props.origen;
-    this.destino = props.destino;
-    this.estacionOrigen = props.estacionOrigen;
-    this.estacionDestino = props.estacionDestino;
-    this.horaSalidaProgramada = props.horaSalidaProgramada;
-    this.precioBase = props.precioBase;
-    this.precioPorPasajero = props.precioBase; // Se recalcula más adelante
-    this.rutaOptimizada = [props.origen, props.destino]; // Se optimiza con pasajeros
+    this.driverId = props.driverId;
+    this.vehicleType = props.vehicleType;
+    this.mode = props.mode;
+    this.status = props.status;
+    this.passengers = props.passengers;
+    this.originCity = props.originCity;
+    this.originAddress = props.originAddress;
+    this.destCity = props.destCity;
+    this.destAddress = props.destAddress;
+    this.stationOrigin = props.stationOrigin;
+    this.stationDest = props.stationDest;
+    this.departureTime = props.departureTime;
+    this.estimatedArrivalTime = props.estimatedArrivalTime;
+    this.basePrice = props.basePrice;
+    this.pricePerPassenger = props.pricePerPassenger;
+    this.currency = props.currency;
+    this.createdAt = props.createdAt;
   }
 
-  // Capacidad según tipo de vehículo
-  getCapacidadMaxima(): number {
-    return this.tipoVehiculo === 'VAN' ? 7 : 3;
+  public static create(props: {
+    driverId: string;
+    vehicleType: VehicleType;
+    mode: TravelMode;
+    originCity: string;
+    originAddress: string;
+    destCity: string;
+    destAddress: string;
+    stationOrigin?: string;
+    stationDest?: string;
+    departureTime: Date;
+    basePrice: number;
+    currency: string;
+  }): Trip {
+    const estimatedArrivalTime = new Date(props.departureTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+    
+    return new Trip({
+      id: crypto.randomUUID(),
+      ...props,
+      status: 'SCHEDULED',
+      passengers: [],
+      estimatedArrivalTime,
+      pricePerPassenger: props.basePrice,
+      createdAt: new Date(),
+    });
   }
 
-  getCupoDisponible(): number {
-    return this.getCapacidadMaxima() - this.pasajeros.length;
+  public static fromPrimitives(props: TripProps): Trip {
+    return new Trip(props);
   }
 
-  // Añadir un pasajero al viaje (solo si hay cupo y es compatible)
-  agregarPasajero(pasajero: Omit<PasajeroEnViaje, 'precioPagado'>, precio: MoneyVO): void {
-    if (this.getCupoDisponible() <= 0) {
-      throw new Error('No hay cupo disponible en este viaje.');
+  public toPrimitives(): TripProps {
+    return {
+      id: this.id,
+      driverId: this.driverId,
+      vehicleType: this.vehicleType,
+      mode: this.mode,
+      status: this.status,
+      passengers: this.passengers,
+      originCity: this.originCity,
+      originAddress: this.originAddress,
+      destCity: this.destCity,
+      destAddress: this.destAddress,
+      stationOrigin: this.stationOrigin,
+      stationDest: this.stationDest,
+      departureTime: this.departureTime,
+      estimatedArrivalTime: this.estimatedArrivalTime,
+      basePrice: this.basePrice,
+      pricePerPassenger: this.pricePerPassenger,
+      currency: this.currency,
+      createdAt: this.createdAt,
+    };
+  }
+
+  getMaxCapacity(): number {
+    return this.vehicleType === 'VAN' ? 7 : 3;
+  }
+
+  getAvailableSeats(): number {
+    return this.getMaxCapacity() - this.passengers.length;
+  }
+
+  addPassenger(passenger: Omit<TripPassenger, 'pricePaid' | 'currency'>): void {
+    if (this.getAvailableSeats() <= 0) {
+      throw new Error('No seats available.');
     }
 
-    if (this.tipoVehiculo === 'SUV' && pasajero.asientoDelantero && this.pasajeros.some(p => p.asientoDelantero)) {
-      throw new Error('Solo un pasajero puede tener el asiento delantero en SUV.');
+    if (this.vehicleType === 'SUV' && passenger.frontSeat && this.passengers.some(p => p.frontSeat)) {
+      throw new Error('Only one passenger can have the front seat in SUV.');
     }
 
-    this.pasajeros.push({
-      ...pasajero,
-      precioPagado: precio
+    this.passengers.push({
+      ...passenger,
+      pricePaid: this.pricePerPassenger,
+      currency: this.currency,
     });
 
-    // Recalcular precio por pasajero si hay más de 1
-    if (this.pasajeros.length > 1) {
-      this.recalcularPrecioPorPasajero();
+    if (this.passengers.length > 1) {
+      this.recalculatePricePerPassenger();
     }
 
-    // Si está lleno, cambiar estado
-    if (this.getCupoDisponible() === 0) {
-      this.estado = 'ESPERANDO_PASAJEROS'; // o 'EN_RUTA' si ya partió
+    if (this.getAvailableSeats() === 0) {
+      this.status = 'WAITING_PASSENGERS';
     }
   }
 
-  private recalcularPrecioPorPasajero(): void {
-    // Aplicar descuento por compartir
-    const factorCompartir = this.pasajeros.length === 2 ? 0.6 : this.pasajeros.length === 3 ? 0.45 : 1.0;
-    // Para VAN: no hay descuento por compartir, pero sí por volumen (más adelante)
-    const nuevoPrecio = this.precioBase.multiply(factorCompartir);
-    this.precioPorPasajero = nuevoPrecio;
-    // Actualizar precio de todos los pasajeros
-    for (const p of this.pasajeros) {
-      p.precioPagado = nuevoPrecio;
+  private recalculatePricePerPassenger(): void {
+    const shareDiscount = this.passengers.length === 2 ? 0.6 : this.passengers.length === 3 ? 0.45 : 1.0;
+    this.pricePerPassenger = this.basePrice * shareDiscount;
+    
+    for (const p of this.passengers) {
+      p.pricePaid = this.pricePerPassenger;
     }
   }
 
-  // Cambiar estado
-  iniciar(): void {
-    if (this.estado !== 'PROGRAMADO' && this.estado !== 'ESPERANDO_PASAJEROS') {
-      throw new Error('No se puede iniciar un viaje en este estado.');
+  assignDriver(driverId: string): void {
+    if (this.status !== 'SCHEDULED') {
+      throw new Error('Cannot assign driver to a trip that is not scheduled.');
     }
-    this.estado = 'EN_RUTA';
+    this.driverId = driverId;
   }
 
-  finalizar(): void {
-    if (this.estado !== 'EN_RUTA') {
-      throw new Error('Solo se puede finalizar un viaje en ruta.');
+  start(): void {
+    if (this.status !== 'SCHEDULED' && this.status !== 'WAITING_PASSENGERS') {
+      throw new Error('Cannot start trip in current state.');
     }
-    this.estado = 'FINALIZADO';
+    this.status = 'IN_TRANSIT';
+  }
+
+  complete(): void {
+    if (this.status !== 'IN_TRANSIT') {
+      throw new Error('Only in-transit trips can be completed.');
+    }
+    this.status = 'COMPLETED';
+  }
+
+  cancel(): void {
+    if (this.status === 'COMPLETED' || this.status === 'CANCELLED') {
+      throw new Error('Cannot cancel completed or already cancelled trip.');
+    }
+    this.status = 'CANCELLED';
   }
 }

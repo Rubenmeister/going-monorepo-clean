@@ -1,8 +1,8 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "esModuleInterop": true,
-    "outDir": "../../dist/out-tsc",
+    "outDir": "../dist/out-tsc",
     "module": "commonjs",
     "types": ["jest", "node", "supertest"]
   },
@@ -13,7 +13,7 @@
       "path": "./tsconfig.spec.json"
     },
     {
-      "path": "../../apps/user-auth-service/tsconfig.app.json"
+      "path": "./tsconfig.app.json"
     }
   ]
 }

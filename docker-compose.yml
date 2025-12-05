@@ -1,52 +1,37 @@
- version: '3.8'
+version: '3.8'
 
 services:
-  # --- INFRAESTRUCTURA ---
-  mongo:
-    image: mongo:6.0
-    container_name: going-mongo
-    restart: always
+  postgres:
+    image: postgres:15-alpine
+    container_name: going_postgres
+    environment:
+      POSTGRES_USER: going_user
+      POSTGRES_PASSWORD: going_password
+      POSTGRES_DB: going_monorepo
     ports:
-      - "27017:27017"
+      - '5432:5432'
     volumes:
-      - mongo_data:/data/db
-    networks:
-      - going-network
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
+      test: ['CMD-SHELL', 'pg_isready -U going_user -d going_monorepo']
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: going-redis
-    restart: always
+  # Optional: pgAdmin for database management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: going_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@going.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
-      - "6379:6379"
-    networks:
-      - going-network
-
-  # (Opcional) Postgres - Lo dejo comentado por si lo necesitas en el futuro
-  # postgres:
-  #   image: postgres:15-alpine
-  #   container_name: going-postgres
-  #   restart: always
-  #   environment:
-  #     POSTGRES_USER: ${DATABASE_USER:-postgres}
-  #     POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
-  #     POSTGRES_DB: ${DATABASE_NAME:-going_monorepo}
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   networks:
-  #     - going-network
+      - '5050:80'
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
-  mongo_data:
   postgres_data:
-
-networks:
-  going-network:
-    driver: bridge
+  pgadmin_data:

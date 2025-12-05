@@ -3,7 +3,7 @@
     "version": "22.0.3"
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "targetDefaults": {
+  "targetDefaults": {
     "test": {
       "cache": true
     },
@@ -51,10 +51,10 @@
         "api-gateway-e2e/**/*",
         "user-auth-service-e2e/**/*",
         "payment-service-e2e/**/*",
-        "anfitriones-service-e2e/**/*",
-        "experiencias-service-e2e/**/*",
+        "host-service-e2e/**/*",
+        "experience-service-e2e/**/*",
         "tours-service-e2e/**/*",
-        "envios-service-e2e/**/*",
+        "parcel-service-e2e/**/*",
         "transport-service-e2e/**/*",
         "notifications-service-e2e/**/*",
         "tracking-service-e2e/**/*",

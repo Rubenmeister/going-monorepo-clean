@@ -1,37 +1,51 @@
-import {
-  Controller,
-  Post,
-  Req,
-  Headers,
-  RawBodyRequest,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Post, Req, Headers, Logger, RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
-import { HandleStripeEventUseCase } from '@going-monorepo-clean/domains-payment-application';
+import { StripeGateway } from '../infrastructure/gateways/stripe.gateway';
+import { PrismaPaymentRepository } from '../infrastructure/repositories/prisma-payment.repository';
 
-@Controller('webhooks')
+@Controller('webhook')
 export class WebhookController {
+  private readonly logger = new Logger(WebhookController.name);
+
   constructor(
-    private readonly handleStripeEventUseCase: HandleStripeEventUseCase,
+    private readonly stripeGateway: StripeGateway,
+    private readonly paymentRepository: PrismaPaymentRepository,
   ) {}
 
   @Post('stripe')
   async handleStripeWebhook(
-    @Headers('stripe-signature') signature: string | undefined,
     @Req() req: RawBodyRequest<Request>,
+    @Headers('stripe-signature') signature: string,
   ) {
-    if (!signature) {
-      throw new BadRequestException('Missing stripe-signature header');
-    }
-    if (!req.rawBody) {
-      throw new BadRequestException('Raw body missing. Ensure rawBody: true in main.ts');
-    }
-
     try {
-      await this.handleStripeEventUseCase.execute(req.rawBody, signature);
+      const event = await this.stripeGateway.constructWebhookEvent(
+        req.rawBody as Buffer,
+        signature,
+      );
+
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          await this.paymentRepository.completePayment(
+            paymentIntent.metadata?.paymentId || paymentIntent.id,
+            paymentIntent.id,
+          );
+          this.logger.log(`Payment completed: ${paymentIntent.id}`);
+          break;
+
+        case 'payment_intent.payment_failed':
+          const failedIntent = event.data.object;
+          this.logger.warn(`Payment failed: ${failedIntent.id}`);
+          break;
+
+        default:
+          this.logger.log(`Unhandled event type: ${event.type}`);
+      }
+
       return { received: true };
     } catch (error) {
-      throw new BadRequestException(error.message);
+      this.logger.error(`Webhook error: ${error.message}`);
+      throw error;
     }
   }
 }

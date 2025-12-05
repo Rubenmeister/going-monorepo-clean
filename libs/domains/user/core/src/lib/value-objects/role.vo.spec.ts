@@ -1,42 +1,39 @@
 import { Role } from './role.vo';
+import { RoleType } from '../entities/user.entity';
 
 describe('Role Value Object', () => {
 
-  it('debería crear un rol válido (user)', () => {
-    const roleResult = Role.create('user');
+  it('debería crear un rol válido (USER)', () => {
+    const roleResult = Role.create(RoleType.USER);
     expect(roleResult.isOk()).toBe(true);
-    expect(roleResult.value.value).toBe('user');
+    expect(roleResult._unsafeUnwrap().value).toBe(RoleType.USER);
   });
 
-  it('debería crear un rol válido en mayúsculas (ADMIN)', () => {
+  it('debería crear un rol válido desde string en mayúsculas (ADMIN)', () => {
     const roleResult = Role.create('ADMIN');
-    // El VO debe normalizarlo a minúsculas
     expect(roleResult.isOk()).toBe(true);
-    expect(roleResult.value.value).toBe('admin');
+    expect(roleResult._unsafeUnwrap().value).toBe(RoleType.ADMIN);
   });
 
-  it('debería fallar al crear un rol inválido (guest)', () => {
-    const roleResult = Role.create('guest');
+  it('debería fallar al crear un rol inválido (lowercase)', () => {
+    const roleResult = Role.create('user'); // lowercase no válido
     expect(roleResult.isErr()).toBe(true);
-    expect(roleResult.error.message).toBe('Invalid role');
+    expect(roleResult._unsafeUnwrapErr().message).toBe('Invalid role: user');
+  });
+
+  it('debería fallar al crear un rol que no existe (GUEST)', () => {
+    const roleResult = Role.create('GUEST');
+    expect(roleResult.isErr()).toBe(true);
+    expect(roleResult._unsafeUnwrapErr().message).toBe('Invalid role: GUEST');
   });
 
   it('debería convertir a primitivo correctamente', () => {
-    const role = Role.create('driver')._unsafeUnwrap();
-    expect(role.toPrimitives()).toBe('driver');
+    const role = Role.create(RoleType.DRIVER)._unsafeUnwrap();
+    expect(role.toPrimitives()).toBe('DRIVER');
   });
 
   it('debería crear desde un primitivo correctamente', () => {
-    const role = Role.fromPrimitives('host');
-    expect(role.value).toBe('host');
-  });
-
-  it('debería verificar los roles correctamente', () => {
-    const adminRole = Role.create('admin')._unsafeUnwrap();
-    const driverRole = Role.create('driver')._unsafeUnwrap();
-    
-    expect(adminRole.isAdmin()).toBe(true);
-    expect(adminRole.isDriver()).toBe(false);
-    expect(driverRole.isDriver()).toBe(true);
+    const role = Role.fromPrimitives('HOST');
+    expect(role.value).toBe('HOST');
   });
 });

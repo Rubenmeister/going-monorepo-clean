@@ -1,0 +1,84 @@
+{
+  "name": "experience-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "experience-service/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "executor": "@nx/webpack:webpack",
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "inspect": false,
+          "optimization": true,
+          "mode": "production",
+          "extractLicenses": true
+        }
+      },
+      "options": {
+        "assets": ["experience-service/src/assets"],
+        "isolatedConfig": true,
+        "tsConfig": "experience-service/tsconfig.app.json",
+        "outputPath": "dist/experience-service",
+        "generatePackageJson": true,
+        "target": "node",
+        "webpackConfig": "experience-service/webpack.config.js",
+        "main": "experience-service/src/main.ts",
+        "compiler": "tsc"
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/experience-service/package.json",
+        "{workspaceRoot}/dist/experience-service/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/experience-service/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "experience-service:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "experience-service:build:development"
+        },
+        "production": {
+          "buildTarget": "experience-service:build:production"
+        }
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}

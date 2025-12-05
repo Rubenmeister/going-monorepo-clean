@@ -1,13 +1,12 @@
-import { createGlobPatternsForDependencies } from '@nx/react/src/utils/create-glob-patterns';
 import { join } from 'path';
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    // Rutas para que Tailwind escanee todos los archivos del monorepo:
-    join(__dirname, 'apps/**/!(*.stories|*.spec).{ts,tsx,html}'),
-    join(__dirname, 'libs/**/!(*.stories|*.spec).{ts,tsx,html}'),
-    ...createGlobPatternsForDependencies(__dirname),
+    // Admin dashboard source files
+    join(__dirname, 'src/**/*.{ts,tsx,html}'),
+    // Shared libraries that may contain components
+    join(__dirname, '../libs/**/*.{ts,tsx,html}'),
   ],
   theme: {
     extend: {
