@@ -1,0 +1,15 @@
+{
+  "parcel": {
+    "create": "Create parcel",
+    "track": "Track parcel",
+    "status": {
+      "pending": "Pending",
+      "in_transit": "In transit",
+      "delivered": "Delivered"
+    }
+  },
+  "tour": {
+    "book": "Book tour",
+    "available": "Available tours"
+  }
+}

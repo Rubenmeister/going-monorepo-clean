@@ -1,19 +1,21 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { useAuth } from './auth-context.provider';
 
 export const useMonorepoApp = () => {
-  // Ahora useAuth sí existe porque lo exportamos en el archivo anterior
-  const authState = useAuth();
-  
-  return {
-    // Exponemos el estado de autenticación
-    user: authState.user,
-    isAuthenticated: authState.isAuthenticated,
-    login: authState.login,
-    logout: authState.logout,
+  const [isLoaded, setIsLoaded] = useState(false);
+  const authContext = useAuth();
 
-    // Exponemos las funciones "Dummy" para que la UI no se rompa
-    payment: authState.dependencies.payment,
-    parcel: authState.dependencies.parcel,
-    trips: authState.dependencies.trips
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
+  // Return auth as nested object with isLoading for compatibility
+  const auth = {
+    ...authContext,
+    isLoading: !isLoaded,
   };
+
+  return { isLoaded, auth };
 };

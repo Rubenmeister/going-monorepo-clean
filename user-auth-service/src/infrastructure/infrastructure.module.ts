@@ -1,52 +1,44 @@
-// apps/user-auth-service/src/infrastructure/infrastructure.module.ts
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-// IMPORTANTE: Importamos tanto la Clase (UserModel) como el Schema (UserModelSchema)
-import { UserModel, UserModelSchema } from './persistence/schemas/user.schema';
+// Shared Prisma Module
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 
-import { MongooseUserRepository } from './persistence/mongoose-user.repository';
+// Domain Ports (symbols and interfaces from user-core)
+import { 
+  IUserRepository,
+  IPasswordHasher,
+  ITokenService,
+} from '@going-monorepo-clean/domains-user-core';
+
+// Infrastructure Implementations
+import { PrismaUserRepository } from './repositories/user.repository';
 import { BcryptHasher } from './services/bcrypt.hasher';
 import { JwtTokenService } from './services/jwt.token.service';
 
+@Global()
 @Module({
   imports: [
-    // CORRECCIÓN CRÍTICA:
-    // Mongoose 10+ requiere el nombre de la CLASE (UserModel.name), no del schema.
-    MongooseModule.forFeature([
-      { name: UserModel.name, schema: UserModelSchema },
-    ]),
-    
-    // Configuración de JWT
+    PrismaModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
+        secret: configService.get('JWT_SECRET') || 'default-secret-change-in-production',
         signOptions: { expiresIn: configService.get('JWT_EXPIRATION') || '1h' },
       }),
     }),
   ],
   providers: [
-    // Registramos los servicios de infraestructura
-    MongooseUserRepository,
-    BcryptHasher,
-    JwtTokenService,
-    
-    // Si en tu AppModule usas inyección por tokens (ej. 'IUserRepository'), 
-    // descomenta y ajusta esto:
-    // { provide: 'IUserRepository', useClass: MongooseUserRepository },
-    // { provide: 'IPasswordHasher', useClass: BcryptHasher },
-    // { provide: 'ITokenService', useClass: JwtTokenService },
+    { provide: IUserRepository, useClass: PrismaUserRepository },
+    { provide: IPasswordHasher, useClass: BcryptHasher },
+    { provide: ITokenService, useClass: JwtTokenService },
   ],
   exports: [
-    // Exportamos para que el AppModule pueda usarlos
-    MongooseUserRepository,
-    BcryptHasher,
-    JwtTokenService,
-    MongooseModule, // Exportamos Mongoose por si acaso
+    IUserRepository,
+    IPasswordHasher,
+    ITokenService,
     JwtModule,
   ],
 })

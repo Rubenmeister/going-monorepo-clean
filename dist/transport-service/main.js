@@ -1,190 +1,653 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
-/******/ 	var __webpack_modules__ = ([
-/* 0 */,
-/* 1 */
-/***/ ((module) => {
 
-module.exports = require("@nestjs/core");
+;// external "tslib"
+const external_tslib_namespaceObject = require("tslib");
+;// external "@nestjs/core"
+const core_namespaceObject = require("@nestjs/core");
+;// external "@nestjs/common"
+const common_namespaceObject = require("@nestjs/common");
+;// external "@nestjs/config"
+const config_namespaceObject = require("@nestjs/config");
+;// external "@prisma/client"
+const client_namespaceObject = require("@prisma/client");
+;// ./libs/shared/prisma-client/src/lib/prisma.service.ts
+var PrismaService_1;
 
-/***/ }),
-/* 2 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AppModule = void 0;
-const tslib_1 = __webpack_require__(3);
-const common_1 = __webpack_require__(4);
-const config_1 = __webpack_require__(5);
-const mongoose_1 = __webpack_require__(6);
-const infrastructure_module_1 = __webpack_require__(7);
-const transport_controller_1 = __webpack_require__(8);
-const domains_transport_application_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-transport-application'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-let AppModule = class AppModule {
+let PrismaService = PrismaService_1 = class PrismaService extends client_namespaceObject.PrismaClient {
+    constructor() {
+        super({
+            log: process.env.NODE_ENV === 'development'
+                ? ['query', 'info', 'warn', 'error']
+                : ['error'],
+        });
+        this.logger = new common_namespaceObject.Logger(PrismaService_1.name);
+    }
+    onModuleInit() {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            try {
+                yield this.$connect();
+                this.logger.log('Connected to PostgreSQL database');
+            }
+            catch (error) {
+                this.logger.error('Failed to connect to PostgreSQL database', error);
+                throw error;
+            }
+        });
+    }
+    onModuleDestroy() {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            yield this.$disconnect();
+            this.logger.log('Disconnected from PostgreSQL database');
+        });
+    }
+    /**
+     * Execute operations within a transaction
+     * All operations succeed or all fail together
+     */
+    executeTransaction(fn) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            return this.$transaction(fn);
+        });
+    }
+    /**
+     * Clean database for testing purposes
+     * WARNING: This deletes all data!
+     */
+    cleanDatabase() {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            if (process.env.NODE_ENV !== 'test') {
+                throw new Error('cleanDatabase can only be used in test environment');
+            }
+            const tablenames = yield this.$queryRaw `
+      SELECT tablename FROM pg_tables WHERE schemaname='public'
+    `;
+            for (const { tablename } of tablenames) {
+                if (tablename !== '_prisma_migrations') {
+                    yield this.$executeRawUnsafe(`TRUNCATE TABLE "public"."${tablename}" CASCADE;`);
+                }
+            }
+        });
+    }
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = tslib_1.__decorate([
-    (0, common_1.Module)({
-        imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
-            mongoose_1.MongooseModule.forRoot(process.env.TRANSPORT_DB_URL), // .env
-            infrastructure_module_1.InfrastructureModule,
-        ],
-        controllers: [
-            transport_controller_1.TransportController,
-        ],
-        providers: [
-            domains_transport_application_1.RequestTripUseCase,
-            domains_transport_application_1.AcceptTripUseCase,
-        ],
+PrismaService = PrismaService_1 = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Injectable)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [])
+], PrismaService);
+
+
+;// ./libs/shared/prisma-client/src/lib/prisma.module.ts
+
+
+
+let PrismaModule = class PrismaModule {
+};
+PrismaModule = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Global)(),
+    (0,common_namespaceObject.Module)({
+        providers: [PrismaService],
+        exports: [PrismaService],
     })
-], AppModule);
+], PrismaModule);
 
 
-/***/ }),
-/* 3 */
-/***/ ((module) => {
+;// ./libs/shared/prisma-client/src/index.ts
+// Prisma Client re-exports
 
-module.exports = require("tslib");
-
-/***/ }),
-/* 4 */
-/***/ ((module) => {
-
-module.exports = require("@nestjs/common");
-
-/***/ }),
-/* 5 */
-/***/ ((module) => {
-
-module.exports = require("@nestjs/config");
-
-/***/ }),
-/* 6 */
-/***/ ((module) => {
-
-module.exports = require("@nestjs/mongoose");
-
-/***/ }),
-/* 7 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+// NestJS integration
 
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.InfrastructureModule = void 0;
-const tslib_1 = __webpack_require__(3);
-const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(6);
-const domains_transport_core_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module '@going-monorepo-clean/domains-transport-core'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const mongoose_trip_repository_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module './persistence/mongoose-trip.repository'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-const trip_schema_1 = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module './persistence/schemas/trip.schema'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+;// ./libs/domains/transport/core/src/libs/entities/trip.entity.ts
+class Trip {
+    constructor(props) {
+        this.id = props.id;
+        this.driverId = props.driverId;
+        this.vehicleType = props.vehicleType;
+        this.mode = props.mode;
+        this.status = props.status;
+        this.passengers = props.passengers;
+        this.originCity = props.originCity;
+        this.originAddress = props.originAddress;
+        this.destCity = props.destCity;
+        this.destAddress = props.destAddress;
+        this.stationOrigin = props.stationOrigin;
+        this.stationDest = props.stationDest;
+        this.departureTime = props.departureTime;
+        this.estimatedArrivalTime = props.estimatedArrivalTime;
+        this.basePrice = props.basePrice;
+        this.pricePerPassenger = props.pricePerPassenger;
+        this.currency = props.currency;
+        this.createdAt = props.createdAt;
+    }
+    static create(props) {
+        const estimatedArrivalTime = new Date(props.departureTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
+        return new Trip(Object.assign(Object.assign({ id: crypto.randomUUID() }, props), { status: 'SCHEDULED', passengers: [], estimatedArrivalTime, pricePerPassenger: props.basePrice, createdAt: new Date() }));
+    }
+    static fromPrimitives(props) {
+        return new Trip(props);
+    }
+    toPrimitives() {
+        return {
+            id: this.id,
+            driverId: this.driverId,
+            vehicleType: this.vehicleType,
+            mode: this.mode,
+            status: this.status,
+            passengers: this.passengers,
+            originCity: this.originCity,
+            originAddress: this.originAddress,
+            destCity: this.destCity,
+            destAddress: this.destAddress,
+            stationOrigin: this.stationOrigin,
+            stationDest: this.stationDest,
+            departureTime: this.departureTime,
+            estimatedArrivalTime: this.estimatedArrivalTime,
+            basePrice: this.basePrice,
+            pricePerPassenger: this.pricePerPassenger,
+            currency: this.currency,
+            createdAt: this.createdAt,
+        };
+    }
+    getMaxCapacity() {
+        return this.vehicleType === 'VAN' ? 7 : 3;
+    }
+    getAvailableSeats() {
+        return this.getMaxCapacity() - this.passengers.length;
+    }
+    addPassenger(passenger) {
+        if (this.getAvailableSeats() <= 0) {
+            throw new Error('No seats available.');
+        }
+        if (this.vehicleType === 'SUV' && passenger.frontSeat && this.passengers.some(p => p.frontSeat)) {
+            throw new Error('Only one passenger can have the front seat in SUV.');
+        }
+        this.passengers.push(Object.assign(Object.assign({}, passenger), { pricePaid: this.pricePerPassenger, currency: this.currency }));
+        if (this.passengers.length > 1) {
+            this.recalculatePricePerPassenger();
+        }
+        if (this.getAvailableSeats() === 0) {
+            this.status = 'WAITING_PASSENGERS';
+        }
+    }
+    recalculatePricePerPassenger() {
+        const shareDiscount = this.passengers.length === 2 ? 0.6 : this.passengers.length === 3 ? 0.45 : 1.0;
+        this.pricePerPassenger = this.basePrice * shareDiscount;
+        for (const p of this.passengers) {
+            p.pricePaid = this.pricePerPassenger;
+        }
+    }
+    assignDriver(driverId) {
+        if (this.status !== 'SCHEDULED') {
+            throw new Error('Cannot assign driver to a trip that is not scheduled.');
+        }
+        this.driverId = driverId;
+    }
+    start() {
+        if (this.status !== 'SCHEDULED' && this.status !== 'WAITING_PASSENGERS') {
+            throw new Error('Cannot start trip in current state.');
+        }
+        this.status = 'IN_TRANSIT';
+    }
+    complete() {
+        if (this.status !== 'IN_TRANSIT') {
+            throw new Error('Only in-transit trips can be completed.');
+        }
+        this.status = 'COMPLETED';
+    }
+    cancel() {
+        if (this.status === 'COMPLETED' || this.status === 'CANCELLED') {
+            throw new Error('Cannot cancel completed or already cancelled trip.');
+        }
+        this.status = 'CANCELLED';
+    }
+}
+
+;// ./libs/domains/transport/core/src/libs/ports/itrip.repository.ts
+const ITripRepository = Symbol('ITripRepository');
+
+;// ./libs/domains/transport/core/src/index.ts
+// Transport Core Domain
+
+
+
+;// ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts
+var _a;
+
+
+
+
+let PrismaTransportRepository = class PrismaTransportRepository {
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    save(trip) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            const primitives = trip.toPrimitives();
+            yield this.prisma.transport.upsert({
+                where: { id: primitives.id },
+                create: {
+                    id: primitives.id,
+                    driverId: primitives.driverId,
+                    vehicleType: primitives.vehicleType,
+                    licensePlate: 'PENDING', // Default or need to add to entity
+                    capacity: trip.getMaxCapacity(),
+                    pricePerKm: primitives.basePrice,
+                    currency: primitives.currency,
+                    status: this.toPrismaStatus(primitives.status),
+                    originCity: primitives.originCity,
+                    originAddress: primitives.originAddress,
+                    destCity: primitives.destCity,
+                    destAddress: primitives.destAddress,
+                    departureTime: primitives.departureTime,
+                    arrivalTime: primitives.estimatedArrivalTime,
+                },
+                update: {
+                    status: this.toPrismaStatus(primitives.status),
+                    pricePerKm: primitives.basePrice,
+                    departureTime: primitives.departureTime,
+                    arrivalTime: primitives.estimatedArrivalTime,
+                    originCity: primitives.originCity,
+                    originAddress: primitives.originAddress,
+                    destCity: primitives.destCity,
+                    destAddress: primitives.destAddress,
+                },
+            });
+        });
+    }
+    findById(id) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            const record = yield this.prisma.transport.findUnique({
+                where: { id: id }, // UUID is string alias, so no .value
+            });
+            if (!record)
+                return null;
+            return this.toDomain(record);
+        });
+    }
+    findAvailableSharedTrips(origin, dest, vehicleType) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            const records = yield this.prisma.transport.findMany({
+                where: {
+                    status: 'AVAILABLE',
+                    vehicleType: vehicleType,
+                    originCity: origin.city,
+                    destCity: dest.city,
+                },
+            });
+            return records.map(r => this.toDomain(r));
+        });
+    }
+    findTripsByDriverId(driverId) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            const records = yield this.prisma.transport.findMany({
+                where: { driverId },
+            });
+            return records.map(r => this.toDomain(r));
+        });
+    }
+    update(trip) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            yield this.save(trip);
+        });
+    }
+    toPrismaStatus(status) {
+        switch (status) {
+            case 'SCHEDULED': return 'AVAILABLE';
+            case 'WAITING_PASSENGERS': return 'AVAILABLE';
+            case 'IN_TRANSIT': return 'IN_SERVICE';
+            case 'COMPLETED': return 'AVAILABLE';
+            case 'CANCELLED': return 'INACTIVE';
+            default: return 'AVAILABLE';
+        }
+    }
+    toDomain(record) {
+        return Trip.fromPrimitives({
+            id: record.id,
+            driverId: record.driverId,
+            vehicleType: record.vehicleType,
+            mode: 'POINT_TO_POINT', // Default
+            status: this.fromPrismaStatus(record.status),
+            passengers: [], // Need to fetch passengers/bookings
+            originCity: record.originCity || '',
+            originAddress: record.originAddress || '',
+            destCity: record.destCity || '',
+            destAddress: record.destAddress || '',
+            departureTime: record.departureTime || new Date(),
+            estimatedArrivalTime: record.arrivalTime || new Date(),
+            basePrice: Number(record.pricePerKm),
+            pricePerPassenger: Number(record.pricePerKm),
+            currency: record.currency,
+            createdAt: record.createdAt,
+        });
+    }
+    fromPrismaStatus(status) {
+        switch (status) {
+            case 'AVAILABLE': return 'SCHEDULED';
+            case 'IN_SERVICE': return 'IN_TRANSIT';
+            case 'INACTIVE': return 'CANCELLED';
+            default: return 'SCHEDULED';
+        }
+    }
+};
+PrismaTransportRepository = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Injectable)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [typeof (_a = typeof PrismaService !== "undefined" && PrismaService) === "function" ? _a : Object])
+], PrismaTransportRepository);
+
+
+;// ./transport-service/src/infrastructure/infrastructure.module.ts
+
+
+
+// Shared Prisma Module
+
+// Domain Ports
+
+// Repository Implementation
+
 let InfrastructureModule = class InfrastructureModule {
 };
-exports.InfrastructureModule = InfrastructureModule;
-exports.InfrastructureModule = InfrastructureModule = tslib_1.__decorate([
-    (0, common_1.Module)({
+InfrastructureModule = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Global)(),
+    (0,common_namespaceObject.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([
-                { name: trip_schema_1.TripModelSchema.name, schema: trip_schema_1.TripSchema },
-            ]),
+            config_namespaceObject.ConfigModule.forRoot({ isGlobal: true }),
+            PrismaModule,
         ],
         providers: [
             {
-                provide: domains_transport_core_1.ITripRepository,
-                useClass: mongoose_trip_repository_1.MongooseTripRepository,
+                provide: ITripRepository,
+                useClass: PrismaTransportRepository,
             },
+            PrismaTransportRepository,
         ],
-        exports: [domains_transport_core_1.ITripRepository],
+        exports: [ITripRepository, PrismaTransportRepository],
     })
 ], InfrastructureModule);
 
 
-/***/ }),
-/* 8 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+;// external "class-transformer"
+const external_class_transformer_namespaceObject = require("class-transformer");
+;// external "class-validator"
+const external_class_validator_namespaceObject = require("class-validator");
+;// ./libs/domains/transport/application/src/lib/dto/request-trip.dto.ts
 
 
-var _a;
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TransportController = void 0;
-const tslib_1 = __webpack_require__(3);
-const common_1 = __webpack_require__(4);
-let TransportController = class TransportController {
-    // ... otros métodos
-    async obtenerHorarios(query) {
-        // Lógica para calcular horarios fijos o dinámicos basados en la ruta
-        // Por ejemplo, VAN de Quito a Ambato sale cada 5 horas
-        const frecuenciaMinutos = query.tipoVehiculo === 'VAN' ? 300 : 60; // 5h o 1h
-        const ahora = new Date();
-        const horarios = [];
-        for (let i = 0; i < 5; i++) { // Próximas 5 salidas
-            const proxima = new Date(ahora.getTime() + (frecuenciaMinutos * i * 60000));
-            horarios.push(proxima);
-        }
-        return { horarios };
+
+class PriceDto {
+}
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsNumber)(),
+    (0,external_class_validator_namespaceObject.Min)(0),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", Number)
+], PriceDto.prototype, "amount", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsIn)(['USD']),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], PriceDto.prototype, "currency", void 0);
+class LocationDto {
+}
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsString)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], LocationDto.prototype, "city", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsString)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], LocationDto.prototype, "address", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsLatitude)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", Number)
+], LocationDto.prototype, "latitude", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsLongitude)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", Number)
+], LocationDto.prototype, "longitude", void 0);
+class RequestTripDto {
+}
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsUUID)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], RequestTripDto.prototype, "userId", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsOptional)(),
+    (0,external_class_validator_namespaceObject.IsUUID)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], RequestTripDto.prototype, "driverId", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsOptional)(),
+    (0,external_class_validator_namespaceObject.IsIn)(['SUV', 'VAN']),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], RequestTripDto.prototype, "vehicleType", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsOptional)(),
+    (0,external_class_validator_namespaceObject.IsIn)(['DOOR_TO_DOOR', 'POINT_TO_POINT']),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], RequestTripDto.prototype, "mode", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.IsDateString)(),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", String)
+], RequestTripDto.prototype, "departureTime", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.ValidateNested)(),
+    (0,external_class_transformer_namespaceObject.Type)(() => LocationDto),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", LocationDto)
+], RequestTripDto.prototype, "origin", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.ValidateNested)(),
+    (0,external_class_transformer_namespaceObject.Type)(() => LocationDto),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", LocationDto)
+], RequestTripDto.prototype, "destination", void 0);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,external_class_validator_namespaceObject.IsNotEmpty)(),
+    (0,external_class_validator_namespaceObject.ValidateNested)(),
+    (0,external_class_transformer_namespaceObject.Type)(() => PriceDto),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", PriceDto)
+], RequestTripDto.prototype, "price", void 0);
+
+;// ./libs/domains/transport/application/src/lib/use-cases/request-trip.use-case.ts
+var request_trip_use_case_a;
+
+
+
+let RequestTripUseCase = class RequestTripUseCase {
+    constructor(tripRepo) {
+        this.tripRepo = tripRepo;
+    }
+    execute(dto) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            // Assuming DTO has necessary fields, mapping them to entity creation
+            // Note: The DTO might need updates to match new Trip entity props
+            const trip = Trip.create({
+                driverId: dto.driverId || 'PENDING', // Needs logic
+                vehicleType: dto.vehicleType || 'SUV',
+                mode: dto.mode || 'POINT_TO_POINT',
+                originCity: dto.origin.city,
+                originAddress: dto.origin.address,
+                destCity: dto.destination.city,
+                destAddress: dto.destination.address,
+                departureTime: new Date(dto.departureTime),
+                basePrice: dto.price.amount,
+                currency: dto.price.currency,
+            });
+            yield this.tripRepo.save(trip);
+            return { id: trip.id };
+        });
     }
 };
-exports.TransportController = TransportController;
-tslib_1.__decorate([
-    (0, common_1.Get)('schedules'),
-    tslib_1.__param(0, (0, common_1.Query)()),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [Object]),
-    tslib_1.__metadata("design:returntype", typeof (_a = typeof Promise !== "undefined" && Promise) === "function" ? _a : Object)
-], TransportController.prototype, "obtenerHorarios", null);
-exports.TransportController = TransportController = tslib_1.__decorate([
-    (0, common_1.Controller)('transport')
+RequestTripUseCase = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Injectable)(),
+    (0,external_tslib_namespaceObject.__param)(0, (0,common_namespaceObject.Inject)(ITripRepository)),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [typeof (request_trip_use_case_a = typeof ITripRepository !== "undefined" && ITripRepository) === "function" ? request_trip_use_case_a : Object])
+], RequestTripUseCase);
+
+
+;// ./libs/domains/transport/application/src/lib/use-cases/accept-trip.use-case.ts
+var accept_trip_use_case_a;
+
+
+
+let AcceptTripUseCase = class AcceptTripUseCase {
+    constructor(tripRepo) {
+        this.tripRepo = tripRepo;
+    }
+    execute(tripId, driverId) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            try {
+                // UUID is string alias, so use it directly
+                const trip = yield this.tripRepo.findById(tripId);
+                if (!trip) {
+                    throw new common_namespaceObject.NotFoundException(`Trip with id ${tripId} not found`);
+                }
+                try {
+                    trip.assignDriver(driverId);
+                }
+                catch (error) {
+                    throw new common_namespaceObject.PreconditionFailedException(error.message);
+                }
+                yield this.tripRepo.update(trip);
+            }
+            catch (error) {
+                if (error instanceof common_namespaceObject.NotFoundException || error instanceof common_namespaceObject.PreconditionFailedException) {
+                    throw error;
+                }
+                throw new common_namespaceObject.InternalServerErrorException(error.message);
+            }
+        });
+    }
+};
+AcceptTripUseCase = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Injectable)(),
+    (0,external_tslib_namespaceObject.__param)(0, (0,common_namespaceObject.Inject)(ITripRepository)),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [typeof (accept_trip_use_case_a = typeof ITripRepository !== "undefined" && ITripRepository) === "function" ? accept_trip_use_case_a : Object])
+], AcceptTripUseCase);
+
+
+;// ./libs/domains/transport/application/src/lib/transport-application.module.ts
+
+
+
+
+// Import other use cases if needed
+let TransportApplicationModule = class TransportApplicationModule {
+};
+TransportApplicationModule = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Module)({
+        providers: [
+            AcceptTripUseCase,
+            RequestTripUseCase,
+        ],
+        exports: [
+            AcceptTripUseCase,
+            RequestTripUseCase,
+        ],
+    })
+], TransportApplicationModule);
+
+
+;// ./libs/domains/transport/application/src/index.ts
+
+
+
+
+
+;// ./transport-service/src/api/transport.controller.ts
+var transport_controller_a, _b, _c;
+
+
+
+let TransportController = class TransportController {
+    constructor(requestTripUseCase, acceptTripUseCase) {
+        this.requestTripUseCase = requestTripUseCase;
+        this.acceptTripUseCase = acceptTripUseCase;
+    }
+    requestTrip(dto) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            return this.requestTripUseCase.execute(dto);
+        });
+    }
+    acceptTrip(id, driverId) {
+        return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+            // Assuming UUID validation happens in VO or Pipe, but here we cast string to UUID type alias
+            // In a real scenario, we might want a DTO for the body or a ParseUUIDPipe
+            return this.acceptTripUseCase.execute(id, driverId);
+        });
+    }
+};
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Post)('request'),
+    (0,external_tslib_namespaceObject.__param)(0, (0,common_namespaceObject.Body)()),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", Function),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [typeof (_c = typeof RequestTripDto !== "undefined" && RequestTripDto) === "function" ? _c : Object]),
+    (0,external_tslib_namespaceObject.__metadata)("design:returntype", Promise)
+], TransportController.prototype, "requestTrip", null);
+(0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Patch)(':id/accept'),
+    (0,external_tslib_namespaceObject.__param)(0, (0,common_namespaceObject.Param)('id')),
+    (0,external_tslib_namespaceObject.__param)(1, (0,common_namespaceObject.Body)('driverId')),
+    (0,external_tslib_namespaceObject.__metadata)("design:type", Function),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [String, String]),
+    (0,external_tslib_namespaceObject.__metadata)("design:returntype", Promise)
+], TransportController.prototype, "acceptTrip", null);
+TransportController = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Controller)('transport'),
+    (0,external_tslib_namespaceObject.__metadata)("design:paramtypes", [typeof (transport_controller_a = typeof RequestTripUseCase !== "undefined" && RequestTripUseCase) === "function" ? transport_controller_a : Object, typeof (_b = typeof AcceptTripUseCase !== "undefined" && AcceptTripUseCase) === "function" ? _b : Object])
 ], TransportController);
 
 
-/***/ })
-/******/ 	]);
-/************************************************************************/
-/******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
-/******/ 	
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 		if (cachedModule !== undefined) {
-/******/ 			return cachedModule.exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			// no module.id needed
-/******/ 			// no module.loaded needed
-/******/ 			exports: {}
-/******/ 		};
-/******/ 	
-/******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/ 	
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/ 	
-/************************************************************************/
-var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
-(() => {
-var exports = __webpack_exports__;
+;// ./transport-service/src/app.module.ts
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core_1 = __webpack_require__(1);
-const app_module_1 = __webpack_require__(2);
-const common_1 = __webpack_require__(4);
-async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    const port = process.env.PORT || 3006;
-    app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, transform: true }));
-    await app.listen(port);
-    common_1.Logger.log(`🚀 Transport-Service está corriendo en http://localhost:${port}`, 'Bootstrap');
+
+
+
+
+
+let AppModule = class AppModule {
+};
+AppModule = (0,external_tslib_namespaceObject.__decorate)([
+    (0,common_namespaceObject.Module)({
+        imports: [
+            config_namespaceObject.ConfigModule.forRoot({ isGlobal: true }),
+            InfrastructureModule,
+            TransportApplicationModule,
+        ],
+        controllers: [TransportController],
+        providers: [],
+    })
+], AppModule);
+
+
+;// ./transport-service/src/main.ts
+
+
+
+
+function bootstrap() {
+    return (0,external_tslib_namespaceObject.__awaiter)(this, void 0, void 0, function* () {
+        const app = yield core_namespaceObject.NestFactory.create(AppModule);
+        const port = process.env.PORT || 3006;
+        app.enableCors();
+        app.setGlobalPrefix('api');
+        app.useGlobalPipes(new common_namespaceObject.ValidationPipe({ whitelist: true, transform: true }));
+        yield app.listen(port);
+        common_namespaceObject.Logger.log(`🚀 Transport-Service está corriendo en http://localhost:${port}/api`, 'Bootstrap');
+    });
 }
 bootstrap();
 
-})();
-
 /******/ })()
 ;
+//# sourceMappingURL=main.js.map

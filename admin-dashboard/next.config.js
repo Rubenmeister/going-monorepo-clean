@@ -10,6 +10,12 @@ const nextConfig = {
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
+  // Use standalone output for better compatibility
+  output: 'standalone',
+  // Disable image optimization if not needed
+  images: {
+    unoptimized: true,
+  },
 };
 
 const plugins = [

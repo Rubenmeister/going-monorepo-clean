@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../libs/domains/booking-frontend/src/lib/booking-frontend.ts"],"sourcesContent":["export function bookingFrontend(): string {\r\n  return 'booking-frontend';\r\n}\r\n"],"names":["bookingFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

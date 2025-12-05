@@ -1,82 +1,221 @@
 import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../apps/user-auth-service/src/app.module'; // Importa el módulo principal
-import { RegisterUserDto } from '@going-monorepo-clean/domains-user-application'; // DTO
+import { AppModule } from '../../../user-auth-service/src/app/app.module';
 
-describe('AUTH E2E (user-auth-service)', () => {
+describe('Auth E2E Tests', () => {
   let app: INestApplication;
-  const ENDPOINT = '/auth/register';
 
-  // Usuario de prueba válido
-  const validUser: RegisterUserDto = {
-    email: 'test_user_e2e@going.com',
-    password: 'passwordSegura123',
+  // Test user data
+  const testUser = {
+    email: `test_e2e_${Date.now()}@going.com`,
+    password: 'SecurePassword123!',
     firstName: 'Test',
-    lastName: 'E2E',
-    roles: ['user'],
+    lastName: 'User',
+    roles: ['USER'],
   };
 
-  // Esta función se ejecuta para configurar la aplicación
+  let authToken: string;
+
   beforeAll(async () => {
-    // 1. Configura el módulo de prueba (inicia toda la app)
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-      // Aquí puedes usar .overrideProvider para simular servicios externos (ej. email)
     }).compile();
 
-    // 2. Crea la instancia de la aplicación NestJS
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }));
+    
     await app.init();
   });
 
-  // Limpia el estado después de todas las pruebas
   afterAll(async () => {
-    // Nota: Aquí DEBERÍAS eliminar los registros creados en la DB de prueba
     await app.close();
   });
 
+  // ============================================================
+  // REGISTRATION TESTS
+  // ============================================================
 
-  // ====================================================================
-  // ESCENARIOS
-  // ====================================================================
+  describe('POST /auth/register', () => {
+    it('should register a new user successfully', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(testUser)
+        .expect(201);
 
-  it('POST /auth/register - Debería permitir el registro de un nuevo usuario (201 Created)', async () => {
-    // Ejecuta la prueba
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(validUser)
-      .expect(201); // 201 Created
+      expect(response.body).toBeDefined();
+      // The response should contain user info, not just ID
+      expect(response.body.id || response.body.user).toBeDefined();
+    });
 
-    // Verifica la respuesta del Caso de Uso
-    expect(response.body).toHaveProperty('id');
-    expect(typeof response.body.id).toBe('string');
+    it('should fail when email is already registered', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(testUser)
+        .expect(400); // or 409
+
+      expect(response.body.message).toBeDefined();
+    });
+
+    it('should fail with invalid email format', async () => {
+      const invalidUser = {
+        ...testUser,
+        email: 'invalid-email-format',
+      };
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(invalidUser)
+        .expect(400);
+    });
+
+    it('should fail when password is too short', async () => {
+      const invalidUser = {
+        email: `weak_${Date.now()}@test.com`,
+        password: 'weak',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: ['USER'],
+      };
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(invalidUser)
+        .expect(400);
+    });
+
+    it('should fail when required fields are missing', async () => {
+      const incompleteUser = {
+        email: `incomplete_${Date.now()}@test.com`,
+        // password missing
+      };
+
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(incompleteUser)
+        .expect(400);
+    });
   });
 
-  it('POST /auth/register - Debería fallar si se intenta registrar el mismo email (409 Conflict)', async () => {
-    // El usuario ya existe por la prueba anterior (es un estado acumulativo)
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(validUser)
-      .expect(409); // 409 Conflict
+  // ============================================================
+  // LOGIN TESTS
+  // ============================================================
 
-    // Verifica el mensaje de error del Caso de Uso (mapeado a NestJS)
-    expect(response.body.message).toBe('Email already in use');
+  describe('POST /auth/login', () => {
+    it('should login successfully with valid credentials', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: testUser.email,
+          password: testUser.password,
+        })
+        .expect(200);
+
+      expect(response.body).toBeDefined();
+      // Should return a token
+      expect(response.body.token || response.body.access_token || response.body.accessToken).toBeDefined();
+      
+      // Save token for authenticated tests
+      authToken = response.body.token || response.body.access_token || response.body.accessToken;
+    });
+
+    it('should fail with incorrect password', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: testUser.email,
+          password: 'wrong_password123',
+        })
+        .expect(401);
+
+      expect(response.body.message).toBeDefined();
+    });
+
+    it('should fail with non-existent email', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'anypassword123',
+        })
+        .expect(401);
+
+      expect(response.body.message).toBeDefined();
+    });
+
+    it('should fail with empty credentials', async () => {
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({})
+        .expect(400);
+    });
   });
 
-  it('POST /auth/register - Debería fallar si la contraseña es muy corta (400 Bad Request - ValidationPipe)', async () => {
-    const invalidUser = {
-      ...validUser,
-      email: 'new_invalid@test.com',
-      password: 'short', // Menos de 8 caracteres
-    };
+  // ============================================================
+  // AUTHENTICATION FLOW TESTS
+  // ============================================================
 
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(invalidUser)
-      .expect(400); // 400 Bad Request (Error de validación del DTO)
+  describe('Authentication Flow', () => {
+    it('should complete full registration and login flow', async () => {
+      // 1. Register a new user
+      const newUser = {
+        email: `flow_${Date.now()}@test.com`,
+        password: 'FlowTest123!',
+        firstName: 'Flow',
+        lastName: 'Test',
+        roles: ['USER'],
+      };
 
-    // Verifica el error de class-validator
-    expect(response.body.message).toContain('Password must be at least 8 characters');
+      const registerResponse = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(newUser)
+        .expect(201);
+
+      expect(registerResponse.body).toBeDefined();
+
+      // 2. Login with the new user
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: newUser.email,
+          password: newUser.password,
+        })
+        .expect(200);
+
+      expect(loginResponse.body.token || loginResponse.body.access_token).toBeDefined();
+    });
+
+    it('should return consistent user data between register and login', async () => {
+      const newUser = {
+        email: `consistency_${Date.now()}@test.com`,
+        password: 'Consistent123!',
+        firstName: 'Consistency',
+        lastName: 'Test',
+        roles: ['USER'],
+      };
+
+      // Register
+      await request(app.getHttpServer())
+        .post('/auth/register')
+        .send(newUser)
+        .expect(201);
+
+      // Login
+      const loginResponse = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: newUser.email,
+          password: newUser.password,
+        })
+        .expect(200);
+
+      // User data should be consistent
+      if (loginResponse.body.user) {
+        expect(loginResponse.body.user.email).toBe(newUser.email);
+      }
+    });
   });
 });

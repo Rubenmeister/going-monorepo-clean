@@ -38,7 +38,7 @@ export class HttpParcelRepository implements IParcelRepository {
       const parcel = Parcel.fromPrimitives(responseData);
       return ok(parcel);
       
-    } catch (error) {
+    } catch (error: any) {
       return err(new Error(error.message || 'Error de red al crear el envío'));
     }
   }
@@ -59,7 +59,7 @@ export class HttpParcelRepository implements IParcelRepository {
       const parcels = responseData.map((data: any) => Parcel.fromPrimitives(data));
       return ok(parcels);
 
-    } catch (error) {
+    } catch (error: any) {
       return err(new Error('Error de red al obtener los envíos'));
     }
   }
@@ -79,7 +79,7 @@ export class HttpParcelRepository implements IParcelRepository {
 
       const parcel = Parcel.fromPrimitives(responseData);
       return ok(parcel);
-    } catch (error) {
+    } catch (error: any) {
       return err(new Error('Error de red al obtener el tracking'));
     }
   }

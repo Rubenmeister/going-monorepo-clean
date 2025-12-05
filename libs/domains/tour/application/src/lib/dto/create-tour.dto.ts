@@ -1,55 +1,8 @@
-import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsString,
-  IsNumber,
-  Min,
-  ValidateNested,
-  IsUUID,
-  IsIn,
-  IsEnum,
-  Max,
-  IsLatitude,
-  IsLongitude,
-} from 'class-validator';
-import { TourCategory } from '@going-monorepo-clean/domains-tour-core';
-
-class PriceDto {
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @IsNotEmpty()
-  @IsIn(['USD'])
-  currency: 'USD';
-}
-
-class LocationDto {
-  @IsNotEmpty()
-  @IsString()
-  address: string;
-  
-  @IsNotEmpty()
-  @IsString()
-  city: string;
-
-  @IsNotEmpty()
-  @IsString()
-  country: string;
-
-  @IsNotEmpty()
-  @IsLatitude()
-  latitude: number;
-
-  @IsNotEmpty()
-  @IsLongitude()
-  longitude: number;
-}
+import { IsNotEmpty, IsString, IsNumber, Min, IsIn } from 'class-validator';
 
 export class CreateTourDto {
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   hostId: string;
 
   @IsNotEmpty()
@@ -61,14 +14,18 @@ export class CreateTourDto {
   description: string;
 
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => LocationDto)
-  location: LocationDto;
+  @IsNumber()
+  @Min(0)
+  pricePerPerson: number;
 
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => PriceDto)
-  price: PriceDto;
+  @IsIn(['USD', 'EUR'])
+  currency: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  maxCapacity: number;
 
   @IsNotEmpty()
   @IsNumber()
@@ -76,11 +33,10 @@ export class CreateTourDto {
   durationHours: number;
 
   @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  maxGuests: number;
+  @IsString()
+  location: string;
 
   @IsNotEmpty()
-  @IsEnum(TourCategory)
-  category: TourCategory;
+  @IsString()
+  meetingPoint: string;
 }

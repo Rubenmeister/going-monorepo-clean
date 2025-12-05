@@ -1,29 +1,32 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './auth/auth.module'; // Tu módulo de usuarios
+import { ConfigModule } from '@nestjs/config';
+
+// Infrastructure module with Prisma
+import { InfrastructureModule } from '../infrastructure/infrastructure.module';
+
+// API Controllers
+import { AuthController } from '../api/auth.controller';
+
+// Application layer - Use Cases
+import {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+} from '@going-monorepo-clean/domains-user-application';
 
 @Module({
   imports: [
-    // 1. Cargar configuración segura
-    ConfigModule.forRoot({
+    ConfigModule.forRoot({ 
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '.env'
     }),
-
-    // 2. Conectar a Base de Datos (Esperando a que cargue la config)
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI'),
-      }),
-      inject: [ConfigService],
-    }),
-
-    // 3. Tus módulos de negocio
-    AuthModule,
+    InfrastructureModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [
+    AuthController,
+  ],
+  providers: [
+    RegisterUserUseCase,
+    LoginUserUseCase,
+  ],
 })
 export class AppModule {}

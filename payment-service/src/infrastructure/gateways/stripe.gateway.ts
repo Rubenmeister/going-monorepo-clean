@@ -1,59 +1,71 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { Result, ok, err } from 'neverthrow';
-import { IPaymentGateway, PaymentIntentResult } from '@going-monorepo-clean/domains-payment-core';
-import { Money } from '@going-monorepo-clean/shared-domain';
+
+export interface PaymentIntentResult {
+  clientSecret: string;
+  paymentIntentId: string;
+}
 
 @Injectable()
-export class StripeGateway implements IPaymentGateway {
-  private readonly stripe: Stripe;
-  private readonly webhookSecret: string;
+export class StripeGateway {
+  private stripe: Stripe | null = null;
+  private webhookSecret: string = '';
   private readonly logger = new Logger(StripeGateway.name);
 
   constructor(private readonly configService: ConfigService) {
     const secretKey = this.configService.get('STRIPE_SECRET_KEY');
-    this.webhookSecret = this.configService.get('STRIPE_WEBHOOK_SECRET');
+    this.webhookSecret = this.configService.get('STRIPE_WEBHOOK_SECRET') || '';
 
-    if (!secretKey || !this.webhookSecret) {
-      this.logger.error('Stripe keys not configured');
-      throw new Error('Stripe keys not configured');
-    }
-
-    this.stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' as any });
-  }
-
-  async createPaymentIntent(amount: Money): Promise<Result<PaymentIntentResult, Error>> {
-    try {
-      const intent = await this.stripe.paymentIntents.create({
-        amount: amount.amount,
-        currency: amount.currency,
-      });
-
-      if (!intent.client_secret) {
-        return err(new Error('Failed to create Stripe Payment Intent'));
-      }
-
-      return ok({
-        clientSecret: intent.client_secret,
-        paymentIntentId: intent.id,
-      });
-    } catch (error) {
-      return err(new Error(error.message));
+    if (secretKey) {
+      this.stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' as any });
+    } else {
+      this.logger.warn('Stripe keys not configured - payment gateway disabled');
     }
   }
 
-  async constructWebhookEvent(payload: Buffer, signature: string): Promise<Result<any, Error>> {
-    try {
-      const event = this.stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        this.webhookSecret,
-      );
-      return ok(event);
-    } catch (err: any) {
-      this.logger.error(`Stripe signature verification failed: ${err.message}`);
-      return err(new Error(`Webhook Error: ${err.message}`));
+  async createPaymentIntent(amount: number, currency: string = 'USD'): Promise<PaymentIntentResult> {
+    if (!this.stripe) {
+      throw new Error('Stripe not configured');
     }
+
+    const intent = await this.stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe uses cents
+      currency: currency.toLowerCase(),
+    });
+
+    if (!intent.client_secret) {
+      throw new Error('Failed to create Stripe Payment Intent');
+    }
+
+    return {
+      clientSecret: intent.client_secret,
+      paymentIntentId: intent.id,
+    };
+  }
+
+  async constructWebhookEvent(payload: Buffer, signature: string): Promise<any> {
+    if (!this.stripe) {
+      throw new Error('Stripe not configured');
+    }
+
+    return this.stripe.webhooks.constructEvent(
+      payload,
+      signature,
+      this.webhookSecret,
+    );
+  }
+
+  async refund(paymentIntentId: string, amount?: number): Promise<string> {
+    if (!this.stripe) {
+      throw new Error('Stripe not configured');
+    }
+
+    const refund = await this.stripe.refunds.create({
+      payment_intent: paymentIntentId,
+      amount: amount ? Math.round(amount * 100) : undefined,
+    });
+
+    return refund.id;
   }
 }

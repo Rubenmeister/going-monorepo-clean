@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../libs/parcel/src/lib/parcel.ts"],"sourcesContent":["export function parcel(): string {\r\n  return 'parcel';\r\n}\r\n"],"names":["parcel"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

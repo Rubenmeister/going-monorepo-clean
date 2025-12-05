@@ -18,6 +18,18 @@ let HttpTransportAdapter = class HttpTransportAdapter {
             body: JSON.stringify(trip)
         });
     }
+    async findById(id) {
+        throw new Error('Method not implemented.');
+    }
+    async findAvailableSharedTrips(origen, destino, tipoVehiculo) {
+        throw new Error('Method not implemented.');
+    }
+    async findTripsByDriverId(driverId) {
+        throw new Error('Method not implemented.');
+    }
+    async update(trip) {
+        throw new Error('Method not implemented.');
+    }
 };
 HttpTransportAdapter = _ts_decorate._([
     (0, _common.Injectable)()
