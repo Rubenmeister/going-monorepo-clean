@@ -6,14 +6,18 @@ import {
   Min,
   ValidateNested,
   IsUUID,
-  IsIn,
+  IsOptional,
 } from 'class-validator';
-import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain'; // Asumiendo DTOs compartidos
+import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain';
 
 export class CreateParcelDto {
   @IsNotEmpty()
   @IsUUID()
   userId: string;
+
+  @IsOptional()
+  @IsUUID()
+  receiverId?: string;
 
   @IsNotEmpty()
   @ValidateNested()
@@ -33,4 +37,9 @@ export class CreateParcelDto {
   @ValidateNested()
   @Type(() => MoneyDto)
   price: MoneyDto;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  weight?: number;
 }

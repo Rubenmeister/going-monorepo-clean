@@ -1,99 +1,181 @@
-import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Result, ok, err } from 'neverthrow';
 
-// Definimos los posibles estados de una reserva
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type BookingType = 'accommodation' | 'experience' | 'transport' | 'tour';
 
 export interface BookingProps {
-  id: UUID;
-  userId: UUID; // Usuario que hace la reserva
-  experienceId: UUID; // Referencia al servicio/producto reservado
+  id: string;
+  userId: string;
+  type: BookingType;
+  accommodationId?: string;
+  experienceId?: string;
+  transportId?: string;
+  tourId?: string;
   startDate: Date;
-  endDate: Date;
+  endDate?: Date;
+  guests: number;
   totalPrice: number;
+  currency: string;
   status: BookingStatus;
-  paymentId?: string; // ID de transacción después de la confirmación
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export class Booking {
-  readonly id: UUID;
-  readonly userId: UUID;
-  readonly experienceId: UUID;
+  readonly id: string;
+  readonly userId: string;
+  readonly type: BookingType;
+  readonly accommodationId?: string;
+  readonly experienceId?: string;
+  readonly transportId?: string;
+  readonly tourId?: string;
   readonly startDate: Date;
-  readonly endDate: Date;
+  readonly endDate?: Date;
+  readonly guests: number;
   readonly totalPrice: number;
+  readonly currency: string;
   readonly status: BookingStatus;
-  readonly paymentId?: string;
   readonly createdAt: Date;
+  readonly updatedAt: Date;
 
   private constructor(props: BookingProps) {
     this.id = props.id;
     this.userId = props.userId;
+    this.type = props.type;
+    this.accommodationId = props.accommodationId;
     this.experienceId = props.experienceId;
+    this.transportId = props.transportId;
+    this.tourId = props.tourId;
     this.startDate = props.startDate;
     this.endDate = props.endDate;
+    this.guests = props.guests;
     this.totalPrice = props.totalPrice;
+    this.currency = props.currency;
     this.status = props.status;
-    this.paymentId = props.paymentId;
     this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
   }
 
-  // Lógica de Negocio: Fábrica para crear una nueva reserva
+  // Factory method para crear nueva reserva
   public static create(props: {
-    userId: UUID;
-    experienceId: UUID;
+    userId: string;
+    type: BookingType;
+    accommodationId?: string;
+    experienceId?: string;
+    transportId?: string;
+    tourId?: string;
     startDate: Date;
-    endDate: Date;
+    endDate?: Date;
+    guests: number;
     totalPrice: number;
+    currency?: string;
   }): Result<Booking, Error> {
-    // ⚠️ Ejemplo de validación de Dominio
-    if (props.startDate >= props.endDate) {
-      return err(new Error('Start date must be before end date.'));
+    // Validaciones de negocio
+    if (!props.userId || props.userId.length === 0) {
+      return err(new Error('userId is required'));
+    }
+    if (props.guests < 1) {
+      return err(new Error('Guests must be at least 1'));
+    }
+    if (props.totalPrice < 0) {
+      return err(new Error('Total price cannot be negative'));
+    }
+    if (props.startDate < new Date()) {
+      return err(new Error('Start date cannot be in the past'));
+    }
+    if (props.endDate && props.endDate < props.startDate) {
+      return err(new Error('End date cannot be before start date'));
+    }
+
+    // Validar que al menos un ID de recurso esté presente
+    const hasResource = props.accommodationId || props.experienceId || props.transportId || props.tourId;
+    if (!hasResource) {
+      return err(new Error('At least one resource ID (accommodation, experience, transport, or tour) is required'));
     }
 
     const booking = new Booking({
+      id: crypto.randomUUID(),
       ...props,
-      id: new UUID(), // Asumimos que la librería UUID tiene un método para generar
-      status: 'pending', // Siempre comienza como pendiente
+      currency: props.currency || 'USD',
+      status: 'pending',
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     return ok(booking);
   }
 
-  // Lógica de Negocio: Confirmar el pago
-  public confirm(paymentId: string): Result<void, Error> {
+  // Lógica de negocio: Confirmar reserva
+  public confirm(): Result<Booking, Error> {
     if (this.status !== 'pending') {
-      return err(new Error(`Booking is already ${this.status}. Only 'pending' can be confirmed.`));
+      return err(new Error('Only pending bookings can be confirmed'));
     }
-    (this as any).status = 'confirmed';
-    (this as any).paymentId = paymentId;
-    return ok(undefined);
-  }
-  
-  // Lógica de Negocio: Cancelar la reserva
-  public cancel(): Result<void, Error> {
-    if (this.status === 'completed' || this.status === 'cancelled') {
-      return err(new Error(`Booking cannot be cancelled if it is already ${this.status}.`));
-    }
-    (this as any).status = 'cancelled';
-    return ok(undefined);
+
+    return ok(
+      new Booking({
+        ...this,
+        status: 'confirmed',
+        updatedAt: new Date(),
+      })
+    );
   }
 
-  // Mapeo a Primitivos (requerido por el adaptador de Prisma)
+  // Lógica de negocio: Cancelar reserva
+  public cancel(): Result<Booking, Error> {
+    if (this.status === 'cancelled') {
+      return err(new Error('Booking is already cancelled'));
+    }
+    if (this.status === 'completed') {
+      return err(new Error('Cannot cancel a completed booking'));
+    }
+
+    return ok(
+      new Booking({
+        ...this,
+        status: 'cancelled',
+        updatedAt: new Date(),
+      })
+    );
+  }
+
+  // Lógica de negocio: Completar reserva
+  public complete(): Result<Booking, Error> {
+    if (this.status !== 'confirmed') {
+      return err(new Error('Only confirmed bookings can be completed'));
+    }
+
+    return ok(
+      new Booking({
+        ...this,
+        status: 'completed',
+        updatedAt: new Date(),
+      })
+    );
+  }
+
+  // Serialización para persistencia
   public toPrimitives(): BookingProps {
-    // Nota: Aquí se deben mapear los UUID a string si es necesario.
     return {
-      id: this.id.toString(), 
-      userId: this.userId.toString(),
-      experienceId: this.experienceId.toString(),
+      id: this.id,
+      userId: this.userId,
+      type: this.type,
+      accommodationId: this.accommodationId,
+      experienceId: this.experienceId,
+      transportId: this.transportId,
+      tourId: this.tourId,
       startDate: this.startDate,
       endDate: this.endDate,
+      guests: this.guests,
       totalPrice: this.totalPrice,
+      currency: this.currency,
       status: this.status,
-      paymentId: this.paymentId,
       createdAt: this.createdAt,
-    } as any;
+      updatedAt: this.updatedAt,
+    };
+  }
+
+  // Deserialización desde persistencia
+  public static fromPrimitives(props: BookingProps): Booking {
+    return new Booking(props);
   }
 }

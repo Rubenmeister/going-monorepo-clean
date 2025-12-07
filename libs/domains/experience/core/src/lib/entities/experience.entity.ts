@@ -1,89 +1,57 @@
-import { v4 as uuidv4 } from 'uuid';
+import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Result, ok, err } from 'neverthrow';
 
-// Experience status
 export type ExperienceStatus = 'draft' | 'published' | 'archived';
 
 export interface ExperienceProps {
-  id: string;
-  hostId: string;
+  id: UUID;
+  hostId: UUID;
   title: string;
   description: string;
-  pricePerPerson: number;
-  maxCapacity: number;
-  location: string;
   status: ExperienceStatus;
+  pricePerPerson: number;
+  currency: string;
+  maxCapacity: number;
+  durationHours: number;
+  location: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export class Experience {
-  readonly id: string;
-  readonly hostId: string;
-  readonly title: string;
-  readonly description: string;
-  readonly pricePerPerson: number;
-  readonly maxCapacity: number;
-  readonly location: string;
-  readonly status: ExperienceStatus;
-  readonly createdAt: Date;
+  private constructor(private readonly props: ExperienceProps) {}
 
-  private constructor(props: ExperienceProps) {
-    this.id = props.id;
-    this.hostId = props.hostId;
-    this.title = props.title;
-    this.description = props.description;
-    this.pricePerPerson = props.pricePerPerson;
-    this.maxCapacity = props.maxCapacity;
-    this.location = props.location;
-    this.status = props.status;
-    this.createdAt = props.createdAt;
-  }
-
-  public static create(props: Omit<ExperienceProps, 'id' | 'status' | 'createdAt'>): Result<Experience, Error> {
-    if (props.pricePerPerson <= 0) {
-      return err(new Error('Price must be greater than zero.'));
-    }
-    
+  static create(props: Omit<ExperienceProps, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Result<Experience, Error> {
+    if (!props.title) return err(new Error('Title is required'));
+    if (props.maxCapacity <= 0) return err(new Error('Capacity must be > 0'));
+    const now = new Date();
     const experience = new Experience({
       ...props,
-      id: uuidv4(),
+      id: crypto.randomUUID() as UUID,
       status: 'draft',
-      createdAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
     });
-
     return ok(experience);
   }
-  
-  public publish(): Result<void, Error> {
-    if (this.status === 'published') {
-      return err(new Error('Experience is already published.'));
-    }
-    (this as any).status = 'published'; 
-    return ok(undefined);
+
+  publish(): Result<Experience, Error> {
+    if (this.props.status !== 'draft') return err(new Error('Only draft experiences can be published'));
+    const updated = new Experience({ ...this.props, status: 'published', updatedAt: new Date() });
+    return ok(updated);
   }
 
-  public calculateTotalPrice(people: number): Result<number, Error> {
-    if (people > this.maxCapacity) {
-      return err(new Error('Capacity exceeded.'));
-    }
-    return ok(people * this.pricePerPerson);
+  archive(): Result<Experience, Error> {
+    if (this.props.status === 'archived') return err(new Error('Experience already archived'));
+    const updated = new Experience({ ...this.props, status: 'archived', updatedAt: new Date() });
+    return ok(updated);
   }
 
-  public toPrimitives(): ExperienceProps {
-    return {
-      id: this.id,
-      hostId: this.hostId,
-      title: this.title,
-      description: this.description,
-      pricePerPerson: this.pricePerPerson,
-      maxCapacity: this.maxCapacity,
-      location: this.location,
-      status: this.status,
-      createdAt: this.createdAt,
-    };
+  toPrimitives(): ExperienceProps {
+    return { ...this.props };
   }
 
-  public static fromPrimitives(props: ExperienceProps): Experience {
-    return new Experience(props);
+  static fromPrimitives(data: ExperienceProps): Experience {
+    return new Experience(data);
   }
 }

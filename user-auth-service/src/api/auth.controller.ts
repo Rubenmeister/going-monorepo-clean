@@ -1,40 +1,56 @@
-import { Body, Controller, Post, HttpCode, HttpStatus, HttpException } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { 
   RegisterUserUseCase, 
   LoginUserUseCase,
-  RegisterUserDto, 
-  LoginUserDto, 
-} from '@going-monorepo-clean/domains-user-application'; 
+  RegisterUserDto,
+  LoginUserDto,
+  AuthResponseDto
+} from '@going-monorepo-clean/domains-user-application';
 
 @Controller('auth')
 export class AuthController {
-  
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
   ) {}
 
   @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(@Body() registerDto: RegisterUserDto) {
-    const result = await this.registerUserUseCase.execute(registerDto);
+  async register(@Body() dto: RegisterUserDto): Promise<AuthResponseDto> {
+    const result = await this.registerUserUseCase.execute(dto);
 
     if (result.isErr()) {
-      throw new HttpException(result.error.message, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(result.error.message);
     }
-    
-    return result.value;
+
+    const user = result.value.toPrimitives();
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      accessToken: 'mock-jwt-token-for-now',
+    };
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginUserDto) {
-    const result = await this.loginUserUseCase.execute(loginDto);
-    
+  async login(@Body() dto: LoginUserDto): Promise<AuthResponseDto> {
+    const result = await this.loginUserUseCase.execute(dto);
+
     if (result.isErr()) {
-      throw new HttpException(result.error.message, HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException(result.error.message);
     }
-    
-    return result.value;
+
+    const user = result.value.toPrimitives();
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      accessToken: 'mock-jwt-token-for-now',
+    };
   }
 }

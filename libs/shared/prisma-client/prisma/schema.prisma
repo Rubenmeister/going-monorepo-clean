@@ -87,9 +87,9 @@ model Accommodation {
 // ==================== EXPERIENCE DOMAIN ====================
 
 enum ExperienceStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  draft
+  published
+  archived
 }
 
 model Experience {
@@ -103,7 +103,7 @@ model Experience {
   maxCapacity     Int
   durationHours   Int
   location        String
-  status          ExperienceStatus @default(DRAFT)
+  status          ExperienceStatus @default(draft)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -114,11 +114,11 @@ model Experience {
 // ==================== PARCEL DOMAIN ====================
 
 enum ParcelStatus {
-  PENDING
-  PICKED_UP
-  IN_TRANSIT
-  DELIVERED
-  CANCELLED
+  pending
+  pickup_assigned
+  in_transit
+  delivered
+  cancelled
 }
 
 model Parcel {
@@ -136,7 +136,7 @@ model Parcel {
   originAddress   String
   destCity        String
   destAddress     String
-  status          ParcelStatus @default(PENDING)
+  status          ParcelStatus @default(pending)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -158,17 +158,17 @@ model TrackingEvent {
 // ==================== BOOKING DOMAIN ====================
 
 enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
+  pending
+  confirmed
+  cancelled
+  completed
 }
 
 enum BookingType {
-  ACCOMMODATION
-  EXPERIENCE
-  TRANSPORT
-  TOUR
+  accommodation
+  experience
+  transport
+  tour
 }
 
 model Booking {
@@ -189,7 +189,7 @@ model Booking {
   guests            Int           @default(1)
   totalPrice        Decimal       @db.Decimal(10, 2)
   currency          String        @default("USD")
-  status            BookingStatus @default(PENDING)
+  status            BookingStatus @default(pending)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -200,29 +200,42 @@ model Booking {
 // ==================== TRANSPORT DOMAIN ====================
 
 enum TransportStatus {
-  AVAILABLE
-  IN_SERVICE
-  MAINTENANCE
-  INACTIVE
+  SCHEDULED
+  WAITING_PASSENGERS
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
 }
 
 model Transport {
-  id           String          @id @default(uuid())
-  driverId     String
-  vehicleType  String
-  licensePlate String
-  capacity     Int
-  pricePerKm   Decimal         @db.Decimal(10, 2)
-  currency     String          @default("USD")
-  status       TransportStatus @default(AVAILABLE)
-  originCity   String?
-  originAddress String?
-  destCity     String?
-  destAddress  String?
-  departureTime DateTime?
-  arrivalTime  DateTime?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id                   String          @id @default(uuid())
+  driverId             String
+  vehicleType          String          // 'SUV' | 'VAN'
+  mode                 String          // 'DOOR_TO_DOOR' | 'POINT_TO_POINT'
+  licensePlate         String?
+  capacity             Int
+  pricePerKm           Decimal         @db.Decimal(10, 2)
+  pricePerPassenger    Decimal         @db.Decimal(10, 2)
+  currency             String          @default("USD")
+  status               TransportStatus @default(SCHEDULED)
+  
+  // Trip details
+  originCity           String
+  originAddress        String
+  destCity             String
+  destAddress          String
+  stationOrigin        String?         // For VAN only
+  stationDest          String?         // For VAN only
+  
+  // Timing
+  departureTime        DateTime
+  arrivalTime          DateTime        // estimatedArrivalTime
+  
+  // Passengers (stored as JSON)
+  passengers           Json            @default("[]")
+  
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
   // Relations
   bookings    Booking[]
@@ -245,9 +258,9 @@ model Route {
 // ==================== TOUR DOMAIN ====================
 
 enum TourStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  draft
+  published
+  archived
 }
 
 model Tour {
@@ -261,7 +274,7 @@ model Tour {
   durationHours   Int
   location        String
   meetingPoint    String
-  status          TourStatus @default(DRAFT)
+  status          TourStatus @default(draft)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -272,11 +285,10 @@ model Tour {
 // ==================== PAYMENT DOMAIN ====================
 
 enum PaymentStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  REFUNDED
+  pending
+  succeeded
+  failed
+  refunded
 }
 
 enum PaymentMethod {
@@ -298,8 +310,9 @@ model Payment {
   amount        Decimal       @db.Decimal(10, 2)
   currency      String        @default("USD")
   method        PaymentMethod
-  status        PaymentStatus @default(PENDING)
-  transactionId String?
+  status        PaymentStatus @default(pending)
+  transactionId String?       // Stripe payment_intent ID
+  metadata      Json?         // Additional Stripe metadata
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -307,13 +320,13 @@ model Payment {
 // ==================== NOTIFICATION DOMAIN ====================
 
 enum NotificationType {
-  BOOKING_CONFIRMED
-  BOOKING_CANCELLED
-  PAYMENT_RECEIVED
-  PAYMENT_FAILED
-  PARCEL_STATUS_UPDATE
-  MESSAGE_RECEIVED
-  SYSTEM_ALERT
+  booking_confirmed
+  booking_cancelled
+  payment_received
+  payment_failed
+  parcel_status_update
+  message_received
+  system_alert
 }
 
 model Notification {
@@ -325,6 +338,7 @@ model Notification {
   content   String
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   @@index([userId, isRead])
 }

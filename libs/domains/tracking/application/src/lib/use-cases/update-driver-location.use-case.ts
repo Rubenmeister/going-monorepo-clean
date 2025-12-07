@@ -1,39 +1,49 @@
-import { DriverLocation } from '../entities/driver-location.entity';
-import { IDriverLocationRepository } from '../ports/idriver-location.repository';
-import { IDriverLocationGateway } from '../ports/idriver-location.gateway';
-import { LocationVO } from '@myorg/shared/domain/location.vo';
-import { DriverId } from '../entities/driver.entity';
+import {
+  DriverLocation,
+  IDriverLocationRepository,
+  IDriverLocationGateway,
+} from '@going-monorepo-clean/domains-tracking-core';
+import { Result, ok, err } from 'neverthrow';
 
-interface UpdateDriverLocationCommand {
-  driverId: DriverId;
-  lat: number;
-  lng: number;
-  tripId?: string;
-  speed?: number;
-  heading?: number;
+export interface UpdateDriverLocationCommand {
+  driverId: string;
+  latitude: number;
+  longitude: number;
 }
 
 export class UpdateDriverLocationUseCase {
   constructor(
-    private locationRepo: IDriverLocationRepository,
-    private locationGateway: IDriverLocationGateway,
+    private readonly locationRepo: IDriverLocationRepository,
+    private readonly locationGateway: IDriverLocationGateway,
   ) {}
 
-  async execute(command: UpdateDriverLocationCommand): Promise<void> {
-    const { driverId, lat, lng, tripId, speed, heading } = command;
-
-    const location = new DriverLocation({
-      driverId,
-      location: new LocationVO(lat, lng),
-      tripId,
-      speed,
-      heading,
+  async execute(command: UpdateDriverLocationCommand): Promise<Result<void, Error>> {
+    const locationOrError = DriverLocation.create({
+      driverId: command.driverId,
+      latitude: command.latitude,
+      longitude: command.longitude,
     });
 
-    // 1. Guardar la ubicación en la base de datos
-    await this.locationRepo.save(location);
+    if (locationOrError.isErr()) {
+      return err(locationOrError.error);
+    }
 
-    // 2. Emitir la ubicación a los clientes suscritos (por WebSocket o SSE)
-    await this.locationGateway.broadcastLocation(location);
+    const location = locationOrError.value;
+
+    // 1. Guardar la ubicación en la base de datos (Redis/DB)
+    const saveResult = await this.locationRepo.save(location);
+    if (saveResult.isErr()) {
+      return err(saveResult.error);
+    }
+
+    // 2. Emitir la ubicación a los clientes suscritos (Gateway)
+    const broadcastResult = await this.locationGateway.broadcastLocation(location);
+    if (broadcastResult.isErr()) {
+      // Loggear error pero no fallar el caso de uso si solo es broadcast?
+      // O devolver error? Devolveremos error por ahora.
+      return err(broadcastResult.error);
+    }
+
+    return ok(undefined);
   }
 }

@@ -16,34 +16,43 @@ export class PrismaTransportRepository implements ITripRepository {
         id: primitives.id,
         driverId: primitives.driverId,
         vehicleType: primitives.vehicleType,
-        licensePlate: 'PENDING', // Default or need to add to entity
+        mode: primitives.mode,
+        licensePlate: 'PENDING', // Default, can be updated later
         capacity: trip.getMaxCapacity(),
         pricePerKm: primitives.basePrice,
+        pricePerPassenger: primitives.pricePerPassenger,
         currency: primitives.currency,
-        status: this.toPrismaStatus(primitives.status),
+        status: primitives.status,
         originCity: primitives.originCity,
         originAddress: primitives.originAddress,
         destCity: primitives.destCity,
         destAddress: primitives.destAddress,
+        stationOrigin: primitives.stationOrigin,
+        stationDest: primitives.stationDest,
         departureTime: primitives.departureTime,
         arrivalTime: primitives.estimatedArrivalTime,
+        passengers: primitives.passengers,
       },
       update: {
-        status: this.toPrismaStatus(primitives.status),
+        status: primitives.status,
         pricePerKm: primitives.basePrice,
+        pricePerPassenger: primitives.pricePerPassenger,
         departureTime: primitives.departureTime,
         arrivalTime: primitives.estimatedArrivalTime,
         originCity: primitives.originCity,
         originAddress: primitives.originAddress,
         destCity: primitives.destCity,
         destAddress: primitives.destAddress,
+        stationOrigin: primitives.stationOrigin,
+        stationDest: primitives.stationDest,
+        passengers: primitives.passengers,
       },
     });
   }
 
   async findById(id: UUID): Promise<Trip | null> {
     const record = await this.prisma.transport.findUnique({
-      where: { id: id }, // UUID is string alias, so no .value
+      where: { id: id },
     });
 
     if (!record) return null;
@@ -54,7 +63,7 @@ export class PrismaTransportRepository implements ITripRepository {
   async findAvailableSharedTrips(origin: Location, dest: Location, vehicleType: 'SUV' | 'VAN'): Promise<Trip[]> {
     const records = await this.prisma.transport.findMany({
       where: {
-        status: 'AVAILABLE',
+        status: 'SCHEDULED',
         vehicleType: vehicleType,
         originCity: origin.city,
         destCity: dest.city,
@@ -76,44 +85,31 @@ export class PrismaTransportRepository implements ITripRepository {
     await this.save(trip);
   }
 
-  private toPrismaStatus(status: TripStatus): 'AVAILABLE' | 'IN_SERVICE' | 'MAINTENANCE' | 'INACTIVE' {
-    switch (status) {
-      case 'SCHEDULED': return 'AVAILABLE';
-      case 'WAITING_PASSENGERS': return 'AVAILABLE';
-      case 'IN_TRANSIT': return 'IN_SERVICE';
-      case 'COMPLETED': return 'AVAILABLE';
-      case 'CANCELLED': return 'INACTIVE';
-      default: return 'AVAILABLE';
-    }
-  }
-
   private toDomain(record: any): Trip {
+    // Parse passengers from JSON
+    const passengers = Array.isArray(record.passengers) 
+      ? record.passengers 
+      : (typeof record.passengers === 'string' ? JSON.parse(record.passengers) : []);
+
     return Trip.fromPrimitives({
       id: record.id,
       driverId: record.driverId,
       vehicleType: record.vehicleType as VehicleType,
-      mode: 'POINT_TO_POINT', // Default
-      status: this.fromPrismaStatus(record.status),
-      passengers: [], // Need to fetch passengers/bookings
-      originCity: record.originCity || '',
-      originAddress: record.originAddress || '',
-      destCity: record.destCity || '',
-      destAddress: record.destAddress || '',
-      departureTime: record.departureTime || new Date(),
-      estimatedArrivalTime: record.arrivalTime || new Date(),
+      mode: record.mode as TravelMode,
+      status: record.status as TripStatus,
+      passengers: passengers,
+      originCity: record.originCity,
+      originAddress: record.originAddress,
+      destCity: record.destCity,
+      destAddress: record.destAddress,
+      stationOrigin: record.stationOrigin,
+      stationDest: record.stationDest,
+      departureTime: new Date(record.departureTime),
+      estimatedArrivalTime: new Date(record.arrivalTime),
       basePrice: Number(record.pricePerKm),
-      pricePerPassenger: Number(record.pricePerKm),
+      pricePerPassenger: Number(record.pricePerPassenger),
       currency: record.currency,
       createdAt: record.createdAt,
     });
-  }
-
-  private fromPrismaStatus(status: string): TripStatus {
-    switch (status) {
-      case 'AVAILABLE': return 'SCHEDULED';
-      case 'IN_SERVICE': return 'IN_TRANSIT';
-      case 'INACTIVE': return 'CANCELLED';
-      default: return 'SCHEDULED';
-    }
   }
 }

@@ -1,2 +1,2 @@
-export * from './lib/entities/anfitriones.entity';
-export * from './lib/ports/ianfitriones.repository';
+export * from './lib/entities/host.entity';
+export * from './lib/ports/ihost.repository';
