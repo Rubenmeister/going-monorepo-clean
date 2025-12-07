@@ -1,55 +1,259 @@
+version: '3.8'
 
 services:
-  # Base de Datos
+  # Base de Datos Compartida
   mongo:
     image: mongo:6.0
     container_name: going_mongo_prod
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: secure_password_production # Cambiar esto
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-secure_production_password}
     volumes:
       - mongo_data_prod:/data/db
     networks:
-      - going-network
+      - going-net
 
-  # Backend (NestJS)
-  user-auth-service:
+  # ==========================================
+  # API GATEWAY (Punto de Entrada)
+  # ==========================================
+  api-gateway:
     build:
       context: .
-      dockerfile: apps/user-auth-service/Dockerfile
-    container_name: going_backend_prod
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: api-gateway
+    container_name: going_gateway
     restart: always
+    ports:
+      - '3000:3000'
     environment:
       NODE_ENV: production
-      PORT: 3333
-      # Cadena de conexión interna de Docker
-      MONGO_URI: mongodb://admin:secure_password_production@mongo:27017/going_db?authSource=admin
-      JWT_SECRET: tu_super_secreto_jwt
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET}
+      # Service Discovery (Docker DNS)
+      USER_AUTH_SERVICE_URL: http://user-auth-service:3001
+      TRANSPORT_SERVICE_URL: http://transport-service:3002
+      PARCEL_SERVICE_URL: http://parcel-service:3003
+      PAYMENT_SERVICE_URL: http://payment-service:3004
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3005
+      BOOKING_SERVICE_URL: http://booking-service:3006
+      TOURS_SERVICE_URL: http://tours-service:3007
+      EXPERIENCE_SERVICE_URL: http://experience-service:3008
+      HOST_SERVICE_URL: http://host-service:3010
+      TRACKING_SERVICE_URL: http://tracking-service:3011
     depends_on:
       - mongo
     networks:
-      - going-network
-    # No exponemos el puerto 3333 al mundo, solo a la red interna (frontend lo usa)
+      - going-net
 
-  # Frontend (Nginx + React)
+  # ==========================================
+  # MICROSERVICIOS
+  # ==========================================
+
+  user-auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: user-auth-service
+    container_name: going_auth
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  transport-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: transport-service
+    container_name: going_transport
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  parcel-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: parcel-service
+    container_name: going_parcel
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: payment-service
+    container_name: going_payment
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3004
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  notifications-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: notifications-service
+    container_name: going_notifications
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3005
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: booking-service
+    container_name: going_booking
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3006
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  tours-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: tours-service
+    container_name: going_tours
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3007
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  experience-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: experience-service
+    container_name: going_experience
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3008
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  host-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: host-service
+    container_name: going_host
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3010
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  tracking-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        APP_NAME: tracking-service
+    container_name: going_tracking
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3011
+      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - going-net
+
+  # ==========================================
+  # FRONTENDS
+  # ==========================================
+
   frontend-webapp:
     build:
       context: .
       dockerfile: apps/frontend-webapp/Dockerfile
-    container_name: going_frontend_prod
+    container_name: going_frontend
     restart: always
     ports:
-      - "80:80" # Producción corre en puerto estándar
-      # - "443:443" # Descomentar cuando agregues certificados SSL
-    depends_on:
-      - user-auth-service
+      - '80:80'
     networks:
-      - going-network
+      - going-net
+
+  admin-dashboard:
+    build:
+      context: .
+      dockerfile: apps/admin-dashboard/Dockerfile
+    container_name: going_admin
+    restart: always
+    ports:
+      - '4201:4201'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000 # Client side access to Gateway
+    networks:
+      - going-net
 
 volumes:
   mongo_data_prod:
 
 networks:
-  going-network:
+  going-net:
     driver: bridge

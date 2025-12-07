@@ -1,48 +1,120 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@going-monorepo-clean/prisma-client';
+import {
+  Notification,
+  INotificationRepository,
+} from '@going-monorepo-clean/domains-notification-core';
+import { Result, ok, err } from 'neverthrow';
 
 @Injectable()
-export class PrismaNotificationRepository {
+export class PrismaNotificationRepository implements INotificationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createNotification(data: {
-    userId: string;
-    type: 'BOOKING_CONFIRMED' | 'BOOKING_CANCELLED' | 'PAYMENT_RECEIVED' | 'PAYMENT_FAILED' | 'PARCEL_STATUS_UPDATE' | 'MESSAGE_RECEIVED' | 'SYSTEM_ALERT';
-    title: string;
-    content: string;
-  }) {
-    return this.prisma.notification.create({
-      data: {
-        ...data,
-        isRead: false,
-      },
-    });
+  async save(notification: Notification): Promise<Result<void, Error>> {
+    try {
+      const primitives = notification.toPrimitives();
+
+      await this.prisma.notification.create({
+        data: {
+          id: primitives.id,
+          userId: primitives.userId,
+          type: primitives.type,
+          title: primitives.title,
+          content: primitives.content,
+          isRead: primitives.isRead,
+          createdAt: primitives.createdAt,
+        },
+      });
+
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(`Failed to save notification: ${error.message}`));
+    }
   }
 
-  async findNotificationsByUser(userId: string) {
-    return this.prisma.notification.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-    });
+  async findById(id: string): Promise<Result<Notification | null, Error>> {
+    try {
+      const record = await this.prisma.notification.findUnique({
+        where: { id },
+      });
+
+      if (!record) {
+        return ok(null);
+      }
+
+      return ok(this.toDomain(record));
+    } catch (error) {
+      return err(new Error(`Failed to find notification: ${error.message}`));
+    }
   }
 
-  async markAsRead(id: string) {
-    return this.prisma.notification.update({
-      where: { id },
-      data: { isRead: true },
-    });
+  async findByUserId(userId: string): Promise<Result<Notification[], Error>> {
+    try {
+      const records = await this.prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return ok(records.map((r) => this.toDomain(r)));
+    } catch (error) {
+      return err(
+        new Error(`Failed to find notifications by user: ${error.message}`)
+      );
+    }
   }
 
-  async markAllAsRead(userId: string) {
-    return this.prisma.notification.updateMany({
-      where: { userId, isRead: false },
-      data: { isRead: true },
-    });
+  async update(notification: Notification): Promise<Result<void, Error>> {
+    try {
+      const primitives = notification.toPrimitives();
+
+      await this.prisma.notification.update({
+        where: { id: primitives.id },
+        data: {
+          isRead: primitives.isRead,
+          updatedAt: new Date(),
+        },
+      });
+
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(`Failed to update notification: ${error.message}`));
+    }
   }
 
-  async getUnreadCount(userId: string) {
-    return this.prisma.notification.count({
-      where: { userId, isRead: false },
+  async getUnreadCount(userId: string): Promise<Result<number, Error>> {
+    try {
+      const count = await this.prisma.notification.count({
+        where: { userId, isRead: false },
+      });
+
+      return ok(count);
+    } catch (error) {
+      return err(new Error(`Failed to get unread count: ${error.message}`));
+    }
+  }
+
+  async markAllAsRead(userId: string): Promise<Result<void, Error>> {
+    try {
+      await this.prisma.notification.updateMany({
+        where: { userId, isRead: false },
+        data: { isRead: true },
+      });
+
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(`Failed to mark all as read: ${error.message}`));
+    }
+  }
+
+  private toDomain(record: any): Notification {
+    return Notification.fromPrimitives({
+      id: record.id,
+      userId: record.userId,
+      type: record.type,
+      title: record.title,
+      content: record.content,
+      isRead: record.isRead,
+      createdAt: record.createdAt,
     });
   }
 }

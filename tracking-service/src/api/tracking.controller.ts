@@ -1,16 +1,20 @@
-import { Controller, Get } from '@nestjs/common';
-import {
-  GetActiveDriversUseCase,
-} from '@going-monorepo-clean/domains-tracking-application';
+import { Controller, Post, Body, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { CreateTrackingEventUseCase, CreateTrackingEventDto } from '@going-monorepo-clean/domains-tracking-application';
 
 @Controller('tracking')
 export class TrackingController {
   constructor(
-    private readonly getActiveDriversUseCase: GetActiveDriversUseCase,
+    private readonly createTrackingEventUseCase: CreateTrackingEventUseCase,
   ) {}
 
-  @Get('active-drivers')
-  async getActiveDrivers(): Promise<any> {
-    return this.getActiveDriversUseCase.execute();
+  @Post('events')
+  async createEvent(@Body() dto: CreateTrackingEventDto) {
+    const result = await this.createTrackingEventUseCase.execute(dto);
+
+    if (result.isErr()) {
+      throw new BadRequestException(result.error.message);
+    }
+
+    return result.value.toPrimitives();
   }
 }

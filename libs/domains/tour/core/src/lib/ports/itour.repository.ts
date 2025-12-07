@@ -1,11 +1,12 @@
 import { Tour } from '../entities/tour.entity';
+import { Result } from 'neverthrow';
 
-export const ITourRepository = Symbol('ITourRepository');
+export const I_TOUR_REPOSITORY = Symbol('ITourRepository');
 
 export interface ITourRepository {
-  save(tour: Tour): Promise<void>;
-  findById(id: string): Promise<Tour | null>;
-  findByHostId(hostId: string): Promise<Tour[]>;
-  search(filters: { location?: string; minPrice?: number; maxPrice?: number }): Promise<Tour[]>;
-  update(tour: Tour): Promise<void>;
+  save(tour: Tour): Promise<Result<void, Error>>;
+  findById(id: string): Promise<Result<Tour | null, Error>>;
+  findByHostId(hostId: string): Promise<Result<Tour[], Error>>;
+  update(tour: Tour): Promise<Result<void, Error>>;
+  findByStatus(status: string): Promise<Result<Tour[], Error>>;
 }

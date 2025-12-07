@@ -3,16 +3,27 @@ import axios from 'axios';
 describe('Transport Service E2E', () => {
   it('should request a trip', async () => {
     const tripData = {
-      driverId: '123e4567-e89b-12d3-a456-426614174000', // Mock UUID
+      userId: '123e4567-e89b-12d3-a456-426614174001', // Mock user UUID
+      driverId: '123e4567-e89b-12d3-a456-426614174000', // Optional driver UUID
       vehicleType: 'SUV',
       mode: 'DOOR_TO_DOOR',
-      originCity: 'New York',
-      originAddress: '123 Start St',
-      destCity: 'Boston',
-      destAddress: '456 End St',
       departureTime: new Date().toISOString(),
-      basePrice: 100,
-      currency: 'USD',
+      origin: {
+        city: 'New York',
+        address: '123 Start St',
+        latitude: 40.7128,
+        longitude: -74.0060,
+      },
+      destination: {
+        city: 'Boston',
+        address: '456 End St',
+        latitude: 42.3601,
+        longitude: -71.0589,
+      },
+      price: {
+        amount: 100,
+        currency: 'USD',
+      },
     };
 
     try {

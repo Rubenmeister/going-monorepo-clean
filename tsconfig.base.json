@@ -35,6 +35,12 @@
       "@going-monorepo-clean/domains-transport-application": ["libs/domains/transport/application/src/index.ts"],
       "@going-monorepo-clean/domains-tour-core": ["libs/domains/tour/core/src/index.ts"],
       "@going-monorepo-clean/domains-tour-application": ["libs/domains/tour/application/src/index.ts"],
+      "@going-monorepo-clean/domains-notification-core": ["libs/domains/notification/core/src/index.ts"],
+      "@going-monorepo-clean/domains-notification-application": ["libs/domains/notification/application/src/index.ts"],
+      "@going-monorepo-clean/domains-booking-core": ["libs/domains/booking/core/src/index.ts"],
+      "@going-monorepo-clean/domains-booking-application": ["libs/domains/booking/application/src/index.ts"],
+      "@going-monorepo-clean/domains-tracking-core": ["libs/domains/tracking/core/src/index.ts"],
+      "@going-monorepo-clean/domains-tracking-application": ["libs/domains/tracking/application/src/index.ts"],
       "@going-monorepo-clean/shared-types": ["libs/shared-types/src/index.ts"]
     }
   },

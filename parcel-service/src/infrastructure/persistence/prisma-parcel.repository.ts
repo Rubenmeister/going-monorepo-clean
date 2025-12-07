@@ -15,9 +15,9 @@ export class PrismaParcelRepository implements IParcelRepository {
         data: {
           id: primitives.id,
           senderId: primitives.userId,
-          receiverId: primitives.userId, // Same as sender initially
-          description: primitives.description || 'Package',
-          weight: primitives.price?.amount || 1,
+          receiverId: primitives.receiverId || primitives.userId, // Default to sender if not provided
+          description: primitives.description,
+          weight: 0, // Weight should come from DTO, not from price
           price: primitives.price?.amount || 0,
           currency: primitives.price?.currency || 'USD',
           originCity: primitives.origin?.city || '',
@@ -101,6 +101,7 @@ export class PrismaParcelRepository implements IParcelRepository {
       id: record.id,
       userId: record.senderId,
       driverId: record.driverId,
+      description: record.description,
       origin: {
         city: record.originCity,
         country: 'EC',

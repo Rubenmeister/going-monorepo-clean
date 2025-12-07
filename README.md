@@ -1,217 +1,92 @@
-# going-monorepo-clean
-🏖️ Going Tourism Platform - Monorepo
-Una plataforma completa de turismo construida con arquitectura de microservicios usando NX.
+# Going Monorepo
 
-📋 Tabla de Contenidos
-Arquitectura
-Servicios
-Instalación
-Desarrollo
-Deployment
-API Documentation
-Testing
-Contribución
-🏗️ Arquitectura
-┌─────────────────┐    ┌──────────────────┐
-│  Admin Dashboard│    │   Mobile App     │
-│    (Next.js)    │    │ (React Native)   │
-└─────────┬───────┘    └────────┬─────────┘
-          │                     │
-          └─────────┬───────────┘
-                    │
-            ┌───────▼────────┐
-            │  API Gateway   │
-            │   (NestJS)     │
-            └───────┬────────┘
-                    │
-    ┌───────────────┼───────────────┐
-    │               │               │
-┌───▼───┐    ┌─────▼─────┐    ┌───▼────┐
-│ Auth  │    │ Booking   │    │ Tours  │
-│Service│    │ Service   │    │Service │
-└───────┘    └───────────┘    └────────┘
-    │               │               │
-    └───────────────┼───────────────┘
-                    │
-            ┌───────▼────────┐
-            │   PostgreSQL   │
-            │     Redis      │
-            └────────────────┘
-🔧 Servicios
-Frontend
-admin-dashboard: Panel de administración (Next.js + Tailwind)
-Backend Services
-api-gateway: Gateway principal y enrutamiento
-user-auth-service: Autenticación y autorización
-booking-service: Gestión de reservas
-tours-service: Gestión de tours y experiencias
-payment-service: Procesamiento de pagos
-anfitriones-service: Gestión de anfitriones/hosts
-experiencias-service: Catálogo de experiencias
-transport-service: Servicios de transporte
-notifications-service: Sistema de notificaciones
-tracking-service: Seguimiento de servicios
-envios-service: Gestión de envíos
-🚀 Instalación
-Prerrequisitos
-Node.js 18+
-npm/yarn/pnpm
-Docker & Docker Compose
-PostgreSQL 14+
-Redis 6+
-Setup Local
-bash 
-# Clonar repositorio
-git clone https://github.com/Rubenmeister/going-monorepo-clean.git
-cd going-monorepo-clean
+## Descripción
 
-# Instalar dependencias
-npm install
+Monorepo para la plataforma de transporte **Going**, construido con **Nx**, **NestJS** (DDD), **React** (Vite + Next.js), y **React Native**.
 
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus configuraciones
+---
 
-# Iniciar base de datos
-docker-compose up -d postgres redis
+## 🚀 Despliegue en Producción
 
-# Ejecutar migraciones
-nx run-many --target=migrate --all
+### Prerrequisitos
 
-# Iniciar servicios en desarrollo
-nx serve api-gateway
-nx serve admin-dashboard
-💻 Desarrollo
-Comandos Principales
-bash 
-# Desarrollo
-nx serve <service-name>              # Iniciar servicio específico
-nx serve-many --all                  # Iniciar todos los servicios
+- Docker & Docker Compose
+- Node.js 18+
+- Git
 
-# Testing
-nx test <service-name>               # Test unitarios
-nx e2e <service-name>-e2e           # Tests E2E
-nx run-many --target=test --all     # Todos los tests
+### Pasos para Desplegar (Windows)
 
-# Build
-nx build <service-name>              # Build específico
-nx run-many --target=build --all    # Build todos
+1. **Configurar Variables de Entorno**
+   Crea un archivo `.env` en la raíz (puedes usar `.env.example` como base) y asegura que las contraseñas de producción sean seguras.
 
-# Linting
-nx lint <service-name>               # Lint específico
-nx run-many --target=lint --all     # Lint todos
-Estructura de Proyecto
-├── apps/
-│   ├── admin-dashboard/           # Frontend admin
-│   ├── api-gateway/              # Gateway principal
-│   ├── user-auth-service/        # Servicio de auth
-│   └── ...                       # Otros servicios
-├── libs/                         # Librerías compartidas
-│   ├── shared/                   # Utilidades comunes
-│   ├── database/                 # Modelos de DB
-│   └── types/                    # Tipos TypeScript
-├── tools/                        # Scripts y herramientas
-├── docker-compose.yml            # Orquestación local
-└── nx.json                       # Configuración NX
-🌐 API Documentation
-Endpoints Principales
-Authentication Service
-POST   /auth/login              # Login usuario
-POST   /auth/register           # Registro usuario
-POST   /auth/refresh            # Refresh token
-DELETE /auth/logout             # Logout
-Booking Service
-GET    /bookings               # Listar reservas
-POST   /bookings               # Crear reserva
-GET    /bookings/:id           # Obtener reserva
-PUT    /bookings/:id           # Actualizar reserva
-DELETE /bookings/:id           # Cancelar reserva
-Tours Service
-GET    /tours                  # Listar tours
-POST   /tours                  # Crear tour
-GET    /tours/:id              # Obtener tour
-PUT    /tours/:id              # Actualizar tour
-DELETE /tours/:id              # Eliminar tour
-Autenticación
-Todos los endpoints (excepto login/register) requieren JWT token:
+2. **Ejecutar Script de Instalación**
 
-Authorization: Bearer <jwt-token>
-🧪 Testing
-Estrategia de Testing
-Unit Tests: Jest + Testing Library
-Integration Tests: Supertest
-E2E Tests: Playwright
-Coverage: >80% requerido
-bash 
-# Ejecutar todos los tests
-npm run test
+   ```powershell
+   ./deploy.ps1
+   ```
 
-# Tests con coverage
-npm run test:coverage
+   Este script:
 
-# Tests E2E
-npm run test:e2e
+   - Compila las imágenes Docker de los 10 microservicios y el gateway.
+   - Levanta la base de datos MongoDB.
+   - Inicia todos los contenedores en segundo plano via Docker Compose.
 
-# Tests en modo watch
-npm run test:watch
-🚀 Deployment
-Desarrollo
-bash 
-docker-compose up -d
-Staging/Producción
-bash 
-# Build para producción
-nx run-many --target=build --all --prod
+3. **Verificación**
+   - **Frontend**: http://localhost:80
+   - **Admin Dashboard**: http://localhost:4201
+   - **API Gateway**: http://localhost:3000
 
-# Deploy con Docker
-docker-compose -f docker-compose.prod.yml up -d
+---
 
-# O usando Kubernetes
-kubectl apply -f k8s/
-Variables de Entorno
-Requeridas
-env 
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/going_tourism
-REDIS_URL=redis://localhost:6379
+## 📱 Aplicaciones Móviles
 
-# JWT
-JWT_SECRET=your-super-secret-key
-JWT_EXPIRES_IN=7d
+### Android
 
-# External APIs
-STRIPE_SECRET_KEY=sk_test_...
-SENDGRID_API_KEY=SG...
-📊 Monitoring
-Health Checks
-Cada servicio expone:
+Para generar el APK firmado:
 
-GET /health - Health check básico
-GET /health/detailed - Health check detallado
-Métricas
-Prometheus metrics en /metrics
-Logs estructurados con Winston
-Error tracking con Sentry
-🤝 Contribución
-Workflow
-Fork del repositorio
-Crear feature branch: git checkout -b feature/nueva-funcionalidad
-Commit cambios: git commit -m 'Add: nueva funcionalidad'
-Push branch: git push origin feature/nueva-funcionalidad
-Crear Pull Request
-Estándares
-Commits: Conventional Commits
-Code Style: ESLint + Prettier
-Testing: Tests requeridos para nuevas features
-Documentation: Actualizar docs relevantes
-📝 Changelog
-Ver CHANGELOG.md para historial de cambios.
+```bash
+cd apps/mobile-user-app/android
+./gradlew assembleRelease
+```
 
-📄 Licencia
-Este proyecto está bajo la licencia MIT. Ver LICENSE para más detalles.
+El APK estará en `apps/mobile-user-app/android/app/build/outputs/apk/release/`.
 
-🆘 Soporte
-Issues: GitHub Issues
-Discussions: GitHub Discussions
-Email: support@thorn.com
-Desarrollado con ❤️ por el equipo de Going 
+### iOS
+
+Abrir el proyecto en Xcode (`apps/mobile-user-app/ios`) y usar la opción **Product > Archive**.
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+### Backend (Microservicios)
+
+- **User Auth**: Autenticación JWT.
+- **Transport**: Gestión de viajes y conductores.
+- **Parcel**: Logística de envíos.
+- **Payment**: Integración Stripe.
+- **Notifications**: Email/Push.
+- **Booking**: Motor de reservas.
+- **Tours**: Catálogo de tours.
+- **Experience**: Experiencias locales.
+- **Tracking**: Geolocalización en tiempo real.
+- **Host**: Gestión de anfitriones.
+
+### Frontend
+
+- **Web App**: Portal de usuarios (React + Vite).
+- **Admin Dashboard**: Panel administrativo (Next.js).
+- **Mobile User**: App nativa para pasajeros (React Native).
+- **Mobile Driver**: App nativa para conductores (React Native).
+
+---
+
+## 🛠️ Desarrollo Local
+
+1. Instalar dependencias: `npm install`
+2. Levantar DB local: `docker-compose up -d mongo`
+3. Iniciar todo: `nx run-many --target=serve --all`
+
+---
+
+**Going Inc. &copy; 2025**

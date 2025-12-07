@@ -1,50 +1,36 @@
-import { Result, ok, err } from 'neverthrow';
 import {
+  User,
   IUserRepository,
   IPasswordHasher,
-  ITokenService,
-  User
 } from '@going-monorepo-clean/domains-user-core';
-import { LoginUserDto } from '../dto/login-user.dto';
+import { Result, ok, err } from 'neverthrow';
+
+export interface LoginUserDto {
+  email: string;
+  password: string;
+}
 
 export class LoginUserUseCase {
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly passwordHasher: IPasswordHasher,
-    private readonly tokenService: ITokenService
+    private readonly userRepo: IUserRepository,
+    private readonly hasher: IPasswordHasher
   ) {}
 
-  async execute(dto: LoginUserDto): Promise<Result<{ user: User; token: string }, Error>> {
-    // 1. Obtenemos el RESULTADO (la caja)
-    const userResult = await this.userRepository.findByEmail(dto.email);
+  async execute(dto: LoginUserDto): Promise<Result<User, Error>> {
+    const userResult = await this.userRepo.findByEmail(dto.email);
 
-    // 2. Verificamos si hubo error (Caja vacía / Error)
-    if (userResult.isErr()) {
-       return err(new Error('Invalid credentials'));
+    if (userResult.isErr() || !userResult.value) {
+      return err(new Error('Invalid credentials'));
     }
 
-    // 3. ¡DESEMPAQUETAMOS! Sacamos el usuario real de la caja
     const user = userResult.value;
 
-    // 4. Ahora sí podemos acceder a las propiedades del usuario
-    const isPasswordValid = await this.passwordHasher.compare(
-      dto.password,
-      user.passwordHash
-    );
+    const isPasswordValid = await this.hasher.compare(dto.password, user.passwordHash);
 
     if (!isPasswordValid) {
       return err(new Error('Invalid credentials'));
     }
 
-    // 5. Generar Token
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: typeof user.roles[0] === 'string' ? user.roles[0] : user.roles[0].value 
-    };
-
-    const token = this.tokenService.sign(payload);
-
-    return ok({ user, token });
+    return ok(user);
   }
 }

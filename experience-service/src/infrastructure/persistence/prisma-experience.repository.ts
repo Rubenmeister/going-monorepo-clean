@@ -11,17 +11,14 @@ import { Result, ok, err } from 'neverthrow';
 export class PrismaExperienceRepository implements IExperienceRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toPrismaStatus(status: string): 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' {
-    const map: Record<string, 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'> = {
-      'draft': 'DRAFT',
-      'published': 'PUBLISHED',
-      'archived': 'ARCHIVED',
-    };
-    return map[status.toLowerCase()] || 'DRAFT';
+  private toPrismaStatus(status: string): ExperienceStatus {
+    // Prisma expects the enum values defined in the schema (lowercase)
+    return status as ExperienceStatus;
   }
 
-  private toDomainStatus(status: string): 'draft' | 'published' | 'archived' {
-    return status.toLowerCase() as 'draft' | 'published' | 'archived';
+  private toDomainStatus(status: ExperienceStatus): 'draft' | 'published' | 'archived' {
+    // Convert Prisma enum back to domain string literals
+    return status as 'draft' | 'published' | 'archived';
   }
 
   async save(experience: Experience): Promise<Result<void, Error>> {
@@ -35,10 +32,10 @@ export class PrismaExperienceRepository implements IExperienceRepository {
           title: primitives.title,
           description: primitives.description,
           pricePerPerson: primitives.pricePerPerson,
-          currency: 'USD',
+          currency: primitives.currency,
           location: primitives.location,
           maxCapacity: primitives.maxCapacity,
-          durationHours: 2, // Default, could be added to domain
+          durationHours: primitives.durationHours,
           status: this.toPrismaStatus(primitives.status),
         },
       });
@@ -102,7 +99,7 @@ export class PrismaExperienceRepository implements IExperienceRepository {
     try {
       const records = await this.prisma.experience.findMany({
         where: {
-          status: 'PUBLISHED',
+          status: 'published',
           ...(filters.location && { location: { contains: filters.location } }),
           ...(filters.hostId && { hostId: filters.hostId }),
           ...(filters.minPrice && { pricePerPerson: { gte: filters.minPrice } }),
@@ -123,10 +120,13 @@ export class PrismaExperienceRepository implements IExperienceRepository {
       title: record.title,
       description: record.description,
       pricePerPerson: Number(record.pricePerPerson),
+      currency: record.currency,
       maxCapacity: record.maxCapacity,
+      durationHours: record.durationHours,
       location: record.location,
       status: this.toDomainStatus(record.status),
       createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   }
 }

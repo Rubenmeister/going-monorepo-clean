@@ -1,8 +1,9 @@
+import { Result } from 'neverthrow';
 import { DriverLocation } from '../entities/driver-location.entity';
-import { DriverId } from '../entities/driver.entity';
+
+export const I_DRIVER_LOCATION_REPOSITORY = Symbol('IDriverLocationRepository');
 
 export interface IDriverLocationRepository {
-  save(location: DriverLocation): Promise<void>;
-  findLastLocationByDriverId(driverId: DriverId): Promise<DriverLocation | null>;
-  findActiveDriversByTripId(tripId: string): Promise<DriverLocation[]>;
+  save(location: DriverLocation): Promise<Result<void, Error>>;
+  findByDriverId(driverId: string): Promise<Result<DriverLocation | null, Error>>;
 }

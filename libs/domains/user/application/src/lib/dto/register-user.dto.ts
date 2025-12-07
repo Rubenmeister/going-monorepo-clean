@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsEmail, MinLength, IsOptional, IsEnum } from 'class-validator';
-import { RoleType } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+import { RoleType } from '@going-monorepo-clean/domains-user-core';
 
 export class RegisterUserDto {
   @IsNotEmpty()
@@ -13,17 +13,14 @@ export class RegisterUserDto {
 
   @IsNotEmpty()
   @IsString()
-  firstName: string;
-
-  @IsNotEmpty()
-  @IsString()
-  lastName: string;
+  name: string;
 
   @IsString()
   @IsOptional()
   phone?: string;
 
-  @IsNotEmpty()
-  @IsEnum(RoleType, { each: true })
-  roles: RoleType[];
+  // Single Role, Optional (defaults to USER in Entity)
+  @IsOptional()
+  @IsEnum(RoleType)
+  role?: RoleType;
 }
