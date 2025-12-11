@@ -13,6 +13,7 @@ export interface TourProps {
   maxCapacity: number;
   durationHours: number;
   location: string;
+  meetingPoint?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,7 @@ export class Tour {
   readonly maxCapacity: number;
   readonly durationHours: number;
   readonly location: string;
+  readonly meetingPoint?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
@@ -42,6 +44,7 @@ export class Tour {
     this.maxCapacity = props.maxCapacity;
     this.durationHours = props.durationHours;
     this.location = props.location;
+    this.meetingPoint = props.meetingPoint;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
   }
@@ -56,6 +59,7 @@ export class Tour {
     maxCapacity: number;
     durationHours: number;
     location: string;
+    meetingPoint?: string;
   }): Result<Tour, Error> {
     // Validaciones de negocio
     if (!props.hostId || props.hostId.length === 0) {
@@ -179,6 +183,7 @@ export class Tour {
       maxCapacity: this.maxCapacity,
       durationHours: this.durationHours,
       location: this.location,
+      meetingPoint: this.meetingPoint,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
