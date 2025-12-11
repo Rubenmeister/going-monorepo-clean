@@ -1,180 +1,343 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert, 
+  ActivityIndicator, 
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../features/auth/AuthService';
-import { User, Lock, Globe } from 'lucide-react-native';
+
+const { width, height } = Dimensions.get('window');
+
+// Design tokens
+const COLORS = {
+  goingRed: '#FF4E43',
+  charcoal: '#1A1A1A',
+  offWhite: '#F5F5F5',
+  white: '#FFFFFF',
+  inputBg: 'rgba(255, 255, 255, 0.9)',
+  errorRing: '#FACC15',
+};
 
 export function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [lang, setLang] = useState<'es' | 'en'>('es'); // Language Toggle
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
 
-  const t = {
-    es: { title: 'Going', subtitle: 'Tu viaje comienza aquí', btn: 'Iniciar Sesión', placeEmail: 'Correo', placePass: 'Contraseña' },
-    en: { title: 'Going', subtitle: 'Your journey starts here', btn: 'Sign In', placeEmail: 'Email', placePass: 'Password' }
+  const validate = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    let isValid = true;
+
+    if (!email.trim()) {
+      newErrors.email = 'El correo es requerido';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Correo inválido';
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = 'La contraseña es requerida';
+      isValid = false;
+    } else if (password.length < 6) {
+      newErrors.password = 'Mínimo 6 caracteres';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
-  const text = t[lang];
-
   const handleLogin = async () => {
+    setTouched({ email: true, password: true });
+    
+    if (!validate()) return;
+
     setLoading(true);
     try {
       await authService.login({ email, password });
       navigation.replace('Main');
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Invalid credentials');
+      Alert.alert('Error', error.response?.data?.message || 'Credenciales inválidas');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    validate();
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Language Toggle */}
-      <TouchableOpacity style={styles.langButton} onPress={() => setLang(prev => prev === 'es' ? 'en' : 'es')}>
-        <Globe color="white" size={20} />
-        <Text style={styles.langText}>{lang.toUpperCase()}</Text>
-      </TouchableOpacity>
-
-      <View style={styles.header}>
-        {/* Placeholder for Logo - In real app use <Image /> */}
-        <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoText}>6</Text> 
-        </View>
-        <Text style={styles.brandName}>{text.title}</Text>
-        <Text style={styles.subtitle}>{text.subtitle}</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-            <User color="#ff4c41" size={20} style={styles.icon} />
-            <TextInput 
-              style={styles.input}
-              placeholder={text.placeEmail}
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-        </View>
-
-        <View style={styles.inputContainer}>
-            <Lock color="#ff4c41" size={20} style={styles.icon} />
-            <TextInput 
-              style={styles.input}
-              placeholder={text.placePass}
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-        </View>
-
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={handleLogin}
-          disabled={loading}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {loading ? <ActivityIndicator color="#ff4c41" /> : <Text style={styles.buttonText}>{text.btn}</Text>}
-        </TouchableOpacity>
-      </View>
-    </View>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../assets/logo_white_symbol_black_text.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.subtitle}>Tu viaje comienza aquí</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            {/* Email Input */}
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.email && touched.email && styles.inputError
+                ]}
+                placeholder="Correo electrónico"
+                placeholderTextColor="#9CA3AF"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (touched.email) validate();
+                }}
+                onBlur={() => handleBlur('email')}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              {errors.email && touched.email && (
+                <Text style={styles.errorText}>{errors.email}</Text>
+              )}
+            </View>
+
+            {/* Password Input */}
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.password && touched.password && styles.inputError
+                ]}
+                placeholder="Contraseña"
+                placeholderTextColor="#9CA3AF"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (touched.password) validate();
+                }}
+                onBlur={() => handleBlur('password')}
+                secureTextEntry
+              />
+              {errors.password && touched.password && (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              )}
+            </View>
+
+            {/* Forgot Password */}
+            <TouchableOpacity style={styles.forgotButton}>
+              <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+
+            {/* Login Button */}
+            <TouchableOpacity 
+              style={styles.loginButton}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Register Link */}
+            <View style={styles.registerContainer}>
+              <Text style={styles.registerPrompt}>¿No tienes cuenta?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.registerLink}> Regístrate</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Social Login */}
+          <View style={styles.socialContainer}>
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>O continúa con</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.socialButtons}>
+              <TouchableOpacity style={styles.socialButton}>
+                <Text style={styles.socialIcon}>G</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton}>
+                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>f</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialButton}>
+                <Text style={styles.socialIcon}></Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 30,
-    backgroundColor: '#ff4c41', // Brand Red Background
+    backgroundColor: COLORS.goingRed,
   },
-  langButton: {
-    position: 'absolute',
-    top: 50,
-    right: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    padding: 8,
-    borderRadius: 20,
+  keyboardView: {
+    flex: 1,
   },
-  langText: {
-    color: 'white',
-    marginLeft: 5,
-    fontWeight: 'bold',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 50,
-  },
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 4,
-    borderColor: 'white',
+  scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    padding: 24,
+    minHeight: height - 100,
   },
-  logoText: {
-    fontSize: 50,
-    color: 'white',
-    fontWeight: 'bold',
-    fontStyle: 'italic', // Trying to mimic the curvy logo
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
-  brandName: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: 'white',
+  logo: {
+    width: width * 0.45,
+    height: 140,
   },
   subtitle: {
+    color: 'rgba(255, 255, 255, 0.9)',
     fontSize: 18,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 5,
+    marginTop: 8,
   },
-  form: {
+  formContainer: {
     width: '100%',
+    maxWidth: 400,
   },
-  inputContainer: {
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 30, // Rounded inputs
-    paddingHorizontal: 20,
-    height: 60,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  icon: {
-    marginRight: 10,
+  inputWrapper: {
+    marginBottom: 16,
   },
   input: {
-    flex: 1,
+    backgroundColor: COLORS.inputBg,
+    height: 52,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     fontSize: 16,
-    color: '#333',
+    color: COLORS.charcoal,
   },
-  button: {
-    backgroundColor: 'white', // White button on Red background
-    height: 60,
-    borderRadius: 30,
+  inputError: {
+    borderWidth: 2,
+    borderColor: COLORS.errorRing,
+    backgroundColor: COLORS.white,
+  },
+  errorText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  forgotButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  loginButton: {
+    backgroundColor: COLORS.charcoal,
+    height: 56,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 5,
   },
-  buttonText: {
-    color: '#ff4c41', // Red text
+  loginButtonText: {
+    color: COLORS.white,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  registerPrompt: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+  },
+  registerLink: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  socialContainer: {
+    width: '100%',
+    marginTop: 40,
+    gap: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dividerText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 12,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  socialButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  socialIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.charcoal,
   },
 });

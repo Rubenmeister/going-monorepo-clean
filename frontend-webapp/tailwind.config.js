@@ -11,10 +11,11 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          red: '#ff4c41',    // Rojo Going
-          black: '#000000',
+          red: '#FF4E43',      // Going Red (updated to match prototype)
+          black: '#1A1A1A',    // Charcoal
           white: '#ffffff',
-          gray: '#f3f4f6',
+          gray: '#F5F5F5',     // Off-White
+          blue: '#0066FF',     // Electric Blue
         }
       },
       fontFamily: {
