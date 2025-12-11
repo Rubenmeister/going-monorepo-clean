@@ -1,0 +1,19 @@
+
+> nx run tours-service-e2e:e2e
+
+(node:28960) Warning: Failed to load the ES module: C:\Users\USER1\going-monorepo-clean\tours-service-e2e\jest.config.cts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Setting up...
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mJest: Got error running globalSetup - C:\Users\USER1\going-monorepo-clean\tours-service-e2e\src\support\global-setup.ts, reason: [AggregateError][39m
+Pass --verbose to see the stacktrace.
+
+
+
+ NX   Running target e2e for project tours-service-e2e failed
+
+Failed tasks:
+
+- tours-service-e2e:e2e
+
+Hint: run the command with --verbose for more details.
+

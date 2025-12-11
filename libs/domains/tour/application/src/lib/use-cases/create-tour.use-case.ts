@@ -10,7 +10,7 @@ export class CreateTourUseCase {
   ) {}
 
   async execute(dto: CreateTourDto): Promise<{ id: string }> {
-    const tour = Tour.create({
+    const tourResult = Tour.create({
       hostId: dto.hostId,
       title: dto.title,
       description: dto.description,
@@ -21,6 +21,12 @@ export class CreateTourUseCase {
       location: dto.location,
       meetingPoint: dto.meetingPoint,
     });
+
+    if (tourResult.isErr()) {
+      throw tourResult.error;
+    }
+
+    const tour = tourResult.value;
 
     await this.tourRepo.save(tour);
 

@@ -1,0 +1,1292 @@
+
+ NX   Running target serve for project tours-service and 1 task it depends on:
+
+
+
+> nx run tours-service:build:production
+
+assets by status 6.3 KiB [compared for emit]
+  asset package-lock.json 5.89 KiB [compared for emit]
+  asset package.json 416 bytes [compared for emit]
+  asset assets/.gitkeep 0 bytes [compared for emit] [from: tours-service/src/assets/.gitkeep] [copied]
+assets by status 10.1 KiB [emitted]
+  asset main.js 10.1 KiB [emitted] [minimized] (name: main) 1 related asset
+  asset 3rdpartylicenses.txt 1 bytes [emitted]
+orphan modules 18.8 KiB [orphan] 21 modules
+./tours-service/src/main.ts + 21 modules 19.4 KiB [not cacheable] [built] [code generated]
+webpack 5.103.0 compiled successfully in 5644 ms
+
+> nx run tours-service:serve:development --port=3009
+
+assets by path *.json 6.3 KiB
+  asset package-lock.json 5.89 KiB [compared for emit]
+  asset package.json 416 bytes [compared for emit]
+asset main.js 22.4 KiB [emitted] (name: main) 1 related asset
+asset assets/.gitkeep 0 bytes [compared for emit] [from: tours-service/src/assets/.gitkeep] [copied]
+orphan modules 18.8 KiB [orphan] 21 modules
+./tours-service/src/main.ts + 21 modules 19.4 KiB [not cacheable] [built] [code generated]
+webpack 5.103.0 compiled successfully in 5726 ms
+Debugger listening on ws://localhost:3009/076d80cc-f5c9-43ce-8b5b-1666fb0f3fc7
+Debugger listening on ws://localhost:3009/076d80cc-f5c9-43ce-8b5b-1666fb0f3fc7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/357bcfc9-d89a-4ae4-a6ba-e5c9c80ae3ff
+
+Debugger listening on ws://localhost:3009/357bcfc9-d89a-4ae4-a6ba-e5c9c80ae3ff
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/19c5b1c0-b8e6-4a1b-8e13-5a8214a3691a
+Debugger listening on ws://localhost:3009/19c5b1c0-b8e6-4a1b-8e13-5a8214a3691a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b0ec1b51-e1c1-4486-8d40-d86689caf5cb
+Debugger listening on ws://localhost:3009/b0ec1b51-e1c1-4486-8d40-d86689caf5cb
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/23c0b4f1-01d2-4e00-911a-769aa1e33e7b
+Debugger listening on ws://localhost:3009/23c0b4f1-01d2-4e00-911a-769aa1e33e7b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/37cdf60a-46c3-4047-b9f0-b0642cd100b1
+
+Debugger listening on ws://localhost:3009/37cdf60a-46c3-4047-b9f0-b0642cd100b1
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/662540b9-b1f9-40e5-bc5a-4fa78d1b9e7f
+Debugger listening on ws://localhost:3009/662540b9-b1f9-40e5-bc5a-4fa78d1b9e7f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f43d011f-c799-414c-acab-444f2be87de8
+Debugger listening on ws://localhost:3009/f43d011f-c799-414c-acab-444f2be87de8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/01a78531-77cc-47c5-9c86-e7e62d285750
+Debugger listening on ws://localhost:3009/01a78531-77cc-47c5-9c86-e7e62d285750
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/96fa4e75-2522-4e34-b97e-0bd87ca8f81c
+Debugger listening on ws://localhost:3009/96fa4e75-2522-4e34-b97e-0bd87ca8f81c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c28c969a-0f4f-4ec5-ada1-1d872ecfe878
+Debugger listening on ws://localhost:3009/c28c969a-0f4f-4ec5-ada1-1d872ecfe878
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/28626bdb-45b4-4add-9e56-4ee8ce4977f0
+Debugger listening on ws://localhost:3009/28626bdb-45b4-4add-9e56-4ee8ce4977f0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3cd1e96d-644a-40bc-b99a-29a7187c3eb0
+Debugger listening on ws://localhost:3009/3cd1e96d-644a-40bc-b99a-29a7187c3eb0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9c8d79d2-3660-4d54-ab2a-9ec393f4f63d
+Debugger listening on ws://localhost:3009/9c8d79d2-3660-4d54-ab2a-9ec393f4f63d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a5681384-1a5a-4a26-9243-98f840eb4f3f
+
+Debugger listening on ws://localhost:3009/a5681384-1a5a-4a26-9243-98f840eb4f3f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cb0a98ae-30d7-42f0-b208-1952d320c62a
+Debugger listening on ws://localhost:3009/cb0a98ae-30d7-42f0-b208-1952d320c62a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cb4adb8c-a143-43fd-932d-e297d3deac81
+
+Debugger listening on ws://localhost:3009/cb4adb8c-a143-43fd-932d-e297d3deac81
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2c29dd82-b67d-475d-857b-ef621e0611d8
+Debugger listening on ws://localhost:3009/2c29dd82-b67d-475d-857b-ef621e0611d8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5cce79ef-9c31-408c-93c7-0dad345566b5
+Debugger listening on ws://localhost:3009/5cce79ef-9c31-408c-93c7-0dad345566b5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0631410a-c7b7-4400-829b-b8737145384a
+Debugger listening on ws://localhost:3009/0631410a-c7b7-4400-829b-b8737145384a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0000594b-7376-4bb5-94e4-3111efdb1c69
+Debugger listening on ws://localhost:3009/0000594b-7376-4bb5-94e4-3111efdb1c69
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/97d27d28-d509-4d8c-8b17-034ad80a40b4
+
+Debugger listening on ws://localhost:3009/97d27d28-d509-4d8c-8b17-034ad80a40b4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c3dec96a-425d-4d3a-8507-d3cbe7c4fb31
+Debugger listening on ws://localhost:3009/c3dec96a-425d-4d3a-8507-d3cbe7c4fb31
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/89bf675f-080d-4c73-bfe3-b20cdcf4b405
+Debugger listening on ws://localhost:3009/89bf675f-080d-4c73-bfe3-b20cdcf4b405
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2910cce3-b0d6-4d98-8080-3fe1be3ea67a
+Debugger listening on ws://localhost:3009/2910cce3-b0d6-4d98-8080-3fe1be3ea67a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/062994ae-f4a0-43fb-8e93-af22817828d2
+Debugger listening on ws://localhost:3009/062994ae-f4a0-43fb-8e93-af22817828d2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d78d1372-c423-40d7-9fb4-7858bdc9899c
+Debugger listening on ws://localhost:3009/d78d1372-c423-40d7-9fb4-7858bdc9899c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/233a2883-1f7e-4db1-b4a8-301fab9426e5
+
+Debugger listening on ws://localhost:3009/233a2883-1f7e-4db1-b4a8-301fab9426e5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1e4a2a11-a452-4bb4-8b08-51c0fdf817ea
+Debugger listening on ws://localhost:3009/1e4a2a11-a452-4bb4-8b08-51c0fdf817ea
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9cad5d48-0cb0-4974-9cc7-08445106dd79
+Debugger listening on ws://localhost:3009/9cad5d48-0cb0-4974-9cc7-08445106dd79
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/147b85d4-602c-4c68-a1ad-15290b5220a8
+Debugger listening on ws://localhost:3009/147b85d4-602c-4c68-a1ad-15290b5220a8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5553958b-39d5-44d7-bd98-04b3ea875372
+Debugger listening on ws://localhost:3009/5553958b-39d5-44d7-bd98-04b3ea875372
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/23656f75-756f-4a5a-a645-fb6eae2e26af
+Debugger listening on ws://localhost:3009/23656f75-756f-4a5a-a645-fb6eae2e26af
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/43dc396e-9be8-4187-bae1-ed6330d0fcf4
+Debugger listening on ws://localhost:3009/43dc396e-9be8-4187-bae1-ed6330d0fcf4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a557ea22-d6a4-4fc5-96ac-3e4b3eab3a02
+Debugger listening on ws://localhost:3009/a557ea22-d6a4-4fc5-96ac-3e4b3eab3a02
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c3579e8a-69e7-4795-ac7a-f6f178f2dd40
+Debugger listening on ws://localhost:3009/c3579e8a-69e7-4795-ac7a-f6f178f2dd40
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/8e5dcff9-3773-4b18-948b-dedebf2cc4d5
+Debugger listening on ws://localhost:3009/8e5dcff9-3773-4b18-948b-dedebf2cc4d5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1520cc69-d329-4844-8b51-81ce151911a5
+Debugger listening on ws://localhost:3009/1520cc69-d329-4844-8b51-81ce151911a5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e9ddac1d-00e4-4a4b-8242-4a1873c165b9
+Debugger listening on ws://localhost:3009/e9ddac1d-00e4-4a4b-8242-4a1873c165b9
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/487e93b4-ec5b-4ace-8e9e-273c31014145
+Debugger listening on ws://localhost:3009/487e93b4-ec5b-4ace-8e9e-273c31014145
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9357e549-269c-44d2-82a3-99482183c1d3
+Debugger listening on ws://localhost:3009/9357e549-269c-44d2-82a3-99482183c1d3
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/810b80af-30cf-4d56-b124-de2407ee1160
+Debugger listening on ws://localhost:3009/810b80af-30cf-4d56-b124-de2407ee1160
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/88930b5e-2c88-4ae2-9169-051a7cd4afdc
+Debugger listening on ws://localhost:3009/88930b5e-2c88-4ae2-9169-051a7cd4afdc
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3614878c-3344-454b-827f-dd769e16756f
+Debugger listening on ws://localhost:3009/3614878c-3344-454b-827f-dd769e16756f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/bf72151e-1f22-4781-a9a4-0bbb3984062c
+Debugger listening on ws://localhost:3009/bf72151e-1f22-4781-a9a4-0bbb3984062c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/08a20e00-3951-4ec3-8ce4-aa106a8304e2
+Debugger listening on ws://localhost:3009/08a20e00-3951-4ec3-8ce4-aa106a8304e2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f8b089fe-9fe7-46a6-a9ac-1c19d5bc8fd6
+Debugger listening on ws://localhost:3009/f8b089fe-9fe7-46a6-a9ac-1c19d5bc8fd6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5108dd1c-6b25-46a6-9e1c-5e86f9ee0d70
+Debugger listening on ws://localhost:3009/5108dd1c-6b25-46a6-9e1c-5e86f9ee0d70
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/38975787-ce44-4d02-b8af-c183af573719
+Debugger listening on ws://localhost:3009/38975787-ce44-4d02-b8af-c183af573719
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/714758af-477e-4a5f-91e6-9ac416e4829a
+Debugger listening on ws://localhost:3009/714758af-477e-4a5f-91e6-9ac416e4829a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f000a257-1e90-4960-b8e1-527e3d0021da
+Debugger listening on ws://localhost:3009/f000a257-1e90-4960-b8e1-527e3d0021da
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cb8b3668-9c31-4225-8252-b4409047833f
+Debugger listening on ws://localhost:3009/cb8b3668-9c31-4225-8252-b4409047833f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/25eafa4b-78f5-42c0-bf4c-ffa07a0913f6
+Debugger listening on ws://localhost:3009/25eafa4b-78f5-42c0-bf4c-ffa07a0913f6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9691ca81-ef20-40d5-86fe-eef23d671801
+
+Debugger listening on ws://localhost:3009/9691ca81-ef20-40d5-86fe-eef23d671801
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ead83586-d901-4c96-b348-3d6643256b54
+Debugger listening on ws://localhost:3009/ead83586-d901-4c96-b348-3d6643256b54
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4f80b63d-4556-4c55-a6f8-309ea7ee3115
+Debugger listening on ws://localhost:3009/4f80b63d-4556-4c55-a6f8-309ea7ee3115
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ae0e641f-de24-423b-8052-b637bd260f62
+
+Debugger listening on ws://localhost:3009/ae0e641f-de24-423b-8052-b637bd260f62
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/392f8a18-93aa-4106-b388-bf9d4c04971a
+Debugger listening on ws://localhost:3009/392f8a18-93aa-4106-b388-bf9d4c04971a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5bd738ce-e448-417a-b92c-1e97b8095b05
+Debugger listening on ws://localhost:3009/5bd738ce-e448-417a-b92c-1e97b8095b05
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/82c4e309-032e-4521-9c02-acbb793ef3f0
+Debugger listening on ws://localhost:3009/82c4e309-032e-4521-9c02-acbb793ef3f0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7719d991-78c0-40ef-ae87-b7ba3deee292
+Debugger listening on ws://localhost:3009/7719d991-78c0-40ef-ae87-b7ba3deee292
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/44dc5e57-1454-4a13-aef6-186ac6da6529
+Debugger listening on ws://localhost:3009/44dc5e57-1454-4a13-aef6-186ac6da6529
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cf33abae-98d2-46f8-b00d-89feb02f1f4d
+
+Debugger listening on ws://localhost:3009/cf33abae-98d2-46f8-b00d-89feb02f1f4d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1fffe226-2ae5-4a53-8d8b-112a684c9c81
+Debugger listening on ws://localhost:3009/1fffe226-2ae5-4a53-8d8b-112a684c9c81
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/325bf515-00d4-42cc-acf7-eea966001ff5
+Debugger listening on ws://localhost:3009/325bf515-00d4-42cc-acf7-eea966001ff5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ef498009-9d60-450c-b513-3ff5d17fd8cc
+Debugger listening on ws://localhost:3009/ef498009-9d60-450c-b513-3ff5d17fd8cc
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/6bb8690b-ce2c-45ed-a7a3-ddf21c00aebb
+Debugger listening on ws://localhost:3009/6bb8690b-ce2c-45ed-a7a3-ddf21c00aebb
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/41aed1f6-8db1-4717-b490-14cca93d9ffc
+Debugger listening on ws://localhost:3009/41aed1f6-8db1-4717-b490-14cca93d9ffc
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/53506894-44f4-4c1d-bf30-d2854c991ff1
+Debugger listening on ws://localhost:3009/53506894-44f4-4c1d-bf30-d2854c991ff1
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d248fa9d-aaac-479e-b0a6-16007a8237b6
+Debugger listening on ws://localhost:3009/d248fa9d-aaac-479e-b0a6-16007a8237b6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/eaacbcda-c419-46ea-ada6-8a5eae53225b
+Debugger listening on ws://localhost:3009/eaacbcda-c419-46ea-ada6-8a5eae53225b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/257b90f2-23e7-424a-8711-76485a3f83f7
+Debugger listening on ws://localhost:3009/257b90f2-23e7-424a-8711-76485a3f83f7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e4f11b2f-838e-4ee9-bdea-5f3ec0b58ba9
+Debugger listening on ws://localhost:3009/e4f11b2f-838e-4ee9-bdea-5f3ec0b58ba9
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/987cb7fc-0e87-403c-84a2-f087e8cc0cf5
+Debugger listening on ws://localhost:3009/987cb7fc-0e87-403c-84a2-f087e8cc0cf5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/76dce55e-40b4-4d10-8f85-6662ad380a35
+Debugger listening on ws://localhost:3009/76dce55e-40b4-4d10-8f85-6662ad380a35
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a8faee18-3e6d-4848-9357-361a0bffe818
+Debugger listening on ws://localhost:3009/a8faee18-3e6d-4848-9357-361a0bffe818
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/fefbdfd9-a089-44a8-b21c-882b4d7515ca
+Debugger listening on ws://localhost:3009/fefbdfd9-a089-44a8-b21c-882b4d7515ca
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4e80f604-ef54-4aea-b908-abae491f0242
+
+Debugger listening on ws://localhost:3009/4e80f604-ef54-4aea-b908-abae491f0242
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a584fb3a-1dbf-40b2-8c80-a1832e6eeaaa
+Debugger listening on ws://localhost:3009/a584fb3a-1dbf-40b2-8c80-a1832e6eeaaa
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/86a0c38c-5159-4706-b5f9-365206e4667d
+Debugger listening on ws://localhost:3009/86a0c38c-5159-4706-b5f9-365206e4667d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/09a101be-b031-4ac0-899d-0b61997e6233
+Debugger listening on ws://localhost:3009/09a101be-b031-4ac0-899d-0b61997e6233
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a965d3a8-a5a0-4fce-9543-aa0264bb7378
+Debugger listening on ws://localhost:3009/a965d3a8-a5a0-4fce-9543-aa0264bb7378
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b549ec2f-5b3b-4759-9370-0d2a27f99147
+
+Debugger listening on ws://localhost:3009/b549ec2f-5b3b-4759-9370-0d2a27f99147
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ee5f2b5e-e99f-46a7-933f-d64aa7a4c2c8
+
+Debugger listening on ws://localhost:3009/ee5f2b5e-e99f-46a7-933f-d64aa7a4c2c8
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cfacef6e-7c43-42d7-be8c-2ab6ddd13aad
+Debugger listening on ws://localhost:3009/cfacef6e-7c43-42d7-be8c-2ab6ddd13aad
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0c5381f7-7461-403b-bf55-cb87818d35e6
+
+Debugger listening on ws://localhost:3009/0c5381f7-7461-403b-bf55-cb87818d35e6
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4b218a37-d6ec-4a4d-86b4-42423ccf86f7
+Debugger listening on ws://localhost:3009/4b218a37-d6ec-4a4d-86b4-42423ccf86f7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dfa0180c-d91e-4189-97c6-bd55d1637fdf
+Debugger listening on ws://localhost:3009/dfa0180c-d91e-4189-97c6-bd55d1637fdf
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/76dab56d-ba26-46a1-ab15-d50f5250942e
+Debugger listening on ws://localhost:3009/76dab56d-ba26-46a1-ab15-d50f5250942e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/bc5b46e9-0f34-4bbc-89b8-f3ec37dad9b6
+Debugger listening on ws://localhost:3009/bc5b46e9-0f34-4bbc-89b8-f3ec37dad9b6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/38bae203-ccce-4816-8060-5aec6d0bb324
+Debugger listening on ws://localhost:3009/38bae203-ccce-4816-8060-5aec6d0bb324
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b0b6a5d5-5c4d-43f0-a634-f951081be9f1
+Debugger listening on ws://localhost:3009/b0b6a5d5-5c4d-43f0-a634-f951081be9f1
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b27e2547-6f4d-4f0a-8d8d-eb7465d44239
+Debugger listening on ws://localhost:3009/b27e2547-6f4d-4f0a-8d8d-eb7465d44239
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/203889ce-b2a2-489a-ace0-bf78e8e1ac3a
+Debugger listening on ws://localhost:3009/203889ce-b2a2-489a-ace0-bf78e8e1ac3a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7e34a48a-fc95-41fc-add7-3095f8b11040
+Debugger listening on ws://localhost:3009/7e34a48a-fc95-41fc-add7-3095f8b11040
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/07007183-dd45-4fe2-bd78-ba6d6cfd108d
+Debugger listening on ws://localhost:3009/07007183-dd45-4fe2-bd78-ba6d6cfd108d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/639204b6-8dfd-4828-a97d-481d2e8894ab
+Debugger listening on ws://localhost:3009/639204b6-8dfd-4828-a97d-481d2e8894ab
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/fe130c1a-cf40-4b72-96b1-f0f1169bab7d
+
+Debugger listening on ws://localhost:3009/fe130c1a-cf40-4b72-96b1-f0f1169bab7d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2fa41f36-bc48-4856-8bfd-d9896f0af3c7
+Debugger listening on ws://localhost:3009/2fa41f36-bc48-4856-8bfd-d9896f0af3c7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e99ccc4b-d0ce-4ee1-9a82-e95e0ea9d2bf
+Debugger listening on ws://localhost:3009/e99ccc4b-d0ce-4ee1-9a82-e95e0ea9d2bf
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e484ca4a-a15c-44cd-ab54-7effda76123a
+Debugger listening on ws://localhost:3009/e484ca4a-a15c-44cd-ab54-7effda76123a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/665c60c0-80a4-4dff-9cb7-c672003ee66b
+
+Debugger listening on ws://localhost:3009/665c60c0-80a4-4dff-9cb7-c672003ee66b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/99899b5b-0a47-4639-84ea-88d18842ac08
+Debugger listening on ws://localhost:3009/99899b5b-0a47-4639-84ea-88d18842ac08
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7011b79f-2841-4cb0-91ef-3ab1b81f126c
+Debugger listening on ws://localhost:3009/7011b79f-2841-4cb0-91ef-3ab1b81f126c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/462e2ca7-10a9-48b7-a28e-16917150ab38
+
+Debugger listening on ws://localhost:3009/462e2ca7-10a9-48b7-a28e-16917150ab38
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/de6959a5-37e2-4340-a986-ef90e3c2c9e7
+Debugger listening on ws://localhost:3009/de6959a5-37e2-4340-a986-ef90e3c2c9e7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c218dfc1-97f8-45bd-9db0-535ac545b29c
+Debugger listening on ws://localhost:3009/c218dfc1-97f8-45bd-9db0-535ac545b29c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a4129709-37ed-46f5-aeca-8c519dff6e54
+
+Debugger listening on ws://localhost:3009/a4129709-37ed-46f5-aeca-8c519dff6e54
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b245eac5-9ec8-4f19-ac4c-c49f2dee3d50
+
+Debugger listening on ws://localhost:3009/b245eac5-9ec8-4f19-ac4c-c49f2dee3d50
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/6f90046e-15b1-475e-8fa2-3debeaf28a40
+Debugger listening on ws://localhost:3009/6f90046e-15b1-475e-8fa2-3debeaf28a40
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/90203a08-7526-4e24-bed9-873b8e82b213
+Debugger listening on ws://localhost:3009/90203a08-7526-4e24-bed9-873b8e82b213
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e3ae1718-1cd1-4e3b-bade-af90e44775a5
+
+Debugger listening on ws://localhost:3009/e3ae1718-1cd1-4e3b-bade-af90e44775a5
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5cd9e489-3314-4a1f-94e7-90005bd680a0
+Debugger listening on ws://localhost:3009/5cd9e489-3314-4a1f-94e7-90005bd680a0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/74761e32-61ad-4c56-a650-68b6571e8319
+Debugger listening on ws://localhost:3009/74761e32-61ad-4c56-a650-68b6571e8319
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d6a97887-e2c1-44cf-b8db-7d46f173353f
+Debugger listening on ws://localhost:3009/d6a97887-e2c1-44cf-b8db-7d46f173353f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d8fd42e0-0089-4099-9c4b-70e95aad0eb3
+
+Debugger listening on ws://localhost:3009/d8fd42e0-0089-4099-9c4b-70e95aad0eb3
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a3fa1ba2-a280-45d9-ae62-6adc7687aae4
+Debugger listening on ws://localhost:3009/a3fa1ba2-a280-45d9-ae62-6adc7687aae4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f400b0d2-7219-4a58-881a-5298e52170a6
+Debugger listening on ws://localhost:3009/f400b0d2-7219-4a58-881a-5298e52170a6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3b27ef73-d920-4328-9f75-01db1cf1676d
+Debugger listening on ws://localhost:3009/3b27ef73-d920-4328-9f75-01db1cf1676d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3c5cecd0-1718-436e-ba25-b84beed01170
+
+Debugger listening on ws://localhost:3009/3c5cecd0-1718-436e-ba25-b84beed01170
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3e5ec70e-0491-489c-a6f4-9baaebd0b2fd
+Debugger listening on ws://localhost:3009/3e5ec70e-0491-489c-a6f4-9baaebd0b2fd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/79381bdc-cc01-4041-96c7-1b0fa61b5d22
+Debugger listening on ws://localhost:3009/79381bdc-cc01-4041-96c7-1b0fa61b5d22
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d523d5bc-6dcf-4547-940e-0aa6f43ec70f
+Debugger listening on ws://localhost:3009/d523d5bc-6dcf-4547-940e-0aa6f43ec70f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2e59587d-a668-447c-a170-4ad69095bfe4
+Debugger listening on ws://localhost:3009/2e59587d-a668-447c-a170-4ad69095bfe4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f7141483-618a-4f9b-b532-5c5bec9aa62a
+Debugger listening on ws://localhost:3009/f7141483-618a-4f9b-b532-5c5bec9aa62a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/bb0deee2-61c6-4568-a2a4-c58647bcd8da
+Debugger listening on ws://localhost:3009/bb0deee2-61c6-4568-a2a4-c58647bcd8da
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4bb8c15e-3932-4e96-bf75-3351f069e22d
+Debugger listening on ws://localhost:3009/4bb8c15e-3932-4e96-bf75-3351f069e22d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/766f04ae-36b3-42ba-9fbe-899dee1c8ecd
+Debugger listening on ws://localhost:3009/766f04ae-36b3-42ba-9fbe-899dee1c8ecd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d677af7c-a3a3-412e-96c7-376d2f48843f
+Debugger listening on ws://localhost:3009/d677af7c-a3a3-412e-96c7-376d2f48843f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/77c4609a-5f9f-4afe-8079-584ca857a8ad
+
+Debugger listening on ws://localhost:3009/77c4609a-5f9f-4afe-8079-584ca857a8ad
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/16fa2c87-c80c-4640-8390-d3a1911766a3
+Debugger listening on ws://localhost:3009/16fa2c87-c80c-4640-8390-d3a1911766a3
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/af575f54-ae7a-48b2-b6b2-365af066579f
+
+Debugger listening on ws://localhost:3009/af575f54-ae7a-48b2-b6b2-365af066579f
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/126090e3-6bd6-4ec8-921b-fe3d152e5704
+Debugger listening on ws://localhost:3009/126090e3-6bd6-4ec8-921b-fe3d152e5704
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9cfe7522-8736-4265-8d4a-dc1c950f87f6
+Debugger listening on ws://localhost:3009/9cfe7522-8736-4265-8d4a-dc1c950f87f6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c04d0a2c-a221-4772-b6d9-429ccc692296
+Debugger listening on ws://localhost:3009/c04d0a2c-a221-4772-b6d9-429ccc692296
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dbf8aa6e-569e-4e22-a2ed-bcc8c6f517c2
+Debugger listening on ws://localhost:3009/dbf8aa6e-569e-4e22-a2ed-bcc8c6f517c2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/821c9669-1d06-4ec4-b78a-b7311970abcd
+Debugger listening on ws://localhost:3009/821c9669-1d06-4ec4-b78a-b7311970abcd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/050894fb-b5af-4d13-aaea-461b1b8cbe78
+Debugger listening on ws://localhost:3009/050894fb-b5af-4d13-aaea-461b1b8cbe78
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dabc9678-c7f7-4e5a-a3a2-c6738ed75247
+Debugger listening on ws://localhost:3009/dabc9678-c7f7-4e5a-a3a2-c6738ed75247
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/21cd699d-b260-4a2f-aa4d-4ae18d3ff06c
+
+Debugger listening on ws://localhost:3009/21cd699d-b260-4a2f-aa4d-4ae18d3ff06c
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/15798b48-8ab6-4675-b820-e46b3acbcb5b
+Debugger listening on ws://localhost:3009/15798b48-8ab6-4675-b820-e46b3acbcb5b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b633c88a-c2f0-4241-b178-5056723820ad
+Debugger listening on ws://localhost:3009/b633c88a-c2f0-4241-b178-5056723820ad
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0341d9cb-f463-4989-b69b-745362869805
+Debugger listening on ws://localhost:3009/0341d9cb-f463-4989-b69b-745362869805
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/39cd0253-1dac-497d-b7a0-b1b0c5e26ecd
+Debugger listening on ws://localhost:3009/39cd0253-1dac-497d-b7a0-b1b0c5e26ecd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e31f4463-bd65-4bec-9b5d-111e31581c3f
+Debugger listening on ws://localhost:3009/e31f4463-bd65-4bec-9b5d-111e31581c3f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/44d8d60d-0e70-4508-bad3-5c0e30951485
+Debugger listening on ws://localhost:3009/44d8d60d-0e70-4508-bad3-5c0e30951485
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/fe50d3a9-dee8-4c25-b0b4-1e8a830be748
+
+Debugger listening on ws://localhost:3009/fe50d3a9-dee8-4c25-b0b4-1e8a830be748
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/165bdda6-9004-4854-95a4-60f4617c36c6
+Debugger listening on ws://localhost:3009/165bdda6-9004-4854-95a4-60f4617c36c6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/be4f43ff-97e8-40bd-ab60-2b8e56a13dee
+
+Debugger listening on ws://localhost:3009/be4f43ff-97e8-40bd-ab60-2b8e56a13dee
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f2620436-4596-4a7b-acba-a4aa96012b8a
+Debugger listening on ws://localhost:3009/f2620436-4596-4a7b-acba-a4aa96012b8a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4f223f01-2b67-47d2-90bb-edc3c59fcf18
+
+Debugger listening on ws://localhost:3009/4f223f01-2b67-47d2-90bb-edc3c59fcf18
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5f12f6e2-b922-49c4-84e3-1221783d5671
+Debugger listening on ws://localhost:3009/5f12f6e2-b922-49c4-84e3-1221783d5671
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/72423c97-10c3-4c6e-b090-f82d896c3d7d
+Debugger listening on ws://localhost:3009/72423c97-10c3-4c6e-b090-f82d896c3d7d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7ee53865-941e-4d46-a94b-54b02532a535
+Debugger listening on ws://localhost:3009/7ee53865-941e-4d46-a94b-54b02532a535
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b8dfdfc2-e354-4d91-bf3e-7ed38a48653d
+Debugger listening on ws://localhost:3009/b8dfdfc2-e354-4d91-bf3e-7ed38a48653d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/20e51e36-f09e-489f-a1d6-1903c0acdd8b
+Debugger listening on ws://localhost:3009/20e51e36-f09e-489f-a1d6-1903c0acdd8b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/845ef887-6125-4052-8d6a-4483ffe64e5a
+Debugger listening on ws://localhost:3009/845ef887-6125-4052-8d6a-4483ffe64e5a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/323e1742-6061-4551-a9dc-c5d56553e7b7
+Debugger listening on ws://localhost:3009/323e1742-6061-4551-a9dc-c5d56553e7b7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a559b583-4f93-4bca-9964-8bdc07dc018e
+Debugger listening on ws://localhost:3009/a559b583-4f93-4bca-9964-8bdc07dc018e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/8ea8f93a-e4d1-443e-aa1a-371c53d81a5a
+Debugger listening on ws://localhost:3009/8ea8f93a-e4d1-443e-aa1a-371c53d81a5a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cbd5ea56-b485-427c-bb77-31b4edf505ca
+Debugger listening on ws://localhost:3009/cbd5ea56-b485-427c-bb77-31b4edf505ca
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/25722ddc-e02b-4b79-85a7-9b07feecd283
+Debugger listening on ws://localhost:3009/25722ddc-e02b-4b79-85a7-9b07feecd283
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f0ab1d27-1cee-4d34-a698-a2303a669a18
+Debugger listening on ws://localhost:3009/f0ab1d27-1cee-4d34-a698-a2303a669a18
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f79fa492-120f-4210-8c18-2a7d52233c23
+Debugger listening on ws://localhost:3009/f79fa492-120f-4210-8c18-2a7d52233c23
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/81386817-21c0-4b94-9735-64a0dff8a9b2
+Debugger listening on ws://localhost:3009/81386817-21c0-4b94-9735-64a0dff8a9b2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/11bd7485-471e-423d-ba73-cb6da167a3f7
+Debugger listening on ws://localhost:3009/11bd7485-471e-423d-ba73-cb6da167a3f7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/23b7d9fc-48aa-40b4-a680-abc442cd2f80
+Debugger listening on ws://localhost:3009/23b7d9fc-48aa-40b4-a680-abc442cd2f80
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c17d0936-21d7-46f0-8aff-b876e3336015
+Debugger listening on ws://localhost:3009/c17d0936-21d7-46f0-8aff-b876e3336015
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/503cd2e4-9fd7-4f55-a088-01f681b820cd
+Debugger listening on ws://localhost:3009/503cd2e4-9fd7-4f55-a088-01f681b820cd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4fafbe8a-3983-444d-98e4-a9bf1f95cae6
+Debugger listening on ws://localhost:3009/4fafbe8a-3983-444d-98e4-a9bf1f95cae6
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cbd901d9-7a2d-40b9-9d3d-83c00b27b6e9
+Debugger listening on ws://localhost:3009/cbd901d9-7a2d-40b9-9d3d-83c00b27b6e9
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9a473486-e7b9-477c-b88d-ec46aeb40767
+Debugger listening on ws://localhost:3009/9a473486-e7b9-477c-b88d-ec46aeb40767
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2104505d-ee21-405a-aded-d4c6038670f4
+Debugger listening on ws://localhost:3009/2104505d-ee21-405a-aded-d4c6038670f4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/54db42a8-f9e0-40b1-b301-3deb45c79fdd
+Debugger listening on ws://localhost:3009/54db42a8-f9e0-40b1-b301-3deb45c79fdd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d3f3fdc1-3f8f-4b01-9d85-5de7b777c40f
+Debugger listening on ws://localhost:3009/d3f3fdc1-3f8f-4b01-9d85-5de7b777c40f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/fa282cc9-3750-4a5e-bc94-966726776774
+Debugger listening on ws://localhost:3009/fa282cc9-3750-4a5e-bc94-966726776774
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/60d50ea7-7652-4269-b266-a3454b4cafd5
+Debugger listening on ws://localhost:3009/60d50ea7-7652-4269-b266-a3454b4cafd5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/90d44408-d576-4844-b20b-00d10337a1d3
+Debugger listening on ws://localhost:3009/90d44408-d576-4844-b20b-00d10337a1d3
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0eedbd2e-3ca1-46a1-9ce6-bcbfa22a30f2
+Debugger listening on ws://localhost:3009/0eedbd2e-3ca1-46a1-9ce6-bcbfa22a30f2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dbe9b601-f7b4-432c-96e2-3139149921f0
+Debugger listening on ws://localhost:3009/dbe9b601-f7b4-432c-96e2-3139149921f0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/6d601700-e1a1-4453-b227-333f21656b29
+Debugger listening on ws://localhost:3009/6d601700-e1a1-4453-b227-333f21656b29
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1d138a0c-e8fa-405c-8253-a80c5e8a54da
+Debugger listening on ws://localhost:3009/1d138a0c-e8fa-405c-8253-a80c5e8a54da
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/378e5f66-341c-4958-b73a-bd2afe13898d
+Debugger listening on ws://localhost:3009/378e5f66-341c-4958-b73a-bd2afe13898d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dab426e6-c3f9-4fad-b571-2f557b81ede4
+Debugger listening on ws://localhost:3009/dab426e6-c3f9-4fad-b571-2f557b81ede4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/519404c3-0dad-416e-a190-1bd17807eee0
+Debugger listening on ws://localhost:3009/519404c3-0dad-416e-a190-1bd17807eee0
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/32917761-aa62-441d-98cb-ee594a806461
+Debugger listening on ws://localhost:3009/32917761-aa62-441d-98cb-ee594a806461
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/647c392a-e4ee-4810-8d23-6b4181804da3
+Debugger listening on ws://localhost:3009/647c392a-e4ee-4810-8d23-6b4181804da3
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/12a6a50e-23b1-4f19-a2bf-1fb4415e41b8
+Debugger listening on ws://localhost:3009/12a6a50e-23b1-4f19-a2bf-1fb4415e41b8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/15dc2968-8120-4a45-ac17-e4d8269254ed
+Debugger listening on ws://localhost:3009/15dc2968-8120-4a45-ac17-e4d8269254ed
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5979f098-5ebe-4570-a880-8ae09e8e2eae
+Debugger listening on ws://localhost:3009/5979f098-5ebe-4570-a880-8ae09e8e2eae
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a1c74f61-2bdf-4d3f-94c1-bfefb2ffe61d
+Debugger listening on ws://localhost:3009/a1c74f61-2bdf-4d3f-94c1-bfefb2ffe61d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/311b19fc-e821-4dbf-b3dc-2ad1fb68dcbd
+Debugger listening on ws://localhost:3009/311b19fc-e821-4dbf-b3dc-2ad1fb68dcbd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/81e7d125-3184-4366-b8b1-b0ad8a0ba887
+
+Debugger listening on ws://localhost:3009/81e7d125-3184-4366-b8b1-b0ad8a0ba887
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1b1b5465-1efd-4488-adb4-c44669f02886
+Debugger listening on ws://localhost:3009/1b1b5465-1efd-4488-adb4-c44669f02886
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/219420ed-5b4b-45e7-9445-e0dbaf146e7a
+Debugger listening on ws://localhost:3009/219420ed-5b4b-45e7-9445-e0dbaf146e7a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1f5d80e5-bf29-49a3-8925-49bb42019b1e
+Debugger listening on ws://localhost:3009/1f5d80e5-bf29-49a3-8925-49bb42019b1e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4e12b206-f1ca-4084-ba35-0e68df7f32c3
+Debugger listening on ws://localhost:3009/4e12b206-f1ca-4084-ba35-0e68df7f32c3
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9b437301-515b-422c-a6d7-177b732225b2
+Debugger listening on ws://localhost:3009/9b437301-515b-422c-a6d7-177b732225b2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9b7f2c24-ebb3-465d-b36a-c3500aacdf03
+Debugger listening on ws://localhost:3009/9b7f2c24-ebb3-465d-b36a-c3500aacdf03
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d1f1fdce-8824-4451-a349-225b81f18fc8
+Debugger listening on ws://localhost:3009/d1f1fdce-8824-4451-a349-225b81f18fc8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5272a2bf-0cbc-4c33-948c-13a495e95495
+Debugger listening on ws://localhost:3009/5272a2bf-0cbc-4c33-948c-13a495e95495
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ae25d3d5-c447-4181-90e5-268b869b552f
+Debugger listening on ws://localhost:3009/ae25d3d5-c447-4181-90e5-268b869b552f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cbd0b201-eff8-4582-9fce-599292ccde36
+Debugger listening on ws://localhost:3009/cbd0b201-eff8-4582-9fce-599292ccde36
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/87671261-079d-4c55-8a13-5159a67a728e
+Debugger listening on ws://localhost:3009/87671261-079d-4c55-8a13-5159a67a728e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/04e1e957-7bc0-499e-b382-2a92b04df941
+Debugger listening on ws://localhost:3009/04e1e957-7bc0-499e-b382-2a92b04df941
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a32bf69d-2351-44a3-b3b8-2f5ee25150e5
+Debugger listening on ws://localhost:3009/a32bf69d-2351-44a3-b3b8-2f5ee25150e5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/233cbd2a-ab6b-4214-9035-b9928cd40211
+Debugger listening on ws://localhost:3009/233cbd2a-ab6b-4214-9035-b9928cd40211
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f737a37e-1e48-443e-9950-af4ad744684b
+Debugger listening on ws://localhost:3009/f737a37e-1e48-443e-9950-af4ad744684b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/615970fc-6285-48ab-81cb-8f8d7ea0c642
+Debugger listening on ws://localhost:3009/615970fc-6285-48ab-81cb-8f8d7ea0c642
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/bac46381-5136-4f5d-99eb-0780c3ba5bae
+Debugger listening on ws://localhost:3009/bac46381-5136-4f5d-99eb-0780c3ba5bae
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b81f9e38-01d0-4786-ad0e-dbde030b1028
+Debugger listening on ws://localhost:3009/b81f9e38-01d0-4786-ad0e-dbde030b1028
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/578b4916-8f9a-42ca-983d-837d36b49339
+Debugger listening on ws://localhost:3009/578b4916-8f9a-42ca-983d-837d36b49339
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2a290ac3-e558-45be-8d86-8d9f4cfd5a3e
+Debugger listening on ws://localhost:3009/2a290ac3-e558-45be-8d86-8d9f4cfd5a3e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/67b8d7be-afa1-4079-8c57-7b4da9a06e54
+Debugger listening on ws://localhost:3009/67b8d7be-afa1-4079-8c57-7b4da9a06e54
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0db59694-d85f-4b8d-afc3-c148b016cf85
+Debugger listening on ws://localhost:3009/0db59694-d85f-4b8d-afc3-c148b016cf85
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/415ae2fe-e880-4326-bceb-facd6c538632
+Debugger listening on ws://localhost:3009/415ae2fe-e880-4326-bceb-facd6c538632
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/13af47e8-6891-4566-89f4-95ca1d2490df
+Debugger listening on ws://localhost:3009/13af47e8-6891-4566-89f4-95ca1d2490df
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/517299a8-d7d3-4fb9-b7c0-4fbdba363196
+Debugger listening on ws://localhost:3009/517299a8-d7d3-4fb9-b7c0-4fbdba363196
+
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1d06a972-e776-4e5e-90d5-5da86dc57a64
+Debugger listening on ws://localhost:3009/1d06a972-e776-4e5e-90d5-5da86dc57a64
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f5697e0e-1fc9-4b0a-8ebd-670e93a83b0a
+Debugger listening on ws://localhost:3009/f5697e0e-1fc9-4b0a-8ebd-670e93a83b0a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2117cd9a-4fd6-4514-aba1-8a4866fb6ab7
+Debugger listening on ws://localhost:3009/2117cd9a-4fd6-4514-aba1-8a4866fb6ab7
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7e1580ed-e71a-4cd5-8775-2ade7be4bc00
+Debugger listening on ws://localhost:3009/7e1580ed-e71a-4cd5-8775-2ade7be4bc00
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/dfb9414c-5a1c-4e6f-ad3e-ac07221571b5
+Debugger listening on ws://localhost:3009/dfb9414c-5a1c-4e6f-ad3e-ac07221571b5
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/050ef6eb-449b-4f22-8e89-62ddebdb6d09
+Debugger listening on ws://localhost:3009/050ef6eb-449b-4f22-8e89-62ddebdb6d09
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4dd17899-7f6c-4b94-a4dd-3ab7e7b8c4e8
+Debugger listening on ws://localhost:3009/4dd17899-7f6c-4b94-a4dd-3ab7e7b8c4e8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/37144943-976d-4b9a-8317-ca5fdb7b1a60
+Debugger listening on ws://localhost:3009/37144943-976d-4b9a-8317-ca5fdb7b1a60
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/54627864-8535-4495-ba84-fffdc15b40c2
+
+Debugger listening on ws://localhost:3009/54627864-8535-4495-ba84-fffdc15b40c2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/40d9bc72-4c0b-4873-96f8-86935c088c07
+Debugger listening on ws://localhost:3009/40d9bc72-4c0b-4873-96f8-86935c088c07
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/ef10f583-b400-4e38-8fb9-39591a57071b
+
+Debugger listening on ws://localhost:3009/ef10f583-b400-4e38-8fb9-39591a57071b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4da6315d-989e-4af0-9b48-ba00a688f789
+Debugger listening on ws://localhost:3009/4da6315d-989e-4af0-9b48-ba00a688f789
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0ccd9d09-7b5b-4c03-9aac-6ff569ee0842
+Debugger listening on ws://localhost:3009/0ccd9d09-7b5b-4c03-9aac-6ff569ee0842
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/48b3de94-c269-4b13-8206-84f081844d78
+Debugger listening on ws://localhost:3009/48b3de94-c269-4b13-8206-84f081844d78
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3c370bcb-ef8b-4c99-9c65-43cef5b87ce2
+Debugger listening on ws://localhost:3009/3c370bcb-ef8b-4c99-9c65-43cef5b87ce2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cb6fc91b-e47d-45c4-bbe9-b59bcee32901
+Debugger listening on ws://localhost:3009/cb6fc91b-e47d-45c4-bbe9-b59bcee32901
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/23e52da4-09c6-48fb-8817-e389d3a3725b
+Debugger listening on ws://localhost:3009/23e52da4-09c6-48fb-8817-e389d3a3725b
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/0b59feeb-a066-44bf-9975-952ac8a1f9d1
+Debugger listening on ws://localhost:3009/0b59feeb-a066-44bf-9975-952ac8a1f9d1
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cade0eb5-461b-4fa7-bb5d-730b2d3bdc91
+Debugger listening on ws://localhost:3009/cade0eb5-461b-4fa7-bb5d-730b2d3bdc91
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/8fcd15df-c07e-402a-babb-e02b5036ddd1
+Debugger listening on ws://localhost:3009/8fcd15df-c07e-402a-babb-e02b5036ddd1
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/48226405-c03e-4950-9a32-e82a5b88debf
+Debugger listening on ws://localhost:3009/48226405-c03e-4950-9a32-e82a5b88debf
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2dc4d106-d6d3-4ea1-9beb-85aac9cc2910
+Debugger listening on ws://localhost:3009/2dc4d106-d6d3-4ea1-9beb-85aac9cc2910
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/1543bd7b-4aaa-405c-beb8-9a9b14780980
+Debugger listening on ws://localhost:3009/1543bd7b-4aaa-405c-beb8-9a9b14780980
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/7e98eb2d-e8c9-4eeb-889c-42bae5a55f01
+Debugger listening on ws://localhost:3009/7e98eb2d-e8c9-4eeb-889c-42bae5a55f01
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d78d00c1-e175-4a79-b9d8-e412806f3797
+Debugger listening on ws://localhost:3009/d78d00c1-e175-4a79-b9d8-e412806f3797
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b848d38f-5fdd-4d37-b441-5c3964fb9836
+Debugger listening on ws://localhost:3009/b848d38f-5fdd-4d37-b441-5c3964fb9836
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/88877bf3-36b5-44bc-89e4-0df69ed3c860
+Debugger listening on ws://localhost:3009/88877bf3-36b5-44bc-89e4-0df69ed3c860
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b3418725-e5a3-4855-a3c6-284b853d7e92
+Debugger listening on ws://localhost:3009/b3418725-e5a3-4855-a3c6-284b853d7e92
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/cc2d9a76-45a1-4cd4-b07d-1a9246dec21c
+Debugger listening on ws://localhost:3009/cc2d9a76-45a1-4cd4-b07d-1a9246dec21c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/154f3c85-fddc-4cbb-bd07-df01b5936b68
+Debugger listening on ws://localhost:3009/154f3c85-fddc-4cbb-bd07-df01b5936b68
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/021e81f5-d7ae-48c4-aa76-d7092c59ddc9
+Debugger listening on ws://localhost:3009/021e81f5-d7ae-48c4-aa76-d7092c59ddc9
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2726198f-1569-4d43-8a67-b3c7fe04eaff
+
+Debugger listening on ws://localhost:3009/2726198f-1569-4d43-8a67-b3c7fe04eaff
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3b2f3203-c318-4e80-9c60-8cd0f5edbab8
+Debugger listening on ws://localhost:3009/3b2f3203-c318-4e80-9c60-8cd0f5edbab8
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4fecb7de-e584-483f-9778-47380f62e55f
+Debugger listening on ws://localhost:3009/4fecb7de-e584-483f-9778-47380f62e55f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/077b00a1-8dde-42e1-bd0a-95ddba049fa2
+Debugger listening on ws://localhost:3009/077b00a1-8dde-42e1-bd0a-95ddba049fa2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/bd66d766-1e84-437d-ab47-143501ec76ee
+Debugger listening on ws://localhost:3009/bd66d766-1e84-437d-ab47-143501ec76ee
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b52422e2-36a1-48d2-bde9-fa30721e727e
+Debugger listening on ws://localhost:3009/b52422e2-36a1-48d2-bde9-fa30721e727e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d3c060af-e3f2-4264-8981-3a8b24b91e31
+Debugger listening on ws://localhost:3009/d3c060af-e3f2-4264-8981-3a8b24b91e31
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/c5088f47-48d9-4ac8-bf11-a4fb89c49a47
+Debugger listening on ws://localhost:3009/c5088f47-48d9-4ac8-bf11-a4fb89c49a47
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/879fd7e2-7c7b-4848-ba7f-bf09409e7b92
+Debugger listening on ws://localhost:3009/879fd7e2-7c7b-4848-ba7f-bf09409e7b92
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b356bbf0-df64-4f95-95f9-c68837deefc9
+Debugger listening on ws://localhost:3009/b356bbf0-df64-4f95-95f9-c68837deefc9
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/857312ba-9013-4a75-8d95-ee19dbde9cfb
+Debugger listening on ws://localhost:3009/857312ba-9013-4a75-8d95-ee19dbde9cfb
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3a539f0b-d57a-41aa-8c87-3c990452ef77
+Debugger listening on ws://localhost:3009/3a539f0b-d57a-41aa-8c87-3c990452ef77
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e7fb8ed9-d794-4930-9c68-6977bb76f3b4
+Debugger listening on ws://localhost:3009/e7fb8ed9-d794-4930-9c68-6977bb76f3b4
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9b47ef85-d4bc-4dbf-8184-4124bf34555c
+Debugger listening on ws://localhost:3009/9b47ef85-d4bc-4dbf-8184-4124bf34555c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/703dcd40-4cdf-4854-9a4e-16552cc6f5c9
+Debugger listening on ws://localhost:3009/703dcd40-4cdf-4854-9a4e-16552cc6f5c9
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e085ffc5-7514-45c9-af0d-0f3d8ce903ff
+Debugger listening on ws://localhost:3009/e085ffc5-7514-45c9-af0d-0f3d8ce903ff
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e2e3d448-8d55-4b1b-9fca-e6b6afd5c868
+Debugger listening on ws://localhost:3009/e2e3d448-8d55-4b1b-9fca-e6b6afd5c868
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f9862c36-63a5-4244-bed0-837631aa162d
+Debugger listening on ws://localhost:3009/f9862c36-63a5-4244-bed0-837631aa162d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/32a1b682-2459-48a5-90be-cf33d2d915cf
+Debugger listening on ws://localhost:3009/32a1b682-2459-48a5-90be-cf33d2d915cf
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b8833e04-0328-40d5-96c5-a0d459897705
+Debugger listening on ws://localhost:3009/b8833e04-0328-40d5-96c5-a0d459897705
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/41dac527-201d-4c6f-b237-bbee563fd40e
+Debugger listening on ws://localhost:3009/41dac527-201d-4c6f-b237-bbee563fd40e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/d7d0aa64-f9c8-4ad0-8fa3-914445069d97
+Debugger listening on ws://localhost:3009/d7d0aa64-f9c8-4ad0-8fa3-914445069d97
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/67a63d34-32d1-4039-9f0b-d82d93d4644d
+Debugger listening on ws://localhost:3009/67a63d34-32d1-4039-9f0b-d82d93d4644d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4fddf67a-274b-476c-9e0b-b1c2452e289f
+Debugger listening on ws://localhost:3009/4fddf67a-274b-476c-9e0b-b1c2452e289f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/14573d3e-d774-4c71-868a-3720dbcc9b1d
+Debugger listening on ws://localhost:3009/14573d3e-d774-4c71-868a-3720dbcc9b1d
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e46b2dee-ff94-4f21-89fd-7099698a8e83
+Debugger listening on ws://localhost:3009/e46b2dee-ff94-4f21-89fd-7099698a8e83
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/615ef258-56c3-440d-968b-3a9deda48b6a
+Debugger listening on ws://localhost:3009/615ef258-56c3-440d-968b-3a9deda48b6a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/db8d4af7-9013-49bf-a6a9-5f53b62b7d4e
+Debugger listening on ws://localhost:3009/db8d4af7-9013-49bf-a6a9-5f53b62b7d4e
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/4448c367-865a-4ac4-a796-736f22a0a880
+Debugger listening on ws://localhost:3009/4448c367-865a-4ac4-a796-736f22a0a880
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/b5f11efd-ceb0-4d65-a1f9-99ddd7db1adf
+Debugger listening on ws://localhost:3009/b5f11efd-ceb0-4d65-a1f9-99ddd7db1adf
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2a6a742d-3f82-425f-9dda-2c47dac8ce08
+Debugger listening on ws://localhost:3009/2a6a742d-3f82-425f-9dda-2c47dac8ce08
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/669e3581-a96e-459c-8979-84506a1abade
+Debugger listening on ws://localhost:3009/669e3581-a96e-459c-8979-84506a1abade
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2a693aa8-30d3-4b8c-b979-3bca47de93be
+Debugger listening on ws://localhost:3009/2a693aa8-30d3-4b8c-b979-3bca47de93be
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/90adf9a4-8c0d-4d92-ae95-4a545a67cde2
+Debugger listening on ws://localhost:3009/90adf9a4-8c0d-4d92-ae95-4a545a67cde2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/941205d5-6d85-4d50-b3be-60e4a4da57d2
+Debugger listening on ws://localhost:3009/941205d5-6d85-4d50-b3be-60e4a4da57d2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/85d1d44a-9c6e-4c8b-8ee4-5ec91b995e6f
+Debugger listening on ws://localhost:3009/85d1d44a-9c6e-4c8b-8ee4-5ec91b995e6f
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/6143b60b-cf98-4535-a1b3-2df3c77b423c
+Debugger listening on ws://localhost:3009/6143b60b-cf98-4535-a1b3-2df3c77b423c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a2b144af-1759-4510-a11c-61eaba3e531a
+Debugger listening on ws://localhost:3009/a2b144af-1759-4510-a11c-61eaba3e531a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/72adfe46-983b-4a4a-bf92-657d3dc629c2
+Debugger listening on ws://localhost:3009/72adfe46-983b-4a4a-bf92-657d3dc629c2
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/9805f1a5-93c7-4ccc-8680-7406fd10b70a
+Debugger listening on ws://localhost:3009/9805f1a5-93c7-4ccc-8680-7406fd10b70a
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/2920b791-7b6b-4a0b-9cde-89ca8af2ed47
+Debugger listening on ws://localhost:3009/2920b791-7b6b-4a0b-9cde-89ca8af2ed47
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/be70ae7a-3e8f-4607-bfe1-9ac69e562bfd
+Debugger listening on ws://localhost:3009/be70ae7a-3e8f-4607-bfe1-9ac69e562bfd
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/3586ebc2-50c5-4eb7-b602-4c7a2b123625
+Debugger listening on ws://localhost:3009/3586ebc2-50c5-4eb7-b602-4c7a2b123625
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/5a1d3368-77a5-45fc-a368-b9f185712d1c
+Debugger listening on ws://localhost:3009/5a1d3368-77a5-45fc-a368-b9f185712d1c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/a817ecaf-f23e-4bb6-a3dd-600481b03a96
+Debugger listening on ws://localhost:3009/a817ecaf-f23e-4bb6-a3dd-600481b03a96
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/f49caf5a-0f98-4209-9d5c-bd75a054ea6c
+Debugger listening on ws://localhost:3009/f49caf5a-0f98-4209-9d5c-bd75a054ea6c
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/85044507-9157-490b-9d3c-8c1e91773401
+Debugger listening on ws://localhost:3009/85044507-9157-490b-9d3c-8c1e91773401
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/6490cc26-30c1-427b-8edd-e13546f6f456
+Debugger listening on ws://localhost:3009/6490cc26-30c1-427b-8edd-e13546f6f456
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/e163a8ae-b6ef-4064-b63c-d07a156ab7ee
+Debugger listening on ws://localhost:3009/e163a8ae-b6ef-4064-b63c-d07a156ab7ee
+For help, see: https://nodejs.org/en/docs/inspector
+
+Debugger listening on ws://localhost:3009/99758eb4-3d89-4bfc-8164-53f8245637b3
+Debugger listening on ws://localhost:3009/99758eb4-3d89-4bfc-8164-53f8245637b3
+For help, see: https://nodejs.org/en/docs/inspector
+
+node:internal/child_process:421
+    throw new ErrnoException(err, 'spawn');
+          ^
+Error: spawn ENAMETOOLONG
+    at ChildProcess.spawn (node:internal/child_process:421:11)
+    at spawn (node:child_process:796:9)
+    at fork (node:child_process:174:10)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\@nx\js\src\executors\node\node.impl.js:117:70
+    at new Promise (<anonymous>)
+    at Object.start (C:\Users\USER1\going-monorepo-clean\node_modules\@nx\js\src\executors\node\node.impl.js:113:36)
+    at async processQueue (C:\Users\USER1\going-monorepo-clean\node_modules\@nx\js\src\executors\node\node.impl.js:78:13)
+    at async Timeout.<anonymous> (C:\Users\USER1\going-monorepo-clean\node_modules\@nx\js\src\executors\node\lib\coalescing-debounce.js:24:40) {
+  errno: -4064,
+  code: 'ENAMETOOLONG',
+  syscall: 'spawn'
+}
+Node.js v24.11.1
+
+
+
+ NX   Successfully ran target serve for project tours-service and 1 task it depends on
+
+

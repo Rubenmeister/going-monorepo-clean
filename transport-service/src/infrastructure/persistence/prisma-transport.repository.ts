@@ -22,7 +22,7 @@ export class PrismaTransportRepository implements ITripRepository {
         pricePerKm: primitives.basePrice,
         pricePerPassenger: primitives.pricePerPassenger,
         currency: primitives.currency,
-        status: primitives.status,
+        status: primitives.status.toUpperCase() as any, // Cast to any to avoid Enum mismatch during build
         originCity: primitives.originCity,
         originAddress: primitives.originAddress,
         destCity: primitives.destCity,
@@ -31,10 +31,10 @@ export class PrismaTransportRepository implements ITripRepository {
         stationDest: primitives.stationDest,
         departureTime: primitives.departureTime,
         arrivalTime: primitives.estimatedArrivalTime,
-        passengers: primitives.passengers,
+        passengers: primitives.passengers as any,
       },
       update: {
-        status: primitives.status,
+        status: primitives.status.toUpperCase() as any,
         pricePerKm: primitives.basePrice,
         pricePerPassenger: primitives.pricePerPassenger,
         departureTime: primitives.departureTime,
@@ -45,7 +45,7 @@ export class PrismaTransportRepository implements ITripRepository {
         destAddress: primitives.destAddress,
         stationOrigin: primitives.stationOrigin,
         stationDest: primitives.stationDest,
-        passengers: primitives.passengers,
+        passengers: primitives.passengers as any,
       },
     });
   }
@@ -63,7 +63,7 @@ export class PrismaTransportRepository implements ITripRepository {
   async findAvailableSharedTrips(origin: Location, dest: Location, vehicleType: 'SUV' | 'VAN'): Promise<Trip[]> {
     const records = await this.prisma.transport.findMany({
       where: {
-        status: 'SCHEDULED',
+        status: 'SCHEDULED' as any,
         vehicleType: vehicleType,
         originCity: origin.city,
         destCity: dest.city,
@@ -96,7 +96,7 @@ export class PrismaTransportRepository implements ITripRepository {
       driverId: record.driverId,
       vehicleType: record.vehicleType as VehicleType,
       mode: record.mode as TravelMode,
-      status: record.status as TripStatus,
+      status: (record.status as string).toLowerCase() as any,
       passengers: passengers,
       originCity: record.originCity,
       originAddress: record.originAddress,

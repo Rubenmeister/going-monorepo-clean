@@ -2,7 +2,8 @@
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 export default function HomePage() {
-  const { user, isAuthenticated, login, logout } = useMonorepoApp();
+  const { auth } = useMonorepoApp();
+  const { user, isAuthenticated, login, logout } = auth;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 font-sans">

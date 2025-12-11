@@ -20,7 +20,7 @@ export class PrismaTourRepository implements ITourRepository {
           hostId: primitives.hostId,
           title: primitives.title,
           description: primitives.description,
-          status: primitives.status,
+
           pricePerPerson: primitives.pricePerPerson,
           currency: primitives.currency,
           maxCapacity: primitives.maxCapacity,
@@ -76,7 +76,7 @@ export class PrismaTourRepository implements ITourRepository {
         data: {
           title: primitives.title,
           description: primitives.description,
-          status: primitives.status,
+
           pricePerPerson: primitives.pricePerPerson,
           maxCapacity: primitives.maxCapacity,
           durationHours: primitives.durationHours,
