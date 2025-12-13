@@ -1,69 +1,76 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'react-native';
 
-// Importamos pantallas
-import { LandingScreen } from './screens/LandingScreen';
-import { LoginScreen } from '../screens/LoginScreen';
-import { RegisterScreen } from '../screens/RegisterScreen';
+// Import all screens
+import { LandingScreen } from '../screens/LandingScreen';
 import { HomeScreen } from '../screens/HomeScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { RegisterScreen } from '../screens/RegisterScreen';
+import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
+import { ChatScreen } from '../screens/ChatScreen';
 
-// Iconos
-import { Home, User } from 'lucide-react-native';
+// Simple navigation state management for web (without React Navigation)
+type ScreenName = 'Landing' | 'Main' | 'Register' | 'ForgotPassword' | 'Chat';
 
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
-
-// Design tokens
-const COLORS = {
-  goingRed: '#FF4E43',
-};
-
-// Navegación Principal (Tabs inferiores: Inicio y Perfil)
-function MainTabs() {
-  return (
-    <Tab.Navigator
-      id="MainTabs"
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: COLORS.goingRed,
-        tabBarInactiveTintColor: 'gray',
-      }}
-    >
-      <Tab.Screen 
-        name="Inicio" 
-        component={HomeScreen} 
-        options={{ tabBarIcon: ({ color }) => <Home color={color} size={24} /> }}
-      />
-      <Tab.Screen 
-        name="Perfil" 
-        component={ProfileScreen} 
-        options={{ tabBarIcon: ({ color }) => <User color={color} size={24} /> }}
-      />
-    </Tab.Navigator>
-  );
+interface NavigationState {
+  currentScreen: ScreenName;
+  params?: any;
 }
 
-// App Principal
 export const App = () => {
+  const [navState, setNavState] = useState<NavigationState>({
+    currentScreen: 'Landing',
+    params: undefined,
+  });
+
+  // Simple navigation object
+  const navigation = {
+    navigate: (screen: ScreenName, params?: any) => {
+      console.log('Navigate to:', screen, params);
+      setNavState({ currentScreen: screen, params });
+    },
+    goBack: () => {
+      console.log('Go back');
+      // Go back to previous screen (smart back)
+      if (navState.currentScreen === 'Chat') {
+        setNavState({ currentScreen: 'Main', params: undefined });
+      } else {
+        setNavState({ currentScreen: 'Landing', params: undefined });
+      }
+    },
+  };
+
+  // Render current screen based on navigation state
+  const renderScreen = () => {
+    switch (navState.currentScreen) {
+      case 'Main':
+        return <HomeScreen navigation={navigation} />;
+      case 'Register':
+        return <RegisterScreen navigation={navigation} />;
+      case 'ForgotPassword':
+        return <ForgotPasswordScreen navigation={navigation} />;
+      case 'Chat':
+        return <ChatScreen navigation={navigation} />;
+      case 'Landing':
+      default:
+        return <LandingScreen navigation={navigation} />;
+    }
+  };
+
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.goingRed} />
-      <NavigationContainer>
-        <Stack.Navigator id="RootStack" screenOptions={{ headerShown: false }}>
-          {/* Flujo: Landing -> Login/Register -> Main */}
-          <Stack.Screen name="Landing" component={LandingScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="Main" component={MainTabs} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <View style={styles.container}>
+        {renderScreen()}
+      </View>
     </SafeAreaProvider>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+});
 
 export default App;

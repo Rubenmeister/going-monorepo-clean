@@ -11,15 +11,20 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          red: '#FF4E43',      // Going Red (updated to match prototype)
-          black: '#1A1A1A',    // Charcoal
+          red: '#FF3333',      // Going Red (Neo-Brutalism)
+          black: '#1A1A1A',    // Dark Charcoal
           white: '#ffffff',
           gray: '#F5F5F5',     // Off-White
           blue: '#0066FF',     // Electric Blue
-        }
+        },
+        brandRed: '#FF3333',
+        electricBlue: '#0066FF',
+        darkCharcoal: '#1A1A1A'
       },
       fontFamily: {
         sans: ['"Nunito Sans"', 'sans-serif'],
+        spaceGrotesk: ['"Space Grotesk"', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
       keyframes: {
         zoomIn: {

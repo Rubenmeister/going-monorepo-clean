@@ -61,7 +61,7 @@ export const Carousel: React.FC<CarouselProps> = ({
         {items.map((item) => (
           <div 
             key={item.id} 
-            className="min-w-full relative aspect-[16/9] cursor-pointer group"
+            className="min-w-full relative aspect-[16/9] cursor-pointer group border-2 border-black"
           >
             <img 
               src={item.image} 
