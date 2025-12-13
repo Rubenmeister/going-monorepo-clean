@@ -8,12 +8,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 
 const { height } = Dimensions.get('window');
+
+// ESM import for logo
+import goingLogoWhiteSymbol from '../assets/logo_white_symbol_black_text.png';
 
 // Design tokens
 const COLORS = {
@@ -146,7 +150,7 @@ export function RegisterScreen({ navigation }: any) {
           >
             <ArrowLeft color={COLORS.white} size={24} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Crear Cuenta</Text>
+          <Image source={{ uri: goingLogoWhiteSymbol }} style={styles.headerLogo} resizeMode="contain" />
           <View style={styles.headerSpacer} />
         </View>
 
@@ -230,6 +234,10 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  headerLogo: {
+    width: 120,
+    height: 40,
   },
   headerSpacer: {
     width: 40,

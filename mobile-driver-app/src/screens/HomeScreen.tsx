@@ -50,8 +50,10 @@ export function HomeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A202C', // Dark background behind map
-  },
+    backgroundColor: '#1A202C',
+    borderWidth: 2,
+    borderColor: '#000',
+  },// Dark background behind map
   mapPlaceholder: {
     flex: 1,
     backgroundColor: '#2D3748', // Simulated Dark Map

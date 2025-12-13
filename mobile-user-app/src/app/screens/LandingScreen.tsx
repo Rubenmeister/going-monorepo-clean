@@ -1,72 +1,178 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   TextInput,
-  Image,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  Animated,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
-// Design tokens from prototype
+// Design tokens matching reference design
 const COLORS = {
-  goingRed: '#FF4E43',
-  charcoal: '#1A1A1A',
-  offWhite: '#F5F5F5',
+  goingRed: '#FF4D4D',
   white: '#FFFFFF',
-  inputBg: 'rgba(255, 255, 255, 0.9)',
-  errorRing: '#FACC15', // Yellow for errors
+  black: '#1A1A1A',
+  lightGray: '#F5F5F5',
+  inputBorder: '#E5E5E5',
+  placeholderText: '#9CA3AF',
+  facebookBlue: '#1877F2',
+  googleRed: '#EA4335',
+  googleBlue: '#4285F4',
+  googleYellow: '#FBBC05',
+  googleGreen: '#34A853',
 };
 
 interface LandingScreenProps {
   navigation: any;
 }
 
+// Going Logo Component - Red symbol matching reference
+const GoingLogoSymbol = () => (
+  <View style={logoStyles.container}>
+    <View style={logoStyles.gShape}>
+      <View style={logoStyles.gCurve} />
+      <View style={logoStyles.gTail} />
+      <View style={logoStyles.gDot} />
+    </View>
+  </View>
+);
+
+const logoStyles = StyleSheet.create({
+  container: {
+    width: 80,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gShape: {
+    width: 70,
+    height: 80,
+    position: 'relative',
+  },
+  gCurve: {
+    width: 55,
+    height: 55,
+    borderRadius: 28,
+    borderWidth: 10,
+    borderColor: COLORS.goingRed,
+    borderRightColor: 'transparent',
+    transform: [{ rotate: '45deg' }],
+  },
+  gTail: {
+    position: 'absolute',
+    bottom: 8,
+    right: -5,
+    width: 30,
+    height: 10,
+    backgroundColor: COLORS.goingRed,
+    borderRadius: 5,
+    transform: [{ rotate: '-25deg' }],
+  },
+  gDot: {
+    position: 'absolute',
+    top: -5,
+    right: 5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.goingRed,
+  },
+});
+
 export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
+  const [showSplash, setShowSplash] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
-  const [touched, setTouched] = useState<{ username?: boolean; password?: boolean }>({});
 
-  const validate = () => {
-    const newErrors: { username?: string; password?: string } = {};
-    let isValid = true;
+  // Animation values
+  const suvPosition = useRef(new Animated.Value(-200)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
 
-    if (!username.trim()) {
-      newErrors.username = 'El usuario es requerido';
-      isValid = false;
-    }
-
-    if (!password) {
-      newErrors.password = 'La contraseña es requerida';
-      isValid = false;
-    } else if (password.length < 6) {
-      newErrors.password = 'Mínimo 6 caracteres';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
+  useEffect(() => {
+    // Phase 1: SUV animation - slides from left to right
+    Animated.timing(suvPosition, {
+      toValue: width + 200,
+      duration: 2500,
+      useNativeDriver: true,
+    }).start(() => {
+      // Phase 2: Logo fade in after SUV exits
+      Animated.sequence([
+        Animated.timing(logoOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(taglineOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.delay(800),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShowSplash(false);
+      });
+    });
+  }, []);
 
   const handleLogin = () => {
-    setTouched({ username: true, password: true });
-    if (validate()) {
-      navigation.navigate('Login');
-    }
+    navigation.navigate('Main');
   };
 
-  const handleBlur = (field: 'username' | 'password') => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-    validate();
+  const handleRegisterUser = () => {
+    navigation.navigate('Register', { userType: 'user' });
   };
+
+  const handleRegisterDriver = () => {
+    navigation.navigate('Register', { userType: 'driver' });
+  };
+
+  // Splash Screen with SUV Animation
+  if (showSplash) {
+    return (
+      <View style={splashStyles.container}>
+        {/* SUV Animation */}
+        <Animated.View 
+          style={[
+            splashStyles.suvContainer,
+            { transform: [{ translateX: suvPosition }] }
+          ]}
+        >
+          <Image
+            source={require('../../assets/suv_black_right.png')}
+            style={splashStyles.suvImage}
+            resizeMode="contain"
+          />
+        </Animated.View>
+
+        {/* Logo Reveal */}
+        <Animated.View style={[splashStyles.logoRevealContainer, { opacity: logoOpacity }]}>
+          <GoingLogoSymbol />
+          <Text style={splashStyles.logoText}>Going</Text>
+        </Animated.View>
+
+        {/* Tagline */}
+        <Animated.Text style={[splashStyles.tagline, { opacity: taglineOpacity }]}>
+          NOS MOVEMOS CONTIGO
+        </Animated.Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -77,14 +183,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../assets/logo_white_symbol_black_text.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+            <GoingLogoSymbol />
+            <Text style={styles.logoText}>Going</Text>
+            <Text style={styles.tagline}>NOS MOVEMOS CONTIGO</Text>
           </View>
 
           {/* Login Form */}
@@ -92,59 +197,31 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
             {/* Username Input */}
             <View style={styles.inputWrapper}>
               <TextInput
-                style={[
-                  styles.input,
-                  errors.username && touched.username && styles.inputError
-                ]}
+                style={styles.input}
                 placeholder="Usuario"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.placeholderText}
                 value={username}
-                onChangeText={(text) => {
-                  setUsername(text);
-                  if (touched.username) validate();
-                }}
-                onBlur={() => handleBlur('username')}
+                onChangeText={setUsername}
                 autoCapitalize="none"
               />
-              {errors.username && touched.username && (
-                <Text style={styles.errorText}>{errors.username}</Text>
-              )}
             </View>
 
             {/* Password Input */}
             <View style={styles.inputWrapper}>
               <TextInput
-                style={[
-                  styles.input,
-                  errors.password && touched.password && styles.inputError
-                ]}
+                style={styles.input}
                 placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.placeholderText}
                 value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (touched.password) validate();
-                }}
-                onBlur={() => handleBlur('password')}
+                onChangeText={setPassword}
                 secureTextEntry
               />
-              {errors.password && touched.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
-              )}
             </View>
 
-            {/* Links */}
-            <View style={styles.linksContainer}>
-              <TouchableOpacity>
-                <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
-              </TouchableOpacity>
-              <View style={styles.registerLinkContainer}>
-                <Text style={styles.registerPrompt}>¿Aún no te has registrado?</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                  <Text style={styles.registerLink}>Regístrate aquí en dos pasos</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            {/* Forgot Password Link */}
+            <TouchableOpacity style={styles.forgotPasswordContainer}>
+              <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
 
             {/* Login Button */}
             <TouchableOpacity 
@@ -165,14 +242,31 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
             </View>
 
             <View style={styles.socialButtons}>
+              {/* Google Button */}
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}>G</Text>
+                <Text style={styles.googleIcon}>G</Text>
               </TouchableOpacity>
+              {/* Facebook Button */}
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>f</Text>
+                <Text style={[styles.socialIcon, { color: COLORS.facebookBlue }]}>f</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}></Text>
+              {/* Apple Button */}
+              <TouchableOpacity style={[styles.socialButton, styles.appleButton]}>
+                <Text style={styles.appleIcon}></Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Register Section */}
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerPrompt}>¿No tienes una cuenta?</Text>
+            <View style={styles.registerLinks}>
+              <TouchableOpacity onPress={handleRegisterUser}>
+                <Text style={styles.registerLink}>Usuario</Text>
+              </TouchableOpacity>
+              <Text style={styles.registerSeparator}>|</Text>
+              <TouchableOpacity onPress={handleRegisterDriver}>
+                <Text style={styles.registerLink}>Conductor</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -182,10 +276,49 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   );
 };
 
+// Splash screen styles
+const splashStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  suvContainer: {
+    position: 'absolute',
+    top: '45%',
+    left: 0,
+  },
+  suvImage: {
+    width: 180,
+    height: 100,
+  },
+  logoRevealContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  logoText: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: COLORS.black,
+    marginTop: 8,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  tagline: {
+    fontSize: 14,
+    fontWeight: '400',
+    fontStyle: 'italic',
+    color: COLORS.black,
+    letterSpacing: 4,
+    marginTop: 24,
+  },
+});
+
+// Main landing screen styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.goingRed,
+    backgroundColor: COLORS.white,
   },
   keyboardView: {
     flex: 1,
@@ -194,105 +327,92 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: 32,
+    paddingVertical: 40,
     minHeight: height - 100,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 48,
   },
-  logo: {
-    width: width * 0.5,
-    height: 160,
+  logoText: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: COLORS.black,
+    marginTop: 8,
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  },
+  tagline: {
+    fontSize: 12,
+    fontWeight: '400',
+    fontStyle: 'italic',
+    color: COLORS.black,
+    letterSpacing: 4,
+    marginTop: 16,
   },
   formContainer: {
     width: '100%',
     maxWidth: 400,
-    gap: 16,
   },
   inputWrapper: {
-    marginBottom: 4,
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: COLORS.inputBg,
-    height: 48,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: COLORS.charcoal,
-  },
-  inputError: {
-    borderWidth: 2,
-    borderColor: COLORS.errorRing,
     backgroundColor: COLORS.white,
+    height: 56,
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    color: COLORS.black,
+    borderWidth: 1,
+    borderColor: COLORS.inputBorder,
   },
-  errorText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  linksContainer: {
+  forgotPasswordContainer: {
     alignItems: 'flex-end',
-    gap: 8,
-    marginTop: 8,
+    marginBottom: 24,
   },
-  linkText: {
-    color: COLORS.white,
+  forgotPasswordText: {
+    color: COLORS.black,
     fontSize: 14,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  registerLinkContainer: {
-    alignItems: 'flex-end',
-  },
-  registerPrompt: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 14,
-  },
-  registerLink: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   loginButton: {
-    backgroundColor: COLORS.charcoal,
-    height: 52,
-    borderRadius: 14,
+    backgroundColor: COLORS.black,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 5,
   },
   loginButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   socialContainer: {
     width: '100%',
     marginTop: 32,
-    gap: 16,
+    alignItems: 'center',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    width: '100%',
+    marginBottom: 20,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: COLORS.inputBorder,
   },
   dividerText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: COLORS.placeholderText,
+    fontSize: 14,
+    marginHorizontal: 16,
   },
   socialButtons: {
     flexDirection: 'row',
@@ -300,22 +420,53 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.inputBorder,
+  },
+  appleButton: {
+    backgroundColor: COLORS.black,
+  },
+  googleIcon: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.googleBlue,
   },
   socialIcon: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.charcoal,
+  },
+  appleIcon: {
+    fontSize: 26,
+    color: COLORS.white,
+  },
+  registerContainer: {
+    marginTop: 48,
+    alignItems: 'center',
+  },
+  registerPrompt: {
+    color: COLORS.placeholderText,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  registerLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  registerLink: {
+    color: COLORS.goingRed,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  registerSeparator: {
+    color: COLORS.placeholderText,
+    fontSize: 16,
+    marginHorizontal: 12,
   },
 });
 

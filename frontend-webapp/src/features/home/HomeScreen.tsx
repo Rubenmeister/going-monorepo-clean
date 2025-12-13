@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Carousel } from '../../components/ui/Carousel';
+import { motion } from 'framer-motion';
+import suvImage from '/suv_black_right_v2.png';
 import { Sidebar } from '../../components/ui/Sidebar';
 
 // Featured destinations for the carousel
@@ -36,7 +38,22 @@ export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 border-2 border-black">
+      <div className="animate-marquee bg-brand-red text-white whitespace-nowrap overflow-hidden">
+        <div className="animate-marquee inline-block px-4">
+          MOVE NOW • JOIN THE RIDE • NOS MOVEMOS CONTIGO
+        </div>
+      </div>
+      {/* SUV Animation */}
+// @ts-expect-error
+      <motion.img
+        src={suvImage}
+        alt="SUV"
+        className="absolute inset-y-1/2 left-0 w-48 h-auto object-contain"
+        initial={{ x: '-100%' }}
+        animate={{ x: '100%' }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      />
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 
@@ -95,7 +112,7 @@ export const HomeScreen: React.FC = () => {
           {/* Start Trip */}
           <button 
             onClick={() => navigate('/trips/new')}
-            className="group relative bg-gradient-to-br from-brand-red to-red-600 rounded-2xl p-6 text-white shadow-lg shadow-red-200 hover:shadow-xl hover:shadow-red-300 transition-all duration-300 hover:-translate-y-1"
+            className="group relative bg-gradient-to-br from-brand-red to-red-600 rounded-2xl p-6 text-white shadow-lg shadow-red-200 hover:shadow-xl hover:shadow-red-300 transition-all duration-300 hover:-translate-y-1 border-2 border-black"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -119,7 +136,7 @@ export const HomeScreen: React.FC = () => {
           {/* Send Package */}
           <button 
             onClick={() => navigate('/packages/new')}
-            className="group relative bg-gradient-to-br from-brand-black to-gray-800 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            className="group relative bg-gradient-to-br from-brand-black to-gray-800 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-black"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">

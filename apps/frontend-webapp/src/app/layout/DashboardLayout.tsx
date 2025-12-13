@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Car, Hotel, Map, Ticket, CreditCard, GraduationCap, Navigation, User, Menu, X } from 'lucide-react';
+import { FloatingCTA } from '../components/FloatingCTA';
 
 const services = [
   { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
@@ -23,7 +24,7 @@ export const DashboardLayout = ({ children, activeModule, setActiveModule }: any
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {services.map((s) => (
             <button key={s.id} onClick={() => setActiveModule(s.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeModule === s.id ? 'bg-[#ff4c41] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}>
+              className={w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all }>
               {s.icon} <span className="text-sm font-medium">{s.label}</span>
             </button>
           ))}
@@ -47,7 +48,10 @@ export const DashboardLayout = ({ children, activeModule, setActiveModule }: any
             </div>
           </div>
         )}
-        <div className="flex-1 overflow-auto p-4 md:p-8">{children}</div>
+        <div className="flex-1 overflow-auto p-4 md:p-8 pb-32">{children}</div>
+        
+        {/* Floating CTA */}
+        <FloatingCTA />
       </main>
     </div>
   );

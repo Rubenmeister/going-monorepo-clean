@@ -98,7 +98,8 @@
         "typecheckTargetName": "typecheck",
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
-      }
+      },
+      "exclude": ["going_app_prototype/**/*"]
     }
   ],
   "generators": {
