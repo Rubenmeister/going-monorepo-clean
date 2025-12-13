@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../libs/domains/payment-frontend/src/lib/payment-frontend.ts"],"sourcesContent":["export function paymentFrontend(): string {\r\n  return 'payment-frontend';\r\n}\r\n"],"names":["paymentFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

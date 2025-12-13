@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../libs/domains/notification-frontend/src/lib/notification-frontend.ts"],"sourcesContent":["export function notificationFrontend(): string {\r\n  return 'notification-frontend';\r\n}\r\n"],"names":["notificationFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}
