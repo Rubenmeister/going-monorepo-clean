@@ -1,6 +1,8 @@
-.nx/installation
-.nx/cache
-.nx/workspace-data
+# Build output
+dist/
+
+# NX local files
+.nx/
 
 
 .cursor/rules/nx-rules.mdc

@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../libs/domains/accommodation-frontend/src/lib/accommodation-frontend.ts"],"sourcesContent":["export function accommodationFrontend(): string {\r\n  return 'accommodation-frontend';\r\n}\r\n"],"names":["accommodationFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}

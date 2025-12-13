@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../../../../libs/domains/transport-frontend/src/lib/transport-frontend.ts"],"sourcesContent":["export function transportFrontend(): string {\r\n  return 'transport-frontend';\r\n}\r\n"],"names":["transportFrontend"],"rangeMappings":";;;;;;;;;;;;","mappings":";;;;+BAAgBA;;;eAAAA;;;AAAT,SAASA;IACd,OAAO;AACT"}
