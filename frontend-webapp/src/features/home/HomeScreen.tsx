@@ -45,9 +45,8 @@ export const HomeScreen: React.FC = () => {
         </div>
       </div>
       {/* SUV Animation */}
-// @ts-expect-error
       <motion.img
-        src={suvImage}
+        src={suvImage as unknown as string}
         alt="SUV"
         className="absolute inset-y-1/2 left-0 w-48 h-auto object-contain"
         initial={{ x: '-100%' }}

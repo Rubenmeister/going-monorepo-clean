@@ -4,6 +4,11 @@ dist/
 # NX local files
 .nx/
 
+# Environment files with secrets
+.env
+.env.local
+config/.env.local
+
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

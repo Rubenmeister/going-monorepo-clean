@@ -1,0 +1,16 @@
+{
+  "types": [
+    {"type": "feat", "section": "🚀 Features"},
+    {"type": "fix", "section": "🐛 Bug Fixes"},
+    {"type": "perf", "section": "⚡ Performance"},
+    {"type": "refactor", "section": "♻️ Refactoring"},
+    {"type": "docs", "section": "📚 Documentation"},
+    {"type": "build", "section": "🏗️ Build"},
+    {"type": "ci", "section": "🔧 CI/CD"},
+    {"type": "test", "section": "✅ Tests"},
+    {"type": "chore", "hidden": true},
+    {"type": "style", "hidden": true}
+  ],
+  "commitUrlFormat": "https://github.com/your-org/going-monorepo/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/your-org/going-monorepo/compare/{{previousTag}}...{{currentTag}}"
+}

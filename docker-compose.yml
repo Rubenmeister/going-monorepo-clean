@@ -18,7 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
-  # Optional: pgAdmin for database management UI
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: going_jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - '16686:16686' # Jaeger UI
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:16686']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # pgAdmin for database management UI
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: going_pgadmin

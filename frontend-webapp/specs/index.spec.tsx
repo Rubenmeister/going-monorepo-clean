@@ -1,10 +1,20 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import Page from '../src/app/page';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '../src/contexts';
+import App from '../src/app/app';
 
-describe('Page', () => {
+// Mock the SplashScreen to skip animation
+jest.mock('../src/screens/SplashScreen', () => ({
+  SplashScreen: ({ onFinish }: { onFinish: () => void }) => {
+    React.useEffect(() => { onFinish(); }, [onFinish]);
+    return null;
+  },
+}));
+
+describe('App', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<Page />);
+    const { baseElement } = render(<App />);
     expect(baseElement).toBeTruthy();
   });
 });
