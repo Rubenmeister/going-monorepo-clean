@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ObservabilityModule } from '@going/shared/observability';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { ParcelController } from './api/parcel.controller';
 import {
@@ -11,7 +12,8 @@ import {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.PARCEL_DB_URL), // .env
+    ObservabilityModule.forRoot({ serviceName: 'parcel-service' }),
+    MongooseModule.forRoot(process.env['PARCEL_DB_URL'] || 'mongodb://localhost:27017/parcel'),
     InfrastructureModule,
   ],
   controllers: [

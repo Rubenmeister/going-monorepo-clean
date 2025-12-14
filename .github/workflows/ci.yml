@@ -74,6 +74,9 @@ jobs:
       - name: 🔍 Run ESLint
         run: npx nx run-many --target=lint --all --parallel=3
 
+      - name: 📐 Check Nx formatting
+        run: npx nx format:check
+
       - name: 🎨 Check Prettier formatting
         run: npx prettier --check .
 
@@ -125,7 +128,15 @@ jobs:
     needs: [setup, lint, test]
     strategy:
       matrix:
-        project: [api-gateway, admin-dashboard, user-auth-service, booking-service, tours-service, payment-service]
+        project:
+          [
+            api-gateway,
+            admin-dashboard,
+            user-auth-service,
+            booking-service,
+            tours-service,
+            payment-service,
+          ]
     steps:
       - name: 🔄 Checkout code
         uses: actions/checkout@v4
@@ -250,7 +261,14 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:
       matrix:
-        service: [api-gateway, user-auth-service, booking-service, tours-service, payment-service]
+        service:
+          [
+            api-gateway,
+            user-auth-service,
+            booking-service,
+            tours-service,
+            payment-service,
+          ]
     steps:
       - name: 🔄 Checkout code
         uses: actions/checkout@v4
@@ -280,7 +298,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./apps/${{ matrix.service }}/Dockerfile
+          file: ./Dockerfile.prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -307,12 +325,12 @@ jobs:
           echo "🚀 Deploying to staging environment..."
           # Add your deployment script here
           # Example: kubectl apply -f k8s/staging/
-          
+
       - name: 🔍 Health check
         run: |
           echo "🔍 Running health checks..."
           # Add health check commands here
-          
+
       - name: 📢 Notify deployment
         uses: 8398a7/action-slack@v3
         with:
@@ -338,7 +356,7 @@ jobs:
         run: |
           echo "🌟 Deploying to production environment..."
           # Add your production deployment script here
-          
+
       - name: 📢 Notify production deployment
         uses: 8398a7/action-slack@v3
         with:

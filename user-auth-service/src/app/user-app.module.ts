@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '@going-monorepo-clean/prisma-client';
+import { ObservabilityModule } from '@going/shared/observability';
 import { AppController } from './app.controller';
 import { AuthController } from '../api/auth.controller';
 import { AppService } from './app.service';
@@ -16,7 +17,10 @@ import {
 } from '@going-monorepo-clean/domains-user-core';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [
+    PrismaModule,
+    ObservabilityModule.forRoot({ serviceName: 'user-auth-service' }),
+  ],
   controllers: [AppController, AuthController],
   providers: [
     AppService,

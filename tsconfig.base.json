@@ -41,7 +41,10 @@
       "@going-monorepo-clean/domains-booking-application": ["libs/domains/booking/application/src/index.ts"],
       "@going-monorepo-clean/domains-tracking-core": ["libs/domains/tracking/core/src/index.ts"],
       "@going-monorepo-clean/domains-tracking-application": ["libs/domains/tracking/application/src/index.ts"],
-      "@going-monorepo-clean/shared-types": ["libs/shared-types/src/index.ts"]
+      "@going-monorepo-clean/shared-types": ["libs/shared-types/src/index.ts"],
+      "@going/shared/observability": ["libs/shared/observability/src/index.ts"],
+      "@going/shared/permissions": ["libs/shared/permissions/src/index.ts"],
+      "@going/shared/realtime": ["libs/shared/realtime/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
