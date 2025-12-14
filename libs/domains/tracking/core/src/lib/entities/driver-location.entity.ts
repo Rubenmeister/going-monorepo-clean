@@ -1,48 +1,61 @@
-import { UUID } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope
-import { Location } from '../value-objects/location.vo';
+import { Result, ok, err } from 'neverthrow';
 
 export interface DriverLocationProps {
-  driverId: UUID;
-  location: Location;
-  updatedAt: Date;
+  driverId: string;
+  latitude: number;
+  longitude: number;
+  timestamp: Date;
 }
 
 export class DriverLocation {
-  readonly driverId: UUID;
-  readonly location: Location;
-  readonly updatedAt: Date;
+  readonly driverId: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly timestamp: Date;
 
   private constructor(props: DriverLocationProps) {
     this.driverId = props.driverId;
-    this.location = props.location;
-    this.updatedAt = props.updatedAt;
+    this.latitude = props.latitude;
+    this.longitude = props.longitude;
+    this.timestamp = props.timestamp;
   }
 
-  // "Factory method" para crear o actualizar una ubicación
   public static create(props: {
-    driverId: UUID;
-    location: Location;
-  }): DriverLocation {
-    return new DriverLocation({
-      ...props,
-      updatedAt: new Date(),
-    });
+    driverId: string;
+    latitude: number;
+    longitude: number;
+  }): Result<DriverLocation, Error> {
+    if (!props.driverId) return err(new Error('Driver ID is required'));
+    if (props.latitude < -90 || props.latitude > 90)
+      return err(new Error('Invalid latitude'));
+    if (props.longitude < -180 || props.longitude > 180)
+      return err(new Error('Invalid longitude'));
+
+    return ok(
+      new DriverLocation({
+        driverId: props.driverId,
+        latitude: props.latitude,
+        longitude: props.longitude,
+        timestamp: new Date(),
+      })
+    );
   }
 
-  // --- Métodos de Persistencia ---
-  
   public toPrimitives(): any {
     return {
       driverId: this.driverId,
-      location: this.location.toPrimitives(),
-      updatedAt: this.updatedAt,
+      latitude: this.latitude,
+      longitude: this.longitude,
+      timestamp: this.timestamp.toISOString(),
     };
   }
 
   public static fromPrimitives(props: any): DriverLocation {
     return new DriverLocation({
-      ...props,
-      location: Location.fromPrimitives(props.location),
+      driverId: props.driverId,
+      latitude: Number(props.latitude),
+      longitude: Number(props.longitude),
+      timestamp: new Date(props.timestamp),
     });
   }
 }

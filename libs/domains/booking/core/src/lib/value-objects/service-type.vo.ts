@@ -1,0 +1,1 @@
+export enum ServiceType { TOUR = 'TOUR', TRANSPORT = 'TRANSPORT', ACCOMMODATION = 'ACCOMMODATION' }

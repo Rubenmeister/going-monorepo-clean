@@ -1,19 +1,12 @@
+import { Tour } from '../entities/tour.entity';
 import { Result } from 'neverthrow';
-import { Tour, TourCategory } from '../entities/tour.entity';
-import { UUID } from '@going-monorepo-clean/shared-domain';
 
-export const ITourRepository = Symbol('ITourRepository');
+export const I_TOUR_REPOSITORY = Symbol('ITourRepository');
 
-export interface TourSearchFilters {
-  locationCity?: string;
-  category?: TourCategory;
-  maxPrice?: number;
-}
-
-export interface ITourRepository {
-  save(tour: Tour): Promise<Result<void, Error>>;
-  update(tour: Tour): Promise<Result<void, Error>>;
-  findById(id: UUID): Promise<Result<Tour | null, Error>>;
-  findByHostId(hostId: UUID): Promise<Result<Tour[], Error>>;
-  searchPublished(filters: TourSearchFilters): Promise<Result<Tour[], Error>>;
+export abstract class ITourRepository {
+  abstract save(tour: Tour): Promise<Result<void, Error>>;
+  abstract findById(id: string): Promise<Result<Tour | null, Error>>;
+  abstract findByHostId(hostId: string): Promise<Result<Tour[], Error>>;
+  abstract update(tour: Tour): Promise<Result<void, Error>>;
+  abstract findByStatus(status: string): Promise<Result<Tour[], Error>>;
 }

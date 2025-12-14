@@ -1,82 +1,52 @@
-import * as request from 'supertest';
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../apps/user-auth-service/src/app.module'; // Importa el módulo principal
-import { RegisterUserDto } from '@going-monorepo-clean/domains-user-application'; // DTO
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
-describe('AUTH E2E (user-auth-service)', () => {
-  let app: INestApplication;
-  const ENDPOINT = '/auth/register';
+describe('User Auth Service', () => {
+  const email = `test-${uuidv4()}@example.com`;
+  const password = 'securePassword123';
+  const name = 'Test User';
+  const API_URL = '/api'; // Use relative URL, assuming axios configured with baseURL or proxy
 
-  // Usuario de prueba válido
-  const validUser: RegisterUserDto = {
-    email: 'test_user_e2e@going.com',
-    password: 'passwordSegura123',
-    firstName: 'Test',
-    lastName: 'E2E',
-    roles: ['user'],
-  };
-
-  // Esta función se ejecuta para configurar la aplicación
-  beforeAll(async () => {
-    // 1. Configura el módulo de prueba (inicia toda la app)
-    const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
-      // Aquí puedes usar .overrideProvider para simular servicios externos (ej. email)
-    }).compile();
-
-    // 2. Crea la instancia de la aplicación NestJS
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  // Limpia el estado después de todas las pruebas
-  afterAll(async () => {
-    // Nota: Aquí DEBERÍAS eliminar los registros creados en la DB de prueba
-    await app.close();
-  });
-
-
-  // ====================================================================
-  // ESCENARIOS
-  // ====================================================================
-
-  it('POST /auth/register - Debería permitir el registro de un nuevo usuario (201 Created)', async () => {
-    // Ejecuta la prueba
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(validUser)
-      .expect(201); // 201 Created
-
-    // Verifica la respuesta del Caso de Uso
-    expect(response.body).toHaveProperty('id');
-    expect(typeof response.body.id).toBe('string');
-  });
-
-  it('POST /auth/register - Debería fallar si se intenta registrar el mismo email (409 Conflict)', async () => {
-    // El usuario ya existe por la prueba anterior (es un estado acumulativo)
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(validUser)
-      .expect(409); // 409 Conflict
-
-    // Verifica el mensaje de error del Caso de Uso (mapeado a NestJS)
-    expect(response.body.message).toBe('Email already in use');
-  });
-
-  it('POST /auth/register - Debería fallar si la contraseña es muy corta (400 Bad Request - ValidationPipe)', async () => {
-    const invalidUser = {
-      ...validUser,
-      email: 'new_invalid@test.com',
-      password: 'short', // Menos de 8 caracteres
+  it('POST /auth/register should create a user', async () => {
+    const payload = {
+      email,
+      password,
+      name,
+      role: 'USER',
     };
 
-    const response = await request(app.getHttpServer())
-      .post(ENDPOINT)
-      .send(invalidUser)
-      .expect(400); // 400 Bad Request (Error de validación del DTO)
+    const res = await axios.post(`${API_URL}/auth/register`, payload);
 
-    // Verifica el error de class-validator
-    expect(response.body.message).toContain('Password must be at least 8 characters');
+    expect(res.status).toBe(201);
+    expect(res.data.accessToken).toBeDefined();
+    expect(res.data.user.email).toBe(email);
+    expect(res.data.user.name).toBe(name);
+  });
+
+  it('POST /auth/login should return valid token', async () => {
+    const payload = {
+      email,
+      password,
+    };
+
+    const res = await axios.post(`${API_URL}/auth/login`, payload);
+
+    expect(res.status).toBe(201);
+    expect(res.data.accessToken).toBeDefined();
+    expect(res.data.user.email).toBe(email);
+  });
+
+  it('POST /auth/login should fail with invalid password', async () => {
+    const payload = {
+      email,
+      password: 'wrongPassword',
+    };
+
+    try {
+      await axios.post(`${API_URL}/auth/login`, payload);
+      fail('Should have thrown 401');
+    } catch (error) {
+      expect(error.response.status).toBe(401);
+    }
   });
 });

@@ -15,32 +15,32 @@ export class MoneyDto {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  amount: number; // En centavos
+  amount!: number; // En centavos
 
   @IsNotEmpty()
   @IsIn(['USD'])
-  currency: 'USD';
+  currency!: 'USD';
 }
 
 // DTO para el Value Object 'Location'
 export class LocationDto {
   @IsNotEmpty()
   @IsString()
-  address: string;
+  address!: string;
 
   @IsNotEmpty()
   @IsString()
-  city: string;
+  city!: string;
   
   @IsNotEmpty()
   @IsString()
-  country: string;
+  country!: string;
 
   @IsNotEmpty()
   @IsLatitude()
-  latitude: number;
+  latitude!: number;
 
   @IsNotEmpty()
   @IsLongitude()
-  longitude: number;
+  longitude!: number;
 }

@@ -1,45 +1,40 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import {
-  Experience,
-  IExperienceRepository,
+import { Injectable, Inject, InternalServerErrorException } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
+import { 
+  Experience, 
+  I_EXPERIENCE_REPOSITORY, 
+  IExperienceRepository 
 } from '@going-monorepo-clean/domains-experience-core';
-import { Money, Location } from '@going-monorepo-clean/shared-domain';
 import { CreateExperienceDto } from '../dto/create-experience.dto';
 
 @Injectable()
 export class CreateExperienceUseCase {
   constructor(
-    @Inject(IExperienceRepository)
+    @Inject(I_EXPERIENCE_REPOSITORY)
     private readonly experienceRepo: IExperienceRepository,
   ) {}
 
-  async execute(dto: CreateExperienceDto): Promise<{ id: string }> {
-    const locationVOResult = Location.create(dto.location);
-    if (locationVOResult.isErr()) {
-      throw new InternalServerErrorException(locationVOResult.error.message);
-    }
-    
-    const locationVO = locationVOResult.value;
-    const priceVO = new Money(dto.price.amount, dto.price.currency);
-
+  async execute(dto: CreateExperienceDto): Promise<Result<Experience, Error>> {
     const experienceResult = Experience.create({
       hostId: dto.hostId,
       title: dto.title,
       description: dto.description,
-      location: locationVO,
-      price: priceVO,
-      durationHours: dto.durationHours,
+      pricePerPerson: dto.price.amount,
+      maxCapacity: dto.durationHours, // Using durationHours as capacity temporarily
+      location: dto.location.address,
     });
 
     if (experienceResult.isErr()) {
-      throw new InternalServerErrorException(experienceResult.error.message);
+      return err(experienceResult.error);
     }
-    const experience = experienceResult.value;
 
+    const experience = experienceResult.value;
     const saveResult = await this.experienceRepo.save(experience);
+
     if (saveResult.isErr()) {
-      throw new InternalServerErrorException(saveResult.error.message);
+      return err(saveResult.error);
     }
-    return { id: experience.id };
+
+    return ok(experience);
   }
 }

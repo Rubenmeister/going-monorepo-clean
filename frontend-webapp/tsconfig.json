@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
     "emitDeclarationOnly": false,
@@ -15,21 +15,13 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "types": ["jest", "node"]
+    "types": ["vite/client", "jest", "node"]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
-    "**/*.jsx",
-    "../frontend-webapp/.next/types/**/*.ts",
-    "../dist/frontend-webapp/.next/types/**/*.ts",
-    "next-env.d.ts"
+    "**/*.jsx"
   ],
   "exclude": [
     "node_modules",

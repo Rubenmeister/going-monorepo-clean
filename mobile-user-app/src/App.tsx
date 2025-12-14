@@ -1,83 +1,54 @@
 import React from 'react';
-import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers'; // Usamos el hook central
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { AuthProvider, useAuth } from '@going-monorepo-clean/frontend-providers';
 
-// 1. Componente de Prueba de Conexión
-const AppContent = () => {
-  const { auth, domain } = useMonorepoApp();
+import { LandingScreen } from './screens/LandingScreen';
+import { LoginScreen } from './screens/LoginScreen';
+import { HomeScreen } from './screens/HomeScreen'; // Assuming this exists or we use the inline placeholder from before
 
-  // Simulación de solicitud de viaje (el corazón del app de usuario)
-  const handleRequestTrip = () => {
-    if (auth.user) {
-      domain.transport.requestTrip({
-        userId: auth.user.id,
-        origin: { address: 'Inicio Móvil', city: 'Quito', country: 'EC', latitude: -0.2, longitude: -78.5 },
-        destination: { address: 'Destino Móvil', city: 'Quito', country: 'EC', latitude: -0.3, longitude: -78.6 },
-        price: { amount: 850, currency: 'USD' } // $8.50
-      });
-    }
-  };
+const Stack = createNativeStackNavigator();
+
+type RootStackParamList = {
+  Landing: undefined;
+  Login: undefined;
+  Home: undefined;
+  // DriverLogin: undefined;
+};
+
+const AppNavigator = () => {
+  const { user } = useAuth(); // Monitor auth state
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Going App de Usuario</Text>
-      
-      {auth.isLoading && <Text>Cargando sesión...</Text>}
-      {auth.error && <Text style={{ color: 'red' }}>Error: {auth.error}</Text>}
-
-      {auth.user ? (
-        <View>
-          <Text style={styles.status}>¡Bienvenido, {auth.user.firstName}!</Text>
-          <Text>Rol: {auth.user.roles.join(', ')}</Text>
-
-          <Button title="Solicitar Viaje" onPress={handleRequestTrip} />
-          <Button title="Cerrar Sesión" onPress={auth.logout} color="gray" />
-        </View>
+    // @ts-ignore: React Navigation 7 type issue workaround or missing id prop requirement
+    <Stack.Navigator screenOptions={{ headerShown: false }} id="RootNavigator">
+      {user ? (
+        // Authenticated Stack
+        <Stack.Screen name="Home" component={HomeScreen} />
       ) : (
-        <View>
-          <Text style={styles.status}>Desconectado</Text>
-          <Button title="Login Test" onPress={() => domain.auth.login({ email: 'user@test.com', password: 'password123' })} />
-        </View>
+        // Public Stack
+        <>
+            <Stack.Screen name="Landing" component={LandingScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            {/* Add Driver Login route here if we are directing them to a separate app or screen */}
+            {/* <Stack.Screen name="DriverLogin" component={DriverLoginScreen} /> */}
+        </>
       )}
-    </View>
+    </Stack.Navigator>
   );
 };
 
-// 2. Componente de Exportación (Envuelve con AuthProvider)
-const App = () => (
-  <SafeAreaView style={styles.safeArea}>
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  </SafeAreaView>
-);
+const App = () => {
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
+};
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  container: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#0033A0',
-  },
-  status: {
-    fontSize: 18,
-    marginBottom: 10,
-  }
-});
-
-// Nota: Necesitas crear un componente Button básico para React Native o usar uno de una librería (ej. react-native-elements)
-const Button = ({ title, onPress, color = '#FFCD00' }) => (
-    <View style={{ marginVertical: 8, width: 200 }}>
-        <ButtonRNE title={title} onPress={onPress} color={color} />
-    </View>
-);
-// Asumimos que ButtonRNE es un componente de alguna librería de UI como 'react-native-elements'
-// Para simplificar, podrías usar el componente 'Button' nativo de React Native.
+export default App;

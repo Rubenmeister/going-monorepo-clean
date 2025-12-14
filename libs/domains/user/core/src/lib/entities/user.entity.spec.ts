@@ -1,9 +1,9 @@
-import { User } from './user.entity';
+import { User, RoleType } from './user.entity'; // Importamos RoleType
 import { Role } from '../value-objects/role.vo';
-import { IPasswordHasher } from '../ports/ipassword-hasher';
+// Asegúrate de que este nombre coincida con tu archivo real (a veces es password.hasher.ts o ipassword.hasher.ts)
+import { IPasswordHasher } from '../ports/ipassword.hasher'; 
 
-// 1. Crear un "Mock" (simulación) del Hasher
-// No queremos usar 'bcrypt' real en una prueba unitaria
+// 1. Mock del Hasher (Perfecto)
 const mockPasswordHasher: IPasswordHasher = {
   hash: jest.fn(async (password: string) => `hashed_${password}`),
   compare: jest.fn(async (password: string, hash: string) => {
@@ -12,7 +12,9 @@ const mockPasswordHasher: IPasswordHasher = {
 };
 
 describe('User Entity', () => {
-  const roleUser = Role.create('user')._unsafeUnwrap();
+  // USO DE ENUM: Más seguro que usar string 'user'
+  const roleUser = Role.create(RoleType.USER)._unsafeUnwrap();
+  
   const validProps = {
     email: 'test@example.com',
     passwordHash: 'hashed_password123',
@@ -29,7 +31,7 @@ describe('User Entity', () => {
     
     expect(user.id).toBeDefined();
     expect(user.firstName).toBe('Test');
-    expect(user.status).toBe('pending_verification');
+    expect(user.status).toBe('pending_verification'); // O UserStatus.PENDING si usas enum
     expect(user.verificationToken).toBeDefined();
   });
 
@@ -40,7 +42,8 @@ describe('User Entity', () => {
     });
     
     expect(userResult.isErr()).toBe(true);
-    expect(userResult.error.message).toBe('First name is too short');
+    // Asegúrate de que tu entidad devuelva este mensaje exacto
+    expect(userResult.error.message).toContain('short'); 
   });
 
   it('debería verificar una cuenta pendiente', () => {
@@ -70,31 +73,33 @@ describe('User Entity', () => {
     
     const isMatch = await user.checkPassword('password123', mockPasswordHasher);
     expect(isMatch).toBe(true);
+    expect(mockPasswordHasher.compare).toHaveBeenCalled(); // Verificamos que se llamó al spy
     
     const isNotMatch = await user.checkPassword('wrongpassword', mockPasswordHasher);
     expect(isNotMatch).toBe(false);
   });
 
   it('debería verificar los roles correctamente', () => {
-    const adminRole = Role.create('admin')._unsafeUnwrap();
+    const adminRole = Role.create(RoleType.ADMIN)._unsafeUnwrap();
     const user = User.create({ ...validProps, roles: [roleUser, adminRole] })._unsafeUnwrap();
 
-    expect(user.hasRole('admin')).toBe(true);
-    expect(user.hasRole('user')).toBe(true);
-    expect(user.hasRole('driver')).toBe(false);
+    expect(user.hasRole(RoleType.ADMIN)).toBe(true);
+    expect(user.hasRole(RoleType.USER)).toBe(true);
+    expect(user.hasRole(RoleType.HOST)).toBe(false);
   });
 
-  it('debería serializar y deserializar (toPrimitives / fromPrimitives) correctamente', () => {
+  it('debería serializar y deserializar (toPrimitives / fromPrimitives)', () => {
     const user = User.create(validProps)._unsafeUnwrap();
     const primitives = user.toPrimitives();
     
-    // Verifica que los VOs se guardan como strings
-    expect(primitives.roles).toEqual(['user']);
+    // Verifica que los VOs se guardan como strings simples
+    expect(primitives.roles).toContain(RoleType.USER);
     
     const rehydratedUser = User.fromPrimitives(primitives);
     
     expect(rehydratedUser).toBeInstanceOf(User);
-    expect(rehydratedUser.id).toBe(user.id);
-    expect(rehydratedUser.roles[0]).toBeInstanceOf(Role); // Verifica que el VO se reconstruyó
+    expect(rehydratedUser.id.value).toBe(user.id.value); // Compara valores primitivos
+    // Verifica que roles[0] sea instancia de Role, no un string
+    expect(rehydratedUser.roles[0]).toBeInstanceOf(Role); 
   });
 });

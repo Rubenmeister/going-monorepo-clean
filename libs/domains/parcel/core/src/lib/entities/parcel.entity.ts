@@ -77,6 +77,7 @@ export class Parcel {
       id: this.id,
       userId: this.userId,
       driverId: this.driverId,
+      description: this.description,
       origin: this.origin.toPrimitives(),
       destination: this.destination.toPrimitives(),
       price: this.price.toPrimitives(),

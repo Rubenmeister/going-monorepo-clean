@@ -1,0 +1,48 @@
+# Dependabot configuration
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  # NPM dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 10
+    groups:
+      # Group minor and patch updates together
+      production-dependencies:
+        patterns:
+          - '@nestjs/*'
+          - 'react*'
+          - 'next*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      dev-dependencies:
+        patterns:
+          - '@types/*'
+          - 'eslint*'
+          - 'typescript'
+          - '@nx/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+    ignore:
+      # Ignore major version updates for stability
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  # GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+
+  # Docker
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'monthly'

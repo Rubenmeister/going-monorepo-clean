@@ -1,0 +1,72 @@
+# ==========================================
+# ETAPA 1: BUILDER
+# ==========================================
+FROM node:18-alpine AS builder
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copiamos archivos de configuración clave
+COPY package*.json nx.json tsconfig.base.json ./
+
+# Instalamos dependencias
+RUN npm install --legacy-peer-deps
+
+# Copiamos el código fuente
+COPY . .
+
+# Limpieza: eliminar frontends y E2E tests para build más rápido
+RUN rm -rf mobile-driver-app mobile-user-app admin-dashboard frontend-webapp *-e2e
+
+# ==========================================
+# BUILD ARG - Parametrizable para cualquier servicio
+# ==========================================
+# Uso: docker build --build-arg SERVICE_NAME=api-gateway -f Dockerfile.prod .
+ARG SERVICE_NAME=api-gateway
+
+# Desactivamos el Daemon de Nx para estabilidad en Docker
+ENV NX_DAEMON=false
+# Aumentamos memoria para evitar crasheos
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Construimos el servicio especificado
+RUN npx nx build ${SERVICE_NAME} --prod
+
+# ==========================================
+# ETAPA 2: RUNNER (PRODUCCIÓN)
+# ==========================================
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# Herramientas de proceso
+RUN apk add --no-cache dumb-init
+
+# Crear usuario no-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001
+
+# Re-declarar ARG para esta etapa
+ARG SERVICE_NAME=api-gateway
+
+# Puerto configurable
+ARG PORT=3000
+ENV PORT=${PORT}
+
+# Copiamos package.json del build
+COPY --from=builder --chown=nestjs:nodejs /app/dist/${SERVICE_NAME}/package*.json ./
+
+# Instalamos solo dependencias de producción
+RUN npm install --omit=dev --ignore-scripts && \
+    npm install class-validator class-transformer @nestjs/platform-socket.io socket.io
+
+# Copiamos el código compilado
+COPY --from=builder --chown=nestjs:nodejs /app/dist/${SERVICE_NAME} ./
+
+USER nestjs
+EXPOSE ${PORT}
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "main.js"]

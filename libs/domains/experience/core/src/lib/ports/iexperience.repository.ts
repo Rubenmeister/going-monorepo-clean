@@ -1,18 +1,23 @@
 import { Result } from 'neverthrow';
 import { Experience } from '../entities/experience.entity';
-import { UUID } from '@going-monorepo-clean/shared-domain';
 
-export const IExperienceRepository = Symbol('IExperienceRepository');
+// Injection token
+export const I_EXPERIENCE_REPOSITORY = Symbol('IExperienceRepository');
 
+// Search filters interface
 export interface ExperienceSearchFilters {
+  location?: string;
   locationCity?: string;
+  minPrice?: number;
   maxPrice?: number;
+  hostId?: string;
 }
 
+// Repository interface (Port) - using Result pattern for error handling
 export interface IExperienceRepository {
   save(experience: Experience): Promise<Result<void, Error>>;
   update(experience: Experience): Promise<Result<void, Error>>;
-  findById(id: UUID): Promise<Result<Experience | null, Error>>;
-  findByHostId(hostId: UUID): Promise<Result<Experience[], Error>>;
+  findById(id: string): Promise<Result<Experience | null, Error>>;
+  findByHostId(hostId: string): Promise<Result<Experience[], Error>>;
   searchPublished(filters: ExperienceSearchFilters): Promise<Result<Experience[], Error>>;
 }

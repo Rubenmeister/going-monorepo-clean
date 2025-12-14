@@ -1,25 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ObservabilityModule } from '@going/shared/observability';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { TransportApplicationModule } from '@going-monorepo-clean/domains-transport-application';
 import { TransportController } from './api/transport.controller';
-import {
-  RequestTripUseCase,
-  AcceptTripUseCase,
-} from '@going-monorepo-clean/domains-transport-application';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.TRANSPORT_DB_URL), // .env
+    ObservabilityModule.forRoot({ serviceName: 'transport-service' }),
     InfrastructureModule,
+    TransportApplicationModule,
   ],
-  controllers: [
-    TransportController,
-  ],
-  providers: [
-    RequestTripUseCase,
-    AcceptTripUseCase,
-  ],
+  controllers: [TransportController],
+  providers: [],
 })
 export class AppModule {}

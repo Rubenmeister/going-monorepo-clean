@@ -1,22 +1,21 @@
-// ... (código existente) ...
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from './auth-context.provider';
 
 export const useMonorepoApp = () => {
-  const authState = useAuth();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const authContext = useAuth();
 
-  return {
-    // 1. ESTADO GLOBAL
-    auth: authState,
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
-    // 2. CASOS DE USO (Funciones de Dominio)
-    domain: {
-      // ... (auth, bookings, transport, etc.) ...
-
-      // Pagos (Payment Frontend)
-      payment: {
-        requestIntent: dependencyProvider.requestPaymentIntentUseCase.execute, // <-- NUEVO
-      },
-      
-      // ... (demás dominios) ...
-    },
+  // Return auth as nested object with isLoading for compatibility
+  const auth = {
+    ...authContext,
+    isLoading: !isLoaded,
   };
+
+  return { isLoaded, auth };
 };

@@ -1,88 +1,115 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Result, ok, err } from 'neverthrow';
 import { UUID, Money } from '@going-monorepo-clean/shared-domain';
 
-export type TransactionStatus = 'pending' | 'succeeded' | 'failed';
+export type TransactionStatus = 'PENDING' | 'CONFIRMED' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
 export interface TransactionProps {
-  id: UUID;
-  userId: UUID;
-  referenceId: UUID; // ej. tripId, bookingId
-  paymentIntentId?: string;
-  amount: Money;
+  id: string;
+  userId: string;
+  tripId?: string;
+  bookingId?: string;
+  parcelId?: string;
+  amount: number;
+  currency: string;
   status: TransactionStatus;
+  paymentIntentId?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export class Transaction {
-  readonly id: UUID;
-  readonly userId: UUID;
-  readonly referenceId: UUID;
-  readonly paymentIntentId?: string;
-  readonly amount: Money;
-  readonly status: TransactionStatus;
+  readonly id: string;
+  readonly userId: string;
+  readonly tripId?: string;
+  readonly bookingId?: string;
+  readonly parcelId?: string;
+  amount: number;
+  currency: string;
+  status: TransactionStatus;
+  paymentIntentId?: string;
   readonly createdAt: Date;
+  updatedAt: Date;
 
   private constructor(props: TransactionProps) {
     this.id = props.id;
     this.userId = props.userId;
-    this.referenceId = props.referenceId;
-    this.paymentIntentId = props.paymentIntentId;
+    this.tripId = props.tripId;
+    this.bookingId = props.bookingId;
+    this.parcelId = props.parcelId;
     this.amount = props.amount;
+    this.currency = props.currency;
     this.status = props.status;
+    this.paymentIntentId = props.paymentIntentId;
     this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
   }
 
   public static create(props: {
-    userId: UUID;
-    referenceId: UUID;
-    amount: Money;
-  }): Result<Transaction, Error> {
-    if (!props.amount.isPositive()) {
-      return err(new Error('Amount must be positive'));
-    }
-
-    const transaction = new Transaction({
-      id: uuidv4(),
+    userId: string;
+    amount: number;
+    currency: string;
+    tripId?: string;
+    bookingId?: string;
+    parcelId?: string;
+  }): Transaction {
+    return new Transaction({
+      id: crypto.randomUUID(),
       ...props,
-      status: 'pending',
+      status: 'PENDING',
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
-    return ok(transaction);
   }
 
-  public toPrimitives(): any {
+  public static fromPrimitives(props: TransactionProps): Transaction {
+    return new Transaction(props);
+  }
+
+  public toPrimitives(): TransactionProps {
     return {
       id: this.id,
       userId: this.userId,
-      referenceId: this.referenceId,
-      paymentIntentId: this.paymentIntentId,
-      amount: this.amount.toPrimitives(),
+      tripId: this.tripId,
+      bookingId: this.bookingId,
+      parcelId: this.parcelId,
+      amount: this.amount,
+      currency: this.currency,
       status: this.status,
+      paymentIntentId: this.paymentIntentId,
       createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
     };
   }
 
-  public static fromPrimitives(props: any): Transaction {
-    return new Transaction({
-      ...props,
-      amount: Money.fromPrimitives(props.amount),
-    });
-  }
-
-  public setPaymentIntent(paymentIntentId: string): void {
-    (this as any).paymentIntentId = paymentIntentId;
-  }
-
-  public succeed(): void {
-    if (this.status === 'pending') {
-      (this as any).status = 'succeeded';
+  confirm(paymentIntentId: string): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Only pending transactions can be confirmed.');
     }
+    this.status = 'CONFIRMED';
+    this.paymentIntentId = paymentIntentId;
+    this.updatedAt = new Date();
   }
 
-  public fail(): void {
-    if (this.status === 'pending') {
-      (this as any).status = 'failed';
+  fail(): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Only pending transactions can fail.');
     }
+    this.status = 'FAILED';
+    this.updatedAt = new Date();
+  }
+
+  cancel(): void {
+    if (this.status !== 'PENDING') {
+      throw new Error('Only pending transactions can be cancelled.');
+    }
+    this.status = 'CANCELLED';
+    this.updatedAt = new Date();
+  }
+
+  refund(): void {
+    if (this.status !== 'CONFIRMED') {
+      throw new Error('Only confirmed transactions can be refunded.');
+    }
+    this.status = 'REFUNDED';
+    this.updatedAt = new Date();
   }
 }

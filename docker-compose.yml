@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: going_postgres
+    environment:
+      POSTGRES_USER: going_user
+      POSTGRES_PASSWORD: going_password
+      POSTGRES_DB: going_monorepo
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U going_user -d going_monorepo']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: going_jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    ports:
+      - '16686:16686' # Jaeger UI
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:16686']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # pgAdmin for database management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: going_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@going.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:

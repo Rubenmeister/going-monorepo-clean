@@ -4,21 +4,29 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   MessageBody,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
 import {
-  UpdateLocationDto,
-  UpdateLocationUseCase,
+  UpdateDriverLocationUseCase,
+  UpdateDriverLocationCommand,
 } from '@going-monorepo-clean/domains-tracking-application';
+import {
+  IDriverLocationGateway,
+  DriverLocation,
+} from '@going-monorepo-clean/domains-tracking-core';
+import { Result, ok, err } from 'neverthrow';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect, IDriverLocationGateway {
   private readonly logger = new Logger(TrackingGateway.name);
-  private validationPipe = new ValidationPipe({ whitelist: true });
+
+  @WebSocketServer()
+  server: Server;
 
   constructor(
-    private readonly updateLocationUseCase: UpdateLocationUseCase,
+    private readonly updateDriverLocationUseCase: UpdateDriverLocationUseCase,
   ) {}
 
   handleConnection(client: Socket) {
@@ -34,16 +42,36 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: any,
   ): Promise<void> {
     try {
-      const dto = new UpdateLocationDto();
-      dto.driverId = payload.driverId;
-      dto.latitude = payload.latitude;
-      dto.longitude = payload.longitude;
+      const command: UpdateDriverLocationCommand = {
+        driverId: payload.driverId,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+      };
+
+      // We pass 'this' as the gateway implementation to the use case?
+      // No, that would be circular/weird dependency if injected in constructor.
+      // Usually UseCase is created with dependencies.
+      // If TrackingGateway USES UpdateDriverLocationUseCase, and UpdateDriverLocationUseCase USES TrackingGateway... Circular Dependency.
+      // Ideally, the Gateway (Infrastructure) and the Broadcaster (Infrastructure) are separate, or validly circular if managed by NestJS forwardRef.
+      // But passing 'this' to execute() is not how UseCase is built.
       
-      await this.validationPipe.transform(dto, { type: 'body' });
-      await this.updateLocationUseCase.execute(dto);
+      const result = await this.updateDriverLocationUseCase.execute(command);
+      
+      if (result.isErr()) {
+        this.logger.error(`Error updating location: ${result.error.message}`);
+      }
       
     } catch (error) {
       this.logger.warn(`Invalid location data from socket: ${error.message}`);
+    }
+  }
+
+  async broadcastLocation(location: DriverLocation): Promise<Result<void, Error>> {
+    try {
+      this.server.emit('driverLocationUpdate', location.toPrimitives());
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(`Broadcast failed: ${error.message}`));
     }
   }
 }

@@ -1,9 +1,5 @@
-import { Controller, Post, Body, Get, Param, Patch, UseGuards } from '@nestjs/common';
-import {
-  RequestTripDto,
-  RequestTripUseCase,
-  AcceptTripUseCase,
-} from '@going-monorepo-clean/domains-transport-application';
+import { Body, Controller, Post, Param, Patch } from '@nestjs/common';
+import { RequestTripUseCase, AcceptTripUseCase, RequestTripDto } from '@going-monorepo-clean/domains-transport-application';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 @Controller('transport')
@@ -14,18 +10,17 @@ export class TransportController {
   ) {}
 
   @Post('request')
-  // @UseGuards(AuthGuard('jwt')) // Protegido por el API Gateway
-  async requestTrip(@Body() dto: RequestTripDto): Promise<any> {
+  async requestTrip(@Body() dto: RequestTripDto) {
     return this.requestTripUseCase.execute(dto);
   }
 
-  @Patch(':tripId/accept')
-  // @UseGuards(AuthGuard('jwt')) // Protegido por el API Gateway
+  @Patch(':id/accept')
   async acceptTrip(
-    @Param('tripId') tripId: UUID,
-    @Body('driverId') driverId: UUID, // El Gateway pasará el ID del conductor
-  ): Promise<any> {
-    await this.acceptTripUseCase.execute(tripId, driverId);
-    return { message: 'Trip accepted' };
+    @Param('id') id: string,
+    @Body('driverId') driverId: string
+  ) {
+    // Assuming UUID validation happens in VO or Pipe, but here we cast string to UUID type alias
+    // In a real scenario, we might want a DTO for the body or a ParseUUIDPipe
+    return this.acceptTripUseCase.execute(id as UUID, driverId as UUID);
   }
 }

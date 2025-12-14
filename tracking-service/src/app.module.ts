@@ -1,25 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ObservabilityModule } from '@going/shared/observability';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
-import { TrackingController } from './api/tracking.controller';
-import { TrackingGateway } from './api/tracking.gateway';
-import {
-  UpdateLocationUseCase,
-  GetActiveDriversUseCase,
-} from '@going-monorepo-clean/domains-tracking-application';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ObservabilityModule.forRoot({ serviceName: 'tracking-service' }),
     InfrastructureModule,
   ],
-  controllers: [
-    TrackingController,
-  ],
-  providers: [
-    TrackingGateway, 
-    UpdateLocationUseCase,
-    GetActiveDriversUseCase,
-  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

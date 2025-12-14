@@ -1,0 +1,15 @@
+{
+  "parcel": {
+    "create": "Crear envío",
+    "track": "Rastrear envío",
+    "status": {
+      "pending": "Pendiente",
+      "in_transit": "En tránsito",
+      "delivered": "Entregado"
+    }
+  },
+  "tour": {
+    "book": "Reservar tour",
+    "available": "Tours disponibles"
+  }
+}

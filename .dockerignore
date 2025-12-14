@@ -1,0 +1,12 @@
+# Ignorar todo por defecto para limpiar el contexto
+*
+!package.json
+!package-lock.json
+# ¡PERMITIR DIST EXPLÍCITAMENTE!
+!dist
+!dist/apps/frontend-webapp
+!dist/apps/user-auth-service
+# Permitir configs de nginx y dockerfiles
+!apps/frontend-webapp/nginx.conf
+!apps/frontend-webapp/Dockerfile
+!apps/user-auth-service/Dockerfile

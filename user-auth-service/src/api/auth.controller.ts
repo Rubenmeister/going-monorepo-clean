@@ -1,10 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import {
-  RegisterUserDto,
-  RegisterUserUseCase,
-  LoginUserDto,
+import { Controller, Post, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { 
+  RegisterUserUseCase, 
   LoginUserUseCase,
-} from '@going-monorepo-clean/domains-user-application'; // Reemplaza con tu scope
+  RegisterUserDto,
+  LoginUserDto,
+  AuthResponseDto
+} from '@going-monorepo-clean/domains-user-application';
 
 @Controller('auth')
 export class AuthController {
@@ -14,12 +15,42 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async register(@Body() dto: RegisterUserDto): Promise<any> {
-    return this.registerUserUseCase.execute(dto);
+  async register(@Body() dto: RegisterUserDto): Promise<AuthResponseDto> {
+    const result = await this.registerUserUseCase.execute(dto);
+
+    if (result.isErr()) {
+      throw new BadRequestException(result.error.message);
+    }
+
+    const user = result.value.toPrimitives();
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      accessToken: 'mock-jwt-token-for-now',
+    };
   }
 
   @Post('login')
-  async login(@Body() dto: LoginUserDto): Promise<any> {
-    return this.loginUserUseCase.execute(dto);
+  async login(@Body() dto: LoginUserDto): Promise<AuthResponseDto> {
+    const result = await this.loginUserUseCase.execute(dto);
+
+    if (result.isErr()) {
+      throw new UnauthorizedException(result.error.message);
+    }
+
+    const user = result.value.toPrimitives();
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+      accessToken: 'mock-jwt-token-for-now',
+    };
   }
 }

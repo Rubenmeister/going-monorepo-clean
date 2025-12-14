@@ -1,0 +1,36 @@
+1 # ==========================================
+2 # ETAPA 1: BUILDER
+3 # ==========================================
+4 FROM node:18-alpine AS builder
+5
+6 RUN apk add --no-cache libc6-compat
+7 WORKDIR /app
+8
+9 COPY package*.json nx.json tsconfig.base.json ./
+10 RUN npm install --legacy-peer-deps
+11
+12 COPY . .
+13
+14 ARG APP_NAME=admin-dashboard
+15 ENV NX_DAEMON=false
+16
+17 # Construimos el frontend
+18 RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
+19
+20 # ==========================================
+21 # ETAPA 2: RUNNER
+22 # ==========================================
+23 FROM node:18-alpine AS runner
+24
+25 WORKDIR /app
+26 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+27
+28 COPY --from=builder /app/package*.json ./
+29 RUN npm install --omit=dev --legacy-peer-deps
+30
+31 # Asumimos salida en dist/apps/admin-dashboard o dist/admin-dashboard
+32 COPY --from=builder --chown=nextjs:nodejs /app/dist/${APP_NAME} ./
+33
+34 EXPOSE 3000
+35 USER nextjs
+36 CMD ["npm", "start"]

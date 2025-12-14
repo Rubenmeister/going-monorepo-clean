@@ -1,0 +1,50 @@
+
+> nx run transport-service:build:production
+
+assets by path *.json 6.03 KiB
+  asset package-lock.json 5.64 KiB [compared for emit]
+  asset package.json 393 bytes [compared for emit]
+asset main.js 11.8 KiB [compared for emit] [minimized] (name: main) 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: transport-service/src/assets/.gitkeep] [copied]
+orphan modules 22 KiB [orphan] 22 modules
+./transport-service/src/main.ts + 22 modules 22.6 KiB [not cacheable] [built] [code generated]
+ERROR in ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts:[32m[1m19:9[22m[39m
+[90mTS2353: [39mObject literal may only specify known properties, and 'mode' does not exist in type '(Without<TransportCreateInput, TransportUncheckedCreateInput> & TransportUncheckedCreateInput) | (Without<...> & TransportCreateInput)'.
+  [0m [90m 17 |[39m         driverId[33m:[39m primitives[33m.[39mdriverId[33m,[39m
+   [90m 18 |[39m         vehicleType[33m:[39m primitives[33m.[39mvehicleType[33m,[39m
+  [31m[1m>[22m[39m[90m 19 |[39m         mode[33m:[39m primitives[33m.[39mmode[33m,[39m
+   [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 20 |[39m         licensePlate[33m:[39m [32m'PENDING'[39m[33m,[39m [90m// Default, can be updated later[39m
+   [90m 21 |[39m         capacity[33m:[39m trip[33m.[39mgetMaxCapacity()[33m,[39m
+   [90m 22 |[39m         pricePerKm[33m:[39m primitives[33m.[39mbasePrice[33m,[39m[0m
+ERROR in ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts:[32m[1m39:9[22m[39m
+[90mTS2353: [39mObject literal may only specify known properties, and 'pricePerPassenger' does not exist in type '(Without<TransportUpdateInput, TransportUncheckedUpdateInput> & TransportUncheckedUpdateInput) | (Without<...> & TransportUpdateInput)'.
+  [0m [90m 37 |[39m
+   [90m 38 |[39m         pricePerKm[33m:[39m primitives[33m.[39mbasePrice[33m,[39m
+  [31m[1m>[22m[39m[90m 39 |[39m         pricePerPassenger[33m:[39m primitives[33m.[39mpricePerPassenger[33m,[39m
+   [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 40 |[39m         departureTime[33m:[39m primitives[33m.[39mdepartureTime[33m,[39m
+   [90m 41 |[39m         arrivalTime[33m:[39m primitives[33m.[39mestimatedArrivalTime[33m,[39m
+   [90m 42 |[39m         originCity[33m:[39m primitives[33m.[39moriginCity[33m,[39m[0m
+ERROR in ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts:[32m[1m66:9[22m[39m
+[90mTS2322: [39mType '"SCHEDULED"' is not assignable to type 'TransportStatus | EnumTransportStatusFilter<"Transport">'.
+  [0m [90m 64 |[39m     [36mconst[39m records [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mprisma[33m.[39mtransport[33m.[39mfindMany({
+   [90m 65 |[39m       where[33m:[39m {
+  [31m[1m>[22m[39m[90m 66 |[39m         status[33m:[39m [32m'SCHEDULED'[39m[33m,[39m
+   [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 67 |[39m         vehicleType[33m:[39m vehicleType[33m,[39m
+   [90m 68 |[39m         originCity[33m:[39m origin[33m.[39mcity[33m,[39m
+   [90m 69 |[39m         destCity[33m:[39m dest[33m.[39mcity[33m,[39m[0m
+webpack 5.103.0 compiled with 3 errors in 5311 ms
+
+
+
+ NX   Running target build for project transport-service failed
+
+Failed tasks:
+
+- transport-service:build:production
+
+Hint: run the command with --verbose for more details.
+

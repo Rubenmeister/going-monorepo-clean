@@ -1,0 +1,45 @@
+
+> nx run transport-service:build:production
+
+assets by path *.json 6.03 KiB
+  asset package-lock.json 5.64 KiB [compared for emit]
+  asset package.json 393 bytes [compared for emit]
+asset main.js 11.9 KiB [compared for emit] [minimized] (name: main) 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: transport-service/src/assets/.gitkeep] [copied]
+orphan modules 22.1 KiB [orphan] 22 modules
+./transport-service/src/main.ts + 22 modules 22.8 KiB [not cacheable] [built] [code generated]
+ERROR in ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts:[32m[1m34:9[22m[39m
+[90mTS2322: [39mType 'TripPassenger[]' is not assignable to type 'JsonNull | InputJsonValue'.
+  Type 'TripPassenger[]' is not assignable to type 'InputJsonObject'.
+    Index signature for type 'string' is missing in type 'TripPassenger[]'.
+  [0m [90m 32 |[39m         departureTime[33m:[39m primitives[33m.[39mdepartureTime[33m,[39m
+   [90m 33 |[39m         arrivalTime[33m:[39m primitives[33m.[39mestimatedArrivalTime[33m,[39m
+  [31m[1m>[22m[39m[90m 34 |[39m         passengers[33m:[39m primitives[33m.[39mpassengers[33m,[39m
+   [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 35 |[39m       }[33m,[39m
+   [90m 36 |[39m       update[33m:[39m {
+   [90m 37 |[39m         status[33m:[39m primitives[33m.[39mstatus[33m.[39mtoUpperCase() [36mas[39m any[33m,[39m[0m
+ERROR in ./transport-service/src/infrastructure/persistence/prisma-transport.repository.ts:[32m[1m48:9[22m[39m
+[90mTS2322: [39mType 'TripPassenger[]' is not assignable to type 'JsonNull | InputJsonValue'.
+  Type 'TripPassenger[]' is not assignable to type 'InputJsonObject'.
+    Index signature for type 'string' is missing in type 'TripPassenger[]'.
+  [0m [90m 46 |[39m         stationOrigin[33m:[39m primitives[33m.[39mstationOrigin[33m,[39m
+   [90m 47 |[39m         stationDest[33m:[39m primitives[33m.[39mstationDest[33m,[39m
+  [31m[1m>[22m[39m[90m 48 |[39m         passengers[33m:[39m primitives[33m.[39mpassengers[33m,[39m
+   [90m    |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 49 |[39m       }[33m,[39m
+   [90m 50 |[39m     })[33m;[39m
+   [90m 51 |[39m   }[0m
+webpack 5.103.0 compiled with 2 errors in 5495 ms
+
+
+
+ NX   Running target build for project transport-service failed
+
+Failed tasks:
+
+- transport-service:build:production
+
+Hint: run the command with --verbose for more details.
+

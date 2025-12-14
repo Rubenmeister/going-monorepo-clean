@@ -1,14 +1,13 @@
-import { Result } from 'neverthrow';
 import { Notification } from '../entities/notification.entity';
-import { NotificationChannel } from '../value-objects/NotificationChannel.vo';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { Result } from 'neverthrow';
 
-export const INotificationRepository = Symbol('INotificationRepository');
+export const I_NOTIFICATION_REPOSITORY = Symbol('INotificationRepository');
 
 export interface INotificationRepository {
   save(notification: Notification): Promise<Result<void, Error>>;
+  findById(id: string): Promise<Result<Notification | null, Error>>;
+  findByUserId(userId: string): Promise<Result<Notification[], Error>>;
   update(notification: Notification): Promise<Result<void, Error>>;
-  findById(id: UUID): Promise<Result<Notification | null, Error>>;
-  findPendingByChannel(channel: NotificationChannel): Promise<Result<Notification[], Error>>;
-  findByUserId(userId: UUID, limit: number): Promise<Result<Notification[], Error>>;
+  getUnreadCount(userId: string): Promise<Result<number, Error>>;
+  markAllAsRead(userId: string): Promise<Result<void, Error>>;
 }
