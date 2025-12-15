@@ -1,0 +1,648 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   GOING WEBAPP - Unified Design System
+   Inspirations:
+   - Uber (Transfers, Maps, Clean UI)
+   - AirBnB (Hosts, Cards, Warm feel)
+   - Tripadvisor (Tours, Reviews, Discovery)
+   ============================================ */
+
+:root {
+  /* Brand Primary */
+  --going-red: #ff4c41;
+  --going-red-dark: #e63e34;
+  --going-red-light: #ff7a73;
+  
+  /* Brand Secondary */
+  --going-yellow: #ffd253;
+  --going-yellow-dark: #e6b845;
+  
+  /* Brand Neutral */
+  --going-black: #0a0a0a;
+  --going-dark: #1a1a1a;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f7;
+  --bg-tertiary: #f0f0f0;
+  
+  /* Text Colors */
+  --text-primary: #222222;
+  --text-secondary: #6b6b6b;
+  --text-muted: #9b9b9b;
+  --text-inverse: #ffffff;
+  
+  /* Borders */
+  --border-light: #ebebeb;
+  --border-medium: #dddddd;
+  
+  /* Status */
+  --status-success: #00a699;
+  --status-warning: #ffc107;
+  --status-error: #ff4c41;
+  --status-info: #3b82f6;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.15);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   NAVIGATION (Uber-style)
+   ============================================ */
+
+.navbar {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 24px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--going-black);
+}
+
+.navbar-logo span {
+  color: var(--going-red);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 32px;
+}
+
+.navbar-links a {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.navbar-links a:hover {
+  color: var(--text-primary);
+}
+
+.navbar-links a.active {
+  color: var(--going-red);
+}
+
+/* ============================================
+   HERO SECTION (Uber-style booking)
+   ============================================ */
+
+.hero {
+  background: linear-gradient(135deg, var(--going-black) 0%, #2a2a2a 100%);
+  color: var(--text-inverse);
+  padding: 80px 24px;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 32px;
+}
+
+/* Booking Widget (Uber-style) */
+.booking-widget {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.booking-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.booking-tab {
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.booking-tab.active {
+  background: var(--going-black);
+  color: white;
+}
+
+.booking-input {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  transition: border-color var(--transition-fast);
+}
+
+.booking-input:focus {
+  outline: none;
+  border-color: var(--going-black);
+}
+
+/* ============================================
+   CARDS (AirBnB-style)
+   ============================================ */
+
+.card {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-light);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 16px;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.card-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-price span {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* Rating (Tripadvisor-style) */
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-star {
+  color: var(--going-red);
+}
+
+.rating-score {
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.rating-count {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   SECTION LAYOUTS
+   ============================================ */
+
+.section {
+  padding: 64px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.section-link {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.section-link:hover {
+  color: var(--going-red);
+}
+
+/* Grid Layouts */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .hero-content { grid-template-columns: 1fr; }
+  .hero-title { font-size: 2.5rem; }
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--going-black);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #333;
+}
+
+.btn-red {
+  background: var(--going-red);
+  color: white;
+}
+
+.btn-red:hover {
+  background: var(--going-red-dark);
+}
+
+.btn-yellow {
+  background: var(--going-yellow);
+  color: var(--going-black);
+}
+
+.btn-yellow:hover {
+  background: var(--going-yellow-dark);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  background: var(--bg-secondary);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ============================================
+   CATEGORY PILLS (Tripadvisor-style)
+   ============================================ */
+
+.category-pills {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  border: 2px solid transparent;
+}
+
+.category-pill:hover {
+  background: var(--bg-tertiary);
+}
+
+.category-pill.active {
+  border-color: var(--going-black);
+  background: var(--bg-primary);
+}
+
+.category-pill-icon {
+  font-size: 1.5rem;
+}
+
+.category-pill-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   HOST CARD (AirBnB-style)
+   ============================================ */
+
+.host-card {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-normal);
+}
+
+.host-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.host-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.host-info h4 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.host-info p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.superhost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 76, 65, 0.1);
+  color: var(--going-red);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* ============================================
+   EXPERIENCE/TOUR CARD (Tripadvisor-style)
+   ============================================ */
+
+.experience-card {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.experience-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.experience-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.experience-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--going-yellow);
+  color: var(--going-black);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.experience-content {
+  padding: 16px;
+}
+
+.experience-category {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--status-success);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.experience-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.experience-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+  background: var(--going-black);
+  color: var(--text-inverse);
+  padding: 64px 24px 32px;
+}
+
+.footer-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 48px;
+}
+
+.footer-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.footer-logo span {
+  color: var(--going-red);
+}
+
+.footer-description {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.footer-title {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: white;
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 48px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-going-red { color: var(--going-red); }
+.text-going-yellow { color: var(--going-yellow); }
+.bg-going-red { background: var(--going-red); }
+.bg-going-yellow { background: var(--going-yellow); }
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

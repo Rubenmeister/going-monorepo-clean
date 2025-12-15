@@ -1,0 +1,34 @@
+
+> nx run admin-dashboard:build:production
+
+ ÔÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+   [1m[38;2;173;127;168mÔû▓ Next.js 15.2.5[39m[22m
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1mÔ£ô[22m[39m Compiled successfully
+ [37m[1m [22m[39m Skipping linting
+ [37m[1m [22m[39m Checking validity of types ...
+Failed to compile.
+
+./src/app/page.tsx:300:13
+Type error: Type '{ focusedTripId: string | undefined; onTripClick: (tripId: string) => void; }' is not assignable to type 'IntrinsicAttributes & LiveMapProps'.
+  Property 'focusedTripId' does not exist on type 'IntrinsicAttributes & LiveMapProps'.
+  298 |           {/* Map Section */}
+  299 |           <LiveMap
+> 300 |             focusedTripId={selectedTrip?.id}
+      |             ^
+  301 |             onTripClick={(tripId) => {
+  302 |               const trip = trips.find(t => t.id === tripId);
+  303 |               if (trip) openTripDrawer(trip);
+Next.js build worker exited with code: 1 and signal: null
+Build process exited due to code 1  
+
+
+
+ NX   Running target build for project admin-dashboard failed
+
+Failed tasks:
+
+- admin-dashboard:build:production
+
+Hint: run the command with --verbose for more details.
+

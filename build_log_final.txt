@@ -1,0 +1,41 @@
+
+> nx run admin-dashboard:build:production
+
+ ÔÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+   [1m[38;2;173;127;168mÔû▓ Next.js 15.2.5[39m[22m
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1mÔ£ô[22m[39m Compiled successfully
+ [37m[1m [22m[39m Skipping linting
+ [37m[1m [22m[39m Checking validity of types ...
+ [37m[1m [22m[39m Collecting page data ...
+ [37m[1m [22m[39m Generating static pages (0/6) ...
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at y (C:\Users\USER1\going-monorepo-clean\apps\admin-dashboard\.next\server\chunks\496.js:6:1351)
+Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at K (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:16:6526)
+    at y (C:\Users\USER1\going-monorepo-clean\apps\admin-dashboard\.next\server\chunks\496.js:6:1351)
+    at Object.react_stack_bottom_frame (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:10313:18)
+    at renderWithHooks (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:5399:19)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:5834:23)
+    at retryNode (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:6765:31)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:6715:11)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:5820:11)
+    at retryNode (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:6765:31)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.edge.development.js:6715:11)
+Export encountered an error on /_error: /404, exiting the build.
+ Ô¿» Next.js build worker exited with code: 1 and signal: null
+Build process exited due to code 1  
+
+
+
+ NX   Running target build for project admin-dashboard failed
+
+Failed tasks:
+
+- admin-dashboard:build:production
+
+Hint: run the command with --verbose for more details.
+

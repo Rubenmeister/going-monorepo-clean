@@ -4,7 +4,8 @@ export * from './lib/entities/user.entity';
 export * from './lib/value-objects/role.vo'; 
 
 // 2. DTOs
-export * from './lib/dto/register-user.dto';
+// 2. DTOs
+// // export * from './lib/dto/register-user.dto'; // Moved to application layer // Moved to application layer
 
 // 3. Puertos (Interfaces)
 export * from './lib/ports/iuser.repository';

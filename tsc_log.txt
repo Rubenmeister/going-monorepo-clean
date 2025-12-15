@@ -1,0 +1,2 @@
+apps/admin-dashboard/src/app/page.tsx(300,13): error TS2322: Type '{ focusedTripId: string | undefined; onTripClick: (tripId: string) => void; }' is not assignable to type 'IntrinsicAttributes & LiveMapProps'.
+  Property 'focusedTripId' does not exist on type 'IntrinsicAttributes & LiveMapProps'.

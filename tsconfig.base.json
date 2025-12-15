@@ -17,6 +17,7 @@
     "paths": {
       "@going-monorepo-clean/shared-domain": ["libs/shared/domain/src/index.ts"],
       "@going-monorepo-clean/shared-ui": ["libs/shared/ui/src/index.ts"],
+      "@going/shared-ui": ["libs/shared/ui/src/index.ts"],
       "@going-monorepo-clean/frontend-providers": ["libs/frontend/providers/src/index.ts"],
       "@going-monorepo-clean/prisma-client": ["libs/shared/prisma-client/src/index.ts"],
       "@going-monorepo-clean/domains-user-core": ["libs/domains/user/core/src/index.ts"],
@@ -44,7 +45,8 @@
       "@going-monorepo-clean/shared-types": ["libs/shared-types/src/index.ts"],
       "@going/shared/observability": ["libs/shared/observability/src/index.ts"],
       "@going/shared/permissions": ["libs/shared/permissions/src/index.ts"],
-      "@going/shared/realtime": ["libs/shared/realtime/src/index.ts"]
+      "@going/shared/realtime": ["libs/shared/realtime/src/index.ts"],
+      "@going-monorepo-clean/domains-parcel-frontend-core": ["libs/domains/parcel/frontend-core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

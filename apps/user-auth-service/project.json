@@ -1,0 +1,64 @@
+{
+  "name": "user-auth-service",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/user-auth-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/user-auth-service",
+        "main": "apps/user-auth-service/src/main.ts",
+        "tsConfig": "apps/user-auth-service/tsconfig.app.json",
+        "assets": [
+          "apps/user-auth-service/src/assets"
+        ],
+        "generatePackageJson": true,
+        "isolatedConfig": true,
+        "webpackConfig": "apps/user-auth-service/webpack.config.js"
+      },
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production",
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "user-auth-service:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "user-auth-service:build:development"
+        },
+        "production": {
+          "buildTarget": "user-auth-service:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": [
+        "{workspaceRoot}/coverage/user-auth-service"
+      ],
+      "options": {
+        "jestConfig": "apps/user-auth-service/jest.config.cts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

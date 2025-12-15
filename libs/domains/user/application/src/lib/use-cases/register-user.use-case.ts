@@ -6,12 +6,7 @@ import {
 } from '@going-monorepo-clean/domains-user-core'; // Using @going-monorepo-clean/domains-user-core alias
 import { Result, ok, err } from 'neverthrow';
 
-export interface RegisterUserDto {
-  email: string;
-  password: string;
-  name: string;
-  role?: RoleType;
-}
+import { RegisterUserDto } from '../dto/register-user.dto';
 
 export class RegisterUserUseCase {
   constructor(

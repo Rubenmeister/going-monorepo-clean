@@ -5,10 +5,7 @@ import {
 } from '@going-monorepo-clean/domains-user-core';
 import { Result, ok, err } from 'neverthrow';
 
-export interface LoginUserDto {
-  email: string;
-  password: string;
-}
+import { LoginUserDto } from '../dto/login-user.dto';
 
 export class LoginUserUseCase {
   constructor(
