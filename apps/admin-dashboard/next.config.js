@@ -12,6 +12,7 @@ const nextConfig = {
       },
     ];
   },
+  transpilePackages: ['@going/shared-ui', 'lucide-react'],
 };
 
 module.exports = nextConfig;

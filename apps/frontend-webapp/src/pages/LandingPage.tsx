@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { ECUADOR_REGIONS, EcuadorRegion, POPULAR_ROUTES } from '@going-monorepo/shared';
+// Adjust import based on your absolute path or alias configuration
+// If alias isn't working in this environment, we might need relative path or ensure tsconfig is right.
+// Assuming standard Nx alias:
+import { RegionBadge } from '../components/ui/RegionBadge';
 
 type HowTab = 'privado' | 'compartido' | 'envios';
 
@@ -51,41 +56,36 @@ function Header() {
   const links = [
     { id: 'how', label: 'CÓMO FUNCIONA' },
     { id: 'services', label: 'SERVICIOS' },
+    { id: 'ecuador', label: 'DESTINOS' }, // Updated label
     { id: 'enterprise', label: 'EMPRESAS' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b-2 border-black bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="h-10 w-10 border-2 border-black bg-going-red flex items-center justify-center shadow-neo">
-            <span className="text-white font-spaceGrotesk font-black text-xl italic">G</span>
-          </div>
-          <div className="leading-none">
-            <div className="font-spaceGrotesk text-2xl font-black tracking-tighter uppercase">GOING</div>
-          </div>
+    <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-xl border-b border-white/20">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-3">
+          <img src="/assets/logo.png" alt="Going" className="h-10 w-auto brightness-0 invert" />
         </div>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-10 md:flex">
           {links.map((l) => (
-            <a key={l.id} href={`#${l.id}`} className="text-sm font-bold border-b-2 border-transparent hover:border-going-red transition-all">
+            <a key={l.id} href={`#${l.id}`} className="text-sm font-black text-white/80 hover:text-white tracking-widest transition-all">
               {l.label}
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={toggle}
-            className="h-10 w-10 flex items-center justify-center border-2 border-black bg-white shadow-neo hover:translate-y-1 hover:shadow-none transition-all rounded-none"
+            className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all font-bold"
             aria-label="Cambiar tema"
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <a href="#download" className="hidden md:flex px-4 py-2 bg-going-black text-white font-bold border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all items-center gap-2">
-            <span>APP</span>
-            <span className="text-going-yellow text-xs">▼</span>
+          <a href="/login" className="px-6 py-2 bg-brand-red text-white font-black text-sm rounded-full shadow-lg hover:scale-105 transition-all uppercase tracking-widest">
+            ACCESO
           </a>
         </div>
       </div>
@@ -96,61 +96,57 @@ function Header() {
 /* ====== HERO ====== */
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white border-b-2 border-black">
-      {/* Decorative Grid */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" 
-        style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-      </div>
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
+      {/* Background Layer */}
+      <img 
+        src="/assets/ecuador_landscape_bg.png" 
+        alt="Ecuador Landscape" 
+        className="absolute inset-0 w-full h-full object-cover opacity-70" 
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
+      
+      {/* Andean Pattern Overlay (very subtle) */}
+      <div 
+        className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" 
+        style={{ backgroundImage: 'url(/assets/andean_pattern.png)', backgroundSize: '400px' }}
+      />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 md:grid-cols-2">
-        <div className="relative z-10">
-          <div className="inline-block px-4 py-1 bg-going-yellow border-2 border-black shadow-neo mb-6 transform -rotate-2">
-            <span className="font-bold font-mono text-xs uppercase tracking-wider">Lanzamiento Oficial</span>
+      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 py-20 flex flex-col md:flex-row items-center gap-16">
+        <div className="flex-1 text-center md:text-left">
+          <div className="inline-block px-4 py-1.5 bg-brand-red text-white text-xs font-black tracking-[0.3em] uppercase mb-8 shadow-2xl">
+            Ecuador en Movimiento
           </div>
           
-          <h1 className="font-spaceGrotesk text-5xl font-black leading-none tracking-tighter md:text-7xl mb-6">
-            MUEVETE <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-going-red to-orange-600">SIN LÍMITES.</span>
+          <h1 className="font-spaceGrotesk text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8 drop-shadow-2xl">
+            DESCUBRE <br/>
+            <span className="text-brand-red">TU RUTA.</span>
           </h1>
           
-          <p className="text-lg font-medium border-l-4 border-going-black pl-4 mb-8 max-w-md">
-            Viajes privados, compartidos y envíos. Una sola app para dominar la ciudad.
+          <p className="text-xl md:text-2xl text-white/80 font-medium mb-10 max-w-xl leading-relaxed">
+             Únete a la plataforma de movilidad sustentable que conecta cada rincón del Ecuador con estilo y seguridad.
           </p>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <a href="#download" className="px-8 py-4 bg-going-red text-white font-black text-lg border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all text-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
+            <a href="/register" className="px-10 py-5 bg-white text-black font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
+              EMPEZAR AHORA
+            </a>
+            <a href="#download" className="px-10 py-5 bg-brand-red text-white font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
               DESCARGAR APP
             </a>
-            <a href="#how" className="px-8 py-4 bg-white text-black font-bold text-lg border-2 border-black shadow-neo hover:translate-y-1 hover:shadow-none transition-all text-center">
-              EXPLORAR
-            </a>
-          </div>
-
-          <div className="mt-10 flex gap-4">
-             <div className="flex -space-x-3">
-               {[1,2,3].map(i => <div key={i} className="w-10 h-10 rounded-full bg-gray-300 border-2 border-black"></div>)}
-             </div>
-             <div className="flex flex-col justify-center">
-               <span className="font-bold text-sm">+2k Usuarios</span>
-               <span className="text-xs text-gray-500">Confían en nosotros</span>
-             </div>
           </div>
         </div>
 
-        <div className="relative h-[400px] flex items-center justify-center">
-          {/* Background Blob */}
-          <div className="absolute w-[400px] h-[400px] bg-going-yellow rounded-full border-2 border-black opacity-20 blur-3xl animate-pulse"></div>
+        <div className="flex-1 relative flex items-center justify-center">
+          <div className="absolute w-[400px] h-[400px] bg-brand-red rounded-full opacity-20 blur-[120px] animate-pulse"></div>
           
-          {/* SUV Animation */}
           <div className="relative w-full max-w-lg z-20 animate-drive-arrive">
              <img 
-               src="/suv_black_right_v2.png" 
+               src="/assets/suv_black_right_v3.png" 
                alt="Going SUV" 
-               className="w-full drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
+               className="w-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
              />
-             {/* Map Marker Floating */}
-             <div className="absolute -top-10 right-20 bg-white px-4 py-2 border-2 border-black shadow-neo animate-bounce">
-               <span className="font-bold">📍 Tu destino</span>
+             <div className="absolute -top-12 -right-4 bg-white/10 backdrop-blur-md px-6 py-3 border border-white/20 rounded-2xl shadow-2xl animate-bounce">
+               <span className="text-white font-black text-lg">UIO ➔ CUE</span>
              </div>
           </div>
         </div>
@@ -166,8 +162,8 @@ function Services() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12">
            <div>
-             <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-2">Nuestros Servicios</h2>
-             <p className="font-medium text-gray-600">Todo lo que necesitas en una sola plataforma.</p>
+             <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-2">Servicios Integrados</h2>
+             <p className="font-medium text-gray-600">Movilidad inteligente para cada necesidad.</p>
            </div>
            <a href="#" className="font-bold underline decoration-2 decoration-going-red underline-offset-4 hover:text-going-red">Ver todo →</a>
         </div>
@@ -175,22 +171,22 @@ function Services() {
         <div className="grid gap-6 md:grid-cols-3">
           <ServiceCard 
             title="VIAJES PRIVADOS" 
-            desc="Tu chofer personal. Coches premium y estándar para moverte con estilo." 
+            desc="Chofer personal. Ideal para moverte seguro en la ciudad." 
             icon="🚗" 
             href="/services/private" 
             active 
           />
           <ServiceCard 
-            title="COMPARTIDOS" 
-            desc="Rutas inteligentes. Comparte gastos y conoce gente en tu camino." 
-            icon="👥" 
+            title="RUTAS COMPARTIDAS" 
+            desc="Conecta ciudades. Ahorra viajando de terminal a terminal." 
+            icon="🚌" 
             href="/services/shared" 
             active 
             accent="yellow"
           />
           <ServiceCard 
-            title="ENVÍOS FLASH" 
-            desc="Paquetería express. Rastreo en tiempo real y entregas seguras." 
+            title="ENCOMIENDAS" 
+            desc="Envíos rápidos entre provincias. Rastreo 24/7." 
             icon="📦" 
             href="/services/shipments" 
             active 
@@ -198,8 +194,8 @@ function Services() {
           />
         </div>
         
-        <div className="mt-8 p-4 border-2 border-dashed border-black/30 rounded-lg text-center">
-            <span className="font-medium text-gray-500">Próximamente: Tours 🏔️ · Experiencias 🎯 · Alojamiento 🏠</span>
+        <div className="mt-8 p-4 border-2 border-dashed border-black/30 rounded-lg text-center bg-white/50 backdrop-blur-sm">
+            <span className="font-medium text-gray-500">Próximamente: Tours 🏔️ · Experiencias Locales 🥘 · Hospedaje 🏠</span>
         </div>
       </div>
     </section>
@@ -211,17 +207,17 @@ function HowItWorks() {
   const [tab, setTab] = useState<HowTab>('privado');
 
   const content: Record<HowTab, { steps: string[]; color: string }> = {
-    privado: { steps: ['Elige tu destino', 'Selecciona "Privado"', 'Disfruta el confort'], color: 'bg-going-red' },
-    compartido: { steps: ['Busca tu ruta', 'Reserva tu asiento', 'Ahorra viajando'], color: 'bg-going-yellow' },
-    envios: { steps: ['Detalla el paquete', 'Solicita recolector', 'Entrega confirmada'], color: 'bg-blue-500' },
+    privado: { steps: ['Elige origen y destino', 'Selecciona "Auto Privado"', 'Viaja seguro'], color: 'bg-going-red' },
+    compartido: { steps: ['Busca tu ruta (ej. UIO-GYE)', 'Reserva tu asiento', 'Viaja cómodo y barato'], color: 'bg-going-yellow' },
+    envios: { steps: ['Detalla el paquete', 'Entrega al conductor', 'Rastrea hasta entrega'], color: 'bg-blue-500' },
   };
 
   return (
     <section id="how" className="py-20 bg-white border-b-2 border-black">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-12">
-           <h2 className="font-spaceGrotesk text-4xl font-black uppercase">¿CÓMO FUNCIONA?</h2>
-           <div className="flex justify-center gap-4 mt-6">
+           <h2 className="font-spaceGrotesk text-4xl font-black uppercase">¿CÓMO USAR GOING?</h2>
+           <div className="flex justify-center gap-4 mt-6 flex-wrap">
              {(['privado', 'compartido', 'envios'] as HowTab[]).map((t) => (
                 <button 
                   key={t}
@@ -263,26 +259,26 @@ function Realtime() {
 
       <div className="mx-auto max-w-7xl px-4 relative z-10 grid md:grid-cols-2 gap-16 items-center">
         <div>
-           <div className="inline-block px-3 py-1 border border-going-red text-going-red font-mono text-xs mb-4">LIVE TRACKING</div>
+           <div className="inline-block px-3 py-1 border border-going-red text-going-red font-mono text-xs mb-4">LIVE OPS</div>
            <h2 className="font-spaceGrotesk text-5xl font-black leading-tight mb-6">
-             CONTROL TOTAL <br/>
-             <span className="text-going-red">EN TUS MANOS.</span>
+             TU VIAJE <br/>
+             <span className="text-going-red">EN TIEMPO REAL.</span>
            </h2>
            <p className="text-gray-400 text-lg mb-8">
-             Olvídate de la incertidumbre. Rastrea tu conductor, tu paquete o tu viaje compartido segundo a segundo.
+             Seguridad y control total. Comparte tu ubicación, chatea con el conductor y recibe notificaciones de estado.
            </p>
            <ul className="space-y-4 font-bold">
              <li className="flex items-center gap-3">
                <span className="w-2 h-2 bg-going-red rounded-full animate-ping"></span>
-               Ubicación GPS Exacta
+               Rastreo Satelital Continuo
              </li>
              <li className="flex items-center gap-3">
                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
-               Chat con el Conductor
+               Conexión Directa Conductor
              </li>
              <li className="flex items-center gap-3">
                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
-               Botón de Seguridad
+               Botón de Pánico Integrado
              </li>
            </ul>
         </div>
@@ -296,7 +292,7 @@ function Realtime() {
                 <div className="w-full h-40 bg-blue-100 rounded-xl mb-4 relative overflow-hidden">
                    <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '10px 10px'}}></div>
                    <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-going-black border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg z-10"></div>
-                   <div className="absolute top-1/4 left-1/4 w-8 h-8 text-2xl animate-bounce">🚗</div>
+                   <div className="absolute top-1/4 left-1/4 w-8 h-8 text-2xl animate-bounce">🚙</div>
                 </div>
                 <div className="space-y-3">
                    <div className="h-4 bg-gray-300 w-3/4 rounded"></div>
@@ -320,16 +316,49 @@ function Realtime() {
 /* ====== ECUADOR SECTION ====== */
 function Ecuador() {
   return (
-    <section className="py-20 bg-going-yellow border-b-2 border-black">
-       <div className="mx-auto max-w-7xl px-4 text-center">
-          <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-8">ORGULLOSAMENTE ECUATORIANOS 🇪🇨</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-             {['COSTA', 'SIERRA', 'ORIENTE', 'GALÁPAGOS'].map(region => (
-               <span key={region} className="px-6 py-2 bg-white border-2 border-black font-bold shadow-neo transform hover:-rotate-2 transition-transform cursor-default">
-                 {region}
-               </span>
+    <section id="ecuador" className="py-20 bg-gray-100 border-b-2 border-black relative overflow-hidden">
+       {/* Background Patterns Layer */}
+       <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-pattern-andino"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-pattern-costa"></div>
+       </div>
+
+       <div className="mx-auto max-w-7xl px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-4">DESCUBRE ECUADOR 🇪🇨</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Conectamos las 4 regiones del país. Vive la diversidad de nuestros paisajes y culturas con la seguridad que mereces.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-4">
+             {Object.values(ECUADOR_REGIONS).map((region: any) => (
+               <div key={region.label} className="bg-white p-6 border-2 border-black shadow-neo hover:-translate-y-2 transition-transform group">
+                 <div className={`w-full h-32 mb-4 rounded-lg flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity`} style={{backgroundColor: region.colorHex + '20'}}>
+                    {/* Placeholder for real images later */}
+                    <span className="text-4xl" style={{color: region.colorHex}}>●</span>
+                 </div>
+                 <div className="flex justify-between items-center mb-2">
+                    <RegionBadge region={region.label.toUpperCase() as EcuadorRegion} />
+                 </div>
+                 <h3 className="font-bold text-xl mb-1">{region.slogan}</h3>
+                 <p className="text-sm text-gray-500">{region.description}</p>
+               </div>
              ))}
           </div>
+
+          <div className="mt-16 bg-white border-2 border-black p-8 shadow-neo max-w-3xl mx-auto">
+             <h3 className="font-bold text-lg mb-6 text-center uppercase border-b-2 border-gray-100 pb-2">Rutas Populares</h3>
+             <div className="flex flex-wrap justify-center gap-4">
+                {POPULAR_ROUTES.map((route: any, idx: number) => (
+                   <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors">
+                      <span className="text-xs font-bold text-gray-400">{route.region}</span>
+                      <span className="font-bold text-sm">{route.label}</span>
+                   </div>
+                ))}
+             </div>
+          </div>
+
        </div>
     </section>
   );
@@ -341,9 +370,9 @@ function Safety() {
     <section id="safety" className="py-20 bg-white border-b-2 border-black">
       <div className="mx-auto max-w-4xl px-4 text-center">
          <div className="w-16 h-16 bg-black text-white text-3xl flex items-center justify-center mx-auto mb-6">🛡️</div>
-         <h2 className="font-spaceGrotesk text-3xl font-black mb-4">SEGURIDAD PRIMERO</h2>
+         <h2 className="font-spaceGrotesk text-3xl font-black mb-4">SEGURIDAD ANTE TODO</h2>
          <p className="text-gray-600 mb-8 max-w-xl mx-auto">
-           Monitoreo 24/7, conductores verificados y seguro de viaje en cada trayecto. Tu tranquilidad no es negociable.
+           Verificación de identidad, monitoreo de ruta y soporte 24/7. Viajar en Ecuador nunca fue tan seguro.
          </p>
          <a href="#" className="font-bold border-b-2 border-black pb-0.5 hover:text-going-red hover:border-going-red">Conoce nuestros estándares</a>
       </div>
@@ -356,8 +385,8 @@ function Enterprise() {
     <section id="enterprise" className="py-20 bg-brand-gray border-b-2 border-black">
        <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="font-spaceGrotesk text-4xl font-black mb-4">GOING PARA EMPRESAS</h2>
-            <p className="mb-6 font-medium">Gestiona la movilidad de tu equipo con facturación mensual y control total.</p>
+            <h2 className="font-spaceGrotesk text-4xl font-black mb-4">GOING CORPORATIVO</h2>
+            <p className="mb-6 font-medium">Soluciones de transporte para empresas. Control de gastos, facturación centralizada y reportes detallados.</p>
             <button className="px-6 py-3 bg-black text-white font-bold border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-colors">
               CONTACTAR VENTAS
             </button>
@@ -383,19 +412,25 @@ function FAQ() {
   return (
     <section className="py-20 bg-white border-b-2 border-black">
        <div className="mx-auto max-w-3xl px-4">
-         <h2 className="font-spaceGrotesk text-3xl font-black mb-8 text-center">PREGUNTAS FRECUENTES</h2>
+         <h2 className="font-spaceGrotesk text-3xl font-black mb-8 text-center">DUDAS FRECUENTES</h2>
          <div className="space-y-4">
             <details className="border-2 border-black p-4 shadow-[4px_4px_0px_0px_#ddd] open:shadow-none open:translate-y-1 transition-all">
                <summary className="font-bold cursor-pointer list-none flex justify-between">
                  ¿Cómo me registro como conductor? <span>+</span>
                </summary>
-               <p className="mt-4 text-gray-600">Descarga la app de conductores, sube tus documentos y en 24h te contactaremos.</p>
+               <p className="mt-4 text-gray-600">Descarga la App Conductor, sube tu licencia, matrícula y antecedentes. Nuestro equipo validará tu perfil en 24h.</p>
             </details>
             <details className="border-2 border-black p-4 shadow-[4px_4px_0px_0px_#ddd] open:shadow-none open:translate-y-1 transition-all">
                <summary className="font-bold cursor-pointer list-none flex justify-between">
-                 ¿Aceptan efectivo? <span>+</span>
+                 ¿Qué métodos de pago aceptan? <span>+</span>
                </summary>
-               <p className="mt-4 text-gray-600">Sí, aceptamos efectivo, tarjetas y transferencias directas.</p>
+               <p className="mt-4 text-gray-600">Aceptamos efectivo, tarjetas de crédito/débito y transferencia directa en la App.</p>
+            </details>
+            <details className="border-2 border-black p-4 shadow-[4px_4px_0px_0px_#ddd] open:shadow-none open:translate-y-1 transition-all">
+               <summary className="font-bold cursor-pointer list-none flex justify-between">
+                 ¿Cubren rutas interprovinciales? <span>+</span>
+               </summary>
+               <p className="mt-4 text-gray-600">Sí, cubrimos rutas populares como Quito-Cuenca, Guayaquil-Salinas, etc. en modalidad compartida y privada.</p>
             </details>
          </div>
        </div>
@@ -408,15 +443,15 @@ function FinalCTA() {
   return (
     <section className="py-24 bg-going-red text-white text-center">
        <div className="mx-auto max-w-4xl px-4">
-         <h2 className="font-spaceGrotesk text-5xl font-black mb-8">¿LISTO PARA IR?</h2>
-         <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="px-8 py-4 bg-black text-white border-2 border-white font-bold shadow-[4px_4px_0px_0px_#fff] hover:translate-y-1 hover:shadow-none transition-all">
+         <h2 className="font-spaceGrotesk text-5xl font-black mb-8">¿LISTO PARA PARTIR?</h2>
+         <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <button className="px-10 py-5 bg-black text-white font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
               DESCARGAR EN ANDROID
             </button>
-            <button className="px-8 py-4 bg-white text-black border-2 border-black font-bold shadow-[4px_4px_0px_0px_#000] hover:translate-y-1 hover:shadow-none transition-all">
+            <button className="px-10 py-5 bg-white text-brand-red font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
               DESCARGAR EN IOS
             </button>
-         </div>
+          </div>
        </div>
     </section>
   );
@@ -424,14 +459,14 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="py-12 bg-black text-white">
-      <div className="mx-auto max-w-7xl px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-         <div className="font-spaceGrotesk text-2xl font-black">GOING</div>
-         <div className="text-sm text-gray-400">© 2024 Going Ecuador. Todos los derechos reservados.</div>
-         <div className="flex gap-6 font-bold text-sm">
-            <a href="#" className="hover:text-going-red">Legal</a>
-            <a href="#" className="hover:text-going-red">Privacidad</a>
-            <a href="#" className="hover:text-going-red">Soporte</a>
+    <footer className="py-16 bg-black text-white border-t border-white/10">
+      <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row justify-between items-center gap-10">
+         <div className="font-spaceGrotesk text-3xl font-black italic tracking-tighter">GOING</div>
+         <div className="text-sm text-gray-500 font-medium">© 2024 Going Ecuador. Hecho con ❤️ para mover al país.</div>
+         <div className="flex gap-10 font-black text-xs tracking-widest uppercase">
+            <a href="#" className="text-white/60 hover:text-brand-red transition-colors">Términos</a>
+            <a href="#" className="text-white/60 hover:text-brand-red transition-colors">Privacidad</a>
+            <a href="#" className="text-white/60 hover:text-brand-red transition-colors">Soporte</a>
          </div>
       </div>
     </footer>
@@ -441,18 +476,14 @@ function Footer() {
 /* ====== COMPONENTS ====== */
 
 function ServiceCard({ title, desc, icon, href, active, accent = 'red' }: any) {
-  const borderColor = active ? 'border-black' : 'border-dashed border-gray-400';
-  const shadowClass = active ? 'shadow-neo hover:translate-y-1 hover:shadow-none' : '';
-  const bgColor = active ? 'bg-white' : 'bg-gray-50';
-  
   return (
-    <a href={href} className={`block p-6 ${bgColor} border-2 ${borderColor} ${shadowClass} transition-all rounded-none group`}>
-       <div className="flex justify-between items-start mb-4">
-          <span className="text-4xl filter grayscale group-hover:grayscale-0 transition-all">{icon}</span>
-          <span className={`w-3 h-3 rounded-full ${active ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+    <a href={href} className={`block p-8 bg-white border border-gray-100 rounded-[32px] shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group`}>
+       <div className="flex justify-between items-start mb-6">
+          <span className="text-5xl group-hover:scale-110 transition-transform duration-300">{icon}</span>
+          <div className={`w-3 h-3 rounded-full ${active ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-gray-300'}`}></div>
        </div>
-       <h3 className="font-black text-xl mb-2 group-hover:text-going-red transition-colors">{title}</h3>
-       <p className="text-sm text-gray-600 font-medium">{desc}</p>
+       <h3 className="font-black text-2xl mb-3 group-hover:text-brand-red transition-colors">{title}</h3>
+       <p className="text-base text-gray-500 font-medium leading-relaxed">{desc}</p>
     </a>
   );
 }

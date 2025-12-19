@@ -1,16 +1,17 @@
 version: '3.8'
 
 services:
-  # Base de Datos Compartida
-  mongo:
-    image: mongo:6.0
-    container_name: going_mongo_prod
+  # Base de Datos Compartida (Postgres para Prod)
+  postgres:
+    image: postgres:15-alpine
+    container_name: going_postgres_prod
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-secure_production_password}
+      POSTGRES_USER: going_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_production_password}
+      POSTGRES_DB: going_monorepo
     volumes:
-      - mongo_data_prod:/data/db
+      - postgres_data_prod:/var/lib/postgresql/data
     networks:
       - going-net
 
@@ -43,7 +44,7 @@ services:
       HOST_SERVICE_URL: http://host-service:3010
       TRACKING_SERVICE_URL: http://tracking-service:3011
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -62,10 +63,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
       JWT_SECRET: ${JWT_SECRET}
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -80,9 +81,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3002
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -97,9 +98,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3003
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -114,10 +115,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3004
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -132,9 +133,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3005
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -149,9 +150,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3006
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -166,9 +167,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3007
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -183,9 +184,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3008
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -200,9 +201,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3010
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -217,9 +218,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3011
-      MONGO_URI: mongodb://admin:${MONGO_PASSWORD:-secure_production_password}@mongo:27017/going_db?authSource=admin
+      DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
     depends_on:
-      - mongo
+      - postgres
     networks:
       - going-net
 
@@ -252,7 +253,8 @@ services:
       - going-net
 
 volumes:
-  mongo_data_prod:
+  postgres_data_prod:
+
 
 networks:
   going-net:

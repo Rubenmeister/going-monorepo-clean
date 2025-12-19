@@ -8,70 +8,55 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) => {
   return (
-    <div className="min-h-screen flex bg-brand-red">
-      {/* Left Side - Brand Panel (Desktop) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-red via-brand-red to-red-700 z-10" />
-        <img 
-          src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2021&q=80" 
-          alt="Travel" 
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
-        
-        {/* Content */}
-        <div className="relative z-20 flex flex-col justify-between h-full p-12 text-white">
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden font-inter">
+      {/* Background Layer */}
+      <img 
+        src="/assets/ecuador_landscape_bg.png" 
+        alt="Ecuador Landscape" 
+        className="absolute inset-0 w-full h-full object-cover" 
+      />
+      <div className="absolute inset-0 bg-brand-red/85" />
+      
+      {/* Andean Pattern Layer */}
+      <div 
+        className="absolute inset-0 opacity-10" 
+        style={{ 
+          backgroundImage: 'url(/assets/andean_pattern.png)', 
+          backgroundRepeat: 'repeat',
+          backgroundSize: '300px'
+        }} 
+      />
+      
+      {/* Auth Card - Glassmorphism */}
+      <div className="relative z-10 w-full max-w-xl p-8 md:p-12 mx-4">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[40px] p-8 md:p-12 shadow-2xl">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex justify-center mb-10">
             <img 
-              src="/assets/logo-full.png" 
+              src="/assets/logo.png" 
               alt="Going" 
-              className="h-12 w-auto brightness-0 invert"
+              className="h-20 w-auto brightness-0 invert"
             />
           </div>
           
-          {/* Hero Text */}
-          <div>
-            <h1 className="text-6xl font-bold mb-6 leading-tight">
-              Nos movemos<br/>contigo.
-            </h1>
-            <p className="text-xl text-white/80 max-w-md">
-              Únete a la plataforma de movilidad más innovadora de Colombia.
-            </p>
-          </div>
-          
-          {/* Footer */}
-          <div className="text-sm text-white/50">
-            © 2024 Going Inc. Todos los derechos reservados.
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side - Form (Mobile: Full Screen Red) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 lg:p-12 lg:bg-white">
-        <div className="w-full max-w-md space-y-8">
-          {/* Mobile Logo (visible only on mobile) */}
-          <div className="lg:hidden flex flex-col items-center mb-8">
-            <img 
-              src="/assets/logo_white_symbol_black_text.png" 
-              alt="Going" 
-              className="h-24 w-auto"
-            />
-          </div>
-          
-          {/* Title */}
-          <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-white lg:text-brand-black">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-3">
               {title}
             </h2>
-            <p className="mt-2 text-white/80 lg:text-gray-500">
+            <p className="text-white/70 text-lg font-medium">
               {subtitle}
             </p>
           </div>
           
-          {/* Form Content */}
-          <div className="bg-white/90 lg:bg-transparent p-6 lg:p-0 rounded-2xl lg:rounded-none">
+          {/* Children (Form) */}
+          <div className="auth-form-container">
             {children}
+          </div>
+          
+          {/* Footer Footer */}
+          <div className="mt-12 text-center text-white/30 text-xs font-bold tracking-widest uppercase">
+            Ecuador en Movimiento • 2024
           </div>
         </div>
       </div>

@@ -96,7 +96,7 @@ export class PrismaHostRepository implements IHostRepository {
       id: record.id,
       userId: record.userId,
       name: record.name,
-      email: record.user?.email || '',  // Get from joined user
+
       phone: record.phone,
       isVerified: record.isVerified,
       createdAt: record.createdAt,

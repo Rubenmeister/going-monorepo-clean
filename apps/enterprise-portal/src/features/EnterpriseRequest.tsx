@@ -1,8 +1,6 @@
-'use client';
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
 
 interface EnterpriseRequestProps {
   type?: 'ride' | 'shipment';
@@ -26,9 +24,7 @@ const TRAVEL_PURPOSES = [
 ];
 
 export function EnterpriseRequest({ type }: EnterpriseRequestProps) {
-  const { user, tenantName } = useEnterpriseAuth();
   const navigate = useNavigate();
-  
   const [requestType, setRequestType] = useState(type || 'ride');
   const [form, setForm] = useState({
     from: '',
@@ -46,64 +42,51 @@ export function EnterpriseRequest({ type }: EnterpriseRequestProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, this would call the API
-    alert(`Solicitud ${requestType === 'ride' ? 'de viaje' : 'de envío'} creada exitosamente`);
-    navigate(requestType === 'ride' ? '/e/trips' : '/e/shipments');
+    alert(`Solicitud exitosa`);
+    navigate(requestType === 'ride' ? '/trips' : '/shipments');
   };
 
   return (
-    <>
+    <EnterpriseLayout activeItem={requestType === 'ride' ? 'trips' : 'shipments'}>
       {/* Header */}
       <header className="top-header">
-        <div>
-          <h1 className="page-title">
-            {requestType === 'ride' ? 'Solicitar Viaje' : 'Solicitar Envío'}
-          </h1>
-          <p className="text-sm text-muted">{tenantName}</p>
-        </div>
+        <h1 className="page-title">
+          {requestType === 'ride' ? 'Solicitar Viaje' : 'Solicitar Envío'}
+        </h1>
       </header>
 
       {/* Content */}
       <div className="page-content">
-        <div className="max-w-2xl">
-          {/* Type Selector */}
-          {!type && (
-            <div className="flex gap-3 mb-6">
-              <button
-                onClick={() => setRequestType('ride')}
-                className={`flex-1 p-4 rounded-xl border-2 transition ${
-                  requestType === 'ride' 
-                    ? 'border-enterprise-blue bg-enterprise-blue/5' 
-                    : 'border-slate-200'
-                }`}
-              >
-                <span className="text-2xl block mb-2">🚗</span>
-                <span className="font-medium">Viaje</span>
-              </button>
-              <button
-                onClick={() => setRequestType('shipment')}
-                className={`flex-1 p-4 rounded-xl border-2 transition ${
-                  requestType === 'shipment' 
-                    ? 'border-enterprise-blue bg-enterprise-blue/5' 
-                    : 'border-slate-200'
-                }`}
-              >
-                <span className="text-2xl block mb-2">📦</span>
-                <span className="font-medium">Envío</span>
-              </button>
+        <div className="max-w-2xl mx-auto">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="data-card overflow-hidden">
+            <div className="card-header bg-slate-50 border-b border-slate-200">
+              <div className="flex gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setRequestType('ride')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition ${requestType === 'ride' ? 'bg-enterprise-blue text-white' : 'hover:bg-slate-200'}`}
+                >
+                  🚗 Viaje
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setRequestType('shipment')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition ${requestType === 'shipment' ? 'bg-enterprise-blue text-white' : 'hover:bg-slate-200'}`}
+                >
+                  📦 Envío
+                </button>
+              </div>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="data-card">
             <div className="card-body space-y-6">
-              {/* Route */}
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">Origen</label>
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="Dirección de recogida"
+                    placeholder="Punto de partida"
                     value={form.from}
                     onChange={(e) => setForm({ ...form, from: e.target.value })}
                     required
@@ -114,7 +97,7 @@ export function EnterpriseRequest({ type }: EnterpriseRequestProps) {
                   <input
                     type="text"
                     className="form-input"
-                    placeholder="Dirección de destino"
+                    placeholder="Punto de llegada"
                     value={form.to}
                     onChange={(e) => setForm({ ...form, to: e.target.value })}
                     required
@@ -122,119 +105,60 @@ export function EnterpriseRequest({ type }: EnterpriseRequestProps) {
                 </div>
               </div>
 
-              {/* Date & Time */}
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">Fecha</label>
-                  <input
-                    type="date"
-                    className="form-input"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    required
-                  />
+                  <input type="date" className="form-input" required />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Hora</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={form.time}
-                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    required
-                  />
+                  <input type="time" className="form-input" required />
                 </div>
               </div>
 
-              {/* Enterprise Fields */}
               <div className="grid-2">
                 <div className="form-group">
                   <label className="form-label">Centro de Costo</label>
-                  <select
-                    className="form-input"
-                    value={form.costCenter}
-                    onChange={(e) => setForm({ ...form, costCenter: e.target.value })}
-                    required
-                  >
+                  <select className="form-input" required>
                     <option value="">Seleccionar...</option>
-                    {COST_CENTERS.map(cc => (
-                      <option key={cc.id} value={cc.id}>{cc.name}</option>
-                    ))}
+                    {COST_CENTERS.map(cc => <option key={cc.id} value={cc.id}>{cc.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Motivo del viaje</label>
-                  <select
-                    className="form-input"
-                    value={form.purpose}
-                    onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-                    required
-                  >
+                  <label className="form-label">Motivo</label>
+                  <select className="form-input" required>
                     <option value="">Seleccionar...</option>
-                    {TRAVEL_PURPOSES.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
+                    {TRAVEL_PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* For Another Person */}
-              {requestType === 'ride' && (
-                <div className="border-t border-slate-200 pt-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.forOther}
-                      onChange={(e) => setForm({ ...form, forOther: e.target.checked })}
-                      className="w-5 h-5 rounded border-slate-300"
-                    />
-                    <span className="font-medium">Este viaje es para otra persona</span>
-                  </label>
+              <div className="form-group">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    onChange={(e) => setForm({...form, forOther: e.target.checked})}
+                    className="w-4 h-4 text-enterprise-blue"
+                  />
+                  <span className="text-sm font-medium">Este servicio es para otra persona</span>
+                </label>
+              </div>
 
-                  {form.forOther && (
-                    <div className="grid-2 mt-4">
-                      <div className="form-group">
-                        <label className="form-label">Nombre del pasajero</label>
-                        <input
-                          type="text"
-                          className="form-input"
-                          value={form.passengerName}
-                          onChange={(e) => setForm({ ...form, passengerName: e.target.value })}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Email del pasajero</label>
-                        <input
-                          type="email"
-                          className="form-input"
-                          value={form.passengerEmail}
-                          onChange={(e) => setForm({ ...form, passengerEmail: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  )}
+              {form.forOther && (
+                <div className="grid-2 p-4 bg-slate-50 rounded-lg animate-fadeIn">
+                  <div className="form-group">
+                    <label className="form-label">Nombre Pasajero</label>
+                    <input type="text" className="form-input" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email Pasajero</label>
+                    <input type="email" className="form-input" />
+                  </div>
                 </div>
               )}
 
-              {/* Notes */}
-              <div className="form-group">
-                <label className="form-label">Notas adicionales</label>
-                <textarea
-                  className="form-input"
-                  rows={3}
-                  placeholder="Instrucciones especiales, referencias, etc."
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                />
-              </div>
-
-              {/* Submit */}
-              <div className="pt-4 border-t border-slate-200 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="btn btn-secondary"
-                >
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary flex-1">
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary flex-1">
@@ -245,7 +169,7 @@ export function EnterpriseRequest({ type }: EnterpriseRequestProps) {
           </form>
         </div>
       </div>
-    </>
+    </EnterpriseLayout>
   );
 }
 

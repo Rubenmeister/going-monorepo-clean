@@ -50,3 +50,13 @@ export {
 // Ecuador Identity Components
 export { RegionChips, PopularRoutes } from './lib/EcuadorComponents';
 export type { EcuadorRegion, PopularRoute } from './lib/EcuadorComponents';
+
+// Design System Components (Shadcn/UI)
+export * from './lib/components/ui/button';
+export * from './lib/components/ui/badge';
+export * from './lib/components/ui/input';
+
+// Hooks
+export { useTransport } from './lib/hooks/useTransport';
+export type { TransportTrip } from './lib/hooks/useTransport';
+

@@ -1,20 +1,20 @@
 import { Body, Controller, Post, HttpCode, HttpStatus, HttpException } from '@nestjs/common';
-import { RegisterHostUseCase, RegisterHostDto } from '@going-monorepo-clean/domains-anfitriones-application';
+import { CreateHostUseCase, CreateHostDto } from '@going-monorepo-clean/domains-anfitriones-application';
 import { Host } from '@going-monorepo-clean/domains-anfitriones-core';
 
 @Controller('hosts') 
 export class HostController {
   
   constructor(
-    private readonly registerHostUseCase: RegisterHostUseCase,
+    private readonly createHostUseCase: CreateHostUseCase,
     // [Opcional] private readonly verifyHostUseCase: VerifyHostUseCase,
   ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED) 
-  async registerHost(@Body() registerDto: RegisterHostDto): Promise<Host> {
+  async register(@Body() dto: CreateHostDto): Promise<Host> {
     
-    const result = await this.registerHostUseCase.execute(registerDto);
+    const result = await this.createHostUseCase.execute(dto);
 
     if (result.isErr()) {
       throw new HttpException(result.error.message, HttpStatus.BAD_REQUEST); 

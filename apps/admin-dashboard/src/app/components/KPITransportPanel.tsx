@@ -77,10 +77,9 @@ interface VehicleTypeRowProps {
   trips: number;
   target: number;
   icon: string;
-  isAuthorized?: boolean;
 }
 
-function VehicleTypeRow({ type, trips, target, icon, isAuthorized }: VehicleTypeRowProps) {
+function VehicleTypeRow({ type, trips, target, icon }: VehicleTypeRowProps) {
   const progress = Math.min((trips / target) * 100, 100);
   const isOnTrack = progress >= 80;
 
@@ -91,15 +90,6 @@ function VehicleTypeRow({ type, trips, target, icon, isAuthorized }: VehicleType
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm text-white font-medium">{type}</span>
           <div className="flex items-center gap-2">
-            {isAuthorized !== undefined && (
-              <span className={`text-[10px] px-2 py-0.5 rounded ${
-                isAuthorized 
-                  ? 'bg-success/20 text-success' 
-                  : 'bg-white/10 text-white/50'
-              }`}>
-                {isAuthorized ? '✓ ANT' : 'GRIS'}
-              </span>
-            )}
             <span className="text-sm text-white/60">{trips}/{target}</span>
           </div>
         </div>
@@ -201,28 +191,24 @@ export function KPITransportPanel() {
             trips={kpis.tripsCompletedToday.suv} 
             target={100} 
             icon="🚙"
-            isAuthorized={false}
           />
           <VehicleTypeRow 
             type="VAN Turística" 
             trips={kpis.tripsCompletedToday.van} 
             target={30} 
             icon="🚐"
-            isAuthorized={true}
           />
           <VehicleTypeRow 
             type="Minibus" 
             trips={kpis.tripsCompletedToday.minibus} 
             target={15} 
             icon="🚌"
-            isAuthorized={true}
           />
           <VehicleTypeRow 
             type="Bus 50pax" 
             trips={kpis.tripsCompletedToday.bus} 
             target={8} 
             icon="🚍"
-            isAuthorized={true}
           />
         </div>
       </div>

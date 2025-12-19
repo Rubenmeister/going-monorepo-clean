@@ -1,7 +1,5 @@
-'use client';
-
-import React, { useState } from 'react';
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { useState } from 'react';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
 
 interface Trip {
   id: string;
@@ -31,8 +29,7 @@ const statusLabels = {
   scheduled: { label: 'Programado', class: 'badge-warning' },
 };
 
-export function EnterpriseTrips() {
-  const { tenantName } = useEnterpriseAuth();
+export default function EnterpriseTrips() {
   const [filter, setFilter] = useState({ status: 'all', costCenter: 'all' });
 
   const filteredTrips = MOCK_TRIPS.filter(trip => {
@@ -44,24 +41,20 @@ export function EnterpriseTrips() {
   const costCenters = [...new Set(MOCK_TRIPS.map(t => t.costCenter))];
 
   return (
-    <>
+    <EnterpriseLayout activeItem="trips">
       {/* Header */}
       <header className="top-header">
         <div>
           <h1 className="page-title">Viajes</h1>
-          <p className="text-sm text-muted">{tenantName} • {filteredTrips.length} viajes</p>
+          <p className="text-sm text-muted">{filteredTrips.length} viajes encontrados</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">
-            📥 Exportar CSV
-          </button>
-          <a href="/e/request/ride" className="btn btn-primary">
-            + Nuevo Viaje
-          </a>
+          <button className="btn btn-secondary btn-sm">📥 Exportar CSV</button>
+          <a href="/e/request/ride" className="btn btn-primary btn-sm">+ Nuevo Viaje</a>
         </div>
       </header>
 
-      {/* Content */}
+      {/* Page Content */}
       <div className="page-content">
         {/* Filters */}
         <div className="flex gap-4 mb-6">
@@ -105,18 +98,17 @@ export function EnterpriseTrips() {
             <tbody>
               {filteredTrips.map(trip => (
                 <tr key={trip.id} className="cursor-pointer hover:bg-slate-50">
-                  <td className="font-medium">{trip.id}</td>
+                  <td className="font-medium" style={{ color: '#1e40af' }}>{trip.id}</td>
                   <td>
                     <div className="text-sm">
                       <span className="text-going-red">●</span> {trip.from}
                       <br />
-                      <span className="text-going-yellow">●</span> {trip.to}
+                      <span className="text-blue-500">●</span> {trip.to}
                     </div>
                   </td>
                   <td>
                     <div className="text-sm">
-                      {trip.date}<br />
-                      <span className="text-muted">{trip.time}</span>
+                      {trip.date} • <span className="text-muted">{trip.time}</span>
                     </div>
                   </td>
                   <td>{trip.user}</td>
@@ -128,7 +120,7 @@ export function EnterpriseTrips() {
                       {statusLabels[trip.status].label}
                     </span>
                   </td>
-                  <td className="font-semibold">
+                  <td className="font-semibold text-right">
                     {trip.amount > 0 ? `$${trip.amount.toFixed(2)}` : '-'}
                   </td>
                 </tr>
@@ -137,8 +129,6 @@ export function EnterpriseTrips() {
           </table>
         </div>
       </div>
-    </>
+    </EnterpriseLayout>
   );
 }
-
-export default EnterpriseTrips;

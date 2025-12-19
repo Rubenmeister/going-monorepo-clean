@@ -1,62 +1,118 @@
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { useState } from 'react';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
+
+const MOCK_USERS = [
+  { id: '1', name: 'Juan García', email: 'juan@acme.com', role: 'enterprise_admin', status: 'active', lastLogin: 'Hoy, 09:24' },
+  { id: '2', name: 'María López', email: 'maria@acme.com', role: 'enterprise_user', status: 'active', lastLogin: 'Ayer, 18:30' },
+  { id: '3', name: 'Carlos Ruiz', email: 'carlos@acme.com', role: 'enterprise_user', status: 'active', lastLogin: 'Hace 3 días' },
+  { id: '4', name: 'Ana Martínez', email: 'ana@acme.com', role: 'enterprise_user', status: 'inactive', lastLogin: 'Hace 1 mes' },
+  { id: '5', name: 'Pedro Sánchez', email: 'pedro@acme.com', role: 'enterprise_user', status: 'active', lastLogin: 'Hoy, 11:15' },
+];
 
 export default function EnterpriseUsers() {
-  const { user } = useEnterpriseAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredUsers = MOCK_USERS.filter(u => 
+    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-xl font-bold text-slate-800">Going Enterprise</h1>
-          <p className="text-sm text-slate-500">{user?.tenantName}</p>
+    <EnterpriseLayout activeItem="users">
+      {/* Header */}
+      <header className="top-header">
+        <h1 className="page-title">Usuarios</h1>
+        <div className="header-actions">
+          <button className="btn btn-primary btn-sm">+ Nuevo Usuario</button>
         </div>
       </header>
 
-      <nav className="bg-slate-800 text-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-6">
-            <a href="/" className="py-3 border-b-2 border-transparent hover:border-slate-400">Dashboard</a>
-            <a href="/reports" className="py-3 border-b-2 border-transparent hover:border-slate-400">Reportes</a>
-            <a href="/users" className="py-3 border-b-2 border-blue-400">Usuarios</a>
+      {/* Page Content */}
+      <div className="page-content">
+        {/* Search & Filters */}
+        <div className="flex gap-4 mb-6">
+          <div className="relative flex-1 max-w-md">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+            <input 
+              type="text" 
+              className="form-input pl-10" 
+              placeholder="Buscar por nombre o email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+          <select className="form-input w-auto">
+            <option>Todos los roles</option>
+            <option>Administrador</option>
+            <option>Colaborador</option>
+          </select>
+          <select className="form-input w-auto">
+            <option>Todos los estados</option>
+            <option>Activos</option>
+            <option>Inactivos</option>
+          </select>
         </div>
-      </nav>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Usuarios de la Empresa</h2>
-          {user?.role === 'enterprise_admin' && (
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              + Agregar Usuario
-            </button>
-          )}
-        </div>
-        
-        <div className="bg-white rounded-lg shadow">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+        {/* Users Table */}
+        <div className="data-card">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="text-left p-4 text-sm font-semibold text-slate-600">Nombre</th>
-                <th className="text-left p-4 text-sm font-semibold text-slate-600">Email</th>
-                <th className="text-left p-4 text-sm font-semibold text-slate-600">Rol</th>
-                <th className="text-left p-4 text-sm font-semibold text-slate-600">Acciones</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Último Acceso</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-slate-100">
-                <td className="p-4">{user?.name}</td>
-                <td className="p-4">{user?.email}</td>
-                <td className="p-4">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                    {user?.role === 'enterprise_admin' ? 'Administrador' : 'Usuario'}
-                  </span>
-                </td>
-                <td className="p-4 text-slate-400">-</td>
-              </tr>
+              {filteredUsers.map((u) => (
+                <tr key={u.id}>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
+                        {u.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-800">{u.name}</div>
+                        <div className="text-xs text-slate-500">{u.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`badge ${u.role === 'enterprise_admin' ? 'badge-info' : 'badge-secondary'}`}>
+                      {u.role === 'enterprise_admin' ? 'Administrador' : 'Colaborador'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${u.status === 'active' ? 'badge-success' : 'badge-error'}`}>
+                      {u.status === 'active' ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td className="text-sm text-slate-500">{u.lastLogin}</td>
+                  <td className="text-right">
+                    <button className="text-slate-400 hover:text-slate-600 transition">
+                      ⋮
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-      </main>
-    </div>
+
+        {/* User Info Alert */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-4">
+          <div className="text-2xl">💡</div>
+          <div>
+            <h4 className="font-bold text-blue-900">Gestión de Roles</h4>
+            <p className="text-sm text-blue-700">
+              Los <b>Administradores</b> pueden crear solicitudes, ver reportes y gestionar usuarios. 
+              Los <b>Colaboradores</b> solo pueden crear y ver sus propias solicitudes asignadas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </EnterpriseLayout>
   );
 }

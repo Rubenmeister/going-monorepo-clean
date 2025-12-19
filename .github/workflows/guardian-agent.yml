@@ -1,0 +1,54 @@
+name: 🛡️ Guardian Agent 24/7 Supervision
+
+on:
+  schedule:
+    - cron: '0 */8 * * *' # Every 8 hours
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  supervise:
+    name: 🛡️ Supervise & Heal
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🛡️ Run Guardian Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd tools/guardian
+          npm start
+
+      - name: 📝 Post Daily Briefing
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: guardian-report
+          path: GUARDIAN_REPORT.md
+
+      - name: 📢 Notify on Slack
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#alerts-guardian'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

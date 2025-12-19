@@ -16,26 +16,26 @@ export class User {
   @Prop({ required: true })
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @Prop({ required: true })
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @Prop({ required: true, unique: true, index: true })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @Prop({ select: false }) // Por seguridad, nunca devolver la contraseña en consultas normales
   @IsString()
-  passwordHash: string;
+  passwordHash!: string;
 
   @Prop({ required: true, enum: UserRole, default: UserRole.PASAJERO })
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 
   @Prop({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
   
   // Aquí podrías agregar campos futuros como:
   // @Prop() profilePicture?: string;

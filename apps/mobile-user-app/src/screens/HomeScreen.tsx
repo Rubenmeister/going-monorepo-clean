@@ -5,19 +5,16 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   TextInput,
-  Dimensions,
   ScrollView,
-  Platform,
   Image,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width, height } = Dimensions.get('window');
-
 // ESM import for logo
 import goingLogoHorizontal from '../assets/logo_horizontal.png';
 import ecuadorMap from '../assets/ecuador_map.png';
+import andeanPattern from '../assets/andean_pattern.png';
 
 // Design tokens
 const COLORS = {
@@ -103,12 +100,15 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         >
           <View style={styles.sidebar}>
             <TouchableOpacity onPress={(e) => e.stopPropagation()}>
-              {/* Sidebar Header */}
+              {/* Sidebar Header with Andean Pattern */}
               <View style={styles.sidebarHeader}>
-                <Image source={{ uri: goingLogoHorizontal }} style={styles.sidebarLogo} resizeMode="contain" />
-                <TouchableOpacity onPress={toggleSidebar} style={styles.closeButton}>
-                  <Text style={styles.closeIcon}>✕</Text>
-                </TouchableOpacity>
+                <Image source={{ uri: andeanPattern }} style={styles.sidebarPattern} resizeMode="repeat" />
+                <View style={styles.sidebarHeaderContent}>
+                  <Image source={{ uri: goingLogoHorizontal }} style={styles.sidebarLogo} resizeMode="contain" />
+                  <TouchableOpacity onPress={toggleSidebar} style={styles.closeButton}>
+                    <Text style={styles.closeIcon}>✕</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {/* User Section */}
@@ -411,19 +411,28 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           <View style={styles.servicesSection}>
             <Text style={styles.servicesTitle}>Más servicios Going</Text>
             <View style={styles.servicesRow}>
-              <TouchableOpacity style={styles.serviceItem}>
+              <TouchableOpacity 
+                style={styles.serviceItem}
+                onPress={() => Alert.alert('Anfitriones', 'Próximamente: Explora hospedajes y anfitriones locales.')}
+              >
                 <View style={[styles.serviceIcon, { backgroundColor: '#FFE5E5' }]}>
                   <Text style={styles.serviceIconEmoji}>🏠</Text>
                 </View>
                 <Text style={styles.serviceLabel}>Anfitriones</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.serviceItem}>
+              <TouchableOpacity 
+                style={styles.serviceItem}
+                onPress={() => Alert.alert('Tours', 'Próximamente: Reserva tours guiados por las mejores rutas de Ecuador.')}
+              >
                 <View style={[styles.serviceIcon, { backgroundColor: '#E5F3FF' }]}>
                   <Text style={styles.serviceIconEmoji}>🗺️</Text>
                 </View>
                 <Text style={styles.serviceLabel}>Tours</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.serviceItem}>
+              <TouchableOpacity 
+                style={styles.serviceItem}
+                onPress={() => Alert.alert('Experiencias', 'Próximamente: Vive tradiciones y gastronomía local auténtica.')}
+              >
                 <View style={[styles.serviceIcon, { backgroundColor: '#FFF5E5' }]}>
                   <Text style={styles.serviceIconEmoji}>⭐</Text>
                 </View>
@@ -507,14 +516,17 @@ const styles = StyleSheet.create({
     right: '25%',
     bottom: 30,
     width: '50%',
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 20,
+    padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    overflow: 'hidden',
   },
   cardTitle: {
     fontSize: 28,
@@ -775,13 +787,22 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   sidebarHeader: {
+    height: 120,
+    position: 'relative',
+    justifyContent: 'flex-end',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  sidebarPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.15,
+  },
+  sidebarHeaderContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   sidebarLogo: {
     width: 100,

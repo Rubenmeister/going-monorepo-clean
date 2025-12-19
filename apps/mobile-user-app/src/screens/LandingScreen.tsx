@@ -21,6 +21,8 @@ import goingLogoWhiteSymbol from '../assets/logo_white_symbol_black_text.png';
 import googleIcon from '../assets/google_icon.png';
 import facebookIcon from '../assets/facebook_icon.png';
 import appleIcon from '../assets/apple_icon.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
+import andeanPattern from '../assets/andean_pattern.png';
 
 const { width, height } = Dimensions.get('window');
 
@@ -168,10 +170,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
     navigation.navigate('ForgotPassword');
   };
 
-  // SCENE 1: SUV crosses between the lines
+  // SCENE 1: SUV crosses between the lines with landscape background
   if (currentScene === 1) {
     return (
       <View style={splashStyles.container}>
+        <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <View style={splashStyles.overlay} />
+        
         {/* Red Line - Above SUV path */}
         <View style={splashStyles.redLine} />
         
@@ -188,17 +193,20 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
             resizeMode="contain"
           />
         </Animated.View>
-
+        
         {/* Yellow Line - Below SUV path */}
         <View style={splashStyles.yellowLine} />
       </View>
     );
   }
 
-  // SCENE 2: Logo reveal with tagline
+  // SCENE 2: Logo reveal with tagline and landscape background
   if (currentScene === 2) {
     return (
       <View style={splashStyles.container}>
+        <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <View style={splashStyles.overlay} />
+        
         {/* Logo */}
         <Animated.View style={[splashStyles.logoRevealContainer, { opacity: logoOpacity }]}>
           <Image source={{ uri: goingLogo }} style={splashStyles.logoImage} resizeMode="contain" />
@@ -213,9 +221,11 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   }
 
   // SCENE 3: Login screen
-
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={{ uri: andeanPattern }} style={styles.backgroundPattern} resizeMode="repeat" />
       {/* Language Selector */}
       <View style={styles.languageSelector}>
         <TouchableOpacity style={styles.languageButton}>
@@ -319,9 +329,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
 const splashStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.black,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   suvContainer: {
     position: 'absolute',
@@ -372,12 +386,15 @@ const splashStyles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   tagline: {
-    fontSize: 14,
-    fontWeight: '400',
+    fontSize: 16,
+    fontWeight: '700',
     fontStyle: 'italic',
-    color: COLORS.black,
+    color: COLORS.white,
     letterSpacing: 4,
     marginTop: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
 });
 
@@ -386,6 +403,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.goingRed,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.goingRed,
+    opacity: 0.85,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.08,
   },
   keyboardView: {
     flex: 1,
@@ -441,6 +467,11 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     maxWidth: 400,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    padding: 32,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   inputWrapper: {
     marginBottom: 16,

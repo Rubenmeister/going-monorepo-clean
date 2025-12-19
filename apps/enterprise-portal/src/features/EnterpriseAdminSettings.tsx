@@ -1,7 +1,5 @@
-'use client';
-
-import React, { useState } from 'react';
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { useState } from 'react';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
 
 interface EnterpriseAdminSettingsProps {
   section?: 'cost-centers' | 'policies';
@@ -23,21 +21,20 @@ const MOCK_POLICIES = [
 ];
 
 export function EnterpriseAdminSettings({ section = 'cost-centers' }: EnterpriseAdminSettingsProps) {
-  const { tenantName } = useEnterpriseAuth();
   const [activeSection, setActiveSection] = useState(section);
 
   return (
-    <>
+    <EnterpriseLayout activeItem="settings">
       {/* Header */}
       <header className="top-header">
         <div>
           <h1 className="page-title">
             {activeSection === 'cost-centers' ? 'Centros de Costo' : 'Políticas'}
           </h1>
-          <p className="text-sm text-muted">{tenantName} • Administración</p>
+          <p className="text-sm text-muted">Configuración administrativa de la empresa</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-primary">
+          <button className="btn btn-primary btn-sm">
             + {activeSection === 'cost-centers' ? 'Nuevo Centro' : 'Nueva Política'}
           </button>
         </div>
@@ -61,7 +58,7 @@ export function EnterpriseAdminSettings({ section = 'cost-centers' }: Enterprise
               activeSection === 'policies' ? 'bg-enterprise-blue text-white' : 'bg-slate-100'
             }`}
           >
-            📋 Políticas
+            📋 Políticas de Viaje
           </button>
         </div>
 
@@ -74,8 +71,8 @@ export function EnterpriseAdminSettings({ section = 'cost-centers' }: Enterprise
                   <th>Nombre</th>
                   <th>Código</th>
                   <th>Presupuesto</th>
-                  <th>Gastado</th>
-                  <th>Disponible</th>
+                  <th>Consumo</th>
+                  <th>Saldo</th>
                   <th></th>
                 </tr>
               </thead>
@@ -90,20 +87,20 @@ export function EnterpriseAdminSettings({ section = 'cost-centers' }: Enterprise
                       <td>${cc.budget.toLocaleString()}</td>
                       <td>
                         <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full ${pct > 80 ? 'bg-going-red' : pct > 50 ? 'bg-going-yellow' : 'bg-green-500'}`}
+                              className={`h-full ${pct > 80 ? 'bg-red-500' : pct > 50 ? 'bg-orange-400' : 'bg-green-500'}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="text-sm">{pct.toFixed(0)}%</span>
+                          <span className="text-xs font-bold">{pct.toFixed(0)}%</span>
                         </div>
                       </td>
-                      <td className={available < 1000 ? 'text-going-red font-semibold' : ''}>
+                      <td className={`font-semibold ${available < 1000 ? 'text-red-600' : 'text-slate-800'}`}>
                         ${available.toLocaleString()}
                       </td>
-                      <td>
-                        <button className="btn btn-sm btn-secondary">Editar</button>
+                      <td className="text-right">
+                        <button className="text-blue-600 hover:underline text-sm font-medium">Editar</button>
                       </td>
                     </tr>
                   );
@@ -115,30 +112,23 @@ export function EnterpriseAdminSettings({ section = 'cost-centers' }: Enterprise
 
         {/* Policies */}
         {activeSection === 'policies' && (
-          <div className="space-y-4">
+          <div className="grid-2">
             {MOCK_POLICIES.map(policy => (
-              <div 
-                key={policy.id}
-                className="data-card"
-              >
-                <div className="card-body flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-slate-900">{policy.name}</h4>
-                    <p className="text-sm text-muted">{policy.value}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className={`badge ${policy.active ? 'badge-success' : 'badge-warning'}`}>
-                      {policy.active ? 'Activa' : 'Inactiva'}
-                    </span>
-                    <button className="btn btn-sm btn-secondary">Editar</button>
-                  </div>
+              <div key={policy.id} className="data-card p-6 flex items-start justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 mb-1">{policy.name}</h4>
+                  <p className="text-sm text-slate-500 mb-4">{policy.value}</p>
+                  <span className={`badge ${policy.active ? 'badge-success' : 'badge-warning'}`}>
+                    {policy.active ? '● Activa' : '○ Inactiva'}
+                  </span>
                 </div>
+                <button className="btn btn-sm btn-secondary">Ajustar</button>
               </div>
             ))}
           </div>
         )}
       </div>
-    </>
+    </EnterpriseLayout>
   );
 }
 

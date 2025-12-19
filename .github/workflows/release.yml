@@ -41,8 +41,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: 🏷️ Create Release
+        id: version
         run: |
           npx standard-version --release-as ${{ github.event.inputs.release_type }}
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
           git push --follow-tags origin main
 
       - name: 📝 Create GitHub Release

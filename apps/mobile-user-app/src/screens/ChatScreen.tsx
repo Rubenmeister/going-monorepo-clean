@@ -9,9 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
+
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
+import andeanPattern from '../assets/andean_pattern.png';
 
 // Design tokens
 const COLORS = {
@@ -117,6 +121,10 @@ export function ChatScreen({ navigation }: ChatScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={{ uri: andeanPattern }} style={styles.backgroundPattern} resizeMode="repeat" />
+      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity 
@@ -317,10 +325,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 12,
   },
-  userBubble: {
-    alignSelf: 'flex-end',
-    backgroundColor: COLORS.userBubble,
-    borderBottomRightRadius: 4,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.lightGray,
+    opacity: 0.92,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.05,
   },
   driverBubble: {
     alignSelf: 'flex-start',

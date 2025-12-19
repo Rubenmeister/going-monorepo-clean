@@ -9,158 +9,190 @@ export default function ProviderDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('services');
 
-  // Placeholder data - In real app, this comes from API based on user role (driver vs host)
-  const isDriver = true; // Simulating a driver view for now
+  // Placeholder - logic to show driver vs host
+  const isDriver = true;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header Mobile styled */}
-      <div className="bg-white p-6 sticky top-0 z-10 shadow-sm border-b border-gray-100">
-        <div className="flex justify-between items-center max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Header with Glassmorphism */}
+      <div className="bg-white/90 backdrop-blur-md sticky top-0 z-20 border-b border-gray-100/50">
+        <div className="flex justify-between items-center max-w-4xl mx-auto p-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Panel Proveedor 💼</h1>
-            <p className="text-sm text-gray-500">
-              {isDriver ? 'Conductor' : 'Anfitrión'} • {user?.name}
-            </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black text-gray-900 tracking-tight">Panel Proveedor</h1>
+              <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">{isDriver ? 'Conductor' : 'Anfitrión'}</span>
+            </div>
+            <p className="text-sm font-medium text-gray-400 mt-0.5">{user?.name}</p>
           </div>
-          <div className="flex gap-2">
-             <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold flex items-center">
-               ● En línea
+          <div className="flex items-center gap-3">
+             <div className="px-3 py-1.5 bg-green-500/10 text-green-700 rounded-full text-xs font-bold flex items-center gap-1.5 border border-green-500/20">
+               <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+               EN LÍNEA
              </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs - Floating effect */}
+        <div className="px-6 pb-4 max-w-4xl mx-auto overflow-x-auto hide-scrollbar">
+          <div className="inline-flex p-1 bg-gray-100/80 rounded-xl gap-1">
+            <TabButton active={activeTab === 'services'} onClick={() => setActiveTab('services')} label="Mis Servicios" icon="📋" />
+            <TabButton active={activeTab === 'earnings'} onClick={() => setActiveTab('earnings')} label="Ganancias" icon="💰" />
+            <TabButton active={activeTab === 'requests'} onClick={() => setActiveTab('requests')} label="Solicitudes" icon="zap" emoji="⚡" badge={3} />
+            <TabButton active={activeTab === 'notifications'} onClick={() => setActiveTab('notifications')} label="Avisos" icon="bell" emoji="🔔" />
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-4 space-y-6 animate-fade-in">
         
-        {/* Navigation Tabs */}
-        <div className="flex overflow-x-auto gap-2 mb-6 pb-2 hide-scrollbar">
-          <TabButton active={activeTab === 'services'} onClick={() => setActiveTab('services')} label="Mis Servicios" icon="📋" />
-          <TabButton active={activeTab === 'earnings'} onClick={() => setActiveTab('earnings')} label="Ganancias" icon="💰" />
-          <TabButton active={activeTab === 'requests'} onClick={() => setActiveTab('requests')} label="Solicitudes" icon="🔔" badge={3} />
-          <TabButton active={activeTab === 'notifications'} onClick={() => setActiveTab('notifications')} label="Avisos" icon="📢" />
-        </div>
-
-        {/* Content Area */}
-        <div className="space-y-6">
-          
-          {activeTab === 'services' && (
-            <div className="space-y-4">
-               {/* Quick Stats */}
-               <div className="grid grid-cols-2 gap-4">
-                 <StatCard label="Total Viajes" value="124" />
-                 <StatCard label="Calificación" value="4.9 ⭐" />
-               </div>
-
-               {/* Active Service */}
-               <div className="bg-white rounded-xl shadow-sm border border-brand-red/20 p-6 relative overflow-hidden">
-                 <div className="absolute top-0 right-0 w-24 h-24 bg-brand-red/10 rounded-full -mr-10 -mt-10" />
-                 <h3 className="font-bold text-gray-900 z-10 relative">Servicio Actual</h3>
-                 <div className="mt-4 z-10 relative">
-                   <div className="text-sm text-gray-500">Estado</div>
-                   <div className="font-semibold text-brand-red">Esperando asignación...</div>
-                 </div>
-                 <button className="mt-4 w-full py-2 bg-brand-red text-white rounded-lg font-semibold hover:bg-red-600 transition">
-                   Ir al Mapa
-                 </button>
-               </div>
-
-               {/* Recents list */}
-               <div>
-                 <h3 className="font-bold text-gray-800 mb-3">Historial Reciente</h3>
-                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divider-gray-100">
-                   {[1, 2, 3].map((i) => (
-                     <div key={i} className="p-4 flex justify-between items-center">
-                       <div>
-                         <div className="font-semibold text-gray-800">Viaje Privado #{1000 + i}</div>
-                         <div className="text-xs text-gray-500">Hace {i} horas • Completado</div>
-                       </div>
-                       <div className="font-bold text-green-600">+$12.50</div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-            </div>
-          )}
-
-          {activeTab === 'earnings' && (
-            <div className="space-y-6">
-               <div className="bg-gray-900 text-white rounded-2xl p-6 text-center">
-                 <div className="text-gray-400 text-sm mb-1">Ganancias Disponibles</div>
-                 <div className="text-4xl font-bold mb-4">$450.00</div>
-                 <button className="px-6 py-2 bg-white text-gray-900 rounded-lg font-semibold text-sm hover:bg-gray-100 transition">
-                   Retirar Fondos
-                 </button>
-               </div>
-               
-               <div className="grid grid-cols-2 gap-4">
-                 <StatCard label="Esta Semana" value="$120.50" />
-                 <StatCard label="Mes Anterior" value="$1,240.00" />
-               </div>
-
-               <div className="bg-white rounded-xl border border-gray-100 p-4">
-                 <h3 className="font-bold text-gray-800 mb-4">Desglose de Gastos (Estimado)</h3>
-                 {/* Placeholder for Expenses Chart/List */}
-                 <div className="space-y-3">
-                   <div className="flex justify-between text-sm">
-                     <span className="text-gray-600">Comisión Plataforma (15%)</span>
-                     <span className="font-medium text-red-500">-$18.00</span>
-                   </div>
-                   <div className="flex justify-between text-sm">
-                     <span className="text-gray-600">Impuestos</span>
-                     <span className="font-medium text-red-500">-$2.40</span>
-                   </div>
-                   <div className="pt-2 border-t border-gray-100 flex justify-between font-bold">
-                     <span>Neto</span>
-                     <span className="text-green-600">$100.10</span>
-                   </div>
-                 </div>
-               </div>
-            </div>
-          )}
-
-          {activeTab === 'requests' && (
-             <div className="space-y-4">
-               <div className="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm border border-blue-100">
-                 💡 Tip: Acepta solicitudes rápido para mantener tu tasa de aceptación alta.
-               </div>
-
-               {[1, 2, 3].map((i) => (
-                 <div key={i} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                   <div className="flex justify-between items-start mb-3">
-                     <div className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-bold">Viaje Privado</div>
-                     <div className="font-bold text-gray-900">$8.50</div>
-                   </div>
-                   
-                   <div className="space-y-3 mb-4">
-                     <div className="flex items-center gap-2">
-                       <span className="text-green-500 text-xs">🟢</span>
-                       <span className="text-sm font-medium">CC El Bosque</span>
-                     </div>
-                     <div className="flex items-center gap-2">
-                       <span className="text-red-500 text-xs">🔴</span>
-                       <span className="text-sm font-medium">Parque La Carolina</span>
-                     </div>
-                   </div>
-
-                   <div className="grid grid-cols-2 gap-3">
-                     <button className="py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">Ignorar</button>
-                     <button className="py-2 bg-gray-900 text-white rounded-lg text-sm font-semibold hover:bg-black">Aceptar</button>
-                   </div>
-                 </div>
-               ))}
+        {activeTab === 'services' && (
+          <div className="space-y-6">
+             {/* Quick Stats Row */}
+             <div className="grid grid-cols-2 gap-4">
+               <StatCard label="Total Viajes" value="124" trend="+12%" />
+               <StatCard label="Calificación" value="4.9" sub="Excelencia" />
              </div>
-          )}
 
-          {activeTab === 'notifications' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100">
-               <NotificationItem title="¡Bienvenido a GOING!" time="Hace 2 días" isNew />
-               <NotificationItem title="Documentos verificados" time="Hace 5 días" />
-               <NotificationItem title="Nueva política de comisiones" time="Hace 1 semana" />
-            </div>
-          )}
+             {/* Active Service Card - Hero style */}
+             <div className="relative overflow-hidden rounded-3xl bg-gray-900 text-white p-8 shadow-xl">
+               <div className="absolute top-0 right-0 p-8 opacity-10">
+                 <span className="text-9xl">🛡️</span>
+               </div>
+               <div className="relative z-10">
+                 <div className="flex items-center gap-2 mb-4">
+                    <span className="w-2 h-2 rounded-full bg-brand-yellow"></span>
+                    <span className="text-xs font-bold tracking-widest text-brand-yellow uppercase">Estado Actual</span>
+                 </div>
+                 <h3 className="text-2xl font-black mb-1">Esperando asignación</h3>
+                 <p className="text-gray-400 text-sm mb-6">Mantente en zonas de alta demanda para recibir más viajes.</p>
+                 
+                 <button className="w-full py-3 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg transform active:scale-95">
+                   Ir al Mapa en Vivo
+                 </button>
+               </div>
+             </div>
 
-        </div>
+             {/* Recent Activity List */}
+             <div>
+               <h3 className="text-lg font-bold text-gray-800 mb-4 px-1">Historial Hoy</h3>
+               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                 {[1, 2, 3].map((i) => (
+                   <div key={i} className="p-4 flex justify-between items-center border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer group">
+                     <div className="flex items-center gap-4">
+                       <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg group-hover:bg-brand-red/10 group-hover:text-brand-red transition-colors">
+                         🏁
+                       </div>
+                       <div>
+                         <div className="font-bold text-gray-900 text-sm">Viaje Privado #{1000 + i}</div>
+                         <div className="text-xs text-gray-500">Hace {i}h • Av. Amazonas</div>
+                       </div>
+                     </div>
+                     <div className="text-right">
+                       <div className="font-bold text-green-600">+$12.50</div>
+                       <div className="text-[10px] text-gray-400">Efectivo</div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'earnings' && (
+          <div className="space-y-6">
+             <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl p-8 text-center shadow-xl relative overflow-hidden">
+               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+               <div className="relative z-10">
+                 <div className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">Disponible para retiro</div>
+                 <div className="text-5xl font-black mb-6 tracking-tight">$450.00</div>
+                 <button className="px-8 py-3 bg-brand-red text-white rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(255,76,65,0.4)] transition transform hover:-translate-y-0.5">
+                   Solicitar Retiro
+                 </button>
+               </div>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-4">
+               <StatCard label="Esta Semana" value="$120.50" trend="+5%" />
+               <StatCard label="Mes Anterior" value="$1,240.00" />
+             </div>
+
+             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+               <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                 <span>📊</span> Desglose Estimado
+               </h3>
+               <div className="space-y-4">
+                 <div className="flex justify-between text-sm items-center">
+                   <div className="flex items-center gap-2">
+                     <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                     <span className="text-gray-600 font-medium">Comisión Plataforma (15%)</span>
+                   </div>
+                   <span className="font-bold text-red-500">-$18.00</span>
+                 </div>
+                 <div className="flex justify-between text-sm items-center">
+                   <div className="flex items-center gap-2">
+                     <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                     <span className="text-gray-600 font-medium">Impuestos</span>
+                   </div>
+                   <span className="font-bold text-red-500">-$2.40</span>
+                 </div>
+                 <div className="pt-4 border-t border-gray-100 flex justify-between">
+                   <span className="font-black text-gray-900">Neto</span>
+                   <span className="font-black text-green-600 text-lg">$100.10</span>
+                 </div>
+               </div>
+             </div>
+          </div>
+        )}
+
+        {activeTab === 'requests' && (
+           <div className="space-y-4">
+             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl text-sm shadow-md flex items-center gap-3">
+               <span className="text-xl">🚀</span>
+               <div className="font-medium leading-tight">
+                 Tip Pro: Acepta solicitudes en menos de 10s para ganar bono de velocidad.
+               </div>
+             </div>
+
+             {[1, 2, 3].map((i) => (
+               <div key={i} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                 <div className="flex justify-between items-start mb-4">
+                   <div className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase tracking-wider rounded font-bold">Viaje Privado</div>
+                   <div className="font-black text-lg text-gray-900">$8.50</div>
+                 </div>
+                 
+                 <div className="space-y-4 mb-6 relative pl-4 border-l-2 border-gray-100 ml-1">
+                   <div className="relative">
+                     <span className="absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-white bg-green-500 shadow-sm"></span>
+                     <div className="text-xs text-gray-400 font-bold uppercase mb-0.5">Recogida</div>
+                     <span className="text-sm font-bold text-gray-900">CC El Bosque</span>
+                   </div>
+                   <div className="relative">
+                     <span className="absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-white bg-red-500 shadow-sm"></span>
+                     <div className="text-xs text-gray-400 font-bold uppercase mb-0.5">Destino</div>
+                     <span className="text-sm font-bold text-gray-900">Parque La Carolina</span>
+                   </div>
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-3">
+                   <button className="py-3 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition">RECHAZAR</button>
+                   <button className="py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-black shadow-lg hover:shadow-xl transition transform active:scale-95">ACEPTAR</button>
+                 </div>
+               </div>
+             ))}
+           </div>
+        )}
+
+        {activeTab === 'notifications' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+             <NotificationItem title="¡Bienvenido a GOING!" time="Hace 2 días" isNew emoji="🎉" />
+             <NotificationItem title="Documentos verificados" time="Hace 5 días" emoji="✅" />
+             <NotificationItem title="Nueva política de comisiones" time="Hace 1 semana" emoji="📢" />
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -168,21 +200,21 @@ export default function ProviderDashboard() {
 
 /* --- Subcomponents --- */
 
-function TabButton({ active, onClick, label, icon, badge }: { active: boolean; onClick: () => void; label: string; icon: string; badge?: number }) {
+function TabButton({ active, onClick, label, icon, emoji, badge }: { active: boolean; onClick: () => void; label: string; icon: string; emoji?: string; badge?: number }) {
   return (
     <button 
       onClick={onClick}
       className={`
-        flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border
+        flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all
         ${active 
-          ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
-          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}
+          ? 'bg-white text-gray-900 shadow-sm font-bold' 
+          : 'text-gray-500 hover:text-gray-900 hover:bg-white/50 font-medium'}
       `}
     >
-      <span>{icon}</span>
-      <span className="font-semibold text-sm">{label}</span>
+      <span>{emoji || icon}</span>
+      <span className="text-sm">{label}</span>
       {badge && (
-        <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+        <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-black ${active ? 'bg-brand-red text-white' : 'bg-gray-200 text-gray-600'}`}>
           {badge}
         </span>
       )}
@@ -190,23 +222,34 @@ function TabButton({ active, onClick, label, icon, badge }: { active: boolean; o
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, trend, sub }: { label: string; value: string; trend?: string; sub?: string }) {
   return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-      <div className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">{label}</div>
-      <div className="text-xl font-bold text-gray-900">{value}</div>
+    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+      <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-2">{label}</div>
+      <div className="flex items-end gap-2">
+        <div className="text-2xl font-black text-gray-900 tracking-tight">{value}</div>
+        {trend && <div className="text-xs font-bold text-green-600 mb-1 bg-green-50 px-1.5 py-0.5 rounded">{trend}</div>}
+        {sub && <div className="text-xs font-bold text-gray-400 mb-1">{sub}</div>}
+      </div>
     </div>
   );
 }
 
-function NotificationItem({ title, time, isNew }: { title: string; time: string; isNew?: boolean }) {
+function NotificationItem({ title, time, isNew, emoji }: { title: string; time: string; isNew?: boolean; emoji?: string }) {
   return (
-    <div className={`p-4 ${isNew ? 'bg-blue-50/50' : ''}`}>
-      <div className="flex justify-between items-start">
-        <h4 className={`text-sm ${isNew ? 'font-bold text-blue-900' : 'font-medium text-gray-800'}`}>{title}</h4>
-        {isNew && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+    <div className={`p-4 hover:bg-gray-50 transition cursor-pointer ${isNew ? 'bg-blue-50/30' : ''}`}>
+      <div className="flex gap-4 items-start">
+        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg shadow-inner">
+          {emoji || 'ℹ️'}
+        </div>
+        <div className="flex-1">
+           <div className="flex justify-between items-start">
+            <h4 className={`text-sm ${isNew ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>{title}</h4>
+            {isNew && <span className="w-2 h-2 rounded-full bg-brand-red"></span>}
+          </div>
+          <p className="text-xs text-gray-400 mt-1 font-medium">{time}</p>
+        </div>
       </div>
-      <p className="text-xs text-gray-500 mt-1">{time}</p>
     </div>
   );
 }

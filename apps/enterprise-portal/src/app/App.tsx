@@ -10,6 +10,11 @@ import EnterpriseShipments from '../features/EnterpriseShipments';
 import EnterpriseRequest from '../features/EnterpriseRequest';
 import EnterpriseBilling from '../features/EnterpriseBilling';
 import EnterpriseAdminSettings from '../features/EnterpriseAdminSettings';
+import MobilityDashboard from './features/mobility/MobilityDashboard';
+import LogisticsDashboard from './features/logistics/LogisticsDashboard';
+import StaysDashboard from './features/stays/StaysDashboard';
+import ToursDashboard from './features/tours/ToursDashboard';
+import ActivitiesDashboard from './features/activities/ActivitiesDashboard';
 
 // Protected route for enterprise
 function EnterpriseProtected({ children }: { children: React.ReactNode }) {
@@ -59,38 +64,25 @@ export default function App() {
             <Route index element={<Navigate to="/e/dashboard" replace />} />
             <Route path="dashboard" element={<EnterpriseDashboard />} />
             
-            {/* Request Services */}
-            <Route path="request" element={<EnterpriseRequest />} />
-            <Route path="request/ride" element={<EnterpriseRequest type="ride" />} />
-            <Route path="request/shipment" element={<EnterpriseRequest type="shipment" />} />
-            
-            {/* Activity */}
-            <Route path="trips" element={<EnterpriseTrips />} />
-            <Route path="trips/:id" element={<EnterpriseTrips />} />
-            <Route path="shipments" element={<EnterpriseShipments />} />
-            <Route path="shipments/:id" element={<EnterpriseShipments />} />
+            {/* 5 Verticals */}
+            <Route path="mobility" element={<MobilityDashboard />} />
+            <Route path="shipments" element={<LogisticsDashboard />} />
+            <Route path="stays" element={<StaysDashboard />} />
+            <Route path="tours" element={<ToursDashboard />} />
+            <Route path="activities" element={<ActivitiesDashboard />} />
             
             {/* Billing & Reports */}
             <Route path="billing" element={<EnterpriseBilling />} />
-            <Route path="billing/invoices" element={<EnterpriseBilling view="invoices" />} />
-            <Route path="billing/payments" element={<EnterpriseBilling view="payments" />} />
             <Route path="reports" element={<EnterpriseReports />} />
             
             {/* Admin Only */}
             <Route path="admin/users" element={
               <AdminOnly><EnterpriseUsers /></AdminOnly>
             } />
-            <Route path="admin/cost-centers" element={
-              <AdminOnly><EnterpriseAdminSettings section="cost-centers" /></AdminOnly>
-            } />
             <Route path="admin/policies" element={
               <AdminOnly><EnterpriseAdminSettings section="policies" /></AdminOnly>
             } />
           </Route>
-
-          {/* Legacy routes redirect */}
-          <Route path="/reports" element={<Navigate to="/e/reports" replace />} />
-          <Route path="/users" element={<Navigate to="/e/admin/users" replace />} />
 
           {/* Default redirects */}
           <Route path="/" element={<Navigate to="/e/dashboard" replace />} />

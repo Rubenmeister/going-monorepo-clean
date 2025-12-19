@@ -1,5 +1,8 @@
 import './global.css';
 
+export const runtime = 'nodejs';
+
+
 export const metadata = {
   title: 'Going Admin Dashboard',
   description: 'Panel de operaciones de Going.',

@@ -32,6 +32,16 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Proxy to Transport Service (Port 3006)
+  const { createProxyMiddleware } = await import('http-proxy-middleware');
+  app.use(
+    '/api/transport',
+    createProxyMiddleware({
+      target: 'http://localhost:3006',
+      changeOrigin: true,
+    })
+  );
+
   // ============================================
   // OpenAPI / Swagger Configuration
   // ============================================

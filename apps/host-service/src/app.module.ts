@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { DatabaseModule } from '../../../libs/shared/src';
 import { ObservabilityModule } from '@going/shared/observability';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AccommodationController } from './api/accommodation.controller';
@@ -13,7 +13,7 @@ import {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ObservabilityModule.forRoot({ serviceName: 'host-service' }),
-    MongooseModule.forRoot(process.env['ACCOMMODATION_DB_URL'] || 'mongodb://localhost:27017/accommodation'),
+    DatabaseModule,
     InfrastructureModule,
   ],
   controllers: [AccommodationController],

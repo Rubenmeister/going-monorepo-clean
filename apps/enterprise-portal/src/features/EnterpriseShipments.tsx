@@ -1,7 +1,5 @@
-'use client';
-
-import React, { useState } from 'react';
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { useState } from 'react';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
 
 interface Shipment {
   id: string;
@@ -29,8 +27,7 @@ const statusLabels = {
   cancelled: { label: 'Cancelado', class: 'badge-error' },
 };
 
-export function EnterpriseShipments() {
-  const { tenantName } = useEnterpriseAuth();
+export default function EnterpriseShipments() {
   const [filter, setFilter] = useState('all');
 
   const filteredShipments = filter === 'all' 
@@ -38,29 +35,29 @@ export function EnterpriseShipments() {
     : MOCK_SHIPMENTS.filter(s => s.status === filter);
 
   return (
-    <>
+    <EnterpriseLayout activeItem="shipments">
       {/* Header */}
       <header className="top-header">
         <div>
           <h1 className="page-title">Envíos</h1>
-          <p className="text-sm text-muted">{tenantName} • {filteredShipments.length} envíos</p>
+          <p className="text-sm text-muted">{filteredShipments.length} envíos registrados</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">📥 Exportar</button>
-          <a href="/e/request/shipment" className="btn btn-primary">+ Nuevo Envío</a>
+          <button className="btn btn-secondary btn-sm">📥 Exportar</button>
+          <a href="/e/request/shipment" className="btn btn-primary btn-sm">+ Nuevo Envío</a>
         </div>
       </header>
 
-      {/* Content */}
+      {/* Page Content */}
       <div className="page-content">
         {/* Filters */}
         <div className="flex gap-4 mb-6">
           <select 
-            className="form-input w-auto"
+            className="form-input w-auto text-sm"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="all">Todos</option>
+            <option value="all">Todos los estados</option>
             <option value="pending">Pendientes</option>
             <option value="in_transit">En tránsito</option>
             <option value="delivered">Entregados</option>
@@ -73,7 +70,7 @@ export function EnterpriseShipments() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Origen → Destino</th>
+                <th>Ruta</th>
                 <th>Fecha</th>
                 <th>Peso</th>
                 <th>Centro</th>
@@ -84,7 +81,7 @@ export function EnterpriseShipments() {
             <tbody>
               {filteredShipments.map(shipment => (
                 <tr key={shipment.id} className="cursor-pointer hover:bg-slate-50">
-                  <td className="font-medium">{shipment.id}</td>
+                  <td className="font-medium" style={{ color: '#1e40af' }}>{shipment.id}</td>
                   <td>
                     <div className="text-sm">
                       📦 {shipment.from}<br />
@@ -99,15 +96,13 @@ export function EnterpriseShipments() {
                       {statusLabels[shipment.status].label}
                     </span>
                   </td>
-                  <td className="font-semibold">${shipment.amount.toFixed(2)}</td>
+                  <td className="font-semibold text-right">${shipment.amount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-    </>
+    </EnterpriseLayout>
   );
 }
-
-export default EnterpriseShipments;

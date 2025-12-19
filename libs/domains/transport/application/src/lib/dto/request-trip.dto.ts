@@ -77,4 +77,21 @@ export class RequestTripDto {
   @ValidateNested()
   @Type(() => PriceDto)
   price: PriceDto;
+
+  // Corporate Fields
+  @IsOptional()
+  @IsString()
+  guestName?: string;
+
+  @IsOptional()
+  @IsString()
+  guestPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  costCenter?: string;
+
+  @IsOptional()
+  @IsString()
+  companyId?: string;
 }

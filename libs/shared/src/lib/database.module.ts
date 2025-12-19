@@ -1,6 +1,6 @@
 import { Module, Global } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 
 @Global()
 @Module({
@@ -9,14 +9,8 @@ import { MongooseModule } from '@nestjs/mongoose';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI') || 'mongodb://localhost:27017/going_monorepo',
-      }),
-      inject: [ConfigService],
-    }),
+    PrismaModule,
   ],
-  exports: [MongooseModule, ConfigModule],
+  exports: [PrismaModule, ConfigModule],
 })
 export class DatabaseModule {}

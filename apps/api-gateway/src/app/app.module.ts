@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@going-monorepo-clean/prisma-client';
+import { DatabaseModule } from '../../../../libs/shared/src';
 
 @Module({
   imports: [

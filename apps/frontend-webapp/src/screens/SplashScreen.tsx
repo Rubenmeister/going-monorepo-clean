@@ -8,64 +8,66 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [phase, setPhase] = useState<'car' | 'logo' | 'finish'>('car');
 
   useEffect(() => {
-    // Phase 1: Car Animation (2.5s)
     const carTimer = setTimeout(() => {
       setPhase('logo');
-    }, 2000); // Switch to logo slightly before car animation finishes completely
+    }, 2800);
 
-    // Phase 2: Logo Animation (2.5s more) then finish
     const finishTimer = setTimeout(() => {
-        if (phase !== 'car') { // Only finish if we moved past car
-             onFinish();
-        }
-    }, 4500); // 2000 + 2500
+      onFinish();
+    }, 6000);
 
     return () => {
       clearTimeout(carTimer);
       clearTimeout(finishTimer);
     };
-  }, []); // Run once on mount
+  }, [onFinish]);
 
-  // Watch for phase change to trigger finish sequence manually if needed
-  useEffect(() => {
-     if (phase === 'logo') {
-         setTimeout(onFinish, 3000);
-     }
-  }, [phase, onFinish]);
-
+  // SCENE 1: SUV Animation
   if (phase === 'car') {
-      return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-red overflow-hidden">
-            <div className="animate-drive-in">
-                <img 
-                    src="/assets/suv.png" 
-                    alt="Approaching SUV" 
-                    className="w-64 h-auto md:w-96 object-contain drop-shadow-2xl"
-                />
-            </div>
-        </div>
-      );
-  }
-
-  return (
-    <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-brand-red transition-opacity duration-700 ${phase === 'finish' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-      <div className="animate-zoom-in flex flex-col items-center">
-        {/* Icon only - Cropped using clip-path */}
-        <div className="flex items-center justify-center">
-           <img 
-            src={`/assets/logo-full.png?v=${new Date().getTime()}`} 
-            alt="Going Icon" 
-            className="w-48 h-auto object-contain brightness-0 invert [clip-path:polygon(0_0,100%_0,100%_60%,0_60%)] -mb-12" 
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black overflow-hidden">
+        <img 
+          src="/assets/ecuador_landscape_bg.png" 
+          alt="Ecuador Landscape" 
+          className="absolute inset-0 w-full h-full object-cover opacity-60" 
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        
+        {/* Lines */}
+        <div className="absolute top-[42%] left-0 right-0 h-0.5 bg-[#FF4D4D]" />
+        <div className="absolute top-[51%] left-0 right-0 h-0.5 bg-[#F5A623]" />
+        
+        {/* SUV */}
+        <div className="absolute top-[43.5%] left-0 w-full animate-drive-full">
+          <img 
+            src="/assets/suv_black_right_v3.png" 
+            alt="Approaching SUV" 
+            className="w-32 h-auto md:w-48 object-contain"
           />
         </div>
-        
-        {/* Text - Black */}
-        <h1 className="mt-2 text-5xl md:text-6xl font-bold text-black tracking-wider">
-          Going
-        </h1>
       </div>
-      <div className="opacity-0 animate-fade-in flex flex-col items-center">
-        <p className="mt-4 text-white/90 font-medium text-lg">Nos movemos contigo</p>
+    );
+  }
+
+  // SCENE 2: Logo Reveal
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black overflow-hidden transition-opacity duration-1000">
+      <img 
+        src="/assets/ecuador_landscape_bg.png" 
+        alt="Ecuador Landscape" 
+        className="absolute inset-0 w-full h-full object-cover opacity-60" 
+      />
+      <div className="absolute inset-0 bg-black/40" />
+      
+      <div className="relative z-10 animate-zoom-in flex flex-col items-center">
+        <img 
+          src="/assets/logo.png" 
+          alt="Going Logo" 
+          className="w-64 h-auto md:w-80 object-contain drop-shadow-2xl" 
+        />
+        <p className="mt-8 text-white font-bold text-xl md:text-2xl tracking-[0.4em] italic drop-shadow-lg text-center px-4 animate-fade-in">
+          NOS MOVEMOS CONTIGO
+        </p>
       </div>
     </div>
   );

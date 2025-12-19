@@ -90,3 +90,10 @@ yarn-error.log
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Eclipse/Buildship
+.settings/
+.project
+.classpath
+.factorypath
+.metadata/

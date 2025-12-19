@@ -35,7 +35,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async executeTransaction<T>(
     fn: (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>) => Promise<T>,
   ): Promise<T> {
-    return this.$transaction(fn);
+    return (this as any).$transaction(fn);
   }
 
   /**

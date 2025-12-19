@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { IPasswordHasher } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 
 @Injectable()

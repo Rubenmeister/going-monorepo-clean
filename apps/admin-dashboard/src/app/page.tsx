@@ -2,417 +2,372 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FilterBar } from './components/FilterBar';
-import { LiveMap } from './components/LiveMap';
+import { 
+  Button, 
+  Badge
+} from '@going/shared-ui';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Truck, 
+  Settings, 
+  CreditCard, 
+  Bell, 
+  Activity,
+  LogOut,
+  Home,
+  Compass,
+  Zap,
+  ShieldCheck,
+  BarChart3
+} from 'lucide-react';
+
 import { TripDrawer, Trip } from './components/TripDrawer';
-import { Badge } from './components/ui/Badge';
-import { Button } from './components/ui/Button';
-import { Alert } from './components/ui/Alert';
+import { CommandSearch } from './components/CommandSearch';
+import { KPITransportPanel } from './components/KPITransportPanel';
+import { ProvidersManager } from './components/providers/ProvidersManager';
+import { RevenueOverview } from './components/analytics/RevenueOverview';
+import { UserAnalytics } from './components/analytics/UserAnalytics';
+import { SUVSharedPanel } from './components/panels/SUVSharedPanel';
+import { TouristAuthorizedPanel } from './components/panels/TouristAuthorizedPanel';
 
-// Icons (inline SVG for simplicity)
-const Icons = {
-  dashboard: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-  ),
-  trips: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  users: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-    </svg>
-  ),
-  drivers: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-    </svg>
-  ),
-  finance: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  settings: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  shipments: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-    </svg>
-  ),
-  alerts: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-  ),
-};
-
-// Sidebar navigation items
-const navItems = [
-  { icon: Icons.dashboard, label: 'Live Ops', href: '/', active: true },
-  { icon: Icons.trips, label: 'Transporte', href: '/transport' },
-  { icon: Icons.shipments, label: 'Logística', href: '/logistics' },
-  { icon: Icons.users, label: 'Anfitriones', href: '/hosts' },
-  { icon: Icons.drivers, label: 'Tours', href: '/tours' },
-  { icon: Icons.settings, label: 'Creadores', href: '/creators' },
-  { icon: Icons.finance, label: 'Finanzas', href: '/finance' },
-  { icon: Icons.alerts, label: 'Alertas', href: '/alerts', badge: 3 },
-  { icon: Icons.settings, label: 'Config', href: '/settings' },
-];
-
-// Mock trips data
+// Mock Data - Focus on SUV, VAN, Bus (No Sedans)
 const MOCK_TRIPS: Trip[] = [
-  {
-    id: 'T-001',
-    status: 'in_progress',
-    from: 'Aeropuerto Mariscal Sucre',
-    to: 'Centro Histórico',
-    passengers: [
-      { id: 'P1', name: 'Carlos Mendoza', phone: '+593 99 123 4567', checkedIn: true, paymentStatus: 'paid' },
-      { id: 'P2', name: 'Ana García', checkedIn: true, paymentStatus: 'pending' },
-    ],
-    driver: { id: 'D1', name: 'Roberto Pérez', vehicle: 'Toyota Corolla', plate: 'ABC-1234', rating: 4.8 },
-    capacity: 4,
-    occupancy: 2,
-    eta: '15 min',
+  { 
+    id: 'T-001', 
+    status: 'in_progress', 
+    from: 'Quito (Centro)', 
+    to: 'Baños', 
+    driver: { id: 'D1', name: 'Roberto Pérez', vehicle: 'Toyota Fortuner (SUV)', plate: 'PBA-1234', rating: 4.8 },
+    eta: '1h 45 min', 
     fare: 25.50,
-    createdAt: '2024-01-15T10:30:00',
-    poolId: 'POOL-A1',
-    timeline: [
-      { event: 'Viaje creado', timestamp: '10:30 AM', details: 'Solicitud recibida' },
-      { event: 'Conductor asignado', timestamp: '10:32 AM', details: 'Roberto Pérez aceptó' },
-      { event: 'Pasajero 1 recogido', timestamp: '10:45 AM' },
-      { event: 'Pasajero 2 recogido', timestamp: '10:52 AM' },
-    ],
-    payment: { total: 25.50, commission: 5.10, tip: 2.00, method: 'Tarjeta Visa', status: 'pending' },
-  },
-  {
-    id: 'T-002',
-    status: 'in_progress',
-    from: 'La Carolina',
-    to: 'Cumbayá',
+    occupancy: 4,
+    capacity: 6,
+    createdAt: '2024-05-15T10:00:00',
+    poolId: 'POOL-99',
     passengers: [
-      { id: 'P3', name: 'María Luisa Torres', checkedIn: true, paymentStatus: 'paid' },
+      { id: 'P1', name: 'Ana García', checkedIn: true, paymentStatus: 'paid' },
+      { id: 'P2', name: 'Carlos Díaz', checkedIn: true, paymentStatus: 'pending' },
     ],
-    driver: { id: 'D2', name: 'Juan Carlos López', vehicle: 'Hyundai Accent', plate: 'XYZ-5678', rating: 4.5 },
-    capacity: 4,
-    occupancy: 1,
-    eta: '22 min',
-    fare: 18.00,
-    createdAt: '2024-01-15T10:35:00',
     timeline: [
-      { event: 'Viaje creado', timestamp: '10:35 AM' },
-      { event: 'Conductor asignado', timestamp: '10:37 AM' },
-      { event: 'Pasajero recogido', timestamp: '10:50 AM' },
+      { event: 'Viaje Compartido Creado', timestamp: '10:00 AM' },
+      { event: 'Conductor Asignado', timestamp: '10:05 AM' },
     ],
-    payment: { total: 18.00, commission: 3.60, tip: 0, method: 'Efectivo', status: 'pending' },
+    payment: { total: 25.50, commission: 5.10, tip: 0, method: 'Tarjeta', status: 'pending' }
   },
-  {
-    id: 'T-003',
-    status: 'assigned',
-    from: 'Quicentro Norte',
-    to: 'El Batán',
-    passengers: [
-      { id: 'P4', name: 'Pedro Ramírez', checkedIn: false, paymentStatus: 'pending' },
-      { id: 'P5', name: 'Laura Sánchez', checkedIn: false, paymentStatus: 'paid' },
-      { id: 'P6', name: 'Diego Morales', checkedIn: false, paymentStatus: 'failed' },
-    ],
-    driver: { id: 'D3', name: 'Fernando Vega', vehicle: 'Kia Sportage', plate: 'DEF-9012', rating: 4.9 },
-    capacity: 5,
-    occupancy: 3,
-    eta: '8 min',
-    fare: 32.00,
-    createdAt: '2024-01-15T10:40:00',
-    poolId: 'POOL-B2',
+  { 
+    id: 'T-002', 
+    status: 'requested', 
+    from: 'Mindo', 
+    to: 'Quito (Aeropuerto)', 
+    eta: '1h 20 min', 
+    fare: 80.00,
+    occupancy: 0,
+    capacity: 12,
+    createdAt: '2024-05-15T10:15:00',
+    passengers: [],
     timeline: [
-      { event: 'Viaje creado', timestamp: '10:40 AM' },
-      { event: 'Conductor asignado', timestamp: '10:42 AM' },
+       { event: 'Solicitud VAN Turística', timestamp: '10:15 AM' }
     ],
-    payment: { total: 32.00, commission: 6.40, tip: 0, method: 'Tarjeta Mastercard', status: 'pending' },
+    payment: { total: 80.00, commission: 16.00, tip: 0, method: 'Transferencia', status: 'pending' }
+  },
+  { 
+    id: 'T-003', 
+    status: 'assigned', 
+    from: 'Quito (Nayon)', 
+    to: 'Cotopaxi', 
+    driver: { id: 'D2', name: 'Fernando Vega', vehicle: 'Mercedes Sprinter (VAN XL)', plate: 'PCC-5678', rating: 4.9 },
+    eta: '45 min', 
+    fare: 120.00,
+    occupancy: 8,
+    capacity: 15,
+    createdAt: '2024-05-15T10:20:00',
+    passengers: [
+      { id: 'P4', name: 'Pedro S.', checkedIn: false, paymentStatus: 'paid' }
+    ],
+    timeline: [
+       { event: 'Tour Grupal Asignado', timestamp: '10:22 AM' }
+    ],
+    payment: { total: 120.00, commission: 24.00, tip: 0, method: 'Tarjeta', status: 'success' }
   },
 ];
 
-// Mock alerts
-const MOCK_ALERTS = [
-  { id: 'A1', type: 'critical' as const, title: 'Conductor sin señal', description: 'V-004 sin GPS hace 5 minutos', tripId: 'T-001' },
-  { id: 'A2', type: 'operational' as const, title: 'Demora en pickup', description: 'T-003 esperando más de 10 min', tripId: 'T-003' },
-  { id: 'A3', type: 'operational' as const, title: 'Pago fallido', description: 'Diego Morales - T-003', tripId: 'T-003' },
-];
-
-type TabType = 'active' | 'queue' | 'alerts';
+type DashboardView = 'control_center' | 'suv_shared' | 'tourist_authorized' | 'providers' | 'revenue' | 'users' | 'hosting' | 'tours' | 'experiences';
 
 export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'queue' | 'alerts'>('active');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [trips] = useState(MOCK_TRIPS);
-  const [alerts] = useState(MOCK_ALERTS);
-
-  // KPIs
-  const activeTrips = trips.filter(t => t.status === 'in_progress').length;
-  const pendingTrips = trips.filter(t => t.status === 'assigned' || t.status === 'requested').length;
-  const criticalAlerts = alerts.filter(a => a.type === 'critical').length;
-  const totalSeats = trips.reduce((acc, t) => acc + t.capacity, 0);
-  const occupiedSeats = trips.reduce((acc, t) => acc + t.occupancy, 0);
-  const fillRate = totalSeats > 0 ? Math.round((occupiedSeats / totalSeats) * 100) : 0;
+  const [currentView, setCurrentView] = useState<DashboardView>('control_center');
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    setLoading(false);
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    router.push('/login');
-  };
-
-  const openTripDrawer = (trip: Trip) => {
-    setSelectedTrip(trip);
-    setDrawerOpen(true);
-  };
+    // Simulating auth check
+    setTimeout(() => setLoading(false), 500);
+  }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-going-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-going-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60">Cargando dashboard...</p>
+      <div className="min-h-screen bg-neutral flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground font-body">Iniciando Mission Control...</p>
         </div>
       </div>
     );
   }
 
+  // Derived State for KPIs (simulated)
+  const activeCount = MOCK_TRIPS.filter(t => t.status === 'in_progress').length;
+  const queueCount = MOCK_TRIPS.filter(t => ['requested', 'assigned'].includes(t.status)).length;
+  const alertCount = 2; // Hardcoded mock
+
   return (
-    <div className="min-h-screen bg-going-black">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
+    <div className="min-h-screen bg-neutral text-foreground flex font-body overflow-hidden">
+      {/* Sidebar - Grouped by Sections */}
+      <aside className="w-64 border-r border-border bg-neutral-900 flex flex-col z-20">
+        <div className="p-6 border-b border-border/10">
           <h1 className="text-2xl font-heading font-bold text-white">
-            <span className="text-going-red">Going</span> Ops
+            <span className="text-primary">Going</span> Ops
           </h1>
         </div>
-        <nav className="sidebar-nav">
-          {navItems.map((item, i) => (
-            <a key={i} href={item.href} className={item.active ? 'active' : ''}>
-              {item.icon}
-              <span>{item.label}</span>
-              {item.badge && (
-                <Badge variant="critical" size="sm" className="ml-auto">
-                  {item.badge}
-                </Badge>
-              )}
-            </a>
-          ))}
+        
+        <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+          {/* SECTION: TRANSPORTE */}
+          <div>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Transporte</p>
+            <div className="space-y-1">
+              <SidebarItem icon={<LayoutDashboard size={18} />} label="Centro de Control" active={currentView === 'control_center'} onClick={() => setCurrentView('control_center')} />
+              <SidebarItem icon={<Zap size={18} />} label="SUV Compartido" active={currentView === 'suv_shared'} onClick={() => setCurrentView('suv_shared')} />
+              <SidebarItem icon={<ShieldCheck size={18} />} label="Turístico ANT" active={currentView === 'tourist_authorized'} onClick={() => setCurrentView('tourist_authorized')} />
+              <SidebarItem icon={<Truck size={18} />} label="Conductores/Flota" active={currentView === 'providers'} onClick={() => setCurrentView('providers')} />
+            </div>
+          </div>
+
+          {/* SECTION: VERTICALES */}
+          <div>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Verticales</p>
+            <div className="space-y-1">
+              <SidebarItem icon={<Home size={18} />} label="Alojamiento" active={currentView === 'hosting'} onClick={() => setCurrentView('hosting')} />
+              <SidebarItem icon={<Compass size={18} />} label="Tours" active={currentView === 'tours'} onClick={() => setCurrentView('tours')} />
+              <SidebarItem icon={<Activity size={18} />} label="Experiencias" active={currentView === 'experiences'} onClick={() => setCurrentView('experiences')} />
+            </div>
+          </div>
+
+          {/* SECTION: ANALYTICS */}
+          <div>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Analytics & Ops</p>
+            <div className="space-y-1">
+              <SidebarItem icon={<CreditCard size={18} />} label="Finanzas (Revenue)" active={currentView === 'revenue'} onClick={() => setCurrentView('revenue')} />
+              <SidebarItem icon={<BarChart3 size={18} />} label="Usuarios" active={currentView === 'users'} onClick={() => setCurrentView('users')} />
+              <SidebarItem icon={<Bell size={18} />} label="Alertas" badge={3} />
+            </div>
+          </div>
+
+          <SidebarItem icon={<Settings size={18} />} label="Configuración" />
         </nav>
+
+        <div className="p-4 border-t border-border/10">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              AD
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">Admin User</p>
+              <p className="text-xs text-muted-foreground truncate">Super Admin</p>
+            </div>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white">
+              <LogOut size={16} />
+            </Button>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="main-content">
-        {/* Header */}
-        <header className="top-header">
-          <div>
-            <h2 className="text-2xl font-heading font-bold text-white">Live Ops</h2>
-            <p className="text-white/50 text-sm">Operaciones en tiempo real</p>
+      <main className="flex-1 flex flex-col bg-background/5 relative h-screen">
+        
+        {/* Topbar */}
+        <header className="h-16 border-b border-border bg-neutral flex items-center justify-between px-6 z-10 shrink-0">
+          <div className="flex items-center gap-6 flex-1">
+             <h2 className="text-lg font-heading font-bold text-white hidden md:block">Centro de Control de Operaciones</h2>
+             <div className="w-px h-6 bg-border mx-2 hidden md:block"></div>
+             {/* Command Search */}
+             <CommandSearch />
           </div>
-          <div className="flex items-center gap-4">
-            <div className="realtime-indicator">
-              <span className="pulse"></span>
-              <span>Tiempo real activo</span>
+          
+          <div className="flex items-center gap-4 ml-4">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs font-medium text-primary whitespace-nowrap">System Active</span>
             </div>
-            <Button variant="secondary" size="sm" onClick={handleLogout}>
-              Cerrar sesión
-            </Button>
           </div>
         </header>
 
-        {/* KPI Row - Command Center */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          {/* Transport Stats */}
-          <div className="bg-surface rounded-lg p-4 border-l-4 border-going-red relative overflow-hidden group">
-            <div className="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-              {Icons.drivers}
-            </div>
-            <p className="text-[10px] uppercase tracking-wide text-white/40">Transporte Activo</p>
-            <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-bold text-white">124</span>
-              <span className="text-xs text-success">▲ 12%</span>
-            </div>
-          </div>
+        {/* Dynamic Content Area */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-neutral-900/50">
+          {/* Dashboard Header with KPIs */}
+          <KPITransportPanel />
 
-          {/* Tourism Stats */}
-          <div className="bg-surface rounded-lg p-4 border-l-4 border-going-yellow relative overflow-hidden group">
-             <div className="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-              {Icons.users}
-            </div>
-            <p className="text-[10px] uppercase tracking-wide text-white/40">Turismo (Tours/Hosts)</p>
-             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-bold text-white">142</span>
-              <span className="text-xs text-white/40">Pax</span>
-            </div>
-          </div>
-
-          {/* Logistics Stats */}
-          <div className="bg-surface rounded-lg p-4 border-l-4 border-blue-500 relative overflow-hidden group">
-             <div className="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-              {Icons.shipments}
-            </div>
-            <p className="text-[10px] uppercase tracking-wide text-white/40">Logística (Envíos)</p>
-             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-bold text-white">56</span>
-              <span className="text-xs text-warning">● 3 delayed</span>
-            </div>
-          </div>
-
-          {/* Revenue */}
-          <div className="bg-surface rounded-lg p-4 border-l-4 border-success relative overflow-hidden group">
-             <div className="absolute right-2 top-2 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110">
-              {Icons.finance}
-            </div>
-            <p className="text-[10px] uppercase tracking-wide text-white/40">Revenue (Hoy)</p>
-             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-bold text-white">$4.2k</span>
-              <span className="text-xs text-success">▲ 8%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Bar */}
-        <FilterBar />
-
-        {/* Main Split Layout: Map + Panel */}
-        <div className="grid grid-cols-[65%_35%] gap-6 mt-6">
-          {/* Map Section */}
-          <LiveMap
-            focusedTripId={selectedTrip?.id}
-            onTripClick={(tripId) => {
-              const trip = trips.find(t => t.id === tripId);
-              if (trip) openTripDrawer(trip);
-            }}
-          />
-
-          {/* Right Panel */}
-          <div className="bg-surface rounded-lg border border-border overflow-hidden">
-            {/* Tabs */}
-            <div className="flex border-b border-border">
-              {[
-                { key: 'active' as const, label: 'Activos', count: activeTrips },
-                { key: 'queue' as const, label: 'Cola', count: pendingTrips },
-                { key: 'alerts' as const, label: 'Alertas', count: alerts.length },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 px-4 py-3 text-sm font-medium transition border-b-2 ${
-                    activeTab === tab.key
-                      ? 'border-going-red text-going-red bg-going-red/5'
-                      : 'border-transparent text-white/60 hover:text-white'
-                  }`}
-                >
-                  {tab.label}
-                  <Badge variant={activeTab === tab.key ? 'active' : 'neutral'} size="sm" className="ml-2">
-                    {tab.count}
-                  </Badge>
-                </button>
-              ))}
-            </div>
-
-            {/* Tab Content */}
-            <div className="p-4 h-[calc(100vh-400px)] overflow-y-auto">
-              {activeTab === 'active' && (
-                <div className="space-y-3">
-                  {trips.filter(t => t.status === 'in_progress').map((trip) => (
-                    <button
-                      key={trip.id}
-                      onClick={() => openTripDrawer(trip)}
-                      className="w-full text-left bg-charcoal rounded-lg p-4 border border-border hover:border-going-red/50 transition"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="font-mono text-going-red text-sm">{trip.id}</span>
-                        <Badge variant="active">{trip.status === 'in_progress' ? 'En curso' : trip.status}</Badge>
+          {/* Render Active View */}
+          {(() => {
+            switch (currentView) {
+              case 'control_center':
+                return (
+                  <div className="flex flex-col lg:flex-row gap-6 h-[800px]">
+                    {/* Map Area (65%) */}
+                    <div className="flex-[2] bg-neutral-800 relative group overflow-hidden border border-border rounded-xl shadow-2xl">
+                      <div className="absolute inset-0 opacity-40 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Map_of_Quito%2C_Ecuador.png')] bg-cover bg-center grayscale" />
+                      
+                      {/* Floating Map Controls */}
+                      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                         <Button variant="secondary" size="sm" className="shadow-xl opacity-90 hover:opacity-100 backdrop-blur">🗺️ Clustering: On</Button>
+                         <Button variant="secondary" size="sm" className="shadow-xl opacity-90 hover:opacity-100 backdrop-blur">Target: Quito Central</Button>
                       </div>
-                      <p className="text-white font-medium text-sm">{trip.from} → {trip.to}</p>
-                      <div className="flex items-center justify-between mt-2 text-xs text-white/50">
-                        <span>🪑 {trip.occupancy}/{trip.capacity}</span>
-                        <span>⏱️ {trip.eta}</span>
-                        <span>💵 ${trip.fare}</span>
+
+                      <div className="absolute bottom-6 left-6 z-10 p-5 bg-neutral-900/90 backdrop-blur rounded-xl border border-neutral-700 shadow-2xl max-w-sm">
+                         <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Resumen Operativo de Zona</h4>
+                         <div className="flex gap-8">
+                            <div>
+                              <p className="text-3xl font-bold text-white tracking-tighter">85%</p>
+                              <p className="text-[10px] text-neutral-500 uppercase font-bold">Utilización</p>
+                            </div>
+                            <div>
+                              <p className="text-3xl font-bold text-primary tracking-tighter">12</p>
+                              <p className="text-[10px] text-neutral-500 uppercase font-bold">Alertas Activas</p>
+                            </div>
+                         </div>
                       </div>
-                      {trip.poolId && (
-                        <Badge variant="info" size="sm" className="mt-2">Pool {trip.poolId}</Badge>
-                      )}
-                    </button>
-                  ))}
+
+                      <div className="z-0 h-full w-full flex items-center justify-center pointer-events-none">
+                        <p className="text-white/10 font-heading text-4xl font-black italic uppercase tracking-[0.5em] select-none rotate-[-5deg]">Operational Map</p>
+                      </div>
+                    </div>
+
+                    {/* Right Panel (35%) - "The Queue" */}
+                    <div className="flex-1 bg-neutral-900 flex flex-col min-w-[350px] max-w-[450px] border border-border rounded-xl shadow-2xl overflow-hidden">
+                      {/* Tabs */}
+                      <div className="flex border-b border-border bg-neutral-950/20">
+                        <TabButton label="En Ruta" count={activeCount} active={activeTab === 'active'} onClick={() => setActiveTab('active')} />
+                        <TabButton label="Cola" count={queueCount} active={activeTab === 'queue'} alertMode onClick={() => setActiveTab('queue')} />
+                        <TabButton label="Alertas" count={alertCount} active={activeTab === 'alerts'} variant="destructive" onClick={() => setActiveTab('alerts')} />
+                      </div>
+
+                      {/* List Content */}
+                      <div className="p-0 overflow-y-auto flex-1 bg-neutral-900/50">
+                         {activeTab === 'active' && (
+                           <div className="divide-y divide-neutral-800">
+                             {MOCK_TRIPS.filter(t => t.status === 'in_progress').map(trip => (
+                               <TripCard key={trip.id} trip={trip} onClick={() => setSelectedTrip(trip)} />
+                             ))}
+                           </div>
+                         )}
+
+                         {activeTab === 'queue' && (
+                           <div className="divide-y divide-neutral-800">
+                             {MOCK_TRIPS.filter(t => ['requested', 'assigned'].includes(t.status)).map(trip => (
+                               <TripCard key={trip.id} trip={trip} onClick={() => setSelectedTrip(trip)} />
+                             ))}
+                           </div>
+                         )}
+                         
+                         {activeTab === 'alerts' && (
+                           <div className="p-12 text-center text-neutral-500 text-sm mt-10">
+                             <Bell size={64} className="mx-auto mb-6 opacity-5 text-primary animate-pulse"/>
+                             <p className="font-bold text-white mb-2">Sin Alertas Críticas</p>
+                             <p className="text-xs text-neutral-600 leading-relaxed">El sistema de transporte opera bajo parámetros normales de seguridad y eficiencia.</p>
+                           </div>
+                         )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              case 'suv_shared': return <SUVSharedPanel />;
+              case 'tourist_authorized': return <TouristAuthorizedPanel />;
+              case 'providers': return <ProvidersManager />;
+              case 'revenue': return <RevenueOverview />;
+              case 'users': return <UserAnalytics />;
+              default: return (
+                <div className="flex flex-col items-center justify-center h-[600px] border-2 border-dashed border-neutral-800 rounded-3xl opacity-30">
+                   <LayoutDashboard size={80}/>
+                   <p className="mt-4 font-heading font-bold text-xl uppercase tracking-[0.2em]">{currentView.replace('_', ' ')} Module</p>
                 </div>
-              )}
-
-              {activeTab === 'queue' && (
-                <div className="space-y-3">
-                  {trips.filter(t => t.status === 'assigned' || t.status === 'requested').map((trip) => (
-                    <button
-                      key={trip.id}
-                      onClick={() => openTripDrawer(trip)}
-                      className="w-full text-left bg-charcoal rounded-lg p-4 border border-border hover:border-going-yellow/50 transition"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="font-mono text-going-yellow text-sm">{trip.id}</span>
-                        <Badge variant="warning">{trip.status === 'assigned' ? 'Asignado' : 'Solicitado'}</Badge>
-                      </div>
-                      <p className="text-white font-medium text-sm">{trip.from} → {trip.to}</p>
-                      <div className="flex items-center justify-between mt-2 text-xs text-white/50">
-                        <span>👥 {trip.passengers.length} pasajeros</span>
-                        <span>⏱️ ETA {trip.eta}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {activeTab === 'alerts' && (
-                <div className="space-y-3">
-                  {alerts.map((alert) => (
-                    <Alert
-                      key={alert.id}
-                      type={alert.type}
-                      title={alert.title}
-                      description={alert.description}
-                      actions={[
-                        { label: 'Ver caso', onClick: () => {
-                          const trip = trips.find(t => t.id === alert.tripId);
-                          if (trip) openTripDrawer(trip);
-                        }},
-                        { label: 'Resolver', onClick: () => {}, variant: 'secondary' },
-                      ]}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+              );
+            }
+          })()}
         </div>
       </main>
 
-      {/* Trip Drawer */}
-      <TripDrawer
-        trip={selectedTrip}
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onReassign={(tripId) => console.log('Reassign:', tripId)}
-        onCancel={(tripId, reason) => console.log('Cancel:', tripId, reason)}
-        onContact={(tripId, type) => console.log('Contact:', tripId, type)}
+      <TripDrawer 
+        trip={selectedTrip} 
+        isOpen={!!selectedTrip} 
+        onClose={() => setSelectedTrip(null)} 
+        onReassign={() => console.log('Reassign')}
       />
     </div>
   );
 }
+
+// Subcomponents
+function TripCard({ trip, onClick }: { trip: Trip, onClick: () => void }) {
+  const isQueue = ['requested', 'assigned'].includes(trip.status);
+  
+  return (
+    <div onClick={onClick} className="p-4 hover:bg-neutral-800 cursor-pointer transition-all group border-l-2 border-transparent hover:border-primary">
+      <div className="flex justify-between items-start mb-2">
+         <div className="flex items-center gap-2">
+            <Badge variant={isQueue ? 'secondary' : 'default'} className="font-mono text-[10px] h-5 px-1.5 rounded-sm">
+              {trip.id}
+            </Badge>
+            {trip.poolId && <Badge variant="outline" className="text-[10px] h-5 text-blue-400 border-blue-900 bg-blue-500/5">Pool</Badge>}
+         </div>
+         <span className={`text-[10px] font-bold uppercase tracking-tighter ${isQueue ? 'text-going-yellow' : 'text-success'}`}>
+            {trip.status === 'in_progress' ? 'En ruta' : trip.status === 'assigned' ? 'Asignado' : 'Pendiente'}
+         </span>
+      </div>
+      <div className="flex items-center gap-2 mb-3">
+         <div className="flex flex-col gap-0.5">
+            <p className="text-[10px] text-neutral-500 uppercase tracking-widest font-bold">Ruta Actual</p>
+            <p className="text-sm text-white font-medium truncate">{trip.from} <span className="text-primary italic mx-1">→</span> {trip.to}</p>
+         </div>
+      </div>
+      <div className="flex justify-between items-center text-[11px] text-neutral-500 bg-neutral-950/50 p-2 rounded">
+         <div className="flex gap-4">
+            <span className="flex items-center gap-1.5"><Users size={12} className="text-neutral-600"/> {trip.occupancy}/{trip.capacity}</span>
+            <span className="flex items-center gap-1.5"><Truck size={12} className="text-neutral-600"/> <span className="truncate max-w-[80px]">{trip.driver?.name || '---'}</span></span>
+         </div>
+         <span className="font-mono text-neutral-400 bg-neutral-900 px-1 rounded">{trip.eta}</span>
+      </div>
+    </div>
+  )
+}
+
+function SidebarItem({ icon, label, badge, active, onClick }: { icon: any, label: string, badge?: number, active?: boolean, onClick?: () => void }) {
+  return (
+    <div onClick={onClick} className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all cursor-pointer group ${active ? 'bg-primary/10 text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}>
+      <span className={`${active ? 'text-primary' : 'text-neutral-500 group-hover:text-primary transition-colors'}`}>
+        {icon}
+      </span>
+      <span className="text-sm font-medium tracking-tight">{label}</span>
+      {badge && <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-[10px]">{badge}</Badge>}
+    </div>
+  );
+}
+
+function TabButton({ label, count, active, alertMode, variant, onClick }: any) {
+  const activeClass = variant === 'destructive' 
+     ? 'border-red-500 text-red-500 bg-red-500/5'
+     : alertMode 
+       ? 'border-going-yellow text-going-yellow bg-going-yellow/5'
+       : 'border-primary text-primary bg-primary/5';
+
+  return (
+    <button 
+      onClick={onClick}
+      className={`flex-1 py-4 text-[10px] font-bold uppercase tracking-widest border-b-2 transition-all ${active ? activeClass : 'border-neutral-800 text-neutral-500 hover:text-white hover:bg-neutral-800'}`}
+    >
+      {label}
+      {count !== undefined && <span className="ml-2 opacity-50 font-mono">[{count}]</span>}
+    </button>
+  );
+}
+

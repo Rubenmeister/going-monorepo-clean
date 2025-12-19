@@ -35,6 +35,11 @@ export interface TripProps {
   pricePerPassenger: number;
   currency: string;
   createdAt: Date;
+  // Corporate
+  companyId?: string;
+  costCenter?: string;
+  guestName?: string;
+  guestPhone?: string;
 }
 
 export class Trip {
@@ -56,6 +61,11 @@ export class Trip {
   pricePerPassenger: number;
   currency: string;
   readonly createdAt: Date;
+  // Corporate
+  companyId?: string;
+  costCenter?: string;
+  guestName?: string;
+  guestPhone?: string;
 
   private constructor(props: TripProps) {
     this.id = props.id;
@@ -76,6 +86,10 @@ export class Trip {
     this.pricePerPassenger = props.pricePerPassenger;
     this.currency = props.currency;
     this.createdAt = props.createdAt;
+    this.companyId = props.companyId;
+    this.costCenter = props.costCenter;
+    this.guestName = props.guestName;
+    this.guestPhone = props.guestPhone;
   }
 
   public static create(props: {
@@ -90,7 +104,13 @@ export class Trip {
     stationDest?: string;
     departureTime: Date;
     basePrice: number;
+    basePrice: number;
     currency: string;
+    // Corporate Optional
+    companyId?: string;
+    costCenter?: string;
+    guestName?: string;
+    guestPhone?: string;
   }): Trip {
     const estimatedArrivalTime = new Date(props.departureTime.getTime() + 2 * 60 * 60 * 1000); // +2 hours
     
@@ -129,6 +149,10 @@ export class Trip {
       pricePerPassenger: this.pricePerPassenger,
       currency: this.currency,
       createdAt: this.createdAt,
+      companyId: this.companyId,
+      costCenter: this.costCenter,
+      guestName: this.guestName,
+      guestPhone: this.guestPhone,
     };
   }
 

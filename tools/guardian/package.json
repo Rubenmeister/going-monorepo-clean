@@ -1,0 +1,8 @@
+{
+  "name": "guardian-agent",
+  "version": "1.0.0",
+  "description": "Autonomous supervisor for Superapp Monorepo",
+  "scripts": {
+    "start": "ts-node guardian-agent.ts"
+  }
+}

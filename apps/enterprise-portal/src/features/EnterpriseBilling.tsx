@@ -1,7 +1,4 @@
-'use client';
-
-import React from 'react';
-import { useEnterpriseAuth } from '../app/EnterpriseAuthContext';
+import { EnterpriseLayout } from '../components/EnterpriseLayout';
 
 interface EnterpriseBillingProps {
   view?: 'overview' | 'invoices' | 'payments';
@@ -21,18 +18,15 @@ const STATS = [
 ];
 
 export function EnterpriseBilling({ view = 'overview' }: EnterpriseBillingProps) {
-  const { tenantName } = useEnterpriseAuth();
-
   return (
-    <>
+    <EnterpriseLayout activeItem="billing">
       {/* Header */}
       <header className="top-header">
         <div>
           <h1 className="page-title">Facturación</h1>
-          <p className="text-sm text-muted">{tenantName}</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">📥 Descargar Reporte</button>
+          <button className="btn btn-secondary btn-sm">📥 Descargar Reporte</button>
         </div>
       </header>
 
@@ -51,34 +45,6 @@ export function EnterpriseBilling({ view = 'overview' }: EnterpriseBillingProps)
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6">
-          <a 
-            href="/e/billing" 
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              view === 'overview' ? 'bg-enterprise-blue text-white' : 'bg-slate-100'
-            }`}
-          >
-            Resumen
-          </a>
-          <a 
-            href="/e/billing/invoices" 
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              view === 'invoices' ? 'bg-enterprise-blue text-white' : 'bg-slate-100'
-            }`}
-          >
-            Facturas
-          </a>
-          <a 
-            href="/e/billing/payments" 
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              view === 'payments' ? 'bg-enterprise-blue text-white' : 'bg-slate-100'
-            }`}
-          >
-            Pagos
-          </a>
-        </div>
-
         {/* Invoices Table */}
         <div className="data-card">
           <div className="card-header">
@@ -91,14 +57,14 @@ export function EnterpriseBilling({ view = 'overview' }: EnterpriseBillingProps)
                 <th>Período</th>
                 <th>Monto</th>
                 <th>Estado</th>
-                <th>Fecha</th>
+                <th>Fecha Emisión</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {MOCK_INVOICES.map(inv => (
                 <tr key={inv.id}>
-                  <td className="font-medium">{inv.id}</td>
+                  <td className="font-medium" style={{ color: '#1e40af' }}>{inv.id}</td>
                   <td>{inv.period}</td>
                   <td className="font-semibold">${inv.amount.toFixed(2)}</td>
                   <td>
@@ -109,8 +75,8 @@ export function EnterpriseBilling({ view = 'overview' }: EnterpriseBillingProps)
                   <td className="text-muted">
                     {inv.status === 'paid' ? inv.paidDate : `Vence: ${inv.dueDate}`}
                   </td>
-                  <td>
-                    <button className="btn btn-sm btn-secondary">📄 Ver</button>
+                  <td className="text-right">
+                    <button className="btn btn-sm btn-secondary">📄 PDF</button>
                   </td>
                 </tr>
               ))}
@@ -118,7 +84,7 @@ export function EnterpriseBilling({ view = 'overview' }: EnterpriseBillingProps)
           </table>
         </div>
       </div>
-    </>
+    </EnterpriseLayout>
   );
 }
 

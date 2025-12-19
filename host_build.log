@@ -1,0 +1,39 @@
+
+> nx run host-service:build:production
+
+assets by path *.json 141 KiB
+  asset package-lock.json 140 KiB [compared for emit]
+  asset package.json 1020 bytes [compared for emit]
+asset main.js 4.26 KiB [compared for emit] [minimized] (name: main) 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/host-service/src/assets/.gitkeep] [copied]
+orphan modules 9.01 KiB [orphan] 16 modules
+./apps/host-service/src/main.ts + 16 modules 9.59 KiB [not cacheable] [built] [code generated]
+ERROR in ./apps/host-service/src/api/host.controller.ts:[32m[1m2:10[22m[39m
+[90mTS2724: [39m'"@going-monorepo-clean/domains-anfitriones-application"' has no exported member named 'RegisterHostUseCase'. Did you mean 'CreateHostUseCase'?
+  [0m [90m 1 |[39m [36mimport[39m { [33mBody[39m[33m,[39m [33mController[39m[33m,[39m [33mPost[39m[33m,[39m [33mHttpCode[39m[33m,[39m [33mHttpStatus[39m[33m,[39m [33mHttpException[39m } [36mfrom[39m [32m'@nestjs/common'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mRegisterHostUseCase[39m[33m,[39m [33mRegisterHostDto[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-anfitriones-application'[39m[33m;[39m
+   [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mimport[39m { [33mHost[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-anfitriones-core'[39m[33m;[39m
+   [90m 4 |[39m
+   [90m 5 |[39m [33m@[39m[33mController[39m([32m'hosts'[39m) [0m
+ERROR in ./apps/host-service/src/api/host.controller.ts:[32m[1m2:31[22m[39m
+[90mTS2724: [39m'"@going-monorepo-clean/domains-anfitriones-application"' has no exported member named 'RegisterHostDto'. Did you mean 'CreateHostDto'?
+  [0m [90m 1 |[39m [36mimport[39m { [33mBody[39m[33m,[39m [33mController[39m[33m,[39m [33mPost[39m[33m,[39m [33mHttpCode[39m[33m,[39m [33mHttpStatus[39m[33m,[39m [33mHttpException[39m } [36mfrom[39m [32m'@nestjs/common'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mRegisterHostUseCase[39m[33m,[39m [33mRegisterHostDto[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-anfitriones-application'[39m[33m;[39m
+   [90m   |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mimport[39m { [33mHost[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-anfitriones-core'[39m[33m;[39m
+   [90m 4 |[39m
+   [90m 5 |[39m [33m@[39m[33mController[39m([32m'hosts'[39m) [0m
+webpack 5.103.0 compiled with 2 errors in 8406 ms
+
+
+
+ NX   Running target build for project host-service failed
+
+Failed tasks:
+
+- host-service:build:production
+
+Hint: run the command with --verbose for more details.
+
