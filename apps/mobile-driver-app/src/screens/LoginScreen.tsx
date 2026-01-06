@@ -27,7 +27,7 @@ const COLORS = {
   errorRing: '#FACC15',
 };
 
-export function LoginScreen({ navigation }: any) {
+export function LoginScreen({ navigation }: { navigation: { replace: (screen: string) => void; navigate: (screen: string) => void; } }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,8 +93,9 @@ export function LoginScreen({ navigation }: any) {
     try {
       await driverAuthService.login({ email, password });
       navigation.replace('Home');
-    } catch (error: any) {
-      Alert.alert('Error', error.message || error.response?.data?.message || 'Credenciales inválidas');
+    } catch (error: unknown) {
+      const errorMessage = (error as any)?.message || (error as any)?.response?.data?.message || 'Credenciales inválidas';
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }

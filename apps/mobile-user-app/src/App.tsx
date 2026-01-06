@@ -6,33 +6,36 @@ import { AuthProvider, useAuth } from '@going-monorepo-clean/frontend-providers'
 
 import { LandingScreen } from './screens/LandingScreen';
 import { LoginScreen } from './screens/LoginScreen';
-import { HomeScreen } from './screens/HomeScreen'; // Assuming this exists or we use the inline placeholder from before
+import { RegisterScreen } from './screens/RegisterScreen';
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
+import { HomeScreen } from './screens/HomeScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
+import { ChatScreen } from './screens/ChatScreen';
+import { LogisticsScreen } from './screens/LogisticsScreen';
 
 const Stack = createNativeStackNavigator();
-
-type RootStackParamList = {
-  Landing: undefined;
-  Login: undefined;
-  Home: undefined;
-  // DriverLogin: undefined;
-};
 
 const AppNavigator = () => {
   const { user } = useAuth(); // Monitor auth state
 
   return (
-    // @ts-ignore: React Navigation 7 type issue workaround or missing id prop requirement
+    // @ts-expect-error: React Navigation 7 type issue workaround or missing id prop requirement
     <Stack.Navigator screenOptions={{ headerShown: false }} id="RootNavigator">
       {user ? (
         // Authenticated Stack
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Logistics" component={LogisticsScreen} />
+          <Stack.Screen name="Chat" component={ChatScreen} />
+        </>
       ) : (
         // Public Stack
         <>
-            <Stack.Screen name="Landing" component={LandingScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            {/* Add Driver Login route here if we are directing them to a separate app or screen */}
-            {/* <Stack.Screen name="DriverLogin" component={DriverLoginScreen} /> */}
+          <Stack.Screen name="Landing" component={LandingScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
       )}
     </Stack.Navigator>

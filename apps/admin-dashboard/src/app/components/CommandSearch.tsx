@@ -7,7 +7,7 @@ import { Input, useTransport } from '@going/shared-ui';
 export function CommandSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const { searchTrips, results, loading } = useTransport();
+  const { searchTrips, results, loading, error } = useTransport();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

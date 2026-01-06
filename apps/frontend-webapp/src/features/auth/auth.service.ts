@@ -1,6 +1,6 @@
-import axios from 'axios';
+import { apiClient, AuthResponse } from '../../lib/api/client';
 
-const API_URL = '/api/auth';
+const AUTH_PATH = '/auth';
 
 export interface User {
   id: string;
@@ -9,51 +9,23 @@ export interface User {
   role: string;
 }
 
-export interface AuthResponse {
-  user: User;
-  accessToken: string;
-}
-
 export const authService = {
   async register(data: any): Promise<AuthResponse> {
-    // Mock API call
-    console.log('Mocking register for:', data);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Simulate successful response
-    const mockResponse = {
-      user: {
-        id: '123',
-        email: data.email,
-        name: data.name,
-        role: data.role || 'user'
-      },
-      accessToken: 'mock-jwt-token-123'
-    };
+    const response = await apiClient.post<AuthResponse>(`${AUTH_PATH}/register`, data);
+    const { user, accessToken } = response.data;
 
-    localStorage.setItem('user', JSON.stringify(mockResponse.user));
-    localStorage.setItem('token', mockResponse.accessToken);
-    return mockResponse;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', accessToken);
+    return response.data;
   },
 
   async login(data: any): Promise<AuthResponse> {
-    // Mock API call
-    console.log('Mocking login for:', data);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const response = await apiClient.post<AuthResponse>(`${AUTH_PATH}/login`, data);
+    const { user, accessToken } = response.data;
 
-    const mockResponse = {
-      user: {
-        id: '123',
-        email: data.email || 'user@example.com',
-        name: 'Usuario Demo',
-        role: 'user'
-      },
-      accessToken: 'mock-jwt-token-123'
-    };
-
-    localStorage.setItem('user', JSON.stringify(mockResponse.user));
-    localStorage.setItem('token', mockResponse.accessToken);
-    return mockResponse;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', accessToken);
+    return response.data;
   },
 
   logout() {

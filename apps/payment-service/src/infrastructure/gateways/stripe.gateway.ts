@@ -10,7 +10,7 @@ export interface PaymentIntentResult {
 @Injectable()
 export class StripeGateway {
   private stripe: Stripe | null = null;
-  private webhookSecret: string = '';
+  private webhookSecret = '';
   private readonly logger = new Logger(StripeGateway.name);
 
   constructor(private readonly configService: ConfigService) {
@@ -24,7 +24,7 @@ export class StripeGateway {
     }
   }
 
-  async createPaymentIntent(amount: number, currency: string = 'USD'): Promise<PaymentIntentResult> {
+  async createPaymentIntent(amount: number, currency = 'USD'): Promise<PaymentIntentResult> {
     if (!this.stripe) {
       throw new Error('Stripe not configured');
     }

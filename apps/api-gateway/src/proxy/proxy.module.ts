@@ -30,7 +30,7 @@ export class ProxyModule implements NestModule {
           pathRewrite: { '^/api/auth': '/auth' }, // Auth service has /auth prefix in Controller
         }),
       )
-      .forRoutes('auth');
+      .forRoutes('api/auth');
 
     // Protected Routes
     const applyAuthProxy = (path: string, targetService: string) => {
@@ -44,7 +44,7 @@ export class ProxyModule implements NestModule {
             pathRewrite: { [`^/api/${path}`]: '/api' }, // Most services have Global Prefix 'api'
           }),
         )
-        .forRoutes(path);
+        .forRoutes(`api/${path}`);
     };
 
     applyAuthProxy('transport', services.transport);

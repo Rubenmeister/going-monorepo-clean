@@ -27,7 +27,7 @@ const { width, height } = Dimensions.get('window');
 
 // Design tokens from prototype
 const COLORS = {
-  goingRed: '#FF4D4D',
+  goingRed: '#FF4E43',
   goingYellow: '#F5A623',
   white: '#FFFFFF',
   black: '#1A1A1A',

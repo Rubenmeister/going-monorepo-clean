@@ -4,7 +4,6 @@
  */
 
 // Vite environment type
-declare const import_meta_env: Record<string, string | undefined>;
 
 interface EnvConfig {
   apiUrl: string;
@@ -16,10 +15,15 @@ interface EnvConfig {
 }
 
 function getEnv(): Record<string, string | undefined> {
-  // Access Vite's import.meta.env
+  // During tests, import.meta.env is not available
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+    return (process.env as unknown) as Record<string, string | undefined>;
+  }
+
   try {
-    // @ts-ignore - Vite injects this at build time
-    return import.meta.env || {};
+    // Using eval to hide import.meta from Jest's non-ESM parser
+    const env = eval('import.meta.env');
+    return env || {};
   } catch {
     return {};
   }

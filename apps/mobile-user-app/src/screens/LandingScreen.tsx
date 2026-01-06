@@ -11,6 +11,7 @@ import {
   ScrollView,
   Animated,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -28,7 +29,7 @@ const { width, height } = Dimensions.get('window');
 
 // Design tokens matching reference design
 const COLORS = {
-  goingRed: '#FF4D4D',
+  goingRed: '#FF4E43',
   goingYellow: '#F5A623',
   white: '#FFFFFF',
   black: '#1A1A1A',
@@ -43,10 +44,13 @@ const COLORS = {
 };
 
 interface LandingScreenProps {
-  navigation: any;
+  navigation: {
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
 }
 
-// Going Logo Component - Red symbol matching reference
+// Going Logo Component - Red symbol matching reference (currently unused but preserved for potential UI enrichment)
+/*
 const GoingLogoSymbol = () => (
   <View style={logoStyles.container}>
     <View style={logoStyles.gShape}>
@@ -98,6 +102,7 @@ const logoStyles = StyleSheet.create({
     backgroundColor: COLORS.goingRed,
   },
 });
+*/
 
 export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   // Scene 1 = SUV animation, Scene 2 = Logo reveal, Scene 3 = Login
@@ -155,16 +160,18 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   }, []);
 
   const handleLogin = () => {
-    navigation.navigate('Main');
+    navigation.navigate('Home');
   };
 
   const handleRegisterUser = () => {
     navigation.navigate('Register', { userType: 'user' });
   };
 
+  /*
   const handleRegisterDriver = () => {
     navigation.navigate('Register', { userType: 'driver' });
   };
+  */
 
   const handleForgotPassword = () => {
     navigation.navigate('ForgotPassword');
@@ -319,12 +326,29 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
               <Text style={styles.registerLink}>Regístrate</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Legal Links */}
+          <View style={styles.legalFooter}>
+            <TouchableOpacity onPress={() => Alert.alert('Términos de Uso', 'Aquí van los términos de uso de la aplicación.')}>
+              <Text style={styles.legalLinkText}>Términos de Uso</Text>
+            </TouchableOpacity>
+            <View style={styles.legalSeparator} />
+            <TouchableOpacity onPress={() => Alert.alert('Privacidad', 'Política de privacidad de Going.')}>
+              <Text style={styles.legalLinkText}>Privacidad</Text>
+            </TouchableOpacity>
+            <View style={styles.legalSeparator} />
+            <TouchableOpacity onPress={() => Alert.alert('Uso de Datos', 'Información sobre el uso de tus datos.')}>
+              <Text style={styles.legalLinkText}>Uso de Datos</Text>
+            </TouchableOpacity>
+          </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
+// Splash screen styles
 // Splash screen styles
 const splashStyles = StyleSheet.create({
   container: {
@@ -375,15 +399,8 @@ const splashStyles = StyleSheet.create({
     marginBottom: 20,
   },
   logoImage: {
-    width: 200,
-    height: 150,
-  },
-  logoText: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: COLORS.black,
-    marginTop: 8,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+    width: 260,
+    height: 200,
   },
   tagline: {
     fontSize: 16,
@@ -448,21 +465,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 180,
     height: 120,
-  },
-  logoText: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: COLORS.black,
-    marginTop: 8,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-  },
-  tagline: {
-    fontSize: 12,
-    fontWeight: '400',
-    fontStyle: 'italic',
-    color: COLORS.black,
-    letterSpacing: 4,
-    marginTop: 16,
   },
   formContainer: {
     width: '100%',
@@ -598,6 +600,26 @@ const styles = StyleSheet.create({
   registerSeparator: {
     color: COLORS.placeholderText,
     fontSize: 16,
+    marginHorizontal: 12,
+  },
+  legalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40,
+    paddingBottom: 20,
+    width: '100%',
+  },
+  legalLinkText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     marginHorizontal: 12,
   },
 });

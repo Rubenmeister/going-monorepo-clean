@@ -72,6 +72,16 @@ export interface ApiError {
   error?: string;
 }
 
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+  accessToken: string;
+}
+
 // Helper to extract error message
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {

@@ -24,7 +24,7 @@ export class WebhookController {
       );
 
       switch (event.type) {
-        case 'payment_intent.succeeded':
+        case 'payment_intent.succeeded': {
           const paymentIntent = event.data.object;
           await this.paymentRepository.completePayment(
             paymentIntent.metadata?.paymentId || paymentIntent.id,
@@ -32,11 +32,20 @@ export class WebhookController {
           );
           this.logger.log(`Payment completed: ${paymentIntent.id}`);
           break;
+        }
 
-        case 'payment_intent.payment_failed':
+        case 'payment_intent.payment_failed': {
           const failedIntent = event.data.object;
-          this.logger.warn(`Payment failed: ${failedIntent.id}`);
+          this.logger.warn(`Payment failed: ${failedIntent.id} - ${failedIntent.last_payment_error?.message}`);
           break;
+        }
+
+        case 'charge.refunded': {
+          const refund = event.data.object;
+          this.logger.log(`Charge refunded: ${refund.id} for payment intent ${refund.payment_intent}`);
+          // Aquí se podría actualizar el estado en la DB a 'REFUNDED'
+          break;
+        }
 
         default:
           this.logger.log(`Unhandled event type: ${event.type}`);

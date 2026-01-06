@@ -1,50 +1,95 @@
-import { MoneyVO } from '@myorg/shared/domain/money.vo';
-import { LocationVO } from '@myorg/shared/domain/location.vo';
+import { Injectable } from '@nestjs/common';
+import { MoneyVO } from '@going-monorepo-clean/shared-domain';
+import { DemandFactorService } from '../services/demand-factor.service';
+import { PromotionService } from '../services/promotion.service';
 
 interface CalcularPrecioCommand {
   distancia: number; // en km
-  tipoVehiculo: 'SUV' | 'VAN';
-  modo: 'PUERTA_A_PUERTA' | 'PUNTO_A_PUNTO';
-  pasajerosActuales: number; // 1, 2 o 3 (para SUV) o 1-7 (para VAN)
-  demandaActual?: number; // factor 0.5 - 2.0 basado en hora/día
+  tipoVehiculo: 'SUV' | 'SUVXL' | 'VAN';
+  modoServicio: 'PRIVATE' | 'SHARED';
+  categoria: 'STANDARD' | 'BUSINESS';
+  modoEntrega: 'PUERTA_A_PUERTA' | 'PUNTO_A_PUNTO';
+  pasajerosActuales: number;
+  fecha?: Date;
+  couponCode?: string;
 }
 
+@Injectable()
 export class CalcularPrecioUseCase {
+  constructor(
+    private readonly demandFactorService: DemandFactorService,
+    private readonly promotionService: PromotionService,
+  ) {}
+
   execute(command: CalcularPrecioCommand): MoneyVO {
     const {
       distancia,
       tipoVehiculo,
-      modo,
+      modoServicio,
+      categoria,
+      modoEntrega,
       pasajerosActuales,
-      demandaActual = 1.0,
+      fecha = new Date(),
+      couponCode,
     } = command;
 
-    // Tarifas base por tipo de vehículo
-    const tarifaBase = tipoVehiculo === 'SUV' ? 2.50 : 3.00; // USD
-    const costoPorKm = tipoVehiculo === 'SUV' ? 1.20 : 0.90; // USD
-    const costoPorMin = tipoVehiculo === 'SUV' ? 0.35 : 0.25; // USD
+    // 1. Tarifas base por tipo de vehículo
+    // SUV: 3 asientos, SUVXL: 5 asientos, VAN: 7+ asientos
+    let tarifaBase = 2.50;
+    let costoPorKm = 1.20;
+    let costoPorMin = 0.35;
 
-    // Suponiendo una velocidad promedio de 40 km/h para estimar tiempo
+    if (tipoVehiculo === 'SUVXL') {
+      tarifaBase = 3.50;
+      costoPorKm = 1.50;
+      costoPorMin = 0.45;
+    } else if (tipoVehiculo === 'VAN') {
+      tarifaBase = 5.00;
+      costoPorKm = 1.80;
+      costoPorMin = 0.60;
+    }
+
+    // 2. Incremento por categoría BUSINESS (30%)
+    if (categoria === 'BUSINESS') {
+      tarifaBase *= 1.30;
+      costoPorKm *= 1.30;
+      costoPorMin *= 1.30;
+    }
+
+    // Velocidad promedio de 40 km/h para estimar tiempo
     const tiempoEstimadoHoras = distancia / 40;
     const tiempoMinutos = tiempoEstimadoHoras * 60;
 
-    let precioBase = tarifaBase + (distancia * costoPorKm) + (tiempoMinutos * costoPorMin);
+    let precioCalculado = tarifaBase + (distancia * costoPorKm) + (tiempoMinutos * costoPorMin);
 
-    // Ajuste por demanda (hora pico, día festivo, etc.)
-    precioBase *= demandaActual;
-
-    // Ajuste por modo
-    if (modo === 'PUNTO_A_PUNTO') {
-      // Punto a punto puede tener una tarifa ligeramente más baja por volumen
-      precioBase *= 0.95;
+    // 3. Ajuste por modo de servicio (PRIVATE vs SHARED)
+    if (modoServicio === 'PRIVATE') {
+      // Precio por todo el vehículo (ya calculado como base)
+      // No se aplican descuentos por compartir, el usuario paga el 100%
+    } else {
+      // SHARED: Precio por asiento
+      // El precio base se divide por la capacidad estimada para dar un precio competitivo "por puesto"
+      const capacidad = tipoVehiculo === 'SUV' ? 3 : tipoVehiculo === 'SUVXL' ? 5 : 7;
+      precioCalculado = precioCalculado / capacidad;
+      
+      // Ajuste ligero por ocupación
+      if (pasajerosActuales > 1) {
+        precioCalculado *= 0.98; // Pequeño incentivo
+      }
     }
 
-    // Ajuste por número de pasajeros (solo para el precio base, no el final por persona)
-    // Esto puede ser útil si se ofrecen descuentos por grupos grandes
-    if (pasajerosActuales > 1) {
-      precioBase *= 0.98; // Pequeño descuento por grupo
+    // 4. Ajuste por demanda automático
+    const factorDemanda = this.demandFactorService.calculate(fecha);
+    precioCalculado *= factorDemanda;
+
+    // 5. Ajuste por modo de entrega
+    if (modoEntrega === 'PUNTO_A_PUNTO') {
+      precioCalculado *= 0.95;
     }
 
-    return MoneyVO.fromUSD(precioBase);
+    // 6. Aplicar Promociones y Cupones
+    const precioFinal = this.promotionService.applyPromotions(precioCalculado, fecha, couponCode);
+
+    return MoneyVO.fromUSD(precioFinal);
   }
 }

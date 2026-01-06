@@ -58,8 +58,8 @@ const MOCK_TRIPS: Trip[] = [
   { 
     id: 'T-002', 
     status: 'requested', 
-    from: 'Mindo', 
-    to: 'Quito (Aeropuerto)', 
+    from: 'Guayaquil (Puerto)', 
+    to: 'Salinas', 
     eta: '1h 20 min', 
     fare: 80.00,
     occupancy: 0,
@@ -74,8 +74,8 @@ const MOCK_TRIPS: Trip[] = [
   { 
     id: 'T-003', 
     status: 'assigned', 
-    from: 'Quito (Nayon)', 
-    to: 'Cotopaxi', 
+    from: 'Cuenca (Centro)', 
+    to: 'Parque Cajas', 
     driver: { id: 'D2', name: 'Fernando Vega', vehicle: 'Mercedes Sprinter (VAN XL)', plate: 'PCC-5678', rating: 4.9 },
     eta: '45 min', 
     fare: 120.00,
@@ -125,17 +125,15 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-neutral text-foreground flex font-body overflow-hidden">
       {/* Sidebar - Grouped by Sections */}
-      <aside className="w-64 border-r border-border bg-neutral-900 flex flex-col z-20">
-        <div className="p-6 border-b border-border/10">
-          <h1 className="text-2xl font-heading font-bold text-white">
-            <span className="text-primary">Going</span> Ops
-          </h1>
+      <aside className="w-64 border-r border-black bg-[#111827] flex flex-col z-20 shadow-2xl">
+        <div className="p-8 border-b-2 border-black bg-black">
+          <div className="font-spaceGrotesk text-3xl font-black italic tracking-tighter text-white mb-2 underline decoration-brand-red decoration-4 text-center">GOING</div>
+          <div className="text-[10px] font-black text-brand-red tracking-[0.3em] uppercase text-center">ECUADOR CONTROL 🇪🇨</div>
         </div>
-        
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
           {/* SECTION: TRANSPORTE */}
           <div>
-            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Transporte</p>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3 text-neutral-500">Transporte</p>
             <div className="space-y-1">
               <SidebarItem icon={<LayoutDashboard size={18} />} label="Centro de Control" active={currentView === 'control_center'} onClick={() => setCurrentView('control_center')} />
               <SidebarItem icon={<Zap size={18} />} label="SUV Compartido" active={currentView === 'suv_shared'} onClick={() => setCurrentView('suv_shared')} />
@@ -146,7 +144,7 @@ export default function Dashboard() {
 
           {/* SECTION: VERTICALES */}
           <div>
-            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Verticales</p>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3 text-neutral-500">Verticales</p>
             <div className="space-y-1">
               <SidebarItem icon={<Home size={18} />} label="Alojamiento" active={currentView === 'hosting'} onClick={() => setCurrentView('hosting')} />
               <SidebarItem icon={<Compass size={18} />} label="Tours" active={currentView === 'tours'} onClick={() => setCurrentView('tours')} />
@@ -156,7 +154,7 @@ export default function Dashboard() {
 
           {/* SECTION: ANALYTICS */}
           <div>
-            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3">Analytics & Ops</p>
+            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-3 px-3 text-neutral-500">Analytics & Ops</p>
             <div className="space-y-1">
               <SidebarItem icon={<CreditCard size={18} />} label="Finanzas (Revenue)" active={currentView === 'revenue'} onClick={() => setCurrentView('revenue')} />
               <SidebarItem icon={<BarChart3 size={18} />} label="Usuarios" active={currentView === 'users'} onClick={() => setCurrentView('users')} />
@@ -166,24 +164,7 @@ export default function Dashboard() {
 
           <SidebarItem icon={<Settings size={18} />} label="Configuración" />
         </nav>
-
-        <div className="p-4 border-t border-border/10">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-              AD
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">Admin User</p>
-              <p className="text-xs text-muted-foreground truncate">Super Admin</p>
-            </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-white">
-              <LogOut size={16} />
-            </Button>
-          </div>
-        </div>
       </aside>
-
-      {/* Main Content */}
       <main className="flex-1 flex flex-col bg-background/5 relative h-screen">
         
         {/* Topbar */}
@@ -221,7 +202,7 @@ export default function Dashboard() {
                       {/* Floating Map Controls */}
                       <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
                          <Button variant="secondary" size="sm" className="shadow-xl opacity-90 hover:opacity-100 backdrop-blur">🗺️ Clustering: On</Button>
-                         <Button variant="secondary" size="sm" className="shadow-xl opacity-90 hover:opacity-100 backdrop-blur">Target: Quito Central</Button>
+                         <Button variant="secondary" size="sm" className="shadow-xl opacity-90 hover:opacity-100 backdrop-blur">Target: Ecuador National</Button>
                       </div>
 
                       <div className="absolute bottom-6 left-6 z-10 p-5 bg-neutral-900/90 backdrop-blur rounded-xl border border-neutral-700 shadow-2xl max-w-sm">

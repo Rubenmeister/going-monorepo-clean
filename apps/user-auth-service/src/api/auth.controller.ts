@@ -1,4 +1,5 @@
 import { Controller, Post, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { 
   RegisterUserUseCase, 
   LoginUserUseCase,
@@ -12,6 +13,7 @@ export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Post('register')
@@ -23,6 +25,11 @@ export class AuthController {
     }
 
     const user = result.value.toPrimitives();
+    
+    // Generate real JWT
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    const accessToken = await this.jwtService.signAsync(payload);
+
     return {
       user: {
         id: user.id,
@@ -30,7 +37,7 @@ export class AuthController {
         name: user.name,
         role: user.role,
       },
-      accessToken: 'mock-jwt-token-for-now',
+      accessToken,
     };
   }
 
@@ -43,6 +50,11 @@ export class AuthController {
     }
 
     const user = result.value.toPrimitives();
+    
+    // Generate real JWT
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    const accessToken = await this.jwtService.signAsync(payload);
+
     return {
       user: {
         id: user.id,
@@ -50,7 +62,7 @@ export class AuthController {
         name: user.name,
         role: user.role,
       },
-      accessToken: 'mock-jwt-token-for-now',
+      accessToken,
     };
   }
 }

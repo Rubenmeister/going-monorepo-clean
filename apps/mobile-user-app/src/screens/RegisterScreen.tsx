@@ -8,13 +8,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 
-const { height } = Dimensions.get('window');
+// Unused: const { width } = Dimensions.get('window');
 
 // ESM import for logo
 import goingLogoWhiteSymbol from '../assets/logo_white_symbol_black_text.png';
@@ -37,7 +36,7 @@ interface FormData {
   confirmPassword: string;
 }
 
-export function RegisterScreen({ navigation }: any) {
+export function RegisterScreen({ navigation }: { navigation: { goBack: () => void; navigate: (screen: string) => void; } }) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     phone: '',
@@ -114,7 +113,7 @@ export function RegisterScreen({ navigation }: any) {
   const renderInput = (
     field: keyof FormData, 
     placeholder: string, 
-    options: { secureTextEntry?: boolean; keyboardType?: any } = {}
+    options: { secureTextEntry?: boolean; keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' } = {}
   ) => (
     <View style={styles.inputWrapper}>
       <TextInput

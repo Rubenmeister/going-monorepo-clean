@@ -56,7 +56,7 @@ export function EnterpriseLayout() {
               {!collapsed && (
                 <div className="overflow-hidden">
                   <h1 className="font-heading font-bold text-lg leading-none">Going</h1>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">Enterprise</p>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest leading-tight">Ecuador Corporativo 🇪🇨</p>
                 </div>
               )}
            </div>

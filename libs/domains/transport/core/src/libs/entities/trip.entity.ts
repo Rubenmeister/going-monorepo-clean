@@ -104,7 +104,6 @@ export class Trip {
     stationDest?: string;
     departureTime: Date;
     basePrice: number;
-    basePrice: number;
     currency: string;
     // Corporate Optional
     companyId?: string;

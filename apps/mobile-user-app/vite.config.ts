@@ -71,6 +71,30 @@ export default defineConfig({
     },
   },
   plugins: [react(), nxViteTsPaths()],
+  test: {
+      globals: true,
+      environment: 'jsdom',
+      include: ['src/**/*.{test,spec}.{ts,tsx}'],
+      reporters: ['default'],
+      setupFiles: ['src/test-setup.ts'],
+      alias: {
+        'react-native': 'react-native-web',
+      },
+      server: {
+        deps: {
+          inline: [
+            'react-native',
+            'react-native-web',
+            '@react-navigation/native',
+            'lucide-react-native',
+          ],
+        },
+      },
+      coverage: {
+          reportsDirectory: '../../coverage/apps/mobile-user-app',
+          provider: 'v8',
+      },
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],

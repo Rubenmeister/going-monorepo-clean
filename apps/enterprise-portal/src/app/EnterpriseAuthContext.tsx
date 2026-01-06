@@ -58,25 +58,41 @@ export function EnterpriseAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string, tenantId: string): Promise<void> => {
-    // In production, this would call the API
-    // Determine role based on email for demo
-    let role: EnterpriseRole = 'enterprise_user';
-    if (email.includes('admin')) role = 'enterprise_admin';
-    if (email.includes('viewer') || email.includes('reports')) role = 'enterprise_viewer';
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, tenantId }), // tenantId passed to backend if supported
+      });
 
-    const mockUser: EnterpriseUser = {
-      id: `ent-${Date.now()}`,
-      email,
-      name: email.split('@')[0].replace('.', ' '),
-      role,
-      tenantId,
-      tenantName: tenantId === 'demo' ? 'Demo Corp' : `Empresa ${tenantId}`,
-      permissions: ROLE_PERMISSIONS[role],
-    };
-    
-    localStorage.setItem('enterprise_user', JSON.stringify(mockUser));
-    localStorage.setItem('enterprise_token', 'mock-enterprise-jwt');
-    setUser(mockUser);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al iniciar sesión');
+      }
+
+      const data = await response.json();
+      
+      // In a real scenario, the backend should return the tenant info and permissions
+      // For now, we adapt the real user to the EnterpriseUser type needed by the frontend
+      const enterpriseUser: EnterpriseUser = {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        role: (data.user.role as EnterpriseRole) || 'enterprise_user',
+        tenantId: tenantId,
+        tenantName: tenantId === 'demo' ? 'Demo Corp' : `Empresa ${tenantId}`,
+        permissions: ROLE_PERMISSIONS[data.user.role as EnterpriseRole] || ROLE_PERMISSIONS['enterprise_user'],
+      };
+      
+      localStorage.setItem('enterprise_user', JSON.stringify(enterpriseUser));
+      localStorage.setItem('enterprise_token', data.accessToken);
+      setUser(enterpriseUser);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   };
 
   const logout = () => {

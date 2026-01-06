@@ -81,6 +81,11 @@ export class PrismaTransportRepository implements ITripRepository {
     return records.map(r => this.toDomain(r));
   }
 
+  async findAll(): Promise<Trip[]> {
+    const records = await this.prisma.transport.findMany();
+    return records.map(r => this.toDomain(r));
+  }
+
   async update(trip: Trip): Promise<void> {
     await this.save(trip);
   }

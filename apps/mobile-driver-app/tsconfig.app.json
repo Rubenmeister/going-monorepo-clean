@@ -14,7 +14,9 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
-    "src/test-setup.ts"
+    "src/test-setup.ts",
+    "jest.config.ts",
+    "jest.config.cts"
   ],
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"]
 }

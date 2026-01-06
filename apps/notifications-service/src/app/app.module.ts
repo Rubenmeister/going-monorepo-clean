@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../../../../libs/shared/src';
+import { DatabaseModule } from '@going-monorepo/shared-backend';
 
 @Module({
   imports: [

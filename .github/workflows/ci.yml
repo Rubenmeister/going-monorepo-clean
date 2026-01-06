@@ -136,6 +136,12 @@ jobs:
             booking-service,
             tours-service,
             payment-service,
+            transport-service,
+            parcel-service,
+            notifications-service,
+            experience-service,
+            host-service,
+            tracking-service,
           ]
     steps:
       - name: 🔄 Checkout code
@@ -268,6 +274,12 @@ jobs:
             booking-service,
             tours-service,
             payment-service,
+            transport-service,
+            parcel-service,
+            notifications-service,
+            experience-service,
+            host-service,
+            tracking-service,
           ]
     steps:
       - name: 🔄 Checkout code

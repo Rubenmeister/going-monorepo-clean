@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 import { ObservabilityModule } from '@going/shared/observability';
 import { AppController } from './app.controller';
@@ -20,6 +22,14 @@ import {
   imports: [
     PrismaModule,
     ObservabilityModule.forRoot({ serviceName: 'user-auth-service' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN', '1h') },
+      }),
+    }),
   ],
   controllers: [AppController, AuthController],
   providers: [

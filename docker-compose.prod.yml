@@ -12,6 +12,11 @@ services:
       POSTGRES_DB: going_monorepo
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U going_user -d going_monorepo']
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - going-net
 
@@ -43,8 +48,20 @@ services:
       EXPERIENCE_SERVICE_URL: http://experience-service:3008
       HOST_SERVICE_URL: http://host-service:3010
       TRACKING_SERVICE_URL: http://tracking-service:3011
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      user-auth-service:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -65,8 +82,18 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
       JWT_SECRET: ${JWT_SECRET}
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -82,8 +109,18 @@ services:
       NODE_ENV: production
       PORT: 3002
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -99,8 +136,14 @@ services:
       NODE_ENV: production
       PORT: 3003
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3003/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -117,8 +160,14 @@ services:
       PORT: 3004
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3004/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -134,8 +183,14 @@ services:
       NODE_ENV: production
       PORT: 3005
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -151,8 +206,14 @@ services:
       NODE_ENV: production
       PORT: 3006
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3006/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -168,8 +229,14 @@ services:
       NODE_ENV: production
       PORT: 3007
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3007/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -185,8 +252,14 @@ services:
       NODE_ENV: production
       PORT: 3008
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3008/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -202,8 +275,14 @@ services:
       NODE_ENV: production
       PORT: 3010
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3010/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -219,8 +298,14 @@ services:
       NODE_ENV: production
       PORT: 3011
       DATABASE_URL: postgresql://going_user:${POSTGRES_PASSWORD:-secure_production_password}@postgres:5432/going_monorepo?schema=public
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3011/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - going-net
 
@@ -254,7 +339,6 @@ services:
 
 volumes:
   postgres_data_prod:
-
 
 networks:
   going-net:

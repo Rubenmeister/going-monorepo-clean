@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config'; // <--- Importa ConfigService
-import { DatabaseModule } from '../../../libs/shared/src';
+import { DatabaseModule } from '@going-monorepo/shared-backend';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
 import {

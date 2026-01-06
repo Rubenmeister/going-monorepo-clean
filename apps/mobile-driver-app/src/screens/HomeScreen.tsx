@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Image, Dimensions } from 'react-native';
-import { Power, User, CreditCard, Bell, MapPin } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { User, Bell } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import andeanPattern from '../assets/andean_pattern.png';
 
-const { width, height } = Dimensions.get('window');
-
-export function HomeScreen({ navigation }: any) {
+export function HomeScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
   const [isOnline, setIsOnline] = useState(false);
 
   const toggleStatus = () => {
@@ -32,7 +30,7 @@ export function HomeScreen({ navigation }: any) {
 
       {/* 2. Top Bar Items */}
       <SafeAreaView style={styles.topBar}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation?.navigate('Profile')}>
           <User color="white" size={24} />
         </TouchableOpacity>
         <View style={styles.earningsCapsule}>
@@ -65,6 +63,7 @@ export function HomeScreen({ navigation }: any) {
                 {isOnline ? 'SALIR DE TURNO' : 'INICIAR TURNO'}
               </Text>
             </TouchableOpacity>
+            <Text style={{ fontSize: 9, color: '#6B7280', marginTop: 12, fontWeight: 'bold', letterSpacing: 1 }}>ECUADOR EN MOVIMIENTO 🇪🇨</Text>
           </View>
 
           {/* Quick Stats */}
@@ -111,7 +110,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FF4D4D',
+    backgroundColor: '#FF4E43',
     shadowColor: '#FF4D4D',
     shadowOpacity: 0.8,
     shadowRadius: 10,
@@ -218,7 +217,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   goButtonOnline: {
-    backgroundColor: '#FF4D4D',
+    backgroundColor: '#FF4E43',
     shadowColor: '#FF4D4D',
   },
   goButtonOffline: {

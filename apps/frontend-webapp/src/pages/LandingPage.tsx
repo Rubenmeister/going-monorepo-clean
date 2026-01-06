@@ -18,6 +18,9 @@ export function LandingPage() {
       <HowItWorks />
       <Realtime />
       <Ecuador />
+      <Academy />
+      <EventsCalendar />
+      <Ecosystem />
       <Safety />
       <Enterprise />
       <FAQ />
@@ -114,16 +117,16 @@ function Hero() {
       <div className="relative z-10 mx-auto max-w-7xl w-full px-6 py-20 flex flex-col md:flex-row items-center gap-16">
         <div className="flex-1 text-center md:text-left">
           <div className="inline-block px-4 py-1.5 bg-brand-red text-white text-xs font-black tracking-[0.3em] uppercase mb-8 shadow-2xl">
-            Ecuador en Movimiento
+            Quito en Movimiento
           </div>
           
           <h1 className="font-spaceGrotesk text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8 drop-shadow-2xl">
-            DESCUBRE <br/>
-            <span className="text-brand-red">TU RUTA.</span>
+            QUITO <br/>
+            <span className="text-brand-red">AL MÁXIMO.</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/80 font-medium mb-10 max-w-xl leading-relaxed">
-             Únete a la plataforma de movilidad sustentable que conecta cada rincón del Ecuador con estilo y seguridad.
+             Iniciando nuestra visión de 5 años en la capital. Conectamos cada rincón de Quito con estilo, seguridad y movilidad sustentable.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
@@ -313,54 +316,59 @@ function Realtime() {
   );
 }
 
-/* ====== ECUADOR SECTION ====== */
+/* ====== ECUADOR SECTION / TOURISM EXPO ====== */
 function Ecuador() {
   return (
-    <section id="ecuador" className="py-20 bg-gray-100 border-b-2 border-black relative overflow-hidden">
-       {/* Background Patterns Layer */}
-       <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-pattern-andino"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-pattern-costa"></div>
-       </div>
-
+    <section id="ecuador" className="py-24 bg-gray-100 border-b-2 border-black relative overflow-hidden">
        <div className="mx-auto max-w-7xl px-4 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-4">DESCUBRE ECUADOR 🇪🇨</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Conectamos las 4 regiones del país. Vive la diversidad de nuestros paisajes y culturas con la seguridad que mereces.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-16">
+            <div className="max-w-2xl">
+              <h2 className="font-spaceGrotesk text-5xl font-black uppercase mb-4 leading-tight">EXPLORA <br/><span className="text-brand-red">EL ECUADOR.</span></h2>
+              <p className="text-xl text-gray-600 font-medium">
+                Una vitrina completa de experiencias, destinos y cultura. Desde los Andes hasta Galápagos.
+              </p>
+            </div>
+            <div className="hidden md:block w-32 h-32 bg-brand-red rounded-full flex items-center justify-center text-white font-black text-xs text-center border-2 border-black shadow-neo -rotate-12">
+              TURISMO<br/>SOSTENIBLE
+            </div>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-20">
              {Object.values(ECUADOR_REGIONS).map((region: any) => (
-               <div key={region.label} className="bg-white p-6 border-2 border-black shadow-neo hover:-translate-y-2 transition-transform group">
-                 <div className={`w-full h-32 mb-4 rounded-lg flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity`} style={{backgroundColor: region.colorHex + '20'}}>
-                    {/* Placeholder for real images later */}
-                    <span className="text-4xl" style={{color: region.colorHex}}>●</span>
+               <div key={region.label} className="bg-white p-8 border-2 border-black shadow-neo hover:-translate-y-2 transition-all group">
+                 <div className={`w-full h-48 mb-6 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-black shadow-inner`} style={{backgroundColor: region.colorHex + '10'}}>
+                    <span className="text-6xl group-hover:scale-125 transition-transform duration-500" style={{color: region.colorHex}}>⛰️</span>
                  </div>
-                 <div className="flex justify-between items-center mb-2">
+                 <div className="flex justify-between items-center mb-3">
                     <RegionBadge region={region.label.toUpperCase() as EcuadorRegion} />
                  </div>
-                 <h3 className="font-bold text-xl mb-1">{region.slogan}</h3>
-                 <p className="text-sm text-gray-500">{region.description}</p>
+                 <h3 className="font-black text-2xl mb-2">{region.slogan}</h3>
+                 <p className="text-sm text-gray-500 font-medium leading-relaxed">{region.description}</p>
                </div>
              ))}
           </div>
 
-          <div className="mt-16 bg-white border-2 border-black p-8 shadow-neo max-w-3xl mx-auto">
-             <h3 className="font-bold text-lg mb-6 text-center uppercase border-b-2 border-gray-100 pb-2">Rutas Populares</h3>
-             <div className="flex flex-wrap justify-center gap-4">
-                {POPULAR_ROUTES.map((route: any, idx: number) => (
-                   <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors">
-                      <span className="text-xs font-bold text-gray-400">{route.region}</span>
-                      <span className="font-bold text-sm">{route.label}</span>
-                   </div>
-                ))}
+          <div className="bg-black text-white p-12 rounded-[40px] border-4 border-brand-red shadow-2xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-8 opacity-10 text-9xl">🗺️</div>
+             <h3 className="font-spaceGrotesk text-3xl font-black mb-8 border-b border-white/20 pb-4">SERVICIOS TURÍSTICOS DESTACADOS</h3>
+             <div className="grid md:grid-cols-3 gap-10">
+                <ExpoCard icon="🧗" title="Tours de Aventura" desc="Ascensos al Cotopaxi, Quilotoa y selva primaria." />
+                <ExpoCard icon="🥘" title="Gastronomy Expo" desc="Rutas del cacao, ceviches y cocina andina." />
+                <ExpoCard icon="🛖" title="Hidden Stays" desc="Eco-lodges y haciendas históricas certificadas." />
              </div>
           </div>
-
        </div>
     </section>
+  );
+}
+
+function ExpoCard({ icon, title, desc }: { icon: string, title: string, desc: string }) {
+  return (
+    <div className="group">
+      <div className="text-4xl mb-4 group-hover:animate-bounce">{icon}</div>
+      <h4 className="font-bold text-xl mb-2 text-brand-red italic uppercase">{title}</h4>
+      <p className="text-gray-400 text-sm font-medium leading-relaxed">{desc}</p>
+    </div>
   );
 }
 
@@ -407,6 +415,86 @@ function Enterprise() {
   );
 }
 
+/* ====== ACADEMY SECTION ====== */
+function Academy() {
+  return (
+    <section id="academy" className="py-24 bg-white border-b-2 border-black overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
+      <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-16 items-center">
+        <div className="order-2 md:order-1">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="h-64 bg-brand-red border-2 border-black shadow-neo flex items-center justify-center -rotate-2">
+              <span className="text-white font-black text-4xl">🎓</span>
+            </div>
+            <div className="h-64 bg-going-yellow border-2 border-black shadow-neo flex items-center justify-center rotate-3 translate-y-8">
+              <span className="text-black font-black text-4xl">🌟</span>
+            </div>
+          </div>
+        </div>
+        <div className="order-1 md:order-2">
+          <div className="inline-block px-3 py-1 bg-black text-white font-mono text-xs mb-6 uppercase tracking-widest">Capacitación Premier</div>
+          <h2 className="font-spaceGrotesk text-5xl font-black mb-6 leading-none">GOING <br/><span className="text-brand-red">ACADEMY.</span></h2>
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed font-medium">
+            Formamos a los mejores proveedores turísticos del Ecuador. Certifícate con nosotros y eleva tu servicio al estándar internacional.
+          </p>
+          <ul className="space-y-4 mb-10">
+            <li className="flex items-center gap-3 font-bold">
+              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+              Protocolos de Seguridad Vial
+            </li>
+            <li className="flex items-center gap-3 font-bold">
+              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+              Guianza Turística Especializada
+            </li>
+            <li className="flex items-center gap-3 font-bold">
+              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+              Atención al Cliente de Clase Mundial
+            </li>
+          </ul>
+          <button className="px-8 py-4 bg-black text-white font-black rounded-full hover:scale-105 transition-all shadow-neo">
+            ÚNETE COMO PROVEEDOR
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ====== EVENTS CALENDAR ====== */
+function EventsCalendar() {
+  const events = [
+    { name: 'Fiestas de Quito', date: 'Diciembre', place: 'Pichincha', icon: '💃' },
+    { name: 'Carnaval de Guaranda', date: 'Febrero', place: 'Bolívar', icon: '🎭' },
+    { name: 'Inti Raymi', date: 'Junio', place: 'Sierra Norte', icon: '☀️' },
+    { name: 'Mama Negra', date: 'Noviembre', place: 'Latacunga', icon: '🐎' },
+  ];
+
+  return (
+    <section id="calendar" className="py-24 bg-brand-gray border-b-2 border-black">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex justify-between items-end mb-12">
+          <div>
+            <h2 className="font-spaceGrotesk text-4xl font-black uppercase mb-2">CALENDARIO CULTURAL</h2>
+            <p className="font-medium text-gray-600">No te pierdas de lo mejor del Ecuador este año.</p>
+          </div>
+          <div className="text-6xl opacity-20">📅</div>
+        </div>
+        
+        <div className="grid md:grid-cols-4 gap-6">
+          {events.map((ev, i) => (
+            <div key={i} className="bg-white border-2 border-black p-6 hover:-translate-y-2 transition-all shadow-neo flex flex-col items-center text-center">
+              <span className="text-4xl mb-4">{ev.icon}</span>
+              <h3 className="font-black text-lg mb-1">{ev.name}</h3>
+              <p className="text-brand-red font-bold text-sm uppercase mb-2">{ev.date}</p>
+              <p className="text-gray-400 text-xs font-bold">{ev.place}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ====== FAQ ====== */
 function FAQ() {
   return (
@@ -434,6 +522,35 @@ function FAQ() {
             </details>
          </div>
        </div>
+    </section>
+  );
+}
+
+/* ====== ECOSYSTEM / APP LINKS ====== */
+function Ecosystem() {
+  return (
+    <section id="download" className="py-24 bg-black border-b-2 border-black text-white relative">
+      <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-12">
+        <div className="p-10 border-4 border-brand-red rounded-[40px] shadow-neo bg-neutral-900 group hover:scale-[1.02] transition-transform">
+          <div className="text-6xl mb-6">📱</div>
+          <h3 className="font-spaceGrotesk text-3xl font-black mb-4">GOING PARA USUARIOS</h3>
+          <p className="text-gray-400 mb-8 font-medium">La SuperApp para moverte, enviar paquetes y descubrir el Ecuador.</p>
+          <div className="flex gap-4">
+            <button className="px-6 py-3 bg-white text-black font-black rounded-full hover:bg-brand-red hover:text-white transition-colors">STORE</button>
+            <button className="px-6 py-3 border-2 border-white text-white font-black rounded-full">PLAY STORE</button>
+          </div>
+        </div>
+        
+        <div className="p-10 border-4 border-white rounded-[40px] shadow-neo bg-neutral-800 group hover:scale-[1.02] transition-transform">
+          <div className="text-6xl mb-6">🚕</div>
+          <h3 className="font-spaceGrotesk text-3xl font-black mb-4">GOING PARA SOCIOS</h3>
+          <p className="text-gray-400 mb-8 font-medium">Genera ingresos, certifícate en la Academy y sé parte del cambio en la movilidad.</p>
+          <div className="flex gap-4">
+            <button className="px-6 py-3 bg-white text-black font-black rounded-full">DRIVER STORE</button>
+            <button className="px-6 py-3 border-2 border-white text-white font-black rounded-full hover:bg-white hover:text-black transition-colors">DRIVER PLAY</button>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

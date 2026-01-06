@@ -14,6 +14,14 @@ import {
   Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { 
+  Mail, 
+  Lock, 
+  ArrowRight,
+  Smartphone,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react-native';
 import { authService } from '../features/auth/AuthService';
 
 const { width, height } = Dimensions.get('window');
@@ -26,14 +34,16 @@ const COLORS = {
   white: '#FFFFFF',
   inputBg: 'rgba(255, 255, 255, 0.9)',
   errorRing: '#FACC15',
+  glassWhite: 'rgba(255, 255, 255, 0.2)',
+  glassBorder: 'rgba(255, 255, 255, 0.1)',
 };
 
-export function LoginScreen({ navigation }: any) {
+export function LoginScreen({ navigation }: { navigation: { replace: (screen: string) => void; navigate: (screen: string, params?: any) => void; } }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
+  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({ email: false, password: false });
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -67,9 +77,10 @@ export function LoginScreen({ navigation }: any) {
     setLoading(true);
     try {
       await authService.login({ email, password });
-      navigation.replace('Main');
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Credenciales inválidas');
+      navigation.replace('Home');
+    } catch (error: unknown) {
+      const errorMessage = (error as any)?.response?.data?.message || 'Credenciales inválidas';
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -104,46 +115,52 @@ export function LoginScreen({ navigation }: any) {
           <View style={styles.formContainer}>
             {/* Email Input */}
             <View style={styles.inputWrapper}>
-              <TextInput
-                style={[
-                  styles.input,
-                  errors.email && touched.email && styles.inputError
-                ]}
-                placeholder="Correo electrónico"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  if (touched.email) validate();
-                }}
-                onBlur={() => handleBlur('email')}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
+              <View style={styles.inputIconWrapper}>
+                <Mail size={18} color={COLORS.charcoal} style={styles.fieldIcon} />
+                <TextInput
+                  style={[
+                    styles.input,
+                    errors.email && touched.email && styles.inputError
+                  ]}
+                  placeholder="Correo electrónico"
+                  placeholderTextColor="#9CA3AF"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (touched.email) validate();
+                  }}
+                  onBlur={() => handleBlur('email')}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+              </View>
               {errors.email && touched.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <Text style={styles.errorText}><AlertCircle size={12} color={COLORS.white} /> {errors.email}</Text>
               )}
             </View>
 
             {/* Password Input */}
             <View style={styles.inputWrapper}>
-              <TextInput
-                style={[
-                  styles.input,
-                  errors.password && touched.password && styles.inputError
-                ]}
-                placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (touched.password) validate();
-                }}
-                onBlur={() => handleBlur('password')}
-                secureTextEntry
-              />
+              <View style={styles.inputIconWrapper}>
+                <Lock size={18} color={COLORS.charcoal} style={styles.fieldIcon} />
+                <TextInput
+                  style={[
+                    styles.input,
+                    errors.password && touched.password && styles.inputError
+                  ]}
+                  placeholder="Contraseña"
+                  placeholderTextColor="#9CA3AF"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (touched.password) validate();
+                  }}
+                  onBlur={() => handleBlur('password')}
+                  secureTextEntry
+                />
+              </View>
               {errors.password && touched.password && (
-                <Text style={styles.errorText}>{errors.password}</Text>
+                <Text style={styles.errorText}><AlertCircle size={12} color={COLORS.white} /> {errors.password}</Text>
               )}
             </View>
 
@@ -162,7 +179,10 @@ export function LoginScreen({ navigation }: any) {
               {loading ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+                  <ArrowRight size={20} color={COLORS.white} />
+                </View>
               )}
             </TouchableOpacity>
 
@@ -185,16 +205,28 @@ export function LoginScreen({ navigation }: any) {
 
             <View style={styles.socialButtons}>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}>G</Text>
+                <Smartphone size={24} color={COLORS.charcoal} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>f</Text>
+                <Mail size={24} color="#EA4335" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}></Text>
+                 <CheckCircle2 size={24} color="#1877F2" />
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Legal Links */}
+          <View style={styles.legalFooter}>
+            <TouchableOpacity onPress={() => Alert.alert('Condiciones de Viaje')}>
+              <Text style={styles.legalLinkText}>Condiciones de Viaje</Text>
+            </TouchableOpacity>
+            <View style={styles.legalSeparator} />
+            <TouchableOpacity onPress={() => Alert.alert('Condiciones de Envíos')}>
+              <Text style={styles.legalLinkText}>Condiciones de Envíos</Text>
+            </TouchableOpacity>
+          </View>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -236,11 +268,21 @@ const styles = StyleSheet.create({
   inputWrapper: {
     marginBottom: 16,
   },
-  input: {
+  inputIconWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.inputBg,
-    height: 52,
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
+    height: 52,
+  },
+  fieldIcon: {
+    marginRight: 10,
+    opacity: 0.6,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
     fontSize: 16,
     color: COLORS.charcoal,
   },
@@ -339,5 +381,25 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.charcoal,
+  },
+  legalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40,
+    paddingBottom: 20,
+    width: '100%',
+  },
+  legalLinkText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    width: 1,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    marginHorizontal: 12,
   },
 });

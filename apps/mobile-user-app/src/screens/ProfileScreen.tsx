@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { authService } from '../features/auth/AuthService';
 
-export function ProfileScreen({ navigation }: any) {
-  const [user, setUser] = useState<any>(null);
+export function ProfileScreen({ navigation }: { navigation: { replace: (screen: string) => void } }) {
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function ProfileScreen({ navigation }: any) {
     navigation.replace('Login');
   };
 
-  if (loading) return <View style={styles.container}><ActivityIndicator color="#ff4c41" /></View>;
+  if (loading) return <View style={styles.container}><ActivityIndicator color="#FF4E43" /></View>;
 
   return (
     <View style={styles.container}>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#FF4E43',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',

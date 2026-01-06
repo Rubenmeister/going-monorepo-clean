@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from '../../../libs/shared/src';
+import { DatabaseModule } from '@going-monorepo/shared-backend';
 import { ObservabilityModule } from '@going/shared/observability';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AccommodationController } from './api/accommodation.controller';
