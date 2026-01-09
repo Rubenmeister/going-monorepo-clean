@@ -19,8 +19,10 @@ import {
   IDriverLocationGateway,
 } from '@going-monorepo-clean/domains-tracking-core';
 
+import { SharedLoggerModule } from '@going-monorepo/shared-backend';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, SharedLoggerModule],
   controllers: [AppController, TrackingController],
   providers: [
     AppService,

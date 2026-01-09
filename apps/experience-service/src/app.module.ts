@@ -7,6 +7,8 @@ import { ExperienceController } from './api/experience.controller';
 import {
   CreateExperienceUseCase,
   SearchExperiencesUseCase,
+  DeleteExperienceUseCase,
+  FindAllExperiencesUseCase,
 } from '@going-monorepo-clean/domains-experience-application';
 
 @Module({
@@ -20,6 +22,8 @@ import {
   providers: [
     CreateExperienceUseCase,
     SearchExperiencesUseCase,
+    DeleteExperienceUseCase,
+    FindAllExperiencesUseCase,
   ],
 })
 export class AppModule {}

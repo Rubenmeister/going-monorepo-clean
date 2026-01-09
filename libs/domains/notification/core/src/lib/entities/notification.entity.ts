@@ -10,6 +10,13 @@ export type NotificationType =
   | 'message_received'
   | 'system_alert';
 
+export enum NotificationChannelType {
+  SMS = 'SMS',
+  EMAIL = 'EMAIL',
+  PUSH = 'PUSH',
+  WHATSAPP = 'WHATSAPP',
+}
+
 export interface NotificationProps {
   id: string;
   userId: string;

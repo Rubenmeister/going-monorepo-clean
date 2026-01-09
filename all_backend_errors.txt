@@ -1,0 +1,309 @@
+
+ NX   Running target build for 11 projects and 1 task they depend on:
+
+- api-gateway
+- user-auth-service
+- booking-service
+- transport-service
+- parcel-service
+- payment-service
+- notifications-service
+- tracking-service
+- tours-service
+- experience-service
+- host-service
+
+
+
+> nx run @going/shared/observability:build
+
+Compiling TypeScript files for project "@going/shared/observability"...
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/prisma-health.indicator.ts[0m:[93m3[0m:[93m31[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/shared/observability'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m import { PrismaService } from '@going-monorepo-clean/prisma-client';[39m[22m
+[1m[31m[7m [0m [91m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts[0m:[93m5[0m:[93m31[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.service.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/shared/observability'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/prisma.service' from file '/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts'[39m[22m
+[1m[31m    Imported via './prisma.service' from file '/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.module.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m5[0m export { PrismaService } from './lib/prisma.service';[39m[22m
+[1m[31m[7m [0m [91m                              ~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.module.ts[0m:[93m2[0m:[93m31[0m[39m[22m
+[1m[31m    [7m2[0m import { PrismaService } from './prisma.service';[39m[22m
+[1m[31m    [7m [0m [96m                              ~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts[0m:[93m6[0m:[93m30[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.module.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/shared/observability'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m6[0m export { PrismaModule } from './lib/prisma.module';[39m[22m
+[1m[31m[7m [0m [91m                             ~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+
+> nx run experience-service:build:production
+
+assets by path *.json 24 KiB
+  asset package-lock.json 23 KiB [compared for emit]
+  asset package.json 1 KiB [compared for emit]
+asset main.js 3.19 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/experience-service/src/assets/.gitkeep] [copied]
+orphan modules 6.69 KiB [orphan] 15 modules
+./apps/experience-service/src/main.ts + 15 modules 7.23 KiB [not cacheable] [built] [code generated]
+
+ERROR in ./apps/experience-service/src/infrastructure/persistence/mongoose-experience.repository.ts:[32m[1m36:51[22m[39m
+[90mTS2339: [39mProperty 'id' does not exist on type 'Experience'.
+  [0m [90m 34 |[39m     [36mtry[39m {
+   [90m 35 |[39m       [36mconst[39m primitives [33m=[39m experience[33m.[39mtoPrimitives()[33m;[39m
+  [31m[1m>[22m[39m[90m 36 |[39m       [36mawait[39m [36mthis[39m[33m.[39mmodel[33m.[39mupdateOne({ id[33m:[39m experience[33m.[39mid }[33m,[39m { $set[33m:[39m primitives })[33m.[39mexec()[33m;[39m
+   [90m    |[39m                                                   [31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 37 |[39m       [36mreturn[39m ok(undefined)[33m;[39m
+   [90m 38 |[39m     } [36mcatch[39m (error) {
+   [90m 39 |[39m       [36mreturn[39m err([36mnew[39m [33mError[39m(error[33m.[39mmessage))[33m;[39m[0m
+
+ERROR in ./apps/experience-service/src/infrastructure/persistence/prisma-experience.repository.ts:[32m[1m14:43[22m[39m
+[90mTS2304: [39mCannot find name 'ExperienceStatus'.
+  [0m [90m 12 |[39m   constructor([36mprivate[39m readonly prisma[33m:[39m [33mPrismaService[39m) {}
+   [90m 13 |[39m
+  [31m[1m>[22m[39m[90m 14 |[39m   [36mprivate[39m toPrismaStatus(status[33m:[39m string)[33m:[39m [33mExperienceStatus[39m {
+   [90m    |[39m                                           [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 15 |[39m     [90m// Prisma expects the enum values defined in the schema (lowercase)[39m
+   [90m 16 |[39m     [36mreturn[39m status [36mas[39m [33mExperienceStatus[39m[33m;[39m
+   [90m 17 |[39m   }[0m
+
+ERROR in ./apps/experience-service/src/infrastructure/persistence/prisma-experience.repository.ts:[32m[1m16:22[22m[39m
+[90mTS2304: [39mCannot find name 'ExperienceStatus'.
+  [0m [90m 14 |[39m   [36mprivate[39m toPrismaStatus(status[33m:[39m string)[33m:[39m [33mExperienceStatus[39m {
+   [90m 15 |[39m     [90m// Prisma expects the enum values defined in the schema (lowercase)[39m
+  [31m[1m>[22m[39m[90m 16 |[39m     [36mreturn[39m status [36mas[39m [33mExperienceStatus[39m[33m;[39m
+   [90m    |[39m                      [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 17 |[39m   }
+   [90m 18 |[39m
+   [90m 19 |[39m   [36mprivate[39m toDomainStatus(status[33m:[39m [33mExperienceStatus[39m)[33m:[39m [32m'draft'[39m [33m|[39m [32m'published'[39m [33m|[39m [32m'archived'[39m {[0m
+
+ERROR in ./apps/experience-service/src/infrastructure/persistence/prisma-experience.repository.ts:[32m[1m19:34[22m[39m
+[90mTS2304: [39mCannot find name 'ExperienceStatus'.
+  [0m [90m 17 |[39m   }
+   [90m 18 |[39m
+  [31m[1m>[22m[39m[90m 19 |[39m   [36mprivate[39m toDomainStatus(status[33m:[39m [33mExperienceStatus[39m)[33m:[39m [32m'draft'[39m [33m|[39m [32m'published'[39m [33m|[39m [32m'archived'[39m {
+   [90m    |[39m                                  [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 20 |[39m     [90m// Convert Prisma enum back to domain string literals[39m
+   [90m 21 |[39m     [36mreturn[39m status [36mas[39m [32m'draft'[39m [33m|[39m [32m'published'[39m [33m|[39m [32m'archived'[39m[33m;[39m
+   [90m 22 |[39m   }[0m
+
+ERROR in ./libs/domains/experience/application/src/lib/use-cases/create-experience.use-case.ts:[32m[1m18:48[22m[39m
+[90mTS2345: [39mArgument of type '{ hostId: string; title: string; description: string; pricePerPerson: number; maxCapacity: number; location: string; }' is not assignable to parameter of type 'Omit<ExperienceProps, "id" | "status" | "createdAt" | "updatedAt">'.
+  Type '{ hostId: string; title: string; description: string; pricePerPerson: number; maxCapacity: number; location: string; }' is missing the following properties from type 'Omit<ExperienceProps, "id" | "status" | "createdAt" | "updatedAt">': currency, durationHours
+  [0m [90m 16 |[39m
+   [90m 17 |[39m   [36masync[39m execute(dto[33m:[39m [33mCreateExperienceDto[39m)[33m:[39m [33mPromise[39m[33m<[39m[33mResult[39m[33m<[39m[33mExperience[39m[33m,[39m [33mError[39m[33m>>[39m {
+  [31m[1m>[22m[39m[90m 18 |[39m     [36mconst[39m experienceResult [33m=[39m [33mExperience[39m[33m.[39mcreate({
+   [90m    |[39m                                                [31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 19 |[39m       hostId[33m:[39m dto[33m.[39mhostId[33m,[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 20 |[39m       title[33m:[39m dto[33m.[39mtitle[33m,[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 21 |[39m       description[33m:[39m dto[33m.[39mdescription[33m,[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 22 |[39m       pricePerPerson[33m:[39m dto[33m.[39mprice[33m.[39mamount[33m,[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 23 |[39m       maxCapacity[33m:[39m dto[33m.[39mdurationHours[33m,[39m [90m// Using durationHours as capacity temporarily[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 24 |[39m       location[33m:[39m dto[33m.[39mlocation[33m.[39maddress[33m,[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+  [31m[1m>[22m[39m[90m 25 |[39m     })[33m;[39m
+   [90m    |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 26 |[39m
+   [90m 27 |[39m     [36mif[39m (experienceResult[33m.[39misErr()) {
+   [90m 28 |[39m       [36mreturn[39m err(experienceResult[33m.[39merror)[33m;[39m[0m
+
+webpack 5.104.1 compiled with 5 errors in 6998 ms
+
+> nx run tracking-service:build:production
+
+assets by path *.json 24.6 KiB
+  asset package-lock.json 23.6 KiB [compared for emit]
+  asset package.json 1.03 KiB [compared for emit]
+asset main.js 8.92 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/tracking-service/src/assets/.gitkeep] [copied]
+orphan modules 19.5 KiB [orphan] 29 modules
+runtime modules 670 bytes 3 modules
+./apps/tracking-service/src/main.ts + 29 modules 20.1 KiB [not cacheable] [built] [code generated]
+
+WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:57-79
+export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+ @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 17:37-55
+ @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+
+WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:99-121
+export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+ @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 17:37-55
+ @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+
+ERROR in ./apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts:[32m[1m2:31[22m[39m
+[90mTS2307: [39mCannot find module '@nestjs/cache-manager' or its corresponding type declarations.
+  [0m [90m 1 |[39m [36mimport[39m { [33mInject[39m[33m,[39m [33mInjectable[39m } [36mfrom[39m [32m'@nestjs/common'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mCACHE_MANAGER[39m } [36mfrom[39m [32m'@nestjs/cache-manager'[39m[33m;[39m
+   [90m   |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mimport[39m { [33mCache[39m } [36mfrom[39m [32m'cache-manager'[39m[33m;[39m
+   [90m 4 |[39m [36mimport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } [36mfrom[39m [32m'neverthrow'[39m[33m;[39m
+   [90m 5 |[39m [36mimport[39m {[0m
+
+ERROR in ./apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts:[32m[1m26:44[22m[39m
+[90mTS2339: [39mProperty 'getClient' does not exist on type 'Store'.
+  [0m [90m 24 |[39m       [36mawait[39m [36mthis[39m[33m.[39mcache[33m.[39m[36mset[39m(key[33m,[39m primitives[33m,[39m [33mKEY_TTL_SECONDS[39m)[33m;[39m
+   [90m 25 |[39m       
+  [31m[1m>[22m[39m[90m 26 |[39m       [36mconst[39m redisClient [33m=[39m [36mthis[39m[33m.[39mcache[33m.[39mstore[33m.[39mgetClient()[33m;[39m
+   [90m    |[39m                                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 27 |[39m       [36mawait[39m redisClient[33m.[39msAdd([33mACTIVE_DRIVERS_SET[39m[33m,[39m location[33m.[39mdriverId)[33m;[39m
+   [90m 28 |[39m       
+   [90m 29 |[39m       [36mreturn[39m ok(undefined)[33m;[39m[0m
+
+ERROR in ./apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts:[32m[1m47:44[22m[39m
+[90mTS2339: [39mProperty 'getClient' does not exist on type 'Store'.
+  [0m [90m 45 |[39m   [36masync[39m findAllActive()[33m:[39m [33mPromise[39m[33m<[39m[33mResult[39m[33m<[39m[33mDriverLocation[39m[][33m,[39m [33mError[39m[33m>>[39m {
+   [90m 46 |[39m     [36mtry[39m {
+  [31m[1m>[22m[39m[90m 47 |[39m       [36mconst[39m redisClient [33m=[39m [36mthis[39m[33m.[39mcache[33m.[39mstore[33m.[39mgetClient()[33m;[39m
+   [90m    |[39m                                            [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 48 |[39m       [36mconst[39m driverIds [33m=[39m [36mawait[39m redisClient[33m.[39msMembers([33mACTIVE_DRIVERS_SET[39m)[33m;[39m
+   [90m 49 |[39m
+   [90m 50 |[39m       [36mif[39m ([33m![39mdriverIds [33m||[39m driverIds[33m.[39mlength [33m===[39m [35m0[39m) {[0m
+
+ERROR in ./apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts:[32m[1m55:46[22m[39m
+[90mTS2551: [39mProperty 'mGet' does not exist on type 'Store'. Did you mean 'mget'?
+  [0m [90m 53 |[39m
+   [90m 54 |[39m       [36mconst[39m keys [33m=[39m driverIds[33m.[39mmap(id [33m=>[39m [32m`${DRIVER_KEY_PREFIX}${id}`[39m)[33m;[39m
+  [31m[1m>[22m[39m[90m 55 |[39m       [36mconst[39m results [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mcache[33m.[39mstore[33m.[39mmGet(keys)[33m;[39m
+   [90m    |[39m                                              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 56 |[39m
+   [90m 57 |[39m       [36mconst[39m locations [33m=[39m results
+   [90m 58 |[39m         [33m.[39mfilter(res [33m=>[39m [33m![39m[33m![39mres)[0m
+
+webpack 5.104.1 compiled with 4 errors and 2 warnings in 5375 ms
+
+> nx run notifications-service:build:production
+
+assets by path *.json 25.1 KiB
+  asset package-lock.json 24 KiB [compared for emit]
+  asset package.json 1.05 KiB [compared for emit]
+asset main.js 12.7 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/notifications-service/src/assets/.gitkeep] [copied]
+orphan modules 29.7 KiB [orphan] 46 modules
+runtime modules 663 bytes 3 modules
+./apps/notifications-service/src/main.ts + 46 modules 30.2 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 9302 ms
+
+> nx run user-auth-service:build:production
+
+assets by path *.json 25.4 KiB
+  asset package-lock.json 24.3 KiB [compared for emit]
+  asset package.json 1.07 KiB [compared for emit]
+asset main.js 12.7 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 5 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/user-auth-service/src/assets/.gitkeep] [copied]
+orphan modules 30.2 KiB [orphan] 53 modules
+./apps/user-auth-service/src/main.ts + 53 modules 31 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 6360 ms
+
+> nx run payment-service:build:production
+
+assets by path *.json 24.6 KiB
+  asset package-lock.json 23.6 KiB [compared for emit]
+  asset package.json 1.02 KiB [compared for emit]
+asset main.js 11.7 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/payment-service/src/assets/.gitkeep] [copied]
+orphan modules 26.4 KiB [orphan] 37 modules
+runtime modules 663 bytes 3 modules
+./apps/payment-service/src/main.ts + 37 modules 26.9 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 5416 ms
+
+> nx run parcel-service:build:production
+
+assets by path *.json 24 KiB
+  asset package-lock.json 23 KiB [compared for emit]
+  asset package.json 1020 bytes [compared for emit]
+asset main.js 17.4 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/parcel-service/src/assets/.gitkeep] [copied]
+orphan modules 38.7 KiB [orphan] 57 modules
+runtime modules 670 bytes 3 modules
+./apps/parcel-service/src/main.ts + 57 modules 39.2 KiB [not cacheable] [built] [code generated]
+
+WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:57-74
+export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+ @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+ @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+ @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+
+WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:94-111
+export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+ @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+ @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+ @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+
+webpack 5.104.1 compiled with 2 warnings in 5695 ms
+
+> nx run booking-service:build:production
+
+assets by path *.json 24 KiB
+  asset package-lock.json 23 KiB [compared for emit]
+  asset package.json 1020 bytes [compared for emit]
+asset main.js 10.2 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/booking-service/src/assets/.gitkeep] [copied]
+orphan modules 24.1 KiB [orphan] 39 modules
+./apps/booking-service/src/main.ts + 39 modules 24.7 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 5771 ms
+
+> nx run transport-service:build:production
+
+assets by path *.json 23.5 KiB
+  asset package-lock.json 22.5 KiB [compared for emit]
+  asset package.json 998 bytes [compared for emit]
+asset main.js 17.7 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/transport-service/src/assets/.gitkeep] [copied]
+orphan modules 36.7 KiB [orphan] 46 modules
+./apps/transport-service/src/main.ts + 46 modules 37.2 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 4745 ms
+
+> nx run tours-service:build:production
+
+assets by path *.json 24 KiB
+  asset package-lock.json 23 KiB [compared for emit]
+  asset package.json 1020 bytes [compared for emit]
+asset main.js 13.5 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/tours-service/src/assets/.gitkeep] [copied]
+orphan modules 29.1 KiB [orphan] 43 modules
+./apps/tours-service/src/main.ts + 43 modules 29.7 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 4448 ms
+
+> nx run host-service:build:production
+
+assets by path *.json 24 KiB
+  asset package-lock.json 23 KiB [compared for emit]
+  asset package.json 1020 bytes [compared for emit]
+asset main.js 4.23 KiB [compared for emit] [minimized] (name: main)
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/host-service/src/assets/.gitkeep] [copied]
+orphan modules 9.02 KiB [orphan] 16 modules
+./apps/host-service/src/main.ts + 16 modules 9.59 KiB [not cacheable] [built] [code generated]
+webpack 5.104.1 compiled successfully in 5577 ms
+
+
+
+ NX   Running target build for 11 projects and 1 task they depend on failed
+
+Tasks not run because their dependencies failed or --nx-bail=true:
+
+- api-gateway:build
+
+Failed tasks:
+
+- @going/shared/observability:build
+- experience-service:build:production
+- tracking-service:build:production
+

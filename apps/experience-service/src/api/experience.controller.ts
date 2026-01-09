@@ -2,6 +2,8 @@ import { Body, Controller, Post, Get, Query, HttpCode, HttpStatus, UsePipes, Val
 import { 
   CreateExperienceUseCase,
   SearchExperiencesUseCase,
+  DeleteExperienceUseCase,
+  FindAllExperiencesUseCase,
   CreateExperienceDto,
   SearchExperiencesDto,
 } from '@going-monorepo-clean/domains-experience-application';
@@ -14,6 +16,8 @@ export class ExperienceController {
   constructor(
     private readonly createExperienceUseCase: CreateExperienceUseCase,
     private readonly searchExperiencesUseCase: SearchExperiencesUseCase,
+    private readonly deleteExperienceUseCase: DeleteExperienceUseCase,
+    private readonly findAllExperiencesUseCase: FindAllExperiencesUseCase,
   ) {}
 
   @Post()
@@ -42,5 +46,27 @@ export class ExperienceController {
     }
     
     return result.value;
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getAllExperiences(): Promise<Experience[]> {
+    const result = await this.findAllExperiencesUseCase.execute();
+
+    if (result.isErr()) {
+      throw new HttpException(result.error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    return result.value;
+  }
+
+  @Post(':id/delete')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteExperience(@Body('id') id: string): Promise<void> {
+    const result = await this.deleteExperienceUseCase.execute(id);
+
+    if (result.isErr()) {
+      throw new HttpException(result.error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

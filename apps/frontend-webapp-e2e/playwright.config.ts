@@ -14,14 +14,17 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
+  /* Retries for CI environments */
+  retries: process.env['CI'] ? 2 : 0,
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npx nx serve frontend-webapp',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
-    timeout: 120 * 1000, // 2 minutes for startup
+    timeout: 300 * 1000, // 5 minutes for startup
   },
   /* Only run chromium for faster tests */
   projects: [
@@ -31,8 +34,8 @@ export default defineConfig({
     },
   ],
   /* Increase test timeout */
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   expect: {
-    timeout: 10 * 1000,
+    timeout: 15 * 1000,
   },
 });

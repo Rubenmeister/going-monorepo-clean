@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,11 +9,23 @@ async function bootstrap() {
   app.enableCors();
   app.setGlobalPrefix('api');
   
+  const { HttpAdapterHost } = await import('@nestjs/core');
+  const { AllExceptionsFilter } = await import('@going-monorepo/shared');
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  
+  const { setupSwagger } = await import('@going-monorepo/shared-backend');
+  
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // Use Pino
+  const { Logger } = await import('nestjs-pino');
+  app.useLogger(app.get(Logger));
+
   await app.listen(port);
-  Logger.log(
-    `🚀 Tours-Service está corriendo en http://localhost:${port}/api`,
-    'Bootstrap',
-  );
+  setupSwagger(app, 'Tours Service', port);
+  
+  const logger = app.get(Logger);
+  logger.log(`🚀 Tours-Service running on http://localhost:${port}/api`);
 }
 bootstrap();

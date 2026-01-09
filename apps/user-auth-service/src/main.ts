@@ -14,9 +14,20 @@ async function bootstrap() {
   app.enableCors({ origin: allowedOrigins });
   
   const port = process.env['PORT'] || 3009;
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const { HttpAdapterHost } = await import('@nestjs/core');
+  const { AllExceptionsFilter } = await import('@going-monorepo/shared');
+  const { setupSwagger } = await import('@going-monorepo/shared-backend');
   
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // Use Pino Logger
+  app.useLogger(app.get(Logger));
+
   await app.listen(port);
+  
+  setupSwagger(app, 'User Auth Service', port);
   
   const logger = app.get(Logger);
   logger.log(`🚀 User Auth Service running on http://localhost:${port}/api`);

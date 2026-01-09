@@ -1,0 +1,391 @@
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on:
+
+
+
+> nx run frontend-webapp:serve:development
+
+
+> nx run frontend-webapp-e2e:e2e transport.spec.ts
+
+> playwright test transport.spec.ts
+
+  [32mÔ×£[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://10.2.0.2:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://192.168.1.24:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://172.26.160.1:[1m4200[22m/[39m
+
+[2mRunning [22m1[2m test using [22m1[2m worker[22m
+
+[1A[2K[1/1] [chromium] ÔÇ║ src\transport.spec.ts:59:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides
+[1A[2K[2m[chromium] ÔÇ║ src\transport.spec.ts:59:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides[22m
+REQUEST: http://localhost:4200/
+
+[1A[2KREQUEST: http://localhost:4200/@vite/client
+
+[1A[2KREQUEST: https://cdn.lr-ingest.io/LogRocket.min.js
+
+[1A[2KREQUEST: http://localhost:4200/src/main.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@react-refresh
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/node_modules/vite/dist/client/env.mjs
+
+[1A[2KREQUEST: https://cdn.lr-ingest.io/logger-1.min.js
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react_jsx-dev-runtime.js?v=eb3b2585
+
+[1A[2KBROWSER LOG: [vite] connecting...
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react-dom_client.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/app/app.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/styles.css
+
+[1A[2KREQUEST: http://localhost:4200/@vite-plugin-pwa/pwa-entry-point-loaded
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-SRAPOFJJ.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-G3PMV62Z.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-NWJHXZXE.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react-router-dom.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/contexts/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/error/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/LoginForm.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/RegisterForm.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/home/HomeScreen.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/app/Dashboard.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/screens/SplashScreen.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/pages/LandingPage.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/contexts/AuthContext.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/error/ErrorBoundary.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/ProtectedRoute.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/RequireRole.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/RequireTenant.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/auth.service.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/AuthLayout.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/src/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/RegionBadge.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/lib/api/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/lib/api/client.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Button.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Input.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Card.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Carousel.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Sidebar.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/constants/ecuador-regions.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/neverthrow.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/types.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/roles.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/permissions.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/axios.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/config/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/config/env.ts
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KREQUEST: http://localhost:4200/assets/ecuador_landscape_bg.png
+
+[1A[2KREQUEST: http://localhost:4200/assets/suv_black_right_v3.png
+
+[1A[2KREQUEST: http://localhost:4200/registerSW.js
+
+[1A[2KREQUEST: https://r.lr-ingest.io/i?a=going%2Fmonorepo&r=6-019b9b60-30aa-7371-be23-dc70185747f1&t=bb311c9d-8cac-40a8-ad96-d9d296e0509a&s=0&ro=t&st=web&rs=0%2Cu
+
+[1A[2KREQUEST: http://localhost:4200/c/trips
+
+[1A[2KREQUEST: http://localhost:4200/@vite/client
+
+[1A[2KREQUEST: https://cdn.lr-ingest.io/LogRocket.min.js
+
+[1A[2KREQUEST: http://localhost:4200/src/main.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@react-refresh
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/node_modules/vite/dist/client/env.mjs
+
+[1A[2KREQUEST: https://cdn.lr-ingest.io/logger-1.min.js
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react_jsx-dev-runtime.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react-dom_client.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/app/app.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/styles.css
+
+[1A[2KBROWSER LOG: [vite] connecting...
+
+[1A[2KREQUEST: http://localhost:4200/@vite-plugin-pwa/pwa-entry-point-loaded
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-SRAPOFJJ.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-G3PMV62Z.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-NWJHXZXE.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/react-router-dom.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/contexts/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/error/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/LoginForm.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/RegisterForm.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/home/HomeScreen.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/app/Dashboard.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/screens/SplashScreen.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/pages/LandingPage.tsx
+
+[1A[2KREQUEST: https://r.lr-ingest.io/i?a=going%2Fmonorepo&r=6-019b9b60-30aa-7371-be23-dc70185747f1&t=0cf79f35-02db-497f-8d20-468c4eb79ee9&s=0&ro=t&st=web&rs=0%2Cu
+
+[1A[2KREQUEST: http://localhost:4200/src/contexts/AuthContext.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/error/ErrorBoundary.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/ProtectedRoute.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/RequireRole.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/routing/RequireTenant.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/auth.service.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/features/auth/AuthLayout.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/src/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/RegionBadge.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/lib/api/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/lib/api/client.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Button.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Input.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Card.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Carousel.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/components/ui/Sidebar.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/constants/ecuador-regions.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/neverthrow.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/types.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/roles.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/permissions/src/permissions.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/axios.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/src/config/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/src/config/env.ts
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KREQUEST: http://localhost:4200/assets/ecuador_landscape_bg.png
+
+[1A[2KREQUEST: http://localhost:4200/assets/suv_black_right_v3.png
+
+[1A[2KREQUEST: http://localhost:4200/registerSW.js
+
+PWA v1.2.0
+mode      generateSW
+precache  2 entries (0.12 KiB)
+files generated
+  dev-dist/sw.js
+  dev-dist/workbox-237f2c1f.js
+[1A[2KREQUEST: http://localhost:4200/src/features/customer/CustomerTrips.tsx
+
+[1A[2KREQUEST: http://localhost:4200/src/features/customer/ActivityList.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/index.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/SearchFromTo.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/ServiceSwitcher.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/CapacityPicker.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/TripStatusTimeline.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/TrackingMapPanel.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/PaymentStatusBadge.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/EmptyState.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/FeatureFlags.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/RouteGuards.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/EcuadorComponents.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/components/ui/button.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/components/ui/badge.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/components/ui/input.tsx
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/hooks/useTransport.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/@radix-ui_react-slot.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/class-variance-authority.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/libs/shared/ui/src/lib/utils.ts
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-XL4IJHED.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/clsx.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/tailwind-merge.js?v=eb3b2585
+
+[1A[2KREQUEST: http://localhost:4200/@fs/C:/Users/USER1/going-monorepo-clean/apps/node_modules/.vite/frontend-webapp/deps/chunk-S57K2XXO.js?v=eb3b2585
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KBROWSER LOG: [API] Network error - check connection
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [API] Network error - check connection
+
+[1A[2KBROWSER LOG: Failed to fetch experiences AxiosError
+
+[1A[2KBROWSER LOG: Failed to fetch transports AxiosError
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [API] Network error - check connection
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [API] Network error - check connection
+
+[1A[2KBROWSER LOG: Failed to fetch experiences AxiosError
+
+[1A[2KBROWSER LOG: Failed to fetch transports AxiosError
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2K[31m  1) [chromium] ÔÇ║ src\transport.spec.ts:59:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides [39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('La Mariscal')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for getByText('La Mariscal')[22m
+
+
+    [0m [90m 75 |[39m     
+     [90m 76 |[39m     [90m// Check specific content from mock[39m
+    [31m[1m>[22m[39m[90m 77 |[39m     [36mawait[39m expect(page[33m.[39mgetByText([32m'La Mariscal'[39m))[33m.[39mtoBeVisible()[33m;[39m
+     [90m    |[39m                                                 [31m[1m^[22m[39m
+     [90m 78 |[39m     [36mawait[39m expect(page[33m.[39mgetByText([32m'Reservorio'[39m))[33m.[39mtoBeVisible()[33m;[39m
+     [90m 79 |[39m     [36mawait[39m expect(page[33m.[39mgetByText([32m'Conductor Asignado'[39m))[33m.[39mtoBeVisible()[33m;[39m
+     [90m 80 |[39m   })[33m;[39m[0m
+    [2m    at C:\Users\USER1\going-monorepo-clean\apps\frontend-webapp-e2e\src\transport.spec.ts:77:49[22m
+
+[2m    attachment #1: [1mscreenshot[2m (image/png) [2mÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ[2m[22m
+[2m    ..\..\dist\.playwright\apps\frontend-webapp-e2e\test-output\transport-Transport-Flow-s-2af51-e-transport-list-with-rides-chromium\test-failed-1.png[22m
+[2m    [2mÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ[2m[22m
+
+[2m    Error Context: ..\..\dist\.playwright\apps\frontend-webapp-e2e\test-output\transport-Transport-Flow-s-2af51-e-transport-list-with-rides-chromium\error-context.md[22m
+
+
+[1A[2K[31m  1 failed[39m
+[31m    [chromium] ÔÇ║ src\transport.spec.ts:59:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides [39m
+
+
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on failed
+
+Failed tasks:
+
+- frontend-webapp-e2e:e2e
+
+Hint: run the command with --verbose for more details.
+
+Warning: command "playwright test transport.spec.ts" exited with non-zero status code

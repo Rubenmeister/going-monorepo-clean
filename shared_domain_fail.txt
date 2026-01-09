@@ -1,0 +1,44 @@
+
+> nx run shared-domain:test --passWithNoTests=false
+
+ PASS   shared-domain  libs/shared/domain/src/lib/location.vo.spec.ts
+ PASS   shared-domain  libs/shared/domain/src/lib/uuid.vo.spec.ts
+ FAIL   shared-domain  libs/shared/domain/src/lib/money.vo.spec.ts
+  ÔùÅ Test suite failed to run
+    libs/shared/domain/src/lib/money.vo.spec.ts:11:31 - error TS2554: Expected 2 arguments, but got 1.
+    11     const moneyResult = Money.create({ amount: 50, currency: 'EUR' });
+                                     ~~~~~~
+      libs/shared/domain/src/lib/money.vo.ts:19:40
+        19   public static create(amount: number, currency: string): Result<Money, Error> {
+                                                  ~~~~~~~~~~~~~~~~
+        An argument for 'currency' was not provided.
+    libs/shared/domain/src/lib/money.vo.spec.ts:19:31 - error TS2554: Expected 2 arguments, but got 1.
+    19     const moneyResult = Money.create({ amount: -1, currency: 'USD' });
+                                     ~~~~~~
+      libs/shared/domain/src/lib/money.vo.ts:19:40
+        19   public static create(amount: number, currency: string): Result<Money, Error> {
+                                                  ~~~~~~~~~~~~~~~~
+        An argument for 'currency' was not provided.
+    libs/shared/domain/src/lib/money.vo.spec.ts:25:54 - error TS2322: Type '"GBP"' is not assignable to type '"USD"'.
+    25     const money = Money.fromPrimitives({ amount: 20, currency: 'GBP' });
+                                                            ~~~~~~~~
+      libs/shared/domain/src/lib/money.vo.ts:7:3
+        7   currency: Currency;
+            ~~~~~~~~
+        The expected type comes from property 'currency' which is declared here on type 'MoneyProps'
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        4.155 s
+Ran all test suites.
+
+
+
+ NX   Running target test for project shared-domain failed
+
+Failed tasks:
+
+- shared-domain:test
+
+Hint: run the command with --verbose for more details.
+

@@ -1,0 +1,29 @@
+FAIL api-gateway apps/api-gateway/src/app/experience-integration.spec.ts
+  ÔùÅ Test suite failed to run
+
+    apps/api-gateway/src/app/experience-integration.spec.ts:27:28 - error TS2349: This expression is not callable.
+      Type '{ default: SuperTestStatic; Test: typeof Test; agent: typeof TestAgent & ((app?: App, options?: AgentOptions) => TestAgent<Test>); }' has no call signatures.
+
+    27     const response = await request(app.getHttpServer()).get('/api/experiences/experiences');
+                                  ~~~~~~~
+
+      apps/api-gateway/src/app/experience-integration.spec.ts:3:1
+        3 import * as request from 'supertest';
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Type originates at this import. A namespace-style import cannot be called or constructed, and will cause a failure at runtime. Consider using a default import or import require here instead.
+    apps/api-gateway/src/app/experience-integration.spec.ts:37:28 - error TS2349: This expression is not callable.
+      Type '{ default: SuperTestStatic; Test: typeof Test; agent: typeof TestAgent & ((app?: App, options?: AgentOptions) => TestAgent<Test>); }' has no call signatures.
+
+    37     const response = await request(app.getHttpServer()).get('/api/experiences/experiences');
+                                  ~~~~~~~
+
+      apps/api-gateway/src/app/experience-integration.spec.ts:3:1
+        3 import * as request from 'supertest';
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        Type originates at this import. A namespace-style import cannot be called or constructed, and will cause a failure at runtime. Consider using a default import or import require here instead.
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        2.501 s
+Ran all test suites matching apps/api-gateway/src/app/experience-integration.spec.ts.

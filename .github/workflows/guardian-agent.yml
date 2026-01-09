@@ -2,7 +2,7 @@ name: 🛡️ Guardian Agent 24/7 Supervision
 
 on:
   schedule:
-    - cron: '0 */8 * * *' # Every 8 hours
+    - cron: '0 */4 * * *' # Every 4 hours
   workflow_dispatch: # Allow manual trigger
 
 permissions:

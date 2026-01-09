@@ -3,7 +3,8 @@ import { PrismaService } from '@going-monorepo-clean/prisma-client';
 import { 
   IExperienceRepository, 
   Experience, 
-  ExperienceSearchFilters 
+  ExperienceSearchFilters,
+  ExperienceStatus
 } from '@going-monorepo-clean/domains-experience-core';
 import { Result, ok, err } from 'neverthrow';
 
@@ -11,14 +12,14 @@ import { Result, ok, err } from 'neverthrow';
 export class PrismaExperienceRepository implements IExperienceRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toPrismaStatus(status: string): ExperienceStatus {
+  private toPrismaStatus(status: ExperienceStatus): any {
     // Prisma expects the enum values defined in the schema (lowercase)
-    return status as ExperienceStatus;
+    return status as any;
   }
 
-  private toDomainStatus(status: ExperienceStatus): 'draft' | 'published' | 'archived' {
+  private toDomainStatus(status: any): ExperienceStatus {
     // Convert Prisma enum back to domain string literals
-    return status as 'draft' | 'published' | 'archived';
+    return status as ExperienceStatus;
   }
 
   async save(experience: Experience): Promise<Result<void, Error>> {
@@ -43,6 +44,15 @@ export class PrismaExperienceRepository implements IExperienceRepository {
       return ok(undefined);
     } catch (error) {
       return err(new Error(`Failed to save experience: ${error.message}`));
+    }
+  }
+
+  async delete(id: string): Promise<Result<void, Error>> {
+    try {
+      await this.prisma.experience.delete({ where: { id } });
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(`Failed to delete experience: ${error.message}`));
     }
   }
 
@@ -92,6 +102,15 @@ export class PrismaExperienceRepository implements IExperienceRepository {
       return ok(records.map(r => this.toDomain(r)));
     } catch (error) {
       return err(new Error(`Failed to find experiences by host: ${error.message}`));
+    }
+  }
+
+  async findAll(): Promise<Result<Experience[], Error>> {
+    try {
+      const records = await this.prisma.experience.findMany();
+      return ok(records.map(r => this.toDomain(r)));
+    } catch (error) {
+      return err(new Error(`Failed to find all experiences: ${error.message}`));
     }
   }
 

@@ -1,0 +1,19 @@
+{
+  "name": "@going-monorepo-clean/prisma-client",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/prisma-client/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/prisma-client",
+        "main": "libs/shared/prisma-client/src/index.ts",
+        "tsConfig": "libs/shared/prisma-client/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

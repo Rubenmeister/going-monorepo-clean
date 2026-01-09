@@ -11,12 +11,23 @@ async function bootstrap() {
   // Use Pino structured logger
   app.useLogger(app.get(Logger));
 
+  app.setGlobalPrefix('api');
+
   const port = process.env['PORT'] || 3000;
 
   // Security headers
   app.use(helmet());
 
+  // Compression
+  const { default: compression } = await import('compression');
+  app.use(compression());
+
   // Validation
+  const { HttpAdapterHost } = await import('@nestjs/core');
+  const { AllExceptionsFilter } = await import('@going-monorepo/shared');
+  const httpAdapter = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   // CORS - restrictive for production

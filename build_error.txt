@@ -1,0 +1,33 @@
+
+> nx run experience-service:build:production
+
+assets by path *.json 169 KiB
+  asset package-lock.json 168 KiB [compared for emit]
+  asset package.json 1 KiB [compared for emit]
+asset main.js 3.22 KiB [compared for emit] [minimized] (name: main) 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/experience-service/src/assets/.gitkeep] [copied]
+orphan modules 6.68 KiB [orphan] 15 modules
+./apps/experience-service/src/main.ts + 15 modules 7.23 KiB [not cacheable] [built] [code generated]
+ERROR in ./apps/experience-service/src/infrastructure/persistence/mongoose-experience.repository.ts:[32m[1m16:14[22m[39m
+[90mTS2420: [39mClass 'MongooseExperienceRepository' incorrectly implements interface 'IExperienceRepository'.
+  Type 'MongooseExperienceRepository' is missing the following properties from type 'IExperienceRepository': delete, findAll
+  [0m [90m 14 |[39m
+   [90m 15 |[39m [33m@[39m[33mInjectable[39m()
+  [31m[1m>[22m[39m[90m 16 |[39m [36mexport[39m [36mclass[39m [33mMongooseExperienceRepository[39m [36mimplements[39m [33mIExperienceRepository[39m {
+   [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 17 |[39m   constructor(
+   [90m 18 |[39m     [33m@[39m[33mInjectModel[39m([33mExperienceModelSchema[39m[33m.[39mname)
+   [90m 19 |[39m     [36mprivate[39m readonly model[33m:[39m [33mModel[39m[33m<[39m[33mExperienceDocument[39m[33m>[39m[33m,[39m[0m
+webpack 5.104.1 compiled with 1 error in 6733 ms
+
+
+
+ NX   Running target build for project experience-service failed
+
+Failed tasks:
+
+- experience-service:build:production
+
+Hint: run the command with --verbose for more details.
+

@@ -27,6 +27,7 @@
     "node_modules",
     "jest.config.ts",
     "jest.config.cts",
+    "jest.setup.ts",
     "**/*.spec.ts",
     "**/*.test.ts",
     "src/**/*.spec.ts",

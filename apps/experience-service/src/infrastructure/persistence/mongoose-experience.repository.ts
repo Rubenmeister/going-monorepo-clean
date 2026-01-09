@@ -30,6 +30,15 @@ export class MongooseExperienceRepository implements IExperienceRepository {
     }
   }
 
+  async delete(id: string): Promise<Result<void, Error>> {
+    try {
+      await this.model.deleteOne({ id }).exec();
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   async update(experience: Experience): Promise<Result<void, Error>> {
     try {
       const primitives = experience.toPrimitives();
@@ -52,7 +61,16 @@ export class MongooseExperienceRepository implements IExperienceRepository {
   async findByHostId(hostId: string): Promise<Result<Experience[], Error>> {
     try {
       const docs = await this.model.find({ hostId }).exec();
-      return ok(docs.map(this.toDomain));
+      return ok(docs.map(doc => this.toDomain(doc)));
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
+  async findAll(): Promise<Result<Experience[], Error>> {
+    try {
+      const docs = await this.model.find({}).exec();
+      return ok(docs.map(doc => this.toDomain(doc)));
     } catch (error) {
       return err(new Error(error.message));
     }

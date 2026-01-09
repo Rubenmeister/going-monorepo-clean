@@ -4,12 +4,7 @@ import { Result, ok, err } from 'neverthrow';
 // Estados de la transacción, cruciales para el dominio de pagos
 export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'refunded';
 
-// El Puerto para interactuar con la pasarela de pago externa
-// Lo definimos aquí para que la entidad pueda usarlo en sus métodos
-export interface IPaymentGateway {
-    // Define el contrato para interactuar con Stripe, PayPal, etc.
-    processTransaction(amount: number, token: string): Promise<Result<string, Error>>;
-}
+// IPaymentGateway moved to ports/ipayment.gateway.ts
 
 export interface PaymentProps {
   id: UUID;
@@ -52,7 +47,7 @@ export class Payment {
   }): Payment {
     return new Payment({
       ...props,
-      id: new UUID(), 
+      id: UUID.generate(), 
       externalTransactionId: null,
       status: 'pending', // Siempre comienza como pendiente
       createdAt: new Date(),

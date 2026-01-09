@@ -1,0 +1,2 @@
+apps/api-gateway/src/main.ts(23,11): error TS2349: This expression is not callable.
+  Type '{ default: typeof compression; filter(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<...>>): boolean; }' has no call signatures.

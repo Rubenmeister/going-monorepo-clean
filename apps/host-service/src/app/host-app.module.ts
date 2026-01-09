@@ -7,8 +7,10 @@ import {
   IHostRepository,
 } from '@going-monorepo-clean/domains-anfitriones-core';
 
+import { SharedLoggerModule } from '@going-monorepo/shared-backend';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, SharedLoggerModule],
   controllers: [],
   providers: [
     {

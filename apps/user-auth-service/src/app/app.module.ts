@@ -12,6 +12,7 @@ import {
   RegisterUserUseCase,
   LoginUserUseCase,
 } from '@going-monorepo-clean/domains-user-application';
+import { SharedLoggerModule } from '@going-monorepo/shared-backend';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import {
       envFilePath: '.env'
     }),
     InfrastructureModule,
+    SharedLoggerModule,
   ],
   controllers: [
     AuthController,

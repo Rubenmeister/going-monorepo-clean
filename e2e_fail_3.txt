@@ -1,0 +1,60 @@
+FAIL api-gateway apps/api-gateway/src/app/experience-integration.spec.ts
+  Experience Integration (E2E)
+    ├ù should have the /api/experiences/experiences route defined (1 ms)
+    ├ù should return 401 Unauthorized for experience route without token
+
+  ÔùÅ Experience Integration (E2E) ÔÇ║ should have the /api/experiences/experiences route defined
+
+    [HPM] Missing "target" option. Example: {target: "http://www.example.org"}
+
+      25 |     consumer
+      26 |       .apply(
+    > 27 |         createProxyMiddleware({
+         |                              ^
+      28 |           target: services.auth,
+      29 |           changeOrigin: true,
+      30 |           pathRewrite: { '^/api/auth': '/auth' }, // Auth service has /auth prefix in Controller
+
+      at verifyConfig (../../node_modules/http-proxy-middleware/dist/configuration.js:7:15)
+      at new HttpProxyMiddleware (../../node_modules/http-proxy-middleware/dist/http-proxy-middleware.js:138:42)
+      at createProxyMiddleware (../../node_modules/http-proxy-middleware/dist/factory.js:6:28)
+      at ProxyModule.configure (src/proxy/proxy.module.ts:27:30)
+      at MiddlewareModule.loadConfiguration (../../node_modules/@nestjs/core/middleware/middleware-module.js:55:28)
+      at loadMiddlewareConfiguration (../../node_modules/@nestjs/core/middleware/middleware-module.js:43:24)
+          at Array.map (<anonymous>)
+      at MiddlewareModule.resolveMiddleware (../../node_modules/@nestjs/core/middleware/middleware-module.js:46:41)
+      at MiddlewareModule.register (../../node_modules/@nestjs/core/middleware/middleware-module.js:38:20)
+      at Proxy.registerModules (../../node_modules/@nestjs/core/nest-application.js:85:37)
+      at Proxy.init (../../node_modules/@nestjs/core/nest-application.js:101:20)
+      at Object.<anonymous> (src/app/experience-integration.spec.ts:22:5)
+
+  ÔùÅ Experience Integration (E2E) ÔÇ║ should return 401 Unauthorized for experience route without token
+
+    [HPM] Missing "target" option. Example: {target: "http://www.example.org"}
+
+      25 |     consumer
+      26 |       .apply(
+    > 27 |         createProxyMiddleware({
+         |                              ^
+      28 |           target: services.auth,
+      29 |           changeOrigin: true,
+      30 |           pathRewrite: { '^/api/auth': '/auth' }, // Auth service has /auth prefix in Controller
+
+      at verifyConfig (../../node_modules/http-proxy-middleware/dist/configuration.js:7:15)
+      at new HttpProxyMiddleware (../../node_modules/http-proxy-middleware/dist/http-proxy-middleware.js:138:42)
+      at createProxyMiddleware (../../node_modules/http-proxy-middleware/dist/factory.js:6:28)
+      at ProxyModule.configure (src/proxy/proxy.module.ts:27:30)
+      at MiddlewareModule.loadConfiguration (../../node_modules/@nestjs/core/middleware/middleware-module.js:55:28)
+      at loadMiddlewareConfiguration (../../node_modules/@nestjs/core/middleware/middleware-module.js:43:24)
+          at Array.map (<anonymous>)
+      at MiddlewareModule.resolveMiddleware (../../node_modules/@nestjs/core/middleware/middleware-module.js:46:41)
+      at MiddlewareModule.register (../../node_modules/@nestjs/core/middleware/middleware-module.js:38:20)
+      at Proxy.registerModules (../../node_modules/@nestjs/core/nest-application.js:85:37)
+      at Proxy.init (../../node_modules/@nestjs/core/nest-application.js:101:20)
+      at Object.<anonymous> (src/app/experience-integration.spec.ts:22:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        4.272 s
+Ran all test suites matching apps/api-gateway/src/app/experience-integration.spec.ts.

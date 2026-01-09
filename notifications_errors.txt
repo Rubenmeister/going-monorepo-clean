@@ -1,0 +1,6 @@
+apps/notifications-service/src/api/notification.controller.ts(6,8): error TS2306: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/notification/application/src/index.ts' is not a module.
+apps/notifications-service/src/infrastructure/gateways/twilio-sms.gateway.ts(5,1): error TS1202: Import assignment cannot be used when targeting ECMAScript modules. Consider using 'import * as ns from "mod"', 'import {a} from "mod"', 'import d from "mod"', or another module format instead.
+apps/notifications-service/src/infrastructure/persistence/mongoose-notification.repository.ts(8,3): error TS2724: '"@going-monorepo-clean/domains-notification-core"' has no exported member named 'NotificationChannel'. Did you mean 'NotificationChannelType'?
+apps/notifications-service/src/infrastructure/persistence/mongoose-notification.repository.ts(53,9): error TS2416: Property 'findByUserId' in type 'MongooseNotificationRepository' is not assignable to the same property in base type 'INotificationRepository'.
+  Type '(userId: string, limit: number) => Promise<Result<Notification[], Error>>' is not assignable to type '(userId: string) => Promise<Result<Notification[], Error>>'.
+    Target signature provides too few arguments. Expected 2 or more, but got 1.

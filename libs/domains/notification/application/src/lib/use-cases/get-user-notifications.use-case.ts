@@ -1,26 +1,26 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { INotificationRepository, NotificationStatus } from '@going-monorepo-clean/domains-notification-core';
+import { INotificationRepository, I_NOTIFICATION_REPOSITORY } from '@going-monorepo-clean/domains-notification-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 export type UserNotificationDto = {
-  id: UUID;
+  id: string;
   title: string;
-  body: string;
-  channel: string;
-  status: NotificationStatus;
-  sentAt?: Date;
-  readAt?: Date;
+  content: string;
+  type: string;
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 @Injectable()
 export class GetUserNotificationsUseCase {
   constructor(
-    @Inject(INotificationRepository)
+    @Inject(I_NOTIFICATION_REPOSITORY)
     private readonly notificationRepo: INotificationRepository,
   ) {}
 
-  async execute(userId: UUID, limit = 20): Promise<UserNotificationDto[]> {
-    const notificationsResult = await this.notificationRepo.findByUserId(userId, limit);
+  async execute(userId: UUID): Promise<UserNotificationDto[]> {
+    const notificationsResult = await this.notificationRepo.findByUserId(userId);
 
     if (notificationsResult.isErr()) {
       throw new InternalServerErrorException(notificationsResult.error.message);
@@ -32,11 +32,11 @@ export class GetUserNotificationsUseCase {
       return {
         id: props.id,
         title: props.title,
-        body: props.body,
-        channel: props.channel,
-        status: props.status,
-        sentAt: props.sentAt,
-        readAt: props.readAt,
+        content: props.content,
+        type: props.type,
+        isRead: props.isRead,
+        createdAt: props.createdAt,
+        updatedAt: props.updatedAt,
       };
     });
   }

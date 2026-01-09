@@ -1,14 +1,17 @@
-import { IsNotEmpty, IsString, IsUUID, IsEnum } from 'class-validator';
-import { NotificationChannelType } from '@going-monorepo-clean/domains-notification-core';
+import { IsNotEmpty, IsString, IsUUID, IsEnum, IsOptional } from 'class-validator';
+import { NotificationType, NotificationChannelType } from '@going-monorepo-clean/domains-notification-core';
 
 export class CreateNotificationDto {
   @IsNotEmpty()
   @IsUUID()
-  userId: string; // El destinatario
+  userId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(NotificationChannelType)
-  channel: NotificationChannelType;
+  channel?: NotificationChannelType;
+
+  @IsOptional()
+  type?: NotificationType;
 
   @IsNotEmpty()
   @IsString()

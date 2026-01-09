@@ -13,6 +13,8 @@
     "lib": ["es2017", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
       "@going-monorepo/shared": ["libs/shared/src/index.ts"],
@@ -33,6 +35,7 @@
       "@going-monorepo-clean/domains-experience-core": ["libs/domains/experience/core/src/index.ts"],
       "@going-monorepo-clean/domains-experience-application": ["libs/domains/experience/application/src/index.ts"],
       "@going-monorepo-clean/domains-payment-core": ["libs/domains/payment/core/src/index.ts"],
+      "@going-monorepo-clean/domains-payment": ["libs/domains/payment/core/src/index.ts"],
       "@going-monorepo-clean/domains-payment-application": ["libs/domains/payment/application/src/index.ts"],
       "@going-monorepo-clean/domains-transport-core": ["libs/domains/transport/core/src/index.ts"],
       "@going-monorepo-clean/domains-transport-application": ["libs/domains/transport/application/src/index.ts"],

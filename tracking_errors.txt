@@ -1,0 +1,9 @@
+apps/tracking-service/src/infrastructure/gateways/socket-io-tracking.gateway.ts(2,40): error TS2307: Cannot find module '@myorg/domains/tracking/core' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/gateways/socket-io-tracking.gateway.ts(3,32): error TS2307: Cannot find module '@myorg/domains/tracking/core' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/gateways/socket-io-tracking.gateway.ts(4,33): error TS2307: Cannot find module '../api/tracking.gateway' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts(2,31): error TS2307: Cannot find module '@nestjs/cache-manager' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts(3,23): error TS2307: Cannot find module 'cache-manager' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts(19,9): error TS2416: Property 'save' in type 'RedisTrackingRepository' is not assignable to the same property in base type 'ITrackingRepository'.
+  Type '(location: DriverLocation) => Promise<Result<void, Error>>' is not assignable to type '(event: TrackingEvent) => Promise<Result<void, Error>>'.
+    Types of parameters 'location' and 'event' are incompatible.
+      Type 'TrackingEvent' is missing the following properties from type 'DriverLocation': driverId, latitude, longitude

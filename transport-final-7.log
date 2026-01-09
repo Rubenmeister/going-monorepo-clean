@@ -1,0 +1,60 @@
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on:
+
+
+
+> nx run frontend-webapp:serve:development
+
+
+> nx run frontend-webapp-e2e:e2e transport.spec.ts
+
+> playwright test transport.spec.ts
+
+  [32mÔ×£[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://10.2.0.2:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://192.168.1.24:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://172.26.160.1:[1m4200[22m/[39m
+
+[2mRunning [22m1[2m test using [22m1[2m worker[22m
+
+[1A[2K[1/1] [chromium] ÔÇ║ src\transport.spec.ts:58:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides
+[1A[2K[2m[chromium] ÔÇ║ src\transport.spec.ts:58:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides[22m
+BROWSER LOG: [vite] connecting...
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [vite] connecting...
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KMOCK: Intercepted /api/transports call
+
+[1A[2KMOCK: Intercepted /api/transports call
+
+[1A[2K[32m  1 passed[39m[2m (10.6s)[22m
+
+
+
+ NX   Successfully ran target e2e for project frontend-webapp-e2e and 1 task it depends on
+
+

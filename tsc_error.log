@@ -1,0 +1,4 @@
+apps/tracking-service/src/adapters/redis-io.adapter.ts(3,31): error TS2307: Cannot find module '@socket.io/redis-adapter' or its corresponding type declarations.
+apps/tracking-service/src/adapters/redis-io.adapter.ts(4,30): error TS2307: Cannot find module 'redis' or its corresponding type declarations.
+apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts(26,39): error TS2551: Property 'store' does not exist on type 'Cache'. Did you mean 'stores'?
+apps/tracking-service/src/infrastructure/persistence/redis-tracking.repository.ts(47,37): error TS2551: Property 'store' does not exist on type 'Cache'. Did you mean 'stores'?

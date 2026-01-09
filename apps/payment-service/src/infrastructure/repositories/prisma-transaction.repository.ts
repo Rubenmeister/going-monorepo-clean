@@ -113,17 +113,17 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     }
   }
 
-  private toPrismaStatus(status: string): 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' {
-    const map: Record<string, any> = {
-      'PENDING': 'PENDING',
-      'PROCESSING': 'PROCESSING',
-      'CONFIRMED': 'COMPLETED',
-      'COMPLETED': 'COMPLETED',
-      'FAILED': 'FAILED',
-      'CANCELLED': 'FAILED',
-      'REFUNDED': 'REFUNDED',
+  private toPrismaStatus(status: string): 'pending' | 'succeeded' | 'failed' | 'refunded' {
+    const map: Record<string, 'pending' | 'succeeded' | 'failed' | 'refunded'> = {
+      'PENDING': 'pending',
+      'PROCESSING': 'pending',
+      'CONFIRMED': 'succeeded',
+      'COMPLETED': 'succeeded',
+      'FAILED': 'failed',
+      'CANCELLED': 'failed',
+      'REFUNDED': 'refunded',
     };
-    return map[status.toUpperCase()] || 'PENDING';
+    return map[status.toUpperCase()] || 'pending';
   }
 
   private toPrismaMethod(method: string): 'CREDIT_CARD' | 'DEBIT_CARD' | 'BANK_TRANSFER' | 'WALLET' | 'CASH' {

@@ -16,11 +16,13 @@ export class CreateExperienceUseCase {
 
   async execute(dto: CreateExperienceDto): Promise<Result<Experience, Error>> {
     const experienceResult = Experience.create({
-      hostId: dto.hostId,
+      hostId: dto.hostId as any,
       title: dto.title,
       description: dto.description,
       pricePerPerson: dto.price.amount,
-      maxCapacity: dto.durationHours, // Using durationHours as capacity temporarily
+      currency: dto.price.currency,
+      durationHours: dto.durationHours,
+      maxCapacity: dto.maxCapacity,
       location: dto.location.address,
     });
 

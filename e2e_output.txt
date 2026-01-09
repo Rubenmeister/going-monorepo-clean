@@ -1,0 +1,25 @@
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on:
+
+
+
+> nx run frontend-webapp:serve:development
+
+
+> nx run frontend-webapp-e2e:e2e --spec transport.spec.ts
+
+> playwright test --spec transport.spec.ts
+
+error: unknown option '--spec'
+
+
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on failed
+
+Failed tasks:
+
+- frontend-webapp-e2e:e2e
+
+Hint: run the command with --verbose for more details.
+
+Warning: command "playwright test --spec transport.spec.ts" exited with non-zero status code

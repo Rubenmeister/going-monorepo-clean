@@ -4,7 +4,7 @@ import { Cache } from 'cache-manager';
 import { Result, ok, err } from 'neverthrow';
 import {
   DriverLocation,
-  ITrackingRepository,
+  IDriverLocationRepository,
 } from '@going-monorepo-clean/domains-tracking-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
@@ -13,7 +13,7 @@ const ACTIVE_DRIVERS_SET = 'drivers:active';
 const KEY_TTL_SECONDS = 60 * 1000; // 60 segundos en milisegundos
 
 @Injectable()
-export class RedisTrackingRepository implements ITrackingRepository {
+export class RedisTrackingRepository implements IDriverLocationRepository {
   constructor(@Inject(CACHE_MANAGER) private readonly cache: Cache) {}
 
   async save(location: DriverLocation): Promise<Result<void, Error>> {
@@ -23,7 +23,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
       
       await this.cache.set(key, primitives, KEY_TTL_SECONDS);
       
-      const redisClient = this.cache.store.getClient();
+      const redisClient = (this.cache as any).store.getClient();
       await redisClient.sAdd(ACTIVE_DRIVERS_SET, location.driverId);
       
       return ok(undefined);
@@ -44,7 +44,8 @@ export class RedisTrackingRepository implements ITrackingRepository {
 
   async findAllActive(): Promise<Result<DriverLocation[], Error>> {
     try {
-      const redisClient = this.cache.store.getClient();
+      const redisStore = (this.cache as any).store;
+      const redisClient = redisStore.getClient();
       const driverIds = await redisClient.sMembers(ACTIVE_DRIVERS_SET);
 
       if (!driverIds || driverIds.length === 0) {
@@ -52,11 +53,11 @@ export class RedisTrackingRepository implements ITrackingRepository {
       }
 
       const keys = driverIds.map(id => `${DRIVER_KEY_PREFIX}${id}`);
-      const results = await this.cache.store.mGet(keys);
+      const results = await redisStore.mget(...keys);
 
       const locations = results
         .filter(res => !!res)
-        .map(loc => DriverLocation.fromPrimitives(JSON.parse(loc as string)));
+        .map(loc => DriverLocation.fromPrimitives(typeof loc === 'string' ? JSON.parse(loc) : loc));
         
       return ok(locations);
     } catch (error) {

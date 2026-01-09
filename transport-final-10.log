@@ -1,0 +1,107 @@
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on:
+
+
+
+> nx run frontend-webapp:serve:development
+
+
+> nx run frontend-webapp-e2e:e2e transport.spec.ts
+
+> playwright test transport.spec.ts
+
+  [32mÔ×£[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://10.2.0.2:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://192.168.1.24:[1m4200[22m/[39m
+  [32mÔ×£[39m  [1mNetwork[22m: [36mhttp://172.26.160.1:[1m4200[22m/[39m
+
+[2mRunning [22m1[2m test using [22m1[2m worker[22m
+
+[1A[2K[1/1] [chromium] ÔÇ║ src\transport.spec.ts:71:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides
+[1A[2K[2m[chromium] ÔÇ║ src\transport.spec.ts:71:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides[22m
+MOCK MODE: Configuring network mocks...
+
+[1A[2KBROWSER LOG: [vite] connecting...
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [vite] connecting...
+
+[1A[2KBROWSER LOG: [vite] connected.
+
+[1A[2KBROWSER LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+
+[1A[2KBROWSER LOG: [Config] Environment loaded: {apiUrl: http://localhost:3000, appEnv: development}
+
+[1A[2KBROWSER LOG: Failed to load resource: net::ERR_FAILED
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KBROWSER LOG: [API] GET /api/parcels/user/1
+
+[1A[2KBROWSER LOG: [API] GET /api/hosts/search
+
+[1A[2KBROWSER LOG: [API] GET /api/experiences/experiences
+
+[1A[2KBROWSER LOG: [API] GET /api/transports
+
+[1A[2KBROWSER LOG: [API] GET /api/parcels/user/1
+
+[1A[2KBROWSER LOG: [API] GET /api/hosts/search
+
+[1A[2KMOCK: Intercepted /api/transports call
+
+[1A[2KMOCK: Intercepted /api/transports call
+
+[1A[2K[31m  1) [chromium] ÔÇ║ src\transport.spec.ts:71:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides [39m
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('h1')
+    Expected substring: [32m"Actividad"[39m
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 15000ms[22m
+    [2m  - waiting for locator('h1')[22m
+
+
+    [0m [90m 74 |[39m
+     [90m 75 |[39m     [90m// Verify header[39m
+    [31m[1m>[22m[39m[90m 76 |[39m     [36mawait[39m expect(page[33m.[39mlocator([32m'h1'[39m))[33m.[39mtoContainText([32m'Actividad'[39m)[33m;[39m
+     [90m    |[39m                                      [31m[1m^[22m[39m
+     [90m 77 |[39m
+     [90m 78 |[39m     [90m// Filters have been removed from UI for now, so we skip selection[39m
+     [90m 79 |[39m     [90m// const typeFilter = page.locator('select').first();[39m[0m
+    [2m    at C:\Users\USER1\going-monorepo-clean\apps\frontend-webapp-e2e\src\transport.spec.ts:76:38[22m
+
+[2m    attachment #1: [1mscreenshot[2m (image/png) [2mÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ[2m[22m
+[2m    ..\..\dist\.playwright\apps\frontend-webapp-e2e\test-output\transport-Transport-Flow-s-2af51-e-transport-list-with-rides-chromium\test-failed-1.png[22m
+[2m    [2mÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ[2m[22m
+
+[2m    Error Context: ..\..\dist\.playwright\apps\frontend-webapp-e2e\test-output\transport-Transport-Flow-s-2af51-e-transport-list-with-rides-chromium\error-context.md[22m
+
+
+[1A[2K[31m  1 failed[39m
+[31m    [chromium] ÔÇ║ src\transport.spec.ts:71:7 ÔÇ║ Transport Flow ÔÇ║ should display the transport list with rides [39m
+
+
+
+ NX   Running target e2e for project frontend-webapp-e2e and 1 task it depends on failed
+
+Failed tasks:
+
+- frontend-webapp-e2e:e2e
+
+Hint: run the command with --verbose for more details.
+
+Warning: command "playwright test transport.spec.ts" exited with non-zero status code

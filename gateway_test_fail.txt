@@ -1,0 +1,7 @@
+ÔùÅ Validation Error:
+
+  Preset ../jest.preset.js not found relative to rootDir C:\Users\USER1\going-monorepo-clean\apps\api-gateway.
+
+  Configuration Documentation:
+  https://jestjs.io/docs/configuration
+

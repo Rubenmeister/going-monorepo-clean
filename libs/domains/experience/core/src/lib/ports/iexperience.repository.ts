@@ -17,7 +17,9 @@ export interface ExperienceSearchFilters {
 export interface IExperienceRepository {
   save(experience: Experience): Promise<Result<void, Error>>;
   update(experience: Experience): Promise<Result<void, Error>>;
+  delete(id: string): Promise<Result<void, Error>>;
   findById(id: string): Promise<Result<Experience | null, Error>>;
+  findAll(): Promise<Result<Experience[], Error>>;
   findByHostId(hostId: string): Promise<Result<Experience[], Error>>;
   searchPublished(filters: ExperienceSearchFilters): Promise<Result<Experience[], Error>>;
 }

@@ -1,0 +1,24 @@
+
+> nx run domains-transport-core:test
+
+(node:29456) Warning: Failed to load the ES module: C:\Users\USER1\going-monorepo-clean\libs\domains\transport\core\jest.config.cts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31m[31m[1m[1mÔùÅ [22m[1mValidation Error[22m:[39m[31m[39m
+[31m[39m
+[31m  Preset [1m../../../jest.preset.js[22m not found relative to rootDir [1mC:\Users\USER1\going-monorepo-clean\libs\domains\transport\core[22m.[39m
+[31m[39m
+[31m  [1mConfiguration Documentation:[22m[39m
+[31m  https://jestjs.io/docs/configuration[39m
+[31m[39m
+Pass --verbose to see the stacktrace.
+
+
+
+ NX   Running target test for project domains-transport-core failed
+
+Failed tasks:
+
+- domains-transport-core:test
+
+Hint: run the command with --verbose for more details.
+

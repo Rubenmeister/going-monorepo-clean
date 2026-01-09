@@ -1,13 +1,26 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@going-monorepo/shared-backend';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { TransportController } from './transport.controller';
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
+import { PrismaTransportRepository } from '../infrastructure/persistence/prisma-transport.repository';
+import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
+import { FindAllTransportsUseCase } from './queries/find-all-transports.use-case';
+import { DeleteTransportUseCase } from './commands/delete-transport.use-case';
+
+import { SharedLoggerModule } from '@going-monorepo/shared-backend';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    // Aqu� importar�s luego los m�dulos espec�ficos de este servicio
+  imports: [PrismaModule, SharedLoggerModule],
+  controllers: [AppController, TransportController],
+  providers: [
+    AppService,
+    FindAllTransportsUseCase,
+    DeleteTransportUseCase,
+    {
+      provide: ITripRepository,
+      useClass: PrismaTransportRepository,
+    },
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
-

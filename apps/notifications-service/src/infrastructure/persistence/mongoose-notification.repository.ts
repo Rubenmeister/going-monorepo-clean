@@ -5,7 +5,7 @@ import { Result, ok, err } from 'neverthrow';
 import {
   Notification,
   INotificationRepository,
-  NotificationChannel,
+  NotificationChannelType,
 } from '@going-monorepo-clean/domains-notification-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import {
@@ -50,25 +50,46 @@ export class MongooseNotificationRepository implements INotificationRepository {
     }
   }
 
-  async findByUserId(userId: UUID, limit: number): Promise<Result<Notification[], Error>> {
+  async findByUserId(userId: string): Promise<Result<Notification[], Error>> {
     try {
       const docs = await this.model
         .find({ userId })
         .sort({ createdAt: -1 })
-        .limit(limit)
+        .limit(50) // Default limit
         .exec();
       return ok(docs.map(this.toDomain));
     } catch (error) {
-      return err(new Error(error.message));
+      return err(new Error((error as Error).message));
     }
   }
   
-  async findPendingByChannel(channel: NotificationChannel): Promise<Result<Notification[], Error>> {
+  async findPendingByChannel(channel: NotificationChannelType): Promise<Result<Notification[], Error>> {
     try {
-      const docs = await this.model.find({ channel: channel.toPrimitives(), status: 'PENDING' }).exec();
+      const docs = await this.model.find({ channel: channel, status: 'PENDING' }).exec();
       return ok(docs.map(this.toDomain));
     } catch (error) {
-      return err(new Error(error.message));
+      return err(new Error((error as Error).message));
+    }
+  }
+
+  async getUnreadCount(userId: string): Promise<Result<number, Error>> {
+    try {
+      const count = await this.model.countDocuments({ userId, isRead: false }).exec();
+      return ok(count);
+    } catch (error) {
+      return err(new Error((error as Error).message));
+    }
+  }
+
+  async markAllAsRead(userId: string): Promise<Result<void, Error>> {
+    try {
+      await this.model.updateMany(
+        { userId, isRead: false },
+        { $set: { isRead: true } }
+      ).exec();
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error((error as Error).message));
     }
   }
 

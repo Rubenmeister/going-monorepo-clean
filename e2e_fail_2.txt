@@ -1,0 +1,68 @@
+[Nest] 36172  - 07/01/2026, 8:03:34 p.┬ám.   ERROR [PrismaService] Failed to connect to PostgreSQL database
+[Nest] 36172  - 07/01/2026, 8:03:34 p.┬ám.   ERROR [PrismaService] PrismaClientInitializationError: Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+    at t (C:\Users\USER1\going-monorepo-clean\node_modules\@prisma\client\runtime\library.js:112:2488)
+    at Proxy.onModuleInit (C:\Users\USER1\going-monorepo-clean\libs\shared\prisma-client\src\lib\prisma.service.ts:18:7)
+    at async Promise.all (index 0)
+    at callModuleInitHook (C:\Users\USER1\going-monorepo-clean\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:5)
+    at Proxy.callInitHook (C:\Users\USER1\going-monorepo-clean\node_modules\@nestjs\core\nest-application-context.js:252:13)
+    at Proxy.init (C:\Users\USER1\going-monorepo-clean\node_modules\@nestjs\core\nest-application.js:103:9)
+    at Object.<anonymous> (C:\Users\USER1\going-monorepo-clean\apps\api-gateway\src\app\experience-integration.spec.ts:16:5) {
+  clientVersion: '5.22.0',
+  errorCode: 'P1001'
+}
+FAIL api-gateway apps/api-gateway/src/app/experience-integration.spec.ts (8.386 s)
+  Experience Integration (E2E)
+    ├ù should proxy /api/experiences/experiences to the experience service (2 ms)
+    ├ù should have the correct path rewrite for experiences
+
+  ÔùÅ Experience Integration (E2E) ÔÇ║ should proxy /api/experiences/experiences to the experience service
+
+    PrismaClientInitializationError: Can't reach database server at `localhost:5432`
+
+    Please make sure your database server is running at `localhost:5432`.
+
+      16 |   async onModuleInit() {
+      17 |     try {
+    > 18 |       await this.$connect();
+         |       ^
+      19 |       this.logger.log('Connected to PostgreSQL database');
+      20 |     } catch (error) {
+      21 |       this.logger.error('Failed to connect to PostgreSQL database', error);
+
+      at t (../../node_modules/@prisma/client/runtime/library.js:112:2488)
+      at Proxy.onModuleInit (../../libs/shared/prisma-client/src/lib/prisma.service.ts:18:7)
+          at async Promise.all (index 0)
+      at callModuleInitHook (../../node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+      at Proxy.callInitHook (../../node_modules/@nestjs/core/nest-application-context.js:252:13)
+      at Proxy.init (../../node_modules/@nestjs/core/nest-application.js:103:9)
+      at Object.<anonymous> (src/app/experience-integration.spec.ts:16:5)
+
+  ÔùÅ Experience Integration (E2E) ÔÇ║ should have the correct path rewrite for experiences
+
+    PrismaClientInitializationError: Can't reach database server at `localhost:5432`
+
+    Please make sure your database server is running at `localhost:5432`.
+
+      16 |   async onModuleInit() {
+      17 |     try {
+    > 18 |       await this.$connect();
+         |       ^
+      19 |       this.logger.log('Connected to PostgreSQL database');
+      20 |     } catch (error) {
+      21 |       this.logger.error('Failed to connect to PostgreSQL database', error);
+
+      at t (../../node_modules/@prisma/client/runtime/library.js:112:2488)
+      at Proxy.onModuleInit (../../libs/shared/prisma-client/src/lib/prisma.service.ts:18:7)
+          at async Promise.all (index 0)
+      at callModuleInitHook (../../node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+      at Proxy.callInitHook (../../node_modules/@nestjs/core/nest-application-context.js:252:13)
+      at Proxy.init (../../node_modules/@nestjs/core/nest-application.js:103:9)
+      at Object.<anonymous> (src/app/experience-integration.spec.ts:16:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        8.809 s
+Ran all test suites matching apps/api-gateway/src/app/experience-integration.spec.ts.

@@ -20,6 +20,10 @@ export interface ExperienceProps {
 
 export class Experience {
   private constructor(private readonly props: ExperienceProps) {}
+  
+  get id(): UUID {
+    return this.props.id;
+  }
 
   static create(props: Omit<ExperienceProps, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Result<Experience, Error> {
     if (!props.title) return err(new Error('Title is required'));

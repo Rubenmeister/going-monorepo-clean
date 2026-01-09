@@ -1,0 +1,10 @@
+apps/notifications-service/src/infrastructure/persistence/mongoose-notification.repository.ts(17,14): error TS2420: Class 'MongooseNotificationRepository' incorrectly implements interface 'INotificationRepository'.
+  Type 'MongooseNotificationRepository' is missing the following properties from type 'INotificationRepository': getUnreadCount, markAllAsRead
+libs/domains/notification/application/src/lib/use-cases/get-user-notifications.use-case.ts(2,35): error TS2724: '"@going-monorepo-clean/domains-notification-core"' has no exported member named 'NotificationStatus'. Did you mean 'Notification'?
+libs/domains/notification/application/src/lib/use-cases/get-user-notifications.use-case.ts(18,13): error TS2693: 'INotificationRepository' only refers to a type, but is being used as a value here.
+libs/domains/notification/application/src/lib/use-cases/get-user-notifications.use-case.ts(23,82): error TS2554: Expected 1 arguments, but got 2.
+libs/domains/notification/application/src/lib/use-cases/send-notification.use-case.ts(7,3): error TS2724: '"@going-monorepo-clean/domains-notification-core"' has no exported member named 'NotificationChannel'. Did you mean 'NotificationChannelType'?
+libs/domains/notification/application/src/lib/use-cases/send-notification.use-case.ts(16,13): error TS2693: 'INotificationRepository' only refers to a type, but is being used as a value here.
+libs/domains/notification/application/src/lib/use-cases/send-notification.use-case.ts(31,7): error TS2353: Object literal may only specify known properties, and 'body' does not exist in type '{ userId: string; type: NotificationType; title: string; content: string; }'.
+libs/domains/notification/application/src/lib/use-cases/send-notification.use-case.ts(50,20): error TS2339: Property 'markAsFailed' does not exist on type 'Notification'.
+libs/domains/notification/application/src/lib/use-cases/send-notification.use-case.ts(55,18): error TS2339: Property 'markAsSent' does not exist on type 'Notification'.

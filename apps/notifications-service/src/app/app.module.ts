@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@going-monorepo/shared-backend';
+import { SharedLoggerModule } from '@going-monorepo/shared-backend';
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 
 @Module({
   imports: [
-    DatabaseModule,
-    // Aqu� importar�s luego los m�dulos espec�ficos de este servicio
+    PrismaModule,
+    SharedLoggerModule,
   ],
   controllers: [],
   providers: [],
 })
 export class AppModule {}
-

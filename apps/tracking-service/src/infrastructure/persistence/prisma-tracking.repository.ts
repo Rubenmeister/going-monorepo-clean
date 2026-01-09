@@ -3,6 +3,7 @@ import { PrismaService } from '@going-monorepo-clean/prisma-client';
 import {
   ITrackingRepository,
   TrackingEvent,
+  TrackingEventProps,
 } from '@going-monorepo-clean/domains-tracking-core';
 import { Result, ok, err } from 'neverthrow';
 
@@ -12,7 +13,7 @@ export class PrismaTrackingRepository implements ITrackingRepository {
 
   async save(event: TrackingEvent): Promise<Result<void, Error>> {
     try {
-      const primitives = event.toPrimitives();
+      const primitives = event.toPrimitives() as TrackingEventProps;
 
       await this.prisma.trackingEvent.create({
         data: {

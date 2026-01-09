@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@going-monorepo/shared-backend';
+import { DatabaseModule, SharedLoggerModule } from '@going-monorepo/shared-backend';
 
 @Module({
   imports: [
     DatabaseModule,
-    // Aqu� importar�s luego los m�dulos espec�ficos de este servicio
+    SharedLoggerModule,
+    // Aqu importars luego los mdulos especficos de este servicio
   ],
   controllers: [],
   providers: [],
 })
 export class AppModule {}
-

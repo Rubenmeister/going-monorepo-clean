@@ -1,6 +1,7 @@
 import './global.css';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 
 export const metadata = {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
-import { Twilio } from 'twilio';
+import Twilio from 'twilio';
 import {
   Notification,
   INotificationGateway,
@@ -9,7 +9,7 @@ import {
 
 @Injectable()
 export class TwilioSmsGateway implements INotificationGateway {
-  private twilioClient: Twilio | null = null;
+  private twilioClient: Twilio.Twilio | null = null;
   private fromNumber = '';
   private readonly logger = new Logger(TwilioSmsGateway.name);
 
@@ -19,7 +19,7 @@ export class TwilioSmsGateway implements INotificationGateway {
     this.fromNumber = this.configService.get('TWILIO_FROM_NUMBER') || '';
 
     if (accountSid && authToken) {
-      this.twilioClient = new Twilio(accountSid, authToken);
+      this.twilioClient = Twilio(accountSid, authToken);
     } else {
       this.logger.warn('Twilio keys not configured - SMS gateway disabled');
     }

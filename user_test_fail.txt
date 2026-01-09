@@ -1,0 +1,10 @@
+FAIL domains-user-core libs/domains/user/core/src/lib/entities/user.entity.spec.ts
+  ÔùÅ Test suite failed to run
+
+    error TS5083: Cannot read file 'C:/Users/USER1/going-monorepo-clean/libs/tsconfig.base.json'.
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        0.568 s
+Ran all test suites matching libs/domains/user/core/src/lib/entities/user.entity.spec.ts.

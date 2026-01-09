@@ -18,7 +18,7 @@ export class PrismaPaymentRepository {
       data: {
         ...data,
         currency: data.currency || 'USD',
-        status: 'PENDING',
+        status: 'pending',
       },
     });
   }
@@ -46,7 +46,7 @@ export class PrismaPaymentRepository {
 
   async updatePaymentStatus(
     id: string, 
-    status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED',
+    status: 'pending' | 'succeeded' | 'failed' | 'refunded',
     transactionId?: string
   ) {
     return this.prisma.payment.update({
@@ -62,7 +62,7 @@ export class PrismaPaymentRepository {
     return this.prisma.payment.update({
       where: { id },
       data: {
-        status: 'COMPLETED',
+        status: 'succeeded',
         transactionId,
       },
     });
@@ -71,21 +71,21 @@ export class PrismaPaymentRepository {
   async failPayment(id: string) {
     return this.prisma.payment.update({
       where: { id },
-      data: { status: 'FAILED' },
+      data: { status: 'failed' },
     });
   }
 
   async refundPayment(id: string) {
     return this.prisma.payment.update({
       where: { id },
-      data: { status: 'REFUNDED' },
+      data: { status: 'refunded' },
     });
   }
 
   // Stats
   async getTotalByUser(userId: string) {
     const result = await this.prisma.payment.aggregate({
-      where: { userId, status: 'COMPLETED' },
+      where: { userId, status: 'succeeded' },
       _sum: { amount: true },
     });
     return result._sum.amount || 0;

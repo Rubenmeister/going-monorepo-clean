@@ -66,7 +66,20 @@ export class MongooseBookingRepository implements IBookingRepository {
       const docs = await this.model.find({ serviceId, serviceType }).exec();
       return ok(docs.map(this.toDomain));
     } catch (error) {
-      return err(new Error(error.message));
+      return err(new Error((error as Error).message));
+    }
+  }
+
+  async findByType(type: string, userId?: string): Promise<Result<Booking[], Error>> {
+    try {
+      const query: Record<string, string> = { serviceType: type };
+      if (userId) {
+        query['userId'] = userId;
+      }
+      const docs = await this.model.find(query).sort({ createdAt: -1 }).exec();
+      return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error((error as Error).message));
     }
   }
 

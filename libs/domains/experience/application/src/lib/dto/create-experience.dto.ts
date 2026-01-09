@@ -62,4 +62,9 @@ export class CreateExperienceDto {
   @Min(1)
   @Max(24)
   durationHours: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  maxCapacity: number;
 }
