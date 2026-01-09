@@ -6,11 +6,11 @@ param(
 
 $Services = @(
     "api-gateway",
-    "user-service",
+    "user-auth-service",
     "transport-service",
     "parcel-service",
-    "accommodation-service",
-    "notification-service",
+    "booking-service",
+    "notifications-service",
     "host-service",
     "tours-service",
     "experience-service",

@@ -1,0 +1,25 @@
+# Going Superapp - Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+# NEVER commit terraform.tfvars to version control!
+
+# Required: GCP Project Configuration
+project_id  = "your-gcp-project-id"
+region      = "us-central1"
+environment = "prod"
+
+# Required: Database
+db_password = "your-secure-database-password"
+
+# Required: Authentication
+jwt_secret = "your-jwt-secret-min-32-characters"
+
+# Required: Kushki Payment Gateway (https://kushkipagos.com)
+kushki_public_key  = "your-kushki-public-key"
+kushki_private_key = "your-kushki-private-key"
+
+# Required: Twilio SMS/OTP (https://twilio.com)
+twilio_account_sid = "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+twilio_auth_token  = "your-twilio-auth-token"
+
+# Required: Firebase Push Notifications
+firebase_project_id = "your-firebase-project-id"

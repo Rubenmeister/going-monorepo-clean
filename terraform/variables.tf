@@ -20,3 +20,38 @@ variable "environment" {
   type        = string
   default     = "prod"
 }
+
+variable "jwt_secret" {
+  description = "JWT secret for authentication tokens"
+  type        = string
+  sensitive   = true
+}
+
+variable "kushki_public_key" {
+  description = "Kushki payment gateway public key"
+  type        = string
+  sensitive   = true
+}
+
+variable "kushki_private_key" {
+  description = "Kushki payment gateway private key"
+  type        = string
+  sensitive   = true
+}
+
+variable "twilio_account_sid" {
+  description = "Twilio Account SID for SMS/OTP"
+  type        = string
+  sensitive   = true
+}
+
+variable "twilio_auth_token" {
+  description = "Twilio Auth Token for SMS/OTP"
+  type        = string
+  sensitive   = true
+}
+
+variable "firebase_project_id" {
+  description = "Firebase project ID for push notifications"
+  type        = string
+}

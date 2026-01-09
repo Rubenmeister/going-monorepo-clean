@@ -21,13 +21,26 @@ resource "google_sql_database_instance" "main" {
   depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
-    tier = "db-f1-micro" # Use smallest for cost efficiency, scale as needed
+    tier = var.environment == "prod" ? "db-custom-2-4096" : "db-f1-micro"
+    
     ip_configuration {
       ipv4_enabled    = false # Private IP only
       private_network = google_compute_network.vite_vpc.id
     }
+
+    backup_configuration {
+      enabled                        = true
+      point_in_time_recovery_enabled = var.environment == "prod"
+      start_time                     = "03:00" # 3 AM UTC
+    }
+
+    maintenance_window {
+      day  = 7 # Sunday
+      hour = 4 # 4 AM UTC
+    }
   }
-  deletion_protection  = false # Set to true for actual production
+  
+  deletion_protection = var.environment == "prod"
 }
 
 resource "google_sql_database" "database" {

@@ -1,18 +1,47 @@
 locals {
-  # List of all microservices to deploy
+  # List of all microservices to deploy (must match app directory names)
   services = [
     "api-gateway",
-    "user-service",
+    "user-auth-service",
     "transport-service",
     "parcel-service",
-    "accommodation-service",
-    "notification-service",
+    "booking-service",
+    "notifications-service",
     "host-service",
     "tours-service",
     "experience-service",
     "tracking-service",
     "payment-service"
   ]
+
+  # Port mappings for each service
+  service_ports = {
+    "api-gateway"          = 3000
+    "user-auth-service"    = 3001
+    "transport-service"    = 3002
+    "parcel-service"       = 3003
+    "payment-service"      = 3004
+    "notifications-service" = 3005
+    "booking-service"      = 3006
+    "tours-service"        = 3007
+    "experience-service"   = 3008
+    "host-service"         = 3010
+    "tracking-service"     = 3011
+  }
+
+  # Service discovery URLs for API Gateway (Cloud Run internal URLs)
+  service_urls = {
+    USER_AUTH_SERVICE_URL    = "https://user-auth-service-${var.environment}-${var.region}.a.run.app"
+    TRANSPORT_SERVICE_URL    = "https://transport-service-${var.environment}-${var.region}.a.run.app"
+    PARCEL_SERVICE_URL       = "https://parcel-service-${var.environment}-${var.region}.a.run.app"
+    PAYMENT_SERVICE_URL      = "https://payment-service-${var.environment}-${var.region}.a.run.app"
+    NOTIFICATIONS_SERVICE_URL = "https://notifications-service-${var.environment}-${var.region}.a.run.app"
+    BOOKING_SERVICE_URL      = "https://booking-service-${var.environment}-${var.region}.a.run.app"
+    TOURS_SERVICE_URL        = "https://tours-service-${var.environment}-${var.region}.a.run.app"
+    EXPERIENCE_SERVICE_URL   = "https://experience-service-${var.environment}-${var.region}.a.run.app"
+    HOST_SERVICE_URL         = "https://host-service-${var.environment}-${var.region}.a.run.app"
+    TRACKING_SERVICE_URL     = "https://tracking-service-${var.environment}-${var.region}.a.run.app"
+  }
 }
 
 resource "google_cloud_run_service" "default" {
@@ -26,9 +55,25 @@ resource "google_cloud_run_service" "default" {
       containers {
         image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.repo.repository_id}/${each.value}:latest"
         
+        ports {
+          container_port = local.service_ports[each.value]
+        }
+
+        resources {
+          limits = {
+            cpu    = "1000m"
+            memory = "512Mi"
+          }
+        }
+        
         env {
           name  = "NODE_ENV"
           value = "production"
+        }
+
+        env {
+          name  = "PORT"
+          value = tostring(local.service_ports[each.value])
         }
         
         env {
@@ -40,8 +85,46 @@ resource "google_cloud_run_service" "default" {
             }
           }
         }
-        
-        # Add other common env vars here
+
+        # JWT Secret for auth-related services
+        dynamic "env" {
+          for_each = contains(["api-gateway", "user-auth-service"], each.value) ? [1] : []
+          content {
+            name = "JWT_SECRET"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.jwt_secret.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        # Redis URL for tracking service
+        dynamic "env" {
+          for_each = each.value == "tracking-service" ? [1] : []
+          content {
+            name  = "REDIS_HOST"
+            value = google_redis_instance.cache.host
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "tracking-service" ? [1] : []
+          content {
+            name  = "REDIS_PORT"
+            value = tostring(google_redis_instance.cache.port)
+          }
+        }
+
+        # Service discovery URLs for API Gateway
+        dynamic "env" {
+          for_each = each.value == "api-gateway" ? local.service_urls : {}
+          content {
+            name  = env.key
+            value = env.value
+          }
+        }
       }
     }
 
@@ -49,8 +132,8 @@ resource "google_cloud_run_service" "default" {
       annotations = {
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.connector.name
         "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
-        "autoscaling.knative.dev/minScale"        = "0" # Scale to zero to save costs in dev/staging
-        "autoscaling.knative.dev/maxScale"        = "5"
+        "autoscaling.knative.dev/minScale"        = var.environment == "prod" ? "1" : "0"
+        "autoscaling.knative.dev/maxScale"        = "10"
       }
     }
   }
