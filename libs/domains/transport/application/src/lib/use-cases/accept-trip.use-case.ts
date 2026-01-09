@@ -10,26 +10,24 @@ export class AcceptTripUseCase {
   ) {}
 
   async execute(tripId: UUID, driverId: UUID): Promise<void> {
+    const result = await this.tripRepo.findById(tripId);
+    
+    const trip = result.match(
+      (t) => t,
+      (error) => {
+        throw new NotFoundException(`Trip with id ${tripId} not found: ${error.message}`);
+      }
+    );
+
     try {
-      // UUID is string alias, so use it directly
-      const trip = await this.tripRepo.findById(tripId);
-      
-      if (!trip) {
-        throw new NotFoundException(`Trip with id ${tripId} not found`);
-      }
-
-      try {
-        trip.assignDriver(driverId);
-      } catch (error) {
-        throw new PreconditionFailedException(error.message);
-      }
-
-      await this.tripRepo.update(trip);
+      trip.assignDriver(driverId);
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof PreconditionFailedException) {
-        throw error;
-      }
-      throw new InternalServerErrorException(error.message);
+      throw new PreconditionFailedException((error as Error).message);
+    }
+
+    const saveResult = await this.tripRepo.save(trip);
+    if (saveResult.isErr()) {
+      throw new InternalServerErrorException(`Failed to save trip: ${saveResult.error.message}`);
     }
   }
 }

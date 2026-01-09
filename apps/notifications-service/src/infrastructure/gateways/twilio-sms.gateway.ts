@@ -1,15 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
-import Twilio from 'twilio';
+import twilio from 'twilio';
 import {
   Notification,
   INotificationGateway,
 } from '@going-monorepo-clean/domains-notification-core';
 
+type TwilioClient = ReturnType<typeof twilio>;
+
 @Injectable()
 export class TwilioSmsGateway implements INotificationGateway {
-  private twilioClient: Twilio.Twilio | null = null;
+  private twilioClient: TwilioClient | null = null;
   private fromNumber = '';
   private readonly logger = new Logger(TwilioSmsGateway.name);
 
@@ -19,7 +21,7 @@ export class TwilioSmsGateway implements INotificationGateway {
     this.fromNumber = this.configService.get('TWILIO_FROM_NUMBER') || '';
 
     if (accountSid && authToken) {
-      this.twilioClient = Twilio(accountSid, authToken);
+      this.twilioClient = twilio(accountSid, authToken);
     } else {
       this.logger.warn('Twilio keys not configured - SMS gateway disabled');
     }
@@ -30,14 +32,15 @@ export class TwilioSmsGateway implements INotificationGateway {
       return err(new Error('Twilio not configured'));
     }
 
-    const { userId, body } = notification.toPrimitives();
+    const { userId, content } = notification.toPrimitives();
 
     try {
-      // En un escenario real, buscaríamos el teléfono del userId
+      // TODO: Implement phone lookup from user profile
+      // For now, this is a placeholder - you would look up the user's phone number
       await this.twilioClient.messages.create({
-        body: body,
+        body: content,
         from: this.fromNumber,
-        to: '+1234567890', // Placeholder
+        to: '+1234567890', // Placeholder - replace with user lookup
       });
 
       this.logger.log(`SMS sent via Twilio to ${userId}`);

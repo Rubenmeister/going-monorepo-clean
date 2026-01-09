@@ -37,7 +37,8 @@
     "../admin-dashboard/.next/types/**/*.ts",
     "../dist/admin-dashboard/.next/types/**/*.ts",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../dist/apps/admin-dashboard/.next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

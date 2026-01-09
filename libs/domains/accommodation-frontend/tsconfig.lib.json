@@ -3,11 +3,15 @@
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
     "declaration": true,
-    "types": ["node"],
-    "rootDir": "../../..",
-    "composite": false
+    "types": [
+      "node"
+    ],
+    "composite": false,
+    "rootDir": "../../../../"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
     "jest.config.ts",
     "jest.config.cts",

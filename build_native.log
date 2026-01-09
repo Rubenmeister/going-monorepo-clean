@@ -1,0 +1,18 @@
+
+> nx run admin-dashboard:build:production
+
+> npx next build apps/admin-dashboard --outputPath=dist/apps/admin-dashboard
+
+error: unknown option '--outputPath=dist/apps/admin-dashboard'
+
+
+
+ NX   Running target build for project admin-dashboard failed
+
+Failed tasks:
+
+- admin-dashboard:build:production
+
+Hint: run the command with --verbose for more details.
+
+Warning: command "npx next build apps/admin-dashboard --outputPath=dist/apps/admin-dashboard" exited with non-zero status code

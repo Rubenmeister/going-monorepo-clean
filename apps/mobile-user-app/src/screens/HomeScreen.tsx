@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -8,13 +8,14 @@ import {
   ScrollView,
   Image,
   Alert,
-  Dimensions,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PhotoCarousel, CarouselItem } from '../components/PhotoCarousel';
 
 // Image assets - ESM imports for Vite web compatibility
 import goingLogoHorizontal from '../assets/logo_horizontal.png';
+import andeanPattern from '../assets/andean_pattern.png';
 
 import { 
   Menu, 
@@ -32,22 +33,23 @@ import {
   Navigation
 } from 'lucide-react-native';
 
-// Design tokens
+// Design tokens matching premium brand guidelines
 const COLORS = {
   goingRed: '#FF4E43',
+  goingYellow: '#F5A623',
   white: '#FFFFFF',
   black: '#1A1A1A',
   lightGray: '#F3F4F6',
-  gray: '#4B5563', // Darker gray for better contrast
+  gray: '#4B5563',
   border: '#E5E7EB',
   mapBg: '#E8E4D9',
-  glassWhite: 'rgba(255, 255, 255, 0.92)', // More opaque for legibility
+  glassWhite: 'rgba(255, 255, 255, 0.95)',
   glassBorder: 'rgba(255, 255, 255, 1)',
   blue: '#0EA5E9',
 };
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CAROUSEL_ITEM_WIDTH = SCREEN_WIDTH - 40; // Full width minus padding
+// SCREEN_WIDTH removed as it was unused in some contexts
+// CAROUSEL_ITEM_WIDTH removed as it was unused
 
 // Ecuador photo carousel data
 const ECUADOR_PHOTOS: CarouselItem[] = [
@@ -81,7 +83,25 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
   const [originCity, setOriginCity] = useState('');
   const [destinationCity, setDestinationCity] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sidebarAnim = useRef(new Animated.Value(-280)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  
   const [activeMode, setActiveMode] = useState<'none' | 'viaje' | 'envios'>('none');
+  
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(sidebarAnim, {
+        toValue: isSidebarOpen ? 0 : -280,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: isSidebarOpen ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isSidebarOpen]);
   
   // Shipping form states
   const [senderName, setSenderName] = useState('');
@@ -109,37 +129,58 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
   return (
     <View style={styles.container}>
       {/* Header */}
-      <SafeAreaView style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
-            <Menu size={24} color={COLORS.black} />
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Image source={goingLogoHorizontal as any} style={styles.headerLogo} resizeMode="contain" />
+      <View style={styles.header}>
+        <SafeAreaView edges={['top']}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+              <Menu size={24} color={COLORS.black} />
+            </TouchableOpacity>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Image source={goingLogoHorizontal as any} style={styles.headerLogo} resizeMode="contain" />
+            </View>
+            <TouchableOpacity onPress={() => Alert.alert('Perfil', 'Acceso rápido al perfil')}>
+              <User size={24} color={COLORS.black} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={() => Alert.alert('Perfil', 'Acceso rápido al perfil')}>
-            <User size={24} color={COLORS.black} />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </View>
 
       {/* Sidebar Overlay */}
-      {isSidebarOpen && (
+      <Animated.View 
+        style={[
+          styles.sidebarOverlay, 
+          { 
+            opacity: overlayOpacity,
+            pointerEvents: isSidebarOpen ? 'auto' : 'none' 
+          }
+        ]}
+      >
         <TouchableOpacity 
-          style={styles.sidebarOverlay} 
+          style={{ flex: 1 }} 
           activeOpacity={1} 
           onPress={toggleSidebar}
-        >
-          <View style={styles.sidebar}>
-            <TouchableOpacity onPress={(e) => e.stopPropagation()}>
-              {/* Sidebar Header - Clean Minimalist */}
-              <View style={styles.sidebarHeader}>
-                <Image source={goingLogoHorizontal as any} style={styles.sidebarLogo} resizeMode="contain" />
-                <TouchableOpacity onPress={toggleSidebar} style={styles.closeButton}>
-                  <Plus size={24} color={COLORS.black} style={{ transform: [{ rotate: '45deg' }] }} />
-                </TouchableOpacity>
-              </View>
+        />
+      </Animated.View>
 
+      {/* Sidebar Content */}
+      <Animated.View 
+        style={[
+          styles.sidebar, 
+          { transform: [{ translateX: sidebarAnim }] }
+        ]}
+      >
+        <View style={{ flex: 1 }}>
+          <Image source={andeanPattern as any} style={styles.sidebarPattern} resizeMode="repeat" />
+          <TouchableOpacity onPress={(e) => e.stopPropagation()} style={{ flex: 1 }}>
+            {/* Sidebar Header - Clean Minimalist */}
+            <View style={styles.sidebarHeader}>
+              <Image source={goingLogoHorizontal as any} style={styles.sidebarLogo} resizeMode="contain" />
+              <TouchableOpacity onPress={toggleSidebar} style={styles.closeButton}>
+                <Plus size={24} color={COLORS.black} style={{ transform: [{ rotate: '45deg' }] }} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
               {/* User Section */}
               <View style={styles.userSection}>
                 <View style={styles.userAvatar}>
@@ -208,16 +249,6 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
                   <Text style={styles.tripHistoryType}>Viaje Privado • 1 pasajero</Text>
                 </TouchableOpacity>
 
-                {/* Sample Trip 3 */}
-                <TouchableOpacity style={styles.tripHistoryItem}>
-                  <View style={styles.tripHistoryHeader}>
-                    <Text style={styles.tripHistoryDate}>28 Nov 2024</Text>
-                    <Text style={styles.tripHistoryPrice}>$12.75</Text>
-                  </View>
-                  <Text style={styles.tripHistoryRoute}>Guayaquil → Cuenca</Text>
-                  <Text style={styles.tripHistoryType}>Viaje Compartido • 3 pasajeros</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity style={styles.viewAllTrips}>
                   <Text style={styles.viewAllTripsText}>Ver todos los viajes →</Text>
                 </TouchableOpacity>
@@ -227,41 +258,21 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
               <View style={styles.menuSection}>
                 <Text style={styles.sectionTitle}>Seguridad</Text>
                 <TouchableOpacity 
-                  style={styles.menuItem}
-                  onPress={() => {
-                    Alert.alert(
-                      '📍 Compartir Ubicación',
-                      'Tu ubicación será compartida con tus contactos de confianza.',
-                      [
-                        { text: 'Cancelar', style: 'cancel' },
-                        { text: 'Compartir', onPress: () => Alert.alert('Éxito', 'Ubicación compartida con tus contactos de confianza.') }
-                      ]
-                    );
-                  }}
-                >
-                  <MapIcon size={20} color={COLORS.gray} style={styles.menuItemIcon} />
-                  <Text style={styles.menuItemText}>Compartir Ubicación</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.menuItem, styles.emergencyMenuItem]}
-                  onPress={() => {
-                    Alert.alert(
-                      '🚨 AUXILIO - SOS',
-                      '¿Estás en una situación de emergencia?\n\nSe notificará a los servicios de emergencia y a tu contacto de confianza.',
-                      [
-                        { text: 'Cancelar', style: 'cancel' },
-                        { 
-                          text: '📞 Llamar al 911',
-                          style: 'destructive',
-                          onPress: () => Alert.alert('Emergencia', 'Conectando con servicios de emergencia...') 
-                        },
-                        {
-                          text: '📍 Enviar ubicación',
-                          onPress: () => Alert.alert('Ubicación enviada', 'Tu ubicación ha sido enviada a emergencias y contactos de confianza.')
-                        },
-                      ]
-                    );
-                  }}
+                   style={[styles.menuItem, styles.emergencyMenuItem]}
+                   onPress={() => {
+                     Alert.alert(
+                       '🚨 AUXILIO - SOS',
+                       '¿Estás en una situación de emergencia?\n\nSe notificará a los servicios de emergencia y a tu contacto de confianza.',
+                       [
+                         { text: 'Cancelar', style: 'cancel' },
+                         { 
+                           text: '📞 Llamar al 911',
+                           style: 'destructive',
+                           onPress: () => Alert.alert('Emergencia', 'Conectando con servicios de emergencia...') 
+                         }
+                       ]
+                     );
+                   }}
                 >
                   <Shield size={20} color={COLORS.goingRed} style={styles.menuItemIcon} />
                   <Text style={[styles.menuItemText, styles.emergencyText]}>AUXILIO / SOS</Text>
@@ -269,16 +280,16 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
               </View>
 
               {/* Logout */}
-              <View style={styles.menuSection}>
+              <View style={[styles.menuSection, { borderBottomWidth: 0, marginBottom: 40 }]}>
                 <TouchableOpacity style={styles.menuItem} onPress={() => navigation?.navigate('Landing')}>
                   <LogOut size={20} color={COLORS.goingRed} style={styles.menuItemIcon} />
                   <Text style={[styles.menuItemText, { color: COLORS.goingRed }]}>Cerrar Sesión</Text>
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      )}
+            </ScrollView>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
 
       {/* Main Content Area */}
       <View style={styles.contentContainer}>
@@ -598,7 +609,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     zIndex: 100,
   },
   sidebar: {
@@ -609,6 +620,17 @@ const styles = StyleSheet.create({
     width: 280,
     backgroundColor: COLORS.white,
     zIndex: 101,
+    shadowColor: '#000',
+    shadowOffset: { width: 10, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  sidebarPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.03,
+    width: '100%',
+    height: '100%',
   },
   sidebarHeader: {
     height: 140,

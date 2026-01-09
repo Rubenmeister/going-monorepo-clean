@@ -6,13 +6,12 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
-        "outputPath": "dist/libs/domains/parcel-frontend",
-        "main": "libs/domains/parcel-frontend/src/index.ts",
-        "tsConfig": "libs/domains/parcel-frontend/tsconfig.lib.json",
-        "assets": ["libs/domains/parcel-frontend/*.md"]
+        "command": "tsc -p libs/domains/parcel-frontend/tsconfig.lib.json"
       }
     }
   }

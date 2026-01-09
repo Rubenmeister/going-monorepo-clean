@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import { NotificationApiClient, NotificationDto } from '@going-monorepo-clean/notification-api-client'; // <--- NUEVA DEPENDENCIA
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+
+export interface IAuthRepository {
+    loadSession(): Promise<Result<{ token: string }, Error>>;
+}
 
 // --- View Model (Nuevo Modelo Simple para la UI) ---
 export interface NotificationViewModel {
@@ -38,7 +41,7 @@ export class GetUserNotificationsUseCase {
         }
         
         // 2. Mapear DTOs simples a View Models (Transformación)
-        const viewModels: NotificationViewModel[] = result.value.map(dto => ({
+        const viewModels: NotificationViewModel[] = result.value.map((dto: NotificationDto) => ({
             id: dto.id,
             title: dto.title,
             body: dto.body,

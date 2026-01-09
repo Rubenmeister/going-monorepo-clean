@@ -1,0 +1,35 @@
+
+ NX   Running target build for 4 projects:
+
+- parcel-frontend
+- notification-frontend
+- accommodation-frontend
+- transport-frontend
+
+
+
+> nx run parcel-frontend:build
+
+> tsc -p libs/domains/parcel-frontend/tsconfig.lib.json
+
+
+> nx run notification-frontend:build
+
+> tsc -p libs/domains/notification-frontend/tsconfig.lib.json
+
+
+> nx run accommodation-frontend:build
+
+> tsc -p libs/domains/accommodation-frontend/tsconfig.lib.json
+
+
+> nx run transport-frontend:build
+
+> tsc -p libs/domains/transport-frontend/tsconfig.lib.json
+
+
+
+
+ NX   Successfully ran target build for 4 projects
+
+

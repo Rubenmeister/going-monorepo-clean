@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install openssl (required for Prisma)
+RUN apk add --no-cache openssl
+
+# Copy schema and package files
+COPY libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+COPY package.json package-lock.json ./
+
+# Install only production dependencies + prisma CLI
+# We need prisma CLI to run 'migrate deploy'
+RUN npm install prisma --save-dev
+
+# Set environment variables
+ENV NODE_ENV=production
+
+# Default command
+CMD ["npx", "prisma", "migrate", "deploy", "--schema=./prisma/schema.prisma"]

@@ -14,16 +14,22 @@ export class SearchTripsUseCase {
   async execute(query: string): Promise<any[]> {
     // For now, we use a simple find all and filter approach if a specific search is not implemented
     // In a real scenario, this would be a DB-level query
-    const trips = await this.tripRepo.findAll();
+    const result = await this.tripRepo.findAll();
     
-    return trips
-      .filter(t => 
-        !query || 
-        t.id.toLowerCase().includes(query.toLowerCase()) || 
-        t.driverId?.toLowerCase().includes(query.toLowerCase()) ||
-        t.originCity.toLowerCase().includes(query.toLowerCase()) ||
-        t.destCity.toLowerCase().includes(query.toLowerCase())
-      )
-      .map(t => t.toPrimitives());
+    return result.match(
+      (trips) => trips
+        .filter(t => 
+          !query || 
+          t.id.toLowerCase().includes(query.toLowerCase()) || 
+          t.driverId?.toLowerCase().includes(query.toLowerCase()) ||
+          t.originCity.toLowerCase().includes(query.toLowerCase()) ||
+          t.destCity.toLowerCase().includes(query.toLowerCase())
+        )
+        .map(t => t.toPrimitives()),
+      (error) => {
+        console.error('Failed to fetch trips:', error);
+        return [];
+      }
+    );
   }
 }

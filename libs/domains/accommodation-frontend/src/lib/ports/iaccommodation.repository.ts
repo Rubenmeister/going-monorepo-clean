@@ -1,5 +1,5 @@
 import { Result } from 'neverthrow';
-import { Accommodation } from '../entities/accommodation.entity';
+import { Accommodation } from '../application/entities/accommodation.entity';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 export interface SearchFilters {

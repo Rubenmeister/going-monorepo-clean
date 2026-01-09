@@ -25,9 +25,9 @@ import appleIcon from '../assets/apple_icon.png';
 import ecuadorBg from '../assets/ecuador_landscape_bg.png';
 import andeanPattern from '../assets/andean_pattern.png';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// Design tokens matching reference design
+// Design tokens matching premium brand guidelines
 const COLORS = {
   goingRed: '#FF4E43',
   goingYellow: '#F5A623',
@@ -37,10 +37,8 @@ const COLORS = {
   inputBorder: '#E5E5E5',
   placeholderText: '#9CA3AF',
   facebookBlue: '#1877F2',
-  googleRed: '#EA4335',
-  googleBlue: '#4285F4',
-  googleYellow: '#FBBC05',
-  googleGreen: '#34A853',
+  glassWhite: 'rgba(255, 255, 255, 0.15)',
+  glassBorder: 'rgba(255, 255, 255, 0.3)',
 };
 
 interface LandingScreenProps {
@@ -49,63 +47,7 @@ interface LandingScreenProps {
   };
 }
 
-// Going Logo Component - Red symbol matching reference (currently unused but preserved for potential UI enrichment)
-/*
-const GoingLogoSymbol = () => (
-  <View style={logoStyles.container}>
-    <View style={logoStyles.gShape}>
-      <View style={logoStyles.gCurve} />
-      <View style={logoStyles.gTail} />
-      <View style={logoStyles.gDot} />
-    </View>
-  </View>
-);
-
-const logoStyles = StyleSheet.create({
-  container: {
-    width: 80,
-    height: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gShape: {
-    width: 70,
-    height: 80,
-    position: 'relative',
-  },
-  gCurve: {
-    width: 55,
-    height: 55,
-    borderRadius: 28,
-    borderWidth: 10,
-    borderColor: COLORS.goingRed,
-    borderRightColor: 'transparent',
-    transform: [{ rotate: '45deg' }],
-  },
-  gTail: {
-    position: 'absolute',
-    bottom: 8,
-    right: -5,
-    width: 30,
-    height: 10,
-    backgroundColor: COLORS.goingRed,
-    borderRadius: 5,
-    transform: [{ rotate: '-25deg' }],
-  },
-  gDot: {
-    position: 'absolute',
-    top: -5,
-    right: 5,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: COLORS.goingRed,
-  },
-});
-*/
-
 export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
-  // Scene 1 = SUV animation, Scene 2 = Logo reveal, Scene 3 = Login
   const [currentScene, setCurrentScene] = useState(1);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -114,12 +56,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   const suvPosition = useRef(new Animated.Value(-200)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const taglineOpacity = useRef(new Animated.Value(0)).current;
+  const formSlideUp = useRef(new Animated.Value(50)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
   
   // Ref to prevent React StrictMode double-animation issue
   const hasAnimationStarted = useRef(false);
 
   useEffect(() => {
-    // Prevent double execution in StrictMode
     if (hasAnimationStarted.current) return;
     hasAnimationStarted.current = true;
 
@@ -146,18 +89,30 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
           duration: 400,
           useNativeDriver: true,
         }),
-        Animated.delay(1200), // Show logo+tagline for 1.2 seconds
+        Animated.delay(1000), 
       ]).start(() => {
         // Transition to Scene 3 (Login screen)
         setCurrentScene(3);
+        // Start entering animation for Login Form
+        Animated.parallel([
+          Animated.timing(formSlideUp, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(formOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          })
+        ]).start();
       });
     });
 
-    // Cleanup function
     return () => {
       suvAnimation.stop();
     };
-  }, []);
+  }, [logoOpacity, suvPosition, taglineOpacity, formSlideUp, formOpacity]);
 
   const handleLogin = () => {
     navigation.navigate('Home');
@@ -167,27 +122,21 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
     navigation.navigate('Register', { userType: 'user' });
   };
 
-  /*
-  const handleRegisterDriver = () => {
-    navigation.navigate('Register', { userType: 'driver' });
-  };
-  */
-
   const handleForgotPassword = () => {
     navigation.navigate('ForgotPassword');
   };
 
-  // SCENE 1: SUV crosses between the lines with landscape background
+  // SCENE 1: SUV crosses between the energy lines
   if (currentScene === 1) {
     return (
       <View style={splashStyles.container}>
         <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         <View style={splashStyles.overlay} />
         
-        {/* Red Line - Above SUV path */}
-        <View style={splashStyles.redLine} />
+        {/* Superior Energy Line */}
+        <View style={[splashStyles.energyLine, splashStyles.redLine]} />
         
-        {/* SUV Animation - between the two lines */}
+        {/* SUV Animation */}
         <Animated.View 
           style={[
             splashStyles.suvContainer,
@@ -201,25 +150,23 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
           />
         </Animated.View>
         
-        {/* Yellow Line - Below SUV path */}
-        <View style={splashStyles.yellowLine} />
+        {/* Inferior Energy Line */}
+        <View style={[splashStyles.energyLine, splashStyles.yellowLine]} />
       </View>
     );
   }
 
-  // SCENE 2: Logo reveal with tagline and landscape background
+  // SCENE 2: Brand Identity Reveal
   if (currentScene === 2) {
     return (
       <View style={splashStyles.container}>
         <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         <View style={splashStyles.overlay} />
         
-        {/* Logo */}
         <Animated.View style={[splashStyles.logoRevealContainer, { opacity: logoOpacity }]}>
           <Image source={{ uri: goingLogo }} style={splashStyles.logoImage} resizeMode="contain" />
         </Animated.View>
 
-        {/* Tagline */}
         <Animated.Text style={[splashStyles.tagline, { opacity: taglineOpacity }]}>
           NOS MOVEMOS CONTIGO
         </Animated.Text>
@@ -227,13 +174,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
     );
   }
 
-  // SCENE 3: Login screen
+  // SCENE 3: Premium Login Screen
   return (
     <SafeAreaView style={styles.container}>
       <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
       <View style={styles.backgroundOverlay} />
       <Image source={{ uri: andeanPattern }} style={styles.backgroundPattern} resizeMode="repeat" />
-      {/* Language Selector */}
+      
       <View style={styles.languageSelector}>
         <TouchableOpacity style={styles.languageButton}>
           <Text style={styles.languageText}>ES</Text>
@@ -250,17 +197,22 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
-          <View style={styles.logoContainer}>
+          <Animated.View style={[styles.logoContainer, { opacity: formOpacity }]}>
             <Image source={{ uri: goingLogoWhiteSymbol }} style={styles.logoImage} resizeMode="contain" />
-          </View>
+          </Animated.View>
 
-          {/* Login Form */}
-          <View style={styles.formContainer}>
-            {/* Username Input */}
+          {/* Login Form with Entrance Animation */}
+          <Animated.View style={[
+            styles.formContainer, 
+            { 
+              opacity: formOpacity,
+              transform: [{ translateY: formSlideUp }]
+            }
+          ]}>
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Usuario"
+                placeholder="Usuario o Correo"
                 placeholderTextColor={COLORS.placeholderText}
                 value={username}
                 onChangeText={setUsername}
@@ -268,7 +220,6 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
               />
             </View>
 
-            {/* Password Input */}
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
@@ -280,23 +231,21 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
               />
             </View>
 
-            {/* Forgot Password Link */}
             <TouchableOpacity style={styles.forgotPasswordContainer} onPress={handleForgotPassword}>
               <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            {/* Login Button */}
             <TouchableOpacity 
               style={styles.loginButton}
               onPress={handleLogin}
               activeOpacity={0.8}
             >
-              <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+              <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          {/* Social Login */}
-          <View style={styles.socialContainer}>
+          {/* Social Access Section */}
+          <Animated.View style={[styles.socialContainer, { opacity: formOpacity }]}>
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>O continúa con</Text>
@@ -304,43 +253,40 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
             </View>
 
             <View style={styles.socialButtons}>
-              {/* Google Button */}
               <TouchableOpacity style={styles.socialButton}>
                 <Image source={{ uri: googleIcon }} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
-              {/* Facebook Button */}
               <TouchableOpacity style={styles.socialButton}>
                 <Image source={{ uri: facebookIcon }} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
-              {/* Apple Button */}
               <TouchableOpacity style={styles.socialButton}>
                 <Image source={{ uri: appleIcon }} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
 
-          {/* Register Section */}
-          <View style={styles.registerContainer}>
+          {/* Registration Prompt */}
+          <Animated.View style={[styles.registerContainer, { opacity: formOpacity }]}>
             <Text style={styles.registerPrompt}>¿No tienes una cuenta?</Text>
             <TouchableOpacity onPress={handleRegisterUser}>
-              <Text style={styles.registerLink}>Regístrate</Text>
+              <Text style={styles.registerLink}>Regístrate ahora</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          {/* Legal Links */}
-          <View style={styles.legalFooter}>
-            <TouchableOpacity onPress={() => Alert.alert('Términos de Uso', 'Aquí van los términos de uso de la aplicación.')}>
-              <Text style={styles.legalLinkText}>Términos de Uso</Text>
+          {/* Secondary Legal Links */}
+          <Animated.View style={[styles.legalFooter, { opacity: formOpacity }]}>
+            <TouchableOpacity onPress={() => Alert.alert('Legales', 'Términos de Uso')}>
+              <Text style={styles.legalLinkText}>Términos</Text>
             </TouchableOpacity>
             <View style={styles.legalSeparator} />
-            <TouchableOpacity onPress={() => Alert.alert('Privacidad', 'Política de privacidad de Going.')}>
+            <TouchableOpacity onPress={() => Alert.alert('Legales', 'Privacidad')}>
               <Text style={styles.legalLinkText}>Privacidad</Text>
             </TouchableOpacity>
             <View style={styles.legalSeparator} />
-            <TouchableOpacity onPress={() => Alert.alert('Uso de Datos', 'Información sobre el uso de tus datos.')}>
-              <Text style={styles.legalLinkText}>Uso de Datos</Text>
+            <TouchableOpacity onPress={() => Alert.alert('Legales', 'Soporte')}>
+              <Text style={styles.legalLinkText}>Ayuda</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -348,8 +294,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   );
 };
 
-// Splash screen styles
-// Splash screen styles
+// Refined Splash screen styling
 const splashStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -359,7 +304,7 @@ const splashStyles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   suvContainer: {
     position: 'absolute',
@@ -367,55 +312,53 @@ const splashStyles = StyleSheet.create({
     left: 0,
   },
   suvImage: {
-    width: 100,
-    height: 55,
+    width: 110,
+    height: 60,
   },
-  linesContainer: {
+  energyLine: {
     position: 'absolute',
-    top: '48%',
     left: 0,
     right: 0,
+    height: 2,
+    width: '100%',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 5,
   },
   redLine: {
-    position: 'absolute',
     top: '42%',
-    left: 0,
-    right: 0,
-    height: 1,
     backgroundColor: COLORS.goingRed,
-    width: '100%',
+    shadowColor: COLORS.goingRed,
   },
   yellowLine: {
-    position: 'absolute',
-    top: '50%',
-    left: 0,
-    right: 0,
-    height: 1,
+    top: '51%',
     backgroundColor: COLORS.goingYellow,
-    width: '100%',
+    shadowColor: COLORS.goingYellow,
   },
   logoRevealContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
   logoImage: {
-    width: 260,
-    height: 200,
+    width: 240,
+    height: 180,
   },
   tagline: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '900',
     fontStyle: 'italic',
     color: COLORS.white,
-    letterSpacing: 4,
+    letterSpacing: 5,
     marginTop: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: -1, height: 1 },
+    textTransform: 'uppercase',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10,
   },
 });
 
-// Main landing screen styles
+// Final Login Screen Aesthetics
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -423,12 +366,12 @@ const styles = StyleSheet.create({
   },
   backgroundOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.goingRed,
-    opacity: 0.85,
+    backgroundColor: COLORS.black,
+    opacity: 0.88,
   },
   backgroundPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
+    opacity: 0.04,
   },
   keyboardView: {
     flex: 1,
@@ -440,15 +383,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   languageButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   languageText: {
     color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   scrollContent: {
     flexGrow: 1,
@@ -456,24 +401,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
     paddingVertical: 40,
-    minHeight: height - 100,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 40,
   },
   logoImage: {
-    width: 180,
-    height: 120,
+    width: 200,
+    height: 140,
   },
   formContainer: {
     width: '100%',
-    maxWidth: 400,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    padding: 32,
+    maxWidth: 360,
+    backgroundColor: COLORS.glassWhite,
+    padding: 30,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: COLORS.glassBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
   },
   inputWrapper: {
     marginBottom: 16,
@@ -481,42 +430,42 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: COLORS.white,
     height: 56,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 20,
     fontSize: 16,
     color: COLORS.black,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
+    fontWeight: '500',
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
     marginBottom: 24,
   },
   forgotPasswordText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    fontWeight: '600',
   },
   loginButton: {
-    backgroundColor: COLORS.black,
-    height: 56,
-    borderRadius: 28,
+    backgroundColor: COLORS.goingRed,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: COLORS.goingRed,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
   loginButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   socialContainer: {
     width: '100%',
-    marginTop: 32,
+    marginTop: 40,
     alignItems: 'center',
   },
   dividerContainer: {
@@ -528,79 +477,54 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    fontWeight: 'bold',
     marginHorizontal: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 20,
   },
   socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 0,
-  },
-  facebookButton: {
-    backgroundColor: COLORS.facebookBlue,
-  },
-  appleButton: {
-    backgroundColor: COLORS.black,
-  },
-  googleIcon: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: COLORS.black,
-  },
-  facebookIcon: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.white,
-  },
-  socialIcon: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   socialIconImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  appleIcon: {
-    fontSize: 22,
-    color: COLORS.white,
+    width: 32,
+    height: 32,
   },
   registerContainer: {
     marginTop: 48,
     alignItems: 'center',
   },
   registerPrompt: {
-    color: COLORS.white,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
-    marginBottom: 8,
-  },
-  registerLinks: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 4,
   },
   registerLink: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '800',
     textDecorationLine: 'underline',
-  },
-  registerSeparator: {
-    color: COLORS.placeholderText,
-    fontSize: 16,
-    marginHorizontal: 12,
   },
   legalFooter: {
     flexDirection: 'row',
@@ -611,17 +535,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   legalLinkText: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '700',
   },
   legalSeparator: {
-    width: 1,
-    height: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginHorizontal: 12,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 16,
   },
 });
 
 export default LandingScreen;
+

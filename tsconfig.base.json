@@ -51,7 +51,9 @@
       "@going/shared/observability": ["libs/shared/observability/src/index.ts"],
       "@going/shared/permissions": ["libs/shared/permissions/src/index.ts"],
       "@going/shared/realtime": ["libs/shared/realtime/src/index.ts"],
-      "@going-monorepo-clean/domains-parcel-frontend-core": ["libs/domains/parcel/frontend-core/src/index.ts"]
+      "@going-monorepo-clean/domains-parcel-frontend-core": ["libs/domains/parcel/frontend-core/src/index.ts"],
+      "@going-monorepo-clean/notification-api-client": ["libs/notification/api-client/src/index.ts"],
+      "@going-monorepo-clean/domains-accommodation-frontend-core": ["libs/domains/accommodation/core/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

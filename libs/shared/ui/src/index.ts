@@ -1,3 +1,5 @@
+'use client';
+
 // Shared UI Components Library
 // Going Ecuador - Marketplace & Enterprise
 
@@ -59,4 +61,5 @@ export * from './lib/components/ui/input';
 // Hooks
 export { useTransport } from './lib/hooks/useTransport';
 export type { TransportTrip } from './lib/hooks/useTransport';
+
 

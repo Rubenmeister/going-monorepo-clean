@@ -1,0 +1,31 @@
+
+> nx run admin-dashboard:build:production
+
+ ÔÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+  [1m[38;2;173;127;168mÔû▓ Next.js 14.2.3[39m[22m
+ [37m[1m [22m[39m Creating an optimized production build ...
+Failed to compile.
+
+../../node_modules/next/dist/client/index.js
+Module not found: Can't resolve 'react-dom/client'
+https://nextjs.org/docs/messages/module-not-found
+Import trace for requested module:
+../../node_modules/next/dist/client/next.js
+../../node_modules/next/dist/client/app-index.js
+Module not found: Can't resolve 'react-dom/client'
+https://nextjs.org/docs/messages/module-not-found
+Import trace for requested module:
+../../node_modules/next/dist/client/app-next.js
+> Build failed because of webpack errors
+Build process exited due to code 1  
+
+
+
+ NX   Running target build for project admin-dashboard failed
+
+Failed tasks:
+
+- admin-dashboard:build:production
+
+Hint: run the command with --verbose for more details.
+

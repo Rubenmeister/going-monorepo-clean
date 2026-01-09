@@ -13,19 +13,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 
-// Unused: const { width } = Dimensions.get('window');
-
-// ESM import for logo
+// ESM import for assets
+import andeanPattern from '../assets/andean_pattern.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
 import goingLogoWhiteSymbol from '../assets/logo_white_symbol_black_text.png';
 
-// Design tokens
+// Design tokens matching premium brand guidelines
 const COLORS = {
   goingRed: '#FF4E43',
-  charcoal: '#1A1A1A',
-  offWhite: '#F5F5F5',
+  goingYellow: '#F5A623',
   white: '#FFFFFF',
-  inputBg: 'rgba(255, 255, 255, 0.9)',
-  errorRing: '#FACC15',
+  black: '#1A1A1A',
+  charcoal: '#1A1A1A',
+  lightGray: '#F5F5F5',
+  inputBorder: '#E5E5E5',
+  placeholderText: '#9CA3AF',
+  glassWhite: 'rgba(255, 255, 255, 0.15)',
+  glassBorder: 'rgba(255, 255, 255, 0.3)',
 };
 
 interface FormData {
@@ -122,7 +126,7 @@ export function RegisterScreen({ navigation }: { navigation: { goBack: () => voi
           errors[field] && touched[field] && styles.inputError
         ]}
         placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={COLORS.placeholderText}
         value={formData[field]}
         onChangeText={(text) => handleChange(field, text)}
         onBlur={() => handleBlur(field)}
@@ -137,6 +141,10 @@ export function RegisterScreen({ navigation }: { navigation: { goBack: () => voi
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
+
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -149,14 +157,21 @@ export function RegisterScreen({ navigation }: { navigation: { goBack: () => voi
           >
             <ArrowLeft color={COLORS.white} size={24} />
           </TouchableOpacity>
-          <Image source={{ uri: goingLogoWhiteSymbol }} style={styles.headerLogo} resizeMode="contain" />
+          <Image source={goingLogoWhiteSymbol as any} style={styles.headerLogo} resizeMode="contain" />
           <View style={styles.headerSpacer} />
         </View>
 
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
+          {/* Title Section */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>CREAR CUENTA</Text>
+            <Text style={styles.subtitle}>Únete a la movilidad del futuro</Text>
+          </View>
+
           {/* Form */}
           <View style={styles.formContainer}>
             {renderInput('name', 'Nombre completo')}
@@ -171,7 +186,7 @@ export function RegisterScreen({ navigation }: { navigation: { goBack: () => voi
               onPress={handleSubmit}
               activeOpacity={0.8}
             >
-              <Text style={styles.submitButtonText}>Crear Cuenta</Text>
+              <Text style={styles.submitButtonText}>CREAR CUENTA</Text>
             </TouchableOpacity>
           </View>
 
@@ -188,10 +203,10 @@ export function RegisterScreen({ navigation }: { navigation: { goBack: () => voi
                 <Text style={styles.socialIcon}>G</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>f</Text>
+                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>F</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}></Text>
+                 <Text style={styles.socialIcon}>A</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -216,6 +231,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.goingRed,
   },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.black,
+    opacity: 0.88,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.04,
+  },
   keyboardView: {
     flex: 1,
   },
@@ -229,11 +253,6 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
-  headerTitle: {
-    color: COLORS.white,
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   headerLogo: {
     width: 120,
     height: 40,
@@ -243,53 +262,76 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  title: {
+    color: COLORS.white,
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  subtitle: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+    marginTop: 4,
+    fontWeight: '600',
   },
   formContainer: {
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
+    backgroundColor: COLORS.glassWhite,
+    padding: 24,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   inputWrapper: {
     marginBottom: 16,
   },
   input: {
-    backgroundColor: COLORS.inputBg,
-    height: 48,
-    borderRadius: 10,
+    backgroundColor: COLORS.white,
+    height: 52,
+    borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: COLORS.charcoal,
+    color: COLORS.black,
+    fontWeight: '500',
   },
   inputError: {
     borderWidth: 2,
-    borderColor: COLORS.errorRing,
-    backgroundColor: COLORS.white,
+    borderColor: '#FACC15',
   },
   errorText: {
     color: COLORS.white,
     fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 4,
   },
   submitButton: {
-    backgroundColor: COLORS.charcoal,
-    height: 52,
-    borderRadius: 14,
+    backgroundColor: COLORS.goingRed,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
-    shadowColor: '#000',
+    marginTop: 16,
+    shadowColor: COLORS.goingRed,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 8,
   },
   submitButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    letterSpacing: 1.5,
   },
   socialContainer: {
     marginTop: 32,
@@ -303,21 +345,24 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    textTransform: 'uppercase',
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 20,
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
@@ -329,22 +374,24 @@ const styles = StyleSheet.create({
   },
   socialIcon: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.charcoal,
+    fontWeight: '900',
+    color: COLORS.black,
   },
   termsContainer: {
     marginTop: 32,
     paddingHorizontal: 16,
   },
   termsText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 11,
     textAlign: 'center',
     lineHeight: 18,
+    fontWeight: '600',
   },
   termsLink: {
+    color: COLORS.white,
     textDecorationLine: 'underline',
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
 });
 

@@ -23,8 +23,15 @@ export class RedisTrackingRepository implements IDriverLocationRepository {
       
       await this.cache.set(key, primitives, KEY_TTL_SECONDS);
       
-      const redisClient = (this.cache as any).store.getClient();
-      await redisClient.sAdd(ACTIVE_DRIVERS_SET, location.driverId);
+      // Get the underlying redis client if possible
+      const redisStore = (this.cache as any).store;
+      const redisClient = redisStore.client || (redisStore.getClient ? redisStore.getClient() : null);
+      
+      if (redisClient && redisClient.sAdd) {
+        await redisClient.sAdd(ACTIVE_DRIVERS_SET, location.driverId);
+      } else if (redisClient && redisClient.sadd) {
+        await redisClient.sadd(ACTIVE_DRIVERS_SET, location.driverId);
+      }
       
       return ok(undefined);
     } catch (error) {
@@ -45,19 +52,44 @@ export class RedisTrackingRepository implements IDriverLocationRepository {
   async findAllActive(): Promise<Result<DriverLocation[], Error>> {
     try {
       const redisStore = (this.cache as any).store;
-      const redisClient = redisStore.getClient();
-      const driverIds = await redisClient.sMembers(ACTIVE_DRIVERS_SET);
+      const redisClient = redisStore.client || (redisStore.getClient ? redisStore.getClient() : null);
+      
+      let driverIds: string[] = [];
+      if (redisClient && redisClient.sMembers) {
+        driverIds = await redisClient.sMembers(ACTIVE_DRIVERS_SET);
+      } else if (redisClient && redisClient.smembers) {
+        driverIds = await redisClient.smembers(ACTIVE_DRIVERS_SET);
+      } else {
+        // Fallback for non-redis stores or unknown clients
+        return ok([]);
+      }
 
       if (!driverIds || driverIds.length === 0) {
         return ok([]);
       }
 
       const keys = driverIds.map(id => `${DRIVER_KEY_PREFIX}${id}`);
-      const results = await redisStore.mget(...keys);
+      
+      // Try mget/mGet from store first
+      let results: any[] = [];
+      if (redisStore.mget) {
+        results = await redisStore.mget(...keys);
+      } else if (redisStore.mGet) {
+        results = await redisStore.mGet(...keys);
+      } else if (redisClient && (redisClient.mGet || redisClient.mget)) {
+        const mgetFn = redisClient.mGet || redisClient.mget;
+        results = await mgetFn.call(redisClient, keys);
+      } else {
+        // Fallback to individual gets
+        results = await Promise.all(keys.map(k => this.cache.get(k)));
+      }
 
       const locations = results
         .filter(res => !!res)
-        .map(loc => DriverLocation.fromPrimitives(typeof loc === 'string' ? JSON.parse(loc) : loc));
+        .map(loc => {
+          const data = typeof loc === 'string' ? JSON.parse(loc) : loc;
+          return DriverLocation.fromPrimitives(data);
+        });
         
       return ok(locations);
     } catch (error) {

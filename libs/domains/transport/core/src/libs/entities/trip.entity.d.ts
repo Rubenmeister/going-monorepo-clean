@@ -30,6 +30,10 @@ export interface TripProps {
     pricePerPassenger: number;
     currency: string;
     createdAt: Date;
+    companyId?: string;
+    costCenter?: string;
+    guestName?: string;
+    guestPhone?: string;
 }
 export declare class Trip {
     id: string;
@@ -50,6 +54,10 @@ export declare class Trip {
     pricePerPassenger: number;
     currency: string;
     readonly createdAt: Date;
+    companyId?: string;
+    costCenter?: string;
+    guestName?: string;
+    guestPhone?: string;
     private constructor();
     static create(props: {
         driverId: string;
@@ -64,6 +72,10 @@ export declare class Trip {
         departureTime: Date;
         basePrice: number;
         currency: string;
+        companyId?: string;
+        costCenter?: string;
+        guestName?: string;
+        guestPhone?: string;
     }): Trip;
     static fromPrimitives(props: TripProps): Trip;
     toPrimitives(): TripProps;

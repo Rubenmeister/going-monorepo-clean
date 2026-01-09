@@ -1,10 +1,12 @@
+import { Result } from 'neverthrow';
 import { Trip } from '../entities/trip.entity';
 import { UUID, Location } from '@going-monorepo-clean/shared-domain';
 export declare const ITripRepository: unique symbol;
 export interface ITripRepository {
-    save(trip: Trip): Promise<void>;
-    findById(id: UUID): Promise<Trip | null>;
-    findAvailableSharedTrips(origen: Location, destino: Location, tipoVehiculo: 'SUV' | 'VAN'): Promise<Trip[]>;
+    save(trip: Trip): Promise<Result<void, Error>>;
+    findById(id: UUID): Promise<Result<Trip, Error>>;
+    findAvailableSharedTrips(origin: Location, dest: Location, vehicleType: 'SUV' | 'VAN'): Promise<Trip[]>;
     findTripsByDriverId(driverId: string): Promise<Trip[]>;
-    update(trip: Trip): Promise<void>;
+    findAll(): Promise<Result<Trip[], Error>>;
+    delete(id: UUID): Promise<Result<void, Error>>;
 }

@@ -1,0 +1,44 @@
+
+ NX   Running target build for 4 projects:
+
+- parcel-frontend
+- notification-frontend
+- accommodation-frontend
+- transport-frontend
+
+
+
+> nx run parcel-frontend:build
+
+> tsc -p libs/domains/parcel-frontend/tsconfig.lib.json
+
+libs/domains/parcel-frontend/src/lib/ports/http-parcel.repository.ts(11,14): error TS2420: Class 'HttpParcelRepository' incorrectly implements interface 'IParcelRepository'.
+  Type 'HttpParcelRepository' is missing the following properties from type 'IParcelRepository': save, findById, findByUserId, findByDriverId, update
+> tsc -p libs/domains/parcel-frontend/tsconfig.lib.json
+
+libs/domains/parcel-frontend/src/lib/ports/http-parcel.repository.ts(11,14): error TS2420: Class 'HttpParcelRepository' incorrectly implements interface 'IParcelRepository'.
+  Type 'HttpParcelRepository' is missing the following properties from type 'IParcelRepository': save, findById, findByUserId, findByDriverId, update
+Warning: command "tsc -p libs/domains/parcel-frontend/tsconfig.lib.json" exited with non-zero status code
+> nx run notification-frontend:build
+
+> tsc -p libs/domains/notification-frontend/tsconfig.lib.json
+
+
+> nx run accommodation-frontend:build
+
+> tsc -p libs/domains/accommodation-frontend/tsconfig.lib.json
+
+
+> nx run transport-frontend:build
+
+> tsc -p libs/domains/transport-frontend/tsconfig.lib.json
+
+
+
+
+ NX   Running target build for 4 projects failed
+
+Failed tasks:
+
+- parcel-frontend:build
+

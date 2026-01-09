@@ -1,0 +1,349 @@
+
+ NX   Running target build for 4 projects and 2 tasks they depend on:
+
+- parcel-frontend
+- notification-frontend
+- accommodation-frontend
+- transport-frontend
+
+
+
+> nx run shared-domain:build
+
+Compiling TypeScript files for project "shared-domain"...
+Done compiling TypeScript files for project "shared-domain".
+
+> nx run domains-parcel-frontend-core:build
+
+Compiling TypeScript files for project "domains-parcel-frontend-core"...
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts[0m:[93m1[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/entities/parcel.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/entities/parcel.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts'[39m[22m
+[1m[31m    Imported via '../entities/parcel.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m1[0m export * from './lib/entities/parcel.entity';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts[0m:[93m2[0m:[93m24[0m[39m[22m
+[1m[31m    [7m2[0m import { Parcel } from '../entities/parcel.entity';[39m[22m
+[1m[31m    [7m [0m [96m                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/ports/iparcel.repository';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/entities/parcel.entity.ts[0m:[93m3[0m:[93m39[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/entities/parcel.entity.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m import { Money, UUID, Location } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope[39m[22m
+[1m[31m[7m [0m [91m                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts[0m:[93m3[0m:[93m22[0m[39m[22m
+[1m[31m    [7m3[0m import { UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts[0m:[93m2[0m:[93m45[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/domains-parcel-core' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/domains-parcel-core' from file '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export { Parcel, I_PARCEL_REPOSITORY } from '@going-monorepo-clean/domains-parcel-core';[39m[22m
+[1m[31m[7m [0m [91m                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts[0m:[93m3[0m:[93m67[0m[39m[22m
+[1m[31m    [7m3[0m export type { IParcelRepository, ParcelProps, ParcelStatus } from '@going-monorepo-clean/domains-parcel-core';[39m[22m
+[1m[31m    [7m [0m [96m                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/uuid.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './lib/money.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/location.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m7[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m7[0m export * from './lib/dtos/shared.dtos';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m14[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'[39m[22m
+[1m[31m    Imported via './base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m14[0m export * from './lib/base.entity';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts[0m:[93m1[0m:[93m28[0m[39m[22m
+[1m[31m    [7m1[0m import { BaseEntity } from './base.entity';[39m[22m
+[1m[31m    [7m [0m [96m                           ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m15[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m15[0m export * from './lib/aggregate-root';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+
+> nx run accommodation-frontend:build
+
+Compiling TypeScript files for project "accommodation-frontend"...
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/index.ts[0m:[93m1[0m:[93m15[0m - [91merror[0m[90m TS2307: [0mCannot find module './lib/entities/accommodation.entity' or its corresponding type declarations.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m1[0m export * from './lib/entities/accommodation.entity';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS2307: [0mCannot find module './lib/use-cases/search-accommodations.use-case' or its corresponding type declarations.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './lib/use-cases/search-accommodations.use-case';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS2307: [0mCannot find module './lib/http-accommodation.repository' or its corresponding type declarations.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/http-accommodation.repository';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/application/use-cases/search-accommodations.use-case.ts[0m:[93m7[0m:[93m8[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m7[0m } from '@going-monorepo-clean/domains-accommodation-frontend-core';[39m[22m
+[1m[31m[7m [0m [91m       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts[0m:[93m2[0m:[93m31[0m - [91merror[0m[90m TS2307: [0mCannot find module '../entities/accommodation.entity' or its corresponding type declarations.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m import { Accommodation } from '../entities/accommodation.entity';[39m[22m
+[1m[31m[7m [0m [91m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts[0m:[93m3[0m:[93m22[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/application/entities/accommodation.entity.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/entities/accommodation.entity.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/ports/iaccommodation.repository.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m import { UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m[7m [0m [91m                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/application/entities/accommodation.entity.ts[0m:[93m1[0m:[93m39[0m[39m[22m
+[1m[31m    [7m1[0m import { UUID, Money, Location } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/entities/accommodation.entity.ts[0m:[93m3[0m:[93m29[0m[39m[22m
+[1m[31m    [7m3[0m import { UUID, Money } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/ports/iaccommodation.repository.ts[0m:[93m3[0m:[93m22[0m[39m[22m
+[1m[31m    [7m3[0m import { UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/entities/accommodation.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/entities/accommodation.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts'[39m[22m
+[1m[31m    Imported via '../entities/accommodation.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/ports/iaccommodation.repository.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/entities/accommodation.entity';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/ports/iaccommodation.repository.ts[0m:[93m2[0m:[93m31[0m[39m[22m
+[1m[31m    [7m2[0m import { Accommodation } from '../entities/accommodation.entity';[39m[22m
+[1m[31m    [7m [0m [96m                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/ports/iaccommodation.repository.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/ports/iaccommodation.repository';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/entities/accommodation.entity.ts[0m:[93m4[0m:[93m26[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/value-objects/location.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '../value-objects/location.vo' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/lib/entities/accommodation.entity.ts'[39m[22m
+[1m[31m    Imported via './lib/value-objects/location.vo' from file '/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m import { Location } from '../value-objects/location.vo';[39m[22m
+[1m[31m[7m [0m [91m                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/accommodation/core/src/index.ts[0m:[93m3[0m:[93m15[0m[39m[22m
+[1m[31m    [7m3[0m export * from './lib/value-objects/location.vo';[39m[22m
+[1m[31m    [7m [0m [96m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/uuid.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './lib/money.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/location.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m7[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m7[0m export * from './lib/dtos/shared.dtos';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m14[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'[39m[22m
+[1m[31m    Imported via './base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m14[0m export * from './lib/base.entity';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts[0m:[93m1[0m:[93m28[0m[39m[22m
+[1m[31m    [7m1[0m import { BaseEntity } from './base.entity';[39m[22m
+[1m[31m    [7m [0m [96m                           ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m15[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m15[0m export * from './lib/aggregate-root';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+
+> nx run notification-frontend:build
+
+Compiling TypeScript files for project "notification-frontend"...
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts[0m:[93m3[0m:[93m56[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/notification/api-client/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m import { NotificationApiClient, NotificationDto } from '@going-monorepo-clean/notification-api-client'; // <--- NUEVA DEPENDENCIA[39m[22m
+[1m[31m[7m [0m [91m                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts[0m:[93m4[0m:[93m33[0m - [91merror[0m[90m TS2307: [0mCannot find module '@going-monorepo-clean/domains-user-frontend-core' or its corresponding type declarations.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';[39m[22m
+[1m[31m[7m [0m [91m                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/notification/api-client/src/index.ts[0m:[93m1[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/notification/api-client/src/lib/notification.api.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m1[0m export * from './lib/notification.api';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/notification/api-client/src/lib/notification.api.ts[0m:[93m2[0m:[93m22[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/notification/api-client/src/lib/notification.api.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m import { UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m[7m [0m [91m                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts[0m:[93m5[0m:[93m22[0m[39m[22m
+[1m[31m    [7m5[0m import { UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/uuid.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './lib/money.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/location.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m7[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m7[0m export * from './lib/dtos/shared.dtos';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m14[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'[39m[22m
+[1m[31m    Imported via './base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m14[0m export * from './lib/base.entity';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts[0m:[93m1[0m:[93m28[0m[39m[22m
+[1m[31m    [7m1[0m import { BaseEntity } from './base.entity';[39m[22m
+[1m[31m    [7m [0m [96m                           ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m15[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m15[0m export * from './lib/aggregate-root';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+
+> nx run transport-frontend:build
+
+Compiling TypeScript files for project "transport-frontend"...
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend/src/lib/adapters/http/transport.adapter.ts[0m:[93m2[0m:[93m39[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m import { ITripRepository, Trip } from '@going-monorepo-clean/domains-transport-core';[39m[22m
+[1m[31m[7m [0m [91m                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/entities/trip.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './libs/entities/trip.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts'[39m[22m
+[1m[31m    Imported via '../entities/trip.entity' from file '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './libs/entities/trip.entity';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts[0m:[93m2[0m:[93m22[0m[39m[22m
+[1m[31m    [7m2[0m import { Trip } from '../entities/trip.entity';[39m[22m
+[1m[31m    [7m [0m [96m                     ~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './libs/ports/itrip.repository';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/entities/trip.entity.ts[0m:[93m1[0m:[93m33[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/entities/trip.entity.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts'[39m[22m
+[1m[31m    Imported via '@going-monorepo-clean/shared-domain' from file '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend/src/lib/adapters/http/transport.adapter.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m1[0m import { Location, Money } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m[7m [0m [91m                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts[0m:[93m3[0m:[93m32[0m[39m[22m
+[1m[31m    [7m3[0m import { UUID, Location } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend/src/lib/adapters/http/transport.adapter.ts[0m:[93m3[0m:[93m32[0m[39m[22m
+[1m[31m    [7m3[0m import { Location, UUID } from '@going-monorepo-clean/shared-domain';[39m[22m
+[1m[31m    [7m [0m [96m                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m2[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m2[0m export * from './lib/uuid.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m3[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m3[0m export * from './lib/money.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m4[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m4[0m export * from './lib/location.vo';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m7[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m7[0m export * from './lib/dtos/shared.dtos';[39m[22m
+[1m[31m[7m [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m14[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m  The file is in the program because:[39m[22m
+[1m[31m    Imported via './lib/base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'[39m[22m
+[1m[31m    Imported via './base.entity' from file '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m14[0m export * from './lib/base.entity';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+[1m[31m  [96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts[0m:[93m1[0m:[93m28[0m[39m[22m
+[1m[31m    [7m1[0m import { BaseEntity } from './base.entity';[39m[22m
+[1m[31m    [7m [0m [96m                           ~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m    File is included via import here.[39m[22m
+[1m[31m[96m/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts[0m:[93m15[0m:[93m15[0m - [91merror[0m[90m TS6059: [0mFile '/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' '/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.[39m[22m
+[1m[31m[39m[22m
+[1m[31m[7m15[0m export * from './lib/aggregate-root';[39m[22m
+[1m[31m[7m  [0m [91m              ~~~~~~~~~~~~~~~~~~~~~~[0m[39m[22m
+[1m[31m[39m[22m
+
+
+
+ NX   Running target build for 4 projects and 2 tasks they depend on failed
+
+Tasks not run because their dependencies failed or --nx-bail=true:
+
+- parcel-frontend:build
+
+Failed tasks:
+
+- domains-parcel-frontend-core:build
+- accommodation-frontend:build
+- notification-frontend:build
+- transport-frontend:build
+

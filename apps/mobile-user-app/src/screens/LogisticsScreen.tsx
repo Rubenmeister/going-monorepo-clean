@@ -6,18 +6,26 @@ import {
   TouchableOpacity, 
   TextInput,
   ScrollView,
+  Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Package, Truck, ArrowLeft, Info } from 'lucide-react-native';
+import { Package, Truck, ArrowLeft, Info, MapPin } from 'lucide-react-native';
+
+// ESM import for assets
+import andeanPattern from '../assets/andean_pattern.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
 
 const COLORS = {
   goingRed: '#FF4E43',
-  goingYellow: '#FFD700',
+  goingYellow: '#F5A623',
   white: '#FFFFFF',
   black: '#1A1A1A',
   lightGray: '#F5F5F5',
   gray: '#6B7280',
   border: '#E5E5E5',
+  glassWhite: 'rgba(255, 255, 255, 0.15)',
+  glassBorder: 'rgba(255, 255, 255, 0.3)',
 };
 
 export function LogisticsScreen({ navigation }: { navigation: any }) {
@@ -37,18 +45,22 @@ export function LogisticsScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
+
       <SafeAreaView style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <ArrowLeft color={COLORS.black} size={24} />
+            <ArrowLeft color={COLORS.white} size={24} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>LOGÍSTICA / ENVÍOS</Text>
-          <View style={{ width: 24 }} />
+          <View style={{ width: 44 }} />
         </View>
       </SafeAreaView>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Package Types */}
+        {/* Package Types - Premium Carousels */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>¿QUÉ VAS A ENVIAR?</Text>
           <View style={styles.typeRow}>
@@ -58,21 +70,25 @@ export function LogisticsScreen({ navigation }: { navigation: any }) {
                 style={[styles.typeCard, packageType === type && styles.typeCardActive]}
                 onPress={() => setPackageType(type)}
               >
-                <Package color={packageType === type ? COLORS.goingRed : COLORS.gray} size={32} />
+                <Package color={packageType === type ? COLORS.white : COLORS.white} opacity={packageType === type ? 1 : 0.5} size={32} />
                 <Text style={[styles.typeText, packageType === type && styles.typeTextActive]}>{type}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Route Info */}
-        <View style={styles.section}>
+        {/* Route Info - Glass Card */}
+        <View style={[styles.section, styles.glassCard]}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>PUNTO DE RECOGIDA</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <MapPin size={14} color={COLORS.goingRed} style={{ marginRight: 6 }} />
+              <Text style={styles.label}>PUNTO DE RECOGIDA</Text>
+            </View>
             <View style={styles.inputWrapper}>
               <TextInput 
                 style={styles.input}
                 placeholder="Dirección de origen"
+                placeholderTextColor="#9CA3AF"
                 value={origin}
                 onChangeText={setOrigin}
               />
@@ -80,11 +96,15 @@ export function LogisticsScreen({ navigation }: { navigation: any }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>PUNTO DE ENTREGA</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <MapPin size={14} color={COLORS.goingRed} style={{ marginRight: 6 }} />
+              <Text style={styles.label}>PUNTO DE ENTREGA</Text>
+            </View>
             <View style={styles.inputWrapper}>
               <TextInput 
                 style={styles.input}
                 placeholder="Dirección de destino"
+                placeholderTextColor="#9CA3AF"
                 value={destination}
                 onChangeText={setDestination}
               />
@@ -92,42 +112,54 @@ export function LogisticsScreen({ navigation }: { navigation: any }) {
           </View>
         </View>
 
-        {/* Weight Info */}
-        <View style={styles.section}>
-           <Text style={styles.label}>PESO APROXIMADO (KG)</Text>
-           <View style={styles.weightSelector}>
-             <TextInput 
-                style={styles.weightInput}
-                keyboardType="numeric"
-                value={weight}
-                onChangeText={setWeight}
-             />
-             <Text style={styles.weightUnit}>KG</Text>
-           </View>
+        {/* Weight and Estimation */}
+        <View style={styles.flexRow}>
+          <View style={[styles.section, styles.glassCard, { flex: 1, marginRight: 12, marginBottom: 0 }]}>
+            <Text style={styles.label}>PESO APROX (KG)</Text>
+            <View style={styles.weightSelector}>
+              <TextInput 
+                  style={styles.weightInput}
+                  keyboardType="numeric"
+                  value={weight}
+                  onChangeText={setWeight}
+              />
+              <Text style={styles.weightUnit}>KG</Text>
+            </View>
+          </View>
+
+          <View style={[styles.section, styles.glassCard, { flex: 1, marginBottom: 0, justifyContent: 'center' }]}>
+             <TouchableOpacity 
+                style={styles.refreshButton}
+                onPress={calculatePrice}
+              >
+                <Text style={styles.refreshButtonText}>COTIZAR</Text>
+              </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Info color={COLORS.gray} size={20} />
-          <Text style={styles.infoText}>
-            Máximo 20kg por envío. El tiempo estimado de entrega es de 2 a 4 horas.
-          </Text>
-        </View>
-
-        {/* Estimation */}
+        {/* Estimation Display */}
         {estimatedPrice && (
            <View style={styles.fareContainer}>
-             <Text style={styles.fareLabel}>Cotización Estimada</Text>
-             <Text style={styles.farePrice}>${estimatedPrice.toFixed(2)} USD</Text>
+             <Text style={styles.fareLabel}>Tarifa Estimada</Text>
+             <Text style={styles.farePrice}>${estimatedPrice.toFixed(2)}</Text>
+             <Text style={styles.fareCurrency}>USD</Text>
            </View>
         )}
 
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <Info color="#3B82F6" size={20} />
+          <Text style={styles.infoText}>
+            Máximo 20kg. Entrega express de 2-4 horas. Incluye seguimiento en tiempo real.
+          </Text>
+        </View>
+
         <TouchableOpacity 
           style={styles.mainButton}
-          onPress={calculatePrice}
+          onPress={() => Alert.alert('Éxito', 'Buscando el mejor transportista para tu envío...')}
         >
-          <Truck color="white" size={24} style={{ marginRight: 10 }} />
-          <Text style={styles.mainButtonText}>PEDIR ENVÍO AHORA</Text>
+          <Truck color="white" size={24} style={{ marginRight: 12 }} />
+          <Text style={styles.mainButtonText}>ENVIAR AHORA</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -137,11 +169,19 @@ export function LogisticsScreen({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.goingRed,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.black,
+    opacity: 0.88,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.04,
   },
   header: {
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    zIndex: 10,
   },
   headerContent: {
     flexDirection: 'row',
@@ -154,23 +194,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: 2,
+    color: COLORS.white,
   },
   backButton: {
-    padding: 4,
+    padding: 8,
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 24,
+  },
+  flexRow: {
+    flexDirection: 'row',
+    marginBottom: 24,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.gray,
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 16,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   typeRow: {
     flexDirection: 'row',
@@ -179,117 +224,157 @@ const styles = StyleSheet.create({
   },
   typeCard: {
     flex: 1,
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 16,
+    backgroundColor: COLORS.glassWhite,
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   typeCardActive: {
     borderColor: COLORS.goingRed,
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(255, 78, 67, 0.25)',
   },
   typeText: {
     fontSize: 10,
-    fontWeight: '800',
-    marginTop: 8,
-    color: COLORS.gray,
+    fontWeight: '900',
+    marginTop: 10,
+    color: 'rgba(255, 255, 255, 0.6)',
+    letterSpacing: 1,
   },
   typeTextActive: {
-    color: COLORS.goingRed,
+    color: COLORS.white,
+  },
+  glassCard: {
+    backgroundColor: COLORS.glassWhite,
+    padding: 24,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.gray,
-    marginBottom: 8,
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.7)',
+    letterSpacing: 1,
   },
   inputWrapper: {
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    height: 50,
+    height: 52,
     justifyContent: 'center',
   },
   input: {
     fontSize: 15,
     color: COLORS.black,
+    fontWeight: '500',
   },
   weightSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
-    borderRadius: 12,
-    width: 120,
-    height: 50,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    height: 52,
     paddingHorizontal: 16,
+    marginTop: 8,
   },
   weightInput: {
     flex: 1,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    color: COLORS.black,
   },
   weightUnit: {
     fontWeight: '900',
     color: COLORS.gray,
+    fontSize: 12,
+  },
+  refreshButton: {
+    backgroundColor: COLORS.white,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  refreshButtonText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.black,
+    letterSpacing: 1,
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.2)',
   },
   infoText: {
     flex: 1,
     marginLeft: 12,
     fontSize: 12,
-    color: COLORS.gray,
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 18,
+    fontWeight: '500',
   },
   fareContainer: {
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 20,
-    backgroundColor: '#FFFBEB',
-    borderRadius: 20,
+    marginBottom: 32,
+    padding: 24,
+    backgroundColor: 'rgba(245, 166, 35, 0.15)',
+    borderRadius: 28,
     borderWidth: 2,
     borderColor: COLORS.goingYellow,
   },
   fareLabel: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#92400E',
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.goingYellow,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 8,
   },
   farePrice: {
-    fontSize: 40,
+    fontSize: 48,
     fontWeight: '900',
-    color: COLORS.black,
+    color: COLORS.white,
+  },
+  fareCurrency: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: -4,
   },
   mainButton: {
     backgroundColor: COLORS.goingRed,
-    height: 60,
-    borderRadius: 30,
+    height: 64,
+    borderRadius: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: COLORS.goingRed,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
-    marginBottom: 40,
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
+    marginBottom: 60,
   },
   mainButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
 });

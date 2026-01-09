@@ -1,0 +1,23 @@
+
+ NX   The following outputs are invalid: 
+
+ - dist/apps/admin-dashboard
+   ** Reason: Outputs must start with either "{workspaceRoot}/" or "{projectRoot}/".
+
+Run `nx repair` to fix this.
+Error: The following outputs are invalid: 
+ - dist/apps/admin-dashboard
+   ** Reason: Outputs must start with either "{workspaceRoot}/" or "{projectRoot}/".
+
+Run `nx repair` to fix this.
+    at validateOutputs (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\utils.js:183:34)
+    at getOutputsForTargetAndConfiguration (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\utils.js:220:9)
+    at getOutputs (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\utils.js:128:12)
+    at ProcessTasks.createTask (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\create-task-graph.js:207:45)
+    at ProcessTasks.processTasks (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\create-task-graph.js:37:39)
+    at createTaskGraph (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\create-task-graph.js:224:21)
+    at createTaskGraphAndRunValidations (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\run-command.js:267:63)
+    at ensureWorkspaceIsInSyncAndGetGraphs (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\run-command.js:390:21)
+    at runCommandForTasks (C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\run-command.js:331:47)
+    at C:\Users\USER1\going-monorepo-clean\.nx\installation\node_modules\nx\src\tasks-runner\run-command.js:303:50
+

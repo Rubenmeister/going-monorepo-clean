@@ -1,0 +1,192 @@
+
+ NX   Running target build for 4 projects and 2 tasks they depend on:
+
+- parcel-frontend
+- notification-frontend
+- accommodation-frontend
+- transport-frontend
+
+
+
+> nx run domains-parcel-frontend-core:build
+
+> tsc -p libs/domains/parcel/frontend-core/tsconfig.lib.json
+
+
+> nx run transport-frontend:build
+
+> tsc -p libs/domains/transport-frontend/tsconfig.lib.json
+
+
+> nx run shared-domain:build
+
+Compiling TypeScript files for project "shared-domain"...
+Done compiling TypeScript files for project "shared-domain".
+
+> nx run notification-frontend:build
+
+> tsc -p libs/domains/notification-frontend/tsconfig.lib.json
+
+libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts(4,33): error TS2307: Cannot find module '@going-monorepo-clean/domains-user-frontend-core' or its corresponding type declarations.
+> tsc -p libs/domains/notification-frontend/tsconfig.lib.json
+
+libs/domains/notification-frontend/src/lib/application/get-user-notifications.use-case.ts(4,33): error TS2307: Cannot find module '@going-monorepo-clean/domains-user-frontend-core' or its corresponding type declarations.
+Warning: command "tsc -p libs/domains/notification-frontend/tsconfig.lib.json" exited with non-zero status code
+> nx run accommodation-frontend:build
+
+> tsc -p libs/domains/accommodation-frontend/tsconfig.lib.json
+
+libs/domains/accommodation-frontend/src/index.ts(1,15): error TS2307: Cannot find module './lib/entities/accommodation.entity' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/index.ts(3,15): error TS2307: Cannot find module './lib/use-cases/search-accommodations.use-case' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/index.ts(4,15): error TS2307: Cannot find module './lib/http-accommodation.repository' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts(2,31): error TS2307: Cannot find module '../entities/accommodation.entity' or its corresponding type declarations.
+> tsc -p libs/domains/accommodation-frontend/tsconfig.lib.json
+
+libs/domains/accommodation-frontend/src/index.ts(1,15): error TS2307: Cannot find module './lib/entities/accommodation.entity' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/index.ts(3,15): error TS2307: Cannot find module './lib/use-cases/search-accommodations.use-case' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/index.ts(4,15): error TS2307: Cannot find module './lib/http-accommodation.repository' or its corresponding type declarations.
+libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts(2,31): error TS2307: Cannot find module '../entities/accommodation.entity' or its corresponding type declarations.
+Warning: command "tsc -p libs/domains/accommodation-frontend/tsconfig.lib.json" exited with non-zero status code
+> nx run parcel-frontend:build
+
+Compiling with SWC for parcel-frontend...
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:6:8[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 4 | [39m  [33mIParcelRepository[39m[33m,[39m[0m
+[0m [90m 5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m   | [39m       [31m[1m^[22m[39m[0m
+[0m [90m 7 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 8 | [39m[0m
+[0m [90m 9 | [39m[36mconst[39m [33mAPI_GATEWAY_URL[39m [33m=[39m [32m'http://localhost:3000/api'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:11:14[39m[24m - [31m[1merror[22m[39m [90mTS2420[39m: Class 'HttpParcelRepository' incorrectly implements interface 'IParcelRepository'.
+  Type 'HttpParcelRepository' is missing the following properties from type 'IParcelRepository': save, findById, findByUserId, findByDriverId, update
+
+[0m [90m  9 | [39m[36mconst[39m [33mAPI_GATEWAY_URL[39m [33m=[39m [32m'http://localhost:3000/api'[39m[33m;[39m[0m
+[0m [90m 10 | [39m[0m
+[0m[31m[1m>[22m[39m[90m 11 | [39m[36mexport[39m [36mclass[39m [33mHttpParcelRepository[39m implements [33mIParcelRepository[39m {[0m
+[0m [90m    | [39m             [31m[1m^[22m[39m[0m
+[0m [90m 12 | [39m  [0m
+[0m [90m 13 | [39m  public async create(data[33m:[39m [33mCreateParcelData[39m[33m,[39m token[33m:[39m string)[33m:[39m [33mPromise[39m[33m<[39m[33mResult[39m[33m<[39m[33mParcel[39m[33m,[39m [33mError[39m[33m>>[39m {[0m
+[0m [90m 14 | [39m    [36mtry[39m {[0m
+
+[4m[34mlibs\domains\parcel\core\src\index.ts:1:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/entities/parcel.entity.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/entities/parcel.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts'
+    Imported via '../entities/parcel.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts'
+
+[0m[31m[1m>[22m[39m[90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/entities/parcel.entity'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/ports/iparcel.repository'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\parcel\core\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/entities/parcel.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/ports/iparcel.repository'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+
+[4m[34mlibs\domains\parcel\core\src\lib\entities\parcel.entity.ts:3:39[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/entities/parcel.entity.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/lib/ports/iparcel.repository.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel-frontend/src/lib/ports/http-parcel.repository.ts'
+
+[0m [90m 1 | [39m[36mimport[39m { v4 as uuidv4 } from [32m'uuid'[39m[33m;[39m[0m
+[0m [90m 2 | [39m[36mimport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mimport[39m { [33mMoney[39m[33m,[39m [33mUUID[39m[33m,[39m [33mLocation[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m [90m// Reemplaza con tu scope[39m[0m
+[0m [90m   | [39m                                      [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[0m
+[0m [90m 5 | [39m[36mexport[39m type [33mParcelStatus[39m [33m=[39m[0m
+[0m [90m 6 | [39m  [33m|[39m [32m'pending'[39m[0m
+
+[4m[34mlibs\domains\parcel\frontend-core\src\index.ts:1:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/lib/domains-parcel-frontend-core.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m[31m[1m>[22m[39m[90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 2 | [39m[36mexport[39m { [33mParcel[39m[33m,[39m [33mI_PARCEL_REPOSITORY[39m } from [32m'@going-monorepo-clean/domains-parcel-core'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m type { [33mIParcelRepository[39m[33m,[39m [33mParcelProps[39m[33m,[39m [33mParcelStatus[39m } from [32m'@going-monorepo-clean/domains-parcel-core'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[0m
+
+[4m[34mlibs\domains\parcel\frontend-core\src\index.ts:2:45[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/core/src/index.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/domains-parcel-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts'
+    Imported via '@going-monorepo-clean/domains-parcel-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts'
+
+[0m [90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m { [33mParcel[39m[33m,[39m [33mI_PARCEL_REPOSITORY[39m } from [32m'@going-monorepo-clean/domains-parcel-core'[39m[33m;[39m[0m
+[0m [90m   | [39m                                            [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m type { [33mIParcelRepository[39m[33m,[39m [33mParcelProps[39m[33m,[39m [33mParcelStatus[39m } from [32m'@going-monorepo-clean/domains-parcel-core'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[0m
+[0m [90m 5 | [39m[90m// We define CreateParcelData here as it might be frontend-specific[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m [90m 7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:7:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m[0m
+[0m [90m  6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[90m// Exporta 'neverthrow' para que todos los dominios[39m[0m
+[0m [90m 10 | [39m[90m// lo importen desde este ├║nico lugar[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:14:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+
+[0m [90m 12 | [39m[0m
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m[31m[1m>[22m[39m[90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:15:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m [90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+
+Found 13 errors.
+
+
+
+ NX   Running target build for 4 projects and 2 tasks they depend on failed
+
+Failed tasks:
+
+- notification-frontend:build
+- accommodation-frontend:build
+- parcel-frontend:build
+

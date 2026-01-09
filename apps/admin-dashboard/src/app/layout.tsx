@@ -1,8 +1,7 @@
+import { Inter } from 'next/font/google';
 import './global.css';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Going Admin Dashboard',
@@ -16,12 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
-      </head>
-      <body>
+      <body className={inter.className}>
         {children}
       </body>
     </html>

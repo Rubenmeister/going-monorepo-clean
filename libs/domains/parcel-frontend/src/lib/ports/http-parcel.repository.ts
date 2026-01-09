@@ -9,7 +9,27 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 const API_GATEWAY_URL = 'http://localhost:3000/api';
 
 export class HttpParcelRepository implements IParcelRepository {
-  
+    
+    async save(parcel: Parcel): Promise<Result<void, Error>> {
+        return err(new Error('Method not implemented.'));
+    }
+
+    async findById(id: UUID): Promise<Result<Parcel | null, Error>> {
+        return err(new Error('Method not implemented.'));
+    }
+
+    async findByUserId(userId: UUID): Promise<Result<Parcel[], Error>> {
+        return err(new Error('Method not implemented.'));
+    }
+
+    async findByDriverId(driverId: UUID): Promise<Result<Parcel[], Error>> {
+        return err(new Error('Method not implemented.'));
+    }
+
+    async update(parcel: Parcel): Promise<Result<void, Error>> {
+        return err(new Error('Method not implemented.'));
+    }
+
   public async create(data: CreateParcelData, token: string): Promise<Result<Parcel, Error>> {
     try {
       const body = {

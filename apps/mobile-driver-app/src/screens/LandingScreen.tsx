@@ -25,16 +25,18 @@ import andeanPattern from '../assets/andean_pattern.png';
 
 const { width, height } = Dimensions.get('window');
 
-// Design tokens from prototype
+// Design tokens from prototype - Driver Dark Mode
 const COLORS = {
   goingRed: '#FF4E43',
   goingYellow: '#F5A623',
   white: '#FFFFFF',
   black: '#1A1A1A',
+  charcoal: '#0D0D0D',
   lightGray: '#F5F5F5',
   inputBorder: '#E5E5E5',
   placeholderText: '#9CA3AF',
-  charcoal: '#1A1A1A',
+  glassWhite: 'rgba(255, 255, 255, 0.1)',
+  glassBorder: 'rgba(255, 255, 255, 0.15)',
 };
 
 interface LandingScreenProps {
@@ -120,11 +122,11 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   if (currentScene === 1) {
     return (
       <View style={splashStyles.container}>
-        <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
         <View style={splashStyles.overlay} />
         <View style={splashStyles.redLine} />
         <Animated.View style={[splashStyles.suvContainer, { transform: [{ translateX: suvPosition }] }]}>
-          <Image source={{ uri: suvBlackRight }} style={splashStyles.suvImage} resizeMode="contain" />
+          <Image source={suvBlackRight as any} style={splashStyles.suvImage} resizeMode="contain" />
         </Animated.View>
         <View style={splashStyles.yellowLine} />
       </View>
@@ -135,10 +137,10 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   if (currentScene === 2) {
     return (
       <View style={splashStyles.container}>
-        <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
         <View style={splashStyles.overlay} />
         <Animated.View style={[splashStyles.logoRevealContainer, { opacity: logoOpacity }]}>
-          <Image source={{ uri: goingLogo }} style={splashStyles.logoImage} resizeMode="contain" />
+          <Image source={goingLogo as any} style={splashStyles.logoImage} resizeMode="contain" />
         </Animated.View>
         <Animated.Text style={[splashStyles.tagline, { opacity: taglineOpacity }]}>
           NOS MOVEMOS CONTIGO
@@ -150,9 +152,9 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
   // SCENE 3: Driver Login
   return (
     <SafeAreaView style={styles.container}>
-      <Image source={{ uri: ecuadorBg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
       <View style={styles.backgroundOverlay} />
-      <Image source={{ uri: andeanPattern }} style={styles.backgroundPattern} resizeMode="repeat" />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -170,7 +172,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
 
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <Image source={{ uri: goingLogo }} style={styles.logoImage} resizeMode="contain" />
+            <Image source={goingLogo as any} style={styles.logoImage} resizeMode="contain" />
           </View>
 
           {/* Login Form */}
@@ -220,13 +222,13 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ navigation }) => {
 
             <View style={styles.socialButtons}>
               <TouchableOpacity style={styles.socialButton}>
-                <Image source={{ uri: googleIcon }} style={styles.socialIconImage} resizeMode="contain" />
+                <Image source={googleIcon as any} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Image source={{ uri: facebookIcon }} style={styles.socialIconImage} resizeMode="contain" />
+                <Image source={facebookIcon as any} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Image source={{ uri: appleIcon }} style={styles.socialIconImage} resizeMode="contain" />
+                <Image source={appleIcon as any} style={styles.socialIconImage} resizeMode="contain" />
               </TouchableOpacity>
             </View>
           </View>
@@ -352,11 +354,11 @@ const styles = StyleSheet.create({
   formContainer: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: COLORS.glassWhite,
     padding: 32,
-    borderRadius: 30,
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: COLORS.glassBorder,
   },
   inputWrapper: {
     marginBottom: 16,

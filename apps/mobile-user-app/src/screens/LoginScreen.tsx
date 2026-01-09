@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
@@ -24,18 +23,23 @@ import {
 } from 'lucide-react-native';
 import { authService } from '../features/auth/AuthService';
 
-const { width, height } = Dimensions.get('window');
+// ESM import for assets
+import andeanPattern from '../assets/andean_pattern.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
+import goingLogoWhiteSymbol from '../assets/logo_white_symbol_black_text.png';
 
-// Design tokens
+// Design tokens matching premium brand guidelines
 const COLORS = {
   goingRed: '#FF4E43',
-  charcoal: '#1A1A1A',
-  offWhite: '#F5F5F5',
+  goingYellow: '#F5A623',
   white: '#FFFFFF',
-  inputBg: 'rgba(255, 255, 255, 0.9)',
-  errorRing: '#FACC15',
-  glassWhite: 'rgba(255, 255, 255, 0.2)',
-  glassBorder: 'rgba(255, 255, 255, 0.1)',
+  black: '#1A1A1A',
+  charcoal: '#1A1A1A',
+  lightGray: '#F5F5F5',
+  inputBorder: '#E5E5E5',
+  placeholderText: '#9CA3AF',
+  glassWhite: 'rgba(255, 255, 255, 0.15)',
+  glassBorder: 'rgba(255, 255, 255, 0.3)',
 };
 
 export function LoginScreen({ navigation }: { navigation: { replace: (screen: string) => void; navigate: (screen: string, params?: any) => void; } }) {
@@ -93,6 +97,10 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
+
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -100,15 +108,16 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Logo */}
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/logo_white_symbol_black_text.png')}
+              source={goingLogoWhiteSymbol as any}
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.subtitle}>Tu viaje comienza aquí</Text>
+            <Text style={styles.subtitle}>TU VIAJE COMIENZA AQUÍ</Text>
           </View>
 
           {/* Form */}
@@ -116,14 +125,14 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
             {/* Email Input */}
             <View style={styles.inputWrapper}>
               <View style={styles.inputIconWrapper}>
-                <Mail size={18} color={COLORS.charcoal} style={styles.fieldIcon} />
+                <Mail size={18} color={COLORS.black} style={styles.fieldIcon} />
                 <TextInput
                   style={[
                     styles.input,
                     errors.email && touched.email && styles.inputError
                   ]}
                   placeholder="Correo electrónico"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={COLORS.placeholderText}
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
@@ -142,14 +151,14 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
             {/* Password Input */}
             <View style={styles.inputWrapper}>
               <View style={styles.inputIconWrapper}>
-                <Lock size={18} color={COLORS.charcoal} style={styles.fieldIcon} />
+                <Lock size={18} color={COLORS.black} style={styles.fieldIcon} />
                 <TextInput
                   style={[
                     styles.input,
                     errors.password && touched.password && styles.inputError
                   ]}
                   placeholder="Contraseña"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={COLORS.placeholderText}
                   value={password}
                   onChangeText={(text) => {
                     setPassword(text);
@@ -165,7 +174,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
             </View>
 
             {/* Forgot Password */}
-            <TouchableOpacity style={styles.forgotButton}>
+            <TouchableOpacity style={styles.forgotButton} onPress={() => navigation.navigate('ForgotPassword')}>
               <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
@@ -179,8 +188,8 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
               {loading ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
                   <ArrowRight size={20} color={COLORS.white} />
                 </View>
               )}
@@ -205,7 +214,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
 
             <View style={styles.socialButtons}>
               <TouchableOpacity style={styles.socialButton}>
-                <Smartphone size={24} color={COLORS.charcoal} />
+                <Smartphone size={24} color={COLORS.black} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
                 <Mail size={24} color="#EA4335" />
@@ -219,11 +228,15 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
           {/* Legal Links */}
           <View style={styles.legalFooter}>
             <TouchableOpacity onPress={() => Alert.alert('Condiciones de Viaje')}>
-              <Text style={styles.legalLinkText}>Condiciones de Viaje</Text>
+              <Text style={styles.legalLinkText}>Condiciones</Text>
             </TouchableOpacity>
             <View style={styles.legalSeparator} />
             <TouchableOpacity onPress={() => Alert.alert('Condiciones de Envíos')}>
-              <Text style={styles.legalLinkText}>Condiciones de Envíos</Text>
+              <Text style={styles.legalLinkText}>Privacidad</Text>
+            </TouchableOpacity>
+            <View style={styles.legalSeparator} />
+            <TouchableOpacity onPress={() => Alert.alert('Ayuda')}>
+              <Text style={styles.legalLinkText}>Ayuda</Text>
             </TouchableOpacity>
           </View>
 
@@ -238,6 +251,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.goingRed,
   },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.black,
+    opacity: 0.88,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.04,
+  },
   keyboardView: {
     flex: 1,
   },
@@ -245,25 +267,38 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-    minHeight: height - 100,
+    paddingHorizontal: 32,
+    paddingVertical: 50,
   },
   logoContainer: {
     alignItems: 'center',
     marginBottom: 40,
   },
   logo: {
-    width: width * 0.45,
+    width: 200,
     height: 140,
   },
   subtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 18,
-    marginTop: 8,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 4,
+    marginTop: -10,
+    fontStyle: 'italic',
   },
   formContainer: {
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 360,
+    backgroundColor: COLORS.glassWhite,
+    padding: 30,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
   },
   inputWrapper: {
     marginBottom: 16,
@@ -271,135 +306,142 @@ const styles = StyleSheet.create({
   inputIconWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.inputBg,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 52,
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    height: 56,
   },
   fieldIcon: {
     marginRight: 10,
-    opacity: 0.6,
+    opacity: 0.8,
   },
   input: {
     flex: 1,
     height: '100%',
     fontSize: 16,
-    color: COLORS.charcoal,
+    color: COLORS.black,
+    fontWeight: '500',
   },
   inputError: {
     borderWidth: 2,
-    borderColor: COLORS.errorRing,
-    backgroundColor: COLORS.white,
+    borderColor: '#FACC15',
   },
   errorText: {
     color: COLORS.white,
     fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 4,
+    marginTop: 6,
     marginLeft: 4,
   },
   forgotButton: {
     alignSelf: 'flex-end',
-    marginBottom: 20,
+    marginBottom: 24,
+    marginTop: 8,
   },
   forgotText: {
-    color: COLORS.white,
-    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
     fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   loginButton: {
-    backgroundColor: COLORS.charcoal,
-    height: 56,
-    borderRadius: 14,
+    backgroundColor: COLORS.goingRed,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: COLORS.goingRed,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
   loginButtonText: {
     color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 32,
+    alignItems: 'center',
   },
   registerPrompt: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontSize: 14,
   },
   registerLink: {
     color: COLORS.white,
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '800',
     textDecorationLine: 'underline',
+    marginLeft: 6,
   },
   socialContainer: {
     width: '100%',
     marginTop: 40,
-    gap: 16,
+    alignItems: 'center',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    width: '100%',
+    marginBottom: 24,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 20,
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
-  },
-  socialIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.charcoal,
   },
   legalFooter: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: 48,
     paddingBottom: 20,
     width: '100%',
   },
   legalLinkText: {
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
-    textDecorationLine: 'underline',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   legalSeparator: {
-    width: 1,
-    height: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginHorizontal: 12,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 16,
   },
 });

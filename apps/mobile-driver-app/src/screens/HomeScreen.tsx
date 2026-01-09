@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
-import { User, Bell } from 'lucide-react-native';
+import { User, Bell, Zap, TrendingUp } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import andeanPattern from '../assets/andean_pattern.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
+
+// Design tokens - Driver Dark Mode Premium
+const COLORS = {
+  goingRed: '#FF4E43',
+  goingYellow: '#F5A623',
+  dark: '#0D0D0D',
+  charcoal: '#1A1A1A',
+  greenOnline: '#48BB78',
+  grayOffline: '#374151',
+  white: '#FFFFFF',
+  glassWhite: 'rgba(255, 255, 255, 0.08)',
+  glassBorder: 'rgba(255, 255, 255, 0.1)',
+};
 
 export function HomeScreen({ navigation }: { navigation: { navigate: (screen: string) => void } }) {
   const [isOnline, setIsOnline] = useState(false);
@@ -11,73 +25,78 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
   const toggleStatus = () => {
     setIsOnline(!isOnline);
     Alert.alert(
-      !isOnline ? 'Conectado' : 'Desconectado',
-      !isOnline ? 'Ahora puedes recibir viajes.' : 'Has terminado tu sesión.'
+      !isOnline ? '¡Conectado!' : 'Desconectado',
+      !isOnline ? 'Ahora estás recibiendo solicitudes de viaje.' : 'Has finalizado tu turno. ¡Buen trabajo!'
     );
   };
 
   return (
     <View style={styles.container}>
-      {/* 1. Map Background (Dark Mode) */}
-      <View style={styles.mapPlaceholder}>
-          <View style={styles.gridOverlay} />
-          <Text style={styles.mapText}>ECUADOR EN MOVIMIENTO</Text>
-          <View style={[styles.mapMarker, { top: '40%', left: '30%' }]} />
-          <View style={[styles.mapMarker, { top: '60%', left: '70%' }]} />
+      {/* 1. Premium Dark Map Background */}
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.mapOverlay} />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
+      
+      <View style={styles.mapTextContainer}>
+        <Text style={styles.mapText}>ECUADOR EN MOVIMIENTO</Text>
+        <View style={[styles.mapMarker, { top: '40%', left: '30%' }]} />
+        <View style={[styles.mapMarker, { top: '60%', left: '70%' }]} />
       </View>
 
-      <Image source={{ uri: andeanPattern }} style={styles.backgroundPattern} resizeMode="repeat" />
-
-      {/* 2. Top Bar Items */}
+      {/* 2. Top Bar - Premium Glass */}
       <SafeAreaView style={styles.topBar}>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation?.navigate('Profile')}>
-          <User color="white" size={24} />
+          <User color="white" size={22} />
         </TouchableOpacity>
         <View style={styles.earningsCapsule}>
           <Text style={styles.earningsLabel}>HOY</Text>
           <Text style={styles.earningsValue}>$150.00</Text>
+          <View style={styles.earningsGlow} />
         </View>
         <TouchableOpacity style={styles.iconButton}>
-          <Bell color="white" size={24} />
+          <Bell color="white" size={22} />
         </TouchableOpacity>
       </SafeAreaView>
 
-      {/* 3. Bottom Action Sheet */}
+      {/* 3. Bottom Action Sheet - Premium Glass */}
       <View style={styles.bottomSheet}>
-          <View style={styles.handle} />
-          <View style={styles.statusIndicator}>
-              <View style={[styles.statusDot, { backgroundColor: isOnline ? '#48BB78' : '#6B7280' }]} />
-              <Text style={styles.statusText}>
-                  {isOnline ? 'EN LÍNEA' : 'DESCONECTADO'}
-              </Text>
-          </View>
+        <View style={styles.handle} />
+        <View style={styles.statusIndicator}>
+          <View style={[styles.statusDot, { backgroundColor: isOnline ? COLORS.greenOnline : COLORS.grayOffline }]} />
+          <Text style={styles.statusText}>
+            {isOnline ? 'EN LÍNEA' : 'DESCONECTADO'}
+          </Text>
+        </View>
 
-          {/* 4. The "GO" Pill Button */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[styles.goButton, isOnline ? styles.goButtonOffline : styles.goButtonOnline]}
-              onPress={toggleStatus}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.goText}>
-                {isOnline ? 'SALIR DE TURNO' : 'INICIAR TURNO'}
-              </Text>
-            </TouchableOpacity>
-            <Text style={{ fontSize: 9, color: '#6B7280', marginTop: 12, fontWeight: 'bold', letterSpacing: 1 }}>ECUADOR EN MOVIMIENTO 🇪🇨</Text>
-          </View>
+        {/* 4. The "GO" Pill Button - Premium */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[styles.goButton, isOnline ? styles.goButtonOffline : styles.goButtonOnline]}
+            onPress={toggleStatus}
+            activeOpacity={0.85}
+          >
+            <Zap size={24} color={COLORS.white} style={{ marginRight: 12 }} />
+            <Text style={styles.goText}>
+              {isOnline ? 'FINALIZAR TURNO' : 'INICIAR TURNO'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.taglineText}>ECUADOR EN MOVIMIENTO 🇪🇨</Text>
+        </View>
 
-          {/* Quick Stats */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>4.8</Text>
-                <Text style={styles.statLabel}>Calificación</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>95%</Text>
-              <Text style={styles.statLabel}>Aceptación</Text>
-            </View>
+        {/* Quick Stats */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <TrendingUp size={18} color={COLORS.goingYellow} style={{ marginBottom: 4 }} />
+            <Text style={styles.statValue}>4.91</Text>
+            <Text style={styles.statLabel}>Calificación</Text>
           </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <TrendingUp size={18} color={COLORS.greenOnline} style={{ marginBottom: 4 }} />
+            <Text style={styles.statValue}>97%</Text>
+            <Text style={styles.statLabel}>Aceptación</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -86,38 +105,37 @@ export function HomeScreen({ navigation }: { navigation: { navigate: (screen: st
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: COLORS.dark,
   },
-  mapPlaceholder: {
+  mapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  mapTextContainer: {
     flex: 1,
-    backgroundColor: '#111827',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gridOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.03)',
-  },
   mapText: {
-    color: 'rgba(255,255,255,0.1)',
-    fontSize: 24,
+    color: 'rgba(255,255,255,0.08)',
+    fontSize: 28,
     fontWeight: '900',
-    letterSpacing: 8,
+    letterSpacing: 10,
   },
   mapMarker: {
     position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FF4E43',
-    shadowColor: '#FF4D4D',
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.goingRed,
+    shadowColor: COLORS.goingRed,
+    shadowOpacity: 0.9,
+    shadowRadius: 12,
+    elevation: 10,
   },
   backgroundPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.03,
+    opacity: 0.02,
   },
   topBar: {
     position: 'absolute',
@@ -131,102 +149,122 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.glassWhite,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: COLORS.glassBorder,
   },
   earningsCapsule: {
-    backgroundColor: 'black',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 30,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#48BB78',
+    borderWidth: 1.5,
+    borderColor: COLORS.greenOnline,
+    position: 'relative',
+  },
+  earningsGlow: {
+    position: 'absolute',
+    top: -2, left: -2, right: -2, bottom: -2,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: 'rgba(72, 187, 120, 0.3)',
   },
   earningsLabel: {
     color: 'rgba(255,255,255,0.5)',
     fontSize: 10,
-    fontWeight: 'bold',
-    letterSpacing: 2,
+    fontWeight: '900',
+    letterSpacing: 3,
   },
   earningsValue: {
-    color: '#48BB78',
-    fontSize: 24,
+    color: COLORS.greenOnline,
+    fontSize: 26,
     fontWeight: '900',
   },
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    backgroundColor: '#1A1A1A',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 24,
-    paddingBottom: 40,
+    backgroundColor: COLORS.charcoal,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 28,
+    paddingBottom: 48,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: COLORS.glassBorder,
   },
   handle: {
-    width: 40,
-    height: 4,
+    width: 48,
+    height: 5,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
+    borderRadius: 3,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    marginBottom: 24,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    marginBottom: 28,
+    backgroundColor: COLORS.glassWhite,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 10,
   },
   statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 1.5,
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   buttonContainer: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: 28,
+    alignItems: 'center',
   },
   goButton: {
-    height: 70,
-    borderRadius: 35,
+    width: '100%',
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 8,
+    flexDirection: 'row',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 12,
   },
   goButtonOnline: {
-    backgroundColor: '#FF4E43',
-    shadowColor: '#FF4D4D',
+    backgroundColor: COLORS.goingRed,
+    shadowColor: COLORS.goingRed,
   },
   goButtonOffline: {
-    backgroundColor: '#374151',
+    backgroundColor: COLORS.grayOffline,
     shadowColor: '#000',
   },
   goText: {
-    color: 'white',
-    fontSize: 20,
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: 3,
+  },
+  taglineText: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.3)',
+    marginTop: 16,
     fontWeight: '900',
     letterSpacing: 2,
   },
@@ -234,26 +272,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingTop: 16,
+    paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
+    borderTopColor: COLORS.glassBorder,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: COLORS.white,
+    fontSize: 24,
+    fontWeight: '900',
   },
   statLabel: {
     color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 4,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   statDivider: {
     width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    height: 40,
+    backgroundColor: COLORS.glassBorder,
   },
 });

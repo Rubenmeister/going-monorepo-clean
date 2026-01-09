@@ -10,12 +10,13 @@ export class GetTripByIdUseCase {
   ) {}
 
   async execute(id: UUID): Promise<Trip> {
-    const trip = await this.repository.findById(id);
+    const result = await this.repository.findById(id);
 
-    if (!trip) {
-      throw new NotFoundException(`Trip with ID ${id} not found.`);
-    }
-    
-    return trip;
+    return result.match(
+      (trip) => trip,
+      (error) => {
+        throw new NotFoundException(`Trip with ID ${id} not found: ${error.message}`);
+      }
+    );
   }
 }

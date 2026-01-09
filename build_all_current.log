@@ -1,0 +1,1353 @@
+
+ NX   Running target build for 32 projects:
+
+- accommodation-frontend
+- notification-frontend
+- domains-parcel-frontend-core
+- experience-frontend
+- transport-frontend
+- tracking-frontend
+- booking-frontend
+- payment-frontend
+- parcel-frontend
+- notifications-service
+- tour-frontend
+- user-frontend
+- @going-monorepo-clean/prisma-client
+- @going/shared/observability
+- experience-service
+- enterprise-portal
+- mobile-driver-app
+- transport-service
+- user-auth-service
+- tracking-service
+- admin-dashboard
+- booking-service
+- frontend-webapp
+- mobile-user-app
+- payment-service
+- parcel-service
+- tours-service
+- host-service
+- user
+- api-gateway
+- frontend
+- going-monorepo-clean
+
+
+
+> nx run frontend:build
+
+Compiling with SWC for frontend...
+
+
+> nx run domains-parcel-frontend-core:build
+
+Compiling with SWC for domains-parcel-frontend-core...
+
+
+> nx run @going-monorepo-clean/prisma-client:build
+
+Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+
+> nx run user:build
+
+Compiling with SWC for user...
+
+
+> nx run @going/shared/observability:build
+
+Compiling TypeScript files for project "@going/shared/observability"...
+Done compiling TypeScript files for project "@going/shared/observability".
+
+> nx run frontend-webapp:build:production
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 135 modules transformed.
+[31mÔ£ù[39m Build failed in 2.82s
+
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31m[31m[vite-plugin-pwa:build] [plugin vite-plugin-pwa:build] node_modules/react-native/index.js (28:7): There was an error during the build:[39m
+
+  Expected 'from', got 'typeOf' in C:/Users/USER1/going-monorepo-clean/node_modules/react-native/index.js
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  Expected 'from', got 'typeOf' in C:/Users/USER1/going-monorepo-clean/node_modules/react-native/index.js[39m
+file: [36mC:/Users/USER1/going-monorepo-clean/node_modules/react-native/index.js:28:7[39m
+[33m
+26: // ----------------------------------------------------------------------------
+27: 
+28: import typeof * as ReactNativePublicAPI from './index.js.flow';
+           ^
+29: 
+30: const warnOnce = require('./Libraries/Utilities/warnOnce').default;
+[39m
+Pass --verbose to see the stacktrace.
+
+
+> nx run host-service:build:production
+
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.04 KiB [compared for emit]
+assets by path *.js 11.8 KiB
+  asset main.js 9.26 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/host-service/src/assets/.gitkeep] [copied]
+orphan modules 16.1 KiB [orphan] 19 modules
+runtime modules 3.53 KiB 8 modules
+built modules 20.2 KiB [built]
+  modules by path ./ 20 KiB
+    cacheable modules 6.86 KiB 4 modules
+    ./apps/host-service/src/main.ts + 8 modules 7.59 KiB [not cacheable] [built] [code generated]
+    ./libs/shared/src/backend.ts + 9 modules 5.55 KiB [not cacheable] [built] [code generated]
+  modules by path external "@nestjs/ 84 bytes
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    external "@nestjs/core" 42 bytes [built] [code generated]
+  external "nestjs-pino" 42 bytes [built] [code generated]
+  external "tslib" 42 bytes [built] [code generated]
+  external "neverthrow" 42 bytes [built] [code generated]
+  external "@prisma/client" 42 bytes [built] [code generated]
+webpack 5.104.1 compiled successfully in 12630 ms
+
+> nx run admin-dashboard:build:production
+
+ [33m[1mÔÜá[22m[39m You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+  [1m[38;2;173;127;168mÔû▓ Next.js 14.2.3[39m[22m
+
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [33m[1mÔÜá[22m[39m Found lockfile missing swc dependencies, patching...
+ [33m[1mÔÜá[22m[39m Lockfile was successfully patched, please run "npm install" to ensure @next/swc dependencies are downloaded
+[31mFailed to compile.
+[39m
+../../node_modules/react-native/Libraries/Utilities/binaryToBase64.js
+Module parse failed: Unexpected token (15:28)
+File was processed with these loaders:
+ * ../../node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+| const base64 = require('base64-js');
+| 
+> function binaryToBase64(data: ArrayBuffer | $ArrayBufferView): string {
+|   if (data instanceof ArrayBuffer) {
+|     // $FlowFixMe[reassign-const]
+
+Import trace for requested module:
+../../node_modules/react-native/Libraries/Utilities/binaryToBase64.js
+../../node_modules/@react-native-firebase/app/lib/common/Base64.js
+../../node_modules/@react-native-firebase/app/lib/common/index.js
+../../node_modules/@react-native-firebase/auth/lib/index.js
+../../libs/shared/ui/src/lib/hooks/usePhoneAuth.ts
+../../libs/shared/ui/src/index.ts
+./src/app/page.tsx
+
+../../node_modules/react-native/Libraries/vendor/emitter/EventEmitter.js
+Module parse failed: Unexpected token (12:5)
+File was processed with these loaders:
+ * ../../node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ../../node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+| 
+| // $FlowFixMe[unclear-type] unclear type of events
+> type UnsafeObject = Object;
+| 
+| export interface EventSubscription {
+
+Import trace for requested module:
+../../node_modules/react-native/Libraries/vendor/emitter/EventEmitter.js
+../../node_modules/@react-native-firebase/app/lib/internal/SharedEventEmitter.js
+../../node_modules/@react-native-firebase/app/lib/internal/index.js
+../../node_modules/@react-native-firebase/auth/lib/index.js
+../../libs/shared/ui/src/lib/hooks/usePhoneAuth.ts
+../../libs/shared/ui/src/index.ts
+./src/app/page.tsx
+
+../../node_modules/react-native/index.js
+Error: 
+  [31mx[0m Expected 'from', got 'typeof'
+    ,-[[36;1;4mC:\Users\USER1\going-monorepo-clean\node_modules\react-native\index.js[0m:25:1]
+ [2m25[0m | // whenever updating React Native's public API.
+ [2m26[0m | // ----------------------------------------------------------------------------
+ [2m27[0m | 
+ [2m28[0m | import typeof * as ReactNativePublicAPI from './index.js.flow';
+    : [31;1m       ^^^^^^[0m
+ [2m29[0m | 
+ [2m30[0m | const warnOnce = require('./Libraries/Utilities/warnOnce').default;
+ [2m31[0m | const invariant = require('invariant');
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+../../node_modules/react-native/index.js
+../../libs/shared/ui/src/lib/ShareTripButton.tsx
+../../libs/shared/ui/src/index.ts
+./src/app/page.tsx
+
+
+> Build failed because of webpack errors
+[1m[31mBuild process exited due to code 1  [39m[22m
+
+> nx run booking-service:build:production
+
+assets by path *.js 17.8 KiB
+  asset main.js 12.5 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.06 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/booking-service/src/assets/.gitkeep] [copied]
+orphan modules 30.8 KiB [orphan] 35 modules
+runtime modules 3.53 KiB 8 modules
+built modules 35.1 KiB [built]
+  modules by path ./ 34.7 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 12804 ms
+
+> nx run api-gateway:build
+
+> webpack-cli build --node-env=production
+
+chunk (runtime: main) [1m[32mmain.js[39m[22m (main) 37.1 KiB [1m[33m[entry][39m[22m [1m[32m[rendered][39m[22m
+webpack compiled [1m[32msuccessfully[39m[22m (a5ddcfc2eea319b5)
+
+> nx run experience-service:build:production
+
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.07 KiB [compared for emit]
+assets by path *.js 8.63 KiB
+  asset main.js 6.12 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/experience-service/src/assets/.gitkeep] [copied]
+orphan modules 12.4 KiB [orphan] 16 modules
+runtime modules 3.27 KiB 7 modules
+built modules 14.3 KiB [built]
+  modules by path ./ 14.1 KiB
+    ./apps/experience-service/src/main.ts + 1 modules 1.64 KiB [built] [code generated]
+    ./libs/shared/src/backend.ts + 13 modules 7.97 KiB [not cacheable] [built] [code generated]
+    ./libs/shared/src/index.ts + 2 modules 4.49 KiB [built] [code generated]
+  modules by path external "@nestjs/ 84 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+  external "nestjs-pino" 42 bytes [built] [code generated]
+  external "tslib" 42 bytes [built] [code generated]
+  external "neverthrow" 42 bytes [built] [code generated]
+webpack 5.104.1 compiled successfully in 12509 ms
+
+> nx run tracking-service:build:production
+
+assets by path *.js 17.2 KiB
+  asset main.js 13.9 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+  asset 2.js 822 bytes [compared for emit] [minimized] 1 related asset
+assets by path *.json 182 KiB
+  asset package-lock.json 180 KiB [compared for emit]
+  asset package.json 1.22 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/tracking-service/src/assets/.gitkeep] [copied]
+orphan modules 26.5 KiB [orphan] 32 modules
+runtime modules 3.53 KiB 8 modules
+built modules 32.2 KiB [built]
+  modules by path ./ 31.8 KiB
+    cacheable modules 7.99 KiB 5 modules
+    ./apps/tracking-service/src/main.ts + 21 modules 18.3 KiB [not cacheable] [built] [code generated]
+    ./libs/shared/src/backend.ts + 9 modules 5.55 KiB [not cacheable] [built] [code generated]
+  modules by path external "@nestjs/ 126 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    external "@nestjs/platform-socket.io" 42 bytes [built] [code generated]
+  + 6 modules
+
+WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:57-79
+export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+ @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 18:37-55
+ @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+
+WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:99-121
+export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+ @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 18:37-55
+ @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+
+webpack 5.104.1 compiled with 2 warnings in 12552 ms
+
+> nx run notifications-service:build:production
+
+assets by path *.js 28.2 KiB
+  asset main.js 22.9 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 225 KiB
+  asset package-lock.json 224 KiB [compared for emit]
+  asset package.json 1.15 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/notifications-service/src/assets/.gitkeep] [copied]
+orphan modules 52.5 KiB [orphan] 46 modules
+runtime modules 3.53 KiB 8 modules
+built modules 56.7 KiB [built]
+  modules by path ./ 56.3 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 17004 ms
+
+> nx run user-auth-service:build:production
+
+assets by path *.js 20.3 KiB
+  asset main.js 15 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 180 KiB
+  asset package-lock.json 179 KiB [compared for emit]
+  asset package.json 1.12 KiB [compared for emit]
+asset 3rdpartylicenses.txt 5 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/user-auth-service/src/assets/.gitkeep] [copied]
+orphan modules 36.8 KiB [orphan] 48 modules
+runtime modules 3.53 KiB 8 modules
+built modules 41.3 KiB [built]
+  modules by path ./ 40.9 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 11287 ms
+
+> nx run payment-service:build:production
+
+assets by path *.js 19.1 KiB
+  asset main.js 13.8 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 175 KiB
+  asset package-lock.json 174 KiB [compared for emit]
+  asset package.json 1.09 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/payment-service/src/assets/.gitkeep] [copied]
+orphan modules 33.1 KiB [orphan] 34 modules
+runtime modules 3.53 KiB 8 modules
+built modules 37.4 KiB [built]
+  modules by path ./ 37 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 9778 ms
+
+> nx run parcel-service:build:production
+
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.06 KiB [compared for emit]
+assets by path *.js 23 KiB
+  asset main.js 20.5 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/parcel-service/src/assets/.gitkeep] [copied]
+orphan modules 41.7 KiB [orphan] 48 modules
+runtime modules 3.53 KiB 8 modules
+built modules 45.9 KiB [built]
+  modules by path ./ 45.6 KiB
+    cacheable modules 6.86 KiB 4 modules
+    ./apps/parcel-service/src/main.ts + 40 modules 33.3 KiB [not cacheable] [built] [code generated]
+    ./libs/shared/src/backend.ts + 6 modules 5.43 KiB [not cacheable] [built] [code generated]
+  modules by path external "@nestjs/ 168 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 2 modules
+  + 5 modules
+
+WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:57-74
+export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+ @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+ @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+ @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+
+WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:94-111
+export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+ @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+ @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+ @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+
+webpack 5.104.1 compiled with 2 warnings in 10248 ms
+
+> nx run tours-service:build:production
+
+assets by path *.js 21.1 KiB
+  asset main.js 15.7 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.04 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/tours-service/src/assets/.gitkeep] [copied]
+orphan modules 35.7 KiB [orphan] 38 modules
+runtime modules 3.53 KiB 8 modules
+built modules 40 KiB [built]
+  modules by path ./ 39.6 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 8643 ms
+
+> nx run parcel-frontend:build
+
+Compiling with SWC for parcel-frontend...
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:3:3[39m[24m - [31m[1merror[22m[39m [90mTS2305[39m: Module '"@going-monorepo-clean/domains-parcel-frontend-core"' has no exported member 'Parcel'.
+
+[0m [90m 1 | [39m[36mimport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m [90m 2 | [39m[36mimport[39m {[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m  [33mParcel[39m[33m,[39m[0m
+[0m [90m   | [39m  [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m  [33mIParcelRepository[39m[33m,[39m[0m
+[0m [90m 5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m [90m 6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:4:3[39m[24m - [31m[1merror[22m[39m [90mTS2305[39m: Module '"@going-monorepo-clean/domains-parcel-frontend-core"' has no exported member 'IParcelRepository'.
+
+[0m [90m 2 | [39m[36mimport[39m {[0m
+[0m [90m 3 | [39m  [33mParcel[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m  [33mIParcelRepository[39m[33m,[39m[0m
+[0m [90m   | [39m  [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m [90m 6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m 7 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:5:3[39m[24m - [31m[1merror[22m[39m [90mTS2305[39m: Module '"@going-monorepo-clean/domains-parcel-frontend-core"' has no exported member 'CreateParcelData'.
+
+[0m [90m 3 | [39m  [33mParcel[39m[33m,[39m[0m
+[0m [90m 4 | [39m  [33mIParcelRepository[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m [90m   | [39m  [31m[1m^[22m[39m[0m
+[0m [90m 6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m 7 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 8 | [39m[0m
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:6:8[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/index.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 4 | [39m  [33mIParcelRepository[39m[33m,[39m[0m
+[0m [90m 5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m   | [39m       [31m[1m^[22m[39m[0m
+[0m [90m 7 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 8 | [39m[0m
+[0m [90m 9 | [39m[36mconst[39m [33mAPI_GATEWAY_URL[39m [33m=[39m [32m'http://localhost:3000/api'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\parcel-frontend\src\lib\ports\http-parcel.repository.ts:7:22[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m  [33mCreateParcelData[39m[33m,[39m[0m
+[0m [90m  6 | [39m} from [32m'@going-monorepo-clean/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m    | [39m                     [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[36mconst[39m [33mAPI_GATEWAY_URL[39m [33m=[39m [32m'http://localhost:3000/api'[39m[33m;[39m[0m
+[0m [90m 10 | [39m[0m
+
+[4m[34mlibs\domains\parcel\frontend-core\src\index.ts:1:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/parcel/frontend-core/src/lib/domains-parcel-frontend-core.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m[31m[1m>[22m[39m[90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/domains-parcel-frontend-core'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 2 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m [90m 7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:7:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m[0m
+[0m [90m  6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[90m// Exporta 'neverthrow' para que todos los dominios[39m[0m
+[0m [90m 10 | [39m[90m// lo importen desde este ├║nico lugar[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:14:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+
+[0m [90m 12 | [39m[0m
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m[31m[1m>[22m[39m[90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:15:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' 'libs/domains/parcel-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m [90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+
+Found 12 errors.
+
+> nx run tour-frontend:build
+
+Compiling with SWC for tour-frontend...
+
+
+> nx run payment-frontend:build
+
+Compiling with SWC for payment-frontend...
+
+
+> nx run transport-service:build:production
+
+assets by path *.js 25.8 KiB
+  asset main.js 20.5 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.07 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/transport-service/src/assets/.gitkeep] [copied]
+orphan modules 44.3 KiB [orphan] 42 modules
+runtime modules 3.53 KiB 8 modules
+built modules 49 KiB [built]
+  modules by path ./ 48.5 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 9251 ms
+
+> nx run tracking-frontend:build
+
+Compiling TypeScript files for project "tracking-frontend"...
+Done compiling TypeScript files for project "tracking-frontend".
+
+> nx run experience-frontend:build
+
+Compiling with SWC for experience-frontend...
+
+
+> nx run notification-frontend:build
+
+Compiling with SWC for notification-frontend...
+
+[4m[34mlibs\domains\notification-frontend\src\lib\application\get-user-notifications.use-case.ts:3:56[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module '@going-monorepo-clean/notification-api-client' or its corresponding type declarations.
+
+[0m [90m 1 | [39m[36mimport[39m { [33mInjectable[39m } from [32m'@nestjs/common'[39m[33m;[39m[0m
+[0m [90m 2 | [39m[36mimport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mimport[39m { [33mNotificationApiClient[39m[33m,[39m [33mNotificationDto[39m } from [32m'@going-monorepo-clean/notification-api-client'[39m[33m;[39m [90m// <--- NUEVA DEPENDENCIA[39m[0m
+[0m [90m   | [39m                                                       [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mimport[39m { [33mIAuthRepository[39m } from [32m'@going-monorepo-clean/domains-user-frontend-core'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 6 | [39m[0m
+
+[4m[34mlibs\domains\notification-frontend\src\lib\application\get-user-notifications.use-case.ts:4:33[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module '@going-monorepo-clean/domains-user-frontend-core' or its corresponding type declarations.
+
+[0m [90m 2 | [39m[36mimport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mimport[39m { [33mNotificationApiClient[39m[33m,[39m [33mNotificationDto[39m } from [32m'@going-monorepo-clean/notification-api-client'[39m[33m;[39m [90m// <--- NUEVA DEPENDENCIA[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mimport[39m { [33mIAuthRepository[39m } from [32m'@going-monorepo-clean/domains-user-frontend-core'[39m[33m;[39m[0m
+[0m [90m   | [39m                                [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 6 | [39m[0m
+[0m [90m 7 | [39m[90m// --- View Model (Nuevo Modelo Simple para la UI) ---[39m[0m
+
+[4m[34mlibs\domains\notification-frontend\src\lib\application\get-user-notifications.use-case.ts:5:22[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 3 | [39m[36mimport[39m { [33mNotificationApiClient[39m[33m,[39m [33mNotificationDto[39m } from [32m'@going-monorepo-clean/notification-api-client'[39m[33m;[39m [90m// <--- NUEVA DEPENDENCIA[39m[0m
+[0m [90m 4 | [39m[36mimport[39m { [33mIAuthRepository[39m } from [32m'@going-monorepo-clean/domains-user-frontend-core'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 5 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m   | [39m                     [31m[1m^[22m[39m[0m
+[0m [90m 6 | [39m[0m
+[0m [90m 7 | [39m[90m// --- View Model (Nuevo Modelo Simple para la UI) ---[39m[0m
+[0m [90m 8 | [39m[36mexport[39m interface [33mNotificationViewModel[39m {[0m
+
+[4m[34mlibs\domains\notification-frontend\src\lib\application\get-user-notifications.use-case.ts:41:70[39m[24m - [31m[1merror[22m[39m [90mTS7006[39m: Parameter 'dto' implicitly has an 'any' type.
+
+[0m [90m 39 | [39m        [0m
+[0m [90m 40 | [39m        [90m// 2. Mapear DTOs simples a View Models (Transformaci├│n)[39m[0m
+[0m[31m[1m>[22m[39m[90m 41 | [39m        [36mconst[39m viewModels[33m:[39m [33mNotificationViewModel[39m[] [33m=[39m result[33m.[39mvalue[33m.[39mmap(dto [33m=>[39m ({[0m
+[0m [90m    | [39m                                                                     [31m[1m^[22m[39m[0m
+[0m [90m 42 | [39m            id[33m:[39m dto[33m.[39mid[33m,[39m[0m
+[0m [90m 43 | [39m            title[33m:[39m dto[33m.[39mtitle[33m,[39m[0m
+[0m [90m 44 | [39m            body[33m:[39m dto[33m.[39mbody[33m,[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m [90m 7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:7:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m[0m
+[0m [90m  6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[90m// Exporta 'neverthrow' para que todos los dominios[39m[0m
+[0m [90m 10 | [39m[90m// lo importen desde este ├║nico lugar[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:14:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+
+[0m [90m 12 | [39m[0m
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m[31m[1m>[22m[39m[90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:15:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' 'libs/domains/notification-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m [90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+
+Found 10 errors.
+
+> nx run accommodation-frontend:build
+
+Compiling with SWC for accommodation-frontend...
+
+[4m[34mlibs\domains\accommodation-frontend\src\index.ts:1:15[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module './lib/entities/accommodation.entity' or its corresponding type declarations.
+
+[0m[31m[1m>[22m[39m[90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/entities/accommodation.entity'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/ports/iaccommodation.repository'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/use-cases/search-accommodations.use-case'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/http-accommodation.repository'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\accommodation-frontend\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module './lib/use-cases/search-accommodations.use-case' or its corresponding type declarations.
+
+[0m [90m 1 | [39m[36mexport[39m [33m*[39m from [32m'./lib/entities/accommodation.entity'[39m[33m;[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/ports/iaccommodation.repository'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/use-cases/search-accommodations.use-case'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/http-accommodation.repository'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\accommodation-frontend\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module './lib/http-accommodation.repository' or its corresponding type declarations.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/ports/iaccommodation.repository'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/use-cases/search-accommodations.use-case'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/http-accommodation.repository'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+
+[4m[34mlibs\domains\accommodation-frontend\src\lib\application\use-cases\search-accommodations.use-case.ts:7:8[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module '@going-monorepo-clean/domains-accommodation-frontend-core' or its corresponding type declarations.
+
+[0m [90m  5 | [39m  [33mIAccommodationRepository[39m[33m,[39m[0m
+[0m [90m  6 | [39m  [33mSearchFilters[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m} from [32m'@going-monorepo-clean/domains-accommodation-frontend-core'[39m[33m;[39m[0m
+[0m [90m    | [39m       [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[33m@[39m[33mInjectable[39m()[0m
+[0m [90m 10 | [39m[36mexport[39m [36mclass[39m [33mSearchAccommodationsUseCase[39m {[0m
+
+[4m[34mlibs\domains\accommodation-frontend\src\lib\ports\iaccommodation.repository.ts:2:31[39m[24m - [31m[1merror[22m[39m [90mTS2307[39m: Cannot find module '../entities/accommodation.entity' or its corresponding type declarations.
+
+[0m [90m 1 | [39m[36mimport[39m { [33mResult[39m } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mimport[39m { [33mAccommodation[39m } from [32m'../entities/accommodation.entity'[39m[33m;[39m[0m
+[0m [90m   | [39m                              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[0m
+[0m [90m 5 | [39m[36mexport[39m interface [33mSearchFilters[39m {[0m
+
+[4m[34mlibs\domains\accommodation-frontend\src\lib\ports\iaccommodation.repository.ts:3:22[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/ports/iaccommodation.repository.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/accommodation-frontend/src/lib/application/entities/accommodation.entity.ts'
+
+[0m [90m 1 | [39m[36mimport[39m { [33mResult[39m } from [32m'neverthrow'[39m[33m;[39m[0m
+[0m [90m 2 | [39m[36mimport[39m { [33mAccommodation[39m } from [32m'../entities/accommodation.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mimport[39m { [33mUUID[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m   | [39m                     [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[0m
+[0m [90m 5 | [39m[36mexport[39m interface [33mSearchFilters[39m {[0m
+[0m [90m 6 | [39m  city[33m?[39m[33m:[39m string[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m [90m 7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:7:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m[0m
+[0m [90m  6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[90m// Exporta 'neverthrow' para que todos los dominios[39m[0m
+[0m [90m 10 | [39m[90m// lo importen desde este ├║nico lugar[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:14:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+
+[0m [90m 12 | [39m[0m
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m[31m[1m>[22m[39m[90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:15:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' 'libs/domains/accommodation-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m [90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+
+Found 12 errors.
+
+> nx run booking-frontend:build
+
+Compiling with SWC for booking-frontend...
+
+
+> nx run transport-frontend:build
+
+Compiling with SWC for transport-frontend...
+
+[4m[34mlibs\domains\transport-frontend\src\lib\adapters\http\transport.adapter.ts:2:39[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[36mimport[39m { [33mInjectable[39m } from [32m'@nestjs/common'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mimport[39m { [33mITripRepository[39m[33m,[39m [33mTrip[39m } from [32m'@going-monorepo-clean/domains-transport-core'[39m[33m;[39m[0m
+[0m [90m   | [39m                                      [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mimport[39m { [33mLocation[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[0m
+[0m [90m 5 | [39m[33m@[39m[33mInjectable[39m()[0m
+
+[4m[34mlibs\domains\transport-frontend\src\lib\adapters\http\transport.adapter.ts:7:9[39m[24m - [31m[1merror[22m[39m [90mTS2416[39m: Property 'save' in type 'HttpTransportAdapter' is not assignable to the same property in base type 'ITripRepository'.
+  Type '(trip: Trip) => Promise<void>' is not assignable to type '(trip: Trip) => Promise<Result<void, Error>>'.
+    Type 'Promise<void>' is not assignable to type 'Promise<Result<void, Error>>'.
+      Type 'void' is not assignable to type 'Result<void, Error>'.
+
+[0m [90m  5 | [39m[33m@[39m[33mInjectable[39m()[0m
+[0m [90m  6 | [39m[36mexport[39m [36mclass[39m [33mHttpTransportAdapter[39m implements [33mITripRepository[39m {[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m  async save(trip[33m:[39m [33mTrip[39m)[33m:[39m [33mPromise[39m[33m<[39m[36mvoid[39m[33m>[39m {[0m
+[0m [90m    | [39m        [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m    [90m// L├│gica para llamar a transport-service[39m[0m
+[0m [90m  9 | [39m    await fetch([32m'/api/transport/create'[39m[33m,[39m { method[33m:[39m [32m'POST'[39m[33m,[39m body[33m:[39m [33mJSON[39m[33m.[39mstringify(trip) })[33m;[39m[0m
+[0m [90m 10 | [39m  }[0m
+
+[4m[34mlibs\domains\transport-frontend\src\lib\adapters\http\transport.adapter.ts:12:9[39m[24m - [31m[1merror[22m[39m [90mTS2416[39m: Property 'findById' in type 'HttpTransportAdapter' is not assignable to the same property in base type 'ITripRepository'.
+  Type '(id: string) => Promise<Trip | null>' is not assignable to type '(id: string) => Promise<Result<Trip, Error>>'.
+    Type 'Promise<Trip | null>' is not assignable to type 'Promise<Result<Trip, Error>>'.
+      Type 'Trip | null' is not assignable to type 'Result<Trip, Error>'.
+        Type 'null' is not assignable to type 'Result<Trip, Error>'.
+
+[0m [90m 10 | [39m  }[0m
+[0m [90m 11 | [39m[0m
+[0m[31m[1m>[22m[39m[90m 12 | [39m  async findById(id[33m:[39m string)[33m:[39m [33mPromise[39m[33m<[39m[33mTrip[39m [33m|[39m [36mnull[39m[33m>[39m {[0m
+[0m [90m    | [39m        [31m[1m^[22m[39m[0m
+[0m [90m 13 | [39m    [36mthrow[39m [36mnew[39m [33mError[39m([32m'Method not implemented.'[39m)[33m;[39m[0m
+[0m [90m 14 | [39m  }[0m
+[0m [90m 15 | [39m  async findAvailableSharedTrips(origen[33m:[39m [33mLocation[39m[33m,[39m destino[33m:[39m [33mLocation[39m[33m,[39m tipoVehiculo[33m:[39m [32m'SUV'[39m [33m|[39m [32m'VAN'[39m)[33m:[39m [33mPromise[39m[33m<[39m[33mTrip[39m[][33m>[39m {[0m
+
+[4m[34mlibs\domains\transport\core\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/entities/trip.entity.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './libs/entities/trip.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/index.ts'
+    Imported via '../entities/trip.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts'
+
+[0m [90m 1 | [39m[90m// Transport Core Domain[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./libs/entities/trip.entity'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./libs/ports/itrip.repository'[39m[33m;[39m[0m
+
+[4m[34mlibs\domains\transport\core\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Transport Core Domain[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./libs/entities/trip.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./libs/ports/itrip.repository'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+
+[4m[34mlibs\domains\transport\core\src\libs\entities\trip.entity.ts:1:33[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/entities/trip.entity.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport/core/src/libs/ports/itrip.repository.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/transport-frontend/src/lib/adapters/http/transport.adapter.ts'
+
+[0m[31m[1m>[22m[39m[90m 1 | [39m[36mimport[39m { [33mLocation[39m[33m,[39m [33mMoney[39m } from [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m[0m
+[0m [90m   | [39m                                [31m[1m^[22m[39m[0m
+[0m [90m 2 | [39m[0m
+[0m [90m 3 | [39m[36mexport[39m type [33mTripStatus[39m [33m=[39m [32m'SCHEDULED'[39m [33m|[39m [32m'WAITING_PASSENGERS'[39m [33m|[39m [32m'IN_TRANSIT'[39m [33m|[39m [32m'COMPLETED'[39m [33m|[39m [32m'CANCELLED'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m type [33mVehicleType[39m [33m=[39m [32m'SUV'[39m [33m|[39m [32m'VAN'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:2:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m[31m[1m>[22m[39m[90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:3:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 1 | [39m[90m// Exporta los Value Objects[39m[0m
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:4:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 2 | [39m[36mexport[39m [33m*[39m from [32m'./lib/uuid.vo'[39m[33m;[39m[0m
+[0m [90m 3 | [39m[36mexport[39m [33m*[39m from [32m'./lib/money.vo'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 | [39m[36mexport[39m [33m*[39m from [32m'./lib/location.vo'[39m[33m;[39m[0m
+[0m [90m   | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 5 | [39m[0m
+[0m [90m 6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m [90m 7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:7:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m  5 | [39m[0m
+[0m [90m  6 | [39m[90m// Exporta los DTOs compartidos[39m[0m
+[0m[31m[1m>[22m[39m[90m  7 | [39m[36mexport[39m [33m*[39m from [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m  8 | [39m[0m
+[0m [90m  9 | [39m[90m// Exporta 'neverthrow' para que todos los dominios[39m[0m
+[0m [90m 10 | [39m[90m// lo importen desde este ├║nico lugar[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:14:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+
+[0m [90m 12 | [39m[0m
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m[31m[1m>[22m[39m[90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+[0m [90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+
+[4m[34mlibs\shared\domain\src\index.ts:15:15[39m[24m - [31m[1merror[22m[39m [90mTS6059[39m: File 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not under 'rootDir' 'libs/domains/transport-frontend'. 'rootDir' is expected to contain all source files.
+
+[0m [90m 13 | [39m[90m// Base Classes[39m[0m
+[0m [90m 14 | [39m[36mexport[39m [33m*[39m from [32m'./lib/base.entity'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 15 | [39m[36mexport[39m [33m*[39m from [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+[0m [90m    | [39m              [31m[1m^[22m[39m[0m
+
+Found 12 errors.
+
+> nx run user-frontend:build
+
+Compiling TypeScript files for project "user-frontend"...
+Done compiling TypeScript files for project "user-frontend".
+
+> nx run enterprise-portal:build:production
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+
+[1m[33mwarn[39m[22m - The `content` option in your Tailwind CSS configuration is missing or empty.
+[1m[33mwarn[39m[22m - Configure your content sources or your generated CSS will be missing styles.
+[1m[33mwarn[39m[22m - https://tailwindcss.com/docs/content-configuration
+[32mÔ£ô[39m 1733 modules transformed.
+[31mÔ£ù[39m Build failed in 4.66s
+
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31m[31m[commonjs--resolver] Expected 'from', got 'typeOf' in C:/Users/USER1/going-monorepo-clean/node_modules/react-native/index.js[39m[31m[39m
+
+file: [36mC:/Users/USER1/going-monorepo-clean/node_modules/react-native/index.js:28:7[39m
+[33m
+26: // ----------------------------------------------------------------------------
+27: 
+28: import typeof * as ReactNativePublicAPI from './index.js.flow';
+           ^
+29: 
+30: const warnOnce = require('./Libraries/Utilities/warnOnce').default;
+[39m
+Pass --verbose to see the stacktrace.
+
+
+> nx run mobile-driver-app:build
+
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mÔ£ô[39m 2278 modules transformed.
+[33m
+[1m(!)[22m outDir [37m[2mC:\Users\USER1\going-monorepo-clean\apps\dist\mobile-driver-app\web[22m[33m is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+[39m
+rendering chunks...
+computing gzip size...
+[2m../dist/mobile-driver-app/web/[22m[32mindex.html                                [39m[1m[2m    0.50 kB[22m[1m[22m[2m Ôöé gzip:   0.32 kB[22m
+[2m../dist/mobile-driver-app/web/[22m[32massets/logo-CNeDx48p.png                  [39m[1m[2m   16.08 kB[22m[1m[22m
+[2m../dist/mobile-driver-app/web/[22m[32massets/ecuador_landscape_bg-9423fsCt.png  [39m[1m[2m  585.65 kB[22m[1m[22m
+[2m../dist/mobile-driver-app/web/[22m[32massets/andean_pattern-BDW5QgNI.png        [39m[1m[2m1,153.40 kB[22m[1m[22m
+[2m../dist/mobile-driver-app/web/[22m[36massets/index-DiZ4vKXh.js                  [39m[1m[33m  802.12 kB[39m[22m[2m Ôöé gzip: 251.55 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32mÔ£ô built in 11.21s[39m
+
+> nx run mobile-user-app:build
+
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[33m[plugin vite:esbuild] src/screens/ChatScreen.tsx: [33mDuplicate key "container" in object literal[33m
+326 |      marginBottom: 12,
+327 |    },
+328 |    container: {
+    |    ^
+329 |      flex: 1,
+330 |      backgroundColor: COLORS.white,
+[39m
+[32mÔ£ô[39m 1998 modules transformed.
+[33m
+[1m(!)[22m outDir [37m[2mC:\Users\USER1\going-monorepo-clean\apps\dist\mobile-user-app\web[22m[33m is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+[39m
+rendering chunks...
+computing gzip size...
+[2m../dist/mobile-user-app/web/[22m[32mindex.html                                        [39m[1m[2m    0.50 kB[22m[1m[22m[2m Ôöé gzip:   0.32 kB[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/logo-CNeDx48p.png                          [39m[1m[2m   16.08 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/logo_white_symbol_black_text-B4TSDYFc.png  [39m[1m[2m   18.64 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/logo_horizontal-DShVF_L4.png               [39m[1m[2m   26.18 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/facebook_icon-B0N7oO4Q.png                 [39m[1m[2m  104.66 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/apple_icon-DA81BlAP.png                    [39m[1m[2m  331.00 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/google_icon-BBecHfzm.png                   [39m[1m[2m  341.54 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/ecuador_landscape_bg-9423fsCt.png          [39m[1m[2m  585.65 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/suv_black_right_v3-BYz0pXV7.png            [39m[1m[2m  749.03 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[32massets/andean_pattern-BDW5QgNI.png                [39m[1m[2m1,153.40 kB[22m[1m[22m
+[2m../dist/mobile-user-app/web/[22m[36massets/index-CBnt8x4Y.js                          [39m[1m[33m  666.34 kB[39m[22m[2m Ôöé gzip: 189.54 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32mÔ£ô built in 6.90s[39m
+
+> nx run going-monorepo-clean:build
+
+
+> going-monorepo-clean@2.0.0 build
+> nx build
+
+
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+[2m> [22m[2mnx run[22m going-monorepo-clean:build
+> going-monorepo-clean@2.0.0 build
+> nx build
+Nx requires NodeJS to be available. To install NodeJS and NPM, see: https://nodejs.org/en/download/ . 
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+[2mFailed tasks:[22m
+[2m-[22m going-monorepo-clean:build
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+
+
+
+[0m[7m[1m[31m NX [39m[22m[27m[0m  [31mRunning target [1mbuild[22m for project going-monorepo-clean failed[39m
+
+[2mFailed tasks:[22m
+
+[2m-[22m going-monorepo-clean:build
+
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+
+
+
+
+ NX   Running target build for 32 projects failed
+
+Failed tasks:
+
+- frontend-webapp:build:production
+- admin-dashboard:build:production
+- parcel-frontend:build
+- notification-frontend:build
+- accommodation-frontend:build
+- transport-frontend:build
+- enterprise-portal:build:production
+- going-monorepo-clean:build
+

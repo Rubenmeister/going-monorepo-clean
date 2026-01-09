@@ -27,13 +27,14 @@ export class NotificationApiClient {
                 },
             });
             
-            const data: NotificationDto[] = await response.json();
+            const data = await response.json();
             
             if (!response.ok) {
-                return err(new Error(data.message || 'Error al obtener notificaciones.'));
+                const errorData = data as any;
+                return err(new Error(errorData.message || 'Error al obtener notificaciones.'));
             }
             
-            return ok(data);
+            return ok(data as NotificationDto[]);
         } catch (error) {
             return err(new Error('Error de red al conectar con el Gateway.'));
         }

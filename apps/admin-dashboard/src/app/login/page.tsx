@@ -1,10 +1,9 @@
 'use client';
 
-// Force dynamic rendering to avoid SSR issues with hooks during static generation
-export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -47,8 +46,12 @@ export default function AdminLogin() {
       localStorage.setItem('admin_token', data.accessToken);
       localStorage.setItem('admin_user', JSON.stringify(data.user));
       router.push('/');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -60,9 +63,11 @@ export default function AdminLogin() {
       <div className="min-h-screen bg-[#ff4c41] flex flex-col items-center justify-center overflow-hidden">
         {/* Logo - horizontal white version */}
         <div className="mb-8 animate-pulse">
-          <img 
+          <Image 
             src="/assets/logo_horizontal.png" 
-            alt="Going" 
+            alt="Going Logo" 
+            width={200}
+            height={64}
             className="h-16 w-auto brightness-0 invert"
           />
         </div>
@@ -70,9 +75,11 @@ export default function AdminLogin() {
         {/* SUV Animation */}
         <div className="relative w-full max-w-md h-32 overflow-hidden">
           <div className="suv-approaching absolute top-1/2 -translate-y-1/2">
-            <img 
+            <Image 
               src="/assets/suv_black_right_v2.png" 
-              alt="SUV" 
+              alt="SUV Animation" 
+              width={180}
+              height={96}
               className="h-24 w-auto drop-shadow-2xl"
             />
           </div>
@@ -108,9 +115,11 @@ export default function AdminLogin() {
       <div className="relative w-full max-w-md">
         {/* Logo - White version */}
         <div className="text-center mb-8">
-          <img 
+          <Image 
             src="/assets/logo_horizontal.png" 
-            alt="Going" 
+            alt="Going Logo" 
+            width={150}
+            height={48}
             className="h-12 w-auto mx-auto mb-4 brightness-0 invert"
           />
           <p className="text-white/50 font-body">Panel de Operaciones</p>

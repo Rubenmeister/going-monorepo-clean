@@ -6,9 +6,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 
 // Importamos pantallas
-import { LoginScreen } from '../../screens/LoginScreen';
-import { HomeScreen } from '../../screens/HomeScreen';
-import { ProfileScreen } from '../../screens/ProfileScreen';
+import { LoginScreen } from '../screens/LoginScreen';
+import { HomeScreen } from '../screens/HomeScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 
 // Iconos
 import { Home, User } from 'lucide-react-native';
@@ -20,6 +20,7 @@ const Tab = createBottomTabNavigator();
 function MainTabs() {
   return (
     <Tab.Navigator
+      id="DriverTabs"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#ff4c41',
@@ -46,7 +47,7 @@ export const App = () => {
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#2D3748" />
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator id="DriverStackNavigator" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Main" component={MainTabs} />
         </Stack.Navigator>

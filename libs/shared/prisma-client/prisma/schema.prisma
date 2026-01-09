@@ -343,6 +343,27 @@ model Notification {
   @@index([userId, isRead])
 }
 
+// ==================== DEVICE TOKEN DOMAIN (FCM) ====================
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+model DeviceToken {
+  id        String         @id @default(uuid())
+  userId    String
+  token     String         @unique
+  platform  DevicePlatform
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([token])
+}
+
 // ==================== COMMUNICATION DOMAIN ====================
 
 model Message {

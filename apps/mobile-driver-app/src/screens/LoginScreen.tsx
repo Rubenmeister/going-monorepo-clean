@@ -10,21 +10,26 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { driverAuthService } from '../features/auth/DriverAuthService';
 
-const { height } = Dimensions.get('window');
+// ESM import for assets
+import andeanPattern from '../assets/andean_pattern.png';
+import ecuadorBg from '../assets/ecuador_landscape_bg.png';
+import goingLogo from '../assets/logo.png';
 
-// Design tokens
+// Design tokens - Driver Dark Mode Premium
 const COLORS = {
   goingRed: '#FF4E43',
+  goingYellow: '#F5A623',
   charcoal: '#1A1A1A',
-  offWhite: '#F5F5F5',
+  dark: '#0D0D0D',
   white: '#FFFFFF',
-  inputBg: 'rgba(255, 255, 255, 0.9)',
-  errorRing: '#FACC15',
+  glassWhite: 'rgba(255, 255, 255, 0.1)',
+  glassBorder: 'rgba(255, 255, 255, 0.15)',
+  placeholderText: '#9CA3AF',
 };
 
 export function LoginScreen({ navigation }: { navigation: { replace: (screen: string) => void; navigate: (screen: string) => void; } }) {
@@ -108,6 +113,10 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
 
   return (
     <SafeAreaView style={styles.container}>
+      <Image source={ecuadorBg as any} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <View style={styles.backgroundOverlay} />
+      <Image source={andeanPattern as any} style={styles.backgroundPattern} resizeMode="repeat" />
+
       {/* Language Toggle */}
       <TouchableOpacity 
         style={styles.langButton} 
@@ -128,13 +137,11 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Logo */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoSymbol}>G</Text>
-            </View>
-            <Text style={styles.logoText}>{text.title}</Text>
+            <Image source={goingLogo as any} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.subtitle}>{text.subtitle}</Text>
           </View>
 
@@ -148,7 +155,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
                   errors.email && touched.email && styles.inputError
                 ]}
                 placeholder={text.email}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.placeholderText}
                 value={email}
                 onChangeText={(txt) => {
                   setEmail(txt);
@@ -171,7 +178,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
                   errors.password && touched.password && styles.inputError
                 ]}
                 placeholder={text.password}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.placeholderText}
                 value={password}
                 onChangeText={(txt) => {
                   setPassword(txt);
@@ -195,7 +202,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
               style={styles.loginButton}
               onPress={handleLogin}
               disabled={loading}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator color={COLORS.white} />
@@ -217,7 +224,7 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
           <View style={styles.socialContainer}>
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>{lang === 'es' ? 'O continúa con' : 'Or continue with'}</Text>
+              <Text style={styles.dividerText}>{lang === 'es' ? 'CONEXIÓN SEGURA' : 'SECURE LOGIN'}</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -226,10 +233,10 @@ export function LoginScreen({ navigation }: { navigation: { replace: (screen: st
                 <Text style={styles.socialIcon}>G</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>f</Text>
+                <Text style={[styles.socialIcon, { color: '#1877F2' }]}>F</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialIcon}></Text>
+                <Text style={styles.socialIcon}>A</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -244,35 +251,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.goingRed,
   },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.dark,
+    opacity: 0.9,
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.03,
+  },
   langButton: {
     position: 'absolute',
     top: 50,
     right: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    backgroundColor: COLORS.glassWhite,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
     zIndex: 10,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   langText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   driverBadge: {
     position: 'absolute',
     top: 50,
     left: 20,
-    backgroundColor: COLORS.charcoal,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
+    backgroundColor: COLORS.goingYellow,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
     zIndex: 10,
   },
   driverBadgeText: {
-    color: COLORS.white,
+    color: COLORS.dark,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '900',
     letterSpacing: 2,
   },
   keyboardView: {
@@ -282,154 +301,147 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-    minHeight: height - 100,
+    paddingHorizontal: 32,
+    paddingVertical: 100,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 48,
   },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  logoSymbol: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: COLORS.goingRed,
-    fontStyle: 'italic',
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.white,
+  logoImage: {
+    width: 180,
+    height: 120,
   },
   subtitle: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 16,
-    marginTop: 4,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    marginTop: -5,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
   formContainer: {
     width: '100%',
     maxWidth: 400,
+    backgroundColor: COLORS.glassWhite,
+    padding: 28,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
   },
   inputWrapper: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
   input: {
-    backgroundColor: COLORS.inputBg,
-    height: 52,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+    height: 56,
+    borderRadius: 14,
+    paddingHorizontal: 18,
     fontSize: 16,
-    color: COLORS.charcoal,
+    color: COLORS.dark,
+    fontWeight: '500',
   },
   inputError: {
     borderWidth: 2,
-    borderColor: COLORS.errorRing,
-    backgroundColor: COLORS.white,
+    borderColor: COLORS.goingYellow,
   },
   errorText: {
-    color: COLORS.white,
+    color: COLORS.goingYellow,
     fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 4,
+    fontWeight: '700',
+    marginTop: 6,
     marginLeft: 4,
   },
   forgotButton: {
     alignSelf: 'flex-end',
-    marginBottom: 20,
+    marginBottom: 24,
+    marginTop: 4,
   },
   forgotText: {
-    color: COLORS.white,
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 13,
     fontWeight: '600',
-    textDecorationLine: 'underline',
   },
   loginButton: {
-    backgroundColor: COLORS.charcoal,
-    height: 56,
-    borderRadius: 14,
+    backgroundColor: COLORS.goingRed,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowColor: COLORS.goingRed,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
   },
   loginButtonText: {
     color: COLORS.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    letterSpacing: 2,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 28,
     flexWrap: 'wrap',
+    alignItems: 'center',
   },
   registerPrompt: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontSize: 14,
   },
   registerLink: {
     color: COLORS.white,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '800',
     textDecorationLine: 'underline',
   },
   socialContainer: {
     width: '100%',
-    marginTop: 40,
-    gap: 16,
+    marginTop: 48,
+    alignItems: 'center',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    width: '100%',
+    marginBottom: 24,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.4)',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    marginHorizontal: 16,
   },
   socialButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
+    gap: 20,
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   socialIcon: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.charcoal,
+    fontSize: 22,
+    fontWeight: '900',
+    color: COLORS.dark,
   },
 });
 

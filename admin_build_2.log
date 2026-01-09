@@ -1,0 +1,191 @@
+
+> nx run admin-dashboard:build:production
+
+ ÔÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+  [1m[38;2;173;127;168mÔû▓ Next.js 14.2.3[39m[22m
+ [37m[1m [22m[39m Creating an optimized production build ...
+ [32m[1mÔ£ô[22m[39m Compiled successfully
+ [37m[1m [22m[39m Skipping linting
+ [37m[1m [22m[39m Checking validity of types ...
+ [37m[1m [22m[39m Collecting page data ...
+ [37m[1m [22m[39m Generating static pages (0/6) ...
+ [37m[1m [22m[39m Generating static pages (1/6) 
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at Z (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:16:5430)
+    at I (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\135.js:6:1263)
+    at renderWithHooks (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5658:16)
+    at renderIndeterminateComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5732:15)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5957:7)
+    at renderNodeDestructiveImpl (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6115:11)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6087:14)
+    at finishClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5688:3)
+    at renderClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5696:3)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5954:7)
+Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at Z (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:16:5430)
+    at I (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\135.js:6:1263)
+    at renderWithHooks (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5658:16)
+    at renderIndeterminateComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5732:15)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5957:7)
+    at renderNodeDestructiveImpl (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6115:11)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6087:14)
+    at finishClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5688:3)
+    at renderClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5696:3)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5954:7)
+ [37m[1m [22m[39m Generating static pages (2/6) 
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at Z (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:16:5430)
+    at I (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\135.js:6:1263)
+    at renderWithHooks (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5658:16)
+    at renderIndeterminateComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5732:15)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5957:7)
+    at renderNodeDestructiveImpl (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6115:11)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6087:14)
+    at finishClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5688:3)
+    at renderClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5696:3)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5954:7)
+Error occurred prerendering page "/500". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: <Html> should not be imported outside of pages/_document.
+Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+    at Z (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:16:5430)
+    at I (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\135.js:6:1263)
+    at renderWithHooks (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5658:16)
+    at renderIndeterminateComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5732:15)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5957:7)
+    at renderNodeDestructiveImpl (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6115:11)
+    at renderNodeDestructive (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:6087:14)
+    at finishClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5688:3)
+    at renderClassComponent (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5696:3)
+    at renderElement (C:\Users\USER1\going-monorepo-clean\node_modules\react-dom\cjs\react-dom-server.browser.development.js:5954:7)
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908) {
+  digest: '503299708'
+}
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+ [37m[1m [22m[39m Generating static pages (4/6) 
+ [32m[1mÔ£ô[22m[39m Generating static pages (6/6)
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908) {
+  digest: '503299708'
+}
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908) {
+  digest: '503299708'
+}
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of null (reading 'useContext')
+    at t.useContext (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:109363)
+    at d (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:21631)
+    at h (C:\Users\USER1\going-monorepo-clean\dist\apps\admin-dashboard\.next\server\chunks\737.js:1:13550)
+    at au (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:10446)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:15122
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+    at a_ (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:49776)
+    at ab (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:11808)
+    at C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16871
+    at aw (C:\Users\USER1\going-monorepo-clean\node_modules\next\dist\compiled\next-server\app-page.runtime.dev.js:35:16908)
+> Export encountered errors on following paths:
+	/_error: /404
+	/_error: /500
+	/_not-found/page: /_not-found
+	/login/page: /login
+	/page: /
+Build process exited due to code 1  
+
+
+
+ NX   Running target build for project admin-dashboard failed
+
+Failed tasks:
+
+- admin-dashboard:build:production
+
+Hint: run the command with --verbose for more details.
+

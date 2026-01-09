@@ -1,0 +1,31 @@
+
+> nx run transport-service:build:production
+
+assets by path *.js 25.8 KiB
+  asset main.js 20.5 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 174 KiB
+  asset package-lock.json 173 KiB [compared for emit]
+  asset package.json 1.07 KiB [compared for emit]
+asset 3rdpartylicenses.txt 1 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/transport-service/src/assets/.gitkeep] [copied]
+orphan modules 44.3 KiB [orphan] 42 modules
+runtime modules 3.53 KiB 8 modules
+built modules 49 KiB [built]
+  modules by path ./ 48.5 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+webpack 5.104.1 compiled successfully in 5511 ms
+
+
+
+ NX   Successfully ran target build for project transport-service
+
+

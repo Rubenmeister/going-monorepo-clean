@@ -1,10 +1,6 @@
 'use client';
 
-// Force dynamic rendering to avoid SSR issues with hooks during static generation
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
   Button, 
   Badge
@@ -17,7 +13,6 @@ import {
   CreditCard, 
   Bell, 
   Activity,
-  LogOut,
   Home,
   Compass,
   Zap,
@@ -98,7 +93,6 @@ const MOCK_TRIPS: Trip[] = [
 type DashboardView = 'control_center' | 'suv_shared' | 'tourist_authorized' | 'providers' | 'revenue' | 'users' | 'hosting' | 'tours' | 'experiences';
 
 export default function Dashboard() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'queue' | 'alerts'>('active');
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
@@ -325,7 +319,7 @@ function TripCard({ trip, onClick }: { trip: Trip, onClick: () => void }) {
   )
 }
 
-function SidebarItem({ icon, label, badge, active, onClick }: { icon: any, label: string, badge?: number, active?: boolean, onClick?: () => void }) {
+function SidebarItem({ icon, label, badge, active, onClick }: { icon: React.ReactNode, label: string, badge?: number, active?: boolean, onClick?: () => void }) {
   return (
     <div onClick={onClick} className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all cursor-pointer group ${active ? 'bg-primary/10 text-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]' : 'text-neutral-400 hover:bg-white/5 hover:text-white'}`}>
       <span className={`${active ? 'text-primary' : 'text-neutral-500 group-hover:text-primary transition-colors'}`}>
@@ -337,7 +331,16 @@ function SidebarItem({ icon, label, badge, active, onClick }: { icon: any, label
   );
 }
 
-function TabButton({ label, count, active, alertMode, variant, onClick }: any) {
+interface TabButtonProps {
+  label: string;
+  count?: number;
+  active?: boolean;
+  alertMode?: boolean;
+  variant?: 'destructive' | 'default';
+  onClick?: () => void;
+}
+
+function TabButton({ label, count, active, alertMode, variant, onClick }: TabButtonProps) {
   const activeClass = variant === 'destructive' 
      ? 'border-red-500 text-red-500 bg-red-500/5'
      : alertMode 
