@@ -1,0 +1,79 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.39kB 0.0s done
+#1 DONE 0.0s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:18-alpine
+#3 DONE 1.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 433B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 657.45kB 1.0s done
+#5 DONE 1.1s
+
+#7 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#7 CACHED
+
+#8 [builder 5/8] COPY . .
+#8 CACHED
+
+#9 [builder 3/8] WORKDIR /app
+#9 CACHED
+
+#10 [builder 7/8] RUN npm install --legacy-peer-deps
+#10 CACHED
+
+#11 [builder 2/8] RUN apk add --no-cache libc6-compat
+#11 CACHED
+
+#12 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e
+#12 CACHED
+
+#13 [builder 8/8] RUN npx nx build api-gateway --prod
+#13 CACHED
+
+#14 [runner 3/7] RUN apk add --no-cache dumb-init
+#14 CACHED
+
+#15 [runner 2/7] WORKDIR /app
+#15 CACHED
+
+#16 [runner 4/7] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#16 CACHED
+
+#17 [runner 6/7] RUN npm install --omit=dev --ignore-scripts &&     npm install class-validator class-transformer @nestjs/platform-socket.io socket.io
+#17 CACHED
+
+#18 [runner 7/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway ./
+#18 ERROR: failed to calculate checksum of ref 619tq4pqbqepg79etxsvcfioj::xwqnxs1svq1vk2a2fg89avhra: "/app/dist/apps/api-gateway": not found
+
+#19 [runner 5/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#19 CANCELED
+------
+ > [runner 7/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway ./:
+------
+Dockerfile.prod:69
+--------------------
+  67 |     
+  68 |     # Copiamos el c├│digo compilado
+  69 | >>> COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/${SERVICE_NAME} ./
+  70 |     
+  71 |     USER nestjs
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 619tq4pqbqepg79etxsvcfioj::xwqnxs1svq1vk2a2fg89avhra: "/app/dist/apps/api-gateway": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/36f52wa7abd38v5jam1h26muu

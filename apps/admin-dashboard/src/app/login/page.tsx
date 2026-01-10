@@ -1,5 +1,6 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -88,24 +89,10 @@ export default function AdminLogin() {
         {/* Tagline */}
         <p className="text-white/80 text-lg mt-8 font-body">Panel de Operaciones</p>
         
-        <style jsx>{`
-          .suv-approaching {
-            animation: approach 2s ease-out forwards;
-          }
-          @keyframes approach {
-            0% {
-              left: -150px;
-              transform: translateY(-50%) scale(0.5);
-            }
-            100% {
-              left: calc(50% - 60px);
-              transform: translateY(-50%) scale(1);
-            }
-          }
-        `}</style>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">

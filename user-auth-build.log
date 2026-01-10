@@ -1,0 +1,447 @@
+
+> nx run user-auth-service:build:production
+
+assets by path *.js 20.3 KiB
+  asset main.js 15 KiB [compared for emit] [minimized] (name: main) 1 related asset
+  asset 2.js 2.8 KiB [compared for emit] [minimized] 1 related asset
+  asset 1.js 2.51 KiB [compared for emit] [minimized] 1 related asset
+assets by path *.json 180 KiB
+  asset package-lock.json 179 KiB [compared for emit]
+  asset package.json 1.12 KiB [compared for emit]
+asset 3rdpartylicenses.txt 5 bytes [compared for emit]
+asset assets/.gitkeep 0 bytes [compared for emit] [from: apps/user-auth-service/src/assets/.gitkeep] [copied]
+orphan modules 36.8 KiB [orphan] 48 modules
+runtime modules 3.53 KiB 8 modules
+built modules 41.3 KiB [built]
+  modules by path ./ 40.9 KiB
+    modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+    modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+    + 1 module
+  modules by path external "@nestjs/ 210 bytes
+    external "@nestjs/common" 42 bytes [built] [code generated]
+    external "@nestjs/core" 42 bytes [built] [code generated]
+    + 3 modules
+  + 5 modules
+ERROR in C:\Users\USER1\going-monorepo-clean\apps\user-auth-service\tsconfig.app.json
+./apps/user-auth-service/src/main.ts C:\Users\USER1\going-monorepo-clean\apps\user-auth-service\tsconfig.app.json
+[90m[tsl] [39m[1m[31mERROR[39m[22m
+[1m[31m      TS6304: Composite projects may not disable declaration emit.[39m[22m
+ERROR in ./apps/user-auth-service/src/api/auth.controller.ts:[32m[1m9:8[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/domains-user-application' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/api/auth.controller.ts'
+    Imported via '@going-monorepo-clean/domains-user-application' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app/user-app.module.ts'
+    Imported via '@going-monorepo-clean/domains-user-application' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app.module.ts'
+    Imported via '@going-monorepo-clean/domains-user-application' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app/app.module.ts'
+  [0m [90m  7 |[39m   [33mLoginUserDto[39m[33m,[39m
+   [90m  8 |[39m   [33mAuthResponseDto[39m
+  [31m[1m>[22m[39m[90m  9 |[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-user-application'[39m[33m;[39m
+   [90m    |[39m        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 10 |[39m
+   [90m 11 |[39m [33m@[39m[33mController[39m([32m'auth'[39m)
+   [90m 12 |[39m [36mexport[39m [36mclass[39m [33mAuthController[39m {[0m
+ERROR in ./apps/user-auth-service/src/app/user-app.module.ts:[32m[1m4:30[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app/user-app.module.ts'
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/prisma-health.indicator.ts'
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/persistence/prisma-user.repository.ts'
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/database.module.ts'
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/infrastructure.module.ts'
+    Imported via '@going-monorepo-clean/prisma-client' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/repositories/user.repository.ts'
+  [0m [90m 2 |[39m [36mimport[39m { [33mConfigModule[39m[33m,[39m [33mConfigService[39m } [36mfrom[39m [32m'@nestjs/config'[39m[33m;[39m
+   [90m 3 |[39m [36mimport[39m { [33mJwtModule[39m } [36mfrom[39m [32m'@nestjs/jwt'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mPrismaModule[39m } [36mfrom[39m [32m'@going-monorepo-clean/prisma-client'[39m[33m;[39m
+   [90m   |[39m                              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 5 |[39m [36mimport[39m { [33mObservabilityModule[39m } [36mfrom[39m [32m'@going/shared/observability'[39m[33m;[39m
+   [90m 6 |[39m [36mimport[39m { [33mAppController[39m } [36mfrom[39m [32m'./app.controller'[39m[33m;[39m
+   [90m 7 |[39m [36mimport[39m { [33mAuthController[39m } [36mfrom[39m [32m'../api/auth.controller'[39m[33m;[39m[0m
+ERROR in ./apps/user-auth-service/src/app/user-app.module.ts:[32m[1m5:37[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 3 |[39m [36mimport[39m { [33mJwtModule[39m } [36mfrom[39m [32m'@nestjs/jwt'[39m[33m;[39m
+   [90m 4 |[39m [36mimport[39m { [33mPrismaModule[39m } [36mfrom[39m [32m'@going-monorepo-clean/prisma-client'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { [33mObservabilityModule[39m } [36mfrom[39m [32m'@going/shared/observability'[39m[33m;[39m
+   [90m   |[39m                                     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 6 |[39m [36mimport[39m { [33mAppController[39m } [36mfrom[39m [32m'./app.controller'[39m[33m;[39m
+   [90m 7 |[39m [36mimport[39m { [33mAuthController[39m } [36mfrom[39m [32m'../api/auth.controller'[39m[33m;[39m
+   [90m 8 |[39m [36mimport[39m { [33mAppService[39m } [36mfrom[39m [32m'./app.service'[39m[33m;[39m[0m
+ERROR in ./apps/user-auth-service/src/main.ts:[32m[1m18:48[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 16 |[39m   [36mconst[39m port [33m=[39m process[33m.[39menv[[32m'PORT'[39m] [33m||[39m [35m3009[39m[33m;[39m
+   [90m 17 |[39m   [36mconst[39m { [33mHttpAdapterHost[39m } [33m=[39m [36mawait[39m [36mimport[39m([32m'@nestjs/core'[39m)[33m;[39m
+  [31m[1m>[22m[39m[90m 18 |[39m   [36mconst[39m { [33mAllExceptionsFilter[39m } [33m=[39m [36mawait[39m [36mimport[39m([32m'@going-monorepo/shared'[39m)[33m;[39m
+   [90m    |[39m                                                [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 19 |[39m   [36mconst[39m { setupSwagger } [33m=[39m [36mawait[39m [36mimport[39m([32m'@going-monorepo/shared-backend'[39m)[33m;[39m
+   [90m 20 |[39m   
+   [90m 21 |[39m   [36mconst[39m httpAdapter [33m=[39m app[33m.[39m[36mget[39m([33mHttpAdapterHost[39m)[33m;[39m[0m
+ERROR in ./apps/user-auth-service/src/main.ts:[32m[1m19:41[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/backend.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via '@going-monorepo/shared-backend' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/main.ts'
+    Imported via '@going-monorepo/shared-backend' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app.module.ts'
+    Imported via '@going-monorepo/shared-backend' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app/app.module.ts'
+  [0m [90m 17 |[39m   [36mconst[39m { [33mHttpAdapterHost[39m } [33m=[39m [36mawait[39m [36mimport[39m([32m'@nestjs/core'[39m)[33m;[39m
+   [90m 18 |[39m   [36mconst[39m { [33mAllExceptionsFilter[39m } [33m=[39m [36mawait[39m [36mimport[39m([32m'@going-monorepo/shared'[39m)[33m;[39m
+  [31m[1m>[22m[39m[90m 19 |[39m   [36mconst[39m { setupSwagger } [33m=[39m [36mawait[39m [36mimport[39m([32m'@going-monorepo/shared-backend'[39m)[33m;[39m
+   [90m    |[39m                                         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 20 |[39m   
+   [90m 21 |[39m   [36mconst[39m httpAdapter [33m=[39m app[33m.[39m[36mget[39m([33mHttpAdapterHost[39m)[33m;[39m
+   [90m 22 |[39m   app[33m.[39museGlobalFilters([36mnew[39m [33mAllExceptionsFilter[39m(httpAdapter))[33m;[39m[0m
+ERROR in ./libs/domains/user/application/src/index.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/dto/register-user.dto.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './lib/dto/register-user.dto' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/index.ts'
+    Imported via '../dto/register-user.dto' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/register-user.use-case.ts'
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/register-user.dto'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/login-user.dto'[39m[33m;[39m
+   [90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/auth-response.dto'[39m[33m;[39m
+   [90m 4 |[39m[0m
+ERROR in ./libs/domains/user/application/src/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/dto/login-user.dto.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './lib/dto/login-user.dto' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/index.ts'
+    Imported via '../dto/login-user.dto' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/login-user.use-case.ts'
+  [0m [90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/register-user.dto'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/login-user.dto'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/auth-response.dto'[39m[33m;[39m
+   [90m 4 |[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/register-user.use-case'[39m[33m;[39m[0m
+ERROR in ./libs/domains/user/application/src/index.ts:[32m[1m3:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/dto/auth-response.dto.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/register-user.dto'[39m[33m;[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/login-user.dto'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/auth-response.dto'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 4 |[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/register-user.use-case'[39m[33m;[39m
+   [90m 6 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/login-user.use-case'[39m[33m;[39m[0m
+ERROR in ./libs/domains/user/application/src/index.ts:[32m[1m5:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/register-user.use-case.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dto/auth-response.dto'[39m[33m;[39m
+   [90m 4 |[39m
+  [31m[1m>[22m[39m[90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/register-user.use-case'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 6 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/login-user.use-case'[39m[33m;[39m[0m
+ERROR in ./libs/domains/user/application/src/index.ts:[32m[1m6:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/login-user.use-case.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 4 |[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/register-user.use-case'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 6 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/use-cases/login-user.use-case'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+ERROR in ./libs/domains/user/application/src/lib/dto/register-user.dto.ts:[32m[1m2:26[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/dto/register-user.dto.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/dto/auth-response.dto.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/register-user.use-case.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/application/src/lib/use-cases/login-user.use-case.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/persistence/prisma-user.repository.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/security/bcrypt-password.hasher.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/app/user-app.module.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/infrastructure.module.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/repositories/user.repository.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/services/bcrypt.hasher.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/services/jwt.token.service.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/persistence/mongoose-user.repository.ts'
+    Imported via '@going-monorepo-clean/domains-user-core' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/ports/i-token.service.port.ts'
+  [0m [90m 1 |[39m [36mimport[39m { [33mIsNotEmpty[39m[33m,[39m [33mIsString[39m[33m,[39m [33mIsEmail[39m[33m,[39m [33mMinLength[39m[33m,[39m [33mIsOptional[39m[33m,[39m [33mIsEnum[39m } [36mfrom[39m [32m'class-validator'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mRoleType[39m } [36mfrom[39m [32m'@going-monorepo-clean/domains-user-core'[39m[33m;[39m
+   [90m   |[39m                          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m
+   [90m 4 |[39m [36mexport[39m [36mclass[39m [33mRegisterUserDto[39m {
+   [90m 5 |[39m   [33m@[39m[33mIsNotEmpty[39m()[0m
+ERROR in ./libs/domains/user/core/src/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/entities/user.entity.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './lib/entities/user.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/index.ts'
+    Imported via '../entities/user.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/value-objects/role.vo.ts'
+    Imported via '../entities/user.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/ports/iuser.repository.ts'
+  [0m [90m 1 |[39m [90m// 1. Entidades y Value Objects[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/entities/user.entity'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [90m// IMPORTANTE: Exporta el Value Object Role si lo usas en la capa de aplicaci├│n[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/value-objects/role.vo'[39m[33m;[39m 
+   [90m 5 |[39m[0m
+ERROR in ./libs/domains/user/core/src/index.ts:[32m[1m4:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/value-objects/role.vo.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/entities/user.entity'[39m[33m;[39m
+   [90m 3 |[39m [90m// IMPORTANTE: Exporta el Value Object Role si lo usas en la capa de aplicaci├│n[39m
+  [31m[1m>[22m[39m[90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/value-objects/role.vo'[39m[33m;[39m 
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 5 |[39m
+   [90m 6 |[39m [90m// 2. DTOs[39m
+   [90m 7 |[39m [90m// 2. DTOs[39m[0m
+ERROR in ./libs/domains/user/core/src/index.ts:[32m[1m11:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/ports/iuser.repository.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m  9 |[39m
+   [90m 10 |[39m [90m// 3. Puertos (Interfaces)[39m
+  [31m[1m>[22m[39m[90m 11 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/iuser.repository'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 12 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/ipassword.hasher'[39m[33m;[39m
+   [90m 13 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/itoken.service'[39m[33m;[39m[0m
+ERROR in ./libs/domains/user/core/src/index.ts:[32m[1m12:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/ports/ipassword.hasher.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 10 |[39m [90m// 3. Puertos (Interfaces)[39m
+   [90m 11 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/iuser.repository'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 12 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/ipassword.hasher'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 13 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/itoken.service'[39m[33m;[39m[0m
+ERROR in ./libs/domains/user/core/src/index.ts:[32m[1m13:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/ports/itoken.service.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 11 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/iuser.repository'[39m[33m;[39m
+   [90m 12 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/ipassword.hasher'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 13 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/ports/itoken.service'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+ERROR in ./libs/domains/user/core/src/lib/ports/itoken.service.ts:[32m[1m1:22[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/libs/domains/user/core/src/lib/ports/itoken.service.ts'
+    Imported via '@going-monorepo-clean/shared-domain' from file 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/src/infrastructure/persistence/mongoose-user.repository.ts'
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { [33mUUID[39m } [36mfrom[39m [32m'@going-monorepo-clean/shared-domain'[39m[33m;[39m [90m// Reemplaza con tu scope[39m
+   [90m   |[39m                      [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m
+   [90m 3 |[39m [36mexport[39m [36mconst[39m [33mITokenService[39m [33m=[39m [33mSymbol[39m([32m'ITokenService'[39m)[33m;[39m
+   [90m 4 |[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/uuid.vo.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [90m// Exporta los Value Objects[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/uuid.vo'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/money.vo'[39m[33m;[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/location.vo'[39m[33m;[39m
+   [90m 5 |[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m3:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/money.vo.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [90m// Exporta los Value Objects[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/uuid.vo'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/money.vo'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/location.vo'[39m[33m;[39m
+   [90m 5 |[39m
+   [90m 6 |[39m [90m// Exporta los DTOs compartidos[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m4:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/location.vo.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/uuid.vo'[39m[33m;[39m
+   [90m 3 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/money.vo'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/location.vo'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 5 |[39m
+   [90m 6 |[39m [90m// Exporta los DTOs compartidos[39m
+   [90m 7 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dtos/shared.dtos'[39m[33m;[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m7:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/dtos/shared.dtos.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m  5 |[39m
+   [90m  6 |[39m [90m// Exporta los DTOs compartidos[39m
+  [31m[1m>[22m[39m[90m  7 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/dtos/shared.dtos'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m  8 |[39m
+   [90m  9 |[39m [90m// Exporta 'neverthrow' para que todos los dominios[39m
+   [90m 10 |[39m [90m// lo importen desde este ├║nico lugar[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m14:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/base.entity.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './lib/base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/index.ts'
+    Imported via './base.entity' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts'
+  [0m [90m 12 |[39m
+   [90m 13 |[39m [90m// Base Classes[39m
+  [31m[1m>[22m[39m[90m 14 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/base.entity'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 15 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/aggregate-root'[39m[33m;[39m[0m
+ERROR in ./libs/shared/domain/src/index.ts:[32m[1m15:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/domain/src/lib/aggregate-root.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 13 |[39m [90m// Base Classes[39m
+   [90m 14 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/base.entity'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 15 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/aggregate-root'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+ERROR in ./libs/shared/observability/src/correlation/index.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/correlation/correlation.middleware.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './correlation.middleware' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/correlation/index.ts'
+    Imported via './correlation.middleware' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/correlation/correlation.module.ts'
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./correlation.middleware'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./correlation.module'[39m[33m;[39m
+   [90m 3 |[39m[0m
+ERROR in ./libs/shared/observability/src/correlation/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/correlation/correlation.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./correlation.middleware'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./correlation.module'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m[0m
+ERROR in ./libs/shared/observability/src/health/health.controller.ts:[32m[1m10:39[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/prisma-health.indicator.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './prisma-health.indicator' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/health.controller.ts'
+    Imported via './prisma-health.indicator' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/health.module.ts'
+  [0m [90m  8 |[39m   [33mMemoryHealthIndicator[39m[33m,[39m
+   [90m  9 |[39m } [36mfrom[39m [32m'@nestjs/terminus'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 10 |[39m [36mimport[39m { [33mPrismaHealthIndicator[39m } [36mfrom[39m [32m'./prisma-health.indicator'[39m[33m;[39m
+   [90m    |[39m                                       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 11 |[39m
+   [90m 12 |[39m [33m@[39m[33mApiTags[39m([32m'health'[39m)
+   [90m 13 |[39m [33m@[39m[33mController[39m([32m'health'[39m)[0m
+ERROR in ./libs/shared/observability/src/health/index.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/health.controller.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './health.controller' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/index.ts'
+    Imported via './health.controller' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/health.module.ts'
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./health.controller'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./health.module'[39m[33m;[39m
+   [90m 3 |[39m[0m
+ERROR in ./libs/shared/observability/src/health/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/health.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./health.controller'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./health.module'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m[0m
+ERROR in ./libs/shared/observability/src/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/observability.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [90m// Main module[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./observability.module'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m
+   [90m 4 |[39m [90m// Sub-modules[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./correlation'[39m[33m;[39m[0m
+ERROR in ./libs/shared/observability/src/index.ts:[32m[1m8:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/tracing/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m  6 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logging'[39m[33m;[39m
+   [90m  7 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./health'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m  8 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./tracing'[39m[33m;[39m
+   [90m    |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m  9 |[39m
+   [90m 10 |[39m[0m
+ERROR in ./libs/shared/observability/src/logging/index.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/logging/logging.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logging.module'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m[0m
+ERROR in ./libs/shared/observability/src/observability.module.ts:[32m[1m2:35[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/correlation/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './correlation' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/observability.module.ts'
+    Imported via '../correlation' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/logging/logging.module.ts'
+    Imported via './correlation' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/index.ts'
+  [0m [90m 1 |[39m [36mimport[39m { [33mModule[39m[33m,[39m [33mDynamicModule[39m } [36mfrom[39m [32m'@nestjs/common'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mimport[39m { [33mCorrelationModule[39m } [36mfrom[39m [32m'./correlation'[39m[33m;[39m
+   [90m   |[39m                                   [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [36mimport[39m { [33mLoggingModule[39m[33m,[39m [33mLoggingModuleOptions[39m } [36mfrom[39m [32m'./logging'[39m[33m;[39m
+   [90m 4 |[39m [36mimport[39m { [33mHealthModule[39m } [36mfrom[39m [32m'./health'[39m[33m;[39m
+   [90m 5 |[39m[0m
+ERROR in ./libs/shared/observability/src/observability.module.ts:[32m[1m3:53[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/logging/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './logging' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/observability.module.ts'
+    Imported via './logging' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/index.ts'
+  [0m [90m 1 |[39m [36mimport[39m { [33mModule[39m[33m,[39m [33mDynamicModule[39m } [36mfrom[39m [32m'@nestjs/common'[39m[33m;[39m
+   [90m 2 |[39m [36mimport[39m { [33mCorrelationModule[39m } [36mfrom[39m [32m'./correlation'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m { [33mLoggingModule[39m[33m,[39m [33mLoggingModuleOptions[39m } [36mfrom[39m [32m'./logging'[39m[33m;[39m
+   [90m   |[39m                                                     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 4 |[39m [36mimport[39m { [33mHealthModule[39m } [36mfrom[39m [32m'./health'[39m[33m;[39m
+   [90m 5 |[39m
+   [90m 6 |[39m [36mexport[39m [36minterface[39m [33mObservabilityModuleOptions[39m [36mextends[39m [33mLoggingModuleOptions[39m {[0m
+ERROR in ./libs/shared/observability/src/observability.module.ts:[32m[1m4:30[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/health/index.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './health' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/observability.module.ts'
+    Imported via './health' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/index.ts'
+  [0m [90m 2 |[39m [36mimport[39m { [33mCorrelationModule[39m } [36mfrom[39m [32m'./correlation'[39m[33m;[39m
+   [90m 3 |[39m [36mimport[39m { [33mLoggingModule[39m[33m,[39m [33mLoggingModuleOptions[39m } [36mfrom[39m [32m'./logging'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [33mHealthModule[39m } [36mfrom[39m [32m'./health'[39m[33m;[39m
+   [90m   |[39m                              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 5 |[39m
+   [90m 6 |[39m [36mexport[39m [36minterface[39m [33mObservabilityModuleOptions[39m [36mextends[39m [33mLoggingModuleOptions[39m {
+   [90m 7 |[39m   enableTracing[33m?[39m[33m:[39m boolean[33m;[39m[0m
+ERROR in ./libs/shared/observability/src/tracing/index.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/observability/src/tracing/tracing.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./tracing'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m[0m
+ERROR in ./libs/shared/prisma-client/src/index.ts:[32m[1m5:31[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.service.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via './lib/prisma.service' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/index.ts'
+    Imported via './prisma.service' from file 'C:/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.module.ts'
+  [0m [90m 3 |[39m
+   [90m 4 |[39m [90m// NestJS integration[39m
+  [31m[1m>[22m[39m[90m 5 |[39m [36mexport[39m { [33mPrismaService[39m } [36mfrom[39m [32m'./lib/prisma.service'[39m[33m;[39m
+   [90m   |[39m                               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 6 |[39m [36mexport[39m { [33mPrismaModule[39m } [36mfrom[39m [32m'./lib/prisma.module'[39m[33m;[39m
+   [90m 7 |[39m[0m
+ERROR in ./libs/shared/prisma-client/src/index.ts:[32m[1m6:30[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/prisma-client/src/lib/prisma.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 4 |[39m [90m// NestJS integration[39m
+   [90m 5 |[39m [36mexport[39m { [33mPrismaService[39m } [36mfrom[39m [32m'./lib/prisma.service'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 6 |[39m [36mexport[39m { [33mPrismaModule[39m } [36mfrom[39m [32m'./lib/prisma.module'[39m[33m;[39m
+   [90m   |[39m                              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 7 |[39m[0m
+ERROR in ./libs/shared/src/backend.ts:[32m[1m1:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/database.module.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m[31m[1m>[22m[39m[90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/database.module'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/schemas/user.schema'[39m[33m;[39m
+   [90m 3 |[39m [90m// --- BACKEND SPECIFIC UTILS ---[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./swagger/setup'[39m[33m;[39m[0m
+ERROR in ./libs/shared/src/backend.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/schemas/user.schema.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/database.module'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/schemas/user.schema'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m [90m// --- BACKEND SPECIFIC UTILS ---[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./swagger/setup'[39m[33m;[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logger/logger.config'[39m[33m;[39m[0m
+ERROR in ./libs/shared/src/backend.ts:[32m[1m4:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/swagger/setup.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/schemas/user.schema'[39m[33m;[39m
+   [90m 3 |[39m [90m// --- BACKEND SPECIFIC UTILS ---[39m
+  [31m[1m>[22m[39m[90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./swagger/setup'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logger/logger.config'[39m[33m;[39m
+   [90m 6 |[39m [36mexport[39m { [33mDatabaseModule[39m [36mas[39m [33mMongoDatabaseModule[39m } [36mfrom[39m [32m'./lib/database/mongo-config.service'[39m[33m;[39m
+   [90m 7 |[39m[0m
+ERROR in ./libs/shared/src/backend.ts:[32m[1m5:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/logger/logger.config.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 3 |[39m [90m// --- BACKEND SPECIFIC UTILS ---[39m
+   [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./swagger/setup'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logger/logger.config'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 6 |[39m [36mexport[39m { [33mDatabaseModule[39m [36mas[39
+m [33mMongoDatabaseModule[39m } [36mfrom[39m [32m'./lib/database/mongo-config.service'[39m[33m;[39m
+   [90m 7 |[39m[0m
+ERROR in ./libs/shared/src/backend.ts:[32m[1m6:55[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/database/mongo-config.service.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 4 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./swagger/setup'[39m[33m;[39m
+   [90m 5 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./logger/logger.config'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 6 |[39m [36mexport[39m { [33mDatabaseModule[39m [36mas[39m [33mMongoDatabaseModule[39m } [36mfrom[39m [32m'./lib/database/mongo-config.service'[39m[33m;[39m
+   [90m   |[39m                                                       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 7 |[39m[0m
+ERROR in ./libs/shared/src/index.ts:[32m[1m2:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/lib/constants/ecuador-regions.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 1 |[39m [90m// --- M├ôDULOS COMPARTIDOS (Frontend & Backend) ---[39m
+  [31m[1m>[22m[39m[90m 2 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./lib/constants/ecuador-regions'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+   [90m 3 |[39m
+   [90m 4 |[39m [90m// --- UTILIDADES ---[39m
+   [90m 5 |[39m [36mexport[39m { [33mResult[39m[33m,[39m ok[33m,[39m err } [36mfrom[39m [32m'neverthrow'[39m[33m;[39m[0m
+ERROR in ./libs/shared/src/index.ts:[32m[1m8:15[22m[39m
+[90mTS6307: [39mFile 'C:/Users/USER1/going-monorepo-clean/libs/shared/src/filters/all-exceptions.filter.ts' is not listed within the file list of project 'C:/Users/USER1/going-monorepo-clean/apps/user-auth-service/tsconfig.app.json'. Projects must list all files or use an 'include' pattern.
+  [0m [90m 6 |[39m
+   [90m 7 |[39m [90m// --- FILTERS ---[39m
+  [31m[1m>[22m[39m[90m 8 |[39m [36mexport[39m [33m*[39m [36mfrom[39m [32m'./filters/all-exceptions.filter'[39m[33m;[39m
+   [90m   |[39m               [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[0m
+1 error has detailed information that is not shown.
+Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+webpack 5.104.1 compiled with 45 errors in 10222 ms
+
+
+
+ NX   Running target build for project user-auth-service failed
+
+Failed tasks:
+
+- user-auth-service:build:production
+
+Hint: run the command with --verbose for more details.
+

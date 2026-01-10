@@ -1,0 +1,232 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.frontend
+#1 transferring dockerfile: 1.73kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 1.7s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 207B 0.0s done
+#4 DONE 0.1s
+
+#5 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#5 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 42.69MB 4.8s
+#6 transferring context: 84.41MB 9.9s
+#6 transferring context: 126.70MB 15.0s
+#6 transferring context: 169.19MB 20.0s
+#6 transferring context: 216.06MB 25.1s
+#6 transferring context: 279.03MB 30.1s
+#6 transferring context: 319.36MB 34.0s done
+#6 DONE 34.0s
+
+#7 [builder 2/8] WORKDIR /app
+#7 CACHED
+
+#8 [builder 3/8] RUN apk add --no-cache libc6-compat
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 DONE 3.4s
+
+#10 [builder 5/8] RUN npm install --legacy-peer-deps
+#10 7.465 npm warn EBADENGINE Unsupported engine {
+#10 7.465 npm warn EBADENGINE   package: '@isaacs/balanced-match@4.0.1',
+#10 7.465 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.465 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.465 npm warn EBADENGINE }
+#10 7.471 npm warn EBADENGINE Unsupported engine {
+#10 7.471 npm warn EBADENGINE   package: '@isaacs/brace-expansion@5.0.0',
+#10 7.471 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.471 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.471 npm warn EBADENGINE }
+#10 7.475 npm warn EBADENGINE Unsupported engine {
+#10 7.475 npm warn EBADENGINE   package: '@nestjs/core@11.1.11',
+#10 7.475 npm warn EBADENGINE   required: { node: '>= 20' },
+#10 7.475 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.475 npm warn EBADENGINE }
+#10 7.494 npm warn EBADENGINE Unsupported engine {
+#10 7.494 npm warn EBADENGINE   package: 'file-type@21.2.0',
+#10 7.494 npm warn EBADENGINE   required: { node: '>=20' },
+#10 7.494 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.494 npm warn EBADENGINE }
+#10 7.497 npm warn EBADENGINE Unsupported engine {
+#10 7.497 npm warn EBADENGINE   package: 'hashery@1.4.0',
+#10 7.497 npm warn EBADENGINE   required: { node: '>=20' },
+#10 7.497 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.497 npm warn EBADENGINE }
+#10 7.514 npm warn EBADENGINE Unsupported engine {
+#10 7.514 npm warn EBADENGINE   package: 'react-router@7.11.0',
+#10 7.514 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#10 7.514 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.514 npm warn EBADENGINE }
+#10 7.514 npm warn EBADENGINE Unsupported engine {
+#10 7.514 npm warn EBADENGINE   package: 'react-router-dom@7.11.0',
+#10 7.514 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#10 7.514 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.514 npm warn EBADENGINE }
+#10 7.521 npm warn EBADENGINE Unsupported engine {
+#10 7.521 npm warn EBADENGINE   package: 'vite@7.3.0',
+#10 7.521 npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+#10 7.521 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.521 npm warn EBADENGINE }
+#10 7.528 npm warn EBADENGINE Unsupported engine {
+#10 7.528 npm warn EBADENGINE   package: 'workbox-build@7.4.0',
+#10 7.528 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#10 7.528 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.528 npm warn EBADENGINE }
+#10 7.530 npm warn EBADENGINE Unsupported engine {
+#10 7.530 npm warn EBADENGINE   package: 'glob@11.1.0',
+#10 7.530 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.530 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.530 npm warn EBADENGINE }
+#10 7.531 npm warn EBADENGINE Unsupported engine {
+#10 7.531 npm warn EBADENGINE   package: 'jackspeak@4.1.1',
+#10 7.531 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.531 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.531 npm warn EBADENGINE }
+#10 7.531 npm warn EBADENGINE Unsupported engine {
+#10 7.531 npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+#10 7.531 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.531 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.531 npm warn EBADENGINE }
+#10 7.531 npm warn EBADENGINE Unsupported engine {
+#10 7.531 npm warn EBADENGINE   package: 'minimatch@10.1.1',
+#10 7.531 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.531 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.531 npm warn EBADENGINE }
+#10 7.532 npm warn EBADENGINE Unsupported engine {
+#10 7.532 npm warn EBADENGINE   package: 'path-scurry@2.0.1',
+#10 7.532 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#10 7.532 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#10 7.532 npm warn EBADENGINE }
+#10 21.29 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 23.66 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#10 24.08 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#10 24.61 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#10 25.63 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#10 26.37 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#10 27.81 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#10 27.81 npm warn deprecated
+#10 27.81 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#10 34.49 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#10 36.38 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#10 40.98 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#10 44.99 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#10 73.10 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 74.91 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#10 75.77 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 75.77 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 76.39 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 80.02 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 88.63 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#10 88.92 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 169.8 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#10 179.1 
+#10 179.1 > going-monorepo-clean@2.0.0 prepare
+#10 179.1 > husky install
+#10 179.1 
+#10 179.2 husky - install command is DEPRECATED
+#10 179.2 .git can't be found
+#10 179.3 added 3114 packages, and audited 3115 packages in 3m
+#10 179.3 
+#10 179.3 439 packages are looking for funding
+#10 179.3   run `npm fund` for details
+#10 179.5 
+#10 179.5 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#10 179.5 
+#10 179.5 To address issues that do not require attention, run:
+#10 179.5   npm audit fix
+#10 179.5 
+#10 179.5 To address all issues (including breaking changes), run:
+#10 179.5   npm audit fix --force
+#10 179.5 
+#10 179.5 Run `npm audit` for details.
+#10 179.5 npm notice
+#10 179.5 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#10 179.5 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#10 179.5 npm notice To update run: npm install -g npm@11.7.0
+#10 179.5 npm notice
+#10 DONE 184.8s
+
+#11 [builder 6/8] COPY . .
+#11 DONE 7.8s
+
+#12 [builder 7/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/*-e2e &&     rm -rf tools/guardian
+#12 DONE 0.7s
+
+#13 [builder 8/8] RUN cd apps/admin-dashboard && npx next build
+#13 4.825 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#13 4.825 This information is used to shape Next.js' roadmap and prioritize features.
+#13 4.825 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#13 4.826 https://nextjs.org/telemetry
+#13 4.826 
+#13 4.933   Ôû▓ Next.js 14.2.3
+#13 4.933 
+#13 5.966    Creating an optimized production build ...
+#13 35.23  Ô£ô Compiled successfully
+#13 35.23    Skipping validation of types
+#13 35.23    Skipping linting
+#13 35.68    Collecting page data ...
+#13 37.18    Generating static pages (0/6) ...
+#13 38.55    Generating static pages (1/6) 
+#13 38.56    Generating static pages (2/6) 
+#13 38.56    Generating static pages (4/6) 
+#13 38.57  Ô£ô Generating static pages (6/6)
+#13 39.01    Finalizing page optimization ...
+#13 39.01    Collecting build traces ...
+#13 77.53 
+#13 77.53 Route (app)                              Size     First Load JS
+#13 77.53 Ôöî Ôùï /                                    25.2 kB         112 kB
+#13 77.53 Ôö£ ãÆ /_not-found                          142 B          87.1 kB
+#13 77.53 Ôö£ Ôùï /api/hello                           0 B                0 B
+#13 77.53 Ôöö Ôùï /login                               7.06 kB          94 kB
+#13 77.53 + First Load JS shared by all            87 kB
+#13 77.53   Ôö£ chunks/1dd3208c-c7948333d11f4602.js  53.6 kB
+#13 77.53   Ôö£ chunks/286-998854773fa7eddc.js       31.5 kB
+#13 77.53   Ôöö other shared chunks (total)          1.9 kB
+#13 77.53 
+#13 77.53 
+#13 77.54 Ôùï  (Static)   prerendered as static content
+#13 77.54 ãÆ  (Dynamic)  server-rendered on demand
+#13 77.54 
+#13 DONE 78.4s
+
+#14 [runner 3/6] RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+#14 CACHED
+
+#15 [runner 4/6] COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-dashboard/.next/standalone ./
+#15 DONE 2.0s
+
+#16 [runner 5/6] COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-dashboard/.next/static ./apps/admin-dashboard/.next/static
+#16 DONE 0.5s
+
+#17 [runner 6/6] COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-dashboard/public ./apps/admin-dashboard/public
+#17 DONE 0.2s
+
+#18 exporting to image
+#18 exporting layers
+#18 exporting layers 8.6s done
+#18 exporting manifest sha256:70680ddc7b1d0316d6616ab80d0ec4e1d2168433d030978784e3ba95fc01d385 0.0s done
+#18 exporting config sha256:8b3502337146800974d1f7013889174a5e7556eca8cbef3df4d568d5cd948522 0.0s done
+#18 exporting attestation manifest sha256:db0c7bc27130a13d2a4379a8bd7c679c92aaf420d4ff7fc8ab294a5590931781
+#18 exporting attestation manifest sha256:db0c7bc27130a13d2a4379a8bd7c679c92aaf420d4ff7fc8ab294a5590931781 0.1s done
+#18 exporting manifest list sha256:4149836d19a3dee9f16a526a8474ae023044c6c0f40ffbde07ab4815fa271fce 0.0s done
+#18 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/admin-dashboard:latest
+#18 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/admin-dashboard:latest done
+#18 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/admin-dashboard:latest
+#18 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/admin-dashboard:latest 2.6s done
+#18 DONE 11.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/lwnkkv0dhd5oixzzlolmhbmrj

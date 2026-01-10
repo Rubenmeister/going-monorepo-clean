@@ -1,0 +1,183 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.70kB 0.0s done
+#1 DONE 0.0s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 1.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 207B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 516.16kB 0.7s done
+#5 DONE 0.7s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [builder 3/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 CACHED
+
+#10 [builder 5/8] COPY . .
+#10 DONE 5.6s
+
+#11 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#11 DONE 1.7s
+
+#12 [builder 7/8] RUN npm install --legacy-peer-deps
+#12 18.87 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#12 21.65 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#12 22.88 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#12 23.14 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#12 23.96 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#12 24.83 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#12 26.59 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#12 26.59 npm warn deprecated
+#12 26.59 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#12 33.87 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#12 35.90 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#12 41.16 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#12 45.52 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#12 74.25 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 76.52 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#12 76.98 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 77.70 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 77.86 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 81.84 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#12 89.77 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#12 90.22 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 164.3 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#12 173.1 
+#12 173.1 > going-monorepo-clean@2.0.0 prepare
+#12 173.1 > husky install
+#12 173.1 
+#12 173.2 husky - install command is DEPRECATED
+#12 173.2 .git can't be found
+#12 173.3 added 3114 packages, and audited 3115 packages in 3m
+#12 173.3 
+#12 173.3 439 packages are looking for funding
+#12 173.3   run `npm fund` for details
+#12 173.5 
+#12 173.5 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#12 173.5 
+#12 173.5 To address issues that do not require attention, run:
+#12 173.5   npm audit fix
+#12 173.5 
+#12 173.5 To address all issues (including breaking changes), run:
+#12 173.5   npm audit fix --force
+#12 173.5 
+#12 173.5 Run `npm audit` for details.
+#12 173.5 npm notice
+#12 173.5 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#12 173.5 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#12 173.5 npm notice To update run: npm install -g npm@11.7.0
+#12 173.5 npm notice
+#12 DONE 180.5s
+
+#13 [builder 8/8] RUN npx nx build api-gateway --prod
+#13 10.22 
+#13 10.22  NX   Running target build for project api-gateway and 2 tasks it depends on:
+#13 10.22 
+#13 10.22 
+#13 13.58 
+#13 13.58 > nx run @going-monorepo-clean/prisma-client:build
+#13 13.58 
+#13 13.58 Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+#13 13.58 Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+#13 17.99 
+#13 17.99 > nx run @going/shared/observability:build
+#13 17.99 
+#13 17.99 Compiling TypeScript files for project "@going/shared/observability"...
+#13 17.99 Done compiling TypeScript files for project "@going/shared/observability".
+#13 18.01 
+#13 18.01 > nx run api-gateway:build
+#13 18.01 
+#13 18.01 > webpack-cli build --node-env=production
+#13 18.01 
+#13 27.91 chunk (runtime: main) main.js (main) 37.1 KiB [entry] [rendered]
+#13 27.91 webpack compiled successfully (a5ddcfc2eea319b5)
+#13 27.98 
+#13 27.98 
+#13 27.98 
+#13 27.98  NX   Successfully ran target build for project api-gateway and 2 tasks it depends on
+#13 27.98 
+#13 27.98 
+#13 DONE 28.6s
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#15 CACHED
+
+#16 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#16 CACHED
+
+#17 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#17 CACHED
+
+#18 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#18 CACHED
+
+#19 [runner  7/10] RUN npm install prisma @prisma/client
+#19 CACHED
+
+#20 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#20 CACHED
+
+#21 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#21 2.991 Prisma schema loaded from prisma/schema.prisma.
+#21 3.003 Error: Prisma schema validation - (get-config wasm)
+#21 3.003 Error code: P1012
+#21 3.003 error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+#21 3.003   -->  prisma/schema.prisma:8
+#21 3.003    | 
+#21 3.003  7 |   provider = "postgresql"
+#21 3.003  8 |   url      = env("DATABASE_URL")
+#21 3.003    | 
+#21 3.003 
+#21 3.003 Validation Error Count: 1
+#21 3.003 [Context: getConfig]
+#21 3.003 
+#21 3.003 Prisma CLI Version : 7.2.0
+#21 ERROR: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+------
+ > [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma:
+3.003   -->  prisma/schema.prisma:8
+3.003    | 
+3.003  7 |   provider = "postgresql"
+3.003  8 |   url      = env("DATABASE_URL")
+3.003    | 
+3.003 
+3.003 Validation Error Count: 1
+3.003 [Context: getConfig]
+3.003 
+3.003 Prisma CLI Version : 7.2.0
+------
+Dockerfile.prod:72
+--------------------
+  70 |     # DATABASE_URL solo requerido para generar el cliente (no se conecta realmente)
+  71 |     ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+  72 | >>> RUN npx prisma generate --schema ./prisma/schema.prisma
+  73 |     
+  74 |     # Copiamos el c├│digo compilado
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/leo3df9zelvchwtngd4rvezcl

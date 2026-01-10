@@ -7,14 +7,6 @@
     "types": ["jest", "node", "supertest"]
   },
   "files": [],
-  "include": ["src/**/*.ts", "src/**/*.js"],
-  "references": [
-    {
-      "path": "./tsconfig.spec.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+  "include": ["src/**/*.ts", "src/**/*.js"]
 }
 

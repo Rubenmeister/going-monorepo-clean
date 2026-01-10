@@ -9,7 +9,7 @@ Write-Host "🚀 Starting GCP Frontend Deployment to $RegistryUrl..." -Foregroun
 
 # 1. Admin Dashboard (Next.js -> Dockerfile.frontend)
 $AdminService = "admin-dashboard"
-$AdminImage = "$RegistryUrl/$AdminService`" + ":latest"
+$AdminImage = "$RegistryUrl/${AdminService}:latest"
 
 Write-Host "`n📦 Processing: $AdminService (Next.js)" -ForegroundColor Green
 Write-Host "   🔨 Building..."
@@ -28,7 +28,7 @@ Write-Host "   ✅ $AdminService deployed."
 
 # 2. Frontend Webapp (Vite SPA -> Dockerfile.spa)
 $WebAppService = "frontend-webapp"
-$WebAppImage = "$RegistryUrl/$WebAppService`" + ":latest"
+$WebAppImage = "$RegistryUrl/${WebAppService}:latest"
 
 Write-Host "`n📦 Processing: $WebAppService (Vite SPA)" -ForegroundColor Green
 Write-Host "   🔨 Building..."

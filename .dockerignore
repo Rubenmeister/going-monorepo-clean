@@ -1,12 +1,14 @@
-# Ignorar todo por defecto para limpiar el contexto
-*
-!package.json
-!package-lock.json
-# ¡PERMITIR DIST EXPLÍCITAMENTE!
-!dist
-!dist/apps/frontend-webapp
-!dist/apps/user-auth-service
-# Permitir configs de nginx y dockerfiles
-!apps/frontend-webapp/nginx.conf
-!apps/frontend-webapp/Dockerfile
-!apps/user-auth-service/Dockerfile
+node_modules
+.git
+.next
+dist
+tmp
+.nx
+*.log
+
+# Exclude large mobile apps
+apps/mobile-user-app
+apps/mobile-driver-app
+apps/enterprise-portal
+apps/*-e2e
+tools/guardian

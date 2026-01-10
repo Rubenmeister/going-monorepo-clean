@@ -1,7 +1,7 @@
 # ==========================================
 # ETAPA 1: BUILDER
 # ==========================================
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Instalar dependencias del sistema
 RUN apk add --no-cache libc6-compat
@@ -11,24 +11,25 @@ WORKDIR /app
 # Copiamos archivos de configuración clave
 COPY package*.json nx.json tsconfig.base.json ./
 
-# Instalamos dependencias
-RUN npm install --legacy-peer-deps
-
-# Copiamos el código fuente
+# Copiamos el código fuente primero
 COPY . .
 
-# Limpieza: eliminar frontends y E2E tests para build más rápido
-RUN rm -rf mobile-driver-app mobile-user-app admin-dashboard frontend-webapp *-e2e
+# Limpieza TEMPRANA: eliminar frontends y apps Vite ANTES de npm install
+# Esto evita que Nx intente procesar sus vite.config.ts
+RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal && \
+    rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e && \
+    rm -rf tools/guardian
+
+# Instalamos dependencias
+RUN npm install --legacy-peer-deps
 
 # ==========================================
 # BUILD ARG - Parametrizable para cualquier servicio
 # ==========================================
-# Uso: docker build --build-arg SERVICE_NAME=api-gateway -f Dockerfile.prod .
 ARG SERVICE_NAME=api-gateway
 
 # Desactivamos el Daemon de Nx para estabilidad en Docker
 ENV NX_DAEMON=false
-# Aumentamos memoria para evitar crasheos
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Construimos el servicio especificado
@@ -37,12 +38,12 @@ RUN npx nx build ${SERVICE_NAME} --prod
 # ==========================================
 # ETAPA 2: RUNNER (PRODUCCIÓN)
 # ==========================================
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Herramientas de proceso
-RUN apk add --no-cache dumb-init
+# Herramientas de proceso y Prisma runtime
+RUN apk add --no-cache dumb-init openssl libc6-compat
 
 # Crear usuario no-root
 RUN addgroup -g 1001 -S nodejs && \
@@ -51,22 +52,31 @@ RUN addgroup -g 1001 -S nodejs && \
 # Re-declarar ARG para esta etapa
 ARG SERVICE_NAME=api-gateway
 
-# Puerto configurable
-ARG PORT=3000
-ENV PORT=${PORT}
+# Puerto configurable (Default 3000 para Cloud Run)
+ENV PORT=3000
 
 # Copiamos package.json del build
-COPY --from=builder --chown=nestjs:nodejs /app/dist/${SERVICE_NAME}/package*.json ./
+COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/${SERVICE_NAME}/package*.json ./
 
-# Instalamos solo dependencias de producción
-RUN npm install --omit=dev --ignore-scripts && \
-    npm install class-validator class-transformer @nestjs/platform-socket.io socket.io
+# Instalamos dependencias de producción
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Forzamos la instalación de prisma para el runner para asegurar que el engine esté presente
+# Version pinned to match project dependencies
+RUN npm install prisma@5.22.0 @prisma/client@5.22.0
+
+# Copiamos el esquema de prisma para regeneración
+COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+
+# DATABASE_URL solo requerido para generar el cliente (no se conecta realmente)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+RUN npx prisma generate --schema ./prisma/schema.prisma
 
 # Copiamos el código compilado
-COPY --from=builder --chown=nestjs:nodejs /app/dist/${SERVICE_NAME} ./
+COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/${SERVICE_NAME} ./
 
 USER nestjs
-EXPOSE ${PORT}
+EXPOSE 3000
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "main.js"]

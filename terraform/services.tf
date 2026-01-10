@@ -14,19 +14,19 @@ locals {
     "payment-service"
   ]
 
-  # Port mappings for each service
+  # Port mappings for each service (Standardized to 3000 for Cloud Run)
   service_ports = {
-    "api-gateway"          = 3000
-    "user-auth-service"    = 3001
-    "transport-service"    = 3002
-    "parcel-service"       = 3003
-    "payment-service"      = 3004
-    "notifications-service" = 3005
-    "booking-service"      = 3006
-    "tours-service"        = 3007
-    "experience-service"   = 3008
-    "host-service"         = 3010
-    "tracking-service"     = 3011
+    "api-gateway"           = 3000
+    "user-auth-service"     = 3000
+    "transport-service"     = 3000
+    "parcel-service"        = 3000
+    "payment-service"       = 3000
+    "notifications-service" = 3000
+    "booking-service"       = 3000
+    "tours-service"         = 3000
+    "experience-service"    = 3000
+    "host-service"          = 3000
+    "tracking-service"      = 3000
   }
 
   # Service discovery URLs for API Gateway (Cloud Run internal URLs)
@@ -69,11 +69,6 @@ resource "google_cloud_run_service" "default" {
         env {
           name  = "NODE_ENV"
           value = "production"
-        }
-
-        env {
-          name  = "PORT"
-          value = tostring(local.service_ports[each.value])
         }
         
         env {

@@ -1,0 +1,243 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.39kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 433B 0.0s done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#5 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#5 CACHED
+
+#6 [runner 2/7] WORKDIR /app
+#6 CACHED
+
+#4 [internal] load build context
+#4 transferring context: 657.45kB 1.0s done
+#4 DONE 1.0s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 0.973 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+#7 1.609 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+#7 2.662 (1/3) Installing musl-obstack (1.2.3-r2)
+#7 2.711 (2/3) Installing libucontext (1.3.2-r0)
+#7 2.755 (3/3) Installing gcompat (1.1.0-r4)
+#7 2.810 OK: 10 MiB in 20 packages
+#7 ...
+
+#8 [runner 3/7] RUN apk add --no-cache dumb-init
+#8 0.976 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+#8 1.598 fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+#8 2.694 (1/1) Installing dumb-init (1.2.5-r3)
+#8 2.753 Executing busybox-1.37.0-r12.trigger
+#8 2.763 OK: 10 MiB in 18 packages
+#8 DONE 3.0s
+
+#9 [runner 4/7] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#9 ...
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 DONE 3.2s
+
+#10 [builder 3/8] WORKDIR /app
+#10 DONE 0.5s
+
+#9 [runner 4/7] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#9 ...
+
+#11 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#11 DONE 1.9s
+
+#12 [builder 5/8] COPY . .
+#12 ...
+
+#9 [runner 4/7] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#9 DONE 3.1s
+
+#12 [builder 5/8] COPY . .
+#12 DONE 49.0s
+
+#13 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e
+#13 DONE 2.7s
+
+#14 [builder 7/8] RUN npm install --legacy-peer-deps
+#14 5.119 npm warn EBADENGINE Unsupported engine {
+#14 5.119 npm warn EBADENGINE   package: '@isaacs/balanced-match@4.0.1',
+#14 5.119 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.119 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.119 npm warn EBADENGINE }
+#14 5.120 npm warn EBADENGINE Unsupported engine {
+#14 5.120 npm warn EBADENGINE   package: '@isaacs/brace-expansion@5.0.0',
+#14 5.120 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.120 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.120 npm warn EBADENGINE }
+#14 5.123 npm warn EBADENGINE Unsupported engine {
+#14 5.123 npm warn EBADENGINE   package: '@nestjs/core@11.1.11',
+#14 5.123 npm warn EBADENGINE   required: { node: '>= 20' },
+#14 5.123 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.123 npm warn EBADENGINE }
+#14 5.141 npm warn EBADENGINE Unsupported engine {
+#14 5.141 npm warn EBADENGINE   package: 'file-type@21.2.0',
+#14 5.141 npm warn EBADENGINE   required: { node: '>=20' },
+#14 5.141 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.141 npm warn EBADENGINE }
+#14 5.145 npm warn EBADENGINE Unsupported engine {
+#14 5.145 npm warn EBADENGINE   package: 'hashery@1.4.0',
+#14 5.145 npm warn EBADENGINE   required: { node: '>=20' },
+#14 5.145 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.145 npm warn EBADENGINE }
+#14 5.157 npm warn EBADENGINE Unsupported engine {
+#14 5.157 npm warn EBADENGINE   package: 'react-router@7.11.0',
+#14 5.157 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#14 5.157 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.157 npm warn EBADENGINE }
+#14 5.157 npm warn EBADENGINE Unsupported engine {
+#14 5.157 npm warn EBADENGINE   package: 'react-router-dom@7.11.0',
+#14 5.157 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#14 5.157 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.157 npm warn EBADENGINE }
+#14 5.162 npm warn EBADENGINE Unsupported engine {
+#14 5.162 npm warn EBADENGINE   package: 'vite@7.3.0',
+#14 5.162 npm warn EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+#14 5.162 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.162 npm warn EBADENGINE }
+#14 5.169 npm warn EBADENGINE Unsupported engine {
+#14 5.169 npm warn EBADENGINE   package: 'workbox-build@7.4.0',
+#14 5.169 npm warn EBADENGINE   required: { node: '>=20.0.0' },
+#14 5.169 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.169 npm warn EBADENGINE }
+#14 5.170 npm warn EBADENGINE Unsupported engine {
+#14 5.170 npm warn EBADENGINE   package: 'glob@11.1.0',
+#14 5.170 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.170 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.170 npm warn EBADENGINE }
+#14 5.171 npm warn EBADENGINE Unsupported engine {
+#14 5.171 npm warn EBADENGINE   package: 'jackspeak@4.1.1',
+#14 5.171 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.171 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.171 npm warn EBADENGINE }
+#14 5.171 npm warn EBADENGINE Unsupported engine {
+#14 5.171 npm warn EBADENGINE   package: 'lru-cache@11.2.4',
+#14 5.171 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.171 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.171 npm warn EBADENGINE }
+#14 5.171 npm warn EBADENGINE Unsupported engine {
+#14 5.171 npm warn EBADENGINE   package: 'minimatch@10.1.1',
+#14 5.171 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.171 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.171 npm warn EBADENGINE }
+#14 5.172 npm warn EBADENGINE Unsupported engine {
+#14 5.172 npm warn EBADENGINE   package: 'path-scurry@2.0.1',
+#14 5.172 npm warn EBADENGINE   required: { node: '20 || >=22' },
+#14 5.172 npm warn EBADENGINE   current: { node: 'v18.20.8', npm: '10.8.2' }
+#14 5.172 npm warn EBADENGINE }
+#14 17.09 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#14 19.38 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#14 19.93 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#14 20.60 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#14 21.87 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#14 22.65 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#14 23.96 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#14 23.96 npm warn deprecated
+#14 23.96 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#14 29.50 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#14 31.55 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#14 35.47 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#14 38.66 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#14 64.95 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 67.17 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 67.28 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 67.77 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#14 68.52 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 71.41 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#14 78.94 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#14 79.39 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 163.1 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#14 174.7 
+#14 174.7 > going-monorepo-clean@2.0.0 prepare
+#14 174.7 > husky install
+#14 174.7 
+#14 174.8 husky - install command is DEPRECATED
+#14 174.8 .git can't be found
+#14 174.9 added 3114 packages, and audited 3115 packages in 3m
+#14 174.9 
+#14 174.9 439 packages are looking for funding
+#14 174.9   run `npm fund` for details
+#14 175.1 
+#14 175.1 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#14 175.1 
+#14 175.1 To address issues that do not require attention, run:
+#14 175.1   npm audit fix
+#14 175.1 
+#14 175.1 To address all issues (including breaking changes), run:
+#14 175.1   npm audit fix --force
+#14 175.1 
+#14 175.1 Run `npm audit` for details.
+#14 175.1 npm notice
+#14 175.1 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#14 175.1 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#14 175.1 npm notice To update run: npm install -g npm@11.7.0
+#14 175.1 npm notice
+#14 DONE 179.7s
+
+#15 [builder 8/8] RUN npx nx build api-gateway --prod
+#15 13.74 
+#15 13.74  NX   Running target build for project api-gateway and 2 tasks it depends on:
+#15 13.74 
+#15 13.74 
+#15 17.09 
+#15 17.09 > nx run @going-monorepo-clean/prisma-client:build
+#15 17.09 
+#15 17.09 Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+#15 17.09 Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+#15 22.56 
+#15 22.56 > nx run @going/shared/observability:build
+#15 22.56 
+#15 22.56 Compiling TypeScript files for project "@going/shared/observability"...
+#15 22.56 Done compiling TypeScript files for project "@going/shared/observability".
+#15 22.57 
+#15 22.57 > nx run api-gateway:build
+#15 22.57 
+#15 22.58 > webpack-cli build --node-env=production
+#15 22.58 
+#15 32.62 chunk (runtime: main) main.js (main) 37.1 KiB [entry] [rendered]
+#15 32.62 webpack compiled successfully (a5ddcfc2eea319b5)
+#15 32.69 
+#15 32.69 
+#15 32.69 
+#15 32.69  NX   Successfully ran target build for project api-gateway and 2 tasks it depends on
+#15 32.69 
+#15 32.69 
+#15 DONE 32.9s
+
+#16 [runner 5/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#16 CACHED
+
+#17 [runner 6/7] RUN npm install --omit=dev --ignore-scripts &&     npm install class-validator class-transformer @nestjs/platform-socket.io socket.io
+#17 CACHED
+
+#18 [runner 7/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway ./
+#18 ERROR: failed to calculate checksum of ref 619tq4pqbqepg79etxsvcfioj::wy5v40pllnrfxidmtmymngy3y: "/app/dist/apps/api-gateway": not found
+------
+ > [runner 7/7] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway ./:
+------
+Dockerfile.prod:69
+--------------------
+  67 |     
+  68 |     # Copiamos el c├│digo compilado
+  69 | >>> COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/${SERVICE_NAME} ./
+  70 |     
+  71 |     USER nestjs
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 619tq4pqbqepg79etxsvcfioj::wy5v40pllnrfxidmtmymngy3y: "/app/dist/apps/api-gateway": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/58ombiwptokmlryrdgksieqk8

@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -10,8 +10,10 @@ COPY libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
 COPY package.json package-lock.json ./
 
 # Install only production dependencies + prisma CLI
-# We need prisma CLI to run 'migrate deploy'
-RUN npm install prisma --save-dev
+RUN npm install prisma @prisma/client --legacy-peer-deps
+
+# Generate the client to ensure engines are present for the migration runner
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Set environment variables
 ENV NODE_ENV=production

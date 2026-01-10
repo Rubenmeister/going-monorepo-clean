@@ -1,0 +1,145 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.migrations
+#1 transferring dockerfile: 605B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 433B 0.0s done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#5 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 290B 0.0s done
+#4 DONE 0.1s
+
+#6 [2/6] WORKDIR /app
+#6 CACHED
+
+#7 [3/6] RUN apk add --no-cache openssl
+#7 CACHED
+
+#8 [4/6] COPY libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#8 CACHED
+
+#9 [5/6] COPY package.json package-lock.json ./
+#9 CACHED
+
+#10 [6/6] RUN npm install prisma --save-dev
+#10 11.23 npm warn ERESOLVE overriding peer dependency
+#10 11.23 npm warn While resolving: @firebase/auth@1.9.0
+#10 11.23 npm warn Found: @react-native-async-storage/async-storage@2.2.0
+#10 11.23 npm warn node_modules/@react-native-async-storage/async-storage
+#10 11.23 npm warn   @react-native-async-storage/async-storage@"^2.2.0" from the root project
+#10 11.23 npm warn
+#10 11.23 npm warn Could not resolve dependency:
+#10 11.23 npm warn peerOptional @react-native-async-storage/async-storage@"^1.18.1" from @firebase/auth@1.9.0
+#10 11.23 npm warn node_modules/@firebase/auth
+#10 11.23 npm warn   @firebase/auth@"1.9.0" from @firebase/auth-compat@0.5.18
+#10 11.23 npm warn   node_modules/@firebase/auth-compat
+#10 11.23 npm warn   1 more (firebase)
+#10 11.23 npm warn
+#10 11.23 npm warn Conflicting peer dependency: @react-native-async-storage/async-storage@1.24.0
+#10 11.23 npm warn node_modules/@react-native-async-storage/async-storage
+#10 11.23 npm warn   peerOptional @react-native-async-storage/async-storage@"^1.18.1" from @firebase/auth@1.9.0
+#10 11.23 npm warn   node_modules/@firebase/auth
+#10 11.23 npm warn     @firebase/auth@"1.9.0" from @firebase/auth-compat@0.5.18
+#10 11.23 npm warn     node_modules/@firebase/auth-compat
+#10 11.23 npm warn     1 more (firebase)
+#10 12.74 npm warn ERESOLVE overriding peer dependency
+#10 12.74 npm warn While resolving: @react-native/virtualized-lists@0.79.7
+#10 12.74 npm warn Found: @types/react@18.3.3
+#10 12.74 npm warn node_modules/@types/react
+#10 12.74 npm warn   peerOptional @types/react@"*" from @radix-ui/react-compose-refs@1.1.2
+#10 12.74 npm warn   node_modules/@radix-ui/react-compose-refs
+#10 12.74 npm warn     @radix-ui/react-compose-refs@"1.1.2" from @radix-ui/react-slot@1.2.4
+#10 12.74 npm warn     node_modules/@radix-ui/react-slot
+#10 12.74 npm warn   6 more (@radix-ui/react-slot, @testing-library/react, ...)
+#10 12.74 npm warn
+#10 12.74 npm warn Could not resolve dependency:
+#10 12.74 npm warn peerOptional @types/react@"^19.0.0" from @react-native/virtualized-lists@0.79.7
+#10 12.74 npm warn node_modules/@react-native/virtualized-lists
+#10 12.74 npm warn   @react-native/virtualized-lists@"0.79.7" from react-native@0.79.7
+#10 12.74 npm warn   node_modules/react-native
+#10 12.74 npm warn
+#10 12.74 npm warn Conflicting peer dependency: @types/react@19.2.7
+#10 12.74 npm warn node_modules/@types/react
+#10 12.74 npm warn   peerOptional @types/react@"^19.0.0" from @react-native/virtualized-lists@0.79.7
+#10 12.74 npm warn   node_modules/@react-native/virtualized-lists
+#10 12.74 npm warn     @react-native/virtualized-lists@"0.79.7" from react-native@0.79.7
+#10 12.74 npm warn     node_modules/react-native
+#10 16.57 npm error code ERESOLVE
+#10 16.57 npm error ERESOLVE could not resolve
+#10 16.57 npm error
+#10 16.57 npm error While resolving: @sentry/nestjs@8.55.0
+#10 16.57 npm error Found: @nestjs/common@11.1.11
+#10 16.57 npm error node_modules/@nestjs/common
+#10 16.57 npm error   peer @nestjs/common@"^10.0.0 || ^11.0.0" from @nestjs/axios@4.0.1
+#10 16.57 npm error   node_modules/@nestjs/axios
+#10 16.57 npm error     peerOptional @nestjs/axios@"^2.0.0 || ^3.0.0 || ^4.0.0" from @nestjs/terminus@11.0.0
+#10 16.57 npm error     node_modules/@nestjs/terminus
+#10 16.57 npm error       @nestjs/terminus@"^11.0.0" from the root project
+#10 16.57 npm error     @nestjs/axios@"^4.0.1" from the root project
+#10 16.57 npm error   peer @nestjs/common@"^9.0.0 || ^10.0.0 || ^11.0.0" from @nestjs/cache-manager@3.1.0
+#10 16.57 npm error   node_modules/@nestjs/cache-manager
+#10 16.57 npm error     @nestjs/cache-manager@"^3.1.0" from the root project
+#10 16.57 npm error   15 more (@nestjs/config, @nestjs/core, @nestjs/jwt, ...)
+#10 16.57 npm error
+#10 16.57 npm error Could not resolve dependency:
+#10 16.57 npm error peer @nestjs/common@"^8.0.0 || ^9.0.0 || ^10.0.0" from @sentry/nestjs@8.55.0
+#10 16.57 npm error node_modules/@sentry/nestjs
+#10 16.57 npm error   @sentry/nestjs@"^8.47.0" from the root project
+#10 16.57 npm error
+#10 16.57 npm error Conflicting peer dependency: @nestjs/common@10.4.21
+#10 16.57 npm error node_modules/@nestjs/common
+#10 16.57 npm error   peer @nestjs/common@"^8.0.0 || ^9.0.0 || ^10.0.0" from @sentry/nestjs@8.55.0
+#10 16.57 npm error   node_modules/@sentry/nestjs
+#10 16.57 npm error     @sentry/nestjs@"^8.47.0" from the root project
+#10 16.57 npm error
+#10 16.57 npm error Fix the upstream dependency conflict, or retry
+#10 16.57 npm error this command with --force or --legacy-peer-deps
+#10 16.57 npm error to accept an incorrect (and potentially broken) dependency resolution.
+#10 16.57 npm error
+#10 16.57 npm error
+#10 16.57 npm error For a full report see:
+#10 16.57 npm error /root/.npm/_logs/2026-01-10T02_02_19_112Z-eresolve-report.txt
+#10 16.57 npm notice
+#10 16.57 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#10 16.57 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#10 16.57 npm notice To update run: npm install -g npm@11.7.0
+#10 16.57 npm notice
+#10 16.57 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-01-10T02_02_19_112Z-debug-0.log
+#10 ERROR: process "/bin/sh -c npm install prisma --save-dev" did not complete successfully: exit code: 1
+------
+ > [6/6] RUN npm install prisma --save-dev:
+16.57 npm error
+16.57 npm error
+16.57 npm error For a full report see:
+16.57 npm error /root/.npm/_logs/2026-01-10T02_02_19_112Z-eresolve-report.txt
+16.57 npm notice
+16.57 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+16.57 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+16.57 npm notice To update run: npm install -g npm@11.7.0
+16.57 npm notice
+16.57 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-01-10T02_02_19_112Z-debug-0.log
+------
+Dockerfile.migrations:14
+--------------------
+  12 |     # Install only production dependencies + prisma CLI
+  13 |     # We need prisma CLI to run 'migrate deploy'
+  14 | >>> RUN npm install prisma --save-dev
+  15 |     
+  16 |     # Set environment variables
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npm install prisma --save-dev" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/088bl84k95ygu8zs8yofh4ahp

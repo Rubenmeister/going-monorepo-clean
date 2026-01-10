@@ -1,9 +1,10 @@
-/// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { join } from 'path';
 import { VitePWA } from 'vite-plugin-pwa';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -13,13 +14,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: __dirname,
-    cacheDir: '../node_modules/.vite/frontend-webapp',
+    cacheDir: '../../node_modules/.vite/frontend-webapp',
 
     css: {
       postcss: {
         plugins: [
-          require('tailwindcss')({ config: join(__dirname, 'tailwind.config.js') }),
-          require('autoprefixer'),
+          tailwindcss({ config: join(__dirname, 'tailwind.config.js') }),
+          autoprefixer(),
         ],
       },
     },

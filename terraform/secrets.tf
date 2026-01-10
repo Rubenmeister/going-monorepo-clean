@@ -85,3 +85,12 @@ resource "google_secret_manager_secret_version" "firebase_project_id_val" {
   secret      = google_secret_manager_secret.firebase_project_id.id
   secret_data = var.firebase_project_id
 }
+
+# IAM Permission for Cloud Run to access secrets
+data "google_project" "project" {}
+
+resource "google_project_iam_member" "secret_accessor" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}

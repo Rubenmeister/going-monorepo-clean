@@ -1,0 +1,115 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.spa
+#1 transferring dockerfile: 1.07kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/node:18-alpine
+#3 DONE 0.7s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 DONE 0.7s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 207B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#6 DONE 0.1s
+
+#7 [runner 1/2] FROM docker.io/library/nginx:alpine@sha256:ce611bb6e76a1da3576e3875f78acb1064a4624dbf45abcbf14fd152cfb7a943
+#7 resolve docker.io/library/nginx:alpine@sha256:ce611bb6e76a1da3576e3875f78acb1064a4624dbf45abcbf14fd152cfb7a943
+#7 resolve docker.io/library/nginx:alpine@sha256:ce611bb6e76a1da3576e3875f78acb1064a4624dbf45abcbf14fd152cfb7a943 0.1s done
+#7 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 132.84kB 0.3s done
+#5 DONE 0.3s
+
+#8 [builder 2/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 3/8] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 CACHED
+
+#11 [builder 5/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 6/8] COPY . .
+#12 DONE 3.6s
+
+#13 [builder 7/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/enterprise-portal &&     rm -rf apps/*-e2e &&     rm -rf tools/guardian
+#13 DONE 0.4s
+
+#14 [builder 8/8] RUN npx nx build frontend-webapp --prod --skip-nx-cache
+#14 4.750 Convert compiler options from json failed, No inputs were found in config file 'tsconfig.json'. Specified 'include' paths were '["jest.config.ts","jest.config.cts","src/**/*.test.ts","src/**/*.spec.ts","src/**/*.test.tsx","src/**/*.spec.tsx","src/**/*.test.js","src/**/*.spec.js","src/**/*.test.jsx","src/**/*.spec.jsx","src/**/*.d.ts"]' and 'exclude' paths were '["node_modules","jest.config.ts","jest.config.cts","jest.setup.ts","**/*.spec.ts","**/*.test.ts","src/**/*.spec.ts","src/**/*.test.ts"]'.
+#14 7.238 
+#14 7.238 > nx run frontend-webapp:build:production
+#14 7.238 
+#14 17.76 vite v7.3.0 building client environment for production...
+#14 17.86 transforming...
+#14 27.58 Ô£ô 1453 modules transformed.
+#14 27.89 apps/frontend-webapp/src/config/env.ts (25:16): Use of eval in "apps/frontend-webapp/src/config/env.ts" is strongly discouraged as it poses security risks and may cause issues with minification.
+#14 28.22 rendering chunks...
+#14 28.95 computing gzip size...
+#14 29.01 ../../dist/apps/frontend-webapp/registerSW.js                             0.13 kB
+#14 29.01 ../../dist/apps/frontend-webapp/manifest.webmanifest                      0.42 kB
+#14 29.01 ../../dist/apps/frontend-webapp/index.html                                0.97 kB Ôöé gzip:   0.51 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/index-CyPPO_ve.css                64.76 kB Ôöé gzip:  10.45 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/ProviderTours-BQfQ0YsA.js          3.88 kB Ôöé gzip:   0.74 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/ComingSoonPage-C8zVCO56.js         8.28 kB Ôöé gzip:   1.94 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/CustomerDashboard-CDAsGPrD.js     15.89 kB Ôöé gzip:   2.56 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/PrivateRidesPage-DcKUMOCC.js      21.54 kB Ôöé gzip:   3.39 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/SharedRidesPage-C0w_356T.js       21.71 kB Ôöé gzip:   3.12 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/ShipmentsPage-ynGohOIV.js         23.58 kB Ôöé gzip:   3.58 kB
+#14 29.01 
+#14 29.01 (!) Some chunks are larger than 500 kB after minification. Consider:
+#14 29.01 - Using dynamic import() to code-split the application
+#14 29.01 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#14 29.01 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#14 29.01 ../../dist/apps/frontend-webapp/assets/ProviderDashboard-C3OCWGcH.js     25.92 kB Ôöé gzip:   3.73 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/CustomerTrips-Da6x9_VF.js         56.22 kB Ôöé gzip:  17.28 kB
+#14 29.01 ../../dist/apps/frontend-webapp/assets/index-CxPKuX7E.js              1,303.78 kB Ôöé gzip: 332.46 kB
+#14 29.01 Ô£ô built in 11.21s
+#14 32.98 PWA v1.2.0
+#14 32.98 mode      generateSW
+#14 32.98 precache  33 entries (6966.58 KiB)
+#14 32.98 files generated
+#14 32.98   ../../dist/apps/frontend-webapp/sw.js
+#14 32.98   ../../dist/apps/frontend-webapp/workbox-237f2c1f.js
+#14 33.14 
+#14 33.14 
+#14 33.14 
+#14 33.14  NX   Successfully ran target build for project frontend-webapp
+#14 33.14 
+#14 33.14 
+#14 DONE 33.4s
+
+#15 [runner 2/2] COPY --from=builder /app/dist/apps/frontend-webapp /usr/share/nginx/html
+#15 DONE 0.2s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 1.0s done
+#16 exporting manifest sha256:17d96a100bb32cc6043810f37ac94222009bb3b8580d6f90ae460936a4da8610 0.0s done
+#16 exporting config sha256:a900d04cb9c24403ef48ffc49e230d381c021c4baf06c180adef27d4472f434a 0.0s done
+#16 exporting attestation manifest sha256:1e7104187bc85af597f9a65940c778b5bd20440e1ad5a902863985f3a8fa5fb6
+#16 exporting attestation manifest sha256:1e7104187bc85af597f9a65940c778b5bd20440e1ad5a902863985f3a8fa5fb6 0.1s done
+#16 exporting manifest list sha256:2fb26189bee92efefc2f60a111855ec960c8b4927e3f18bb976391c6fe936171 0.0s done
+#16 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/frontend-webapp:latest
+#16 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/frontend-webapp:latest done
+#16 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/frontend-webapp:latest
+#16 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/frontend-webapp:latest 0.2s done
+#16 DONE 1.4s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/m138s88vhs0j0j6msm9qtvskl

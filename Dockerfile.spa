@@ -1,26 +1,24 @@
+ARG APP_NAME=frontend-webapp
+
 # ==========================================
 # STAGE 1: BUILDER
 # ==========================================
 FROM node:18-alpine AS builder
-
+ARG APP_NAME
 WORKDIR /app
 
-# Install system dependencies
 RUN apk add --no-cache libc6-compat
 
-# Copy configuration files
 COPY package*.json nx.json tsconfig.base.json ./
-
-# Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy source code
 COPY . .
 
-# Argument for the specific app to build
-ARG APP_NAME=frontend-webapp
+# Limpieza para evitar errores de ESM/Vite y de configuración de Nx en el project graph
+RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/enterprise-portal && \
+    rm -rf apps/*-e2e && \
+    rm -rf tools/guardian
 
-# Disable Nx Daemon
 ENV NX_DAEMON=false
 
 # Build the application
@@ -30,14 +28,10 @@ RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
 # STAGE 2: NGINX RUNNER
 # ==========================================
 FROM nginx:alpine AS runner
+ARG APP_NAME
 
 # Copy build artifacts to Nginx html directory
-# Vite build output is typically in dist/apps/frontend-webapp
-ARG APP_NAME=frontend-webapp
 COPY --from=builder /app/dist/apps/${APP_NAME} /usr/share/nginx/html
 
-# Expose port 80
 EXPOSE 80
-
-# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

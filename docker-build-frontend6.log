@@ -1,0 +1,238 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.frontend
+#1 transferring dockerfile: 1.35kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 1.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 84B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#6 DONE 0.1s
+
+#7 [builder 2/8] WORKDIR /app
+#7 CACHED
+
+#8 [runner 3/6] RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+#8 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 659.05kB 0.9s done
+#5 DONE 0.9s
+
+#9 [builder 3/8] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 CACHED
+
+#11 [builder 5/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 6/8] COPY . .
+#12 DONE 53.3s
+
+#13 [builder 7/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/*-e2e &&     rm -rf tools/guardian
+#13 DONE 2.1s
+
+#14 [builder 8/8] RUN npx nx build admin-dashboard --prod --skip-nx-cache
+#14 4.379 Convert compiler options from json failed, No inputs were found in config file 'tsconfig.json'. Specified 'include' paths were '["jest.config.ts","jest.config.cts","src/**/*.test.ts","src/**/*.spec.ts","src/**/*.test.tsx","src/**/*.spec.tsx","src/**/*.test.js","src/**/*.spec.js","src/**/*.test.jsx","src/**/*.spec.jsx","src/**/*.d.ts"]' and 'exclude' paths were '["node_modules","jest.config.ts","jest.config.cts","**/*.spec.ts","**/*.test.ts","src/**/*.spec.ts","src/**/*.test.ts"]'.
+#14 7.754 
+#14 7.754 > nx run admin-dashboard:build:production
+#14 7.754 
+#14 8.686  ÔÜá You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+#14 12.63 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#14 12.63 This information is used to shape Next.js' roadmap and prioritize features.
+#14 12.63 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#14 12.63 https://nextjs.org/telemetry
+#14 13.26   Ôû▓ Next.js 14.2.3
+#14 13.29    Creating an optimized production build ...
+#14 13.85  ÔÜá Found lockfile missing swc dependencies, patching...
+#14 16.23  ÔÜá Lockfile was successfully patched, please run "npm install" to ensure @next/swc dependencies are downloaded
+#14 37.91  Ô£ô Compiled successfully
+#14 37.91    Skipping linting
+#14 37.91    Checking validity of types ...
+#14 45.09    Collecting page data ...
+#14 46.21    Generating static pages (0/6) ...
+#14 46.88    Generating static pages (1/6) 
+#14 47.58 Error: <Html> should not be imported outside of pages/_document.
+#14 47.58 Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+#14 47.58     at Z (/app/node_modules/next/dist/compiled/next-server/pages.runtime.prod.js:16:5430)
+#14 47.58     at I (/app/dist/apps/admin-dashboard/.next/server/chunks/135.js:6:1263)
+#14 47.58     at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5658:16)
+#14 47.58     at renderIndeterminateComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5732:15)
+#14 47.58     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5957:7)
+#14 47.58     at renderNodeDestructiveImpl (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6115:11)
+#14 47.58     at renderNodeDestructive (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6087:14)
+#14 47.58     at finishClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5688:3)
+#14 47.58     at renderClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5696:3)
+#14 47.58     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5954:7)
+#14 47.58 Error occurred prerendering page "/500". Read more: https://nextjs.org/docs/messages/prerender-error
+#14 47.58 Error: <Html> should not be imported outside of pages/_document.
+#14 47.58 Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+#14 47.58     at Z (/app/node_modules/next/dist/compiled/next-server/pages.runtime.prod.js:16:5430)
+#14 47.58     at I (/app/dist/apps/admin-dashboard/.next/server/chunks/135.js:6:1263)
+#14 47.58     at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5658:16)
+#14 47.58     at renderIndeterminateComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5732:15)
+#14 47.58     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5957:7)
+#14 47.58     at renderNodeDestructiveImpl (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6115:11)
+#14 47.58     at renderNodeDestructive (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6087:14)
+#14 47.58     at finishClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5688:3)
+#14 47.58     at renderClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5696:3)
+#14 47.58     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5954:7)
+#14 47.58    Generating static pages (2/6) 
+#14 47.59 Error: <Html> should not be imported outside of pages/_document.
+#14 47.59 Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+#14 47.59     at Z (/app/node_modules/next/dist/compiled/next-server/pages.runtime.prod.js:16:5430)
+#14 47.59     at I (/app/dist/apps/admin-dashboard/.next/server/chunks/135.js:6:1263)
+#14 47.59     at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5658:16)
+#14 47.59     at renderIndeterminateComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5732:15)
+#14 47.59     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5957:7)
+#14 47.59     at renderNodeDestructiveImpl (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6115:11)
+#14 47.59     at renderNodeDestructive (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6087:14)
+#14 47.59     at finishClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5688:3)
+#14 47.59     at renderClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5696:3)
+#14 47.59     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5954:7)
+#14 47.59 Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+#14 47.59 Error: <Html> should not be imported outside of pages/_document.
+#14 47.59 Read more: https://nextjs.org/docs/messages/no-document-import-in-page
+#14 47.59     at Z (/app/node_modules/next/dist/compiled/next-server/pages.runtime.prod.js:16:5430)
+#14 47.59     at I (/app/dist/apps/admin-dashboard/.next/server/chunks/135.js:6:1263)
+#14 47.59     at renderWithHooks (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5658:16)
+#14 47.59     at renderIndeterminateComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5732:15)
+#14 47.59     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5957:7)
+#14 47.59     at renderNodeDestructiveImpl (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6115:11)
+#14 47.59     at renderNodeDestructive (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:6087:14)
+#14 47.59     at finishClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5688:3)
+#14 47.59     at renderClassComponent (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5696:3)
+#14 47.59     at renderElement (/app/node_modules/react-dom/cjs/react-dom-server.browser.development.js:5954:7)
+#14 47.59    Generating static pages (4/6) 
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59  Ô£ô Generating static pages (6/6)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908) {
+#14 47.59   digest: '2208701404'
+#14 47.59 }
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59 Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908) {
+#14 47.59   digest: '2208701404'
+#14 47.59 }
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59 Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+#14 47.59 TypeError: Cannot read properties of null (reading 'useContext')
+#14 47.59     at t.useContext (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:109363)
+#14 47.59     at d (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:21631)
+#14 47.59     at h (/app/dist/apps/admin-dashboard/.next/server/chunks/942.js:1:13550)
+#14 47.59     at au (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:10446)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:15122
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.59     at a_ (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:49776)
+#14 47.59     at ab (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:11808)
+#14 47.59     at /app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16871
+#14 47.59     at aw (/app/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:35:16908)
+#14 47.63 > Export encountered errors on following paths:
+#14 47.63 	/_error: /404
+#14 47.63 	/_error: /500
+#14 47.63 	/login/page: /login
+#14 47.63 	/page: /
+#14 47.77 Build process exited due to code 1  
+#14 47.81 
+#14 47.81 
+#14 47.81 
+#14 47.81  NX   Running target build for project admin-dashboard failed
+#14 47.81 
+#14 47.81 Failed tasks:
+#14 47.81 
+#14 47.81 - admin-dashboard:build:production
+#14 47.81 
+#14 47.81 Hint: run the command with --verbose for more details.
+#14 47.81 
+#14 ERROR: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+------
+ > [builder 8/8] RUN npx nx build admin-dashboard --prod --skip-nx-cache:
+47.81 
+47.81 
+47.81  NX   Running target build for project admin-dashboard failed
+47.81 
+47.81 Failed tasks:
+47.81 
+47.81 - admin-dashboard:build:production
+47.81 
+47.81 Hint: run the command with --verbose for more details.
+47.81 
+------
+Dockerfile.frontend:27
+--------------------
+  25 |     
+  26 |     # Construimos el frontend
+  27 | >>> RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
+  28 |     
+  29 |     # ==========================================
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/k66viu3juiatylm6gcsg4png2

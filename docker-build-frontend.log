@@ -1,0 +1,97 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.frontend
+#1 transferring dockerfile: 987B 0.0s done
+#1 DONE 0.0s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:18-alpine
+#3 DONE 1.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 433B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/7] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.1s done
+#6 DONE 0.1s
+
+#7 [runner 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [runner 3/6] RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+#8 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 657.45kB 1.0s done
+#5 DONE 1.0s
+
+#9 [builder 2/7] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 3/7] WORKDIR /app
+#10 CACHED
+
+#11 [builder 4/7] COPY package*.json nx.json tsconfig.base.json ./
+#11 CACHED
+
+#12 [builder 5/7] RUN npm install --legacy-peer-deps
+#12 CACHED
+
+#13 [builder 6/7] COPY . .
+#13 CACHED
+
+#14 [builder 7/7] RUN npx nx build admin-dashboard --prod --skip-nx-cache
+#14 10.10 failed to load config from /app/apps/enterprise-portal/vite.config.ts
+#14 10.12 failed to load config from /app/apps/mobile-user-app/vite.config.ts
+#14 10.14 failed to load config from /app/apps/mobile-driver-app/vite.config.ts
+#14 10.14 failed to load config from /app/apps/frontend-webapp/vite.config.ts
+#14 10.32 Convert compiler options from json failed, No inputs were found in config file 'tsconfig.json'. Specified 'include' paths were '["jest.config.ts","jest.config.cts","src/**/*.test.ts","src/**/*.spec.ts","src/**/*.test.tsx","src/**/*.spec.tsx","src/**/*.test.js","src/**/*.spec.js","src/**/*.test.jsx","src/**/*.spec.jsx","src/**/*.d.ts"]' and 'exclude' paths were '["node_modules","jest.config.ts","jest.config.cts","**/*.spec.ts","**/*.test.ts","src/**/*.spec.ts","src/**/*.test.ts"]'.
+#14 12.34 Convert compiler options from json failed, No inputs were found in config file 'tsconfig.json'. Specified 'include' paths were '["jest.config.ts","jest.config.cts","src/**/*.test.ts","src/**/*.spec.ts","src/**/*.test.tsx","src/**/*.spec.tsx","src/**/*.test.js","src/**/*.spec.js","src/**/*.test.jsx","src/**/*.spec.jsx","src/**/*.d.ts"]' and 'exclude' paths were '["node_modules","jest.config.ts","jest.config.cts","jest.setup.ts","**/*.spec.ts","**/*.test.ts","src/**/*.spec.ts","src/**/*.test.ts"]'.
+#14 16.87 
+#14 16.87  NX   Failed to process project graph.
+#14 16.88 
+#14 16.88 4 errors occurred while processing files for the @nx/vite/plugin plugin (Defined at nx.json#plugins[6])
+#14 16.88 .
+#14 16.88   - apps/enterprise-portal/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/enterprise-portal/vite.config.ts not supported.
+#14 16.88 Instead change the require of index.js in /app/apps/enterprise-portal/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+#14 16.88   - apps/mobile-user-app/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/mobile-user-app/vite.config.ts not supported.
+#14 16.88 Instead change the require of index.js in /app/apps/mobile-user-app/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+#14 16.88   - apps/mobile-driver-app/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/mobile-driver-app/vite.config.ts not supported.
+#14 16.88 Instead change the require of index.js in /app/apps/mobile-driver-app/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+#14 16.88   - apps/frontend-webapp/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/frontend-webapp/vite.config.ts not supported.
+#14 16.88 Instead change the require of index.js in /app/apps/frontend-webapp/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+#14 16.88 
+#14 ERROR: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+------
+ > [builder 7/7] RUN npx nx build admin-dashboard --prod --skip-nx-cache:
+16.88 .
+16.88   - apps/enterprise-portal/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/enterprise-portal/vite.config.ts not supported.
+16.88 Instead change the require of index.js in /app/apps/enterprise-portal/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+16.88   - apps/mobile-user-app/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/mobile-user-app/vite.config.ts not supported.
+16.88 Instead change the require of index.js in /app/apps/mobile-user-app/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+16.88   - apps/mobile-driver-app/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/mobile-driver-app/vite.config.ts not supported.
+16.88 Instead change the require of index.js in /app/apps/mobile-driver-app/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+16.88   - apps/frontend-webapp/vite.config.ts: require() of ES Module /app/node_modules/vite/dist/node/index.js from /app/apps/frontend-webapp/vite.config.ts not supported.
+16.88 Instead change the require of index.js in /app/apps/frontend-webapp/vite.config.ts to a dynamic import() which is available in all CommonJS modules.
+16.88 
+------
+
+ 1 warning found (use docker --debug to expand):
+ - UndefinedVar: Usage of undefined variable '$APP_NAME' (line 32)
+Dockerfile.frontend:18
+--------------------
+  16 |     
+  17 |     # Construimos el frontend
+  18 | >>> RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
+  19 |     
+  20 |     # ==========================================
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/y8otaltbvebimbquthbbt8yvn

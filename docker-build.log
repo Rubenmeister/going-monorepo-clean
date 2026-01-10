@@ -1,0 +1,213 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.53kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 207B 0.0s done
+#3 DONE 0.3s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 CACHED
+
+#6 [runner  2/10] WORKDIR /app
+#6 CACHED
+
+#4 [internal] load build context
+#4 transferring context: 513.50kB 0.6s done
+#4 DONE 0.7s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 2.695 (1/3) Installing musl-obstack (1.2.3-r2)
+#7 2.867 (2/3) Installing libucontext (1.3.3-r0)
+#7 2.971 (3/3) Installing gcompat (1.1.0-r4)
+#7 3.142 OK: 11.0 MiB in 21 packages
+#7 DONE 3.3s
+
+#8 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#8 2.669 (1/5) Installing dumb-init (1.2.5-r3)
+#8 2.837 (2/5) Installing musl-obstack (1.2.3-r2)
+#8 3.006 (3/5) Installing libucontext (1.3.3-r0)
+#8 3.175 (4/5) Installing gcompat (1.1.0-r4)
+#8 ...
+
+#9 [builder 3/8] WORKDIR /app
+#9 DONE 0.2s
+
+#8 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#8 3.357 (5/5) Installing openssl (3.5.4-r0)
+#8 3.499 Executing busybox-1.37.0-r30.trigger
+#8 3.508 OK: 11.8 MiB in 23 packages
+#8 DONE 3.6s
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 DONE 0.3s
+
+#11 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#11 DONE 1.3s
+
+#12 [builder 5/8] COPY . .
+#12 DONE 5.2s
+
+#13 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#13 DONE 1.2s
+
+#14 [builder 7/8] RUN npm install --legacy-peer-deps
+#14 16.61 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#14 19.25 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#14 20.00 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#14 20.58 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#14 21.31 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#14 22.01 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#14 23.50 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#14 23.50 npm warn deprecated
+#14 23.50 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#14 31.76 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#14 33.97 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#14 39.05 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#14 42.83 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#14 68.26 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 69.44 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#14 70.41 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 70.41 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 71.06 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 74.94 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#14 83.95 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#14 84.38 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#14 159.5 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#14 168.4 
+#14 168.4 > going-monorepo-clean@2.0.0 prepare
+#14 168.4 > husky install
+#14 168.4 
+#14 168.6 husky - install command is DEPRECATED
+#14 168.6 .git can't be found
+#14 168.6 added 3114 packages, and audited 3115 packages in 3m
+#14 168.6 
+#14 168.6 439 packages are looking for funding
+#14 168.6   run `npm fund` for details
+#14 168.9 
+#14 168.9 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#14 168.9 
+#14 168.9 To address issues that do not require attention, run:
+#14 168.9   npm audit fix
+#14 168.9 
+#14 168.9 To address all issues (including breaking changes), run:
+#14 168.9   npm audit fix --force
+#14 168.9 
+#14 168.9 Run `npm audit` for details.
+#14 168.9 npm notice
+#14 168.9 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#14 168.9 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#14 168.9 npm notice To update run: npm install -g npm@11.7.0
+#14 168.9 npm notice
+#14 DONE 173.4s
+
+#15 [builder 8/8] RUN npx nx build api-gateway --prod
+#15 13.38 
+#15 13.38  NX   Running target build for project api-gateway and 2 tasks it depends on:
+#15 13.38 
+#15 13.38 
+#15 16.92 
+#15 16.92 > nx run @going-monorepo-clean/prisma-client:build
+#15 16.92 
+#15 16.92 Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+#15 16.92 Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+#15 22.19 
+#15 22.19 > nx run @going/shared/observability:build
+#15 22.19 
+#15 22.19 Compiling TypeScript files for project "@going/shared/observability"...
+#15 22.19 Done compiling TypeScript files for project "@going/shared/observability".
+#15 22.22 
+#15 22.22 > nx run api-gateway:build
+#15 22.22 
+#15 22.23 > webpack-cli build --node-env=production
+#15 22.23 
+#15 36.64 chunk (runtime: main) main.js (main) 37.1 KiB [entry] [rendered]
+#15 36.64 webpack compiled successfully (a5ddcfc2eea319b5)
+#15 36.76 
+#15 36.76 
+#15 36.76 
+#15 36.76  NX   Successfully ran target build for project api-gateway and 2 tasks it depends on
+#15 36.76 
+#15 36.76 
+#15 DONE 37.2s
+
+#16 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#16 DONE 0.3s
+
+#17 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#17 26.43 
+#17 26.43 added 404 packages, and audited 405 packages in 26s
+#17 26.43 
+#17 26.43 56 packages are looking for funding
+#17 26.43   run `npm fund` for details
+#17 26.43 
+#17 26.43 found 0 vulnerabilities
+#17 26.44 npm notice
+#17 26.44 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#17 26.44 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#17 26.44 npm notice To update run: npm install -g npm@11.7.0
+#17 26.44 npm notice
+#17 DONE 29.9s
+
+#18 [runner  7/10] RUN npm install prisma @prisma/client
+#18 44.49 
+#18 44.49 added 90 packages, changed 4 packages, and audited 495 packages in 44s
+#18 44.49 
+#18 44.49 65 packages are looking for funding
+#18 44.49   run `npm fund` for details
+#18 44.50 
+#18 44.50 found 0 vulnerabilities
+#18 DONE 46.0s
+
+#19 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#19 DONE 0.6s
+
+#20 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#20 4.398 Prisma schema loaded from prisma/schema.prisma.
+#20 4.418 Error: Prisma schema validation - (get-config wasm)
+#20 4.418 Error code: P1012
+#20 4.418 error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+#20 4.418   -->  prisma/schema.prisma:8
+#20 4.418    | 
+#20 4.418  7 |   provider = "postgresql"
+#20 4.418  8 |   url      = env("DATABASE_URL")
+#20 4.418    | 
+#20 4.418 
+#20 4.418 Validation Error Count: 1
+#20 4.418 [Context: getConfig]
+#20 4.418 
+#20 4.418 Prisma CLI Version : 7.2.0
+#20 ERROR: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+------
+ > [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma:
+4.418   -->  prisma/schema.prisma:8
+4.418    | 
+4.418  7 |   provider = "postgresql"
+4.418  8 |   url      = env("DATABASE_URL")
+4.418    | 
+4.418 
+4.418 Validation Error Count: 1
+4.418 [Context: getConfig]
+4.418 
+4.418 Prisma CLI Version : 7.2.0
+------
+Dockerfile.prod:69
+--------------------
+  67 |     # Copiamos el esquema de prisma para regeneraci├│n
+  68 |     COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+  69 | >>> RUN npx prisma generate --schema ./prisma/schema.prisma
+  70 |     
+  71 |     # Copiamos el c├│digo compilado
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/skwe517r8u78i4mlafdmxjfln

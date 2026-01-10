@@ -1,0 +1,1244 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.53kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 2.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 207B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#6 sha256:cb3325e64457574e24f92246e3da3376946e473d636209e1390eac47b50b26a3 0B / 1.26MB 0.2s
+#6 sha256:fd1849a5c548bc65ee47a64498951bda5d40e87d08efe9dca69b5c8cdedc7a52 0B / 443B 0.2s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 0B / 42.78MB 0.2s
+#6 sha256:cb3325e64457574e24f92246e3da3376946e473d636209e1390eac47b50b26a3 1.26MB / 1.26MB 0.7s done
+#6 sha256:fd1849a5c548bc65ee47a64498951bda5d40e87d08efe9dca69b5c8cdedc7a52 443B / 443B 0.6s done
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 3.15MB / 42.78MB 1.2s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 7.34MB / 42.78MB 1.7s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 10.49MB / 42.78MB 2.0s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 14.68MB / 42.78MB 2.4s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 18.87MB / 42.78MB 2.9s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 22.77MB / 42.78MB 3.3s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 25.47MB / 42.78MB 3.9s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 28.31MB / 42.78MB 4.2s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 31.46MB / 42.78MB 5.0s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 34.60MB / 42.78MB 5.4s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 37.36MB / 42.78MB 5.7s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 39.85MB / 42.78MB 6.2s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 42.78MB / 42.78MB 6.5s
+#6 sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 42.78MB / 42.78MB 6.6s done
+#6 DONE 7.1s
+
+#5 [internal] load build context
+#5 transferring context: 49.48MB 7.1s
+#5 ...
+
+#6 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 extracting sha256:8d06ba6946d1f299d8f962e37906c77006df33d47050430a57f7893ec35af697 4.1s done
+#6 extracting sha256:cb3325e64457574e24f92246e3da3376946e473d636209e1390eac47b50b26a3 0.2s done
+#6 extracting sha256:fd1849a5c548bc65ee47a64498951bda5d40e87d08efe9dca69b5c8cdedc7a52 0.1s done
+#6 DONE 11.5s
+
+#5 [internal] load build context
+#5 ...
+
+#7 [runner  2/10] WORKDIR /app
+#7 DONE 1.9s
+
+#5 [internal] load build context
+#5 transferring context: 93.61MB 13.5s
+#5 ...
+
+#8 [builder 2/8] RUN apk add --no-cache libc6-compat
+#8 5.254 (1/3) Installing musl-obstack (1.2.3-r2)
+#8 5.304 (2/3) Installing libucontext (1.3.3-r0)
+#8 5.350 (3/3) Installing gcompat (1.1.0-r4)
+#8 5.407 OK: 11.0 MiB in 21 packages
+#8 DONE 5.9s
+
+#5 [internal] load build context
+#5 ...
+
+#9 [builder 3/8] WORKDIR /app
+#9 DONE 0.6s
+
+#5 [internal] load build context
+#5 ...
+
+#10 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#10 3.283 (1/5) Installing dumb-init (1.2.5-r3)
+#10 3.336 (2/5) Installing musl-obstack (1.2.3-r2)
+#10 3.383 (3/5) Installing libucontext (1.3.3-r0)
+#10 3.427 (4/5) Installing gcompat (1.1.0-r4)
+#10 3.482 (5/5) Installing openssl (3.5.4-r0)
+#10 3.682 Executing busybox-1.37.0-r30.trigger
+#10 3.738 OK: 11.8 MiB in 23 packages
+#10 DONE 4.8s
+
+#5 [internal] load build context
+#5 transferring context: 141.14MB 18.6s
+#5 ...
+
+#11 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#11 DONE 0.8s
+
+#5 [internal] load build context
+#5 transferring context: 177.38MB 21.4s done
+#5 DONE 21.4s
+
+#12 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#12 DONE 0.4s
+
+#13 [builder 5/8] COPY . .
+#13 DONE 2.4s
+
+#14 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#14 DONE 0.6s
+
+#15 [builder 7/8] RUN npm install --legacy-peer-deps
+#15 16.31 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#15 18.98 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#15 19.53 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#15 20.12 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#15 21.07 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#15 21.90 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#15 23.43 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#15 23.43 npm warn deprecated
+#15 23.43 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#15 28.67 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#15 31.83 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#15 35.40 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#15 38.23 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#15 61.79 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#15 63.32 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#15 64.10 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#15 64.11 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#15 64.91 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#15 67.47 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#15 74.31 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#15 74.49 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#15 142.2 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#15 148.7 
+#15 148.7 > going-monorepo-clean@2.0.0 prepare
+#15 148.7 > husky install
+#15 148.7 
+#15 148.8 husky - install command is DEPRECATED
+#15 148.8 .git can't be found
+#15 148.8 added 3114 packages, and audited 3115 packages in 2m
+#15 148.8 
+#15 148.8 439 packages are looking for funding
+#15 148.8   run `npm fund` for details
+#15 149.0 
+#15 149.0 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#15 149.0 
+#15 149.0 To address issues that do not require attention, run:
+#15 149.0   npm audit fix
+#15 149.0 
+#15 149.0 To address all issues (including breaking changes), run:
+#15 149.0   npm audit fix --force
+#15 149.0 
+#15 149.0 Run `npm audit` for details.
+#15 149.0 npm notice
+#15 149.0 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#15 149.0 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#15 149.0 npm notice To update run: npm install -g npm@11.7.0
+#15 149.0 npm notice
+#15 DONE 153.4s
+
+#16 [builder 8/8] RUN npx nx build api-gateway --prod
+#16 7.995 
+#16 7.995  NX   Running target build for project api-gateway and 2 tasks it depends on:
+#16 7.995 
+#16 7.996 
+#16 10.68 
+#16 10.68 > nx run @going-monorepo-clean/prisma-client:build
+#16 10.68 
+#16 10.68 Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+#16 10.68 Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+#16 14.54 
+#16 14.54 > nx run @going/shared/observability:build
+#16 14.54 
+#16 14.54 Compiling TypeScript files for project "@going/shared/observability"...
+#16 14.54 Done compiling TypeScript files for project "@going/shared/observability".
+#16 14.55 
+#16 14.55 > nx run api-gateway:build
+#16 14.55 
+#16 14.56 > webpack-cli build --node-env=production
+#16 14.56 
+#16 22.86 chunk (runtime: main) main.js (main) 37.1 KiB [entry] [rendered]
+#16 22.86 webpack compiled successfully (a5ddcfc2eea319b5)
+#16 22.92 
+#16 22.92 
+#16 22.92 
+#16 22.92  NX   Successfully ran target build for project api-gateway and 2 tasks it depends on
+#16 22.92 
+#16 22.92 
+#16 DONE 23.3s
+
+#17 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#17 DONE 0.3s
+
+#18 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#18 14.90 
+#18 14.90 added 404 packages, and audited 405 packages in 14s
+#18 14.90 
+#18 14.90 56 packages are looking for funding
+#18 14.90   run `npm fund` for details
+#18 14.90 
+#18 14.90 found 0 vulnerabilities
+#18 14.90 npm notice
+#18 14.90 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#18 14.90 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#18 14.90 npm notice To update run: npm install -g npm@11.7.0
+#18 14.90 npm notice
+#18 DONE 16.6s
+
+#19 [runner  7/10] RUN npm install prisma @prisma/client
+#19 28.15 
+#19 28.15 added 90 packages, changed 4 packages, and audited 495 packages in 27s
+#19 28.15 
+#19 28.15 65 packages are looking for funding
+#19 28.15   run `npm fund` for details
+#19 28.16 
+#19 28.16 found 0 vulnerabilities
+#19 DONE 31.8s
+
+#20 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#20 DONE 0.3s
+
+#21 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#21 2.609 Prisma schema loaded from prisma/schema.prisma.
+#21 2.621 Error: Prisma schema validation - (get-config wasm)
+#21 2.621 Error code: P1012
+#21 2.621 error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+#21 2.621   -->  prisma/schema.prisma:8
+#21 2.621    | 
+#21 2.621  7 |   provider = "postgresql"
+#21 2.621  8 |   url      = env("DATABASE_URL")
+#21 2.621    | 
+#21 2.621 
+#21 2.621 Validation Error Count: 1
+#21 2.621 [Context: getConfig]
+#21 2.621 
+#21 2.621 Prisma CLI Version : 7.2.0
+#21 ERROR: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+------
+ > [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma:
+2.621   -->  prisma/schema.prisma:8
+2.621    | 
+2.621  7 |   provider = "postgresql"
+2.621  8 |   url      = env("DATABASE_URL")
+2.621    | 
+2.621 
+2.621 Validation Error Count: 1
+2.621 [Context: getConfig]
+2.621 
+2.621 Prisma CLI Version : 7.2.0
+------
+Dockerfile.prod:69
+--------------------
+  67 |     # Copiamos el esquema de prisma para regeneraci├│n
+  68 |     COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+  69 | >>> RUN npx prisma generate --schema ./prisma/schema.prisma
+  70 |     
+  71 |     # Copiamos el c├│digo compilado
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/rebrzrgt173di1v9z25blzd46
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway]
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Waiting
+77da09ab70ea: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+25ff2da83641: Layer already exists
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Layer already exists
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+0d2a3a96ea0f: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+1b1684448052: Waiting
+dd71dde834b5: Waiting
+1e5a4c89cee5: Waiting
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+0d2a3a96ea0f: Layer already exists
+f18232174bc9: Waiting
+1b1684448052: Layer already exists
+dd71dde834b5: Waiting
+1e5a4c89cee5: Layer already exists
+2d750371e74d: Waiting
+4aa54b5940a1: Waiting
+c9a06b30d2f0: Waiting
+77da09ab70ea: Waiting
+2d750371e74d: Layer already exists
+4aa54b5940a1: Already exists
+c9a06b30d2f0: Layer already exists
+77da09ab70ea: Waiting
+f18232174bc9: Layer already exists
+dd71dde834b5: Layer already exists
+77da09ab70ea: Waiting
+77da09ab70ea: Layer already exists
+latest: digest: sha256:4bdab03c75c73a431395c3d3a6c038728a9bc0d9461f8fb0c5e79e3dc9a5bede size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.53kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 207B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 129.04kB 0.3s done
+#4 DONE 0.3s
+
+#6 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#6 CACHED
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [builder 3/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 CACHED
+
+#10 [builder 5/8] COPY . .
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build user-auth-service --prod
+#12 8.436 
+#12 8.436 > nx run user-auth-service:build:production
+#12 8.437 
+#12 19.88 assets by path *.js 20.3 KiB
+#12 19.88   asset main.js 15 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 19.88   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 19.89   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 19.89 assets by path *.json 180 KiB
+#12 19.89   asset package-lock.json 179 KiB [emitted]
+#12 19.89   asset package.json 1.12 KiB [emitted]
+#12 19.89 asset 3rdpartylicenses.txt 5 bytes [emitted]
+#12 19.89 asset assets/.gitkeep 0 bytes [emitted] [from: apps/user-auth-service/src/assets/.gitkeep] [copied]
+#12 19.89 orphan modules 36.8 KiB [orphan] 48 modules
+#12 19.89 runtime modules 3.53 KiB 8 modules
+#12 19.89 built modules 41.3 KiB [built]
+#12 19.89   modules by path ./ 40.9 KiB
+#12 19.89     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 19.89     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 19.89     + 1 module
+#12 19.89   modules by path external "@nestjs/ 210 bytes
+#12 19.89     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 19.89     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 19.89     + 3 modules
+#12 19.89   + 5 modules
+#12 19.89 webpack 5.104.1 compiled successfully in 9016 ms
+#12 19.92 
+#12 19.92 
+#12 19.92 
+#12 19.92  NX   Successfully ran target build for project user-auth-service
+#12 19.92 
+#12 19.92 
+#12 DONE 20.2s
+
+#13 [runner  2/10] WORKDIR /app
+#13 CACHED
+
+#14 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#14 CACHED
+
+#15 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#15 CACHED
+
+#16 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/user-auth-service/package*.json ./
+#16 DONE 0.3s
+
+#17 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#17 17.91 
+#17 17.91 added 362 packages, and audited 363 packages in 17s
+#17 17.91 
+#17 17.91 52 packages are looking for funding
+#17 17.91   run `npm fund` for details
+#17 17.92 
+#17 17.92 found 0 vulnerabilities
+#17 17.92 npm notice
+#17 17.92 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#17 17.92 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#17 17.92 npm notice To update run: npm install -g npm@11.7.0
+#17 17.92 npm notice
+#17 DONE 19.1s
+
+#18 [runner  7/10] RUN npm install prisma @prisma/client
+#18 26.19 
+#18 26.19 added 90 packages, changed 4 packages, and audited 453 packages in 26s
+#18 26.19 
+#18 26.19 62 packages are looking for funding
+#18 26.19   run `npm fund` for details
+#18 26.20 
+#18 26.20 found 0 vulnerabilities
+#18 DONE 29.8s
+
+#19 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#19 DONE 1.5s
+
+#20 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#20 2.536 Prisma schema loaded from prisma/schema.prisma.
+#20 2.547 Error: Prisma schema validation - (get-config wasm)
+#20 2.547 Error code: P1012
+#20 2.547 error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+#20 2.547   -->  prisma/schema.prisma:8
+#20 2.547    | 
+#20 2.547  7 |   provider = "postgresql"
+#20 2.547  8 |   url      = env("DATABASE_URL")
+#20 2.547    | 
+#20 2.547 
+#20 2.547 Validation Error Count: 1
+#20 2.547 [Context: getConfig]
+#20 2.547 
+#20 2.547 Prisma CLI Version : 7.2.0
+#20 ERROR: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+------
+ > [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma:
+2.547   -->  prisma/schema.prisma:8
+2.547    | 
+2.547  7 |   provider = "postgresql"
+2.547  8 |   url      = env("DATABASE_URL")
+2.547    | 
+2.547 
+2.547 Validation Error Count: 1
+2.547 [Context: getConfig]
+2.547 
+2.547 Prisma CLI Version : 7.2.0
+------
+Dockerfile.prod:69
+--------------------
+  67 |     # Copiamos el esquema de prisma para regeneraci├│n
+  68 |     COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+  69 | >>> RUN npx prisma generate --schema ./prisma/schema.prisma
+  70 |     
+  71 |     # Copiamos el c├│digo compilado
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/uaj5ktkalrby83tzohu4epbqh
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service]
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+dd71dde834b5: Waiting
+8ddfc8ee33c0: Layer already exists
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+0d2a3a96ea0f: Layer already exists
+cba5f324f741: Waiting
+657287aac65e: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Waiting
+657287aac65e: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Waiting
+f18232174bc9: Waiting
+c8648cc39cb7: Waiting
+1e5a4c89cee5: Waiting
+cba5f324f741: Already exists
+657287aac65e: Layer already exists
+dd71dde834b5: Layer already exists
+25ff2da83641: Waiting
+431d4e3db123: Waiting
+77da09ab70ea: Layer already exists
+f18232174bc9: Layer already exists
+c8648cc39cb7: Layer already exists
+1e5a4c89cee5: Waiting
+25ff2da83641: Waiting
+431d4e3db123: Layer already exists
+1e5a4c89cee5: Layer already exists
+25ff2da83641: Layer already exists
+latest: digest: sha256:62ab66db4212b15fe737fdef7ba7e8d472a9736c1aae0d4de09bdf8075ac2ef5 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.53kB 0.0s done
+#1 DONE 0.1s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 1.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 207B done
+#4 DONE 0.1s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 129.04kB 0.2s done
+#6 DONE 0.3s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [builder 3/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 CACHED
+
+#10 [builder 5/8] COPY . .
+#10 CACHED
+
+#11 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#11 CACHED
+
+#12 [builder 7/8] RUN npm install --legacy-peer-deps
+#12 CACHED
+
+#13 [builder 8/8] RUN npx nx build transport-service --prod
+#13 6.422 
+#13 6.422 > nx run transport-service:build:production
+#13 6.422 
+#13 16.56 assets by path *.js 25.8 KiB
+#13 16.56   asset main.js 20.5 KiB [emitted] [minimized] (name: main) 1 related asset
+#13 16.56   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#13 16.56   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#13 16.56 assets by path *.json 174 KiB
+#13 16.56   asset package-lock.json 173 KiB [emitted]
+#13 16.56   asset package.json 1.07 KiB [emitted]
+#13 16.56 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#13 16.56 asset assets/.gitkeep 0 bytes [emitted] [from: apps/transport-service/src/assets/.gitkeep] [copied]
+#13 16.56 orphan modules 44.3 KiB [orphan] 42 modules
+#13 16.56 runtime modules 3.53 KiB 8 modules
+#13 16.56 built modules 49 KiB [built]
+#13 16.56   modules by path ./ 48.5 KiB
+#13 16.56     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#13 16.56     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#13 16.56     + 1 module
+#13 16.56   modules by path external "@nestjs/ 210 bytes
+#13 16.56     external "@nestjs/core" 42 bytes [built] [code generated]
+#13 16.56     external "@nestjs/common" 42 bytes [built] [code generated]
+#13 16.56     + 3 modules
+#13 16.56   + 5 modules
+#13 16.56 webpack 5.104.1 compiled successfully in 7654 ms
+#13 16.60 
+#13 16.60 
+#13 16.61 
+#13 16.61  NX   Successfully ran target build for project transport-service
+#13 16.61 
+#13 16.61 
+#13 DONE 16.8s
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#15 CACHED
+
+#16 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#16 CACHED
+
+#17 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/transport-service/package*.json ./
+#17 DONE 0.3s
+
+#18 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#18 15.76 
+#18 15.76 added 345 packages, and audited 346 packages in 15s
+#18 15.76 
+#18 15.76 52 packages are looking for funding
+#18 15.76   run `npm fund` for details
+#18 15.76 
+#18 15.76 found 0 vulnerabilities
+#18 15.76 npm notice
+#18 15.76 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#18 15.76 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#18 15.76 npm notice To update run: npm install -g npm@11.7.0
+#18 15.76 npm notice
+#18 DONE 18.3s
+
+#19 [runner  7/10] RUN npm install prisma @prisma/client
+#19 24.86 
+#19 24.86 added 90 packages, changed 4 packages, and audited 436 packages in 24s
+#19 24.86 
+#19 24.86 62 packages are looking for funding
+#19 24.86   run `npm fund` for details
+#19 24.87 
+#19 24.87 found 0 vulnerabilities
+#19 DONE 27.7s
+
+#20 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#20 DONE 0.4s
+
+#21 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#21 2.430 Prisma schema loaded from prisma/schema.prisma.
+#21 2.445 Error: Prisma schema validation - (get-config wasm)
+#21 2.445 Error code: P1012
+#21 2.445 error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+#21 2.445   -->  prisma/schema.prisma:8
+#21 2.445    | 
+#21 2.445  7 |   provider = "postgresql"
+#21 2.445  8 |   url      = env("DATABASE_URL")
+#21 2.445    | 
+#21 2.445 
+#21 2.445 Validation Error Count: 1
+#21 2.445 [Context: getConfig]
+#21 2.445 
+#21 2.445 Prisma CLI Version : 7.2.0
+#21 ERROR: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+------
+ > [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma:
+2.445   -->  prisma/schema.prisma:8
+2.445    | 
+2.445  7 |   provider = "postgresql"
+2.445  8 |   url      = env("DATABASE_URL")
+2.445    | 
+2.445 
+2.445 Validation Error Count: 1
+2.445 [Context: getConfig]
+2.445 
+2.445 Prisma CLI Version : 7.2.0
+------
+Dockerfile.prod:69
+--------------------
+  67 |     # Copiamos el esquema de prisma para regeneraci├│n
+  68 |     COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+  69 | >>> RUN npx prisma generate --schema ./prisma/schema.prisma
+  70 |     
+  71 |     # Copiamos el c├│digo compilado
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx prisma generate --schema ./prisma/schema.prisma" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/oyh54bcmh6uglqtkv23bllkk4
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/transport-service]
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+a9d495bf9f3f: Layer already exists
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+0d2a3a96ea0f: Waiting
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Waiting
+0d2a3a96ea0f: Layer already exists
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Waiting
+8ddfc8ee33c0: Waiting
+1e5a4c89cee5: Layer already exists
+367abac84d46: Waiting
+77da09ab70ea: Waiting
+bad9a97cc7fb: Layer already exists
+dd71dde834b5: Waiting
+25ff2da83641: Waiting
+366813422227: Waiting
+f18232174bc9: Layer already exists
+8ddfc8ee33c0: Layer already exists
+367abac84d46: Already exists
+77da09ab70ea: Layer already exists
+dd71dde834b5: Layer already exists
+25ff2da83641: Layer already exists
+366813422227: Layer already exists
+latest: digest: sha256:8f89bfdb543c992b7bf2e561836ad4bb7f08253c929d63b8c323bccaf222c87c size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.53kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 207B done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 129.04kB 0.2s done
+#4 DONE 0.3s
+
+#6 [builder 2/8] RUN apk add --no-cache libc6-compat
+#6 CACHED
+
+#7 [builder 3/8] WORKDIR /app
+#7 CACHED
+
+#8 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#8 CACHED
+
+#9 [builder 5/8] COPY . .
+#9 CACHED
+
+#10 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build parcel-service --prod
+#12 6.657 
+#12 6.657 > nx run parcel-service:build:production
+#12 6.657 
+#12 17.11 assets by path *.json 174 KiB
+#12 17.11   asset package-lock.json 173 KiB [emitted]
+#12 17.11   asset package.json 1.06 KiB [emitted]
+#12 17.11 assets by path *.js 23 KiB
+#12 17.11   asset main.js 20.5 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 17.11   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 17.11 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 17.11 asset assets/.gitkeep 0 bytes [emitted] [from: apps/parcel-service/src/assets/.gitkeep] [copied]
+#12 17.11 orphan modules 41.7 KiB [orphan] 48 modules
+#12 17.11 runtime modules 3.53 KiB 8 modules
+#12 17.11 built modules 45.9 KiB [built]
+#12 17.11   modules by path ./ 45.6 KiB
+#12 17.11     cacheable modules 6.86 KiB 4 modules
+#12 17.11     ./apps/parcel-service/src/main.ts + 40 modules 33.3 KiB [not cacheable] [built] [code generated]
+#12 17.11     ./libs/shared/src/backend.ts + 6 modules 5.43 KiB [not cacheable] [built] [code generated]
+#12 17.11   modules by path external "@nestjs/ 168 bytes
+#12 17.11     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 17.11     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 17.11     + 2 modules
+#12 17.11   + 5 modules
+#12 17.11 WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:57-74
+#12 17.11 export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+#12 17.11  @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+#12 17.11  @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+#12 17.11  @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+#12 17.11 WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:94-111
+#12 17.11 export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+#12 17.11  @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+#12 17.11  @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+#12 17.11  @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+#12 17.11 webpack 5.104.1 compiled with 2 warnings in 8145 ms
+#12 17.15 
+#12 17.15 
+#12 17.15 
+#12 17.15  NX   Successfully ran target build for project parcel-service
+#12 17.15 
+#12 17.15 
+#12 DONE 17.6s
+
+#13 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#13 CACHED
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#15 CACHED
+
+#16 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/parcel-service/package*.json ./
+#16 DONE 0.3s
+
+#17 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#17 15.15 
+#17 15.15 added 345 packages, and audited 346 packages in 15s
+#17 15.15 
+#17 15.15 52 packages are looking for funding
+#17 15.15   run `npm fund` for details
+#17 15.15 
+#17 15.15 found 0 vulnerabilities
+#17 15.15 npm notice
+#17 15.15 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#17 15.15 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#17 15.15 npm notice To update run: npm install -g npm@11.7.0
+#17 15.15 npm notice
+#17 DONE 17.1s
+
+#18 [runner  7/10] RUN npm install prisma @prisma/client

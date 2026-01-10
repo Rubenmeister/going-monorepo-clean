@@ -33,7 +33,7 @@ if ($LASTEXITCODE -ne 0) {
 foreach ($Service in $Services) {
     Write-Host "`n📦 Processing Service: $Service" -ForegroundColor Green
     
-    $ImageName = "$RegistryUrl/$Service`" + ":latest"
+    $ImageName = "$RegistryUrl/${Service}:latest"
     
     # Build
     Write-Host "   🔨 Building..."

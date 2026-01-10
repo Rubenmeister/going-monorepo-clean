@@ -1,0 +1,114 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.frontend
+#1 transferring dockerfile: 1.22kB done
+#1 DONE 0.0s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:18-alpine
+#3 DONE 1.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 433B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#6 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.0s done
+#6 DONE 0.1s
+
+#7 [runner 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [runner 3/6] RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+#8 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 657.45kB 0.7s done
+#5 DONE 0.8s
+
+#9 [builder 2/8] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 3/8] WORKDIR /app
+#10 CACHED
+
+#11 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#11 CACHED
+
+#12 [builder 5/8] RUN npm install --legacy-peer-deps
+#12 CACHED
+
+#13 [builder 6/8] COPY . .
+#13 CACHED
+
+#14 [builder 7/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/*-e2e
+#14 CACHED
+
+#15 [builder 8/8] RUN npx nx build admin-dashboard --prod --skip-nx-cache
+#15 3.936 Convert compiler options from json failed, No inputs were found in config file 'tsconfig.json'. Specified 'include' paths were '["jest.config.ts","jest.config.cts","src/**/*.test.ts","src/**/*.spec.ts","src/**/*.test.tsx","src/**/*.spec.tsx","src/**/*.test.js","src/**/*.spec.js","src/**/*.test.jsx","src/**/*.spec.jsx","src/**/*.d.ts"]' and 'exclude' paths were '["node_modules","jest.config.ts","jest.config.cts","**/*.spec.ts","**/*.test.ts","src/**/*.spec.ts","src/**/*.test.ts"]'.
+#15 8.522 
+#15 8.522 > nx run admin-dashboard:build:production
+#15 8.522 
+#15 14.82 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#15 14.82 This information is used to shape Next.js' roadmap and prioritize features.
+#15 14.82 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#15 14.82 https://nextjs.org/telemetry
+#15 15.55   Ôû▓ Next.js 14.2.3
+#15 15.65    Creating an optimized production build ...
+#15 16.35  ÔÜá Found lockfile missing swc dependencies, patching...
+#15 19.16  ÔÜá Lockfile was successfully patched, please run "npm install" to ensure @next/swc dependencies are downloaded
+#15 42.64 Failed to compile.
+#15 42.64 
+#15 42.64 ../../node_modules/next/dist/client/index.js
+#15 42.64 Module not found: Can't resolve 'react-dom/client'
+#15 42.64 https://nextjs.org/docs/messages/module-not-found
+#15 42.64 Import trace for requested module:
+#15 42.64 ../../node_modules/next/dist/client/next.js
+#15 42.64 ../../node_modules/next/dist/client/app-index.js
+#15 42.64 Module not found: Can't resolve 'react-dom/client'
+#15 42.64 https://nextjs.org/docs/messages/module-not-found
+#15 42.64 Import trace for requested module:
+#15 42.64 ../../node_modules/next/dist/client/app-next.js
+#15 42.65 > Build failed because of webpack errors
+#15 42.80 Build process exited due to code 1  
+#15 42.84 
+#15 42.84 
+#15 42.84 
+#15 42.84  NX   Running target build for project admin-dashboard failed
+#15 42.84 
+#15 42.84 Failed tasks:
+#15 42.84 
+#15 42.84 - admin-dashboard:build:production
+#15 42.84 
+#15 42.84 Hint: run the command with --verbose for more details.
+#15 42.84 
+#15 ERROR: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+------
+ > [builder 8/8] RUN npx nx build admin-dashboard --prod --skip-nx-cache:
+42.84 
+42.84 
+42.84  NX   Running target build for project admin-dashboard failed
+42.84 
+42.84 Failed tasks:
+42.84 
+42.84 - admin-dashboard:build:production
+42.84 
+42.84 Hint: run the command with --verbose for more details.
+42.84 
+------
+Dockerfile.frontend:25
+--------------------
+  23 |     
+  24 |     # Construimos el frontend
+  25 | >>> RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
+  26 |     
+  27 |     # ==========================================
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c npx nx build ${APP_NAME} --prod --skip-nx-cache" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/2hyhyh2l1i8b9grjub1s3mio7
