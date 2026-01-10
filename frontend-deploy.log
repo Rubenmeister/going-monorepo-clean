@@ -230,3 +230,276 @@
 #18 DONE 11.5s
 
 View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/lwnkkv0dhd5oixzzlolmhbmrj
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/admin-dashboard]
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Waiting
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+dd71dde834b5: Layer already exists
+f18232174bc9: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+f18232174bc9: Layer already exists
+8ddfc8ee33c0: Waiting
+8ddfc8ee33c0: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+2349c19f2991: Waiting
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+8ddfc8ee33c0: Layer already exists
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Waiting
+acfe425668e0: Waiting
+482fd63791cd: Waiting
+25ff2da83641: Layer already exists
+2349c19f2991: Layer already exists
+1e5a4c89cee5: Waiting
+842970306b43: Waiting
+fcad52c9a760: Waiting
+1e5a4c89cee5: Layer already exists
+842970306b43: Waiting
+acfe425668e0: Waiting
+842970306b43: Waiting
+acfe425668e0: Pushed
+fcad52c9a760: Pushed
+482fd63791cd: Pushed
+842970306b43: Pushed
+latest: digest: sha256:4149836d19a3dee9f16a526a8474ae023044c6c0f40ffbde07ab4815fa271fce size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.spa
+#1 transferring dockerfile: 1.07kB 0.1s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/node:18-alpine
+#4 ...
+
+#5 [auth] library/nginx:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 ...
+
+#4 [internal] load metadata for docker.io/library/node:18-alpine
+#4 DONE 1.3s
+
+#2 [internal] load metadata for docker.io/library/nginx:alpine
+#2 DONE 1.4s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 207B 0.0s done
+#6 DONE 0.1s
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#8 [runner 1/2] FROM docker.io/library/nginx:alpine@sha256:c083c3799197cfff91fe5c3c558db3d2eea65ccbbfd419fa42a64d2c39a24027
+#8 resolve docker.io/library/nginx:alpine@sha256:c083c3799197cfff91fe5c3c558db3d2eea65ccbbfd419fa42a64d2c39a24027
+#8 resolve docker.io/library/nginx:alpine@sha256:c083c3799197cfff91fe5c3c558db3d2eea65ccbbfd419fa42a64d2c39a24027 0.2s done
+#8 DONE 0.2s
+
+#9 [builder 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#9 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#9 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.2s done
+#9 DONE 0.3s
+
+#8 [runner 1/2] FROM docker.io/library/nginx:alpine@sha256:c083c3799197cfff91fe5c3c558db3d2eea65ccbbfd419fa42a64d2c39a24027
+#8 CACHED
+
+#7 [internal] load build context
+#7 transferring context: 513.50kB 0.8s done
+#7 DONE 0.9s
+
+#10 [builder 2/8] WORKDIR /app
+#10 CACHED
+
+#11 [builder 3/8] RUN apk add --no-cache libc6-compat
+#11 CACHED
+
+#12 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#12 DONE 2.5s
+
+#13 [builder 5/8] RUN npm install --legacy-peer-deps
