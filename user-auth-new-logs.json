@@ -1,0 +1,266 @@
+[
+  {
+    "insertId": "13qqcwre3zm2n",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "aaa6b263-734a-453d-9f26-68d7ed01e11a",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZII57GQ1Q",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T21:46:16.691110Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T21:46:17.413392178Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T21:46:16.563860Z"
+  },
+  {
+    "insertId": "gxrf7hdvb33",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "0691e9f8-15ea-435f-ae04-205347b29a8f",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZIIxGKWNg",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T21:41:25.066525Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T21:41:25.915305750Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T21:41:24.941587Z"
+  }
+]

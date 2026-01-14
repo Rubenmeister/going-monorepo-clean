@@ -6,7 +6,8 @@ import {
   MessageBody,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, Injectable, OnModuleInit } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Server, Socket } from 'socket.io';
 import {
   UpdateDriverLocationUseCase,
@@ -19,16 +20,17 @@ import {
 import { Result, ok, err } from 'neverthrow';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect, IDriverLocationGateway {
+export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect, IDriverLocationGateway, OnModuleInit {
   private readonly logger = new Logger(TrackingGateway.name);
+  private updateDriverLocationUseCase: UpdateDriverLocationUseCase;
 
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly updateDriverLocationUseCase: UpdateDriverLocationUseCase,
-  ) {
-    console.log('CONSTRUCTOR: TrackingGateway initialized');
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  onModuleInit() {
+    this.updateDriverLocationUseCase = this.moduleRef.get(UpdateDriverLocationUseCase, { strict: false });
   }
 
   handleConnection(client: Socket) {

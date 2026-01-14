@@ -9,6 +9,5 @@ tmp
 # Exclude large mobile apps
 apps/mobile-user-app
 apps/mobile-driver-app
-apps/enterprise-portal
 apps/*-e2e
 tools/guardian

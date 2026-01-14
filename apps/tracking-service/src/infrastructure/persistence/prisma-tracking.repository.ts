@@ -9,9 +9,7 @@ import { Result, ok, err } from 'neverthrow';
 
 @Injectable()
 export class PrismaTrackingRepository implements ITrackingRepository {
-  constructor(private readonly prisma: PrismaService) {
-    console.log('CONSTRUCTOR: PrismaTrackingRepository initialized');
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async save(event: TrackingEvent): Promise<Result<void, Error>> {
     try {

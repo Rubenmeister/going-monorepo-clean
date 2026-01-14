@@ -25,7 +25,7 @@ async function bootstrap() {
   // Use Pino Logger
   app.useLogger(app.get(Logger));
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   
   setupSwagger(app, 'User Auth Service', port);
   

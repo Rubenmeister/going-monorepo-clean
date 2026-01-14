@@ -3,7 +3,7 @@ ARG APP_NAME=admin-dashboard
 # ==========================================
 # ETAPA 1: BUILDER
 # ==========================================
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 ARG APP_NAME
 WORKDIR /app
 
@@ -17,11 +17,21 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Limpieza para evitar errores de ESM/Vite y de configuración de Nx en el project graph
-RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/frontend-webapp apps/enterprise-portal && \
+RUN find apps -maxdepth 1 -type d ! -name "${APP_NAME}" ! -name "apps" -exec rm -rf {} + && \
     rm -rf apps/*-e2e && \
     rm -rf tools/guardian
 
 ENV NX_DAEMON=false
+
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+# Systemic fix for hardcoded localhost URLs in libs/ and apps/
+RUN find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -exec sed -i "s|http://localhost:3000|${NEXT_PUBLIC_API_URL}|g" {} + && \
+    find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -exec sed -i "s|localhost:3000|$(echo ${NEXT_PUBLIC_API_URL} | sed 's|https://||')|g" {} +
+
+# Verificamos que no queden referencias a localhost (En src/)
+RUN grep -r "localhost:3000" apps/${APP_NAME}/src || true
 
 # Construimos el frontend (usando npx next build directamente)
 # Al ejecutarlo dentro de apps/${APP_NAME}, el output queda en apps/${APP_NAME}/.next
@@ -30,7 +40,7 @@ RUN cd apps/${APP_NAME} && npx next build
 # ==========================================
 # ETAPA 2: RUNNER
 # ==========================================
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 ARG APP_NAME
 WORKDIR /app
 

@@ -8,9 +8,7 @@ import {
 @Injectable()
 export class InMemoryDriverLocationRepository implements IDriverLocationRepository {
   private readonly store = new Map<string, DriverLocation>();
-  constructor() {
-    console.log('CONSTRUCTOR: InMemoryDriverLocationRepository initialized');
-  }
+  constructor() {}
 
   async save(location: DriverLocation): Promise<Result<void, Error>> {
     this.store.set(location.driverId, location);

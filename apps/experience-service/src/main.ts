@@ -24,7 +24,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   setupSwagger(app, 'Experience Service', port);
   
   const logger = app.get(Logger);

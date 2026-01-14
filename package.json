@@ -27,7 +27,11 @@
     "prisma:migrate:staging": "dotenv -e config/.env.staging -- prisma migrate deploy --schema=libs/shared/prisma-client/prisma/schema.prisma",
     "prisma:migrate:prod": "dotenv -e config/.env.production -- prisma migrate deploy --schema=libs/shared/prisma-client/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=libs/shared/prisma-client/prisma/schema.prisma",
-    "prisma:reset": "prisma migrate reset --schema=libs/shared/prisma-client/prisma/schema.prisma"
+    "prisma:reset": "prisma migrate reset --schema=libs/shared/prisma-client/prisma/schema.prisma",
+    "build:mobile:user": "powershell -ExecutionPolicy Bypass -File scripts/build-mobile.ps1 -AppName mobile-user-app",
+    "build:mobile:driver": "powershell -ExecutionPolicy Bypass -File scripts/build-mobile.ps1 -AppName mobile-driver-app",
+    "build:mobile:user:release": "powershell -ExecutionPolicy Bypass -File scripts/build-mobile.ps1 -AppName mobile-user-app -Release",
+    "build:mobile:driver:release": "powershell -ExecutionPolicy Bypass -File scripts/build-mobile.ps1 -AppName mobile-driver-app -Release"
   },
   "keywords": [],
   "author": "",

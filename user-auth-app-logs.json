@@ -1,0 +1,1296 @@
+[
+  {
+    "insertId": "6962e3ba000c3e13c056f86d",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? User Auth Service running on http://localhost:3000/api",
+      "pid": 2,
+      "time": 1768088506797
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802323Z"
+  },
+  {
+    "insertId": "6962e3ba000c3e0fda8ff5c5",
+    "jsonPayload": {
+      "context": "Swagger",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? Swagger docs available at http://localhost:3000/api/docs",
+      "pid": 2,
+      "time": 1768088506797
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802319Z"
+  },
+  {
+    "insertId": "6962e3ba000c3e0b6ced2760",
+    "jsonPayload": {
+      "context": "NestApplication",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Nest application successfully started",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802315Z"
+  },
+  {
+    "insertId": "6962e3ba000c3e07bdc95270",
+    "jsonPayload": {
+      "context": "PrismaService",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Connected to PostgreSQL database",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802311Z"
+  },
+  {
+    "insertId": "6962e3ba000c3e034bdbac2f",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/health/ready, GET} route",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802307Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dff78681331",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/health, GET} route",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802303Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dfc69535559",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthController {/health}:",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802300Z"
+  },
+  {
+    "insertId": "6962e3ba000c3df84325929e",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/auth/login, POST} route",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802296Z"
+  },
+  {
+    "insertId": "6962e3ba000c3df4ef847230",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/auth/register, POST} route",
+      "pid": 2,
+      "time": 1768088506740
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802292Z"
+  },
+  {
+    "insertId": "6962e3ba000c3df09b033835",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AuthController {/auth}:",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802288Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dedcd3e0734",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/, GET} route",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802285Z"
+  },
+  {
+    "insertId": "6962e3ba000c3de96b9b7402",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AppController {/}:",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802281Z"
+  },
+  {
+    "insertId": "6962e3ba000c3de50fedb530",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "UserAppModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802277Z"
+  },
+  {
+    "insertId": "6962e3ba000c3de182f373cb",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "JwtModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802273Z"
+  },
+  {
+    "insertId": "6962e3ba000c3ddd56dc11c9",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802269Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dd9c14d8a18",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggerModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802265Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dd5778b3f3a",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TerminusModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802261Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dd128f89b4e",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802257Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dceea838074",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigHostModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802254Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dc9ece35a56",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggingModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802249Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dc5011721ba",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "CorrelationModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802245Z"
+  },
+  {
+    "insertId": "6962e3ba000c3dbf3f9e917c",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ObservabilityModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802239Z"
+  },
+  {
+    "insertId": "6962e3ba000c3db2d810a40b",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "PrismaModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506739
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.802226Z"
+  },
+  {
+    "insertId": "6962e3ba000bea721917cf9b",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? User Auth Service running on http://localhost:3000/api",
+      "pid": 2,
+      "time": 1768088506781
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780914Z"
+  },
+  {
+    "insertId": "6962e3ba000bea6f77362791",
+    "jsonPayload": {
+      "context": "Swagger",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? Swagger docs available at http://localhost:3000/api/docs",
+      "pid": 2,
+      "time": 1768088506780
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780911Z"
+  },
+  {
+    "insertId": "6962e3ba000bea6b896a29d7",
+    "jsonPayload": {
+      "context": "NestApplication",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Nest application successfully started",
+      "pid": 2,
+      "time": 1768088506725
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780907Z"
+  },
+  {
+    "insertId": "6962e3ba000bea688d967dd7",
+    "jsonPayload": {
+      "context": "PrismaService",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Connected to PostgreSQL database",
+      "pid": 2,
+      "time": 1768088506725
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780904Z"
+  },
+  {
+    "insertId": "6962e3ba000bea6446b52544",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/health/ready, GET} route",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780900Z"
+  },
+  {
+    "insertId": "6962e3ba000bea61b0cebac5",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/health, GET} route",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780897Z"
+  },
+  {
+    "insertId": "6962e3ba000bea5e9c31632f",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthController {/health}:",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780894Z"
+  },
+  {
+    "insertId": "6962e3ba000bea5b89c5e66f",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/auth/login, POST} route",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780891Z"
+  },
+  {
+    "insertId": "6962e3ba000bea57d4b60890",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/auth/register, POST} route",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780887Z"
+  },
+  {
+    "insertId": "6962e3ba000bea5305b2557b",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AuthController {/auth}:",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780883Z"
+  },
+  {
+    "insertId": "6962e3ba000bea509385634b",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/, GET} route",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780880Z"
+  },
+  {
+    "insertId": "6962e3ba000bea4b40778f36",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AppController {/}:",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780875Z"
+  },
+  {
+    "insertId": "6962e3ba000bea4669e44966",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "UserAppModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780870Z"
+  },
+  {
+    "insertId": "6962e3ba000bea414d44ae50",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "JwtModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780865Z"
+  },
+  {
+    "insertId": "6962e3ba000bea3d3d88daaa",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780861Z"
+  },
+  {
+    "insertId": "6962e3ba000bea391d8b302e",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggerModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780857Z"
+  },
+  {
+    "insertId": "6962e3ba000bea34c96da416",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TerminusModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780852Z"
+  },
+  {
+    "insertId": "6962e3ba000bea30eb7b8913",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780848Z"
+  },
+  {
+    "insertId": "6962e3ba000bea2c5d1b6f4a",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigHostModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780844Z"
+  },
+  {
+    "insertId": "6962e3ba000bea27b650a328",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggingModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780839Z"
+  },
+  {
+    "insertId": "6962e3ba000bea2278cda340",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "CorrelationModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780834Z"
+  },
+  {
+    "insertId": "6962e3ba000bea1c669b0567",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ObservabilityModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780828Z"
+  },
+  {
+    "insertId": "6962e3ba000bea0c47bf4752",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "PrismaModule dependencies initialized",
+      "pid": 2,
+      "time": 1768088506724
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.780812Z"
+  },
+  {
+    "insertId": "6962e3ba000b4651a6024f95",
+    "jsonPayload": {
+      "context": "NestFactory",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Starting Nest application...",
+      "pid": 2,
+      "time": 1768088506737
+    },
+    "labels": {
+      "instanceId": "0007e26d6804b580863266af674790f14ef06876407821d6f4af5db957be1eed77b69dcff0f132a6923a334dadcdd7551c12099ef2e02128242b48e326f2dca2943c4ed3658fb521b735aeab45de"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:47.069929426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.738897Z"
+  },
+  {
+    "insertId": "6962e3ba000b2d187bb4cf8f",
+    "jsonPayload": {
+      "context": "NestFactory",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Starting Nest application...",
+      "pid": 2,
+      "time": 1768088506722
+    },
+    "labels": {
+      "instanceId": "0007e26d68f63d185ab41a6179edf9597d35a63972ec13a409f558688b2ee836078c529a9e820d8caf6161b0dbc5c7a7906a38dec8d1060853652c53fb9218335596eda470ed1f39e4f7598a7fdf"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-10T23:41:46.736473496Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00001-8qv",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-10T23:41:46.732440Z"
+  }
+]

@@ -63,7 +63,7 @@ RUN npm install --omit=dev --legacy-peer-deps
 
 # Forzamos la instalación de prisma para el runner para asegurar que el engine esté presente
 # Version pinned to match project dependencies
-RUN npm install prisma@5.22.0 @prisma/client@5.22.0
+RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
 
 # Copiamos el esquema de prisma para regeneración
 COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma

@@ -1,0 +1,2707 @@
+[
+  {
+    "insertId": "-d9pd0kdrjca",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.CreateService",
+      "resourceName": "namespaces/going-5d1ae/services/api-gateway-prod",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Service",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/ingress": "all",
+            "run.googleapis.com/ingress-status": "all",
+            "run.googleapis.com/maxScale": "20",
+            "run.googleapis.com/operation-id": "17aa070b-0c24-4538-a6fe-3a137bca35dd",
+            "run.googleapis.com/urls": "[\"https://api-gateway-prod-780842550857.us-central1.run.app\",\"https://api-gateway-prod-lw44cnhdeq-uc.a.run.app\"]",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com",
+            "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T20:16:27.542764Z",
+          "generation": 1,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1"
+          },
+          "name": "api-gateway-prod",
+          "namespace": "780842550857",
+          "resourceVersion": "AAZIIm+tJqw",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/api-gateway-prod",
+          "uid": "29c4660e-be25-43da-9ffc-33ac5c7f6ef3"
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/maxScale": "10",
+                "autoscaling.knative.dev/minScale": "1",
+                "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+              },
+              "labels": {
+                "run.googleapis.com/startupProbeType": "Default"
+              }
+            },
+            "spec": {
+              "containerConcurrency": 80,
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "NODE_ENV",
+                      "value": "production"
+                    },
+                    {
+                      "name": "BOOKING_SERVICE_URL",
+                      "value": "https://booking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PARCEL_SERVICE_URL",
+                      "value": "https://parcel-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TOURS_SERVICE_URL",
+                      "value": "https://tours-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "USER_AUTH_SERVICE_URL",
+                      "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "JWT_SECRET",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "JWT_SECRET-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "DATABASE_URL",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "DATABASE_URL-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TRANSPORT_SERVICE_URL",
+                      "value": "https://transport-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PAYMENT_SERVICE_URL",
+                      "value": "https://payment-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "EXPERIENCE_SERVICE_URL",
+                      "value": "https://experience-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "HOST_SERVICE_URL",
+                      "value": "https://host-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TRACKING_SERVICE_URL",
+                      "value": "https://tracking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "NOTIFICATIONS_SERVICE_URL",
+                      "value": "https://notifications-service-prod-us-central1.a.run.app"
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest",
+                  "ports": [
+                    {
+                      "containerPort": 3000,
+                      "name": "http1"
+                    }
+                  ],
+                  "resources": {
+                    "limits": {
+                      "cpu": "1000m",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "startupProbe": {
+                    "failureThreshold": 1,
+                    "periodSeconds": 240,
+                    "tcpSocket": {
+                      "port": 3000
+                    },
+                    "timeoutSeconds": 240
+                  }
+                }
+              ],
+              "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": 300
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        },
+        "status": {
+          "address": {
+            "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+          },
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T20:16:39.970476Z",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:38.717478Z",
+              "status": "True",
+              "type": "ConfigurationsReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:39.936826Z",
+              "status": "True",
+              "type": "RoutesReady"
+            }
+          ],
+          "latestCreatedRevisionName": "api-gateway-prod-00001-rlg",
+          "latestReadyRevisionName": "api-gateway-prod-00001-rlg",
+          "observedGeneration": 1,
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100,
+              "revisionName": "api-gateway-prod-00001-rlg"
+            }
+          ],
+          "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Service api-gateway-prod."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T20:16:40.965753695Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T20:16:39.982398Z"
+  },
+  {
+    "insertId": "-y43eeke47wcg",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.CreateService",
+      "resourceName": "namespaces/going-5d1ae/revisions/api-gateway-prod-00001-rlg",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/operation-id": "17aa070b-0c24-4538-a6fe-3a137bca35dd",
+            "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T20:16:27.642004Z",
+          "generation": 1,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "api-gateway-prod",
+            "serving.knative.dev/configurationGeneration": "1",
+            "serving.knative.dev/route": "api-gateway-prod",
+            "serving.knative.dev/service": "api-gateway-prod",
+            "serving.knative.dev/serviceUid": "29c4660e-be25-43da-9ffc-33ac5c7f6ef3"
+          },
+          "name": "api-gateway-prod-00001-rlg",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "api-gateway-prod",
+              "uid": "3d638fa3-b57c-4c16-9095-f91e3062b085"
+            }
+          ],
+          "resourceVersion": "AAZIIm+Zae4",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/api-gateway-prod-00001-rlg",
+          "uid": "affba711-43f7-4fb9-ac79-f6e09837d776"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "BOOKING_SERVICE_URL",
+                  "value": "https://booking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PARCEL_SERVICE_URL",
+                  "value": "https://parcel-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TOURS_SERVICE_URL",
+                  "value": "https://tours-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "USER_AUTH_SERVICE_URL",
+                  "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "JWT_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "JWT_SECRET-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "DATABASE_URL-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "TRANSPORT_SERVICE_URL",
+                  "value": "https://transport-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PAYMENT_SERVICE_URL",
+                  "value": "https://payment-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "EXPERIENCE_SERVICE_URL",
+                  "value": "https://experience-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "HOST_SERVICE_URL",
+                  "value": "https://host-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TRACKING_SERVICE_URL",
+                  "value": "https://tracking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "NOTIFICATIONS_SERVICE_URL",
+                  "value": "https://notifications-service-prod-us-central1.a.run.app"
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 3000
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T20:16:38.676974Z",
+              "message": "Deploying revision succeeded in 11.03s.",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:37.498856Z",
+              "message": "Containers became healthy.",
+              "status": "True",
+              "type": "ContainerHealthy"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:28.228431Z",
+              "message": "Container image import completed.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:38.613407Z",
+              "message": "Min instances provisioned successfully  in 10.3s.",
+              "status": "True",
+              "type": "MinInstancesProvisioned"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:31.112457Z",
+              "message": "Provisioning imported containers completed in 2.88s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+              "status": "True",
+              "type": "ResourcesAvailable"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1"
+            }
+          ],
+          "desiredReplicas": 1,
+          "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/api-gateway-prod/revision_name/api-gateway-prod-00001-rlg&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22api-gateway-prod%22%0Aresource.labels.revision_name%3D%22api-gateway-prod-00001-rlg%22",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Revision api-gateway-prod-00001-rlg with message: Deploying revision succeeded in 11.03s."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T20:16:39.369203052Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T20:16:38.686778Z"
+  },
+  {
+    "insertId": "6964052500077214c7eda8db",
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T20:16:37.495396914Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Default STARTUP TCP probe succeeded after 1 attempt for container \"api-gateway-1\" on port 3000.",
+    "timestamp": "2026-01-11T20:16:37.487956Z"
+  },
+  {
+    "insertId": "696405250007709c4d9b8d07",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? Swagger docs available at http://localhost:3000/api/docs",
+      "pid": 2,
+      "time": 1768162597485
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487580Z"
+  },
+  {
+    "insertId": "69640525000770981a934d67",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? API Gateway running on http://localhost:3000",
+      "pid": 2,
+      "time": 1768162597485
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487576Z"
+  },
+  {
+    "insertId": "6964052500077093af13dd67",
+    "jsonPayload": {
+      "context": "NestApplication",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Nest application successfully started",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487571Z"
+  },
+  {
+    "insertId": "696405250007708f50cad6cf",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/api/health/ready, GET} route",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487567Z"
+  },
+  {
+    "insertId": "696405250007708a0d936199",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/api/health, GET} route",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487562Z"
+  },
+  {
+    "insertId": "6964052500077085c761e4ff",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthController {/api/health}:",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487557Z"
+  },
+  {
+    "insertId": "6964052500077081f97a6377",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487553Z"
+  },
+  {
+    "insertId": "696405250007707ad6224608",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487546Z"
+  },
+  {
+    "insertId": "6964052500077074d26920cb",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487540Z"
+  },
+  {
+    "insertId": "696405250007706cc29141f8",
+    "jsonPayload": {
+      "context": "WebSocketsController",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TrackingGateway subscribed to the \"updateLocation\" message",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487532Z"
+  },
+  {
+    "insertId": "6964052500077067621d53ed",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487527Z"
+  },
+  {
+    "insertId": "696405250007706260bde0da",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AuthModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487522Z"
+  },
+  {
+    "insertId": "696405250007705e08902ac1",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TrackingModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487518Z"
+  },
+  {
+    "insertId": "696405250007705a9682ca85",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ProxyModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487514Z"
+  },
+  {
+    "insertId": "6964052500077055877549fe",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggerModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487509Z"
+  },
+  {
+    "insertId": "69640525000770513ce085ad",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TerminusModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487505Z"
+  },
+  {
+    "insertId": "696405250007704d4816773d",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "AppModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487501Z"
+  },
+  {
+    "insertId": "6964052500077048eb410388",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487496Z"
+  },
+  {
+    "insertId": "6964052500077044d281838b",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487492Z"
+  },
+  {
+    "insertId": "69640525000770405c868ea7",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HttpModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487488Z"
+  },
+  {
+    "insertId": "696405250007703bd37b26f4",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ThrottlerModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487483Z"
+  },
+  {
+    "insertId": "6964052500077036a0c29e18",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ConfigHostModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487478Z"
+  },
+  {
+    "insertId": "696405250007703000fb401c",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "PassportModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487472Z"
+  },
+  {
+    "insertId": "696405250007702b28f2406a",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "LoggingModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487467Z"
+  },
+  {
+    "insertId": "69640525000770268276df7a",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "CorrelationModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487462Z"
+  },
+  {
+    "insertId": "696405250007701b8554525f",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "ObservabilityModule dependencies initialized",
+      "pid": 2,
+      "time": 1768162597484
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.824759442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487451Z"
+  },
+  {
+    "insertId": "6964052500076e604d8e3ce9",
+    "jsonPayload": {
+      "context": "NestFactory",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Starting Nest application...",
+      "pid": 2,
+      "time": 1768162597483
+    },
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T20:16:37.490567611Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T20:16:37.487008Z"
+  },
+  {
+    "insertId": "6964051f00027d92e4231877",
+    "labels": {
+      "instanceId": "005eb6974cd6a1e956a5087956f7ed70d5e646eed370a14815baa7f736739727456ecfee6a115b4039c548a0837966b86dfbaa32f561cf77e512b517f1d7840a0d4b9aae28c91f077b693f415e78d1",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T20:16:31.166914718Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00001-rlg",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T20:16:31.163218Z"
+  },
+  {
+    "insertId": "-y43eeke47wbk",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.DeleteService",
+      "resourceName": "namespaces/going-5d1ae/services/api-gateway-prod",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Service",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "551.0.0",
+            "run.googleapis.com/ingress": "all",
+            "run.googleapis.com/ingress-status": "all",
+            "run.googleapis.com/maxScale": "20",
+            "run.googleapis.com/operation-id": "9a728d46-1070-4a30-9096-bc827f85946d",
+            "run.googleapis.com/urls": "[\"https://api-gateway-prod-780842550857.us-central1.run.app\",\"https://api-gateway-prod-lw44cnhdeq-uc.a.run.app\"]",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com",
+            "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T02:40:29.173750Z",
+          "deletionTimestamp": "2026-01-11T20:16:26.941026Z",
+          "generation": 4,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1"
+          },
+          "name": "api-gateway-prod",
+          "namespace": "780842550857",
+          "resourceVersion": "AAZIIm7u8xU",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/api-gateway-prod",
+          "uid": "67067155-7ebe-47fa-bddf-c60df13f9f6b"
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/maxScale": "10",
+                "autoscaling.knative.dev/minScale": "1",
+                "run.googleapis.com/client-name": "gcloud",
+                "run.googleapis.com/client-version": "551.0.0",
+                "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+              },
+              "labels": {
+                "client.knative.dev/nonce": "yansyduxjq",
+                "run.googleapis.com/startupProbeType": "Default"
+              }
+            },
+            "spec": {
+              "containerConcurrency": 80,
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "NODE_ENV",
+                      "value": "production"
+                    },
+                    {
+                      "name": "BOOKING_SERVICE_URL",
+                      "value": "https://booking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PARCEL_SERVICE_URL",
+                      "value": "https://parcel-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TOURS_SERVICE_URL",
+                      "value": "https://tours-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "USER_AUTH_SERVICE_URL",
+                      "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "JWT_SECRET",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "JWT_SECRET-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "DATABASE_URL",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "DATABASE_URL-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TRANSPORT_SERVICE_URL",
+                      "value": "https://transport-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PAYMENT_SERVICE_URL",
+                      "value": "https://payment-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "EXPERIENCE_SERVICE_URL",
+                      "value": "https://experience-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "HOST_SERVICE_URL",
+                      "value": "https://host-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TRACKING_SERVICE_URL",
+                      "value": "https://tracking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "NOTIFICATIONS_SERVICE_URL",
+                      "value": "https://notifications-service-prod-us-central1.a.run.app"
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest",
+                  "ports": [
+                    {
+                      "containerPort": 3000,
+                      "name": "http1"
+                    }
+                  ],
+                  "resources": {
+                    "limits": {
+                      "cpu": "1000m",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "startupProbe": {
+                    "failureThreshold": 1,
+                    "periodSeconds": 240,
+                    "tcpSocket": {
+                      "port": 3000
+                    },
+                    "timeoutSeconds": 240
+                  }
+                }
+              ],
+              "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": 300
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        },
+        "status": {
+          "address": {
+            "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+          },
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T20:16:27.505429Z",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:45.092030Z",
+              "status": "True",
+              "type": "ConfigurationsReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:01:02.559395Z",
+              "status": "True",
+              "type": "RoutesReady"
+            }
+          ],
+          "latestCreatedRevisionName": "api-gateway-prod-00003-k6j",
+          "latestReadyRevisionName": "api-gateway-prod-00003-k6j",
+          "observedGeneration": 4,
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100,
+              "revisionName": "api-gateway-prod-00003-k6j"
+            }
+          ],
+          "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Service api-gateway-prod."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T20:16:28.364348258Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T20:16:27.528779Z"
+  },
+  {
+    "insertId": "1mu26e1du5to",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.create",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/api-gateway-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.create",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/api-gateway-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/api-gateway-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.CreateService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.CreateServiceRequest",
+        "parent": "namespaces/going-5d1ae",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "name": "api-gateway-prod"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                }
+              },
+              "spec": {
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T20:16:27.586918Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/api-gateway-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T20:16:27.786269376Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T20:16:27.467854Z"
+  },
+  {
+    "insertId": "tqufwte56uji",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.DeleteService",
+      "resourceName": "namespaces/going-5d1ae/revisions/api-gateway-prod-00003-k6j",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "551.0.0",
+            "run.googleapis.com/operation-id": "9a728d46-1070-4a30-9096-bc827f85946d",
+            "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T03:00:33.150613Z",
+          "deletionTimestamp": "2026-01-11T20:16:27.311524Z",
+          "generation": 2,
+          "labels": {
+            "client.knative.dev/nonce": "yansyduxjq",
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/cascadeDelete": "true",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "api-gateway-prod",
+            "serving.knative.dev/configurationGeneration": "3",
+            "serving.knative.dev/route": "api-gateway-prod",
+            "serving.knative.dev/service": "api-gateway-prod",
+            "serving.knative.dev/serviceUid": "67067155-7ebe-47fa-bddf-c60df13f9f6b"
+          },
+          "name": "api-gateway-prod-00003-k6j",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "api-gateway-prod",
+              "uid": "a8ef20b6-124f-4cda-827a-9d75b9bdefd9"
+            }
+          ],
+          "resourceVersion": "AAZIIm7shzw",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/api-gateway-prod-00003-k6j",
+          "uid": "5f545b00-6063-46a2-907a-a5b37c2b321d"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "BOOKING_SERVICE_URL",
+                  "value": "https://booking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PARCEL_SERVICE_URL",
+                  "value": "https://parcel-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TOURS_SERVICE_URL",
+                  "value": "https://tours-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "USER_AUTH_SERVICE_URL",
+                  "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "JWT_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "JWT_SECRET-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "DATABASE_URL-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "TRANSPORT_SERVICE_URL",
+                  "value": "https://transport-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PAYMENT_SERVICE_URL",
+                  "value": "https://payment-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "EXPERIENCE_SERVICE_URL",
+                  "value": "https://experience-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "HOST_SERVICE_URL",
+                  "value": "https://host-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TRACKING_SERVICE_URL",
+                  "value": "https://tracking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "NOTIFICATIONS_SERVICE_URL",
+                  "value": "https://notifications-service-prod-us-central1.a.run.app"
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 3000
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T20:16:27.346748Z",
+              "message": "Updating revision scaling succeeded in 9.86s.",
+              "reason": "Retired",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:27.346748Z",
+              "message": "Revision retired.",
+              "reason": "Retired",
+              "severity": "Info",
+              "status": "False",
+              "type": "Active"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.441105Z",
+              "message": "Containers became healthy in 5.79s.",
+              "status": "True",
+              "type": "ContainerHealthy"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:44.997120Z",
+              "message": "Container image import completed in 11.39s.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:27.346748Z",
+              "reason": "NotProvisioned",
+              "severity": "Info",
+              "status": "False",
+              "type": "MinInstancesProvisioned"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T20:16:27.346748Z",
+              "message": "Revision retired.",
+              "reason": "Retired",
+              "status": "Unknown",
+              "type": "ResourcesAvailable"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1"
+            }
+          ],
+          "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/api-gateway-prod/revision_name/api-gateway-prod-00003-k6j&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22api-gateway-prod%22%0Aresource.labels.revision_name%3D%22api-gateway-prod-00003-k6j%22",
+          "observedGeneration": 2
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Revision api-gateway-prod-00003-k6j with message: Updating revision scaling succeeded in 9.86s."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T20:16:27.466124730Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T20:16:27.358037Z"
+  },
+  {
+    "insertId": "dwh7zze3vn9u",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.delete",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/api-gateway-prod",
+          "resourceAttributes": {}
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.DeleteService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.DeleteServiceRequest",
+        "name": "namespaces/going-5d1ae/services/api-gateway-prod"
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T20:16:26.961631Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/api-gateway-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T20:16:27.395462045Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T20:16:26.914920Z"
+  },
+  {
+    "insertId": "uv0or5e3vdlk",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/going-5d1ae/services/api-gateway-prod",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Service",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Service",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "551.0.0",
+            "run.googleapis.com/ingress": "all",
+            "run.googleapis.com/ingress-status": "all",
+            "run.googleapis.com/maxScale": "20",
+            "run.googleapis.com/operation-id": "7f080712-ee8f-44f2-b74a-bf39836d2e99",
+            "run.googleapis.com/urls": "[\"https://api-gateway-prod-780842550857.us-central1.run.app\",\"https://api-gateway-prod-lw44cnhdeq-uc.a.run.app\"]",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com",
+            "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T02:40:29.173750Z",
+          "generation": 3,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1"
+          },
+          "name": "api-gateway-prod",
+          "namespace": "780842550857",
+          "resourceVersion": "AAZIE/gAED0",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/api-gateway-prod",
+          "uid": "67067155-7ebe-47fa-bddf-c60df13f9f6b"
+        },
+        "spec": {
+          "template": {
+            "metadata": {
+              "annotations": {
+                "autoscaling.knative.dev/maxScale": "10",
+                "autoscaling.knative.dev/minScale": "1",
+                "run.googleapis.com/client-name": "gcloud",
+                "run.googleapis.com/client-version": "551.0.0",
+                "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+              },
+              "labels": {
+                "client.knative.dev/nonce": "yansyduxjq",
+                "run.googleapis.com/startupProbeType": "Default"
+              }
+            },
+            "spec": {
+              "containerConcurrency": 80,
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "NODE_ENV",
+                      "value": "production"
+                    },
+                    {
+                      "name": "BOOKING_SERVICE_URL",
+                      "value": "https://booking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PARCEL_SERVICE_URL",
+                      "value": "https://parcel-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TOURS_SERVICE_URL",
+                      "value": "https://tours-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "USER_AUTH_SERVICE_URL",
+                      "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "JWT_SECRET",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "JWT_SECRET-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "DATABASE_URL",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "DATABASE_URL-prod"
+                        }
+                      }
+                    },
+                    {
+                      "name": "TRANSPORT_SERVICE_URL",
+                      "value": "https://transport-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "PAYMENT_SERVICE_URL",
+                      "value": "https://payment-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "EXPERIENCE_SERVICE_URL",
+                      "value": "https://experience-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "HOST_SERVICE_URL",
+                      "value": "https://host-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "TRACKING_SERVICE_URL",
+                      "value": "https://tracking-service-prod-us-central1.a.run.app"
+                    },
+                    {
+                      "name": "NOTIFICATIONS_SERVICE_URL",
+                      "value": "https://notifications-service-prod-us-central1.a.run.app"
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest",
+                  "ports": [
+                    {
+                      "containerPort": 3000,
+                      "name": "http1"
+                    }
+                  ],
+                  "resources": {
+                    "limits": {
+                      "cpu": "1000m",
+                      "memory": "512Mi"
+                    }
+                  },
+                  "startupProbe": {
+                    "failureThreshold": 1,
+                    "periodSeconds": 240,
+                    "tcpSocket": {
+                      "port": 3000
+                    },
+                    "timeoutSeconds": 240
+                  }
+                }
+              ],
+              "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": 300
+            }
+          },
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100
+            }
+          ]
+        },
+        "status": {
+          "address": {
+            "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+          },
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T03:01:02.596157Z",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:45.092030Z",
+              "status": "True",
+              "type": "ConfigurationsReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:01:02.559395Z",
+              "status": "True",
+              "type": "RoutesReady"
+            }
+          ],
+          "latestCreatedRevisionName": "api-gateway-prod-00003-k6j",
+          "latestReadyRevisionName": "api-gateway-prod-00003-k6j",
+          "observedGeneration": 3,
+          "traffic": [
+            {
+              "latestRevision": true,
+              "percent": 100,
+              "revisionName": "api-gateway-prod-00003-k6j"
+            }
+          ],
+          "url": "https://api-gateway-prod-lw44cnhdeq-uc.a.run.app"
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Service api-gateway-prod."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T03:01:03.434281109Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T03:01:02.608640Z"
+  },
+  {
+    "insertId": "azw68dodby",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/going-5d1ae/revisions/api-gateway-prod-00003-k6j",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "551.0.0",
+            "run.googleapis.com/operation-id": "7f080712-ee8f-44f2-b74a-bf39836d2e99",
+            "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T03:00:33.150613Z",
+          "generation": 1,
+          "labels": {
+            "client.knative.dev/nonce": "yansyduxjq",
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "api-gateway-prod",
+            "serving.knative.dev/configurationGeneration": "3",
+            "serving.knative.dev/route": "api-gateway-prod",
+            "serving.knative.dev/service": "api-gateway-prod",
+            "serving.knative.dev/serviceUid": "67067155-7ebe-47fa-bddf-c60df13f9f6b"
+          },
+          "name": "api-gateway-prod-00003-k6j",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "api-gateway-prod",
+              "uid": "a8ef20b6-124f-4cda-827a-9d75b9bdefd9"
+            }
+          ],
+          "resourceVersion": "AAZIE/eLe3Q",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/api-gateway-prod-00003-k6j",
+          "uid": "5f545b00-6063-46a2-907a-a5b37c2b321d"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "BOOKING_SERVICE_URL",
+                  "value": "https://booking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PARCEL_SERVICE_URL",
+                  "value": "https://parcel-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TOURS_SERVICE_URL",
+                  "value": "https://tours-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "USER_AUTH_SERVICE_URL",
+                  "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "JWT_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "JWT_SECRET-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "DATABASE_URL-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "TRANSPORT_SERVICE_URL",
+                  "value": "https://transport-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PAYMENT_SERVICE_URL",
+                  "value": "https://payment-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "EXPERIENCE_SERVICE_URL",
+                  "value": "https://experience-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "HOST_SERVICE_URL",
+                  "value": "https://host-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TRACKING_SERVICE_URL",
+                  "value": "https://tracking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "NOTIFICATIONS_SERVICE_URL",
+                  "value": "https://notifications-service-prod-us-central1.a.run.app"
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 3000
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.955892Z",
+              "message": "Updating revision scaling succeeded in 9.86s.",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.567785Z",
+              "severity": "Info",
+              "status": "True",
+              "type": "Active"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.441105Z",
+              "message": "Containers became healthy in 5.79s.",
+              "status": "True",
+              "type": "ContainerHealthy"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:44.997120Z",
+              "message": "Container image import completed in 11.39s.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.902044Z",
+              "message": "Min instances provisioned successfully  in 9.8s.",
+              "status": "True",
+              "type": "MinInstancesProvisioned"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:48.271074Z",
+              "message": "Provisioning imported containers completed in 3.27s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+              "status": "True",
+              "type": "ResourcesAvailable"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1"
+            }
+          ],
+          "desiredReplicas": 1,
+          "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/api-gateway-prod/revision_name/api-gateway-prod-00003-k6j&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22api-gateway-prod%22%0Aresource.labels.revision_name%3D%22api-gateway-prod-00003-k6j%22",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Revision api-gateway-prod-00003-k6j with message: Updating revision scaling succeeded in 9.86s."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T03:00:55.378148688Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T03:00:54.972384Z"
+  },
+  {
+    "insertId": "-1vyqhue4zpko",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.ReplaceService",
+      "resourceName": "namespaces/going-5d1ae/revisions/api-gateway-prod-00003-k6j",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/client-name": "gcloud",
+            "run.googleapis.com/client-version": "551.0.0",
+            "run.googleapis.com/operation-id": "7f080712-ee8f-44f2-b74a-bf39836d2e99",
+            "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T03:00:33.150613Z",
+          "generation": 1,
+          "labels": {
+            "client.knative.dev/nonce": "yansyduxjq",
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "api-gateway-prod",
+            "serving.knative.dev/configurationGeneration": "3",
+            "serving.knative.dev/route": "api-gateway-prod",
+            "serving.knative.dev/service": "api-gateway-prod",
+            "serving.knative.dev/serviceUid": "67067155-7ebe-47fa-bddf-c60df13f9f6b"
+          },
+          "name": "api-gateway-prod-00003-k6j",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "api-gateway-prod",
+              "uid": "a8ef20b6-124f-4cda-827a-9d75b9bdefd9"
+            }
+          ],
+          "resourceVersion": "AAZIE/eEj4o",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/api-gateway-prod-00003-k6j",
+          "uid": "5f545b00-6063-46a2-907a-a5b37c2b321d"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "BOOKING_SERVICE_URL",
+                  "value": "https://booking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PARCEL_SERVICE_URL",
+                  "value": "https://parcel-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TOURS_SERVICE_URL",
+                  "value": "https://tours-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "USER_AUTH_SERVICE_URL",
+                  "value": "https://user-auth-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "JWT_SECRET",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "JWT_SECRET-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "DATABASE_URL-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "TRANSPORT_SERVICE_URL",
+                  "value": "https://transport-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "PAYMENT_SERVICE_URL",
+                  "value": "https://payment-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "EXPERIENCE_SERVICE_URL",
+                  "value": "https://experience-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "HOST_SERVICE_URL",
+                  "value": "https://host-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "TRACKING_SERVICE_URL",
+                  "value": "https://tracking-service-prod-us-central1.a.run.app"
+                },
+                {
+                  "name": "NOTIFICATIONS_SERVICE_URL",
+                  "value": "https://notifications-service-prod-us-central1.a.run.app"
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 3000
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.502282Z",
+              "message": "Deploying revision succeeded in 21.35s.",
+              "status": "True",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:54.441105Z",
+              "message": "Containers became healthy in 5.79s.",
+              "status": "True",
+              "type": "ContainerHealthy"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:44.997120Z",
+              "message": "Container image import completed in 11.39s.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T03:00:48.271074Z",
+              "message": "Provisioning imported containers completed in 3.27s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+              "status": "True",
+              "type": "ResourcesAvailable"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+              "name": "api-gateway-1"
+            }
+          ],
+          "desiredReplicas": 1,
+          "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway@sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/api-gateway-prod/revision_name/api-gateway-prod-00003-k6j&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22api-gateway-prod%22%0Aresource.labels.revision_name%3D%22api-gateway-prod-00003-k6j%22",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Ready condition status changed to True for Revision api-gateway-prod-00003-k6j with message: Deploying revision succeeded in 21.35s."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T03:00:55.039045338Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T03:00:54.513250Z"
+  },
+  {
+    "insertId": "69631266000693ab0fbb656f",
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:00:54.713142564Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Default STARTUP TCP probe succeeded after 1 attempt for container \"api-gateway-1\" on port 3000.",
+    "timestamp": "2026-01-11T03:00:54.431019Z"
+  },
+  {
+    "insertId": "69631266000691ef40410402",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? Swagger docs available at http://localhost:3000/api/docs",
+      "pid": 2,
+      "time": 1768100454428
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430575Z"
+  },
+  {
+    "insertId": "69631266000691ea8daa2372",
+    "jsonPayload": {
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "? API Gateway running on http://localhost:3000",
+      "pid": 2,
+      "time": 1768100454428
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430570Z"
+  },
+  {
+    "insertId": "69631266000691e679c2608b",
+    "jsonPayload": {
+      "context": "NestApplication",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Nest application successfully started",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430566Z"
+  },
+  {
+    "insertId": "69631266000691e13c7e70f5",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/api/health/ready, GET} route",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430561Z"
+  },
+  {
+    "insertId": "69631266000691dc49e2874f",
+    "jsonPayload": {
+      "context": "RouterExplorer",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "Mapped {/api/health, GET} route",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430556Z"
+  },
+  {
+    "insertId": "69631266000691d88481b8b7",
+    "jsonPayload": {
+      "context": "RoutesResolver",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthController {/api/health}:",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430552Z"
+  },
+  {
+    "insertId": "69631266000691d3b78c2819",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430547Z"
+  },
+  {
+    "insertId": "69631266000691cb12314540",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430539Z"
+  },
+  {
+    "insertId": "69631266000691c4313045dc",
+    "jsonPayload": {
+      "context": "LegacyRouteConverter",
+      "hostname": "localhost",
+      "level": 40,
+      "msg": "Unsupported route path: \"/api/*\". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of \"path-to-regexp\" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with \"/users\", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430532Z"
+  },
+  {
+    "insertId": "69631266000691bc98b62e1d",
+    "jsonPayload": {
+      "context": "WebSocketsController",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "TrackingGateway subscribed to the \"updateLocation\" message",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430524Z"
+  },
+  {
+    "insertId": "69631266000691b635230d2e",
+    "jsonPayload": {
+      "context": "InstanceLoader",
+      "hostname": "localhost",
+      "level": 30,
+      "msg": "HealthModule dependencies initialized",
+      "pid": 2,
+      "time": 1768100454427
+    },
+    "labels": {
+      "instanceId": "0007e26d68e85fd826e3f6bc4044e822eb7ed47ad05137479c18bc0339f5c38bc726a1be7bdba3c61eb9418472e8fa42fc15e085a336977ff332f4f7dbe366337ce03e918c700da2ebbcc9b25275"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T03:00:54.768521185Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "api-gateway-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "api-gateway-prod-00003-k6j",
+        "service_name": "api-gateway-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "timestamp": "2026-01-11T03:00:54.430518Z"
+  }
+]

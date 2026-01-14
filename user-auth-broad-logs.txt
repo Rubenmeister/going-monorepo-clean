@@ -1,0 +1,1009 @@
+TIMESTAMP: 2026-01-11T22:09:36.225458Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T22:08:22.758195Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T21:46:16.563860Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T21:41:24.941587Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T21:01:55.443202Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T20:38:32.920930Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T20:16:26.908746Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: NOTICE
+
+TIMESTAMP: 2026-01-11T03:03:48.186068Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:48.080162113Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:47.881895Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881891Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881886Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881881Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881877Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881873Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881869Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881865Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881862Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881858Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881855Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881852Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881848Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881842Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881827Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881812Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:47.881723Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:43.809042Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:40.218074Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:40.099069783Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:39.939445Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939440Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939435Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939431Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939427Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939422Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939417Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939413Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939408Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939404Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939399Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939395Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939390Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939384Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939365Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939345Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:39.939239Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:35.810723Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:32.374793Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:32.234260315Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:32.090333Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090328Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090325Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090322Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090319Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090315Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090312Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090308Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090305Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090300Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090296Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090287Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090282Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090277Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090259Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090244Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:32.090148Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:27.810256Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:25.080325Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:24.102480604Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:23.113192Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113188Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113185Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113181Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113177Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113174Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113171Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113167Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113164Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113160Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113157Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113154Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113151Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113147Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113128Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113110Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:23.113026Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:18.808225Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:16.267470Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:16.138675322Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:15.318310Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318305Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318301Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318296Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318292Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318288Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318285Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318281Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318278Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318274Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318270Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318267Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318263Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318258Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318241Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318227Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:15.318142Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:10.808902Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:09.249634Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:09.118569289Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:09.001215Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001211Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001208Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001204Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001200Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001196Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001191Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001186Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001182Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001179Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001173Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001168Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001165Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001160Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001136Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001121Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:09.001031Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:04.806712Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:03:03.326979Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:03:03.165966865Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:03:02.179560Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179555Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179551Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179547Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179543Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179539Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179534Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179530Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179526Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179523Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179519Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179516Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179512Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179508Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179493Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179479Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:03:02.179393Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:57.808489Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:02:56.910459Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:02:56.128432406Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:02:56.061911Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061906Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061902Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061897Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061893Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061888Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061883Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061879Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061874Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061870Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061858Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061852Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061847Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061839Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061816Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061796Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:56.061694Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.806338Z
+TEXT_PAYLOAD: Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.
+MESSAGE: 
+SEVERITY: INFO
+
+TIMESTAMP: 2026-01-11T03:02:51.300165Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:02:51.124145030Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:02:51.046182Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046175Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046170Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046165Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046160Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046155Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046149Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046144Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046139Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046135Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046130Z
+TEXT_PAYLOAD:     at async Proxy.onModuleInit (/app/main.js:1:775)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046126Z
+TEXT_PAYLOAD:     at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046120Z
+TEXT_PAYLOAD: Please make sure to provide valid database credentials for the database server at `10.78.0.3`.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046114Z
+TEXT_PAYLOAD: PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046095Z
+TEXT_PAYLOAD:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.046075Z
+TEXT_PAYLOAD: You may have to run ${qe("prisma generate")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B("Response from the Engine was empty",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B("Unable to JSON.parse response from engine",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae("Using driver adapter: %O",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:"json"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if("span"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??"unknown",fm(r)?this.logEmitter.emit("query",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('"beforeExit" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae("library starting");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae("library started")}catch(r){let n=this.parseInitError(r.message);throw typeof n=="string"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan("connect",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae("library is already stopping"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae("library stopping");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae("library stopped")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan("disconnect",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??"unknown"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code==="GenericFailure"&&s.message?.startsWith("PANIC:"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a=="string"?s:new B(`${a.message}
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:51.045950Z
+TEXT_PAYLOAD: /app/node_modules/@prisma/client/runtime/library.js:112
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.445946Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:02:50.366103Z
+TEXT_PAYLOAD: 
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:02:50.355135Z
+TEXT_PAYLOAD: Default STARTUP TCP probe failed 1 time consecutively for container "user-auth-service-1" on port 3000. The instance was not started.
+Connection failed with status CANCELLED.
+MESSAGE: 
+SEVERITY: ERROR
+
+TIMESTAMP: 2026-01-11T03:02:50.217690708Z
+TEXT_PAYLOAD: Container called exit(1).
+MESSAGE: 
+SEVERITY: WARNING
+
+TIMESTAMP: 2026-01-11T03:02:50.093841Z
+TEXT_PAYLOAD: Node.js v20.19.6
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093837Z
+TEXT_PAYLOAD: }
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093835Z
+TEXT_PAYLOAD:   errorCode: 'P1000'
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093832Z
+TEXT_PAYLOAD:   clientVersion: '5.22.0',
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093829Z
+TEXT_PAYLOAD:     at async /app/main.js:3:13868 {
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093826Z
+TEXT_PAYLOAD:     at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093823Z
+TEXT_PAYLOAD:     at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093820Z
+TEXT_PAYLOAD:     at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093817Z
+TEXT_PAYLOAD:     at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)
+MESSAGE: 
+SEVERITY: 
+
+TIMESTAMP: 2026-01-11T03:02:50.093815Z
+TEXT_PAYLOAD:     at async Promise.all (index 0)
+MESSAGE: 
+SEVERITY: 

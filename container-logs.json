@@ -1,0 +1,1015 @@
+[
+  {
+    "insertId": "69641016000337fa40b63710",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:18.323236715Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"notifications-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:03:18.210938Z"
+  },
+  {
+    "insertId": "69641016000123c59eb4b430",
+    "labels": {
+      "container_name": "notifications-service-1",
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:18.323236715Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T21:03:18.074681809Z"
+  },
+  {
+    "insertId": "69641016000054d746b42813",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async DependenciesScanner.scan \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:32:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021719Z"
+  },
+  {
+    "insertId": "69641016000054d3a8630e63",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.scanModulesForDependencies \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:105:18\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021715Z"
+  },
+  {
+    "insertId": "69641016000054ce12ff15be",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.reflectExports \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:17\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021710Z"
+  },
+  {
+    "insertId": "69641016000054c9d38a2eda",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Array.forEach (<anonymous>)",
+    "timestamp": "2026-01-11T21:03:18.021705Z"
+  },
+  {
+    "insertId": "69641016000054c4642fbf62",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at \u001b[90m/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:50",
+    "timestamp": "2026-01-11T21:03:18.021700Z"
+  },
+  {
+    "insertId": "69641016000054bfd096bd9b",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.insertExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:293:24\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021695Z"
+  },
+  {
+    "insertId": "69641016000054b495b59da1",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at NestContainer.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/container.js:182:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021684Z"
+  },
+  {
+    "insertId": "69641016000054af6cc01d0a",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:295:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021679Z"
+  },
+  {
+    "insertId": "69641016000054aa66036396",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at addExportedUnit \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:284:67\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021674Z"
+  },
+  {
+    "insertId": "69641016000054a5b2428c96",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.validateExportedProvider \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:316:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:18.021669Z"
+  },
+  {
+    "insertId": "6964101600005499a5478789",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors",
+    "timestamp": "2026-01-11T21:03:18.021657Z"
+  },
+  {
+    "insertId": "69641016000054927051c579",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "- Is PrismaService part of the relevant providers/imports within InfrastructureModule?",
+    "timestamp": "2026-01-11T21:03:18.021650Z"
+  },
+  {
+    "insertId": "696410160000548c98bf2b46",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Possible Solutions:",
+    "timestamp": "2026-01-11T21:03:18.021644Z"
+  },
+  {
+    "insertId": "69641016000054712ffcb485",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:18.309412354Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[31m[Nest] 2  - \u001b[39m01/11/2026, 9:03:18 PM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[ExceptionHandler] \u001b[39mUnknownExportException [Error]: Nest cannot export a provider/module that is not a part of the currently processed module (InfrastructureModule). Please verify whether the exported PrismaService is available in this particular context.",
+    "timestamp": "2026-01-11T21:03:18.021617Z"
+  },
+  {
+    "insertId": "69641015000f1578e16893a8",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:03:18.274177045Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:03:17 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:03:17.988536Z"
+  },
+  {
+    "insertId": "69641012000ae5f0ccb20304",
+    "labels": {
+      "instanceId": "005eb6974ca5fedebf3cda06a99540e9c075532bc8e3d6d251d660cef74eebd93f5ede5ecc9cacbfac9bd8f5c33b61c9db629ea3bed0adf78159643e896b069da396d1eeb98e02c1eb8bf634dbb8",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:14.992655241Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:03:14.714224Z"
+  },
+  {
+    "insertId": "6964100d000118118afa592d",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:09.330679879Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"notifications-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:03:09.071697Z"
+  },
+  {
+    "insertId": "6964100c000e1f857e2a5865",
+    "labels": {
+      "container_name": "notifications-service-1",
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:08.998098882Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T21:03:08.925539083Z"
+  },
+  {
+    "insertId": "6964100c0004609411ff46a1",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async DependenciesScanner.scan \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:32:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286868Z"
+  },
+  {
+    "insertId": "6964100c0004608e95f3935e",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.scanModulesForDependencies \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:105:18\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286862Z"
+  },
+  {
+    "insertId": "6964100c00046089bc4fc3e5",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.reflectExports \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:17\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286857Z"
+  },
+  {
+    "insertId": "6964100c00046084cd918680",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Array.forEach (<anonymous>)",
+    "timestamp": "2026-01-11T21:03:08.286852Z"
+  },
+  {
+    "insertId": "6964100c0004607f24755397",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at \u001b[90m/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:50",
+    "timestamp": "2026-01-11T21:03:08.286847Z"
+  },
+  {
+    "insertId": "6964100c0004607993668674",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.insertExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:293:24\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286841Z"
+  },
+  {
+    "insertId": "6964100c0004607442416611",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at NestContainer.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/container.js:182:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286836Z"
+  },
+  {
+    "insertId": "6964100c0004606ee8918b60",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:295:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286830Z"
+  },
+  {
+    "insertId": "6964100c00046069c0737389",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at addExportedUnit \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:284:67\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286825Z"
+  },
+  {
+    "insertId": "6964100c000460643a67787f",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.validateExportedProvider \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:316:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.286820Z"
+  },
+  {
+    "insertId": "6964100c0004605cdd531484",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors",
+    "timestamp": "2026-01-11T21:03:08.286812Z"
+  },
+  {
+    "insertId": "6964100c00046054a5ec9b9a",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "- Is PrismaService part of the relevant providers/imports within InfrastructureModule?",
+    "timestamp": "2026-01-11T21:03:08.286804Z"
+  },
+  {
+    "insertId": "6964100c0004604dc65a10d9",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Possible Solutions:",
+    "timestamp": "2026-01-11T21:03:08.286797Z"
+  },
+  {
+    "insertId": "6964100c000460397dd3ed73",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:08.318292212Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[31m[Nest] 2  - \u001b[39m01/11/2026, 9:03:08 PM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[ExceptionHandler] \u001b[39mUnknownExportException [Error]: Nest cannot export a provider/module that is not a part of the currently processed module (InfrastructureModule). Please verify whether the exported PrismaService is available in this particular context.",
+    "timestamp": "2026-01-11T21:03:08.286777Z"
+  },
+  {
+    "insertId": "6964100c0003c836332aee47",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:03:08.284415843Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:03:08 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:03:08.247862Z"
+  },
+  {
+    "insertId": "69641008000aeb204a001b87",
+    "labels": {
+      "instanceId": "005eb6974c28c75a94c6a979b4e114a891ae056dc63e5b53bd103515c49c2bad0b7722021952c239004af9a0b9e5917d93e31f5324da109661f3f72d223c457bb5b4a8335fa281a800134b5fcf49",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:05.003201134Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:03:04.715552Z"
+  },
+  {
+    "insertId": "6964100500010d4b8ca86b10",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:01.337947426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"notifications-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:03:01.068939Z"
+  },
+  {
+    "insertId": "69641004000e61a165fd49d6",
+    "labels": {
+      "container_name": "notifications-service-1",
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:03:01.004971473Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T21:03:00.942486168Z"
+  },
+  {
+    "insertId": "696410040001e7a7e7e88b83",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async DependenciesScanner.scan \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:32:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124839Z"
+  },
+  {
+    "insertId": "696410040001e7a4226930af",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.scanModulesForDependencies \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:105:18\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124836Z"
+  },
+  {
+    "insertId": "696410040001e7a063382427",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.reflectExports \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:17\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124832Z"
+  },
+  {
+    "insertId": "696410040001e79c624d3651",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Array.forEach (<anonymous>)",
+    "timestamp": "2026-01-11T21:03:00.124828Z"
+  },
+  {
+    "insertId": "696410040001e7995abea6ad",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at \u001b[90m/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:152:50",
+    "timestamp": "2026-01-11T21:03:00.124825Z"
+  },
+  {
+    "insertId": "696410040001e795f05b3674",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at DependenciesScanner.insertExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/scanner.js:293:24\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124821Z"
+  },
+  {
+    "insertId": "696410040001e79125d6c885",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at NestContainer.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/container.js:182:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124817Z"
+  },
+  {
+    "insertId": "696410040001e78efa24ded5",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.addExportedProviderOrModule \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:295:9\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124814Z"
+  },
+  {
+    "insertId": "696410040001e7896185612e",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at addExportedUnit \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:284:67\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124809Z"
+  },
+  {
+    "insertId": "696410040001e786cc9a000e",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at Module.validateExportedProvider \u001b[90m(/app/\u001b[39mnode_modules/\u001b[4m@nestjs/core\u001b[24m/injector/module.js:316:19\u001b[90m)\u001b[39m",
+    "timestamp": "2026-01-11T21:03:00.124806Z"
+  },
+  {
+    "insertId": "696410040001e7816e6e5b7b",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors",
+    "timestamp": "2026-01-11T21:03:00.124801Z"
+  },
+  {
+    "insertId": "696410040001e77ca1c377ac",
+    "labels": {
+      "instanceId": "005eb6974c9dc67d828491a7f920a73326fdbd441142674d516bfa3cb2f25999913b579b29c1af584cb48de5eefaa2c90dfd24303fd9b06321def2a561c6de6dda0bc80e33f0a55456193ea30012"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T21:03:00.325097832Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "notifications-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "notifications-service-prod-00001-jhp",
+        "service_name": "notifications-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "- Is PrismaService part of the relevant providers/imports within InfrastructureModule?",
+    "timestamp": "2026-01-11T21:03:00.124796Z"
+  }
+]

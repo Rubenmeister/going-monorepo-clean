@@ -1,0 +1,4064 @@
+WARNING: Your config file at [C:\Users\USER1\.docker\config.json] contains these credential helper entries:
+
+{
+  "credHelpers": {
+    "us-central1-docker.pkg.dev": "gcloud"
+  }
+}
+Adding credentials for: us-central1-docker.pkg.dev
+gcloud credential helpers already registered correctly.
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 ...
+
+#3 [auth] library/node:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 1.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 184B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 58.30MB 4.8s
+#5 transferring context: 123.06MB 9.9s
+#5 transferring context: 166.45MB 15.0s
+#5 transferring context: 244.48MB 20.0s
+#5 transferring context: 319.48MB 25.0s
+#5 transferring context: 321.03MB 25.2s done
+#5 DONE 25.2s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [builder 3/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 CACHED
+
+#10 [builder 5/8] COPY . .
+#10 DONE 5.2s
+
+#11 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#11 DONE 1.2s
+
+#12 [builder 7/8] RUN npm install --legacy-peer-deps
+#12 16.34 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#12 18.64 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#12 18.96 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#12 19.25 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#12 20.22 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#12 20.50 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#12 21.69 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#12 21.69 npm warn deprecated
+#12 21.69 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#12 28.47 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#12 30.73 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#12 35.22 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#12 38.71 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#12 64.52 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 65.94 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 65.94 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 65.94 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 66.41 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#12 68.91 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#12 77.09 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#12 77.49 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#12 150.4 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#12 157.6 
+#12 157.6 > going-monorepo-clean@2.0.0 prepare
+#12 157.6 > husky install
+#12 157.6 
+#12 157.7 husky - install command is DEPRECATED
+#12 157.7 .git can't be found
+#12 157.7 added 3114 packages, and audited 3115 packages in 3m
+#12 157.7 
+#12 157.7 439 packages are looking for funding
+#12 157.7   run `npm fund` for details
+#12 158.0 
+#12 158.0 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#12 158.0 
+#12 158.0 To address issues that do not require attention, run:
+#12 158.0   npm audit fix
+#12 158.0 
+#12 158.0 To address all issues (including breaking changes), run:
+#12 158.0   npm audit fix --force
+#12 158.0 
+#12 158.0 Run `npm audit` for details.
+#12 158.0 npm notice
+#12 158.0 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#12 158.0 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#12 158.0 npm notice To update run: npm install -g npm@11.7.0
+#12 158.0 npm notice
+#12 DONE 163.4s
+
+#13 [builder 8/8] RUN npx nx build api-gateway --prod
+#13 9.328 
+#13 9.333  NX   Running target build for project api-gateway and 2 tasks it depends on:
+#13 9.333 
+#13 9.334 
+#13 12.56 
+#13 12.56 > nx run @going-monorepo-clean/prisma-client:build
+#13 12.56 
+#13 12.56 Compiling TypeScript files for project "@going-monorepo-clean/prisma-client"...
+#13 12.56 Done compiling TypeScript files for project "@going-monorepo-clean/prisma-client".
+#13 17.20 
+#13 17.20 > nx run @going/shared/observability:build
+#13 17.20 
+#13 17.20 Compiling TypeScript files for project "@going/shared/observability"...
+#13 17.20 Done compiling TypeScript files for project "@going/shared/observability".
+#13 17.22 
+#13 17.22 > nx run api-gateway:build
+#13 17.22 
+#13 17.23 > webpack-cli build --node-env=production
+#13 17.23 
+#13 25.81 chunk (runtime: main) main.js (main) 37.1 KiB [entry] [rendered]
+#13 25.81 webpack compiled successfully (a5ddcfc2eea319b5)
+#13 25.89 
+#13 25.89 
+#13 25.89 
+#13 25.89  NX   Successfully ran target build for project api-gateway and 2 tasks it depends on
+#13 25.89 
+#13 25.89 
+#13 DONE 26.3s
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#15 CACHED
+
+#16 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#16 CACHED
+
+#17 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#17 CACHED
+
+#18 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway/package*.json ./
+#18 CACHED
+
+#19 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#19 CACHED
+
+#20 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#20 CACHED
+
+#21 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#21 CACHED
+
+#22 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/api-gateway ./
+#22 CACHED
+
+#23 exporting to image
+#23 exporting layers done
+#23 exporting manifest sha256:0be5eb418cf4f670a199d0681a1feb80d69b2adac735c4bf6c6ad4a7fe53a095 done
+#23 exporting config sha256:16b655cf29cdb94bdf5d37bb577fcfdeafacb5dc5b81358e91cdc2743f99c43d done
+#23 exporting attestation manifest sha256:43a3eb0bdec0345beb57415e3f480f443cc06b1f83d6a2dd6f9a6bf41956686c
+#23 exporting attestation manifest sha256:43a3eb0bdec0345beb57415e3f480f443cc06b1f83d6a2dd6f9a6bf41956686c 0.2s done
+#23 exporting manifest list sha256:e069d5b4e125995a8aa5ce089c58af9ca9eb87d9e2bb0165e38b26eb5d2c461a 0.1s done
+#23 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest done
+#23 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway:latest 0.1s done
+#23 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/acfadp8l77ivi1uhrwnmrhqh8
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/api-gateway]
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Layer already exists
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Waiting
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+13546c6a4a12: Waiting
+13546c6a4a12: Layer already exists
+1074353eec0d: Waiting
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+80d8e188e336: Waiting
+cb3325e64457: Layer already exists
+ae325971b9d7: Waiting
+0c37dbb07b19: Waiting
+9423ee5ee02f: Waiting
+fd1849a5c548: Layer already exists
+437f1e3b09ba: Waiting
+80d8e188e336: Layer already exists
+ae325971b9d7: Layer already exists
+0c37dbb07b19: Waiting
+1074353eec0d: Layer already exists
+cc0437c254a9: Waiting
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+cc0437c254a9: Layer already exists
+e1eced665b11: Waiting
+02d221c21bc9: Waiting
+41ca75be2d44: Waiting
+9423ee5ee02f: Waiting
+437f1e3b09ba: Waiting
+0c37dbb07b19: Waiting
+0c37dbb07b19: Layer already exists
+e1eced665b11: Layer already exists
+02d221c21bc9: Layer already exists
+41ca75be2d44: Layer already exists
+9423ee5ee02f: Waiting
+437f1e3b09ba: Layer already exists
+9423ee5ee02f: Pushed
+latest: digest: sha256:e069d5b4e125995a8aa5ce089c58af9ca9eb87d9e2bb0165e38b26eb5d2c461a size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B 0.0s done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.7s done
+#4 DONE 0.7s
+
+#6 [builder 5/8] COPY . .
+#6 CACHED
+
+#7 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#7 CACHED
+
+#8 [builder 2/8] RUN apk add --no-cache libc6-compat
+#8 CACHED
+
+#9 [builder 3/8] WORKDIR /app
+#9 CACHED
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build user-auth-service --prod
+#12 6.815 
+#12 6.815 > nx run user-auth-service:build:production
+#12 6.815 
+#12 16.82 assets by path *.js 20.3 KiB
+#12 16.82   asset main.js 15 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 16.82   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 16.82   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 16.82 assets by path *.json 180 KiB
+#12 16.82   asset package-lock.json 179 KiB [emitted]
+#12 16.82   asset package.json 1.12 KiB [emitted]
+#12 16.82 asset 3rdpartylicenses.txt 5 bytes [emitted]
+#12 16.82 asset assets/.gitkeep 0 bytes [emitted] [from: apps/user-auth-service/src/assets/.gitkeep] [copied]
+#12 16.82 orphan modules 36.8 KiB [orphan] 48 modules
+#12 16.82 runtime modules 3.53 KiB 8 modules
+#12 16.82 built modules 41.3 KiB [built]
+#12 16.82   modules by path ./ 40.9 KiB
+#12 16.82     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 16.82     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 16.82     + 1 module
+#12 16.82   modules by path external "@nestjs/ 210 bytes
+#12 16.82     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 16.82     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 16.82     + 3 modules
+#12 16.82   + 5 modules
+#12 16.82 webpack 5.104.1 compiled successfully in 7984 ms
+#12 16.86 
+#12 16.86 
+#12 16.86 
+#12 16.86  NX   Successfully ran target build for project user-auth-service
+#12 16.86 
+#12 16.86 
+#12 DONE 17.1s
+
+#13 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#13 CACHED
+
+#14 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/user-auth-service/package*.json ./
+#14 CACHED
+
+#15 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#15 CACHED
+
+#16 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#16 CACHED
+
+#17 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#17 CACHED
+
+#18 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#18 CACHED
+
+#19 [runner  2/10] WORKDIR /app
+#19 CACHED
+
+#20 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/user-auth-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers 0.0s done
+#22 exporting manifest sha256:c680f6cda4ca05a4b24a6c465a2fe22b1276f6f1ac5efe4c05761f52a4313d56 done
+#22 exporting config sha256:920aa3563d00cc91246062c8eba338dc0b8a0d771fdc625d55790e639fd2c19f done
+#22 exporting attestation manifest sha256:9265e42a8990a8f83716165327a6bbc7a8196bb724d6b38169515377f7075c91
+#22 exporting attestation manifest sha256:9265e42a8990a8f83716165327a6bbc7a8196bb724d6b38169515377f7075c91 0.3s done
+#22 exporting manifest list sha256:b5e34258dcf0801bc5cfdb36a18698cebe36d111ba2f48079ff1cc6e703cbc33
+#22 exporting manifest list sha256:b5e34258dcf0801bc5cfdb36a18698cebe36d111ba2f48079ff1cc6e703cbc33 0.0s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest 0.0s done
+#22 DONE 0.6s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/0qdoifhn2bknpos82xof9mxkv
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service]
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+56807acdced6: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+ae325971b9d7: Layer already exists
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+3ad0a50f9138: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Waiting
+4f1a4b23535f: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+56807acdced6: Waiting
+c2a17face2a2: Waiting
+a4c50a36fc4a: Layer already exists
+4f1a4b23535f: Layer already exists
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Layer already exists
+56807acdced6: Waiting
+3ad0a50f9138: Layer already exists
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+475764bf01ff: Waiting
+fd1849a5c548: Layer already exists
+56807acdced6: Waiting
+8d06ba6946d1: Layer already exists
+437f1e3b09ba: Waiting
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+9433b43c4617: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Layer already exists
+cb3325e64457: Waiting
+c2a17face2a2: Waiting
+9433b43c4617: Layer already exists
+1074353eec0d: Layer already exists
+475764bf01ff: Layer already exists
+56807acdced6: Layer already exists
+cb3325e64457: Layer already exists
+c2a17face2a2: Pushed
+latest: digest: sha256:b5e34258dcf0801bc5cfdb36a18698cebe36d111ba2f48079ff1cc6e703cbc33 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.5s done
+#4 DONE 0.5s
+
+#6 [builder 2/8] RUN apk add --no-cache libc6-compat
+#6 CACHED
+
+#7 [builder 3/8] WORKDIR /app
+#7 CACHED
+
+#8 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#8 CACHED
+
+#9 [builder 5/8] COPY . .
+#9 CACHED
+
+#10 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build transport-service --prod
+#12 6.661 
+#12 6.662 > nx run transport-service:build:production
+#12 6.662 
+#12 15.90 assets by path *.js 25.8 KiB
+#12 15.90   asset main.js 20.5 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 15.90   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 15.90   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 15.90 assets by path *.json 174 KiB
+#12 15.90   asset package-lock.json 173 KiB [emitted]
+#12 15.90   asset package.json 1.07 KiB [emitted]
+#12 15.90 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 15.90 asset assets/.gitkeep 0 bytes [emitted] [from: apps/transport-service/src/assets/.gitkeep] [copied]
+#12 15.90 orphan modules 44.3 KiB [orphan] 42 modules
+#12 15.90 runtime modules 3.53 KiB 8 modules
+#12 15.90 built modules 49 KiB [built]
+#12 15.90   modules by path ./ 48.5 KiB
+#12 15.90     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 15.90     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 15.90     + 1 module
+#12 15.90   modules by path external "@nestjs/ 210 bytes
+#12 15.90     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 15.90     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 15.90     + 3 modules
+#12 15.90   + 5 modules
+#12 15.90 webpack 5.104.1 compiled successfully in 6784 ms
+#12 15.93 
+#12 15.93 
+#12 15.93 
+#12 15.93  NX   Successfully ran target build for project transport-service
+#12 15.93 
+#12 15.93 
+#12 DONE 16.2s
+
+#13 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/transport-service/package*.json ./
+#13 CACHED
+
+#14 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#14 CACHED
+
+#15 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#15 CACHED
+
+#16 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#16 CACHED
+
+#17 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#17 CACHED
+
+#18 [runner  2/10] WORKDIR /app
+#18 CACHED
+
+#19 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#19 CACHED
+
+#20 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/transport-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers 0.0s done
+#22 exporting manifest sha256:5dbfadffb948a4c4136aab9ea59182b877beefcaf4dafb0e68ca37d1dd0ff902 done
+#22 exporting config sha256:ab2ed6b94997cc9273a601d362181ceed4bd85d1c1cecd68d3b81136769ac07b done
+#22 exporting attestation manifest sha256:5f4282705e636dbecc79e0d2608b004c03fec850f6521841b1b1c65d0ef674ce 0.1s done
+#22 exporting manifest list sha256:ee73a9155807b3a5e27e1bcdc4cf0f1804fc9ea98fa7a05830ec4c1a6cc330d5
+#22 exporting manifest list sha256:ee73a9155807b3a5e27e1bcdc4cf0f1804fc9ea98fa7a05830ec4c1a6cc330d5 0.0s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/transport-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/transport-service:latest 0.0s done
+#22 DONE 0.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/mdxyzjqxbeblasogq2qnfd9ok
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/transport-service]
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+fefd48787dd6: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+0151638f7cb2: Waiting
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+8d06ba6946d1: Layer already exists
+fd1849a5c548: Layer already exists
+fefd48787dd6: Layer already exists
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Waiting
+92b521bcba6e: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Layer already exists
+0151638f7cb2: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+3a970e89cd59: Waiting
+b388185a53d8: Layer already exists
+437f1e3b09ba: Waiting
+437f1e3b09ba: Waiting
+6ae5a197f7f1: Waiting
+06acc004744c: Layer already exists
+92b521bcba6e: Layer already exists
+cb3325e64457: Layer already exists
+ae325971b9d7: Waiting
+13546c6a4a12: Layer already exists
+3a970e89cd59: Layer already exists
+ae325971b9d7: Waiting
+437f1e3b09ba: Layer already exists
+6ae5a197f7f1: Layer already exists
+ae325971b9d7: Layer already exists
+0151638f7cb2: Pushed
+latest: digest: sha256:ee73a9155807b3a5e27e1bcdc4cf0f1804fc9ea98fa7a05830ec4c1a6cc330d5 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [auth] library/node:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 1.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 184B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#6 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 516.38kB 0.5s done
+#5 DONE 0.6s
+
+#7 [builder 2/8] RUN apk add --no-cache libc6-compat
+#7 CACHED
+
+#8 [builder 3/8] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#9 CACHED
+
+#10 [builder 5/8] COPY . .
+#10 CACHED
+
+#11 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#11 CACHED
+
+#12 [builder 7/8] RUN npm install --legacy-peer-deps
+#12 CACHED
+
+#13 [builder 8/8] RUN npx nx build parcel-service --prod
+#13 6.361 
+#13 6.361 > nx run parcel-service:build:production
+#13 6.361 
+#13 17.75 assets by path *.json 174 KiB
+#13 17.75   asset package-lock.json 173 KiB [emitted]
+#13 17.75   asset package.json 1.06 KiB [emitted]
+#13 17.75 assets by path *.js 23 KiB
+#13 17.75   asset main.js 20.5 KiB [emitted] [minimized] (name: main) 1 related asset
+#13 17.75   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#13 17.75 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#13 17.75 asset assets/.gitkeep 0 bytes [emitted] [from: apps/parcel-service/src/assets/.gitkeep] [copied]
+#13 17.75 orphan modules 41.7 KiB [orphan] 48 modules
+#13 17.75 runtime modules 3.53 KiB 8 modules
+#13 17.75 built modules 45.9 KiB [built]
+#13 17.75   modules by path ./ 45.6 KiB
+#13 17.75     cacheable modules 6.86 KiB 4 modules
+#13 17.75     ./apps/parcel-service/src/main.ts + 40 modules 33.3 KiB [not cacheable] [built] [code generated]
+#13 17.75     ./libs/shared/src/backend.ts + 6 modules 5.43 KiB [not cacheable] [built] [code generated]
+#13 17.75   modules by path external "@nestjs/ 168 bytes
+#13 17.75     external "@nestjs/core" 42 bytes [built] [code generated]
+#13 17.75     external "@nestjs/common" 42 bytes [built] [code generated]
+#13 17.75     + 2 modules
+#13 17.75   + 5 modules
+#13 17.75 WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:57-74
+#13 17.75 export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+#13 17.75  @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+#13 17.75  @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+#13 17.75  @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+#13 17.75 WARNING in ./libs/domains/parcel/application/src/lib/use-cases/create-parcel.use-case.ts 46:94-111
+#13 17.75 export 'IParcelRepository' (imported as 'IParcelRepository') was not found in '@going-monorepo-clean/domains-parcel-core' (possible exports: I_PARCEL_REPOSITORY, Parcel)
+#13 17.75  @ ./libs/domains/parcel/application/src/index.ts 2:0-55 2:0-55
+#13 17.75  @ ./apps/parcel-service/src/app.module.ts 8:0-114 23:12-31 24:12-36
+#13 17.75  @ ./apps/parcel-service/src/main.ts 2:0-41 5:41-50
+#13 17.75 webpack 5.104.1 compiled with 2 warnings in 9234 ms
+#13 17.78 
+#13 17.78 
+#13 17.78 
+#13 17.78  NX   Successfully ran target build for project parcel-service
+#13 17.78 
+#13 17.78 
+#13 DONE 18.3s
+
+#14 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#14 CACHED
+
+#15 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/parcel-service/package*.json ./
+#15 CACHED
+
+#16 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#16 CACHED
+
+#17 [runner  2/10] WORKDIR /app
+#17 CACHED
+
+#18 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#18 CACHED
+
+#19 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#19 CACHED
+
+#20 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#20 CACHED
+
+#21 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#21 CACHED
+
+#22 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/parcel-service ./
+#22 CACHED
+
+#23 exporting to image
+#23 exporting layers done
+#23 exporting manifest sha256:18859b8c988c63d14852b1f75b41b65c7b5be9d863957b1b2bf25e58693d26d5 done
+#23 exporting config sha256:de5eeecad73040abd365e0ac4a5a9ad37a4dd7c473a20fb8267a5a6882835ec2 done
+#23 exporting attestation manifest sha256:66bdcae296231bfd1736435a0e446662fabb8581e4f631d66b8b5b3658383755 0.1s done
+#23 exporting manifest list sha256:f26fc34f6c4f1f536cfcadf654e35a9bf873ac217b8f3fbe34c8bd0f3a10cb04
+#23 exporting manifest list sha256:f26fc34f6c4f1f536cfcadf654e35a9bf873ac217b8f3fbe34c8bd0f3a10cb04 0.0s done
+#23 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/parcel-service:latest done
+#23 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/parcel-service:latest 0.0s done
+#23 DONE 0.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/xpomtsbwymqukxdnli5tc6h82
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/parcel-service]
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Waiting
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Waiting
+212bcfbbbc5a: Layer already exists
+947e1397cf88: Waiting
+1074353eec0d: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+8b65354b28c2: Waiting
+13546c6a4a12: Layer already exists
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+bf4f183e573b: Layer already exists
+947e1397cf88: Layer already exists
+1074353eec0d: Layer already exists
+fd1849a5c548: Layer already exists
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Waiting
+5d0f710ec5e3: Waiting
+3f1125c287a8: Waiting
+3f1125c287a8: Layer already exists
+8b65354b28c2: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Layer already exists
+8d06ba6946d1: Waiting
+9ca997395548: Waiting
+cb3325e64457: Layer already exists
+5d0f710ec5e3: Layer already exists
+8d06ba6946d1: Layer already exists
+9ca997395548: Waiting
+8b65354b28c2: Waiting
+437f1e3b09ba: Layer already exists
+9ca997395548: Layer already exists
+8b65354b28c2: Pushed
+latest: digest: sha256:f26fc34f6c4f1f536cfcadf654e35a9bf873ac217b8f3fbe34c8bd0f3a10cb04 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.5s done
+#4 DONE 0.6s
+
+#6 [builder 5/8] COPY . .
+#6 CACHED
+
+#7 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#7 CACHED
+
+#8 [builder 2/8] RUN apk add --no-cache libc6-compat
+#8 CACHED
+
+#9 [builder 3/8] WORKDIR /app
+#9 CACHED
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build booking-service --prod
+#12 6.502 
+#12 6.503 > nx run booking-service:build:production
+#12 6.503 
+#12 16.98 assets by path *.js 17.8 KiB
+#12 16.98   asset main.js 12.5 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 16.98   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 16.98   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 16.98 assets by path *.json 174 KiB
+#12 16.98   asset package-lock.json 173 KiB [emitted]
+#12 16.98   asset package.json 1.06 KiB [emitted]
+#12 16.98 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 16.98 asset assets/.gitkeep 0 bytes [emitted] [from: apps/booking-service/src/assets/.gitkeep] [copied]
+#12 16.98 orphan modules 30.8 KiB [orphan] 35 modules
+#12 16.98 runtime modules 3.53 KiB 8 modules
+#12 16.98 built modules 35.1 KiB [built]
+#12 16.98   modules by path ./ 34.7 KiB
+#12 16.98     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 16.98     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 16.98     + 1 module
+#12 16.98   modules by path external "@nestjs/ 210 bytes
+#12 16.98     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 16.98     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 16.98     + 3 modules
+#12 16.98   + 5 modules
+#12 16.98 webpack 5.104.1 compiled successfully in 8517 ms
+#12 17.02 
+#12 17.02 
+#12 17.02 
+#12 17.02  NX   Successfully ran target build for project booking-service
+#12 17.02 
+#12 17.02 
+#12 DONE 17.3s
+
+#13 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#13 CACHED
+
+#14 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#14 CACHED
+
+#15 [runner  2/10] WORKDIR /app
+#15 CACHED
+
+#16 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/booking-service/package*.json ./
+#16 CACHED
+
+#17 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#17 CACHED
+
+#18 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#18 CACHED
+
+#19 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#19 CACHED
+
+#20 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/booking-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers done
+#22 exporting manifest sha256:120311996c1e88a2f94ed4d3191d2fb68db4fc494e29fb131437cf058d5088e0 0.0s done
+#22 exporting config sha256:50a550e7a788e2d15fba1d9be17c215e9becd3adb4148f63229adadaa9e320ce done
+#22 exporting attestation manifest sha256:f607d6154ad60e81ae70fdcb71ef9fb4e765831f57457b744c438c1791e9666b
+#22 exporting attestation manifest sha256:f607d6154ad60e81ae70fdcb71ef9fb4e765831f57457b744c438c1791e9666b 0.2s done
+#22 exporting manifest list sha256:d0a6fb455ed94e17cde8020ce3ad02d728b3deda4937f51f0139d4b5813b71ac 0.1s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/booking-service:latest
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/booking-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/booking-service:latest 0.0s done
+#22 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/ttayc70ehfcghhczc9rpk3mvp
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/booking-service]
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Layer already exists
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+ae325971b9d7: Waiting
+c611b87af753: Layer already exists
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Waiting
+13546c6a4a12: Waiting
+cabbd46c9769: Waiting
+fd1849a5c548: Waiting
+93b08bb599ee: Waiting
+7c04a4c3bb2b: Layer already exists
+ae325971b9d7: Layer already exists
+1074353eec0d: Waiting
+437f1e3b09ba: Layer already exists
+8f8fa19f861c: Waiting
+8d06ba6946d1: Waiting
+651ecb5973c3: Waiting
+9a481fffa139: Waiting
+93b08bb599ee: Layer already exists
+1074353eec0d: Layer already exists
+8f8fa19f861c: Waiting
+8d06ba6946d1: Layer already exists
+651ecb5973c3: Waiting
+9a481fffa139: Layer already exists
+13546c6a4a12: Waiting
+cabbd46c9769: Layer already exists
+fd1849a5c548: Layer already exists
+8f8fa19f861c: Layer already exists
+651ecb5973c3: Waiting
+13546c6a4a12: Layer already exists
+651ecb5973c3: Pushed
+latest: digest: sha256:d0a6fb455ed94e17cde8020ce3ad02d728b3deda4937f51f0139d4b5813b71ac size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.5s done
+#4 DONE 0.6s
+
+#6 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#6 CACHED
+
+#7 [builder 5/8] COPY . .
+#7 CACHED
+
+#8 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#8 CACHED
+
+#9 [builder 2/8] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 3/8] WORKDIR /app
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build notifications-service --prod
+#12 7.287 
+#12 7.287 > nx run notifications-service:build:production
+#12 7.287 
+#12 21.63 assets by path *.js 28.2 KiB
+#12 21.63   asset main.js 22.9 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 21.63   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 21.63   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 21.63 assets by path *.json 225 KiB
+#12 21.63   asset package-lock.json 224 KiB [emitted]
+#12 21.63   asset package.json 1.15 KiB [emitted]
+#12 21.63 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 21.63 asset assets/.gitkeep 0 bytes [emitted] [from: apps/notifications-service/src/assets/.gitkeep] [copied]
+#12 21.63 orphan modules 52.5 KiB [orphan] 46 modules
+#12 21.63 runtime modules 3.53 KiB 8 modules
+#12 21.63 built modules 56.7 KiB [built]
+#12 21.63   modules by path ./ 56.3 KiB
+#12 21.63     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 21.63     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 21.63     + 1 module
+#12 21.63   modules by path external "@nestjs/ 210 bytes
+#12 21.63     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 21.63     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 21.63     + 3 modules
+#12 21.63   + 5 modules
+#12 21.63 webpack 5.104.1 compiled successfully in 12298 ms
+#12 21.66 
+#12 21.66 
+#12 21.66 
+#12 21.66  NX   Successfully ran target build for project notifications-service
+#12 21.66 
+#12 21.66 
+#12 DONE 21.9s
+
+#13 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#13 CACHED
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#15 CACHED
+
+#16 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#16 CACHED
+
+#17 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#17 CACHED
+
+#18 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#18 CACHED
+
+#19 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/notifications-service/package*.json ./
+#19 CACHED
+
+#20 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/notifications-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers 0.0s done
+#22 exporting manifest sha256:7485daabcb152b33e63c5fcecb93ffaa8fbdca34a5354b8c27fc324eb401040f 0.1s done
+#22 exporting config sha256:10b1683a2a747c983433a5a63e91a5c8d8dfc09fbc816791a542bb4c9a0a40c5
+#22 exporting config sha256:10b1683a2a747c983433a5a63e91a5c8d8dfc09fbc816791a542bb4c9a0a40c5 0.0s done
+#22 exporting attestation manifest sha256:6c97fba98dd8919e6638b818863cdea3850defc2eb651aec568fe95e3dc0ed87 0.1s done
+#22 exporting manifest list sha256:ed9c533af0a9aabddfb13d556be35937fd9cee5b665ad97a2313c77381333ce7
+#22 exporting manifest list sha256:ed9c533af0a9aabddfb13d556be35937fd9cee5b665ad97a2313c77381333ce7 0.0s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/notifications-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/notifications-service:latest 0.0s done
+#22 DONE 0.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/6q279hfgtbi3apldsu8dhww7m
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/notifications-service]
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Waiting
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Waiting
+ae325971b9d7: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+9a41ec95db7b: Waiting
+9a41ec95db7b: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+ac47c3f87478: Layer already exists
+24b5427d37bf: Waiting
+cb3325e64457: Waiting
+695bfc3c47a6: Waiting
+c67fd7045379: Layer already exists
+ae325971b9d7: Layer already exists
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+4a2a5539b007: Waiting
+24b5427d37bf: Layer already exists
+cb3325e64457: Layer already exists
+695bfc3c47a6: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Layer already exists
+1074353eec0d: Waiting
+437f1e3b09ba: Layer already exists
+4a2a5539b007: Waiting
+9a41ec95db7b: Layer already exists
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+3188b3ad438a: Waiting
+fd1849a5c548: Waiting
+695bfc3c47a6: Waiting
+8d06ba6946d1: Waiting
+1074353eec0d: Layer already exists
+4a2a5539b007: Waiting
+8d06ba6946d1: Layer already exists
+4a2a5539b007: Layer already exists
+3188b3ad438a: Waiting
+fd1849a5c548: Layer already exists
+695bfc3c47a6: Layer already exists
+3188b3ad438a: Pushed
+latest: digest: sha256:ed9c533af0a9aabddfb13d556be35937fd9cee5b665ad97a2313c77381333ce7 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.6s done
+#4 DONE 0.6s
+
+#6 [builder 3/8] WORKDIR /app
+#6 CACHED
+
+#7 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#7 CACHED
+
+#8 [builder 5/8] COPY . .
+#8 CACHED
+
+#9 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#9 CACHED
+
+#10 [builder 2/8] RUN apk add --no-cache libc6-compat
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build host-service --prod
+#12 7.944 
+#12 7.945 > nx run host-service:build:production
+#12 7.945 
+#12 23.19 assets by path *.json 174 KiB
+#12 23.19   asset package-lock.json 173 KiB [emitted]
+#12 23.19   asset package.json 1.04 KiB [emitted]
+#12 23.19 assets by path *.js 11.8 KiB
+#12 23.19   asset main.js 9.26 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 23.19   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 23.19 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 23.19 asset assets/.gitkeep 0 bytes [emitted] [from: apps/host-service/src/assets/.gitkeep] [copied]
+#12 23.19 orphan modules 16.1 KiB [orphan] 19 modules
+#12 23.19 runtime modules 3.53 KiB 8 modules
+#12 23.19 built modules 20.2 KiB [built]
+#12 23.19   modules by path ./ 20 KiB
+#12 23.19     cacheable modules 6.86 KiB 4 modules
+#12 23.19     ./apps/host-service/src/main.ts + 8 modules 7.59 KiB [not cacheable] [built] [code generated]
+#12 23.19     ./libs/shared/src/backend.ts + 9 modules 5.55 KiB [not cacheable] [built] [code generated]
+#12 23.19   modules by path external "@nestjs/ 84 bytes
+#12 23.19     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 23.19     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 23.19   external "nestjs-pino" 42 bytes [built] [code generated]
+#12 23.19   external "tslib" 42 bytes [built] [code generated]
+#12 23.19   external "neverthrow" 42 bytes [built] [code generated]
+#12 23.19   external "@prisma/client" 42 bytes [built] [code generated]
+#12 23.19 webpack 5.104.1 compiled successfully in 12417 ms
+#12 23.23 
+#12 23.23 
+#12 23.23 
+#12 23.23  NX   Successfully ran target build for project host-service
+#12 23.23 
+#12 23.23 
+#12 DONE 23.4s
+
+#13 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/host-service/package*.json ./
+#13 CACHED
+
+#14 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#14 CACHED
+
+#15 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#15 CACHED
+
+#16 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#16 CACHED
+
+#17 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#17 CACHED
+
+#18 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#18 CACHED
+
+#19 [runner  2/10] WORKDIR /app
+#19 CACHED
+
+#20 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/host-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers done
+#22 exporting manifest sha256:2b7548178925b0913d79a0f650d1096062c42ab4f2a8987eee3f3c79ecd6f5d9 0.0s done
+#22 exporting config sha256:abb54b93e2e615f662564f84367338a585f1844fefe56365b4ba82c09e7c40ab done
+#22 exporting attestation manifest sha256:391b8e4c2add8657c8b2d8e445653839a7200ab8d0f08902fa92fddf5fdf6e7a
+#22 exporting attestation manifest sha256:391b8e4c2add8657c8b2d8e445653839a7200ab8d0f08902fa92fddf5fdf6e7a 0.3s done
+#22 exporting manifest list sha256:dc48f1425a4859f3cd8c20fc9ff8cac3051b809dc4507a8b4f804e620679aa66
+#22 exporting manifest list sha256:dc48f1425a4859f3cd8c20fc9ff8cac3051b809dc4507a8b4f804e620679aa66 0.0s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/host-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/host-service:latest 0.0s done
+#22 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/cw897nwee686c7em7p423olwr
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/host-service]
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Waiting
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+8549d9616b57: Layer already exists
+e2d96d451982: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+f61a5330f024: Waiting
+437f1e3b09ba: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Waiting
+4dce6bc913e5: Waiting
+e2d96d451982: Waiting
+73eb802eedac: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Layer already exists
+f61a5330f024: Waiting
+437f1e3b09ba: Layer already exists
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+a2230e81d3a2: Layer already exists
+4dce6bc913e5: Waiting
+e2d96d451982: Layer already exists
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+f61a5330f024: Waiting
+13546c6a4a12: Waiting
+d7ffc25fc81d: Waiting
+4dce6bc913e5: Layer already exists
+ae325971b9d7: Layer already exists
+cb3325e64457: Waiting
+fd1849a5c548: Layer already exists
+f61a5330f024: Layer already exists
+13546c6a4a12: Layer already exists
+d7ffc25fc81d: Layer already exists
+cb3325e64457: Layer already exists
+8d06ba6946d1: Layer already exists
+73eb802eedac: Pushed
+latest: digest: sha256:dc48f1425a4859f3cd8c20fc9ff8cac3051b809dc4507a8b4f804e620679aa66 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.6s done
+#4 DONE 0.6s
+
+#6 [builder 5/8] COPY . .
+#6 CACHED
+
+#7 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#7 CACHED
+
+#8 [builder 2/8] RUN apk add --no-cache libc6-compat
+#8 CACHED
+
+#9 [builder 3/8] WORKDIR /app
+#9 CACHED
+
+#10 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build tours-service --prod
+#12 7.142 
+#12 7.142 > nx run tours-service:build:production
+#12 7.142 
+#12 15.57 assets by path *.js 21.1 KiB
+#12 15.57   asset main.js 15.7 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 15.57   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 15.57   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 15.57 assets by path *.json 174 KiB
+#12 15.57   asset package-lock.json 173 KiB [emitted]
+#12 15.57   asset package.json 1.04 KiB [emitted]
+#12 15.57 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 15.57 asset assets/.gitkeep 0 bytes [emitted] [from: apps/tours-service/src/assets/.gitkeep] [copied]
+#12 15.57 orphan modules 35.7 KiB [orphan] 38 modules
+#12 15.57 runtime modules 3.53 KiB 8 modules
+#12 15.57 built modules 40 KiB [built]
+#12 15.57   modules by path ./ 39.6 KiB
+#12 15.57     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 15.57     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 15.57     + 1 module
+#12 15.57   modules by path external "@nestjs/ 210 bytes
+#12 15.57     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 15.57     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 15.57     + 3 modules
+#12 15.57   + 5 modules
+#12 15.57 webpack 5.104.1 compiled successfully in 6067 ms
+#12 15.60 
+#12 15.60 
+#12 15.60 
+#12 15.60  NX   Successfully ran target build for project tours-service
+#12 15.60 
+#12 15.60 
+#12 DONE 15.9s
+
+#13 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#13 CACHED
+
+#14 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#14 CACHED
+
+#15 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#15 CACHED
+
+#16 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#16 CACHED
+
+#17 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#17 CACHED
+
+#18 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/tours-service/package*.json ./
+#18 CACHED
+
+#19 [runner  2/10] WORKDIR /app
+#19 CACHED
+
+#20 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/tours-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers 0.0s done
+#22 exporting manifest sha256:a5942128e0dc4acb86778f242254bab4044f067fa4a333cc5dae0d21d2a9ac3a done
+#22 exporting config sha256:7aaf139413da3bcb1ca21a852b0dda3bbd5503753ad699be56e3213204f1306b done
+#22 exporting attestation manifest sha256:86519be2281938436d101eee5b5decc3747d36ad3120d1b5dfbf14225f07f01c
+#22 exporting attestation manifest sha256:86519be2281938436d101eee5b5decc3747d36ad3120d1b5dfbf14225f07f01c 0.3s done
+#22 exporting manifest list sha256:a83c23c33642ecd4d8884a6e6d5d1617c9e0c1dee02c993a034678e91cdfa740
+#22 exporting manifest list sha256:a83c23c33642ecd4d8884a6e6d5d1617c9e0c1dee02c993a034678e91cdfa740 0.1s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tours-service:latest
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tours-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tours-service:latest 0.1s done
+#22 DONE 0.7s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/yj7snveqvt1d5pi9roxlffv33
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tours-service]
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Waiting
+8d06ba6946d1: Waiting
+7f3d0c8db75c: Layer already exists
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Layer already exists
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Waiting
+6f9fcfc456b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+13546c6a4a12: Layer already exists
+8d06ba6946d1: Waiting
+437f1e3b09ba: Waiting
+468aef119cd9: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+e59476c34b55: Layer already exists
+6f9fcfc456b3: Layer already exists
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+8d06ba6946d1: Waiting
+437f1e3b09ba: Layer already exists
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+5f7d7a62a6b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Waiting
+8d06ba6946d1: Waiting
+468aef119cd9: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+1074353eec0d: Waiting
+5f7d7a62a6b3: Waiting
+b17b12f0f3f7: Waiting
+d39db3c31a1d: Layer already exists
+8d06ba6946d1: Layer already exists
+468aef119cd9: Layer already exists
+ae325971b9d7: Layer already exists
+fd1849a5c548: Layer already exists
+1074353eec0d: Layer already exists
+5f7d7a62a6b3: Waiting
+b17b12f0f3f7: Layer already exists
+5f7d7a62a6b3: Pushed
+latest: digest: sha256:a83c23c33642ecd4d8884a6e6d5d1617c9e0c1dee02c993a034678e91cdfa740 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B 0.0s done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.6s done
+#4 DONE 0.6s
+
+#6 [builder 3/8] WORKDIR /app
+#6 CACHED
+
+#7 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#7 CACHED
+
+#8 [builder 5/8] COPY . .
+#8 CACHED
+
+#9 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#9 CACHED
+
+#10 [builder 2/8] RUN apk add --no-cache libc6-compat
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build experience-service --prod
+#12 6.960 
+#12 6.960 > nx run experience-service:build:production
+#12 6.960 
+#12 17.34 assets by path *.json 174 KiB
+#12 17.34   asset package-lock.json 173 KiB [emitted]
+#12 17.34   asset package.json 1.07 KiB [emitted]
+#12 17.34 assets by path *.js 8.63 KiB
+#12 17.34   asset main.js 6.12 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 17.34   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 17.34 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 17.34 asset assets/.gitkeep 0 bytes [emitted] [from: apps/experience-service/src/assets/.gitkeep] [copied]
+#12 17.34 orphan modules 12.4 KiB [orphan] 16 modules
+#12 17.34 runtime modules 3.27 KiB 7 modules
+#12 17.34 built modules 14.3 KiB [built]
+#12 17.34   modules by path ./ 14.1 KiB
+#12 17.34     ./apps/experience-service/src/main.ts + 1 modules 1.64 KiB [built] [code generated]
+#12 17.34     ./libs/shared/src/backend.ts + 13 modules 7.97 KiB [not cacheable] [built] [code generated]
+#12 17.34     ./libs/shared/src/index.ts + 2 modules 4.49 KiB [built] [code generated]
+#12 17.34   modules by path external "@nestjs/ 84 bytes
+#12 17.34     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 17.34     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 17.34   external "nestjs-pino" 42 bytes [built] [code generated]
+#12 17.34   external "tslib" 42 bytes [built] [code generated]
+#12 17.34   external "neverthrow" 42 bytes [built] [code generated]
+#12 17.34 webpack 5.104.1 compiled successfully in 8087 ms
+#12 17.37 
+#12 17.37 
+#12 17.37 
+#12 17.37  NX   Successfully ran target build for project experience-service
+#12 17.37 
+#12 17.37 
+#12 DONE 17.6s
+
+#13 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#13 CACHED
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#15 CACHED
+
+#16 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#16 CACHED
+
+#17 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#17 CACHED
+
+#18 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/experience-service/package*.json ./
+#18 CACHED
+
+#19 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#19 CACHED
+
+#20 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/experience-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers 0.0s done
+#22 exporting manifest sha256:8f12e2eef6d953a7c42596c0c0443216df734f0c592c2300cea4fd6177b69062 done
+#22 exporting config sha256:f581257a895e02dbc0eac4da6f191aac3acacb80c06b8dc56972befb85306042 done
+#22 exporting attestation manifest sha256:8722968e41e64cab5cc6fccb3d6211c41f5f4bdf9248de607254706233bbceeb 0.1s done
+#22 exporting manifest list sha256:f3ac166bd9a3d4c9e66177616ea8cc2a9713489a577d2bda8e8f0278c8bfc8eb 0.1s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/experience-service:latest
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/experience-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/experience-service:latest 0.0s done
+#22 DONE 0.4s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/znmtlxpbuax9vd0c3z3yfwdoq
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/experience-service]
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+4ff421df275b: Layer already exists
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Layer already exists
+fd1849a5c548: Waiting
+cb3325e64457: Waiting
+83d6d5d66f50: Waiting
+1074353eec0d: Waiting
+437f1e3b09ba: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Waiting
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+438d363b45e0: Layer already exists
+13546c6a4a12: Waiting
+1074353eec0d: Layer already exists
+437f1e3b09ba: Waiting
+8d06ba6946d1: Layer already exists
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+dfe8149a4730: Layer already exists
+1489af328d5a: Waiting
+8138cf1bd804: Waiting
+13546c6a4a12: Waiting
+cb3325e64457: Layer already exists
+83d6d5d66f50: Waiting
+8138cf1bd804: Waiting
+13546c6a4a12: Layer already exists
+83d6d5d66f50: Waiting
+437f1e3b09ba: Waiting
+fd1849a5c548: Waiting
+e34dd745fcc1: Waiting
+1489af328d5a: Layer already exists
+437f1e3b09ba: Layer already exists
+fd1849a5c548: Layer already exists
+e34dd745fcc1: Layer already exists
+83d6d5d66f50: Layer already exists
+8138cf1bd804: Pushed
+latest: digest: sha256:f3ac166bd9a3d4c9e66177616ea8cc2a9713489a577d2bda8e8f0278c8bfc8eb size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B 0.0s done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.5s done
+#4 DONE 0.6s
+
+#6 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#6 CACHED
+
+#7 [builder 5/8] COPY . .
+#7 CACHED
+
+#8 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#8 CACHED
+
+#9 [builder 2/8] RUN apk add --no-cache libc6-compat
+#9 CACHED
+
+#10 [builder 3/8] WORKDIR /app
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build tracking-service --prod
+#12 7.310 
+#12 7.310 > nx run tracking-service:build:production
+#12 7.310 
+#12 18.89 assets by path *.js 17.2 KiB
+#12 18.89   asset main.js 13.9 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 18.89   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 18.89   asset 2.js 822 bytes [emitted] [minimized] 1 related asset
+#12 18.89 assets by path *.json 182 KiB
+#12 18.89   asset package-lock.json 180 KiB [emitted]
+#12 18.89   asset package.json 1.22 KiB [emitted]
+#12 18.89 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 18.89 asset assets/.gitkeep 0 bytes [emitted] [from: apps/tracking-service/src/assets/.gitkeep] [copied]
+#12 18.89 orphan modules 26.5 KiB [orphan] 32 modules
+#12 18.89 runtime modules 3.53 KiB 8 modules
+#12 18.89 built modules 32.2 KiB [built]
+#12 18.89   modules by path ./ 31.8 KiB
+#12 18.89     cacheable modules 7.99 KiB 5 modules
+#12 18.89     ./apps/tracking-service/src/main.ts + 21 modules 18.3 KiB [not cacheable] [built] [code generated]
+#12 18.89     ./libs/shared/src/backend.ts + 9 modules 5.55 KiB [not cacheable] [built] [code generated]
+#12 18.89   modules by path external "@nestjs/ 126 bytes
+#12 18.89     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 18.89     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 18.89     external "@nestjs/platform-socket.io" 42 bytes [built] [code generated]
+#12 18.89   + 6 modules
+#12 18.89 WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:57-79
+#12 18.89 export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+#12 18.89  @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 18:37-55
+#12 18.89  @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+#12 18.89 WARNING in ./apps/tracking-service/src/api/tracking.controller.ts 22:99-121
+#12 18.89 export 'CreateTrackingEventDto' (imported as 'CreateTrackingEventDto') was not found in '@going-monorepo-clean/domains-tracking-application' (possible exports: CreateTrackingEventUseCase, UpdateDriverLocationUseCase)
+#12 18.89  @ ./apps/tracking-service/src/app/tracking-app.module.ts 6:0-64 18:37-55
+#12 18.89  @ ./apps/tracking-service/src/main.ts 2:0-62 5:41-58
+#12 18.89 webpack 5.104.1 compiled with 2 warnings in 9554 ms
+#12 18.92 
+#12 18.92 
+#12 18.92 
+#12 18.92  NX   Successfully ran target build for project tracking-service
+#12 18.92 
+#12 18.92 
+#12 DONE 19.1s
+
+#13 [runner  2/10] WORKDIR /app
+#13 CACHED
+
+#14 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#14 CACHED
+
+#15 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#15 CACHED
+
+#16 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#16 CACHED
+
+#17 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/tracking-service/package*.json ./
+#17 CACHED
+
+#18 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#18 CACHED
+
+#19 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#19 CACHED
+
+#20 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/tracking-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers done
+#22 exporting manifest sha256:27cce4c5a218e8ea311d0109d560ccaa2d218e713acb1b0b95511112e3b46763 done
+#22 exporting config sha256:bb1ff38acdf861f1fde720d596ce6916080c97692b4467134b1d20f5d8fa358a done
+#22 exporting attestation manifest sha256:f62227215474b719eb19aa3d1b0d1e921615360a3bd718612aafcc79b7942ba1
+#22 exporting attestation manifest sha256:f62227215474b719eb19aa3d1b0d1e921615360a3bd718612aafcc79b7942ba1 0.3s done
+#22 exporting manifest list sha256:c3e252f81af032b79b54cea01a95985497c4172a33a40b147f0089264c84fa4f
+#22 exporting manifest list sha256:c3e252f81af032b79b54cea01a95985497c4172a33a40b147f0089264c84fa4f 0.1s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service:latest 0.0s done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service:latest 0.0s done
+#22 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/qqwxa5myiv6r1m0mwnyyyxcm5
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service]
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+a64faa011447: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+cb3325e64457: Layer already exists
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+a64faa011447: Layer already exists
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+fdbe72051566: Layer already exists
+437f1e3b09ba: Waiting
+0ed704c98506: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Waiting
+13546c6a4a12: Waiting
+ebd9b10525dd: Waiting
+1074353eec0d: Waiting
+be304cfc8016: Waiting
+8d06ba6946d1: Waiting
+fd1849a5c548: Waiting
+ae325971b9d7: Waiting
+9315f6a2fe49: Waiting
+611f504a7a32: Layer already exists
+13546c6a4a12: Waiting
+ebd9b10525dd: Layer already exists
+1074353eec0d: Waiting
+be304cfc8016: Layer already exists
+8d06ba6946d1: Waiting
+fd1849a5c548: Layer already exists
+437f1e3b09ba: Layer already exists
+0ed704c98506: Waiting
+1074353eec0d: Waiting
+8d06ba6946d1: Layer already exists
+0ed704c98506: Waiting
+ae325971b9d7: Layer already exists
+9315f6a2fe49: Waiting
+13546c6a4a12: Layer already exists
+9315f6a2fe49: Layer already exists
+1074353eec0d: Layer already exists
+0ed704c98506: Waiting
+0ed704c98506: Waiting
+0ed704c98506: Pushed
+latest: digest: sha256:c3e252f81af032b79b54cea01a95985497c4172a33a40b147f0089264c84fa4f size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.prod
+#1 transferring dockerfile: 2.78kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/8] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 516.38kB 0.6s done
+#4 DONE 0.6s
+
+#6 [builder 3/8] WORKDIR /app
+#6 CACHED
+
+#7 [builder 4/8] COPY package*.json nx.json tsconfig.base.json ./
+#7 CACHED
+
+#8 [builder 5/8] COPY . .
+#8 CACHED
+
+#9 [builder 6/8] RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/frontend-webapp apps/enterprise-portal &&     rm -rf apps/admin-dashboard-e2e apps/frontend-webapp-e2e apps/*-e2e &&     rm -rf tools/guardian
+#9 CACHED
+
+#10 [builder 2/8] RUN apk add --no-cache libc6-compat
+#10 CACHED
+
+#11 [builder 7/8] RUN npm install --legacy-peer-deps
+#11 CACHED
+
+#12 [builder 8/8] RUN npx nx build payment-service --prod
+#12 7.223 
+#12 7.223 > nx run payment-service:build:production
+#12 7.223 
+#12 18.06 assets by path *.js 19.1 KiB
+#12 18.06   asset main.js 13.8 KiB [emitted] [minimized] (name: main) 1 related asset
+#12 18.06   asset 2.js 2.8 KiB [emitted] [minimized] 1 related asset
+#12 18.06   asset 1.js 2.51 KiB [emitted] [minimized] 1 related asset
+#12 18.06 assets by path *.json 175 KiB
+#12 18.06   asset package-lock.json 174 KiB [emitted]
+#12 18.06   asset package.json 1.09 KiB [emitted]
+#12 18.06 asset 3rdpartylicenses.txt 1 bytes [emitted]
+#12 18.06 asset assets/.gitkeep 0 bytes [emitted] [from: apps/payment-service/src/assets/.gitkeep] [copied]
+#12 18.06 orphan modules 33.1 KiB [orphan] 34 modules
+#12 18.06 runtime modules 3.53 KiB 8 modules
+#12 18.06 built modules 37.4 KiB [built]
+#12 18.06   modules by path ./ 37 KiB
+#12 18.06     modules by path ./libs/shared/prisma-client/src/ 2.37 KiB 3 modules
+#12 18.06     modules by path ./libs/shared/src/*.ts 9.88 KiB 2 modules
+#12 18.06     + 1 module
+#12 18.06   modules by path external "@nestjs/ 210 bytes
+#12 18.06     external "@nestjs/core" 42 bytes [built] [code generated]
+#12 18.06     external "@nestjs/common" 42 bytes [built] [code generated]
+#12 18.06     + 3 modules
+#12 18.06   + 5 modules
+#12 18.06 webpack 5.104.1 compiled successfully in 8712 ms
+#12 18.10 
+#12 18.10 
+#12 18.10 
+#12 18.10  NX   Successfully ran target build for project payment-service
+#12 18.10 
+#12 18.10 
+#12 DONE 18.2s
+
+#13 [runner  7/10] RUN npm install prisma@5.22.0 @prisma/client@5.22.0 neverthrow@8.2.0
+#13 CACHED
+
+#14 [runner  2/10] WORKDIR /app
+#14 CACHED
+
+#15 [runner  9/10] RUN npx prisma generate --schema ./prisma/schema.prisma
+#15 CACHED
+
+#16 [runner  4/10] RUN addgroup -g 1001 -S nodejs &&     adduser -S nestjs -u 1001
+#16 CACHED
+
+#17 [runner  5/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/payment-service/package*.json ./
+#17 CACHED
+
+#18 [runner  8/10] COPY --from=builder --chown=nestjs:nodejs /app/libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#18 CACHED
+
+#19 [runner  3/10] RUN apk add --no-cache dumb-init openssl libc6-compat
+#19 CACHED
+
+#20 [runner  6/10] RUN npm install --omit=dev --legacy-peer-deps
+#20 CACHED
+
+#21 [runner 10/10] COPY --from=builder --chown=nestjs:nodejs /app/dist/apps/payment-service ./
+#21 CACHED
+
+#22 exporting to image
+#22 exporting layers done
+#22 exporting manifest sha256:d7d9e1a0dfb8ee22c3f5f18450081da1cce29b07b60675e28255aedc817841bf 0.1s done
+#22 exporting config sha256:c9314e9f8a5b83e79bb73b507d23044c57b608cfdff3f2cf8b6de14915d680fb
+#22 exporting config sha256:c9314e9f8a5b83e79bb73b507d23044c57b608cfdff3f2cf8b6de14915d680fb done
+#22 exporting attestation manifest sha256:80e86e0846ce25cc309a4a957b82718562aa86258ff8878c6f52e947e5b70094 0.1s done
+#22 exporting manifest list sha256:938e85b2637ee41a08916b476a8623cbb9daa6d61eb6d1f0132e602fc85c83f7
+#22 exporting manifest list sha256:938e85b2637ee41a08916b476a8623cbb9daa6d61eb6d1f0132e602fc85c83f7 0.0s done
+#22 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/payment-service:latest done
+#22 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/payment-service:latest 0.0s done
+#22 DONE 0.4s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/ay18k8b970m97ptjg96o2f8ho
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/payment-service]
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Waiting
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+fd1849a5c548: Waiting
+7ece3d7c8c29: Waiting
+437f1e3b09ba: Layer already exists
+949d3dd551d6: Waiting
+6e5ca47f907f: Waiting
+ae325971b9d7: Waiting
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+8734ae5e050b: Layer already exists
+a9085618fb75: Waiting
+cb3325e64457: Waiting
+949d3dd551d6: Waiting
+6e5ca47f907f: Layer already exists
+ae325971b9d7: Layer already exists
+13546c6a4a12: Waiting
+86528881facf: Waiting
+1074353eec0d: Waiting
+c97bc458aa8d: Waiting
+8d06ba6946d1: Waiting
+a9085618fb75: Layer already exists
+cb3325e64457: Layer already exists
+fd1849a5c548: Layer already exists
+7ece3d7c8c29: Waiting
+7ece3d7c8c29: Layer already exists
+949d3dd551d6: Waiting
+13546c6a4a12: Layer already exists
+86528881facf: Layer already exists
+1074353eec0d: Layer already exists
+c97bc458aa8d: Waiting
+8d06ba6946d1: Layer already exists
+c97bc458aa8d: Layer already exists
+949d3dd551d6: Pushed
+latest: digest: sha256:938e85b2637ee41a08916b476a8623cbb9daa6d61eb6d1f0132e602fc85c83f7 size: 856
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.migrations
+#1 transferring dockerfile: 719B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 184B done
+#3 DONE 0.1s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [1/7] FROM docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448
+#5 resolve docker.io/library/node:20-alpine@sha256:658d0f63e501824d6c23e06d4bb95c71e7d704537c9d9272f488ac03a370d448 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 290B 0.3s done
+#4 DONE 0.3s
+
+#6 [4/7] COPY libs/shared/prisma-client/prisma/schema.prisma ./prisma/schema.prisma
+#6 CACHED
+
+#7 [2/7] WORKDIR /app
+#7 CACHED
+
+#8 [3/7] RUN apk add --no-cache openssl
+#8 CACHED
+
+#9 [5/7] COPY package.json package-lock.json ./
+#9 CACHED
+
+#10 [6/7] RUN npm install prisma @prisma/client --legacy-peer-deps
+#10 20.61 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 22.85 npm warn deprecated stringify-package@1.0.1: This module is not used anymore, and has been replaced by @npmcli/package-json
+#10 23.41 npm warn deprecated stable@0.1.8: Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility
+#10 23.77 npm warn deprecated sourcemap-codec@1.4.8: Please use @jridgewell/sourcemap-codec instead
+#10 24.79 npm warn deprecated scmp@2.1.0: Just use Node.js's crypto.timingSafeEqual()
+#10 25.13 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#10 26.43 npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+#10 26.43 npm warn deprecated
+#10 26.43 npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+#10 32.89 npm warn deprecated keygrip@1.1.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+#10 34.58 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#10 39.03 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#10 42.59 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#10 69.56 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 70.87 npm warn deprecated source-map@0.8.0-beta.0: The work that was done in this beta branch won't be included in future versions
+#10 72.10 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 72.10 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 72.71 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 76.07 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 83.44 npm warn deprecated glob@8.1.0: Glob versions prior to v9 are no longer supported
+#10 84.09 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+#10 147.4 npm warn deprecated next@14.2.3: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
+#10 156.7 
+#10 156.7 added 3114 packages, and audited 3115 packages in 3m
+#10 156.7 
+#10 156.7 439 packages are looking for funding
+#10 156.7   run `npm fund` for details
+#10 156.9 
+#10 156.9 6 vulnerabilities (1 moderate, 4 high, 1 critical)
+#10 156.9 
+#10 156.9 To address issues that do not require attention, run:
+#10 156.9   npm audit fix
+#10 156.9 
+#10 156.9 To address all issues (including breaking changes), run:
+#10 156.9   npm audit fix --force
+#10 156.9 
+#10 156.9 Run `npm audit` for details.
+#10 156.9 npm notice
+#10 156.9 npm notice New major version of npm available! 10.8.2 -> 11.7.0
+#10 156.9 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+#10 156.9 npm notice To update run: npm install -g npm@11.7.0
+#10 156.9 npm notice
+#10 DONE 162.2s
+
+#11 [7/7] RUN npx prisma generate --schema=./prisma/schema.prisma
+#11 5.813 Prisma schema loaded from prisma/schema.prisma
+#11 7.135 
+#11 7.135 Ô£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 449ms
+#11 7.135 
+#11 7.135 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+#11 7.135 
+#11 7.135 Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+#11 7.135 
+#11 DONE 7.9s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 112.6s done
+#12 exporting manifest sha256:fa1bcc65116bebf6244b6d4d4921b4fed6686bdd0d6ccc76ed5d81be17e9b4e6 0.1s done
+#12 exporting config sha256:ea83837299aeef251859add2582f08201fd4f35e66f7c0e6bd6a62ff251668cd
+#12 exporting config sha256:ea83837299aeef251859add2582f08201fd4f35e66f7c0e6bd6a62ff251668cd 0.0s done
+#12 exporting attestation manifest sha256:b1db8be1f34a84408f3bac091ce852096321634fa8174333d4bac751d965d6e1 0.1s done
+#12 exporting manifest list sha256:8db331e5cd5dbfdfd5987fde44411706ab90d0b69eabb6b1602933e5788ebc4a
+#12 exporting manifest list sha256:8db331e5cd5dbfdfd5987fde44411706ab90d0b69eabb6b1602933e5788ebc4a 0.0s done
+#12 naming to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/migration-runner:latest done
+#12 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/migration-runner:latest
+#12 unpacking to us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/migration-runner:latest 75.6s done
+#12 DONE 188.6s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/iz9aml9vbj9m6o2tl38rn72pi
+The push refers to repository [us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/migration-runner]
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+1074353eec0d: Layer already exists
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Waiting
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Waiting
+437f1e3b09ba: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+09ca2459a010: Waiting
+d6739feab56f: Waiting
+fd1849a5c548: Layer already exists
+437f1e3b09ba: Layer already exists
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+e27937c8dc50: Waiting
+09d8f7b448c6: Waiting
+cb3325e64457: Layer already exists
+8d06ba6946d1: Waiting
+09ca2459a010: Waiting
+97056e3b65f5: Waiting
+6becdac4059b: Waiting
+09d8f7b448c6: Waiting
+8d06ba6946d1: Layer already exists
+09ca2459a010: Waiting
+09d8f7b448c6: Pushed
+09ca2459a010: Pushed
+97056e3b65f5: Pushed
+6becdac4059b: Pushed
+d6739feab56f: Pushed
+e27937c8dc50: Pushed
+latest: digest: sha256:8db331e5cd5dbfdfd5987fde44411706ab90d0b69eabb6b1602933e5788ebc4a size: 856

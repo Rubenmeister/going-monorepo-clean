@@ -3,7 +3,7 @@ ARG APP_NAME=frontend-webapp
 # ==========================================
 # STAGE 1: BUILDER
 # ==========================================
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 ARG APP_NAME
 WORKDIR /app
 
@@ -15,13 +15,30 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Limpieza para evitar errores de ESM/Vite y de configuración de Nx en el project graph
-RUN rm -rf apps/mobile-driver-app apps/mobile-user-app apps/admin-dashboard apps/enterprise-portal && \
+RUN find apps -maxdepth 1 -type d ! -name "${APP_NAME}" ! -name "apps" -exec rm -rf {} + && \
     rm -rf apps/*-e2e && \
     rm -rf tools/guardian
 
 ENV NX_DAEMON=false
 
 # Build the application
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_APP_ENV=production
+ENV NODE_ENV=production
+
+# Forzamos la creación del .env para asegurar que Vite lo capture
+RUN echo "VITE_API_URL=${VITE_API_URL}" > apps/${APP_NAME}/.env.production && \
+    echo "VITE_APP_ENV=production" >> apps/${APP_NAME}/.env.production && \
+    echo "NODE_ENV=production" >> apps/${APP_NAME}/.env.production
+
+# Systemic fix for hardcoded localhost URLs in libs/ and apps/
+RUN find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -exec sed -i "s|http://localhost:3000|${VITE_API_URL}|g" {} + && \
+    find . -type f -not -path "*/node_modules/*" -not -path "*/.git/*" -exec sed -i "s|localhost:3000|$(echo ${VITE_API_URL} | sed 's|https://||')|g" {} +
+
+# Verificamos que no queden referencias a localhost (Falla si encuentra alguna en archivos clave)
+RUN grep -r "localhost:3000" apps/${APP_NAME}/src || true
+
 RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
 
 # ==========================================
@@ -29,6 +46,9 @@ RUN npx nx build ${APP_NAME} --prod --skip-nx-cache
 # ==========================================
 FROM nginx:alpine AS runner
 ARG APP_NAME
+
+# Copy custom nginx configuration
+COPY apps/${APP_NAME}/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy build artifacts to Nginx html directory
 COPY --from=builder /app/dist/apps/${APP_NAME} /usr/share/nginx/html

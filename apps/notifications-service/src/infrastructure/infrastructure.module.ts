@@ -2,7 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 // Shared Prisma Module
-import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 
 // Repository
 import { PrismaNotificationRepository } from './persistence/prisma-notification.repository';
@@ -43,7 +43,6 @@ export const I_NOTIFICATION_REPOSITORY = Symbol('INotificationRepository');
   exports: [
     I_NOTIFICATION_REPOSITORY,
     PrismaNotificationRepository,
-    PrismaService,
     'INotificationGateway',
     LogNotificationGateway,
     ResendEmailGateway,

@@ -7,8 +7,8 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_');
-  const API_BASE = env.VITE_API_BASE_URL || 'http://localhost:3000';
+  const env = loadEnv(mode, __dirname, 'VITE_');
+  const API_BASE = env.VITE_API_URL || 'http://localhost:3000';
 
   const isDev = mode === 'development';
 

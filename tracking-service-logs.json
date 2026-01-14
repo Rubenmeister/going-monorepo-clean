@@ -1,0 +1,1199 @@
+[
+  {
+    "insertId": "69641a54000424c2c83d7d8a",
+    "labels": {
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:47:00.497300824Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:47:00.271554Z"
+  },
+  {
+    "insertId": "69641a5400025c1d99ff76f9",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:47:00.167839451Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:47:00.154644802Z"
+  },
+  {
+    "insertId": "69641a53000133e3f537651a",
+    "labels": {
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:59.122651152Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:59 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +2ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:59.078819Z"
+  },
+  {
+    "insertId": "69641a5300012b22fec626a9",
+    "labels": {
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:59.122651152Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:59 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +20ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:59.076578Z"
+  },
+  {
+    "insertId": "69641a530000dda4aa72cf37",
+    "labels": {
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:59.122651152Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:59 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:59.056740Z"
+  },
+  {
+    "insertId": "69641a4f000d013e2385faee",
+    "labels": {
+      "instanceId": "005eb6974c68db08d96fa5e696f1f965a49f3f81a0acdfbabc8d4d11ec1388bcb702f49c6cdf67ad40e95793eeefe388e6898b2133f16b66780c875706a5c5139bbf1e6eacb82b4cb3f709d68d83",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:56.168153889Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:55.852286Z"
+  },
+  {
+    "insertId": "69641a4d000407a80aeab492",
+    "labels": {
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:53.505084510Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:53.264104Z"
+  },
+  {
+    "insertId": "69641a4d00025c5f66f59727",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:53.172057392Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:53.154641790Z"
+  },
+  {
+    "insertId": "69641a4c000ca69a1aa4425b",
+    "labels": {
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:53.131287176Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:52 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +2ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:52.829082Z"
+  },
+  {
+    "insertId": "69641a4c000c9cac1da44bbb",
+    "labels": {
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:53.131287176Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:52 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +22ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:52.826540Z"
+  },
+  {
+    "insertId": "69641a4c000c497fa1af1070",
+    "labels": {
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:53.131287176Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:52 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:52.805247Z"
+  },
+  {
+    "insertId": "69641a49000cfe0b207b7aad",
+    "labels": {
+      "instanceId": "005eb6974cdd942de59a4d2088b4f4f463750948187132985a7243312a113b3cf791611e1c11967448ce1a8763cfaf40b225458a6a5e75729f6b4f9012b3dca9086b326c6777e0a59e356e65d83c",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:50.175318999Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:49.851467Z"
+  },
+  {
+    "insertId": "69641a480004de827525cf79",
+    "labels": {
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:48.509335541Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:48.319106Z"
+  },
+  {
+    "insertId": "69641a4800035725159640b3",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:48.509335541Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:48.218903497Z"
+  },
+  {
+    "insertId": "69641a47000cc8bada3abf41",
+    "labels": {
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:48.133240116Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:47 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +3ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:47.837818Z"
+  },
+  {
+    "insertId": "69641a47000cbf4fd5a33dc3",
+    "labels": {
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:48.133240116Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:47 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +19ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:47.835407Z"
+  },
+  {
+    "insertId": "69641a47000c7522b0c75f19",
+    "labels": {
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:48.133240116Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:47 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:47.816418Z"
+  },
+  {
+    "insertId": "-44z8yte4hy7g",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Services.CreateService",
+      "resourceName": "namespaces/going-5d1ae/revisions/tracking-service-prod-00001-6fm",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Revision",
+        "apiVersion": "serving.knative.dev/v1",
+        "kind": "Revision",
+        "metadata": {
+          "annotations": {
+            "autoscaling.knative.dev/maxScale": "10",
+            "autoscaling.knative.dev/minScale": "1",
+            "run.googleapis.com/operation-id": "fb79e8a8-cb29-49f3-a3e6-88945defb818",
+            "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+            "serving.knative.dev/creator": "rubenmeister@gmail.com"
+          },
+          "creationTimestamp": "2026-01-11T21:46:18.091690Z",
+          "generation": 1,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/startupProbeType": "Default",
+            "serving.knative.dev/configuration": "tracking-service-prod",
+            "serving.knative.dev/configurationGeneration": "1",
+            "serving.knative.dev/route": "tracking-service-prod",
+            "serving.knative.dev/service": "tracking-service-prod",
+            "serving.knative.dev/serviceUid": "fcf421dc-de85-4757-a5a4-f84dd51a246c"
+          },
+          "name": "tracking-service-prod-00001-6fm",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Configuration",
+              "name": "tracking-service-prod",
+              "uid": "b2f5f486-23bc-4087-a34a-85c819ba2672"
+            }
+          ],
+          "resourceVersion": "AAZII7HVkVc",
+          "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/tracking-service-prod-00001-6fm",
+          "uid": "b0a544c4-921f-4833-aad5-1523f7eaa5fc"
+        },
+        "spec": {
+          "containerConcurrency": 80,
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "NODE_ENV",
+                  "value": "production"
+                },
+                {
+                  "name": "DATABASE_URL",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "latest",
+                      "name": "DATABASE_URL-prod"
+                    }
+                  }
+                },
+                {
+                  "name": "REDIS_HOST",
+                  "value": "10.156.57.131"
+                },
+                {
+                  "name": "REDIS_PORT",
+                  "value": "6379"
+                }
+              ],
+              "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:caaf46677281b6e7fce7ceb80a21c605b746f9425cc9e71264bec9ac8dbfe341",
+              "name": "tracking-service-1",
+              "ports": [
+                {
+                  "containerPort": 3000,
+                  "name": "http1"
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1000m",
+                  "memory": "512Mi"
+                }
+              },
+              "startupProbe": {
+                "failureThreshold": 1,
+                "periodSeconds": 240,
+                "tcpSocket": {
+                  "port": 3000
+                },
+                "timeoutSeconds": 240
+              }
+            }
+          ],
+          "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+          "timeoutSeconds": 300
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T21:46:44.882775Z",
+              "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-6fm&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-6fm%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+              "reason": "HealthCheckContainerError",
+              "status": "False",
+              "type": "Ready"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:46:44.882775Z",
+              "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-6fm&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-6fm%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+              "reason": "HealthCheckContainerError",
+              "status": "False",
+              "type": "ContainerHealthy"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:46:18.683809Z",
+              "message": "Container image import completed.",
+              "status": "True",
+              "type": "ContainerReady"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:46:21.880225Z",
+              "reason": "MinInstancesWarming",
+              "status": "Unknown",
+              "type": "MinInstancesProvisioned"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:46:21.880225Z",
+              "message": "Provisioning imported containers completed in 3.2s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+              "status": "True",
+              "type": "ResourcesAvailable"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:46:21.880225Z",
+              "message": "System will retry after 00:00 from lastTransitionTime for attempt 0.",
+              "reason": "ImmediateRetry",
+              "severity": "Info",
+              "status": "True",
+              "type": "Retry"
+            }
+          ],
+          "containerStatuses": [
+            {
+              "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:caaf46677281b6e7fce7ceb80a21c605b746f9425cc9e71264bec9ac8dbfe341",
+              "name": "tracking-service-1"
+            }
+          ],
+          "desiredReplicas": 1,
+          "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:caaf46677281b6e7fce7ceb80a21c605b746f9425cc9e71264bec9ac8dbfe341",
+          "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-6fm&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-6fm%22",
+          "observedGeneration": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "code": 9,
+        "message": "Ready condition status changed to False for Revision tracking-service-prod-00001-6fm with message: The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-6fm&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-6fm%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start"
+      }
+    },
+    "receiveTimestamp": "2026-01-11T21:46:45.200069177Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "timestamp": "2026-01-11T21:46:44.895308Z"
+  },
+  {
+    "insertId": "69641a44000d74221f55d8b2",
+    "labels": {
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:44.995917886Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:44.881698Z"
+  },
+  {
+    "insertId": "69641a44000d034cb2ead7a8",
+    "labels": {
+      "instanceId": "005eb6974c4cef62a451e2528acee461a0cb996994dc06b9775d75ecea4db7764eed08cd0727238a1bc73fa25713722bf9e97f681be8bcaf0737a1be73540749192c203003555dc5fd535f8c0e70",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:45.179688625Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:44.852812Z"
+  },
+  {
+    "insertId": "69641a44000b8e6669bc6185",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:44.995917886Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:44.757311515Z"
+  },
+  {
+    "insertId": "69641a43000d8077e32adb18",
+    "labels": {
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:44.188932981Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:43 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +4ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:43.884855Z"
+  },
+  {
+    "insertId": "69641a43000d736872b25b70",
+    "labels": {
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:44.188932981Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:43 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +30ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:43.881512Z"
+  },
+  {
+    "insertId": "69641a43000d0040425fed70",
+    "labels": {
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:43.856902369Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:43 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:43.852032Z"
+  },
+  {
+    "insertId": "69641a430003b28573c456ac",
+    "labels": {
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:43.514228655Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:43.242309Z"
+  },
+  {
+    "insertId": "69641a430002148664d3cb71",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:43.180138671Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:43.136317198Z"
+  },
+  {
+    "insertId": "69641a42000bbd77d42e9462",
+    "labels": {
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:42.808436175Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:42 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +3ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:42.769399Z"
+  },
+  {
+    "insertId": "69641a42000bb396e875b28f",
+    "labels": {
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:42.808436175Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:42 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +30ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:42.766870Z"
+  },
+  {
+    "insertId": "69641a42000b428fe8f96804",
+    "labels": {
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:42.808436175Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:42 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:42.737935Z"
+  },
+  {
+    "insertId": "69641a3f000d00dd01b82184",
+    "labels": {
+      "instanceId": "005eb6974c0188c486509f549c6a1824f9c971f8a6ab2b0d654c0863b374e737f76279c060b5a8ec9f32bc55554433d92d285e49b466301d194da660a4b40c22a5a0404e034929e52f47d991e56e",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:40.185303994Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:39.852189Z"
+  },
+  {
+    "insertId": "69641a3f0003cfb799f37106",
+    "labels": {
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:39.517446853Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:39.249783Z"
+  },
+  {
+    "insertId": "69641a3f00020b0b13644770",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:39.184317941Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:39.133890300Z"
+  },
+  {
+    "insertId": "69641a3e000d63612478ef75",
+    "labels": {
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:39.140561316Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:38 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +2ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:38.877409Z"
+  },
+  {
+    "insertId": "69641a3e000d5a9a23660b2c",
+    "labels": {
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:39.140561316Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:38 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +21ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:38.875162Z"
+  },
+  {
+    "insertId": "69641a3e000d097e7dd5a738",
+    "labels": {
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:39.140561316Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:38 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:38.854398Z"
+  },
+  {
+    "insertId": "69641a3d000f3a94d650b37a",
+    "labels": {
+      "instanceId": "005eb6974cf7a2811469a0b54c358b8f9aa66fee659df22d1c77aecb6e2b0ba80ba683279b1e3beb7fdc9e396dd417e8ab32b0ae1850d880078bc832d097738b9a791057f7ae4156106a267481694d",
+      "scaling_reason": "DEPLOYMENT_ROLLOUT"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:38.001531844Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: DEPLOYMENT_ROLLOUT - Instance started due to traffic shifting between revisions due to deployment, traffic split adjustment, or deployment health check.",
+    "timestamp": "2026-01-11T21:46:37.998036Z"
+  },
+  {
+    "insertId": "69641a3b000d0251ed3c849c",
+    "labels": {
+      "instanceId": "005eb6974c9576683b5f9d55616f39fbd45de36168ba8af1ccaccc343617ad9003d99d9f0661cd252b5f09503dc594f28d8667d57539ba310bf4644d0c1337f1a2fe1c0cd6a0ef7aed08570bc2bd",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:36.188919824Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:35.852561Z"
+  },
+  {
+    "insertId": "69641a3b0003b31b4d664ed7",
+    "labels": {
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:35.521591315Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:35.242459Z"
+  },
+  {
+    "insertId": "69641a3b0002304bfee35624",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:35.189345077Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:35.143426021Z"
+  },
+  {
+    "insertId": "69641a3a000ea7b78c7d5551",
+    "labels": {
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:35.144949750Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:34 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +2ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:34.960439Z"
+  },
+  {
+    "insertId": "69641a3a000e9f1d42a087c2",
+    "labels": {
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:35.144949750Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:34 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +21ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:34.958237Z"
+  },
+  {
+    "insertId": "69641a3a000e4fc1924a5102",
+    "labels": {
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:35.144949750Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:34 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:34.937921Z"
+  },
+  {
+    "insertId": "69641a37000d007f981312c6",
+    "labels": {
+      "instanceId": "005eb6974cec9d6baeee601558a3447669ff2f40025046c4ea7332d105c86b54bb663431e91634b84ee4fa2565d5538c66fab7e3acf390d9a02078db47d6d64be3f43c7cecb5e92760b085089f93",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:31.859092671Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:31.852095Z"
+  },
+  {
+    "insertId": "69641a370004048ca8531f25",
+    "labels": {
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:31.524924524Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:31.263308Z"
+  },
+  {
+    "insertId": "69641a3700022b386a66f622",
+    "labels": {
+      "container_name": "tracking-service-1",
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:31.192335072Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:46:31.142127124Z"
+  },
+  {
+    "insertId": "69641a36000d03b4e8773fc3",
+    "labels": {
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:31.145106026Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:30 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mLoggerModule dependencies initialized\u001b[39m\u001b[38;5;3m +3ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:30.852916Z"
+  },
+  {
+    "insertId": "69641a36000cfa6d777b69e1",
+    "labels": {
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:31.145106026Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:30 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[InstanceLoader] \u001b[39m\u001b[32mPrismaModule dependencies initialized\u001b[39m\u001b[38;5;3m +22ms\u001b[39m",
+    "timestamp": "2026-01-11T21:46:30.850541Z"
+  },
+  {
+    "insertId": "69641a36000ca666440a8b86",
+    "labels": {
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:46:31.145106026Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "\u001b[32m[Nest] 2  - \u001b[39m01/11/2026, 9:46:30 PM \u001b[32m    LOG\u001b[39m \u001b[38;5;3m[NestFactory] \u001b[39m\u001b[32mStarting Nest application...\u001b[39m",
+    "timestamp": "2026-01-11T21:46:30.829030Z"
+  },
+  {
+    "insertId": "69641a33000d019c6ed1f0d3",
+    "labels": {
+      "instanceId": "005eb6974cd1f8121c2a6b8b2235db67906fd8c9473fb5a2c7b0bce297430b21c2b2116e926a4d95c3773c6f41305e4a4f48a77351836c147b237a2a50c5940529c8448f581f21cbd413c9b9097f",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:27.862181015Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T21:46:27.852380Z"
+  },
+  {
+    "insertId": "69641a33000489fc007cae39",
+    "labels": {
+      "instanceId": "005eb6974c4888f912d32a7fc1dd8ebfeda3d1245ae9aa1423548fae55d164c635d27286af88a60b9d65a21846567d534bb67e69962cd00d217f27f93473c0f2bd6ee3fb12cfa8b3f437c90991e0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:46:27.529299451Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "tracking-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "tracking-service-prod-00001-6fm",
+        "service_name": "tracking-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"tracking-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T21:46:27.297468Z"
+  }
+]

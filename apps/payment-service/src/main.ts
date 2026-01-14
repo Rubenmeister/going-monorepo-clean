@@ -21,7 +21,7 @@ async function bootstrap() {
   const { Logger } = await import('nestjs-pino');
   app.useLogger(app.get(Logger));
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   setupSwagger(app, 'Payment Service', port);
   
   const logger = app.get(Logger);

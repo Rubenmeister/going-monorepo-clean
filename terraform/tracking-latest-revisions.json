@@ -1,0 +1,280 @@
+[
+  {
+    "apiVersion": "serving.knative.dev/v1",
+    "kind": "Revision",
+    "metadata": {
+      "annotations": {
+        "autoscaling.knative.dev/maxScale": "10",
+        "autoscaling.knative.dev/minScale": "1",
+        "run.googleapis.com/client-name": "gcloud",
+        "run.googleapis.com/client-version": "551.0.0",
+        "run.googleapis.com/operation-id": "3bfb5439-4eda-4787-9af4-512b5d93373b",
+        "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+        "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+        "serving.knative.dev/creator": "rubenmeister@gmail.com"
+      },
+      "creationTimestamp": "2026-01-11T22:30:34.141888Z",
+      "generation": 1,
+      "labels": {
+        "client.knative.dev/nonce": "otdrmpflep",
+        "cloud.googleapis.com/location": "us-central1",
+        "run.googleapis.com/startupProbeType": "Default",
+        "serving.knative.dev/configuration": "tracking-service-prod",
+        "serving.knative.dev/configurationGeneration": "2",
+        "serving.knative.dev/route": "tracking-service-prod",
+        "serving.knative.dev/service": "tracking-service-prod",
+        "serving.knative.dev/serviceUid": "f1a4df6f-cf32-479f-bb57-87690817c678"
+      },
+      "name": "tracking-service-prod-00002-bvh",
+      "namespace": "780842550857",
+      "ownerReferences": [
+        {
+          "apiVersion": "serving.knative.dev/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "Configuration",
+          "name": "tracking-service-prod",
+          "uid": "37f29ee3-c4b9-48b1-8e88-5a347a4f893e"
+        }
+      ],
+      "resourceVersion": "AAZIJE8PXx8",
+      "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/tracking-service-prod-00002-bvh",
+      "uid": "0ccf44e7-1d05-4444-a655-266243381ecc"
+    },
+    "spec": {
+      "containerConcurrency": 80,
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "NODE_ENV",
+              "value": "production"
+            },
+            {
+              "name": "DATABASE_URL",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "latest",
+                  "name": "DATABASE_URL-prod"
+                }
+              }
+            },
+            {
+              "name": "REDIS_HOST",
+              "value": "10.156.57.131"
+            },
+            {
+              "name": "REDIS_PORT",
+              "value": "6379"
+            }
+          ],
+          "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:56132ab4de46e68e3664d09a605f6d651bb3457d3a3a8d5867d50250be4d5890",
+          "name": "tracking-service-1",
+          "ports": [
+            {
+              "containerPort": 3000,
+              "name": "http1"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1000m",
+              "memory": "512Mi"
+            }
+          },
+          "startupProbe": {
+            "failureThreshold": 1,
+            "periodSeconds": 240,
+            "tcpSocket": {
+              "port": 3000
+            },
+            "timeoutSeconds": 240
+          }
+        }
+      ],
+      "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+      "timeoutSeconds": 300
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-01-11T22:30:42.646879Z",
+          "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00002-bvh&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00002-bvh%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+          "reason": "HealthCheckContainerError",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:30:42.691595Z",
+          "severity": "Info",
+          "status": "False",
+          "type": "Active"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:30:42.646879Z",
+          "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00002-bvh&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00002-bvh%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+          "reason": "HealthCheckContainerError",
+          "status": "False",
+          "type": "ContainerHealthy"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:30:34.705776Z",
+          "message": "Container image import completed.",
+          "status": "True",
+          "type": "ContainerReady"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:30:37.179577Z",
+          "message": "Provisioning imported containers completed in 2.47s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+          "status": "True",
+          "type": "ResourcesAvailable"
+        }
+      ],
+      "desiredReplicas": 1,
+      "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:56132ab4de46e68e3664d09a605f6d651bb3457d3a3a8d5867d50250be4d5890",
+      "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00002-bvh&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00002-bvh%22",
+      "observedGeneration": 1
+    }
+  },
+  {
+    "apiVersion": "serving.knative.dev/v1",
+    "kind": "Revision",
+    "metadata": {
+      "annotations": {
+        "autoscaling.knative.dev/maxScale": "10",
+        "autoscaling.knative.dev/minScale": "1",
+        "run.googleapis.com/operation-id": "c8fb1d61-058f-4c64-83ec-a92c9ae80cd2",
+        "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+        "run.googleapis.com/vpc-access-egress": "private-ranges-only",
+        "serving.knative.dev/creator": "rubenmeister@gmail.com"
+      },
+      "creationTimestamp": "2026-01-11T22:29:15.864604Z",
+      "generation": 1,
+      "labels": {
+        "cloud.googleapis.com/location": "us-central1",
+        "run.googleapis.com/startupProbeType": "Default",
+        "serving.knative.dev/configuration": "tracking-service-prod",
+        "serving.knative.dev/configurationGeneration": "1",
+        "serving.knative.dev/route": "tracking-service-prod",
+        "serving.knative.dev/service": "tracking-service-prod",
+        "serving.knative.dev/serviceUid": "f1a4df6f-cf32-479f-bb57-87690817c678"
+      },
+      "name": "tracking-service-prod-00001-vqj",
+      "namespace": "780842550857",
+      "ownerReferences": [
+        {
+          "apiVersion": "serving.knative.dev/v1",
+          "blockOwnerDeletion": true,
+          "controller": true,
+          "kind": "Configuration",
+          "name": "tracking-service-prod",
+          "uid": "37f29ee3-c4b9-48b1-8e88-5a347a4f893e"
+        }
+      ],
+      "resourceVersion": "AAZIJEupKaY",
+      "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/revisions/tracking-service-prod-00001-vqj",
+      "uid": "8e435024-5a64-4318-9d17-6054ebb343c8"
+    },
+    "spec": {
+      "containerConcurrency": 80,
+      "containers": [
+        {
+          "env": [
+            {
+              "name": "NODE_ENV",
+              "value": "production"
+            },
+            {
+              "name": "DATABASE_URL",
+              "valueFrom": {
+                "secretKeyRef": {
+                  "key": "latest",
+                  "name": "DATABASE_URL-prod"
+                }
+              }
+            },
+            {
+              "name": "REDIS_HOST",
+              "value": "10.156.57.131"
+            },
+            {
+              "name": "REDIS_PORT",
+              "value": "6379"
+            }
+          ],
+          "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:56132ab4de46e68e3664d09a605f6d651bb3457d3a3a8d5867d50250be4d5890",
+          "name": "tracking-service-1",
+          "ports": [
+            {
+              "containerPort": 3000,
+              "name": "http1"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1000m",
+              "memory": "512Mi"
+            }
+          },
+          "startupProbe": {
+            "failureThreshold": 1,
+            "periodSeconds": 240,
+            "tcpSocket": {
+              "port": 3000
+            },
+            "timeoutSeconds": 240
+          }
+        }
+      ],
+      "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+      "timeoutSeconds": 300
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-01-11T22:29:45.532518Z",
+          "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-vqj&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-vqj%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+          "reason": "HealthCheckContainerError",
+          "status": "False",
+          "type": "Ready"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:29:45.574602Z",
+          "severity": "Info",
+          "status": "False",
+          "type": "Active"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:29:45.532518Z",
+          "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=3000 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-vqj&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-vqj%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+          "reason": "HealthCheckContainerError",
+          "status": "False",
+          "type": "ContainerHealthy"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:29:17.572702Z",
+          "message": "Container image import completed in 1.25s.",
+          "status": "True",
+          "type": "ContainerReady"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:29:45.602631Z",
+          "reason": "MinInstancesWarming",
+          "severity": "Info",
+          "status": "Unknown",
+          "type": "MinInstancesProvisioned"
+        },
+        {
+          "lastTransitionTime": "2026-01-11T22:29:23.566897Z",
+          "message": "Provisioning imported containers completed in 5.99s. Checking container health. This will wait for up to 4m for the configured startup probe, including an initial delay of 0s.",
+          "status": "True",
+          "type": "ResourcesAvailable"
+        }
+      ],
+      "desiredReplicas": 1,
+      "imageDigest": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/tracking-service@sha256:56132ab4de46e68e3664d09a605f6d651bb3457d3a3a8d5867d50250be4d5890",
+      "logUrl": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&resource=cloud_run_revision/service_name/tracking-service-prod/revision_name/tracking-service-prod-00001-vqj&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tracking-service-prod%22%0Aresource.labels.revision_name%3D%22tracking-service-prod-00001-vqj%22",
+      "observedGeneration": 1
+    }
+  }
+]

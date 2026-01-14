@@ -2,7 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 // Shared Prisma Module
-import { PrismaModule, PrismaService } from '@going-monorepo-clean/prisma-client';
+import { PrismaModule } from '@going-monorepo-clean/prisma-client';
 
 // Simple repositories and gateways
 import { PrismaPaymentRepository } from './repositories/prisma-payment.repository';
@@ -34,7 +34,6 @@ export const I_PAYMENT_GATEWAY = Symbol('IPaymentGateway');
     I_PAYMENT_GATEWAY,
     PrismaPaymentRepository, 
     StripeGateway,
-    PrismaService,
   ],
 })
 export class InfrastructureModule {}

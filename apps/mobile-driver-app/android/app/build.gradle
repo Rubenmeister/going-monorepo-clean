@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.mobiledriverapp"
+    namespace "com.going.driverapp"
     defaultConfig {
-        applicationId "com.mobiledriverapp"
+        applicationId "com.going.driverapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

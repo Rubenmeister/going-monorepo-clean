@@ -49,6 +49,35 @@ resource "google_cloud_run_service" "frontend_webapp" {
   }
 }
 
+resource "google_cloud_run_service" "enterprise_portal" {
+  name     = "enterprise-portal-${var.environment}"
+  location = var.region
+
+  template {
+    spec {
+      containers {
+        image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.repo.repository_id}/enterprise-portal:latest"
+        
+        ports {
+          container_port = 80
+        }
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+}
+
+resource "google_cloud_run_service_iam_member" "enterprise_public" {
+  service  = google_cloud_run_service.enterprise_portal.name
+  location = google_cloud_run_service.enterprise_portal.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 # Allow public access to Frontend and Admin (assuming they implement their own auth/login)
 resource "google_cloud_run_service_iam_member" "admin_public" {
   service  = google_cloud_run_service.admin_dashboard.name
@@ -70,4 +99,7 @@ output "admin_dashboard_url" {
 
 output "frontend_webapp_url" {
   value = google_cloud_run_service.frontend_webapp.status[0].url
+}
+output "enterprise_portal_url" {
+  value = google_cloud_run_service.enterprise_portal.status[0].url
 }

@@ -1,0 +1,1463 @@
+[
+  {
+    "insertId": "gxrf7hdvb33",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "0691e9f8-15ea-435f-ae04-205347b29a8f",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZIIxGKWNg",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T21:41:25.066525Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T21:41:25.915305750Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T21:41:24.941587Z"
+  },
+  {
+    "insertId": "1qhffghdylac",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "cc364289-2c2c-4c03-8d6d-1394840ad7f4",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZIIr3xYSk",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T21:01:55.575373Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T21:01:55.666058076Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T21:01:55.443202Z"
+  },
+  {
+    "insertId": "1nefpkpe4frt1",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "ef07328c-44d1-4c03-8098-92f45cb0dfa4",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZIIm7o2Ww",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T20:38:33.035975Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T20:38:33.705058940Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T20:38:32.920930Z"
+  },
+  {
+    "insertId": "4qdonne3rqxu",
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Factivity",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "authenticationInfo": {
+        "oauthInfo": {
+          "oauthClientId": "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+        },
+        "principalEmail": "rubenmeister@gmail.com",
+        "principalSubject": "user:rubenmeister@gmail.com"
+      },
+      "authorizationInfo": [
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {}
+        },
+        {
+          "granted": true,
+          "permission": "run.services.update",
+          "permissionType": "ADMIN_WRITE",
+          "resource": "namespaces/going-5d1ae/services/user-auth-service-prod",
+          "resourceAttributes": {
+            "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+            "service": "run.googleapis.com/",
+            "type": "run.googleapis.com/Service"
+          }
+        }
+      ],
+      "methodName": "google.cloud.run.v1.Services.ReplaceService",
+      "request": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.ReplaceServiceRequest",
+        "name": "namespaces/going-5d1ae/services/user-auth-service-prod",
+        "service": {
+          "apiVersion": "serving.knative.dev/v1",
+          "kind": "Service",
+          "metadata": {
+            "annotations": {
+              "run.googleapis.com/client-name": "gcloud",
+              "run.googleapis.com/client-version": "551.0.0",
+              "run.googleapis.com/ingress": "all",
+              "run.googleapis.com/ingress-status": "all",
+              "run.googleapis.com/maxScale": "20",
+              "run.googleapis.com/operation-id": "b52b885d-d608-4f0f-a0c4-c06b6df49c3a",
+              "run.googleapis.com/urls": "[\"https://user-auth-service-prod-780842550857.us-central1.run.app\",\"https://user-auth-service-prod-lw44cnhdeq-uc.a.run.app\"]",
+              "serving.knative.dev/creator": "rubenmeister@gmail.com",
+              "serving.knative.dev/lastModifier": "rubenmeister@gmail.com"
+            },
+            "generation": 2,
+            "labels": {
+              "cloud.googleapis.com/location": "us-central1"
+            },
+            "name": "user-auth-service-prod",
+            "namespace": "going-5d1ae",
+            "resourceVersion": "AAZIE/5uaDI",
+            "selfLink": "/apis/serving.knative.dev/v1/namespaces/780842550857/services/user-auth-service-prod",
+            "uid": "f646daed-ee78-4161-978e-c3af9af7892e"
+          },
+          "spec": {
+            "template": {
+              "metadata": {
+                "annotations": {
+                  "autoscaling.knative.dev/maxScale": "10",
+                  "autoscaling.knative.dev/minScale": "1",
+                  "run.googleapis.com/vpc-access-connector": "vpc-conn-prod",
+                  "run.googleapis.com/vpc-access-egress": "private-ranges-only"
+                },
+                "labels": {
+                  "client.knative.dev/nonce": "kgyqgbsssy",
+                  "run.googleapis.com/startupProbeType": "Default"
+                }
+              },
+              "spec": {
+                "containerConcurrency": 80,
+                "containers": [
+                  {
+                    "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/user-auth-service:latest",
+                    "resources": {
+                      "limits": {
+                        "cpu": "1000m",
+                        "memory": "512Mi"
+                      }
+                    }
+                  }
+                ],
+                "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+                "timeoutSeconds": 300
+              }
+            },
+            "traffic": [
+              {
+                "latestRevision": true,
+                "percent": 100
+              }
+            ]
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "85.204.78.1",
+        "callerSuppliedUserAgent": "Terraform/1.14.3 (+https://www.terraform.io) Terraform-Plugin-SDK/2.33.0 terraform-provider-google/5.45.2,gzip(gfe)",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {},
+          "time": "2026-01-11T20:16:27.075291Z"
+        }
+      },
+      "resourceLocation": {
+        "currentLocations": [
+          "us-central1"
+        ]
+      },
+      "resourceName": "namespaces/going-5d1ae/services/user-auth-service-prod",
+      "serviceName": "run.googleapis.com"
+    },
+    "receiveTimestamp": "2026-01-11T20:16:27.806622325Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "NOTICE",
+    "timestamp": "2026-01-11T20:16:26.908746Z"
+  },
+  {
+    "insertId": "696313140002d6d40ea97d05",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:48.419820142Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"user-auth-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T03:03:48.186068Z"
+  },
+  {
+    "insertId": "6963131400013982b8f46d1b",
+    "labels": {
+      "container_name": "user-auth-service-1",
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:48.087026302Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T03:03:48.080162113Z"
+  },
+  {
+    "insertId": "69631313000d74e7d57a5e99",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Node.js v20.19.6",
+    "timestamp": "2026-01-11T03:03:47.881895Z"
+  },
+  {
+    "insertId": "69631313000d74e39711cbb0",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "}",
+    "timestamp": "2026-01-11T03:03:47.881891Z"
+  },
+  {
+    "insertId": "69631313000d74deb0e24c32",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  errorCode: 'P1000'",
+    "timestamp": "2026-01-11T03:03:47.881886Z"
+  },
+  {
+    "insertId": "69631313000d74d94298d027",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  clientVersion: '5.22.0',",
+    "timestamp": "2026-01-11T03:03:47.881881Z"
+  },
+  {
+    "insertId": "69631313000d74d54dac4f56",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async /app/main.js:3:13868 {",
+    "timestamp": "2026-01-11T03:03:47.881877Z"
+  },
+  {
+    "insertId": "69631313000d74d138805110",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)",
+    "timestamp": "2026-01-11T03:03:47.881873Z"
+  },
+  {
+    "insertId": "69631313000d74cd86070843",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)",
+    "timestamp": "2026-01-11T03:03:47.881869Z"
+  },
+  {
+    "insertId": "69631313000d74c9fec08aea",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)",
+    "timestamp": "2026-01-11T03:03:47.881865Z"
+  },
+  {
+    "insertId": "69631313000d74c67a18082b",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)",
+    "timestamp": "2026-01-11T03:03:47.881862Z"
+  },
+  {
+    "insertId": "69631313000d74c2e9b9fd53",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async Promise.all (index 0)",
+    "timestamp": "2026-01-11T03:03:47.881858Z"
+  },
+  {
+    "insertId": "69631313000d74bffd06f1ea",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async Proxy.onModuleInit (/app/main.js:1:775)",
+    "timestamp": "2026-01-11T03:03:47.881855Z"
+  },
+  {
+    "insertId": "69631313000d74bca53b26e4",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)",
+    "timestamp": "2026-01-11T03:03:47.881852Z"
+  },
+  {
+    "insertId": "69631313000d74b8d9a8dcbd",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Please make sure to provide valid database credentials for the database server at `10.78.0.3`.",
+    "timestamp": "2026-01-11T03:03:47.881848Z"
+  },
+  {
+    "insertId": "69631313000d74b2320d33e0",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.",
+    "timestamp": "2026-01-11T03:03:47.881842Z"
+  },
+  {
+    "insertId": "69631313000d74a3cec25b2c",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ",
+    "timestamp": "2026-01-11T03:03:47.881827Z"
+  },
+  {
+    "insertId": "69631313000d749476e3c0cc",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "You may have to run ${qe(\"prisma generate\")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B(\"Response from the Engine was empty\",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B(\"Unable to JSON.parse response from engine\",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae(\"Using driver adapter: %O\",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:\"json\"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n==\"string\"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if(\"span\"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??\"unknown\",fm(r)?this.logEmitter.emit(\"query\",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('\"beforeExit\" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae(\"library starting\");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae(\"library started\")}catch(r){let n=this.parseInitError(r.message);throw typeof n==\"string\"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan(\"connect\",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae(\"library is already stopping\"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae(\"library stopping\");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae(\"library stopped\")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan(\"disconnect\",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??\"unknown\"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code===\"GenericFailure\"&&s.message?.startsWith(\"PANIC:\"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a==\"string\"?s:new B(`${a.message}",
+    "timestamp": "2026-01-11T03:03:47.881812Z"
+  },
+  {
+    "insertId": "69631313000d743bc835f1c5",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:48.188241845Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "/app/node_modules/@prisma/client/runtime/library.js:112",
+    "timestamp": "2026-01-11T03:03:47.881723Z"
+  },
+  {
+    "insertId": "6963130f000c58521d49d0f0",
+    "labels": {
+      "instanceId": "0007e26d682e3821aef50c83b943b9ad1edc837b301ea0169cafede1c90e63884b3b02fc10d60e8d6a58eb1ca8e6f2276dd88caa0b464f61ddcc0c2e588a0d0146bdf3339aa955a2f73a7b946768",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:44.091551803Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T03:03:43.809042Z"
+  },
+  {
+    "insertId": "6963130c000353dab57a11c4",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:40.428614928Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"user-auth-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T03:03:40.218074Z"
+  },
+  {
+    "insertId": "6963130c00018307f47bc8d1",
+    "labels": {
+      "container_name": "user-auth-service-1",
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:40.428614928Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T03:03:40.099069783Z"
+  },
+  {
+    "insertId": "6963130b000e55b5b970c8e5",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Node.js v20.19.6",
+    "timestamp": "2026-01-11T03:03:39.939445Z"
+  },
+  {
+    "insertId": "6963130b000e55b078d6f857",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "}",
+    "timestamp": "2026-01-11T03:03:39.939440Z"
+  },
+  {
+    "insertId": "6963130b000e55abd2071f9b",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  errorCode: 'P1000'",
+    "timestamp": "2026-01-11T03:03:39.939435Z"
+  },
+  {
+    "insertId": "6963130b000e55a763a5856d",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  clientVersion: '5.22.0',",
+    "timestamp": "2026-01-11T03:03:39.939431Z"
+  },
+  {
+    "insertId": "6963130b000e55a39094c7ef",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async /app/main.js:3:13868 {",
+    "timestamp": "2026-01-11T03:03:39.939427Z"
+  },
+  {
+    "insertId": "6963130b000e559ebff97d45",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.listen (/app/node_modules/@nestjs/core/nest-application.js:175:13)",
+    "timestamp": "2026-01-11T03:03:39.939422Z"
+  },
+  {
+    "insertId": "6963130b000e5599f1421525",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.init (/app/node_modules/@nestjs/core/nest-application.js:103:9)",
+    "timestamp": "2026-01-11T03:03:39.939417Z"
+  },
+  {
+    "insertId": "6963130b000e5595cf8906f7",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async NestApplication.callInitHook (/app/node_modules/@nestjs/core/nest-application-context.js:252:13)",
+    "timestamp": "2026-01-11T03:03:39.939413Z"
+  },
+  {
+    "insertId": "6963130b000e5590d9a0ddc6",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async callModuleInitHook (/app/node_modules/@nestjs/core/hooks/on-module-init.hook.js:43:5)",
+    "timestamp": "2026-01-11T03:03:39.939408Z"
+  },
+  {
+    "insertId": "6963130b000e558c23cf71bb",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async Promise.all (index 0)",
+    "timestamp": "2026-01-11T03:03:39.939404Z"
+  },
+  {
+    "insertId": "6963130b000e5587b078f7da",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at async Proxy.onModuleInit (/app/main.js:1:775)",
+    "timestamp": "2026-01-11T03:03:39.939399Z"
+  },
+  {
+    "insertId": "6963130b000e55838f85918f",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "    at t (/app/node_modules/@prisma/client/runtime/library.js:112:2488)",
+    "timestamp": "2026-01-11T03:03:39.939395Z"
+  },
+  {
+    "insertId": "6963130b000e557e31ae96b4",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Please make sure to provide valid database credentials for the database server at `10.78.0.3`.",
+    "timestamp": "2026-01-11T03:03:39.939390Z"
+  },
+  {
+    "insertId": "6963130b000e55783fdcf746",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "PrismaClientInitializationError: Authentication failed against database server at `10.78.0.3`, the provided database credentials for `going_user` are not valid.",
+    "timestamp": "2026-01-11T03:03:39.939384Z"
+  },
+  {
+    "insertId": "6963130b000e55650e4762ee",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ",
+    "timestamp": "2026-01-11T03:03:39.939365Z"
+  },
+  {
+    "insertId": "6963130b000e5551d27826de",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "You may have to run ${qe(\"prisma generate\")} for your changes to take effect.`,this.config.clientVersion);return t}}parseEngineResponse(t){if(!t)throw new B(\"Response from the Engine was empty\",{clientVersion:this.config.clientVersion});try{return JSON.parse(t)}catch{throw new B(\"Unable to JSON.parse response from engine\",{clientVersion:this.config.clientVersion})}}async loadEngine(){if(!this.engine){this.QueryEngineConstructor||(this.library=await this.libraryLoader.loadLibrary(this.config),this.QueryEngineConstructor=this.library.QueryEngine);try{let t=new WeakRef(this),{adapter:r}=this.config;r&&Ae(\"Using driver adapter: %O\",r),this.engine=new this.QueryEngineConstructor({datamodel:this.datamodel,env:process.env,logQueries:this.config.logQueries??!1,ignoreEnvVarErrors:!0,datasourceOverrides:this.datasourceOverrides??{},logLevel:this.logLevel,configDir:this.config.cwd,engineProtocol:\"json\"},n=>{t.deref()?.logger(n)},r)}catch(t){let r=t,n=this.parseInitError(r.message);throw typeof n==\"string\"?r:new R(n.message,this.config.clientVersion,n.error_code)}}}logger(t){let r=this.parseEngineResponse(t);if(r){if(\"span\"in r){this.config.tracingHelper.createEngineSpan(r);return}r.level=r?.level.toLowerCase()??\"unknown\",fm(r)?this.logEmitter.emit(\"query\",{timestamp:new Date,query:r.query,params:r.params,duration:Number(r.duration_ms),target:r.module_path}):gm(r)?this.loggerRustPanic=new le(lo(this,`${r.message}: ${r.reason} in ${r.file}:${r.line}:${r.column}`),this.config.clientVersion):this.logEmitter.emit(r.level,{timestamp:new Date,message:r.message,target:r.module_path})}}parseInitError(t){try{return JSON.parse(t)}catch{}return t}parseRequestError(t){try{return JSON.parse(t)}catch{}return t}onBeforeExit(){throw new Error('\"beforeExit\" hook is not applicable to the library engine since Prisma 5.0.0, it is only relevant and implemented for the binary engine. Please add your event listener to the `process` object directly instead.')}async start(){if(await this.libraryInstantiationPromise,await this.libraryStoppingPromise,this.libraryStartingPromise)return Ae(`library already starting, this.libraryStarted: ${this.libraryStarted}`),this.libraryStartingPromise;if(this.libraryStarted)return;let t=async()=>{Ae(\"library starting\");try{let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.connect(JSON.stringify(r)),this.libraryStarted=!0,Ae(\"library started\")}catch(r){let n=this.parseInitError(r.message);throw typeof n==\"string\"?r:new R(n.message,this.config.clientVersion,n.error_code)}finally{this.libraryStartingPromise=void 0}};return this.libraryStartingPromise=this.config.tracingHelper.runInChildSpan(\"connect\",t),this.libraryStartingPromise}async stop(){if(await this.libraryStartingPromise,await this.executingQueryPromise,this.libraryStoppingPromise)return Ae(\"library is already stopping\"),this.libraryStoppingPromise;if(!this.libraryStarted)return;let t=async()=>{await new Promise(n=>setTimeout(n,5)),Ae(\"library stopping\");let r={traceparent:this.config.tracingHelper.getTraceParent()};await this.engine?.disconnect(JSON.stringify(r)),this.libraryStarted=!1,this.libraryStoppingPromise=void 0,Ae(\"library stopped\")};return this.libraryStoppingPromise=this.config.tracingHelper.runInChildSpan(\"disconnect\",t),this.libraryStoppingPromise}version(){return this.versionInfo=this.library?.version(),this.versionInfo?.version??\"unknown\"}debugPanic(t){return this.library?.debugPanic(t)}async request(t,{traceparent:r,interactiveTransaction:n}){Ae(`sending request, this.libraryStarted: ${this.libraryStarted}`);let i=JSON.stringify({traceparent:r}),o=JSON.stringify(t);try{await this.start(),this.executingQueryPromise=this.engine?.query(o,i,n?.id),this.lastQuery=o;let s=this.parseEngineResponse(await this.executingQueryPromise);if(s.errors)throw s.errors.length===1?this.buildQueryError(s.errors[0]):new B(JSON.stringify(s.errors),{clientVersion:this.config.clientVersion});if(this.loggerRustPanic)throw this.loggerRustPanic;return{data:s,elapsed:0}}catch(s){if(s instanceof R)throw s;if(s.code===\"GenericFailure\"&&s.message?.startsWith(\"PANIC:\"))throw new le(lo(this,s.message),this.config.clientVersion);let a=this.parseRequestError(s.message);throw typeof a==\"string\"?s:new B(`${a.message}",
+    "timestamp": "2026-01-11T03:03:39.939345Z"
+  },
+  {
+    "insertId": "6963130b000e54e73050d575",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:40.195474487Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "/app/node_modules/@prisma/client/runtime/library.js:112",
+    "timestamp": "2026-01-11T03:03:39.939239Z"
+  },
+  {
+    "insertId": "69631307000c5ee307c56443",
+    "labels": {
+      "instanceId": "0007e26d68ecaad01cddd5638e828b5fc7f85cc91ab1d67d12acf99c0f2f6821652d9b500788f686b9b1a3f843555ccc00247879cc6b1f1e3e119ee659140f6247e332d10669109f741cf09a6ad5",
+      "scaling_reason": "MANUAL_OR_CUSTOMER_MIN_INSTANCE"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:36.097194160Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "textPayload": "Starting new instance. Reason: MANUAL_OR_CUSTOMER_MIN_INSTANCE - Instance started because of customer-configured min-instances or manual scaling.",
+    "timestamp": "2026-01-11T03:03:35.810723Z"
+  },
+  {
+    "insertId": "696313040005b8096583bb17",
+    "labels": {
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:32.434620727Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "textPayload": "Default STARTUP TCP probe failed 1 time consecutively for container \"user-auth-service-1\" on port 3000. The instance was not started.\nConnection failed with status CANCELLED.",
+    "timestamp": "2026-01-11T03:03:32.374793Z"
+  },
+  {
+    "insertId": "6963130400039322000ca1bd",
+    "labels": {
+      "container_name": "user-auth-service-1",
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T03:03:32.434620727Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "textPayload": "Container called exit(1).",
+    "timestamp": "2026-01-11T03:03:32.234260315Z"
+  },
+  {
+    "insertId": "69631304000160ddd54d2527",
+    "labels": {
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:32.203859264Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "Node.js v20.19.6",
+    "timestamp": "2026-01-11T03:03:32.090333Z"
+  },
+  {
+    "insertId": "69631304000160d87368de16",
+    "labels": {
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:32.203859264Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "}",
+    "timestamp": "2026-01-11T03:03:32.090328Z"
+  },
+  {
+    "insertId": "69631304000160d5565d2575",
+    "labels": {
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:32.203859264Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  errorCode: 'P1000'",
+    "timestamp": "2026-01-11T03:03:32.090325Z"
+  },
+  {
+    "insertId": "69631304000160d2145b27ff",
+    "labels": {
+      "instanceId": "0007e26d689552e07f8a3376d2e21cdc0d0b10589a589224e427d0dff662e0742bb28570a18bdcb583b64cf5072099d55b3df9b2910988e8979078a8c6e3c74368b56180f251f38f461a2dcac5e4"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstderr",
+    "receiveTimestamp": "2026-01-11T03:03:32.203859264Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "user-auth-service-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae",
+        "revision_name": "user-auth-service-prod-00002-lsd",
+        "service_name": "user-auth-service-prod"
+      },
+      "type": "cloud_run_revision"
+    },
+    "textPayload": "  clientVersion: '5.22.0',",
+    "timestamp": "2026-01-11T03:03:32.090322Z"
+  }
+]

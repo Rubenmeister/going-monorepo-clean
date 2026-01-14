@@ -1,0 +1,241 @@
+[
+  {
+    "insertId": "465ojve1dhz6",
+    "labels": {
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz"
+    },
+    "logName": "projects/going-5d1ae/logs/cloudaudit.googleapis.com%2Fsystem_event",
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "methodName": "/Jobs.RunJob",
+      "resourceName": "namespaces/going-5d1ae/executions/migration-job-prod-cdnsz",
+      "response": {
+        "@type": "type.googleapis.com/google.cloud.run.v1.Execution",
+        "apiVersion": "run.googleapis.com/v1",
+        "kind": "Execution",
+        "metadata": {
+          "annotations": {
+            "run.googleapis.com/creator": "rubenmeister@gmail.com",
+            "run.googleapis.com/execution-environment": "gen2",
+            "run.googleapis.com/lastModifier": "rubenmeister@gmail.com",
+            "run.googleapis.com/operation-id": "573dca19-9eb0-40a7-8e24-d5e44c39ae50",
+            "run.googleapis.com/vpc-access-connector": "projects/going-5d1ae/locations/us-central1/connectors/vpc-conn-prod",
+            "run.googleapis.com/vpc-access-egress": "all-traffic"
+          },
+          "creationTimestamp": "2026-01-11T21:48:46.836197Z",
+          "generation": 1,
+          "labels": {
+            "cloud.googleapis.com/location": "us-central1",
+            "run.googleapis.com/job": "migration-job-prod",
+            "run.googleapis.com/jobGeneration": "1",
+            "run.googleapis.com/jobResourceVersion": "1768015442922640",
+            "run.googleapis.com/jobUid": "94287509-81e4-40cf-99f2-46b1f04c6658"
+          },
+          "name": "migration-job-prod-cdnsz",
+          "namespace": "780842550857",
+          "ownerReferences": [
+            {
+              "apiVersion": "serving.knative.dev/v1",
+              "blockOwnerDeletion": true,
+              "controller": true,
+              "kind": "Job",
+              "name": "migration-job-prod",
+              "uid": "94287509-81e4-40cf-99f2-46b1f04c6658"
+            }
+          ],
+          "resourceVersion": "AAZII8TZ/OM",
+          "selfLink": "/apis/run.googleapis.com/v1/namespaces/780842550857/executions/migration-job-prod-cdnsz",
+          "uid": "09b7e50a-811b-4fbc-a00d-fddd7cbdeafb"
+        },
+        "spec": {
+          "parallelism": 1,
+          "taskCount": 1,
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "env": [
+                    {
+                      "name": "DATABASE_URL",
+                      "valueFrom": {
+                        "secretKeyRef": {
+                          "key": "latest",
+                          "name": "DATABASE_URL-prod"
+                        }
+                      }
+                    }
+                  ],
+                  "image": "us-central1-docker.pkg.dev/going-5d1ae/going-repo-prod/migration-runner@sha256:fa1bcc65116bebf6244b6d4d4921b4fed6686bdd0d6ccc76ed5d81be17e9b4e6",
+                  "resources": {
+                    "limits": {
+                      "cpu": "1000m",
+                      "memory": "512Mi"
+                    }
+                  }
+                }
+              ],
+              "maxRetries": 3,
+              "serviceAccountName": "780842550857-compute@developer.gserviceaccount.com",
+              "timeoutSeconds": "600"
+            }
+          }
+        },
+        "status": {
+          "completionTime": "2026-01-11T21:52:02.459953Z",
+          "conditions": [
+            {
+              "lastTransitionTime": "2026-01-11T21:52:02.459953Z",
+              "message": "Execution completed successfully in 1m12.28s.",
+              "status": "True",
+              "type": "Completed"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:50:46.903100Z",
+              "message": "Provisioned imported containers in 1.03s.",
+              "status": "True",
+              "type": "ResourcesAvailable"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:51:50.228331Z",
+              "message": "Started deployed execution in 1m3.32s.",
+              "status": "True",
+              "type": "Started"
+            },
+            {
+              "lastTransitionTime": "2026-01-11T21:50:45.872937Z",
+              "message": "Imported container image in 1m59.03s.",
+              "status": "True",
+              "type": "ContainerReady"
+            }
+          ],
+          "logUri": "https://console.cloud.google.com/logs/viewer?project=going-5d1ae&advancedFilter=resource.type%3D%22cloud_run_job%22%0Aresource.labels.job_name%3D%22migration-job-prod%22%0Aresource.labels.location%3D%22us-central1%22%0Alabels.%22run.googleapis.com/execution_name%22%3D%22migration-job-prod-cdnsz%22",
+          "observedGeneration": 1,
+          "startTime": "2026-01-11T21:50:50.172022Z",
+          "succeededCount": 1
+        }
+      },
+      "serviceName": "run.googleapis.com",
+      "status": {
+        "message": "Execution migration-job-prod-cdnsz has completed successfully."
+      }
+    },
+    "receiveTimestamp": "2026-01-11T21:52:04.461697764Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "severity": "INFO",
+    "timestamp": "2026-01-11T21:52:03.952706Z"
+  },
+  {
+    "insertId": "69641b7d000080f9596b8bea",
+    "labels": {
+      "container_name": "worker",
+      "instanceId": "005eb6974c7f28ebc49b85156bd42714f6069a853420cb2b43dbe1677b8e707ba41ef58ff445207e8a72db7e190151638b272a16d334490bdbae9166c123e8905e7758f2f3c24833646f88a43f82",
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz",
+      "run.googleapis.com/task_attempt": "0",
+      "run.googleapis.com/task_index": "0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fvarlog%2Fsystem",
+    "receiveTimestamp": "2026-01-11T21:51:57.038131726Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "severity": "INFO",
+    "textPayload": "Container called exit(0).",
+    "timestamp": "2026-01-11T21:51:57.032970Z"
+  },
+  {
+    "insertId": "69641b7c000d9c7ef1107376",
+    "labels": {
+      "instanceId": "005eb6974c7f28ebc49b85156bd42714f6069a853420cb2b43dbe1677b8e707ba41ef58ff445207e8a72db7e190151638b272a16d334490bdbae9166c123e8905e7758f2f3c24833646f88a43f82",
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz",
+      "run.googleapis.com/task_attempt": "0",
+      "run.googleapis.com/task_index": "0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:51:56.912010658Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "textPayload": "No pending migrations to apply.",
+    "timestamp": "2026-01-11T21:51:56.892030Z"
+  },
+  {
+    "insertId": "69641b7c000bc7823b920fc0",
+    "labels": {
+      "instanceId": "005eb6974c7f28ebc49b85156bd42714f6069a853420cb2b43dbe1677b8e707ba41ef58ff445207e8a72db7e190151638b272a16d334490bdbae9166c123e8905e7758f2f3c24833646f88a43f82",
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz",
+      "run.googleapis.com/task_attempt": "0",
+      "run.googleapis.com/task_index": "0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:51:56.912010658Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "textPayload": "No migration found in prisma/migrations",
+    "timestamp": "2026-01-11T21:51:56.771970Z"
+  },
+  {
+    "insertId": "69641b7c0008eb4363c5fc57",
+    "labels": {
+      "instanceId": "005eb6974c7f28ebc49b85156bd42714f6069a853420cb2b43dbe1677b8e707ba41ef58ff445207e8a72db7e190151638b272a16d334490bdbae9166c123e8905e7758f2f3c24833646f88a43f82",
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz",
+      "run.googleapis.com/task_attempt": "0",
+      "run.googleapis.com/task_index": "0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:51:56.912010658Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "textPayload": "Datasource \"db\": PostgreSQL database \"going_db\", schema \"public\" at \"10.78.0.3:5432\"",
+    "timestamp": "2026-01-11T21:51:56.584515Z"
+  },
+  {
+    "insertId": "69641b7c0008c3515f352a5f",
+    "labels": {
+      "instanceId": "005eb6974c7f28ebc49b85156bd42714f6069a853420cb2b43dbe1677b8e707ba41ef58ff445207e8a72db7e190151638b272a16d334490bdbae9166c123e8905e7758f2f3c24833646f88a43f82",
+      "run.googleapis.com/execution_name": "migration-job-prod-cdnsz",
+      "run.googleapis.com/task_attempt": "0",
+      "run.googleapis.com/task_index": "0"
+    },
+    "logName": "projects/going-5d1ae/logs/run.googleapis.com%2Fstdout",
+    "receiveTimestamp": "2026-01-11T21:51:56.579495312Z",
+    "resource": {
+      "labels": {
+        "job_name": "migration-job-prod",
+        "location": "us-central1",
+        "project_id": "going-5d1ae"
+      },
+      "type": "cloud_run_job"
+    },
+    "textPayload": "Prisma schema loaded from prisma/schema.prisma",
+    "timestamp": "2026-01-11T21:51:56.574289Z"
+  }
+]
