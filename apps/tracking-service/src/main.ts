@@ -3,36 +3,57 @@ import { TrackingAppModule } from './app/tracking-app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(TrackingAppModule);
-  // Allow CORS for WebSockets/Frontend
-  app.enableCors({ origin: '*' });
-  const port = process.env.PORT || 3011;
-  const { HttpAdapterHost } = await import('@nestjs/core');
-  const { AllExceptionsFilter } = await import('@going-monorepo/shared');
-  const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
+  console.log('BOOTSTRAP: Starting tracking-service...');
+  try {
+    const app = await NestFactory.create(TrackingAppModule);
+    console.log('BOOTSTRAP: Nest application created.');
+    
+    // Allow CORS for WebSockets/Frontend
+    app.enableCors({ origin: '*' });
+    const port = process.env.PORT || 3011;
+    console.log(`BOOTSTRAP: Using port ${port}`);
 
-  const { setupSwagger } = await import('@going-monorepo/shared-backend');
+    const { HttpAdapterHost } = await import('@nestjs/core');
+    const { AllExceptionsFilter } = await import('@going-monorepo/shared');
+    const httpAdapter = app.get(HttpAdapterHost);
+    app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    const { setupSwagger } = await import('@going-monorepo/shared-backend');
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Use Pino
-  const { Logger } = await import('nestjs-pino');
-  app.useLogger(app.get(Logger));
+    // Use Pino
+    const { Logger } = await import('nestjs-pino');
+    app.useLogger(app.get(Logger));
 
-  // Use Redis Adapter for WebSockets
-  const { RedisIoAdapter } = await import('./adapters/redis-io.adapter');
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+    // Use Redis Adapter for WebSockets
+    console.log('BOOTSTRAP: Setting up Redis Adapter...');
+    const { RedisIoAdapter } = await import('./adapters/redis-io.adapter');
+    const redisIoAdapter = new RedisIoAdapter(app);
+    // Connect to Redis asynchronously so it doesn't block the health check
+    redisIoAdapter.connectToRedis().then(() => {
+      console.log('BOOTSTRAP: Redis connected successfully (async).');
+    }).catch((err) => {
+      const logger = app.get(Logger);
+      logger.error('Error connecting to Redis in Tracking-Service', err);
+    });
+    app.useWebSocketAdapter(redisIoAdapter);
 
-  await app.listen(port);
-  setupSwagger(app, 'Tracking Service', port);
-  
-  const logger = app.get(Logger);
-  logger.log(
-    `🚀 Tracking-Service (HTTP y WebSocket) está corriendo en http://localhost:${port}`,
-    'Bootstrap',
-  );
+    console.log('BOOTSTRAP: Starting to listen...');
+    await app.listen(port, '0.0.0.0');
+    console.log(`BOOTSTRAP: Listening on 0.0.0.0:${port}`);
+    setupSwagger(app, 'Tracking Service', port);
+    
+    const logger = app.get(Logger);
+    logger.log(
+      `🚀 Tracking-Service (HTTP y WebSocket) está corriendo en http://localhost:${port}`,
+      'Bootstrap',
+    );
+  } catch (error) {
+    console.error('BOOTSTRAP FATAL ERROR:', error);
+    process.exit(1);
+  }
 }
-bootstrap();
+bootstrap().catch(err => {
+  console.error('BOOTSTRAP UNCAUGHT FATAL ERROR:', err);
+  process.exit(1);
+});

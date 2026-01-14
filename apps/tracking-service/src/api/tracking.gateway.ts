@@ -27,7 +27,9 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private readonly updateDriverLocationUseCase: UpdateDriverLocationUseCase,
-  ) {}
+  ) {
+    console.log('CONSTRUCTOR: TrackingGateway initialized');
+  }
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);

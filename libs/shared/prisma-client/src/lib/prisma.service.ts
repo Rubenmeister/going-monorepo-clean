@@ -14,13 +14,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit() {
-    try {
-      await this.$connect();
-      this.logger.log('Connected to PostgreSQL database');
-    } catch (error) {
-      this.logger.error('Failed to connect to PostgreSQL database', error);
-      throw error;
-    }
+    // Non-blocking connection to allow Cloud Run to start and listen on PORT immediately
+    this.logger.log('Initiating non-blocking connection to PostgreSQL database...');
+    
+    this.$connect()
+      .then(() => {
+        this.logger.log('Successfully connected to PostgreSQL database');
+      })
+      .catch((error) => {
+        this.logger.error('Failed to connect to PostgreSQL database asynchronously', error);
+        // We do not throw here to allow the process to stay alive and listen on PORT.
+        // Subsequent database operations will fail if the connection is not established.
+      });
   }
 
   async onModuleDestroy() {
