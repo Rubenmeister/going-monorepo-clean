@@ -1,4 +1,4 @@
-package com.mobiledriverapp
+package com.going.driverapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

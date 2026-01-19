@@ -13,6 +13,16 @@
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/mobile-driver-app"
       }
+    },
+    "build-android": {
+      "executor": "@nx/react-native:build-android",
+      "outputs": ["{projectRoot}/android/app/build/outputs/apk", "{projectRoot}/android/app/build/outputs/bundle"],
+      "options": {}
+    },
+    "build-ios": {
+      "executor": "@nx/react-native:build-ios",
+      "outputs": ["{projectRoot}/ios/build"],
+      "options": {}
     }
   }
 }

@@ -36,16 +36,16 @@ resource "google_secret_manager_secret_version" "kushki_public_key_val" {
   secret_data = var.kushki_public_key
 }
 
-resource "google_secret_manager_secret" "kushki_private_key" {
-  secret_id = "KUSHKI_PRIVATE_KEY-${var.environment}"
+resource "google_secret_manager_secret" "kushki_private_merchant_id" {
+  secret_id = "KUSHKI_PRIVATE_MERCHANT_ID-${var.environment}"
   replication {
     auto {}
   }
 }
 
-resource "google_secret_manager_secret_version" "kushki_private_key_val" {
-  secret      = google_secret_manager_secret.kushki_private_key.id
-  secret_data = var.kushki_private_key
+resource "google_secret_manager_secret_version" "kushki_private_merchant_id_val" {
+  secret      = google_secret_manager_secret.kushki_private_merchant_id.id
+  secret_data = var.kushki_private_merchant_id
 }
 
 # Twilio SMS/OTP Credentials
@@ -84,6 +84,57 @@ resource "google_secret_manager_secret" "firebase_project_id" {
 resource "google_secret_manager_secret_version" "firebase_project_id_val" {
   secret      = google_secret_manager_secret.firebase_project_id.id
   secret_data = var.firebase_project_id
+}
+
+# Twilio From Number
+resource "google_secret_manager_secret" "twilio_from_number" {
+  secret_id = "TWILIO_FROM_NUMBER-${var.environment}"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "twilio_from_number_val" {
+  secret      = google_secret_manager_secret.twilio_from_number.id
+  secret_data = var.twilio_from_number
+}
+
+# Resend API Key
+resource "google_secret_manager_secret" "resend_api_key" {
+  secret_id = "RESEND_API_KEY-${var.environment}"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "resend_api_key_val" {
+  secret      = google_secret_manager_secret.resend_api_key.id
+  secret_data = var.resend_api_key
+}
+
+# Meta WhatsApp Secrets
+resource "google_secret_manager_secret" "meta_wa_access_token" {
+  secret_id = "META_WA_ACCESS_TOKEN-${var.environment}"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "meta_wa_access_token_val" {
+  secret      = google_secret_manager_secret.meta_wa_access_token.id
+  secret_data = var.meta_wa_access_token
+}
+
+resource "google_secret_manager_secret" "meta_wa_phone_number_id" {
+  secret_id = "META_WA_PHONE_NUMBER_ID-${var.environment}"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "meta_wa_phone_number_id_val" {
+  secret      = google_secret_manager_secret.meta_wa_phone_number_id.id
+  secret_data = var.meta_wa_phone_number_id
 }
 
 # IAM Permission for Cloud Run to access secrets

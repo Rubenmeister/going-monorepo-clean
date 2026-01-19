@@ -120,6 +120,112 @@ resource "google_cloud_run_service" "default" {
             value = env.value
           }
         }
+
+        # Notifications Service Credentials
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "TWILIO_ACCOUNT_SID"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.twilio_account_sid.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "TWILIO_AUTH_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.twilio_auth_token.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "TWILIO_FROM_NUMBER"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.twilio_from_number.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "RESEND_API_KEY"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.resend_api_key.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "META_WA_ACCESS_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.meta_wa_access_token.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "notifications-service" ? [1] : []
+          content {
+            name = "META_WA_PHONE_NUMBER_ID"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.meta_wa_phone_number_id.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        # Payment Service Credentials
+        dynamic "env" {
+          for_each = each.value == "payment-service" ? [1] : []
+          content {
+            name = "KUSHKI_PUBLIC_KEY"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.kushki_public_key.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
+
+        dynamic "env" {
+          for_each = each.value == "payment-service" ? [1] : []
+          content {
+            name = "KUSHKI_PRIVATE_MERCHANT_ID"
+            value_from {
+              secret_key_ref {
+                name = google_secret_manager_secret.kushki_private_merchant_id.secret_id
+                key  = "latest"
+              }
+            }
+          }
+        }
       }
     }
 

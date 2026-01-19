@@ -1,4 +1,4 @@
-package com.mobiledriverapp
+package com.going.driverapp
 
 import android.app.Application
 import com.facebook.react.PackageList

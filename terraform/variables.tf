@@ -33,8 +33,8 @@ variable "kushki_public_key" {
   sensitive   = true
 }
 
-variable "kushki_private_key" {
-  description = "Kushki payment gateway private key"
+variable "kushki_private_merchant_id" {
+  description = "Kushki payment gateway private merchant id"
   type        = string
   sensitive   = true
 }
@@ -49,6 +49,28 @@ variable "twilio_auth_token" {
   description = "Twilio Auth Token for SMS/OTP"
   type        = string
   sensitive   = true
+}
+
+variable "twilio_from_number" {
+  description = "Twilio Phone Number for SMS/OTP"
+  type        = string
+}
+
+variable "resend_api_key" {
+  description = "Resend API key for emails"
+  type        = string
+  sensitive   = true
+}
+
+variable "meta_wa_access_token" {
+  description = "Meta WhatsApp Access Token"
+  type        = string
+  sensitive   = true
+}
+
+variable "meta_wa_phone_number_id" {
+  description = "Meta WhatsApp Phone Number ID"
+  type        = string
 }
 
 variable "firebase_project_id" {

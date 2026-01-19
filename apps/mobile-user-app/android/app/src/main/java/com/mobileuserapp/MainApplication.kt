@@ -1,4 +1,4 @@
-package com.mobileuserapp
+package com.going.userapp
 
 import android.app.Application
 import com.facebook.react.PackageList

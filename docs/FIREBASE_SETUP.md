@@ -5,7 +5,7 @@ This guide walks you through setting up Firebase for push notifications and phon
 ## Prerequisites
 
 - Google Cloud account (same as your GCP project)
-- Access to Firebase Console: https://console.firebase.google.com/
+- Access to Firebase Console: [https://console.firebase.google.com/](https://console.firebase.google.com/)
 - Access to both mobile app source code
 
 ---
@@ -37,7 +37,8 @@ This guide walks you through setting up Firebase for push notifications and phon
 
 1. Download `google-services.json`
 2. Place it in:
-   ```
+
+   ```text
    apps/mobile-user-app/android/app/google-services.json
    apps/mobile-driver-app/android/app/google-services.json
    ```
@@ -71,14 +72,16 @@ apply plugin: 'com.google.gms.google-services'
 3. Enter app nickname
 4. Click **"Register app"**
 
-### Download and Install Config
+### Download and Install Config (iOS)
 
 1. Download `GoogleService-Info.plist`
 2. Place it in:
-   ```
+
+   ```text
    apps/mobile-user-app/ios/GoogleService-Info.plist
    apps/mobile-driver-app/ios/GoogleService-Info.plist
    ```
+
 3. Open Xcode and add the file to your project (drag & drop, ensure "Copy items if needed" is checked)
 
 ### Configure iOS for Push Notifications
