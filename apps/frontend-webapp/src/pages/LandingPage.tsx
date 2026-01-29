@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ECUADOR_REGIONS, EcuadorRegion, POPULAR_ROUTES } from '@going-monorepo/shared';
+import { ECUADOR_REGIONS, EcuadorRegion } from '../constants/ecuador-regions';
 // Adjust import based on your absolute path or alias configuration
 // If alias isn't working in this environment, we might need relative path or ensure tsconfig is right.
 // Assuming standard Nx alias:
@@ -98,59 +98,165 @@ function Header() {
 
 /* ====== HERO ====== */
 function Hero() {
-  return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
-      {/* Background Layer */}
-      <img 
-        src="/assets/ecuador_landscape_bg.png" 
-        alt="Ecuador Landscape" 
-        className="absolute inset-0 w-full h-full object-cover opacity-70" 
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
-      
-      {/* Andean Pattern Overlay (very subtle) */}
-      <div 
-        className="absolute inset-0 opacity-10 mix-blend-overlay pointer-events-none" 
-        style={{ backgroundImage: 'url(/assets/andean_pattern.png)', backgroundSize: '400px' }}
-      />
+  const [serviceType, setServiceType] = useState<'privado' | 'compartido' | 'envios'>('privado');
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
 
-      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 py-20 flex flex-col md:flex-row items-center gap-16">
-        <div className="flex-1 text-center md:text-left">
+  const handleSearch = () => {
+    // Build query params with booking intent
+    const params = new URLSearchParams({
+      service: serviceType,
+      ...(origin && { origin }),
+      ...(destination && { destination }),
+      ...(date && { date }),
+      ...(time && { time }),
+    });
+    // Navigate to register with booking intent
+    window.location.href = `/register?${params.toString()}`;
+  };
+
+  return (
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-going-black">
+      {/* Simple gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-going-black via-gray-900 to-going-black" />
+      
+      {/* Subtle decorative elements */}
+      <div className="absolute top-20 left-10 w-64 h-64 bg-brand-red/10 rounded-full blur-[100px]" />
+      <div className="absolute bottom-20 right-10 w-80 h-80 bg-going-yellow/10 rounded-full blur-[120px]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl w-full px-6 py-20 flex flex-col lg:flex-row items-center gap-16">
+        {/* Left side - Text */}
+        <div className="flex-1 text-center lg:text-left">
           <div className="inline-block px-4 py-1.5 bg-brand-red text-white text-xs font-black tracking-[0.3em] uppercase mb-8 shadow-2xl">
-            Quito en Movimiento
+            Ecuador en Movimiento
           </div>
           
           <h1 className="font-spaceGrotesk text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8 drop-shadow-2xl">
-            QUITO <br/>
+            ECUADOR <br/>
             <span className="text-brand-red">AL MÁXIMO.</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/80 font-medium mb-10 max-w-xl leading-relaxed">
-             Iniciando nuestra visión de 5 años en la capital. Conectamos cada rincón de Quito con estilo, seguridad y movilidad sustentable.
+             Conectamos cada rincón del Ecuador con estilo, seguridad y movilidad sustentable.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center md:justify-start">
-            <a href="/register" className="px-10 py-5 bg-white text-black font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="/register" className="px-8 py-4 bg-white text-black font-black text-lg rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
               EMPEZAR AHORA
             </a>
-            <a href="#download" className="px-10 py-5 bg-brand-red text-white font-black text-xl rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
+            <a href="#download" className="px-8 py-4 bg-brand-red text-white font-black text-lg rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
               DESCARGAR APP
             </a>
           </div>
         </div>
 
-        <div className="flex-1 relative flex items-center justify-center">
-          <div className="absolute w-[400px] h-[400px] bg-brand-red rounded-full opacity-20 blur-[120px] animate-pulse"></div>
-          
-          <div className="relative w-full max-w-lg z-20 animate-drive-arrive">
-             <img 
-               src="/assets/suv_black_right_v3.png" 
-               alt="Going SUV" 
-               className="w-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
-             />
-             <div className="absolute -top-12 -right-4 bg-white/10 backdrop-blur-md px-6 py-3 border border-white/20 rounded-2xl shadow-2xl animate-bounce">
-               <span className="text-white font-black text-lg">UIO ➔ CUE</span>
-             </div>
+        {/* Right side - Booking Card */}
+        <div className="flex-1 w-full max-w-md">
+          <div className="bg-white rounded-3xl p-8 shadow-2xl border-2 border-black">
+            <h2 className="font-spaceGrotesk text-2xl font-black mb-6 text-center">
+              Empieza tu viaje
+            </h2>
+
+            {/* Service Type Buttons */}
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setServiceType('privado')}
+                className={`flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all ${
+                  serviceType === 'privado' 
+                    ? 'bg-brand-red text-white shadow-lg' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Viaje Privado
+              </button>
+              <button
+                onClick={() => setServiceType('compartido')}
+                className={`flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all ${
+                  serviceType === 'compartido' 
+                    ? 'bg-going-yellow text-black shadow-lg' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Viaje Compartido
+              </button>
+              <button
+                onClick={() => setServiceType('envios')}
+                className={`flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all ${
+                  serviceType === 'envios' 
+                    ? 'bg-blue-500 text-white shadow-lg' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Envíos
+              </button>
+            </div>
+
+            {/* Departure */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Lugar de salida</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">📍</span>
+                <input 
+                  type="text" 
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  placeholder="¿Desde dónde sales?"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-medium focus:border-brand-red focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Arrival */}
+            <div className="mb-4">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Lugar de llegada</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🎯</span>
+                <input 
+                  type="text" 
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="¿A dónde vas?"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-medium focus:border-brand-red focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Date and Time */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Día</label>
+                <input 
+                  type="date" 
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl font-medium focus:border-brand-red focus:outline-none transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Hora</label>
+                <input 
+                  type="time" 
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl font-medium focus:border-brand-red focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button 
+              onClick={handleSearch}
+              className="w-full py-4 bg-going-black text-white font-black text-lg rounded-xl hover:bg-gray-800 transition-colors shadow-lg"
+            >
+              BUSCAR OPCIONES
+            </button>
+
+            {/* Info text */}
+            <p className="text-center text-xs text-gray-500 mt-4">
+              Regístrate gratis para ver opciones disponibles
+            </p>
           </div>
         </div>
       </div>
@@ -160,6 +266,30 @@ function Hero() {
 
 /* ====== SERVICES ====== */
 function Services() {
+  const services = [
+    { 
+      title: 'VIAJES PRIVADOS', 
+      desc: 'Chofer personal. Ideal para moverte seguro en la ciudad.', 
+      image: '/assets/services/private-ride.png',
+      href: '/services/private',
+      color: 'going-red'
+    },
+    { 
+      title: 'RUTAS COMPARTIDAS', 
+      desc: 'Conecta ciudades. Ahorra viajando de terminal a terminal.', 
+      image: '/assets/services/shared-ride.png',
+      href: '/services/shared',
+      color: 'going-yellow'
+    },
+    { 
+      title: 'ENCOMIENDAS', 
+      desc: 'Envíos rápidos entre provincias. Rastreo 24/7.', 
+      image: '/assets/services/parcels.png',
+      href: '/services/shipments',
+      color: 'blue-500'
+    },
+  ];
+
   return (
     <section id="services" className="bg-brand-gray py-20 border-b-2 border-black">
       <div className="mx-auto max-w-7xl px-4">
@@ -172,29 +302,30 @@ function Services() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <ServiceCard 
-            title="VIAJES PRIVADOS" 
-            desc="Chofer personal. Ideal para moverte seguro en la ciudad." 
-            icon="🚗" 
-            href="/services/private" 
-            active 
-          />
-          <ServiceCard 
-            title="RUTAS COMPARTIDAS" 
-            desc="Conecta ciudades. Ahorra viajando de terminal a terminal." 
-            icon="🚌" 
-            href="/services/shared" 
-            active 
-            accent="yellow"
-          />
-          <ServiceCard 
-            title="ENCOMIENDAS" 
-            desc="Envíos rápidos entre provincias. Rastreo 24/7." 
-            icon="📦" 
-            href="/services/shipments" 
-            active 
-            accent="blue"
-          />
+          {services.map((service) => (
+            <a 
+              key={service.title}
+              href={service.href}
+              className="group bg-white border-2 border-black shadow-neo hover:-translate-y-2 transition-all overflow-hidden"
+            >
+              {/* Photo */}
+              <div className="relative h-48 overflow-hidden border-b-2 border-black">
+                <img 
+                  src={service.image} 
+                  alt={service.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className={`absolute bottom-3 left-3 px-3 py-1 bg-${service.color} text-white font-bold text-xs uppercase`}>
+                  {service.title}
+                </div>
+              </div>
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-sm text-gray-600 font-medium leading-relaxed">{service.desc}</p>
+              </div>
+            </a>
+          ))}
         </div>
         
         <div className="mt-8 p-4 border-2 border-dashed border-black/30 rounded-lg text-center bg-white/50 backdrop-blur-sm">
@@ -318,6 +449,14 @@ function Realtime() {
 
 /* ====== ECUADOR SECTION / TOURISM EXPO ====== */
 function Ecuador() {
+  // Map region labels to their photo paths
+  const regionImages: Record<string, string> = {
+    Costa: '/assets/regions/costa.png',
+    Sierra: '/assets/regions/sierra.png',
+    Amazonía: '/assets/regions/amazonia.png',
+    Galápagos: '/assets/regions/galapagos.png',
+  };
+
   return (
     <section id="ecuador" className="py-24 bg-gray-100 border-b-2 border-black relative overflow-hidden">
        <div className="mx-auto max-w-7xl px-4 relative z-10">
@@ -334,27 +473,61 @@ function Ecuador() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-20">
-             {Object.values(ECUADOR_REGIONS).map((region: any) => (
-               <div key={region.label} className="bg-white p-8 border-2 border-black shadow-neo hover:-translate-y-2 transition-all group">
-                 <div className={`w-full h-48 mb-6 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-black shadow-inner`} style={{backgroundColor: region.colorHex + '10'}}>
-                    <span className="text-6xl group-hover:scale-125 transition-transform duration-500" style={{color: region.colorHex}}>⛰️</span>
+             {Object.values(ECUADOR_REGIONS).map((region: typeof ECUADOR_REGIONS[keyof typeof ECUADOR_REGIONS]) => (
+               <div key={region.label} className="bg-white border-2 border-black shadow-neo hover:-translate-y-2 transition-all group overflow-hidden">
+                 {/* Real Photo */}
+                 <div className="relative w-full h-48 overflow-hidden border-b-2 border-black">
+                    <img 
+                      src={regionImages[region.label]} 
+                      alt={`${region.label} - ${region.slogan}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-3 left-3">
+                      <RegionBadge region={region.label.toUpperCase() as EcuadorRegion} />
+                    </div>
                  </div>
-                 <div className="flex justify-between items-center mb-3">
-                    <RegionBadge region={region.label.toUpperCase() as EcuadorRegion} />
+                 {/* Content */}
+                 <div className="p-6">
+                    <h3 className="font-black text-2xl mb-2" style={{color: region.colorHex}}>{region.slogan}</h3>
+                    <p className="text-sm text-gray-500 font-medium leading-relaxed">{region.description}</p>
                  </div>
-                 <h3 className="font-black text-2xl mb-2">{region.slogan}</h3>
-                 <p className="text-sm text-gray-500 font-medium leading-relaxed">{region.description}</p>
                </div>
              ))}
           </div>
 
           <div className="bg-black text-white p-12 rounded-[40px] border-4 border-brand-red shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-8 opacity-10 text-9xl">🗺️</div>
-             <h3 className="font-spaceGrotesk text-3xl font-black mb-8 border-b border-white/20 pb-4">SERVICIOS TURÍSTICOS DESTACADOS</h3>
-             <div className="grid md:grid-cols-3 gap-10">
-                <ExpoCard icon="🧗" title="Tours de Aventura" desc="Ascensos al Cotopaxi, Quilotoa y selva primaria." />
-                <ExpoCard icon="🥘" title="Gastronomy Expo" desc="Rutas del cacao, ceviches y cocina andina." />
-                <ExpoCard icon="🛖" title="Hidden Stays" desc="Eco-lodges y haciendas históricas certificadas." />
+             <div className="absolute top-0 right-0 w-1/2 h-full opacity-20">
+               <img src="/assets/regions/galapagos.png" alt="" className="w-full h-full object-cover" />
+             </div>
+             <div className="relative z-10">
+               <h3 className="font-spaceGrotesk text-3xl font-black mb-8 border-b border-white/20 pb-4">SERVICIOS TURÍSTICOS DESTACADOS</h3>
+               <div className="grid md:grid-cols-3 gap-8">
+                  <div className="group">
+                    <div className="relative h-40 rounded-2xl overflow-hidden mb-4 border-2 border-white/20">
+                      <img src="/assets/tours/cotopaxi.png" alt="Tours de Aventura" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/30" />
+                    </div>
+                    <h4 className="font-bold text-xl mb-2 text-brand-red uppercase">Tours de Aventura</h4>
+                    <p className="text-gray-400 text-sm font-medium">Ascensos al Cotopaxi, Quilotoa y selva primaria.</p>
+                  </div>
+                  <div className="group">
+                    <div className="relative h-40 rounded-2xl overflow-hidden mb-4 border-2 border-white/20">
+                      <img src="/assets/tours/gastronomy.png" alt="Gastronomy Expo" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/30" />
+                    </div>
+                    <h4 className="font-bold text-xl mb-2 text-brand-red uppercase">Gastronomy Expo</h4>
+                    <p className="text-gray-400 text-sm font-medium">Rutas del cacao, ceviches y cocina andina.</p>
+                  </div>
+                  <div className="group">
+                    <div className="relative h-40 rounded-2xl overflow-hidden mb-4 border-2 border-white/20">
+                      <img src="/assets/regions/amazonia.png" alt="Hidden Stays" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-black/30" />
+                    </div>
+                    <h4 className="font-bold text-xl mb-2 text-brand-red uppercase">Hidden Stays</h4>
+                    <p className="text-gray-400 text-sm font-medium">Eco-lodges y haciendas históricas certificadas.</p>
+                  </div>
+               </div>
              </div>
           </div>
        </div>
@@ -362,15 +535,7 @@ function Ecuador() {
   );
 }
 
-function ExpoCard({ icon, title, desc }: { icon: string, title: string, desc: string }) {
-  return (
-    <div className="group">
-      <div className="text-4xl mb-4 group-hover:animate-bounce">{icon}</div>
-      <h4 className="font-bold text-xl mb-2 text-brand-red italic uppercase">{title}</h4>
-      <p className="text-gray-400 text-sm font-medium leading-relaxed">{desc}</p>
-    </div>
-  );
-}
+
 
 /* ====== SAFETY & ENTERPRISE (Simplified for brevity but styled) ====== */
 function Safety() {
@@ -589,19 +754,3 @@ function Footer() {
     </footer>
   );
 }
-
-/* ====== COMPONENTS ====== */
-
-function ServiceCard({ title, desc, icon, href, active, accent = 'red' }: any) {
-  return (
-    <a href={href} className={`block p-8 bg-white border border-gray-100 rounded-[32px] shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group`}>
-       <div className="flex justify-between items-start mb-6">
-          <span className="text-5xl group-hover:scale-110 transition-transform duration-300">{icon}</span>
-          <div className={`w-3 h-3 rounded-full ${active ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-gray-300'}`}></div>
-       </div>
-       <h3 className="font-black text-2xl mb-3 group-hover:text-brand-red transition-colors">{title}</h3>
-       <p className="text-base text-gray-500 font-medium leading-relaxed">{desc}</p>
-    </a>
-  );
-}
-

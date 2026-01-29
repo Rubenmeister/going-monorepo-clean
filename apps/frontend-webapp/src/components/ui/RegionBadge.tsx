@@ -1,5 +1,5 @@
 import React from 'react';
-import { ECUADOR_REGIONS, EcuadorRegion } from '@going-monorepo/shared';
+import { ECUADOR_REGIONS, EcuadorRegion } from '../../constants/ecuador-regions';
 
 interface RegionBadgeProps {
   region: EcuadorRegion;

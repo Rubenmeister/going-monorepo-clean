@@ -8,43 +8,25 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) => {
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden font-inter">
-      {/* Background Layer */}
-      <img 
-        src="/assets/ecuador_landscape_bg.png" 
-        alt="Ecuador Landscape" 
-        className="absolute inset-0 w-full h-full object-cover" 
-      />
-      <div className="absolute inset-0 bg-brand-red/85" />
-      
-      {/* Andean Pattern Layer */}
-      <div 
-        className="absolute inset-0 opacity-10" 
-        style={{ 
-          backgroundImage: 'url(/assets/andean_pattern.png)', 
-          backgroundRepeat: 'repeat',
-          backgroundSize: '300px'
-        }} 
-      />
-      
-      {/* Auth Card - Glassmorphism */}
-      <div className="relative z-10 w-full max-w-xl p-8 md:p-12 mx-4">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[40px] p-8 md:p-12 shadow-2xl">
-          {/* Logo */}
-          <div className="flex justify-center mb-10">
+    <div className="min-h-screen relative flex items-center justify-center overflow-hidden font-inter bg-white">
+      {/* Auth Card - Red background */}
+      <div className="relative z-10 w-full max-w-xl p-6 md:p-8 mx-4">
+        <div className="bg-brand-red rounded-3xl p-8 md:p-10 shadow-2xl">
+          {/* Logo - Using image, inverted for red background */}
+          <div className="flex justify-center mb-8">
             <img 
               src="/assets/logo.png" 
               alt="Going" 
-              className="h-20 w-auto brightness-0 invert"
+              className="h-16 w-auto brightness-0 invert"
             />
           </div>
           
           {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">
               {title}
             </h2>
-            <p className="text-white/70 text-lg font-medium">
+            <p className="text-white/70 text-base">
               {subtitle}
             </p>
           </div>
@@ -54,9 +36,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
             {children}
           </div>
           
-          {/* Footer Footer */}
-          <div className="mt-12 text-center text-white/30 text-xs font-bold tracking-widest uppercase">
-            Ecuador en Movimiento • 2024
+          {/* Footer */}
+          <div className="mt-10 text-center text-white/50 text-xs font-medium tracking-wide">
+            goingec.com • Ecuador en Movimiento
           </div>
         </div>
       </div>
