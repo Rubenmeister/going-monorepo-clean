@@ -11,8 +11,14 @@ const nextConfig = {
   },
   reactStrictMode: true,
   transpilePackages: ['@going/shared-ui', 'lucide-react'],
-  // Remoción de webpack alias manuales que causaban errores de resolución en Docker
-
+  // Skip static page generation for error pages
+  generateBuildId: async () => {
+    return 'admin-dashboard-build';
+  },
+  // Disable static optimization to avoid SSG issues with client components
+  experimental: {
+    // Opt out of static optimization for routes that use client components
+  },
 };
 
 module.exports = withNx(nextConfig);

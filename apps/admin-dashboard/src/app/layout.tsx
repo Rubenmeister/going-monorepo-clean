@@ -1,6 +1,9 @@
 import { Inter } from 'next/font/google';
 import './global.css';
 
+// Force dynamic rendering to avoid static prerendering issues
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {

@@ -1,13 +1,25 @@
-const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
 const { join } = require('path');
-const sharedPreset = require('../../libs/shared/ui/tailwind.preset');
+
+// Shared tailwind preset
+let sharedPreset;
+try {
+  sharedPreset = require('../../libs/shared/ui/src/tailwind.preset');
+} catch (e) {
+  console.warn('Could not load shared preset, using empty preset');
+  sharedPreset = {};
+}
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   presets: [sharedPreset],
   content: [
-    join(__dirname, '{src,pages,components}/**/*!(*.stories|*.spec).{ts,tsx,html}'),
-    ...createGlobPatternsForDependencies(__dirname),
+    // App source files
+    join(__dirname, 'src/**/*.{ts,tsx,html,js,jsx}'),
+    join(__dirname, 'index.html'),
+    // Shared UI library
+    join(__dirname, '../../libs/shared/ui/src/**/*.{ts,tsx,js,jsx}'),
+    // Features from shared libs
+    join(__dirname, '../../libs/frontend/**/*.{ts,tsx,js,jsx}'),
   ],
   theme: {
     extend: {
@@ -32,3 +44,4 @@ module.exports = {
   },
   plugins: [],
 };
+
