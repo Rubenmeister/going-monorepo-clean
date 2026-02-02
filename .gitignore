@@ -99,3 +99,5 @@ vitest.config.*.timestamp*
 .factorypath
 .metadata/
 terraform/.terraform/
+
+terraform/terraform.tfvars
