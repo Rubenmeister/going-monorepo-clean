@@ -98,3 +98,4 @@ vitest.config.*.timestamp*
 .classpath
 .factorypath
 .metadata/
+terraform/.terraform/
