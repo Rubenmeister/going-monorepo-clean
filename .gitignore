@@ -83,3 +83,9 @@ yarn-error.log
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Build output
+dist/
+
+# Gradle wrapper JARs
+**/gradle/wrapper/gradle-wrapper.jar

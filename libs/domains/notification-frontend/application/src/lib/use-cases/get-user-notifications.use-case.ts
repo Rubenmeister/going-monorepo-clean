@@ -1,28 +1,39 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result, err } from 'neverthrow';
-import {
-  Notification,
-  INotificationRepository,
-} from '@going-monorepo-clean/domains-notification-frontend-core';
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
+import { Injectable } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
+import { NotificationApiClient } from '@going-monorepo-clean/notification-api-client';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+
+export interface NotificationViewModel {
+    id: UUID;
+    title: string;
+    body: string;
+    isRead: boolean;
+    timeAgo: string;
+}
 
 @Injectable()
 export class GetUserNotificationsUseCase {
-  constructor(
-    @Inject(INotificationRepository)
-    private readonly repository: INotificationRepository,
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: NotificationApiClient;
 
-  public async execute(userId: UUID): Promise<Result<Notification[], Error>> {
-    const sessionResult = await this.authRepository.loadSession();
-    if (sessionResult.isErr() || !sessionResult.value) {
-      return err(new Error('No estás autenticado.'));
+    constructor() {
+        this.apiClient = new NotificationApiClient();
     }
-    const token = sessionResult.value.token;
 
-    return this.repository.getByUserId(userId, token);
-  }
+    async execute(userId: UUID, token: string): Promise<Result<NotificationViewModel[], Error>> {
+        const result = await this.apiClient.getByUserId(userId, token);
+
+        if (result.isErr()) {
+            return err(result.error);
+        }
+
+        const viewModels: NotificationViewModel[] = result.value.map(dto => ({
+            id: dto.id,
+            title: dto.title,
+            body: dto.body,
+            isRead: dto.status === 'READ',
+            timeAgo: 'Justo ahora',
+        }));
+
+        return ok(viewModels);
+    }
 }

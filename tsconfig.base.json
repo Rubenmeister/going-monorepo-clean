@@ -18,22 +18,45 @@
       "@going-monorepo-clean/shared-domain": [
         "libs/shared/domain/src/index.ts"
       ],
-      "@going-monorepo-clean/domains-user-core": [
-        "libs/domains/user/core/src/index.ts"
-      ],
-      "@going-monorepo-clean/domains-user-application": [
-        "libs/domains/user/application/src/index.ts"
-      ],
-      "@going-monorepo-clean/frontend-providers": [
-        "libs/frontend/providers/src/index.ts"
-      ],
       "@going-monorepo-clean/shared-ui": ["libs/shared/ui/src/index.ts"],
-      "accommodation": ["libs/accommodation/src/index.ts"],
-      "transport": ["libs/transport/src/index.ts"],
-      "tour": ["libs/tour/src/index.ts"],
-      "payment": ["libs/payment/src/index.ts"],
-      "experience": ["libs/experience/src/index.ts"],
-      "parcel": ["libs/parcel/src/index.ts"]
+
+      "@going-monorepo-clean/user-api-client": ["libs/user/api-client/src/index.ts"],
+      "@going-monorepo-clean/booking-api-client": ["libs/booking/api-client/src/index.ts"],
+      "@going-monorepo-clean/accommodation-api-client": ["libs/accommodation/api-client/src/index.ts"],
+      "@going-monorepo-clean/experience-api-client": ["libs/experience/api-client/src/index.ts"],
+      "@going-monorepo-clean/notification-api-client": ["libs/notification/api-client/src/index.ts"],
+      "@going-monorepo-clean/parcel-api-client": ["libs/parcel/api-client/src/index.ts"],
+      "@going-monorepo-clean/payment-api-client": ["libs/payment/api-client/src/index.ts"],
+      "@going-monorepo-clean/tour-api-client": ["libs/tour/api-client/src/index.ts"],
+      "@going-monorepo-clean/tracking-api-client": ["libs/tracking/api-client/src/index.ts"],
+      "@going-monorepo-clean/transport-api-client": ["libs/transport/api-client/src/index.ts"],
+
+      "@going-monorepo-clean/domains-user-core": ["libs/domains/user/core/src/index.ts"],
+      "@going-monorepo-clean/domains-user-application": ["libs/domains/user/application/src/index.ts"],
+      "@going-monorepo-clean/domains-transport-core": ["libs/domains/transport/core/src/index.ts"],
+      "@going-monorepo-clean/domains-transport-application": ["libs/domains/transport/application/src/index.ts"],
+      "@going-monorepo-clean/domains-tracking-core": ["libs/domains/tracking/core/src/index.ts"],
+      "@going-monorepo-clean/domains-notification-core": ["libs/domains/notification/core/src/index.ts"],
+      "@going-monorepo-clean/domains-notification-application": ["libs/domains/notification/application/src/index.ts"],
+      "@going-monorepo-clean/domains-experience-core": ["libs/domains/experience/core/src/index.ts"],
+      "@going-monorepo-clean/domains-experience-application": ["libs/domains/experience/application/src/index.ts"],
+      "@going-monorepo-clean/domains-payment-core": ["libs/domains/payment/core/src/index.ts"],
+      "@going-monorepo-clean/domains-parcel-core": ["libs/domains/parcel/core/src/index.ts"],
+      "@going-monorepo-clean/domains-parcel-application": ["libs/domains/parcel/application/src/index.ts"],
+      "@going-monorepo-clean/domains-accommodation-application": ["libs/domains/accommodation/application/src/index.ts"],
+
+      "@going-monorepo-clean/domains-user-frontend-application": ["libs/domains/user-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-booking-frontend-application": ["libs/domains/booking-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-transport-frontend-application": ["libs/domains/transport-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-accommodation-frontend-application": ["libs/domains/accommodation-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-experience-frontend-application": ["libs/domains/experience-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-tour-frontend-application": ["libs/domains/tour-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-tracking-frontend-application": ["libs/domains/tracking-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-notification-frontend-application": ["libs/domains/notification-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-parcel-frontend-application": ["libs/domains/parcel-frontend/application/src/index.ts"],
+      "@going-monorepo-clean/domains-payment-frontend-application": ["libs/domains/payment-frontend/application/src/index.ts"],
+
+      "@going-monorepo-clean/frontend-providers": ["libs/frontend/providers/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

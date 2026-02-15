@@ -1,22 +1,38 @@
-// ... (código existente) ...
+import { dependencyProvider } from './auth-context.provider';
 
 export const useMonorepoApp = () => {
-  const authState = useAuth();
-
   return {
-    // 1. ESTADO GLOBAL
-    auth: authState,
-
-    // 2. CASOS DE USO (Funciones de Dominio)
     domain: {
-      // ... (auth, bookings, transport, etc.) ...
-
-      // Pagos (Payment Frontend)
-      payment: {
-        requestIntent: dependencyProvider.requestPaymentIntentUseCase.execute, // <-- NUEVO
+      auth: {
+        login: dependencyProvider.loginUseCase,
+        loadSession: dependencyProvider.loadSessionUseCase,
       },
-      
-      // ... (demás dominios) ...
+      booking: {
+        create: dependencyProvider.createBookingUseCase,
+        findByUser: dependencyProvider.findUserBookingsUseCase,
+      },
+      transport: {
+        requestTrip: dependencyProvider.requestTripUseCase,
+        getActiveTrip: dependencyProvider.getActiveTripUseCase,
+      },
+      payment: {
+        requestIntent: dependencyProvider.requestPaymentIntentUseCase,
+      },
+      parcel: {
+        create: dependencyProvider.createParcelUseCase,
+      },
+      accommodation: {
+        search: dependencyProvider.searchAccommodationsUseCase,
+      },
+      tour: {
+        search: dependencyProvider.searchToursUseCase,
+      },
+      tracking: {
+        broadcastLocation: dependencyProvider.broadcastDriverLocationUseCase,
+      },
+      notification: {
+        getByUser: dependencyProvider.getUserNotificationsUseCase,
+      },
     },
   };
 };

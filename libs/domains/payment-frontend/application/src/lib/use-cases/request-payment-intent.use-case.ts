@@ -1,47 +1,46 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Result, err } from 'neverthrow';
-import {
-  PaymentIntent,
-  IPaymentGateway,
-  PaymentRequestData,
-} from '@going-monorepo-clean/domains-payment-frontend-core'; // Reemplaza con tu scope
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
-import { Money } from '@going-monorepo-clean/shared-domain';
+import { Injectable } from '@nestjs/common';
+import { Result, ok, err } from 'neverthrow';
 import { RequestPaymentDto } from '../dto/request-payment.dto';
+import { PaymentApiClient, PaymentRequestData } from '@going-monorepo-clean/payment-api-client';
+import { Money } from '@going-monorepo-clean/shared-domain';
+
+export interface PaymentIntentViewModel {
+    clientSecret: string;
+    amountDollars: number;
+    paymentIntentId: string;
+}
 
 @Injectable()
 export class RequestPaymentIntentUseCase {
-  constructor(
-    // Inyecta el puerto del Gateway (que hará la llamada HTTP)
-    @Inject(IPaymentGateway)
-    private readonly paymentGateway: IPaymentGateway,
-    // Inyecta el puerto de Auth (para obtener el token)
-    @Inject(IAuthRepository)
-    private readonly authRepository: IAuthRepository,
-  ) {}
+    private readonly apiClient: PaymentApiClient;
 
-  public async execute(dto: RequestPaymentDto): Promise<Result<PaymentIntent, Error>> {
-    // 1. Obtener el token de la sesión actual
-    const sessionResult = await this.authRepository.loadSession();
-    if (sessionResult.isErr() || !sessionResult.value) {
-      return err(new Error('No estás autenticado. Por favor, inicia sesión.'));
-    }
-    const token = sessionResult.value.token;
-
-    // 2. Convertir el DTO a los Value Objects del dominio
-    const amountVOResult = Money.create(dto.amount.amount, dto.amount.currency);
-    if (amountVOResult.isErr()) {
-      return err(amountVOResult.error);
+    constructor() {
+        this.apiClient = new PaymentApiClient();
     }
 
-    // 3. Crear el objeto de datos para el repositorio
-    const requestData: PaymentRequestData = {
-      userId: dto.userId,
-      referenceId: dto.referenceId,
-      amount: amountVOResult.value,
-    };
+    async execute(dto: RequestPaymentDto, token: string): Promise<Result<PaymentIntentViewModel, Error>> {
+        const amountVOResult = Money.create(dto.amount.amount, dto.amount.currency);
+        if (amountVOResult.isErr()) return err(amountVOResult.error);
 
-    // 4. Llamar al "Puerto" del Gateway (que hará la llamada HTTP)
-    return this.paymentGateway.requestIntent(requestData, token);
-  }
+        const requestData: PaymentRequestData = {
+            userId: dto.userId,
+            referenceId: dto.referenceId,
+            amount: amountVOResult.value.toPrimitives(),
+        };
+
+        const result = await this.apiClient.requestIntent(requestData, token);
+
+        if (result.isErr()) {
+            return err(result.error);
+        }
+
+        const intentDto = result.value;
+        const viewModel: PaymentIntentViewModel = {
+            clientSecret: intentDto.clientSecret,
+            paymentIntentId: intentDto.id,
+            amountDollars: intentDto.amount.amount / 100,
+        };
+
+        return ok(viewModel);
+    }
 }

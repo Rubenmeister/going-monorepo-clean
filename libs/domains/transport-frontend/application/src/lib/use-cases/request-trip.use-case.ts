@@ -1,25 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import { RequestTripDto } from '../dto/request-trip.dto';
-import { TransportApiClient } from '@going-monorepo-clean/transport-api-client'; // <--- NUEVA DEPENDENCIA
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
+import { TransportApiClient, RequestTripRequest } from '@going-monorepo-clean/transport-api-client';
 import { Money, Location } from '@going-monorepo-clean/shared-domain';
 
-// --- View Model (Nuevo Modelo Simple para la UI) ---
 export interface TripViewModel {
     id: string;
     status: string;
     originCity: string;
     destinationCity: string;
-    price: number; // En dólares
+    price: number;
 }
 
 @Injectable()
 export class RequestTripUseCase {
     private readonly apiClient: TransportApiClient;
 
-    constructor(authRepository: IAuthRepository /* Añade inyección real si usas DI */) {
-        this.apiClient = new TransportApiClient(); 
+    constructor() {
+        this.apiClient = new TransportApiClient();
     }
 
     async execute(dto: RequestTripDto, token: string): Promise<Result<TripViewModel, Error>> {

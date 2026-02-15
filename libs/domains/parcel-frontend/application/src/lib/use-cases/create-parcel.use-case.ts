@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
-import { ParcelApiClient } from '@going-monorepo-clean/parcel-api-client';
-import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
+import { ParcelApiClient, CreateParcelRequest } from '@going-monorepo-clean/parcel-api-client';
 import { CreateParcelDto } from '../dto/create-parcel.dto';
 import { Money, Location } from '@going-monorepo-clean/shared-domain';
 
-// --- View Model (Nuevo Modelo Simple para la UI) ---
 export interface ParcelViewModel {
     id: string;
     status: string;
@@ -15,20 +13,12 @@ export interface ParcelViewModel {
 @Injectable()
 export class CreateParcelUseCase {
     private readonly apiClient: ParcelApiClient;
-    private readonly authRepository: IAuthRepository;
 
-    constructor(authRepository: IAuthRepository) {
+    constructor() {
         this.apiClient = new ParcelApiClient();
-        this.authRepository = authRepository;
     }
 
-    async execute(dto: CreateParcelDto): Promise<Result<ParcelViewModel, Error>> {
-        const sessionResult = await this.authRepository.loadSession();
-        if (sessionResult.isErr() || !sessionResult.value) {
-            return err(new Error('No estás autenticado.'));
-        }
-        const token = sessionResult.value.token;
-
+    async execute(dto: CreateParcelDto, token: string): Promise<Result<ParcelViewModel, Error>> {
         const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
         if (priceVOResult.isErr()) return err(priceVOResult.error);
 
@@ -47,7 +37,7 @@ export class CreateParcelUseCase {
         const result = await this.apiClient.create(requestData, token);
 
         if (result.isErr()) return err(result.error);
-        
+
         const parcelDto = result.value;
         const viewModel: ParcelViewModel = {
             id: parcelDto.id,
