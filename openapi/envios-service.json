@@ -1,0 +1,225 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Envíos",
+    "description": "API para la gestión de envíos de paquetes entre ubicaciones en Colombia.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3007",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/parcels": {
+      "post": {
+        "summary": "Crear un envío",
+        "description": "Registra un nuevo envío de paquete con origen, destino, descripción y precio.",
+        "operationId": "createParcel",
+        "tags": ["Envíos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateParcelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Envío creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParcelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos del envío inválidos"
+          }
+        }
+      }
+    },
+    "/parcels/user/{userId}": {
+      "get": {
+        "summary": "Obtener envíos de un usuario",
+        "description": "Retorna la lista de envíos asociados a un usuario específico.",
+        "operationId": "getParcelsByUser",
+        "tags": ["Envíos"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "Identificador único del usuario",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de envíos del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParcelResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "type": "object",
+        "description": "Ubicación geográfica con dirección completa y coordenadas",
+        "required": ["address", "city", "country", "latitude", "longitude"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Dirección completa",
+            "example": "Calle 10 #5-51, La Candelaria"
+          },
+          "city": {
+            "type": "string",
+            "description": "Ciudad",
+            "example": "Bogotá"
+          },
+          "country": {
+            "type": "string",
+            "description": "País",
+            "example": "Colombia"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud geográfica",
+            "example": 4.5981
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud geográfica",
+            "example": -74.0758
+          }
+        }
+      },
+      "MoneyDto": {
+        "type": "object",
+        "description": "Representación monetaria con monto y moneda",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto monetario",
+            "example": 12
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "description": "Moneda",
+            "example": "USD"
+          }
+        }
+      },
+      "CreateParcelDto": {
+        "type": "object",
+        "description": "Datos requeridos para crear un nuevo envío de paquete",
+        "required": ["userId", "origin", "destination", "description", "price"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del usuario que solicita el envío",
+            "example": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "destination": {
+            "allOf": [
+              { "$ref": "#/components/schemas/LocationDto" }
+            ],
+            "example": {
+              "address": "Carrera 43A #1-50, El Poblado",
+              "city": "Medellín",
+              "country": "Colombia",
+              "latitude": 6.2086,
+              "longitude": -75.5659
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del contenido del paquete",
+            "example": "Artesanías de Ráquira envueltas en papel burbuja"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          }
+        }
+      },
+      "ParcelResponse": {
+        "type": "object",
+        "description": "Respuesta con la información completa del envío",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del envío",
+            "example": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del usuario",
+            "example": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del paquete",
+            "example": "Artesanías de Ráquira envueltas en papel burbuja"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["created", "picked_up", "in_transit", "delivered", "cancelled"],
+            "description": "Estado actual del envío",
+            "example": "created"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación del envío",
+            "example": "2026-02-15T11:00:00Z"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Tours",
+    "description": "API para la gestión de tours turísticos organizados por anfitriones en Colombia, con categorías como cultural, aventura, gastronómico y naturaleza.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3005",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/tours": {
+      "post": {
+        "summary": "Crear un tour",
+        "description": "Registra un nuevo tour turístico con su ubicación, precio, duración, capacidad máxima de invitados y categoría.",
+        "operationId": "createTour",
+        "tags": ["Tours"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTourDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tour creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TourResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos del tour inválidos"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "type": "object",
+        "description": "Ubicación geográfica con dirección completa y coordenadas",
+        "required": ["address", "city", "country", "latitude", "longitude"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Dirección completa",
+            "example": "Calle del Arsenal #8B-137, Getsemaní"
+          },
+          "city": {
+            "type": "string",
+            "description": "Ciudad",
+            "example": "Cartagena"
+          },
+          "country": {
+            "type": "string",
+            "description": "País",
+            "example": "Colombia"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud geográfica",
+            "example": 10.4195
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud geográfica",
+            "example": -75.5460
+          }
+        }
+      },
+      "PriceDto": {
+        "type": "object",
+        "description": "Precio con monto y moneda",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto del precio",
+            "example": 35
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "description": "Moneda del precio",
+            "example": "USD"
+          }
+        }
+      },
+      "TourCategory": {
+        "type": "string",
+        "enum": ["cultural", "adventure", "gastronomic", "nature"],
+        "description": "Categoría del tour: cultural, aventura, gastronómico o naturaleza"
+      },
+      "CreateTourDto": {
+        "type": "object",
+        "description": "Datos requeridos para crear un nuevo tour turístico",
+        "required": ["hostId", "title", "description", "location", "price", "durationHours", "maxGuests", "category"],
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del anfitrión que organiza el tour",
+            "example": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título del tour",
+            "example": "Tour gastronómico por los sabores de Cartagena"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción detallada del tour",
+            "example": "Recorrido por los mejores restaurantes y puestos de comida callejera de Getsemaní y el Centro Histórico de Cartagena. Degustación de arepas de huevo, ceviches, cocadas y jugos tropicales."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceDto"
+          },
+          "durationHours": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Duración del tour en horas",
+            "example": 3
+          },
+          "maxGuests": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número máximo de invitados permitidos en el tour",
+            "example": 12
+          },
+          "category": {
+            "$ref": "#/components/schemas/TourCategory",
+            "example": "gastronomic"
+          }
+        }
+      },
+      "TourResponse": {
+        "type": "object",
+        "description": "Respuesta con la información completa del tour",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del tour",
+            "example": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b"
+          },
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del anfitrión",
+            "example": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título del tour",
+            "example": "Tour gastronómico por los sabores de Cartagena"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del tour",
+            "example": "Recorrido por los mejores restaurantes y puestos de comida callejera de Getsemaní y el Centro Histórico de Cartagena. Degustación de arepas de huevo, ceviches, cocadas y jugos tropicales."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceDto"
+          },
+          "durationHours": {
+            "type": "number",
+            "description": "Duración del tour en horas",
+            "example": 3
+          },
+          "maxGuests": {
+            "type": "integer",
+            "description": "Número máximo de invitados",
+            "example": 12
+          },
+          "category": {
+            "$ref": "#/components/schemas/TourCategory",
+            "example": "gastronomic"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación del tour",
+            "example": "2026-02-15T14:00:00Z"
+          }
+        }
+      }
+    }
+  }
+}

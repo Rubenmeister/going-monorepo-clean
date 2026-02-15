@@ -1,0 +1,187 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Experiencias",
+    "description": "API para la gestión de experiencias turísticas ofrecidas por anfitriones en Colombia.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3004",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/api/experiences": {
+      "post": {
+        "summary": "Crear una experiencia",
+        "description": "Registra una nueva experiencia turística ofrecida por un anfitrión, incluyendo ubicación, precio y duración.",
+        "operationId": "createExperience",
+        "tags": ["Experiencias"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExperienceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Experiencia creada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de la experiencia inválidos"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "type": "object",
+        "description": "Ubicación geográfica con dirección completa y coordenadas",
+        "required": ["address", "city", "country", "latitude", "longitude"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Dirección completa",
+            "example": "Vereda El Caimo, Zona Cafetera"
+          },
+          "city": {
+            "type": "string",
+            "description": "Ciudad",
+            "example": "Salento"
+          },
+          "country": {
+            "type": "string",
+            "description": "País",
+            "example": "Colombia"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud geográfica",
+            "example": 4.6370
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud geográfica",
+            "example": -75.5686
+          }
+        }
+      },
+      "MoneyDto": {
+        "type": "object",
+        "description": "Representación monetaria con monto y moneda",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto monetario",
+            "example": 45
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "description": "Moneda",
+            "example": "USD"
+          }
+        }
+      },
+      "CreateExperienceDto": {
+        "type": "object",
+        "description": "Datos requeridos para crear una nueva experiencia turística",
+        "required": ["hostId", "title", "description", "location", "price", "durationHours"],
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del anfitrión que ofrece la experiencia",
+            "example": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título de la experiencia",
+            "example": "Recorrido por fincas cafeteras del Eje Cafetero"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción detallada de la experiencia",
+            "example": "Visita guiada por las fincas cafeteras de Salento, incluyendo el proceso completo del café desde la semilla hasta la taza, con degustación de variedades locales."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "durationHours": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 24,
+            "description": "Duración de la experiencia en horas (entre 1 y 24)",
+            "example": 4
+          }
+        }
+      },
+      "ExperienceResponse": {
+        "type": "object",
+        "description": "Respuesta con la información completa de la experiencia",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único de la experiencia",
+            "example": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c"
+          },
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del anfitrión",
+            "example": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título de la experiencia",
+            "example": "Recorrido por fincas cafeteras del Eje Cafetero"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción de la experiencia",
+            "example": "Visita guiada por las fincas cafeteras de Salento, incluyendo el proceso completo del café desde la semilla hasta la taza, con degustación de variedades locales."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MoneyDto"
+          },
+          "durationHours": {
+            "type": "number",
+            "description": "Duración en horas",
+            "example": 4
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación",
+            "example": "2026-02-15T09:00:00Z"
+          }
+        }
+      }
+    }
+  }
+}

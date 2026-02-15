@@ -1,0 +1,134 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Rastreo",
+    "description": "API para el rastreo en tiempo real de conductores activos. La actualización de ubicación se realiza mediante WebSocket, y este servicio expone un endpoint REST para consultar conductores activos.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3008",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/tracking/active-drivers": {
+      "get": {
+        "summary": "Obtener conductores activos",
+        "description": "Retorna la lista de conductores que se encuentran activos y disponibles, incluyendo su última ubicación conocida.",
+        "operationId": "getActiveDrivers",
+        "tags": ["Rastreo"],
+        "responses": {
+          "200": {
+            "description": "Lista de conductores activos con sus ubicaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActiveDriverResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateLocationDto": {
+        "type": "object",
+        "description": "Datos para actualizar la ubicación de un conductor en tiempo real (enviados a través de WebSocket)",
+        "required": ["driverId", "latitude", "longitude"],
+        "properties": {
+          "driverId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del conductor",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud de la posición actual del conductor",
+            "example": 6.2442
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud de la posición actual del conductor",
+            "example": -75.5812
+          }
+        }
+      },
+      "ActiveDriverResponse": {
+        "type": "object",
+        "description": "Información de un conductor activo con su última ubicación conocida",
+        "properties": {
+          "driverId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del conductor",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Última latitud conocida del conductor",
+            "example": 6.2442
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Última longitud conocida del conductor",
+            "example": -75.5812
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de la última actualización de ubicación",
+            "example": "2026-02-15T15:30:45Z"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["available", "on_trip", "offline"],
+            "description": "Estado actual del conductor",
+            "example": "available"
+          }
+        }
+      }
+    },
+    "x-websocket": {
+      "description": "Conexión WebSocket para actualización de ubicación en tiempo real",
+      "url": "ws://localhost:3008/tracking",
+      "events": {
+        "updateLocation": {
+          "description": "Evento emitido por el conductor para actualizar su ubicación en tiempo real",
+          "payload": {
+            "$ref": "#/components/schemas/UpdateLocationDto"
+          }
+        },
+        "locationUpdated": {
+          "description": "Evento recibido como confirmación de que la ubicación fue actualizada",
+          "payload": {
+            "type": "object",
+            "properties": {
+              "driverId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Identificador del conductor"
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Marca de tiempo de la actualización"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

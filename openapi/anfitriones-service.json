@@ -1,0 +1,258 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Anfitriones",
+    "description": "API para la gestión de alojamientos ofrecidos por anfitriones en Colombia.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3003",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/api/accommodations": {
+      "post": {
+        "summary": "Crear un alojamiento",
+        "description": "Registra un nuevo alojamiento ofrecido por un anfitrión con su ubicación, precio por noche y comodidades.",
+        "operationId": "createAccommodation",
+        "tags": ["Alojamientos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAccommodationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Alojamiento creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccommodationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos del alojamiento inválidos"
+          }
+        }
+      }
+    },
+    "/api/accommodations/search": {
+      "get": {
+        "summary": "Buscar alojamientos",
+        "description": "Busca alojamientos disponibles filtrando por ciudad, país y capacidad mínima.",
+        "operationId": "searchAccommodations",
+        "tags": ["Alojamientos"],
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Ciudad donde se busca el alojamiento",
+            "schema": {
+              "type": "string",
+              "example": "Cartagena"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "País donde se busca el alojamiento",
+            "schema": {
+              "type": "string",
+              "example": "Colombia"
+            }
+          },
+          {
+            "name": "capacity",
+            "in": "query",
+            "required": false,
+            "description": "Capacidad mínima de huéspedes requerida",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de alojamientos encontrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccommodationResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "type": "object",
+        "description": "Ubicación geográfica con dirección completa y coordenadas",
+        "required": ["address", "city", "country", "latitude", "longitude"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Dirección completa",
+            "example": "Calle 36 #3-50, Centro Histórico"
+          },
+          "city": {
+            "type": "string",
+            "description": "Ciudad",
+            "example": "Cartagena"
+          },
+          "country": {
+            "type": "string",
+            "description": "País",
+            "example": "Colombia"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud geográfica",
+            "example": 10.3910
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud geográfica",
+            "example": -75.5364
+          }
+        }
+      },
+      "PriceDto": {
+        "type": "object",
+        "description": "Precio con monto y moneda",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto del precio",
+            "example": 85
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "description": "Moneda del precio",
+            "example": "USD"
+          }
+        }
+      },
+      "CreateAccommodationDto": {
+        "type": "object",
+        "description": "Datos requeridos para crear un nuevo alojamiento",
+        "required": ["hostId", "title", "description", "location", "pricePerNight", "capacity"],
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del anfitrión",
+            "example": "c3d4e5f6-a1b2-4c5d-8e9f-0a1b2c3d4e5f"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título del alojamiento",
+            "example": "Casa Colonial en el Centro Histórico de Cartagena"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción detallada del alojamiento",
+            "example": "Hermosa casa colonial restaurada con patio interior, ubicada a pasos de la Torre del Reloj y la Plaza de los Coches."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "pricePerNight": {
+            "$ref": "#/components/schemas/PriceDto"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Capacidad máxima de huéspedes",
+            "example": 6
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de comodidades disponibles en el alojamiento",
+            "example": ["WiFi", "Piscina", "Aire acondicionado", "Cocina equipada", "Terraza"]
+          }
+        }
+      },
+      "AccommodationResponse": {
+        "type": "object",
+        "description": "Respuesta con la información completa del alojamiento",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del alojamiento",
+            "example": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a"
+          },
+          "hostId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del anfitrión",
+            "example": "c3d4e5f6-a1b2-4c5d-8e9f-0a1b2c3d4e5f"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título del alojamiento",
+            "example": "Casa Colonial en el Centro Histórico de Cartagena"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción del alojamiento",
+            "example": "Hermosa casa colonial restaurada con patio interior, ubicada a pasos de la Torre del Reloj y la Plaza de los Coches."
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "pricePerNight": {
+            "$ref": "#/components/schemas/PriceDto"
+          },
+          "capacity": {
+            "type": "integer",
+            "description": "Capacidad máxima de huéspedes",
+            "example": 6
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Lista de comodidades",
+            "example": ["WiFi", "Piscina", "Aire acondicionado", "Cocina equipada", "Terraza"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación",
+            "example": "2026-02-15T08:00:00Z"
+          }
+        }
+      }
+    }
+  }
+}

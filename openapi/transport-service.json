@@ -1,0 +1,232 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Transporte",
+    "description": "API para la gestión de solicitudes de transporte y asignación de conductores en Colombia.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3006",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/transport/request": {
+      "post": {
+        "summary": "Solicitar un viaje",
+        "description": "Crea una nueva solicitud de viaje desde un origen hasta un destino con un precio estimado.",
+        "operationId": "requestTrip",
+        "tags": ["Transporte"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestTripDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Viaje solicitado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de la solicitud inválidos"
+          }
+        }
+      }
+    },
+    "/transport/{tripId}/accept": {
+      "patch": {
+        "summary": "Aceptar un viaje",
+        "description": "Permite a un conductor aceptar una solicitud de viaje existente.",
+        "operationId": "acceptTrip",
+        "tags": ["Transporte"],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "description": "Identificador único del viaje",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "b7e1c5d0-3a2f-4e8b-9c1d-6f5a4b3e2d1c"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["driverId"],
+                "properties": {
+                  "driverId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Identificador único del conductor que acepta el viaje",
+                    "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Viaje aceptado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Viaje no encontrado"
+          },
+          "409": {
+            "description": "El viaje ya fue aceptado por otro conductor"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LocationDto": {
+        "type": "object",
+        "description": "Ubicación geográfica con dirección completa y coordenadas",
+        "required": ["address", "city", "country", "latitude", "longitude"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Dirección completa",
+            "example": "Carrera 7 #32-16, Chapinero"
+          },
+          "city": {
+            "type": "string",
+            "description": "Ciudad",
+            "example": "Bogotá"
+          },
+          "country": {
+            "type": "string",
+            "description": "País",
+            "example": "Colombia"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitud geográfica",
+            "example": 4.6351
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitud geográfica",
+            "example": -74.0703
+          }
+        }
+      },
+      "PriceDto": {
+        "type": "object",
+        "description": "Precio con monto y moneda",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Monto del precio",
+            "example": 15000
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "description": "Moneda del precio",
+            "example": "USD"
+          }
+        }
+      },
+      "RequestTripDto": {
+        "type": "object",
+        "description": "Datos requeridos para solicitar un viaje",
+        "required": ["userId", "origin", "destination", "price"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del usuario que solicita el viaje",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceDto"
+          }
+        }
+      },
+      "TripResponse": {
+        "type": "object",
+        "description": "Respuesta con la información del viaje",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del viaje",
+            "example": "b7e1c5d0-3a2f-4e8b-9c1d-6f5a4b3e2d1c"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del usuario",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "driverId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Identificador del conductor asignado",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "accepted", "in_progress", "completed", "cancelled"],
+            "description": "Estado actual del viaje",
+            "example": "pending"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación del viaje",
+            "example": "2026-02-15T10:30:00Z"
+          }
+        }
+      }
+    }
+  }
+}

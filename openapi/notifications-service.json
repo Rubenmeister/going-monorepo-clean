@@ -1,0 +1,167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Servicio de Notificaciones",
+    "description": "API para el envío y consulta de notificaciones a usuarios a través de múltiples canales (push, email, SMS).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3002",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "paths": {
+    "/notifications/send": {
+      "post": {
+        "summary": "Enviar una notificación",
+        "description": "Envía una notificación a un usuario específico a través del canal indicado (push, email o SMS).",
+        "operationId": "sendNotification",
+        "tags": ["Notificaciones"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificación enviada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de la notificación inválidos"
+          }
+        }
+      }
+    },
+    "/notifications/user/{userId}": {
+      "get": {
+        "summary": "Obtener notificaciones de un usuario",
+        "description": "Retorna la lista de notificaciones enviadas a un usuario específico.",
+        "operationId": "getNotificationsByUser",
+        "tags": ["Notificaciones"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "Identificador único del usuario",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de notificaciones del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationResponse"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateNotificationDto": {
+        "type": "object",
+        "description": "Datos requeridos para enviar una notificación",
+        "required": ["userId", "channel", "title", "body"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del usuario destinatario",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["push", "email", "sms"],
+            "description": "Canal de envío de la notificación",
+            "example": "push"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título de la notificación",
+            "example": "Tu viaje ha sido confirmado"
+          },
+          "body": {
+            "type": "string",
+            "description": "Cuerpo o contenido de la notificación",
+            "example": "Tu conductor Juan Carlos está en camino. Llegará en aproximadamente 5 minutos a la Carrera 7 #32-16, Chapinero, Bogotá."
+          }
+        }
+      },
+      "NotificationResponse": {
+        "type": "object",
+        "description": "Respuesta con la información completa de la notificación",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único de la notificación",
+            "example": "c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador del usuario destinatario",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["push", "email", "sms"],
+            "description": "Canal utilizado para enviar la notificación",
+            "example": "push"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título de la notificación",
+            "example": "Tu viaje ha sido confirmado"
+          },
+          "body": {
+            "type": "string",
+            "description": "Cuerpo de la notificación",
+            "example": "Tu conductor Juan Carlos está en camino. Llegará en aproximadamente 5 minutos a la Carrera 7 #32-16, Chapinero, Bogotá."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "sent", "delivered", "failed"],
+            "description": "Estado de la notificación",
+            "example": "sent"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha y hora de creación de la notificación",
+            "example": "2026-02-15T10:35:00Z"
+          }
+        }
+      }
+    }
+  }
+}
