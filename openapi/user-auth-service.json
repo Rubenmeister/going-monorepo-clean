@@ -131,17 +131,17 @@
           },
           "firstName": {
             "type": "string",
-            "example": "Juan",
+            "example": "María",
             "description": "Nombre del usuario"
           },
           "lastName": {
             "type": "string",
-            "example": "Pérez",
+            "example": "Espinoza",
             "description": "Apellido del usuario"
           },
           "phone": {
             "type": "string",
-            "example": "+573001234567",
+            "example": "+593999123456",
             "description": "Teléfono del usuario (opcional)"
           },
           "roles": {

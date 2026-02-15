@@ -3,12 +3,12 @@ import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SearchAccommodationDto {
-  @ApiPropertyOptional({ example: 'Cartagena', description: 'Filtrar por ciudad' })
+  @ApiPropertyOptional({ example: 'Cuenca', description: 'Filtrar por ciudad' })
   @IsString()
   @IsOptional()
   city?: string;
 
-  @ApiPropertyOptional({ example: 'Colombia', description: 'Filtrar por país' })
+  @ApiPropertyOptional({ example: 'Ecuador', description: 'Filtrar por país' })
   @IsString()
   @IsOptional()
   country?: string;

@@ -27,27 +27,27 @@ export class MoneyDto {
 
 // DTO para el Value Object 'Location'
 export class LocationDto {
-  @ApiProperty({ example: 'Calle 100 #15-20', description: 'Dirección' })
+  @ApiProperty({ example: 'Av. Amazonas N36-152 y Naciones Unidas', description: 'Dirección' })
   @IsNotEmpty()
   @IsString()
   address: string;
 
-  @ApiProperty({ example: 'Bogotá', description: 'Ciudad' })
+  @ApiProperty({ example: 'Quito', description: 'Ciudad' })
   @IsNotEmpty()
   @IsString()
   city: string;
 
-  @ApiProperty({ example: 'Colombia', description: 'País' })
+  @ApiProperty({ example: 'Ecuador', description: 'País' })
   @IsNotEmpty()
   @IsString()
   country: string;
 
-  @ApiProperty({ example: 4.6097, description: 'Latitud' })
+  @ApiProperty({ example: -0.1807, description: 'Latitud' })
   @IsNotEmpty()
   @IsLatitude()
   latitude: number;
 
-  @ApiProperty({ example: -74.0817, description: 'Longitud' })
+  @ApiProperty({ example: -78.4678, description: 'Longitud' })
   @IsNotEmpty()
   @IsLongitude()
   longitude: number;

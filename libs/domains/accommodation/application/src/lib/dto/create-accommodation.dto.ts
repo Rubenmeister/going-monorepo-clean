@@ -28,27 +28,27 @@ class PriceDto {
 }
 
 class LocationDto {
-  @ApiProperty({ example: 'Calle 100 #15-20', description: 'Dirección' })
+  @ApiProperty({ example: 'Calle Larga 5-24 y Hermano Miguel', description: 'Dirección' })
   @IsNotEmpty()
   @IsString()
   address: string;
 
-  @ApiProperty({ example: 'Cartagena', description: 'Ciudad' })
+  @ApiProperty({ example: 'Cuenca', description: 'Ciudad' })
   @IsNotEmpty()
   @IsString()
   city: string;
 
-  @ApiProperty({ example: 'Colombia', description: 'País' })
+  @ApiProperty({ example: 'Ecuador', description: 'País' })
   @IsNotEmpty()
   @IsString()
   country: string;
 
-  @ApiProperty({ example: 10.3910, description: 'Latitud' })
+  @ApiProperty({ example: -2.9001, description: 'Latitud' })
   @IsNotEmpty()
   @IsLatitude()
   latitude: number;
 
-  @ApiProperty({ example: -75.5144, description: 'Longitud' })
+  @ApiProperty({ example: -79.0059, description: 'Longitud' })
   @IsNotEmpty()
   @IsLongitude()
   longitude: number;

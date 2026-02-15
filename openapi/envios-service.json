@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Servicio de Envíos",
-    "description": "API para la gestión de envíos de paquetes entre ubicaciones en Colombia.",
+    "description": "API para la gestión de envíos de paquetes entre ubicaciones en Ecuador.",
     "version": "1.0.0"
   },
   "servers": [
@@ -95,29 +95,29 @@
           "address": {
             "type": "string",
             "description": "Dirección completa",
-            "example": "Calle 10 #5-51, La Candelaria"
+            "example": "Av. 10 de Agosto N25-67 y Colón, La Mariscal"
           },
           "city": {
             "type": "string",
             "description": "Ciudad",
-            "example": "Bogotá"
+            "example": "Quito"
           },
           "country": {
             "type": "string",
             "description": "País",
-            "example": "Colombia"
+            "example": "Ecuador"
           },
           "latitude": {
             "type": "number",
             "format": "double",
             "description": "Latitud geográfica",
-            "example": 4.5981
+            "example": -0.2035
           },
           "longitude": {
             "type": "number",
             "format": "double",
             "description": "Longitud geográfica",
-            "example": -74.0758
+            "example": -78.4964
           }
         }
       },
@@ -130,7 +130,7 @@
             "type": "number",
             "minimum": 0,
             "description": "Monto monetario",
-            "example": 12
+            "example": 8.50
           },
           "currency": {
             "type": "string",
@@ -159,17 +159,17 @@
               { "$ref": "#/components/schemas/LocationDto" }
             ],
             "example": {
-              "address": "Carrera 43A #1-50, El Poblado",
-              "city": "Medellín",
-              "country": "Colombia",
-              "latitude": 6.2086,
-              "longitude": -75.5659
+              "address": "Av. 9 de Octubre y Malecón, Centro",
+              "city": "Guayaquil",
+              "country": "Ecuador",
+              "latitude": -2.1894,
+              "longitude": -79.8891
             }
           },
           "description": {
             "type": "string",
             "description": "Descripción del contenido del paquete",
-            "example": "Artesanías de Ráquira envueltas en papel burbuja"
+            "example": "Sombreros de paja toquilla de Montecristi empacados con cuidado"
           },
           "price": {
             "$ref": "#/components/schemas/MoneyDto"
@@ -201,7 +201,7 @@
           "description": {
             "type": "string",
             "description": "Descripción del paquete",
-            "example": "Artesanías de Ráquira envueltas en papel burbuja"
+            "example": "Sombreros de paja toquilla de Montecristi empacados con cuidado"
           },
           "price": {
             "$ref": "#/components/schemas/MoneyDto"

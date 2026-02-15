@@ -14,17 +14,17 @@ export class RegisterUserDto {
   @MinLength(8, { message: 'Password must be at least 8 characters' })
   password: string;
 
-  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
+  @ApiProperty({ example: 'María', description: 'Nombre del usuario' })
   @IsNotEmpty()
   @IsString()
   firstName: string;
 
-  @ApiProperty({ example: 'Pérez', description: 'Apellido del usuario' })
+  @ApiProperty({ example: 'Espinoza', description: 'Apellido del usuario' })
   @IsNotEmpty()
   @IsString()
   lastName: string;
 
-  @ApiPropertyOptional({ example: '+573001234567', description: 'Teléfono del usuario' })
+  @ApiPropertyOptional({ example: '+593999123456', description: 'Teléfono del usuario' })
   @IsString()
   @IsOptional()
   phone?: string;

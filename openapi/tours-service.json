@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Servicio de Tours",
-    "description": "API para la gestión de tours turísticos organizados por anfitriones en Colombia, con categorías como cultural, aventura, gastronómico y naturaleza.",
+    "description": "API para la gestión de tours turísticos organizados por anfitriones en Ecuador, con categorías como cultural, aventura, gastronómico y naturaleza.",
     "version": "1.0.0"
   },
   "servers": [
@@ -56,29 +56,29 @@
           "address": {
             "type": "string",
             "description": "Dirección completa",
-            "example": "Calle del Arsenal #8B-137, Getsemaní"
+            "example": "Calle García Moreno N5-59 y Chile, Centro Histórico"
           },
           "city": {
             "type": "string",
             "description": "Ciudad",
-            "example": "Cartagena"
+            "example": "Quito"
           },
           "country": {
             "type": "string",
             "description": "País",
-            "example": "Colombia"
+            "example": "Ecuador"
           },
           "latitude": {
             "type": "number",
             "format": "double",
             "description": "Latitud geográfica",
-            "example": 10.4195
+            "example": -0.2201
           },
           "longitude": {
             "type": "number",
             "format": "double",
             "description": "Longitud geográfica",
-            "example": -75.5460
+            "example": -78.5123
           }
         }
       },
@@ -91,7 +91,7 @@
             "type": "number",
             "minimum": 0,
             "description": "Monto del precio",
-            "example": 35
+            "example": 25
           },
           "currency": {
             "type": "string",
@@ -120,12 +120,12 @@
           "title": {
             "type": "string",
             "description": "Título del tour",
-            "example": "Tour gastronómico por los sabores de Cartagena"
+            "example": "Tour gastronómico por los sabores de Quito"
           },
           "description": {
             "type": "string",
             "description": "Descripción detallada del tour",
-            "example": "Recorrido por los mejores restaurantes y puestos de comida callejera de Getsemaní y el Centro Histórico de Cartagena. Degustación de arepas de huevo, ceviches, cocadas y jugos tropicales."
+            "example": "Recorrido por los mercados y restaurantes tradicionales del Centro Histórico de Quito. Degustación de locro de papa, empanadas de viento, hornado, ceviche ecuatoriano y jugos de frutas exóticas como naranjilla y guanábana."
           },
           "location": {
             "$ref": "#/components/schemas/LocationDto"
@@ -170,12 +170,12 @@
           "title": {
             "type": "string",
             "description": "Título del tour",
-            "example": "Tour gastronómico por los sabores de Cartagena"
+            "example": "Tour gastronómico por los sabores de Quito"
           },
           "description": {
             "type": "string",
             "description": "Descripción del tour",
-            "example": "Recorrido por los mejores restaurantes y puestos de comida callejera de Getsemaní y el Centro Histórico de Cartagena. Degustación de arepas de huevo, ceviches, cocadas y jugos tropicales."
+            "example": "Recorrido por los mercados y restaurantes tradicionales del Centro Histórico de Quito. Degustación de locro de papa, empanadas de viento, hornado, ceviche ecuatoriano y jugos de frutas exóticas como naranjilla y guanábana."
           },
           "location": {
             "$ref": "#/components/schemas/LocationDto"

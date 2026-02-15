@@ -18,7 +18,7 @@ export class CreateNotificationDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Tu viaje a Cartagena sale mañana a las 8:00 AM', description: 'Cuerpo de la notificación' })
+  @ApiProperty({ example: 'Tu viaje a Cuenca sale mañana a las 8:00 AM', description: 'Cuerpo de la notificación' })
   @IsNotEmpty()
   @IsString()
   body: string;

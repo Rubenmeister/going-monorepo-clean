@@ -28,27 +28,27 @@ class PriceDto {
 }
 
 class LocationDto {
-  @ApiProperty({ example: 'Plaza de Bolívar', description: 'Dirección' })
+  @ApiProperty({ example: 'Calle García Moreno N5-59 y Chile, Centro Histórico', description: 'Dirección' })
   @IsNotEmpty()
   @IsString()
   address: string;
 
-  @ApiProperty({ example: 'Bogotá', description: 'Ciudad' })
+  @ApiProperty({ example: 'Quito', description: 'Ciudad' })
   @IsNotEmpty()
   @IsString()
   city: string;
 
-  @ApiProperty({ example: 'Colombia', description: 'País' })
+  @ApiProperty({ example: 'Ecuador', description: 'País' })
   @IsNotEmpty()
   @IsString()
   country: string;
 
-  @ApiProperty({ example: 4.5981, description: 'Latitud' })
+  @ApiProperty({ example: -0.2201, description: 'Latitud' })
   @IsNotEmpty()
   @IsLatitude()
   latitude: number;
 
-  @ApiProperty({ example: -74.0758, description: 'Longitud' })
+  @ApiProperty({ example: -78.5123, description: 'Longitud' })
   @IsNotEmpty()
   @IsLongitude()
   longitude: number;
@@ -60,12 +60,12 @@ export class CreateTourDto {
   @IsUUID()
   hostId: string;
 
-  @ApiProperty({ example: 'Tour histórico por La Candelaria', description: 'Título del tour' })
+  @ApiProperty({ example: 'Tour gastronómico por los sabores de Quito', description: 'Título del tour' })
   @IsNotEmpty()
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Recorrido por los sitios más emblemáticos del centro histórico', description: 'Descripción del tour' })
+  @ApiProperty({ example: 'Recorrido por los mercados y restaurantes tradicionales del Centro Histórico de Quito', description: 'Descripción del tour' })
   @IsNotEmpty()
   @IsString()
   description: string;

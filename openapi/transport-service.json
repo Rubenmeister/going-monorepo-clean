@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Servicio de Transporte",
-    "description": "API para la gestión de solicitudes de transporte y asignación de conductores en Colombia.",
+    "description": "API para la gestión de solicitudes de transporte y asignación de conductores en Ecuador.",
     "version": "1.0.0"
   },
   "servers": [
@@ -114,29 +114,29 @@
           "address": {
             "type": "string",
             "description": "Dirección completa",
-            "example": "Carrera 7 #32-16, Chapinero"
+            "example": "Av. Amazonas N36-152 y Naciones Unidas, La Mariscal"
           },
           "city": {
             "type": "string",
             "description": "Ciudad",
-            "example": "Bogotá"
+            "example": "Quito"
           },
           "country": {
             "type": "string",
             "description": "País",
-            "example": "Colombia"
+            "example": "Ecuador"
           },
           "latitude": {
             "type": "number",
             "format": "double",
             "description": "Latitud geográfica",
-            "example": 4.6351
+            "example": -0.1807
           },
           "longitude": {
             "type": "number",
             "format": "double",
             "description": "Longitud geográfica",
-            "example": -74.0703
+            "example": -78.4678
           }
         }
       },
@@ -149,7 +149,7 @@
             "type": "number",
             "minimum": 0,
             "description": "Monto del precio",
-            "example": 15000
+            "example": 5.50
           },
           "currency": {
             "type": "string",

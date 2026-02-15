@@ -112,7 +112,7 @@
           "body": {
             "type": "string",
             "description": "Cuerpo o contenido de la notificación",
-            "example": "Tu conductor Juan Carlos está en camino. Llegará en aproximadamente 5 minutos a la Carrera 7 #32-16, Chapinero, Bogotá."
+            "example": "Tu conductor Luis Andrés está en camino. Llegará en aproximadamente 5 minutos a la Av. Amazonas N36-152, La Mariscal, Quito."
           }
         }
       },
@@ -146,7 +146,7 @@
           "body": {
             "type": "string",
             "description": "Cuerpo de la notificación",
-            "example": "Tu conductor Juan Carlos está en camino. Llegará en aproximadamente 5 minutos a la Carrera 7 #32-16, Chapinero, Bogotá."
+            "example": "Tu conductor Luis Andrés está en camino. Llegará en aproximadamente 5 minutos a la Av. Amazonas N36-152, La Mariscal, Quito."
           },
           "status": {
             "type": "string",
