@@ -1,0 +1,159 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Payment Service",
+    "description": "Servicio de pagos con integración Stripe",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local development"
+    }
+  ],
+  "paths": {
+    "/payments/intent": {
+      "post": {
+        "operationId": "PaymentController_createPaymentIntent",
+        "summary": "Crear un Payment Intent de Stripe",
+        "tags": ["payments"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentIntentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment Intent creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "clientSecret": {
+                      "type": "string",
+                      "description": "Client secret de Stripe para completar el pago"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos de entrada inválidos o error de Stripe"
+          }
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "operationId": "WebhookController_handleStripeWebhook",
+        "summary": "Webhook de Stripe para eventos de pago",
+        "tags": ["webhooks"],
+        "parameters": [
+          {
+            "name": "stripe-signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Firma de verificación de Stripe"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Raw body del evento de Stripe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Evento procesado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "received": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Firma inválida o raw body faltante"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PriceDto": {
+        "type": "object",
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "minimum": 50,
+            "example": 5000,
+            "description": "Monto en centavos (mínimo 50)"
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["USD"],
+            "example": "USD",
+            "description": "Moneda (solo USD soportado)"
+          }
+        }
+      },
+      "CreatePaymentIntentDto": {
+        "type": "object",
+        "required": ["userId", "referenceId", "price"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000",
+            "description": "ID del usuario que realiza el pago"
+          },
+          "referenceId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "660e8400-e29b-41d4-a716-446655440001",
+            "description": "ID de referencia (viaje, tour, etc.)"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceDto"
+          }
+        }
+      },
+      "TransactionStatus": {
+        "type": "string",
+        "enum": ["pending", "succeeded", "failed"],
+        "description": "Estado de la transacción"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

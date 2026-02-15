@@ -6,9 +6,11 @@ import {
   RawBodyRequest,
   BadRequestException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { Request } from 'express';
 import { HandleStripeEventUseCase } from '@going-monorepo-clean/domains-payment-application';
 
+@ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhookController {
   constructor(
@@ -16,6 +18,10 @@ export class WebhookController {
   ) {}
 
   @Post('stripe')
+  @ApiOperation({ summary: 'Webhook de Stripe para eventos de pago' })
+  @ApiHeader({ name: 'stripe-signature', description: 'Firma de verificación de Stripe', required: true })
+  @ApiResponse({ status: 201, description: 'Evento procesado exitosamente', schema: { properties: { received: { type: 'boolean', example: true } } } })
+  @ApiResponse({ status: 400, description: 'Firma inválida o raw body faltante' })
   async handleStripeWebhook(
     @Headers('stripe-signature') signature: string | undefined,
     @Req() req: RawBodyRequest<Request>,
