@@ -15,12 +15,18 @@ export interface PaymentRequestData {
     amount: { amount: number; currency: string };
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 /**
  * Cliente HTTP puro para el dominio Payment.
  * Este es el Adaptador intermedio.
  */
 export class PaymentApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/payments';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/payments`;
+    }
     
     public async requestIntent(data: PaymentRequestData, token: string): Promise<Result<PaymentIntentDto, Error>> {
         try {

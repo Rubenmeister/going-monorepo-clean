@@ -18,8 +18,14 @@ interface ExperienceFilters {
     maxPrice?: number;
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 export class ExperienceApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/experiences';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/experiences`;
+    }
     
     public async search(filters: ExperienceFilters): Promise<Result<ExperienceDto[], Error>> {
         try {

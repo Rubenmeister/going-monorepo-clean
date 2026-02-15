@@ -26,8 +26,14 @@ export interface CreateBookingRequest {
  * Cliente HTTP puro para el dominio Booking.
  * Este es el Adaptador intermedio.
  */
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 export class BookingApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/bookings';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/bookings`;
+    }
     
     public async create(data: CreateBookingRequest, token: string): Promise<Result<BookingDto, Error>> {
         try {

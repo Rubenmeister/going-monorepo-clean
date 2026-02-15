@@ -17,8 +17,14 @@ interface TourFilters {
     category?: string;
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 export class TourApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/tours';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/tours`;
+    }
     
     public async search(filters: TourFilters): Promise<Result<TourDto[], Error>> {
         try {

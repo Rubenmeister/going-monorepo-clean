@@ -17,11 +17,17 @@ export interface UserAuthDto {
     };
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 /**
  * Cliente HTTP puro para el dominio User.
  */
 export class UserApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/auth';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/auth`;
+    }
     
     public async login(credentials: LoginCredentialsDto): Promise<Result<UserAuthDto, Error>> {
         try {

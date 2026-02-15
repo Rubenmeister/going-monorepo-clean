@@ -14,11 +14,17 @@ export interface DriverLocationDto {
     updatedAt: Date;
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 /**
  * Cliente HTTP/WebSocket puro para el dominio Tracking.
  */
 export class TrackingApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/tracking';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/tracking`;
+    }
     
     /**
      * Lado del conductor: Llama al endpoint HTTP interno para actualizar la ubicación.

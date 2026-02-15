@@ -17,8 +17,14 @@ export interface AccommodationDto {
  * Cliente HTTP puro para el dominio Accommodation.
  * Este es el Adaptador intermedio.
  */
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 export class AccommodationApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/accommodations';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/accommodations`;
+    }
     
     // El cliente de API no requiere token para buscar
     public async search(filters: SearchAccommodationDto): Promise<Result<AccommodationDto[], Error>> {

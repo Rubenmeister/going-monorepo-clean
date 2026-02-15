@@ -19,11 +19,17 @@ export interface RequestTripRequest {
     price: any;
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 /**
  * Cliente HTTP puro para el dominio Transport.
  */
 export class TransportApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/transport';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/transport`;
+    }
     
     public async requestTrip(data: RequestTripRequest, token: string): Promise<Result<TripDto, Error>> {
         try {

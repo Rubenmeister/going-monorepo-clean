@@ -12,11 +12,17 @@ export interface NotificationDto {
     readAt?: Date;
 }
 
+const API_GATEWAY_URL = process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:3000';
+
 /**
  * Cliente HTTP puro para el dominio Notification.
  */
 export class NotificationApiClient {
-    private readonly baseUrl = 'http://localhost:3000/api/notifications';
+    private readonly baseUrl: string;
+
+    constructor(baseUrl?: string) {
+        this.baseUrl = baseUrl || `${API_GATEWAY_URL}/api/notifications`;
+    }
     
     public async getByUserId(userId: UUID, token: string): Promise<Result<NotificationDto[], Error>> {
         try {
