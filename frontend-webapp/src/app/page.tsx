@@ -8,23 +8,23 @@ export default function HomePage() {
   
   const handleTestLogin = () => {
     // 2. Llamada directa al Caso de Uso de Login
-    domain.auth.login({ email: 'user@test.com', password: 'password123' });
+    domain.auth.login.execute({ email: 'user@test.com', password: 'password123' });
   };
   
   const handleTestSearch = () => {
     // 3. Llamada a un Caso de Uso de Búsqueda
-    domain.search.accommodations({ city: 'Quito', guests: 2 });
+    domain.search.accommodations.execute({ city: 'Quito', guests: 2 } as any);
   };
   
   const handleTestTrip = () => {
     // 3. Llamada a un Caso de Uso de Transporte
     if (auth.user) {
-        domain.transport.requestTrip({
+        domain.transport.requestTrip.execute({
             userId: auth.user.id,
             origin: { address: 'Quito', city: 'Quito', country: 'EC', latitude: -0.18, longitude: -78.47 },
             destination: { address: 'Guayaquil', city: 'Guayaquil', country: 'EC', latitude: -2.18, longitude: -79.88 },
-            price: { amount: 5000, currency: 'USD' } // $50.00
-        });
+            price: { amount: 5000, currency: 'USD' },
+        } as any, '' /* TODO: pass auth token */);
     }
   };
 

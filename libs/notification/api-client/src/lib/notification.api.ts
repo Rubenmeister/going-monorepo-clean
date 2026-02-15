@@ -30,7 +30,7 @@ export class NotificationApiClient {
             const data: NotificationDto[] = await response.json();
             
             if (!response.ok) {
-                return err(new Error(data.message || 'Error al obtener notificaciones.'));
+                return err(new Error((data as any).message || 'Error al obtener notificaciones.'));
             }
             
             return ok(data);

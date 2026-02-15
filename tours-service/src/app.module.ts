@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { InfrastructureModule } from './infrastructure/persistence/schemas/infrastructure.module';
 import { TourController } from './api/tour.controller';
 import {
   CreateTourUseCase,

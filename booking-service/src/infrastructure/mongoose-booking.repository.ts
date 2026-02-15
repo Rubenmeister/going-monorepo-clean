@@ -11,7 +11,7 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 import {
   BookingDocument,
   BookingModelSchema,
-} from './schemas/booking.schema';
+} from './persistence/schemas/booking.schema';
 
 @Injectable()
 export class MongooseBookingRepository implements IBookingRepository {

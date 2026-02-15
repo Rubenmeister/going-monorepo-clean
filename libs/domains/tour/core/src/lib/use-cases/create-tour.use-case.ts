@@ -19,7 +19,7 @@ export class CreateTourUseCase {
       throw new InternalServerErrorException(locationVOResult.error.message);
     }
     const locationVO = locationVOResult.value;
-    const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
+    const priceVO = Money.fromPrimitives({ amount: dto.price.amount, currency: dto.price.currency as 'USD' });
 
     const tourResult = Tour.create({
       hostId: dto.hostId,

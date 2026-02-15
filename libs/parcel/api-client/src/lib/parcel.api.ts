@@ -37,7 +37,7 @@ export class ParcelApiClient {
             const responseData: ParcelDto = await response.json();
             
             if (!response.ok) {
-                return err(new Error(responseData.message || 'Error al crear el envío.'));
+                return err(new Error((responseData as any).message || 'Error al crear el envío.'));
             }
             
             return ok(responseData);

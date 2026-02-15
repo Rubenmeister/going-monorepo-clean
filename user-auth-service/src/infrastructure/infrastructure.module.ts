@@ -11,7 +11,7 @@ import { MongooseUserRepository } from './persistence/mongoose-user.repository';
 import {
   UserModelSchema,
   UserSchema,
-} from './persistence/schemas/user.schema';
+} from './user.schema';
 import { BcryptHasher } from './services/bcrypt.hasher';
 import { JwtTokenService } from './services/jwt.token.service';
 

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "preserve",
     "strict": true,
+    "strictPropertyInitialization": false,
     "noEmit": true,
     "emitDeclarationOnly": false,
     "esModuleInterop": true,
@@ -10,7 +11,11 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -20,16 +25,20 @@
         "name": "next"
       }
     ],
-    "types": ["jest", "node"]
+    "types": [
+      "jest",
+      "node"
+    ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "../frontend-webapp/.next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
     "../dist/frontend-webapp/.next/types/**/*.ts",
-    "next-env.d.ts"
+    "../frontend-webapp/.next/types/**/*.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,20 +1,9 @@
-import { IsNotEmpty, IsString, IsUUID, IsEnum } from 'class-validator';
-import { NotificationChannelType } from '@going-monorepo-clean/domains-notification-core';
+// Exporta las Entidades
+export * from './lib/entities/notification.entity';
 
-export class CreateNotificationDto {
-  @IsNotEmpty()
-  @IsUUID()
-  userId: string; // El destinatario
+// Exporta los Value Objects
+export * from './lib/value-objects/NotificationChannel.vo';
 
-  @IsNotEmpty()
-  @IsEnum(NotificationChannelType)
-  channel: NotificationChannelType;
-
-  @IsNotEmpty()
-  @IsString()
-  title: string;
-
-  @IsNotEmpty()
-  @IsString()
-  body: string;
-}
+// Exporta los Ports
+export * from './lib/ports/inotification.repository';
+export * from './lib/ports/inotification.gateway';

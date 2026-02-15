@@ -39,7 +39,7 @@ export class TransportApiClient {
             const responseData: TripDto = await response.json();
             
             if (!response.ok) {
-                return err(new Error(responseData.message || 'Error al solicitar el viaje.'));
+                return err(new Error((responseData as any).message || 'Error al solicitar el viaje.'));
             }
             
             return ok(responseData);

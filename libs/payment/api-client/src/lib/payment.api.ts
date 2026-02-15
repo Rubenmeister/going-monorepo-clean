@@ -36,7 +36,7 @@ export class PaymentApiClient {
             const responseData: PaymentIntentDto = await response.json();
             
             if (!response.ok) {
-                return err(new Error(responseData.message || 'Error al solicitar el intento de pago.'));
+                return err(new Error((responseData as any).message || 'Error al solicitar el intento de pago.'));
             }
             
             return ok(responseData);

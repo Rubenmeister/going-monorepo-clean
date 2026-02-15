@@ -1,3 +1,6 @@
+'use client';
+
+import React, { createContext, useContext } from 'react';
 import {
   LoginUseCase,
   LoadSessionUseCase,
@@ -65,3 +68,17 @@ class DependencyProvider {
 }
 
 export const dependencyProvider = new DependencyProvider();
+
+const AppContext = createContext<DependencyProvider>(dependencyProvider);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <AppContext.Provider value={dependencyProvider}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useAppContext() {
+  return useContext(AppContext);
+}

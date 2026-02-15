@@ -10,7 +10,7 @@ import {
 import {
   TourDocument,
   TourModelSchema,
-} from './schemas/tour.schema';
+} from './tour.schema';
 
 @Injectable()
 export class MongooseTourRepository implements ITourRepository {

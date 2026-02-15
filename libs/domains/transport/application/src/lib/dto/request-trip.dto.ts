@@ -26,7 +26,15 @@ class LocationDto {
   @IsNotEmpty()
   @IsString()
   address: string;
-  
+
+  @IsNotEmpty()
+  @IsString()
+  city: string;
+
+  @IsNotEmpty()
+  @IsString()
+  country: string;
+
   @IsNotEmpty()
   @IsLatitude()
   latitude: number;

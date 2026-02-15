@@ -1,6 +1,11 @@
 import { Result, ok, err } from 'neverthrow';
 
-export type RoleType = 'admin' | 'user' | 'driver' | 'host';
+export enum RoleType {
+  ADMIN = 'admin',
+  USER = 'user',
+  DRIVER = 'driver',
+  HOST = 'host',
+}
 
 export class Role {
   readonly value: RoleType;

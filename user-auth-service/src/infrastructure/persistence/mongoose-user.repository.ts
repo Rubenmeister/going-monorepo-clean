@@ -7,7 +7,7 @@ import {
   IUserRepository,
 } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 import { UUID } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope
-import { UserDocument, UserModelSchema } from './schemas/user.schema';
+import { UserDocument, UserModelSchema } from '../user.schema';
 
 @Injectable()
 export class MongooseUserRepository implements IUserRepository {

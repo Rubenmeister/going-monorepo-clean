@@ -34,7 +34,7 @@ export class UserApiClient {
             const data: UserAuthDto = await response.json();
             
             if (!response.ok) {
-                return err(new Error(data.message || 'Credenciales inválidas.'));
+                return err(new Error((data as any).message || 'Credenciales inválidas.'));
             }
             
             return ok(data);

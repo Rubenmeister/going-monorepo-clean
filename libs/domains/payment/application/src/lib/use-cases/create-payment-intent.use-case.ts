@@ -18,7 +18,7 @@ export class CreatePaymentIntentUseCase {
   ) {}
 
   async execute(dto: CreatePaymentIntentDto): Promise<{ clientSecret: string }> {
-    const amountVO = new Money(dto.price.amount, dto.price.currency);
+    const amountVO = Money.fromPrimitives({ amount: dto.price.amount, currency: dto.price.currency });
 
     const transactionResult = Transaction.create({
       amount: amountVO,

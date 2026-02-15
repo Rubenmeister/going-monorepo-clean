@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import { TourApiClient } from '@going-monorepo-clean/tour-api-client'; // <--- NUEVA DEPENDENCIA
-import { SearchExperienceDto } from '../../experience-frontend/application/src/lib/dto/search-experience.dto'; // Reutilizamos DTO
+import { SearchTourDto } from '../dto/search-tour.dto';
 
 // --- View Model ---
 export interface TourViewModel {
@@ -21,7 +21,7 @@ export class SearchToursUseCase {
         this.apiClient = new TourApiClient(); 
     }
 
-    async execute(filters: SearchExperienceDto): Promise<Result<TourViewModel[], Error>> {
+    async execute(filters: SearchTourDto): Promise<Result<TourViewModel[], Error>> {
         // 1. Llamar al Adaptador (API Client)
         const result = await this.apiClient.search({ city: filters.city, category: 'ADVENTURE' }); // Filtros de ejemplo
 

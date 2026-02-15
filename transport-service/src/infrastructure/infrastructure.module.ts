@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
-import { MongooseTripRepository } from './persistence/mongoose-trip.repository';
+import { MongooseTripRepository } from './mongoose-trip.repository';
 import {
   TripModelSchema,
   TripSchema,
-} from './persistence/schemas/trip.schema';
+} from './schemas/trip.schema';
 
 @Module({
   imports: [

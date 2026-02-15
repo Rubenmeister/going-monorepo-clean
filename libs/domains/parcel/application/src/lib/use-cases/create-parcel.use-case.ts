@@ -14,7 +14,7 @@ export class CreateParcelUseCase {
   ) {}
 
   async execute(dto: CreateParcelDto): Promise<{ id: string }> {
-    const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
+    const priceVO = Money.fromPrimitives({ amount: dto.price.amount, currency: dto.price.currency as 'USD' });
     const originVOResult = Location.create(dto.origin);
     const destinationVOResult = Location.create(dto.destination);
 

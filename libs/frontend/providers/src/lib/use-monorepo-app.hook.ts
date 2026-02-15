@@ -1,7 +1,31 @@
 import { dependencyProvider } from './auth-context.provider';
 
+// Stub auth state - will be replaced with real auth state management in Phase 3
+interface AuthUser {
+  id: string;
+  firstName: string;
+  roles: string[];
+  isAdmin(): boolean;
+}
+
+interface AuthState {
+  user: AuthUser | null;
+  isLoading: boolean;
+  error: string | null;
+  logout: () => void;
+}
+
 export const useMonorepoApp = () => {
+  // Placeholder auth state (Phase 1: compile only)
+  const auth: AuthState = {
+    user: null,
+    isLoading: false,
+    error: null,
+    logout: () => { /* TODO: implement in Phase 3 */ },
+  };
+
   return {
+    auth,
     domain: {
       auth: {
         login: dependencyProvider.loginUseCase,
@@ -32,6 +56,10 @@ export const useMonorepoApp = () => {
       },
       notification: {
         getByUser: dependencyProvider.getUserNotificationsUseCase,
+      },
+      search: {
+        accommodations: dependencyProvider.searchAccommodationsUseCase,
+        tours: dependencyProvider.searchToursUseCase,
       },
     },
   };

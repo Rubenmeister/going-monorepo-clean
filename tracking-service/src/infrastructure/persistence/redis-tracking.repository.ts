@@ -23,7 +23,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
       
       await this.cache.set(key, primitives, KEY_TTL_SECONDS);
       
-      const redisClient = this.cache.store.getClient();
+      const redisClient = (this.cache as any).store.getClient();
       await redisClient.sAdd(ACTIVE_DRIVERS_SET, location.driverId);
       
       return ok(undefined);
@@ -44,7 +44,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
 
   async findAllActive(): Promise<Result<DriverLocation[], Error>> {
     try {
-      const redisClient = this.cache.store.getClient();
+      const redisClient = (this.cache as any).store.getClient();
       const driverIds = await redisClient.sMembers(ACTIVE_DRIVERS_SET);
 
       if (!driverIds || driverIds.length === 0) {
@@ -52,7 +52,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
       }
 
       const keys = driverIds.map(id => `${DRIVER_KEY_PREFIX}${id}`);
-      const results = await this.cache.store.mGet(keys);
+      const results = await (this.cache as any).store.mGet(keys);
 
       const locations = results
         .filter(res => !!res)

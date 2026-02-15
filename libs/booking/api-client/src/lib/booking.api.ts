@@ -43,7 +43,7 @@ export class BookingApiClient {
             const responseData: BookingDto = await response.json();
             
             if (!response.ok) {
-                return err(new Error(responseData.message || 'Error al crear la reserva.'));
+                return err(new Error((responseData as any).message || 'Error al crear la reserva.'));
             }
             
             return ok(responseData);
@@ -53,7 +53,7 @@ export class BookingApiClient {
     }
 
     public async getByUser(userId: UUID, token: string): Promise<Result<BookingDto[], Error>> {
-        // Lógica para obtener reservas de un usuario
-        // ...
+        // TODO: implement in Phase 3
+        return err(new Error('Not implemented'));
     }
 }

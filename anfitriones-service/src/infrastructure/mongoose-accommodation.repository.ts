@@ -10,7 +10,7 @@ import {
 import {
   AccommodationDocument,
   AccommodationModelSchema,
-} from './schemas/accommodation.schema';
+} from './persistence/schemas/accommodation.schema';
 
 @Injectable()
 export class MongooseAccommodationRepository implements IAccommodationRepository {

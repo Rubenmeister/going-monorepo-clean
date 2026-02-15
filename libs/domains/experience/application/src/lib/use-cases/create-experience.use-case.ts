@@ -20,7 +20,7 @@ export class CreateExperienceUseCase {
     }
     
     const locationVO = locationVOResult.value;
-    const priceVO = new Money(dto.price.amount, dto.price.currency);
+    const priceVO = Money.fromPrimitives({ amount: dto.price.amount, currency: dto.price.currency });
 
     const experienceResult = Experience.create({
       hostId: dto.hostId,

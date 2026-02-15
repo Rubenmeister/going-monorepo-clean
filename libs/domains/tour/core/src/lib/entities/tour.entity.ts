@@ -3,7 +3,12 @@ import { Result, ok, err } from 'neverthrow';
 import { UUID, Money } from '@going-monorepo-clean/shared-domain';
 import { Location } from '@going-monorepo-clean/shared-domain'; // Asumiendo que Location está en shared
 
-export type TourCategory = 'ADVENTURE' | 'CULTURAL' | 'GASTRONOMY' | 'NATURE';
+export enum TourCategory {
+  ADVENTURE = 'ADVENTURE',
+  CULTURAL = 'CULTURAL',
+  GASTRONOMY = 'GASTRONOMY',
+  NATURE = 'NATURE',
+}
 export type TourStatus = 'draft' | 'published' | 'archived';
 
 export interface TourProps {

@@ -39,7 +39,7 @@ export class AccommodationApiClient {
     }
 
     public async getById(id: UUID): Promise<Result<AccommodationDto, Error>> {
-        // Lógica para obtener un alojamiento por ID
-        // ...
+        // TODO: implement in Phase 3
+        return err(new Error('Not implemented'));
     }
 }

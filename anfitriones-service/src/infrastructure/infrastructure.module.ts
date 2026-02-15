@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IAccommodationRepository } from '@going-monorepo-clean/domains-accommodation-core';
-import { MongooseAccommodationRepository } from './persistence/mongoose-accommodation.repository';
+import { MongooseAccommodationRepository } from './mongoose-accommodation.repository';
 import {
   AccommodationModelSchema,
   AccommodationSchema,

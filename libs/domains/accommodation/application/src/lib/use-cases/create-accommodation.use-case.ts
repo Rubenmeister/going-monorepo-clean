@@ -16,7 +16,7 @@ export class CreateAccommodationUseCase {
 
   async execute(dto: CreateAccommodationDto): Promise<{ id: string }> {
     const locationVO = Location.create(dto.location)._unsafeUnwrap(); // Asumiendo DTO válido
-    const priceVO = new Money(dto.pricePerNight.amount, dto.pricePerNight.currency);
+    const priceVO = Money.fromPrimitives({ amount: dto.pricePerNight.amount, currency: dto.pricePerNight.currency });
 
     const accommodationResult = Accommodation.create({
       hostId: dto.hostId,
