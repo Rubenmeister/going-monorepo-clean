@@ -1,3 +1,3 @@
-export function tourFrontend(): string {
-  return 'tour-frontend';
-}
+export {
+  SearchToursUseCase,
+} from '@going-monorepo-clean/domains-tour-frontend-application';

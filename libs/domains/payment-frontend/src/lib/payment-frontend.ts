@@ -1,3 +1,3 @@
-export function paymentFrontend(): string {
-  return 'payment-frontend';
-}
+export {
+  RequestPaymentIntentUseCase,
+} from '@going-monorepo-clean/domains-payment-frontend-application';

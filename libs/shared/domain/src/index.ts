@@ -6,6 +6,9 @@ export * from './lib/location.vo';
 // Exporta los DTOs compartidos
 export * from './lib/dtos/shared.dtos';
 
+// Exporta el Event Bus (puerto)
+export * from './lib/event-bus';
+
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
 export { Result, ok, err } from 'neverthrow';

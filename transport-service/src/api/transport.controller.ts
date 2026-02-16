@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
 import {
   RequestTripDto,
   RequestTripUseCase,
   AcceptTripUseCase,
+  GetActiveTripByUserUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
@@ -13,6 +14,7 @@ export class TransportController {
   constructor(
     private readonly requestTripUseCase: RequestTripUseCase,
     private readonly acceptTripUseCase: AcceptTripUseCase,
+    private readonly getActiveTripByUserUseCase: GetActiveTripByUserUseCase,
   ) {}
 
   @Post('request')
@@ -22,6 +24,15 @@ export class TransportController {
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
   async requestTrip(@Body() dto: RequestTripDto): Promise<any> {
     return this.requestTripUseCase.execute(dto);
+  }
+
+  @Get('user/:userId/active')
+  @ApiOperation({ summary: 'Obtener el viaje activo de un usuario' })
+  @ApiParam({ name: 'userId', description: 'ID del usuario', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiResponse({ status: 200, description: 'Viaje activo del usuario (o null si no tiene)' })
+  async getActiveTrip(@Param('userId') userId: UUID): Promise<any> {
+    const trip = await this.getActiveTripByUserUseCase.execute(userId);
+    return trip ? trip.toPrimitives() : null;
   }
 
   @Patch(':tripId/accept')

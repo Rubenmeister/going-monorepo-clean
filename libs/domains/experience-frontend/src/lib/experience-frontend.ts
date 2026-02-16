@@ -1,3 +1,3 @@
-export function experienceFrontend(): string {
-  return 'experience-frontend';
-}
+export {
+  SearchExperiencesUseCase,
+} from '@going-monorepo-clean/domains-experience-frontend-application';

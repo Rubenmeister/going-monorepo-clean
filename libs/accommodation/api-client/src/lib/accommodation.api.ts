@@ -45,7 +45,18 @@ export class AccommodationApiClient {
     }
 
     public async getById(id: UUID): Promise<Result<AccommodationDto, Error>> {
-        // TODO: implement in Phase 3
-        return err(new Error('Not implemented'));
+        try {
+            const response = await fetch(`${this.baseUrl}/${id}`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                return err(new Error((errorData as any).message || 'Error al obtener el alojamiento.'));
+            }
+
+            const data: AccommodationDto = await response.json();
+            return ok(data);
+        } catch (error) {
+            return err(new Error('Error de red al obtener el alojamiento.'));
+        }
     }
 }

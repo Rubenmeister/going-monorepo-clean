@@ -6,6 +6,7 @@ import { TransportController } from './api/transport.controller';
 import {
   RequestTripUseCase,
   AcceptTripUseCase,
+  GetActiveTripByUserUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 
 @Module({
@@ -20,6 +21,7 @@ import {
   providers: [
     RequestTripUseCase,
     AcceptTripUseCase,
+    GetActiveTripByUserUseCase,
   ],
 })
 export class AppModule {}

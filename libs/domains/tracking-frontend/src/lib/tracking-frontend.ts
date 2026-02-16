@@ -1,3 +1,4 @@
-export function trackingFrontend(): string {
-  return 'tracking-frontend';
-}
+export {
+  LocationUpdateDto,
+  BroadcastDriverLocationUseCase,
+} from '@going-monorepo-clean/domains-tracking-frontend-application';

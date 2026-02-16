@@ -13,7 +13,25 @@ export class GetActiveTripUseCase {
     }
 
     public async execute(userId: UUID, token: string): Promise<Result<TripViewModel | null, Error>> {
-        // TODO: Add a dedicated getActiveTrip endpoint to TransportApiClient
-        return ok(null);
+        const result = await this.apiClient.getActiveTrip(userId, token);
+
+        if (result.isErr()) {
+            return err(result.error);
+        }
+
+        const tripDto = result.value;
+        if (!tripDto) {
+            return ok(null);
+        }
+
+        const viewModel: TripViewModel = {
+            id: tripDto.id,
+            status: tripDto.status,
+            originCity: tripDto.origin.city,
+            destinationCity: tripDto.destination.city,
+            price: tripDto.price.amount / 100,
+        };
+
+        return ok(viewModel);
     }
 }

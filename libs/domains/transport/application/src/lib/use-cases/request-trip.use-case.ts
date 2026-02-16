@@ -1,18 +1,21 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import {
   Trip,
   ITripRepository,
+  TripRequestedEvent,
 } from '@going-monorepo-clean/domains-transport-core';
-import { Money, Location, UUID } from '@going-monorepo-clean/shared-domain';
+import { Money, Location, UUID, IEventBus } from '@going-monorepo-clean/shared-domain';
 import { RequestTripDto } from '../dto/request-trip.dto';
 
 @Injectable()
 export class RequestTripUseCase {
+  private readonly logger = new Logger(RequestTripUseCase.name);
+
   constructor(
     @Inject(ITripRepository)
     private readonly tripRepo: ITripRepository,
-    // Aquí también podrías inyectar un "EventBus" para notificar a los conductores
-    // @Inject(IEventBus) private readonly eventBus: IEventBus,
+    @Inject(IEventBus)
+    private readonly eventBus: IEventBus,
   ) {}
 
   async execute(dto: RequestTripDto): Promise<{ id: string }> {
@@ -44,9 +47,20 @@ export class RequestTripUseCase {
     if (saveResult.isErr()) {
       throw new InternalServerErrorException(saveResult.error.message);
     }
-    
-    // 4. (Opcional) Disparar un evento para buscar conductores
-    // await this.eventBus.publish(new TripRequestedEvent(trip.id, trip.origin));
+
+    // Disparar evento para buscar conductores cercanos
+    try {
+      await this.eventBus.publish(
+        new TripRequestedEvent(
+          trip.id,
+          dto.userId,
+          dto.origin.city,
+          dto.destination.city,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to publish TripRequestedEvent: ${error.message}`);
+    }
 
     return { id: trip.id };
   }

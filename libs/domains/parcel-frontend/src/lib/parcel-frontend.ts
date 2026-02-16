@@ -1,3 +1,4 @@
-export function parcelFrontend(): string {
-  return 'parcel-frontend';
-}
+export {
+  CreateParcelDto,
+  CreateParcelUseCase,
+} from '@going-monorepo-clean/domains-parcel-frontend-application';

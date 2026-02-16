@@ -59,7 +59,23 @@ export class BookingApiClient {
     }
 
     public async getByUser(userId: UUID, token: string): Promise<Result<BookingDto[], Error>> {
-        // TODO: implement in Phase 3
-        return err(new Error('Not implemented'));
+        try {
+            const response = await fetch(`${this.baseUrl}/user/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                return err(new Error((errorData as any).message || 'Error al obtener las reservas.'));
+            }
+
+            const data: BookingDto[] = await response.json();
+            return ok(data);
+        } catch (error) {
+            return err(new Error('Error de red al obtener las reservas.'));
+        }
     }
 }

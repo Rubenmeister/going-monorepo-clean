@@ -1,3 +1,3 @@
-export function accommodationFrontend(): string {
-  return 'accommodation-frontend';
-}
+export {
+  SearchAccommodationsUseCase,
+} from '@going-monorepo-clean/domains-accommodation-frontend-application';
