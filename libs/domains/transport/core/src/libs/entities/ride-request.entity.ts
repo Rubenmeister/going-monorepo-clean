@@ -6,6 +6,8 @@ import { SeatPosition, FRONT_SEAT_PREMIUM_CENTS } from '../value-objects/seat.vo
 
 export type RideType = 'PRIVATE' | 'SHARED';
 
+export type PaymentStatus = 'none' | 'pending' | 'processing' | 'paid' | 'failed';
+
 export type RideRequestStatus =
   | 'pending'
   | 'searching'
@@ -33,6 +35,9 @@ export interface RideRequestProps {
   assignedDriverId?: UUID;
   assignedSeatNumber?: number;
   status: RideRequestStatus;
+  paymentStatus: PaymentStatus;
+  paymentIntentClientSecret?: string;
+  transactionId?: UUID;
   requestedAt: Date;
   assignedAt?: Date;
   completedAt?: Date;
@@ -56,6 +61,9 @@ export class RideRequest {
   readonly assignedDriverId?: UUID;
   readonly assignedSeatNumber?: number;
   readonly status: RideRequestStatus;
+  readonly paymentStatus: PaymentStatus;
+  readonly paymentIntentClientSecret?: string;
+  readonly transactionId?: UUID;
   readonly requestedAt: Date;
   readonly assignedAt?: Date;
   readonly completedAt?: Date;
@@ -78,6 +86,9 @@ export class RideRequest {
     this.assignedDriverId = props.assignedDriverId;
     this.assignedSeatNumber = props.assignedSeatNumber;
     this.status = props.status;
+    this.paymentStatus = props.paymentStatus;
+    this.paymentIntentClientSecret = props.paymentIntentClientSecret;
+    this.transactionId = props.transactionId;
     this.requestedAt = props.requestedAt;
     this.assignedAt = props.assignedAt;
     this.completedAt = props.completedAt;
@@ -126,10 +137,39 @@ export class RideRequest {
       seatPremium: seatPremiumResult.value,
       totalPrice: totalPriceResult.value,
       status: 'pending',
+      paymentStatus: 'none',
       requestedAt: new Date(),
       priority: props.priority,
     }));
   }
+
+  // --- Payment lifecycle ---
+
+  public markPaymentPending(clientSecret: string): RideRequest {
+    return new RideRequest({
+      ...this,
+      paymentStatus: 'pending',
+      paymentIntentClientSecret: clientSecret,
+    });
+  }
+
+  public markPaymentProcessing(): RideRequest {
+    return new RideRequest({ ...this, paymentStatus: 'processing' });
+  }
+
+  public markPaymentPaid(transactionId: UUID): RideRequest {
+    return new RideRequest({
+      ...this,
+      paymentStatus: 'paid',
+      transactionId,
+    });
+  }
+
+  public markPaymentFailed(): RideRequest {
+    return new RideRequest({ ...this, paymentStatus: 'failed' });
+  }
+
+  // --- Ride lifecycle ---
 
   public markSearching(): RideRequest {
     return new RideRequest({ ...this, status: 'searching' });
@@ -221,6 +261,9 @@ export class RideRequest {
       assignedDriverId: this.assignedDriverId,
       assignedSeatNumber: this.assignedSeatNumber,
       status: this.status,
+      paymentStatus: this.paymentStatus,
+      paymentIntentClientSecret: this.paymentIntentClientSecret,
+      transactionId: this.transactionId,
       requestedAt: this.requestedAt,
       assignedAt: this.assignedAt,
       completedAt: this.completedAt,

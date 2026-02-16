@@ -30,3 +30,5 @@ export * from './libs/events/vehicle-assigned.event';
 export * from './libs/events/ride-request-created.event';
 export * from './libs/events/shipment-assigned.event';
 export * from './libs/events/masked-phone-assigned.event';
+export * from './libs/events/ride-completed.event';
+export * from './libs/events/shipment-delivered.event';

@@ -72,6 +72,15 @@ export class RideRequestModelSchema {
   @Prop({ required: true, enum: ['pending', 'searching', 'assigned', 'driver_en_route', 'passenger_picked_up', 'in_progress', 'completed', 'cancelled', 'no_driver_found'] })
   status: string;
 
+  @Prop({ required: true, enum: ['none', 'pending', 'processing', 'paid', 'failed'], default: 'none' })
+  paymentStatus: string;
+
+  @Prop()
+  paymentIntentClientSecret?: string;
+
+  @Prop()
+  transactionId?: string;
+
   @Prop({ required: true })
   requestedAt: Date;
 

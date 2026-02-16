@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Result, ok, err } from 'neverthrow';
 import { UUID, Money, Location } from '@going-monorepo-clean/shared-domain';
+import { PaymentStatus } from './ride-request.entity';
 
 export type ShipmentStatus =
   | 'pending'
@@ -25,6 +26,9 @@ export interface ShipmentProps {
   weightKg: number;
   price: Money;
   status: ShipmentStatus;
+  paymentStatus: PaymentStatus;
+  paymentIntentClientSecret?: string;
+  transactionId?: UUID;
   createdAt: Date;
   pickedUpAt?: Date;
   deliveredAt?: Date;
@@ -44,6 +48,9 @@ export class Shipment {
   readonly weightKg: number;
   readonly price: Money;
   readonly status: ShipmentStatus;
+  readonly paymentStatus: PaymentStatus;
+  readonly paymentIntentClientSecret?: string;
+  readonly transactionId?: UUID;
   readonly createdAt: Date;
   readonly pickedUpAt?: Date;
   readonly deliveredAt?: Date;
@@ -62,6 +69,9 @@ export class Shipment {
     this.weightKg = props.weightKg;
     this.price = props.price;
     this.status = props.status;
+    this.paymentStatus = props.paymentStatus;
+    this.paymentIntentClientSecret = props.paymentIntentClientSecret;
+    this.transactionId = props.transactionId;
     this.createdAt = props.createdAt;
     this.pickedUpAt = props.pickedUpAt;
     this.deliveredAt = props.deliveredAt;
@@ -95,9 +105,38 @@ export class Shipment {
       id: uuidv4(),
       ...props,
       status: 'pending',
+      paymentStatus: 'none',
       createdAt: new Date(),
     }));
   }
+
+  // --- Payment lifecycle ---
+
+  public markPaymentPending(clientSecret: string): Shipment {
+    return new Shipment({
+      ...this,
+      paymentStatus: 'pending',
+      paymentIntentClientSecret: clientSecret,
+    });
+  }
+
+  public markPaymentProcessing(): Shipment {
+    return new Shipment({ ...this, paymentStatus: 'processing' });
+  }
+
+  public markPaymentPaid(transactionId: UUID): Shipment {
+    return new Shipment({
+      ...this,
+      paymentStatus: 'paid',
+      transactionId,
+    });
+  }
+
+  public markPaymentFailed(): Shipment {
+    return new Shipment({ ...this, paymentStatus: 'failed' });
+  }
+
+  // --- Shipment lifecycle ---
 
   public assignToVehicle(vehicleId: UUID, scheduleId?: UUID): Result<Shipment, Error> {
     if (this.status !== 'pending') {
@@ -162,6 +201,9 @@ export class Shipment {
       weightKg: this.weightKg,
       price: this.price.toPrimitives(),
       status: this.status,
+      paymentStatus: this.paymentStatus,
+      paymentIntentClientSecret: this.paymentIntentClientSecret,
+      transactionId: this.transactionId,
       createdAt: this.createdAt,
       pickedUpAt: this.pickedUpAt,
       deliveredAt: this.deliveredAt,

@@ -66,6 +66,15 @@ export class ShipmentModelSchema {
   @Prop({ required: true, enum: ['pending', 'assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled', 'returned'] })
   status: string;
 
+  @Prop({ required: true, enum: ['none', 'pending', 'processing', 'paid', 'failed'], default: 'none' })
+  paymentStatus: string;
+
+  @Prop()
+  paymentIntentClientSecret?: string;
+
+  @Prop()
+  transactionId?: string;
+
   @Prop()
   createdAt: Date;
 

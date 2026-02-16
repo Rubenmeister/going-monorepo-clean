@@ -20,7 +20,9 @@ import { RouteController } from './api/route.controller';
 import { ShipmentController } from './api/shipment.controller';
 import { RideRequestController } from './api/ride-request.controller';
 import { DriverProfileController } from './api/driver-profile.controller';
+import { TransportSagaController } from './api/saga.controller';
 import { HealthController } from './api/health.controller';
+import { TransportPaymentSaga } from './saga/transport-payment.saga';
 import {
   RequestTripUseCase,
   AcceptTripUseCase,
@@ -55,6 +57,7 @@ import {
     ShipmentController,
     RideRequestController,
     DriverProfileController,
+    TransportSagaController,
     HealthController,
   ],
   providers: [
@@ -79,6 +82,7 @@ import {
     CreateRideRequestUseCase,
     AssignVehicleUseCase,
     RegisterDriverProfileUseCase,
+    TransportPaymentSaga,
   ],
 })
 export class AppModule {}
