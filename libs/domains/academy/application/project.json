@@ -1,0 +1,7 @@
+{
+  "name": "domains-academy-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/academy/application/src",
+  "projectType": "library",
+  "tags": []
+}

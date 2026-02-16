@@ -1,0 +1,7 @@
+{
+  "name": "domains-blog-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/blog/application/src",
+  "projectType": "library",
+  "tags": []
+}

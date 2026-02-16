@@ -51,6 +51,10 @@
       "@going-monorepo-clean/domains-booking-core": ["libs/domains/booking/core/src/index.ts"],
       "@going-monorepo-clean/domains-booking-application": ["libs/domains/booking/application/src/index.ts"],
       "@going-monorepo-clean/domains-accommodation-application": ["libs/domains/accommodation/application/src/index.ts"],
+      "@going-monorepo-clean/domains-blog-core": ["libs/domains/blog/core/src/index.ts"],
+      "@going-monorepo-clean/domains-blog-application": ["libs/domains/blog/application/src/index.ts"],
+      "@going-monorepo-clean/domains-academy-core": ["libs/domains/academy/core/src/index.ts"],
+      "@going-monorepo-clean/domains-academy-application": ["libs/domains/academy/application/src/index.ts"],
 
       "@going-monorepo-clean/domains-user-frontend-application": ["libs/domains/user-frontend/application/src/index.ts"],
       "@going-monorepo-clean/domains-booking-frontend-application": ["libs/domains/booking-frontend/application/src/index.ts"],
