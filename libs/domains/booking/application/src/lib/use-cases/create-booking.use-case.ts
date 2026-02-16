@@ -1,9 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Optional } from '@nestjs/common';
 import {
   Booking,
   IBookingRepository,
+  BookingCreatedEvent,
 } from '@going-monorepo-clean/domains-booking-core';
-import { Money } from '@going-monorepo-clean/shared-domain';
+import { Money, IEventBus } from '@going-monorepo-clean/shared-domain';
 import { CreateBookingDto } from '../dto/create-booking.dto';
 
 @Injectable()
@@ -11,6 +12,8 @@ export class CreateBookingUseCase {
   constructor(
     @Inject(IBookingRepository)
     private readonly bookingRepo: IBookingRepository,
+    @Optional() @Inject(IEventBus)
+    private readonly eventBus?: IEventBus,
   ) {}
 
   async execute(dto: CreateBookingDto): Promise<{ id: string }> {
@@ -37,6 +40,20 @@ export class CreateBookingUseCase {
 
     if (saveResult.isErr()) {
       throw new InternalServerErrorException(saveResult.error.message);
+    }
+
+    // Emit BookingCreatedEvent for the saga orchestrator
+    if (this.eventBus) {
+      await this.eventBus.publish(
+        new BookingCreatedEvent({
+          bookingId: booking.id,
+          userId: dto.userId,
+          serviceId: dto.serviceId,
+          serviceType: dto.serviceType,
+          totalAmount: dto.totalPrice.amount,
+          totalCurrency: dto.totalPrice.currency,
+        }),
+      );
     }
 
     return { id: booking.id };

@@ -21,6 +21,12 @@ export * from './lib/health';
 // Exporta Logging (CorrelationIdInterceptor, pinoLoggerConfig)
 export * from './lib/logging';
 
+// Exporta InMemoryEventBus
+export * from './lib/events';
+
+// Exporta Saga types
+export * from './lib/saga';
+
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
 export { Result, ok, err } from 'neverthrow';

@@ -1,8 +1,11 @@
-import { Inject, Injectable, Logger, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, InternalServerErrorException, NotFoundException, Optional } from '@nestjs/common';
 import {
   ITransactionRepository,
   IPaymentGateway,
+  PaymentSucceededEvent,
+  PaymentFailedEvent,
 } from '@going-monorepo-clean/domains-payment-core';
+import { IEventBus } from '@going-monorepo-clean/shared-domain';
 
 @Injectable()
 export class HandleStripeEventUseCase {
@@ -13,6 +16,8 @@ export class HandleStripeEventUseCase {
     private readonly paymentGateway: IPaymentGateway,
     @Inject(ITransactionRepository)
     private readonly transactionRepo: ITransactionRepository,
+    @Optional() @Inject(IEventBus)
+    private readonly eventBus?: IEventBus,
   ) {}
 
   async execute(payload: Buffer, signature: string): Promise<void> {
@@ -23,7 +28,7 @@ export class HandleStripeEventUseCase {
 
     if (eventResult.isErr()) {
       this.logger.error(`Webhook validation failed: ${eventResult.error.message}`);
-      throw eventResult.error; // Lanza el error para que Nest lo maneje (ej. 400 Bad Request)
+      throw eventResult.error;
     }
 
     const event = eventResult.value;
@@ -57,7 +62,17 @@ export class HandleStripeEventUseCase {
     transaction.succeed();
     await this.transactionRepo.update(transaction);
     this.logger.log(`Transaction ${transaction.id} marked as 'succeeded'`);
-    // Aquí podrías disparar un evento: new PaymentSucceededEvent(transaction.id, transaction.referenceId)
+
+    // Emit PaymentSucceededEvent for saga coordination
+    if (this.eventBus) {
+      await this.eventBus.publish(
+        new PaymentSucceededEvent({
+          transactionId: transaction.id,
+          referenceId: transaction.toPrimitives().referenceId,
+          paymentIntentId,
+        }),
+      );
+    }
   }
 
   private async handlePaymentFailure(paymentIntentId: string) {
@@ -70,9 +85,20 @@ export class HandleStripeEventUseCase {
     if (!transaction) {
       throw new NotFoundException(`Transaction not found for paymentIntentId: ${paymentIntentId}`);
     }
-    
+
     transaction.fail();
     await this.transactionRepo.update(transaction);
     this.logger.log(`Transaction ${transaction.id} marked as 'failed'`);
+
+    // Emit PaymentFailedEvent for saga compensation
+    if (this.eventBus) {
+      await this.eventBus.publish(
+        new PaymentFailedEvent({
+          transactionId: transaction.id,
+          referenceId: transaction.toPrimitives().referenceId,
+          paymentIntentId,
+        }),
+      );
+    }
   }
 }
