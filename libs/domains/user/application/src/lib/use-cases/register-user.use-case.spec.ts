@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InternalServerErrorException, ConflictException } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
-import { RegisterUserUseCase } from './register-user.use-case';
-import { RegisterUserDto } from '../dto/register-user.dto';
 import {
+  RegisterUserUseCase,
+  RegisterUserDto,
   User,
   Role,
   IUserRepository,
   IPasswordHasher,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+} from '@going-monorepo-clean/domains-user-core';
 
 // --- 1. Crear Mocks para los Puertos ---
 
