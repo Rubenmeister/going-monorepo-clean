@@ -12,6 +12,15 @@ export * from './lib/event-bus';
 // Exporta Auth Guards y Decorators
 export * from './lib/auth';
 
+// Exporta Filters (HttpExceptionFilter)
+export * from './lib/filters';
+
+// Exporta Health (BaseHealthController)
+export * from './lib/health';
+
+// Exporta Logging (CorrelationIdInterceptor, pinoLoggerConfig)
+export * from './lib/logging';
+
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
 export { Result, ok, err } from 'neverthrow';

@@ -37,7 +37,7 @@ WORKDIR /app
 # Copia SOLO la carpeta 'dist' del servicio construido
 # El puerto 3001 es el que definimos en main.ts
 ARG SERVICE_NAME=payment-service
-EXPOSE 3001
+EXPOSE 3009
 
 # Copia los archivos necesarios para la ejecución:
 # 1. package.json y package-lock.json
@@ -54,4 +54,9 @@ COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
 # COPY .env .env 
 
 # Comando para iniciar la aplicación Node compilada
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3009/health/live || exit 1
+
 CMD ["node", "dist/main.js"]

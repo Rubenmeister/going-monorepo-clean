@@ -32,7 +32,7 @@ WORKDIR /app
 
 # Copia SOLO la carpeta 'dist' del servicio construido
 ARG SERVICE_NAME=academy-service
-EXPOSE 3009
+EXPOSE 3011
 
 # Copia los archivos necesarios para la ejecucion:
 # 1. package.json y package-lock.json
@@ -45,4 +45,9 @@ RUN npm install --omit=dev --ignore-scripts
 COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
 
 # Comando para iniciar la aplicacion Node compilada
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3011/health/live || exit 1
+
 CMD ["node", "dist/main.js"]

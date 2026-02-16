@@ -7,7 +7,7 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(helmet());
-  const port = process.env.PORT || 3010;
+  const port = process.env.PORT || 3012;
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
