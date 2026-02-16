@@ -1,57 +1,181 @@
-name: CI (Pruebas Automatizadas)
+name: CI Pipeline
 
 on:
-  # Se ejecuta en cada 'push' a la rama 'main'
   push:
-    branches:
-      - main
-  # Y en cada 'pull request' (solicitud de cambio) a 'main'
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
 jobs:
-  build-and-test:
-    name: Probar y Construir Proyectos Afectados
-    runs-on: ubuntu-latest # Usar una máquina virtual de Linux
-    
+  # ──────────────────────────────────────────────────────────
+  # Job 1: Lint affected projects
+  # ──────────────────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
     steps:
-      # 1. Obtener el código del repositorio
-      - name: Checkout (Obtener código)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          # Necesario para que Nx pueda comparar los cambios
-          fetch-depth: 0 
+          fetch-depth: 0
 
-      # 2. Configurar Nx (El paso más importante)
-      # Esto instala 'nx' y restaura el caché si existe
-      - name: Setup Nx (Configurar Nx)
-        uses: nx/setup-nx@v5
+      - uses: actions/setup-node@v4
         with:
-          # (Opcional) Si configuraste Nx Cloud, pon tu token aquí
-          # nx-cloud-access-token: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          
-      # 3. Configurar Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Run affected lint
+        run: npx nx affected -t lint --parallel=3
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: Test affected projects
+  # ──────────────────────────────────────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          node-version: '20' # Usar Node 20
-          cache: 'npm' # Usar el caché de npm
+          fetch-depth: 0
 
-      # 4. Instalar todas las dependencias
-      - name: Install dependencies (Instalar dependencias)
-        run: npm install
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
-      # 5. Ejecutar las pruebas SOLO de los proyectos "afectados"
-      # Nx compara tu rama con 'main' y encuentra qué cambió
-      - name: Run affected tests (Ejecutar pruebas afectadas)
-        run: npx nx affected:test --head=HEAD --base=main --parallel
+      - name: Install dependencies
+        run: npm ci
 
-      # 6. Ejecutar el linter SOLO de los proyectos "afectados"
-      - name: Run affected lint (Ejecutar linter afectado)
-        run: npx nx affected:lint --head=HEAD --base=main --parallel
+      - uses: nrwl/nx-set-shas@v4
 
-      # 7. Construir el código SOLO de los proyectos "afectados"
-      # Esto asegura que el código compile correctamente
-      - name: Run affected build (Construir proyectos afectados)
-        run: npx nx affected:build --head=HEAD --base=main --parallel
+      - name: Run affected tests
+        run: npx nx affected -t test --parallel=3 --configuration=ci
+        env:
+          CI: true
+
+  # ──────────────────────────────────────────────────────────
+  # Job 3: Build affected projects
+  # ──────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Run affected build
+        run: npx nx affected -t build --parallel=3
+
+  # ──────────────────────────────────────────────────────────
+  # Job 4: Build Docker images for affected services
+  # ──────────────────────────────────────────────────────────
+  docker:
+    name: Docker Build (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - api-gateway
+          - user-auth-service
+          - booking-service
+          - payment-service
+          - transport-service
+          - tracking-service
+          - notifications-service
+          - tours-service
+          - experiencias-service
+          - envios-service
+          - anfitriones-service
+          - academy-service
+          - blog-service
+        include:
+          - service: api-gateway
+            port: 3000
+          - service: user-auth-service
+            port: 3009
+          - service: booking-service
+            port: 3010
+          - service: payment-service
+            port: 3001
+          - service: transport-service
+            port: 3006
+          - service: tracking-service
+            port: 3008
+          - service: notifications-service
+            port: 3002
+          - service: tours-service
+            port: 3005
+          - service: experiencias-service
+            port: 3004
+          - service: envios-service
+            port: 3007
+          - service: anfitriones-service
+            port: 3003
+          - service: academy-service
+            port: 3011
+          - service: blog-service
+            port: 3012
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.service }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SERVICE_NAME=${{ matrix.service }}
+            SERVICE_PORT=${{ matrix.port }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

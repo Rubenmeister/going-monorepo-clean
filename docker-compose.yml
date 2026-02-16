@@ -1,0 +1,377 @@
+version: '3.9'
+
+services:
+  # ═══════════════════════════════════════════════════════════
+  # Infrastructure Services
+  # ═══════════════════════════════════════════════════════════
+
+  mongodb:
+    image: mongo:7
+    container_name: going_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - going_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: going_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - going_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════════════════════════
+  # Backend Microservices
+  # ═══════════════════════════════════════════════════════════
+
+  user-auth-service:
+    build:
+      context: .
+      dockerfile: ./user-auth-service/Dockerfile
+      args:
+        SERVICE_NAME: user-auth-service
+        SERVICE_PORT: 3009
+    container_name: user-auth-service
+    restart: unless-stopped
+    ports:
+      - "3009:3009"
+    environment:
+      PORT: 3009
+      USER_DB_URL: mongodb://mongodb:27017/user-auth-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  booking-service:
+    build:
+      context: .
+      dockerfile: ./booking-service/Dockerfile
+      args:
+        SERVICE_NAME: booking-service
+        SERVICE_PORT: 3010
+    container_name: booking-service
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      PORT: 3010
+      BOOKING_DB_URL: mongodb://mongodb:27017/booking-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      PAYMENT_SERVICE_URL: http://payment-service:3001
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: ./payment-service/Dockerfile
+      args:
+        SERVICE_NAME: payment-service
+        SERVICE_PORT: 3001
+    container_name: payment-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      PAYMENT_DB_URL: mongodb://mongodb:27017/payment-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      BOOKING_SERVICE_URL: http://booking-service:3010
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  transport-service:
+    build:
+      context: .
+      dockerfile: ./transport-service/Dockerfile
+      args:
+        SERVICE_NAME: transport-service
+        SERVICE_PORT: 3006
+    container_name: transport-service
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      TRANSPORT_DB_URL: mongodb://mongodb:27017/transport-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  tracking-service:
+    build:
+      context: .
+      dockerfile: ./tracking-service/Dockerfile
+      args:
+        SERVICE_NAME: tracking-service
+        SERVICE_PORT: 3008
+    container_name: tracking-service
+    restart: unless-stopped
+    ports:
+      - "3008:3008"
+    environment:
+      PORT: 3008
+      TRACKING_DB_URL: mongodb://mongodb:27017/tracking-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  notifications-service:
+    build:
+      context: .
+      dockerfile: ./notifications-service/Dockerfile
+      args:
+        SERVICE_NAME: notifications-service
+        SERVICE_PORT: 3002
+    container_name: notifications-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      NOTIFICATION_DB_URL: mongodb://mongodb:27017/notification-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  tours-service:
+    build:
+      context: .
+      dockerfile: ./tours-service/Dockerfile
+      args:
+        SERVICE_NAME: tours-service
+        SERVICE_PORT: 3005
+    container_name: tours-service
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      TOUR_DB_URL: mongodb://mongodb:27017/tour-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  experiencias-service:
+    build:
+      context: .
+      dockerfile: ./experiencias-service/Dockerfile
+      args:
+        SERVICE_NAME: experiencias-service
+        SERVICE_PORT: 3004
+    container_name: experiencias-service
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      EXPERIENCE_DB_URL: mongodb://mongodb:27017/experience-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  envios-service:
+    build:
+      context: .
+      dockerfile: ./envios-service/Dockerfile
+      args:
+        SERVICE_NAME: envios-service
+        SERVICE_PORT: 3007
+    container_name: envios-service
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      PORT: 3007
+      PARCEL_DB_URL: mongodb://mongodb:27017/parcel-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  anfitriones-service:
+    build:
+      context: .
+      dockerfile: ./anfitriones-service/Dockerfile
+      args:
+        SERVICE_NAME: anfitriones-service
+        SERVICE_PORT: 3003
+    container_name: anfitriones-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      ACCOMMODATION_DB_URL: mongodb://mongodb:27017/accommodation-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  academy-service:
+    build:
+      context: .
+      dockerfile: ./academy-service/Dockerfile
+      args:
+        SERVICE_NAME: academy-service
+        SERVICE_PORT: 3011
+    container_name: academy-service
+    restart: unless-stopped
+    ports:
+      - "3011:3011"
+    environment:
+      PORT: 3011
+      ACADEMY_DB_URL: mongodb://mongodb:27017/academy-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  blog-service:
+    build:
+      context: .
+      dockerfile: ./blog-service/Dockerfile
+      args:
+        SERVICE_NAME: blog-service
+        SERVICE_PORT: 3012
+    container_name: blog-service
+    restart: unless-stopped
+    ports:
+      - "3012:3012"
+    environment:
+      PORT: 3012
+      BLOG_DB_URL: mongodb://mongodb:27017/blog-db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      NODE_ENV: development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+        SERVICE_PORT: 3000
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      USER_AUTH_SERVICE_URL: http://user-auth-service:3009
+      BOOKING_SERVICE_URL: http://booking-service:3010
+      PAYMENT_SERVICE_URL: http://payment-service:3001
+      TRANSPORT_SERVICE_URL: http://transport-service:3006
+      TRACKING_SERVICE_URL: http://tracking-service:3008
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3002
+      TOURS_SERVICE_URL: http://tours-service:3005
+      EXPERIENCIAS_SERVICE_URL: http://experiencias-service:3004
+      ENVIOS_SERVICE_URL: http://envios-service:3007
+      ANFITRIONES_SERVICE_URL: http://anfitriones-service:3003
+      ACADEMY_SERVICE_URL: http://academy-service:3011
+      BLOG_SERVICE_URL: http://blog-service:3012
+      NODE_ENV: development
+    depends_on:
+      - user-auth-service
+      - booking-service
+      - payment-service
+      - transport-service
+      - tracking-service
+      - notifications-service
+      - tours-service
+      - experiencias-service
+      - envios-service
+      - anfitriones-service
+      - academy-service
+      - blog-service
+    networks:
+      - going_network
+
+# ═══════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════
+
+networks:
+  going_network:
+    driver: bridge
+
+# ═══════════════════════════════════════════════════════════
+# Volumes
+# ═══════════════════════════════════════════════════════════
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -1,53 +1,35 @@
-# --- ETAPA 1: CONSTRUCCION (BUILD) ---
-# Usamos una imagen Node ligera para compilar
+# --- Stage 1: Build ---
 FROM node:20-slim AS builder
-
-# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia los archivos de configuracion de paquetes (npm/package-lock)
-# Usamos la carpeta raiz del monorepo (el contexto de build)
 COPY package.json package-lock.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
+COPY nx.json tsconfig.base.json ./
+RUN npm ci
 
-# Instala las dependencias (solo de produccion por ahora)
-RUN npm install --omit=dev
-
-# Copia todo el codigo del monorepo
 COPY . .
 
-# Expone el puerto de tu servicio
-ARG SERVICE_NAME=blog-service
-
-# Ejecuta el comando de construccion de Nx para el servicio especifico
+ARG SERVICE_NAME
 RUN npx nx run ${SERVICE_NAME}:build
 
-# --- ETAPA 2: PRODUCCION (FINAL) ---
-# Usamos una imagen aun mas pequena para el runtime (ejecucion)
-FROM node:20-alpine AS final
-
-# Recrea el directorio de trabajo
+# --- Stage 2: Production ---
+FROM node:20-alpine AS production
 WORKDIR /app
 
-# Copia SOLO la carpeta 'dist' del servicio construido
-ARG SERVICE_NAME=blog-service
-EXPOSE 3012
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copia los archivos necesarios para la ejecucion:
-# 1. package.json y package-lock.json
 COPY --from=builder /app/package.json /app/package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
-# 2. Copia SOLO las dependencias de produccion (mas seguro y pequeno)
-RUN npm install --omit=dev --ignore-scripts
+ARG SERVICE_NAME
+ARG SERVICE_PORT=3012
+ENV PORT=${SERVICE_PORT}
 
-# 3. Copia el codigo compilado
-COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
+COPY --from=builder /app/dist/${SERVICE_NAME} ./dist/
 
-# Comando para iniciar la aplicacion Node compilada
+USER appuser
+EXPOSE ${SERVICE_PORT}
 
-# Health check endpoint
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3012/health/live || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/health/live || exit 1
 
 CMD ["node", "dist/main.js"]

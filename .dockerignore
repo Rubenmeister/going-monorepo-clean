@@ -1,0 +1,56 @@
+# Dependencies
+node_modules
+.npm
+
+# Build output
+dist
+tmp
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+
+# Docker
+**/Dockerfile
+**/.dockerignore
+docker-compose*.yml
+
+# Tests
+coverage
+jest.config.*
+**/*.spec.ts
+**/*.test.ts
+
+# Docs & misc
+*.md
+LICENSE
+.editorconfig
+.prettierrc
+.prettierignore
+.eslintrc*
+
+# Environment files (secrets)
+.env
+.env.*
+!.env.example
+
+# Nx cache
+.nx
+nx-cloud.env
+
+# Mobile apps (not needed for backend Docker builds)
+mobile-user-app
+mobile-driver-app
+
+# Frontend apps (not needed for backend Docker builds)
+frontend-webapp
+admin-dashboard
