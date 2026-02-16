@@ -1,6 +1,6 @@
 import React from 'react';
-import { SafeAreaView, Text, StyleSheet, View } from 'react-native';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers'; // Usamos el hook central
+import { SafeAreaView, Text, StyleSheet, View, Button } from 'react-native';
+import { useMonorepoApp, AuthProvider } from '@going-monorepo-clean/frontend-providers'; // Usamos el hook central
 
 // 1. Componente de Prueba de Conexión
 const AppContent = () => {
@@ -30,13 +30,19 @@ const AppContent = () => {
           <Text style={styles.status}>¡Bienvenido, {auth.user.firstName}!</Text>
           <Text>Rol: {auth.user.roles.join(', ')}</Text>
 
-          <Button title="Solicitar Viaje" onPress={handleRequestTrip} />
-          <Button title="Cerrar Sesión" onPress={auth.logout} color="gray" />
+          <View style={styles.buttonContainer}>
+            <Button title="Solicitar Viaje" onPress={handleRequestTrip} color="#FFCD00" />
+          </View>
+          <View style={styles.buttonContainer}>
+            <Button title="Cerrar Sesión" onPress={auth.logout} color="#666" />
+          </View>
         </View>
       ) : (
         <View>
           <Text style={styles.status}>Desconectado</Text>
-          <Button title="Login Test" onPress={() => domain.auth.login({ email: 'user@test.com', password: 'password123' })} />
+          <View style={styles.buttonContainer}>
+            <Button title="Login Test" onPress={() => domain.auth.login({ email: 'user@test.com', password: 'password123' })} />
+          </View>
         </View>
       )}
     </View>
@@ -70,14 +76,11 @@ const styles = StyleSheet.create({
   status: {
     fontSize: 18,
     marginBottom: 10,
+  },
+  buttonContainer: {
+    marginVertical: 8,
+    width: 200,
   }
 });
 
-// Nota: Necesitas crear un componente Button básico para React Native o usar uno de una librería (ej. react-native-elements)
-const Button = ({ title, onPress, color = '#FFCD00' }) => (
-    <View style={{ marginVertical: 8, width: 200 }}>
-        <ButtonRNE title={title} onPress={onPress} color={color} />
-    </View>
-);
-// Asumimos que ButtonRNE es un componente de alguna librería de UI como 'react-native-elements'
-// Para simplificar, podrías usar el componente 'Button' nativo de React Native.
+export default App;

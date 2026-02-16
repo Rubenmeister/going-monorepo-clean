@@ -6,6 +6,7 @@ interface AuthUser {
   firstName: string;
   roles: string[];
   isAdmin(): boolean;
+  isDriver(): boolean;
 }
 
 interface AuthState {
@@ -52,7 +53,7 @@ export const useMonorepoApp = () => {
         search: dependencyProvider.searchToursUseCase,
       },
       tracking: {
-        broadcastLocation: dependencyProvider.broadcastDriverLocationUseCase,
+        broadcastDriverLocation: dependencyProvider.broadcastDriverLocationUseCase,
       },
       notification: {
         getByUser: dependencyProvider.getUserNotificationsUseCase,

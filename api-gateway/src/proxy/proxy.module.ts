@@ -18,8 +18,10 @@ export class ProxyModule implements NestModule {
       experiences: this.configService.get('EXPERIENCIAS_SERVICE_URL'), // ej. http://localhost:3004
       parcels: this.configService.get('ENVIOS_SERVICE_URL'), // ej. http://localhost:3007
       notifications: this.configService.get('NOTIFICATIONS_SERVICE_URL'), // ej. http://localhost:3008
-      tracking: this.configService.get('TRACKING_SERVICE_URL'), // ej. http://localhost:3009
+      tracking: this.configService.get('TRACKING_SERVICE_URL'), // ej. http://localhost:3008
       bookings: this.configService.get('BOOKING_SERVICE_URL'), // ej. http://localhost:3010
+      academy: this.configService.get('ACADEMY_SERVICE_URL'), // ej. http://localhost:3011
+      blog: this.configService.get('BLOG_SERVICE_URL'), // ej. http://localhost:3012
     };
 
     // --- RUTAS PÚBLICAS (ej. login, register) ---
@@ -58,5 +60,7 @@ export class ProxyModule implements NestModule {
     applyAuthProxy('notifications', services.notifications);
     applyAuthProxy('tracking', services.tracking);
     applyAuthProxy('bookings', services.bookings);
+    applyAuthProxy('academy', services.academy);
+    applyAuthProxy('blog', services.blog);
   }
 }

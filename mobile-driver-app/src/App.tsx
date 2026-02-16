@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, Alert } from 'react-native';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { SafeAreaView, Text, StyleSheet, View, Alert, Button } from 'react-native';
+import { useMonorepoApp, AuthProvider } from '@going-monorepo-clean/frontend-providers';
 
 const DRIVER_ID = 'b737f525-45c5-41e9-9136-1c2517830d99'; // ID de prueba
 
@@ -84,6 +84,27 @@ const AppDriver = () => (
 );
 
 const styles = StyleSheet.create({
-    // ... (Estilos similares al app de usuario)
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#0033A0',
+  },
+  status: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  statusBox: {
+    alignItems: 'center',
+  },
 });
-// export default AppDriver; // Asegúrate de exportar el componente raíz
+
+export default AppDriver;
