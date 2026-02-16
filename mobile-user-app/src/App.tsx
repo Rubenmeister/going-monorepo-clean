@@ -31,7 +31,7 @@ const AppContent = () => {
           <Text>Rol: {auth.user.roles.join(', ')}</Text>
 
           <View style={styles.buttonContainer}>
-            <Button title="Solicitar Viaje" onPress={handleRequestTrip} color="#FFCD00" />
+            <Button title="Solicitar Viaje" onPress={handleRequestTrip} color="#ff4c41" />
           </View>
           <View style={styles.buttonContainer}>
             <Button title="Cerrar Sesión" onPress={auth.logout} color="#666" />
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#0033A0',
+    color: '#ff4c41',
   },
   status: {
     fontSize: 18,

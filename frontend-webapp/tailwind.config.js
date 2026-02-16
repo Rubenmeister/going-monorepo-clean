@@ -1,23 +1,30 @@
-// const { createGlobPatternsForDependencies } = require('@nx/next/tailwind');
-
-// The above utility import will not work if you are using Next.js' --turbo.
-// Instead you will have to manually add the dependent paths to be included.
-// For example
-// ../libs/buttons/**/*.{ts,tsx,js,jsx,html}',                 <--- Adding a shared lib
-// !../libs/buttons/**/*.{stories,spec}.{ts,tsx,js,jsx,html}', <--- Skip adding spec/stories files from shared lib
-
-// If you are **not** using `--turbo` you can uncomment both lines 1 & 19.
-// A discussion of the issue can be found: https://github.com/nrwl/nx/issues/26510
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
     '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
-    //     ...createGlobPatternsForDependencies(__dirname)
+    '../../libs/shared/ui/src/**/*.{ts,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#ff4c41',
+          light: '#ff7a72',
+          dark: '#d93a30',
+        },
+        secondary: {
+          DEFAULT: '#ffd253',
+          light: '#ffe085',
+          dark: '#e6b833',
+        },
+        accent: '#000000',
+      },
+      fontFamily: {
+        heading: ["'Nunito Sans Variable'", "'Nunito Sans'", 'sans-serif'],
+        body: ["'Roboto'", 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

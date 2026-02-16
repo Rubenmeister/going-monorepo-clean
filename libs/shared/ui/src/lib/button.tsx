@@ -13,21 +13,21 @@ const sizes = {
   lg: 'px-6 py-3 text-lg',
 };
 const variants = {
-  primary: 'bg-[#0033A0] text-white hover:bg-opacity-90',
-  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-  accent: 'bg-[#FFCD00] text-[#0033A0] hover:bg-yellow-400',
+  primary: 'bg-[#ff4c41] text-white hover:bg-[#d93a30]',
+  secondary: 'bg-[#ffd253] text-black hover:bg-[#e6b833]',
+  accent: 'bg-black text-white hover:bg-gray-800',
   ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
 };
 
-export const Button: React.FC<ButtonProps> = ({ 
-  children, 
-  variant = 'primary', 
-  size = 'md', 
-  className = '', 
-  ...props 
+export const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+  ...props
 }) => {
   const classNames = `${baseStyles} ${sizes[size]} ${variants[variant]} ${className}`;
-  
+
   return (
     <button className={classNames} {...props}>
       {children}

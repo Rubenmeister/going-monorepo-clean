@@ -60,7 +60,7 @@ const AppDriverContent = () => {
           <Button 
             title={isBroadcasting ? "Detener GPS" : "Iniciar Tracking"} 
             onPress={() => setIsBroadcasting(!isBroadcasting)} 
-            color={isBroadcasting ? 'red' : '#0033A0'}
+            color={isBroadcasting ? '#d93a30' : '#ff4c41'}
           />
           
           <Button title="Cerrar Sesión" onPress={auth.logout} color="gray" />
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#0033A0',
+    color: '#ff4c41',
   },
   status: {
     fontSize: 18,

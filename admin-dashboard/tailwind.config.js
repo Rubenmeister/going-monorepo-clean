@@ -4,7 +4,6 @@ import { join } from 'path';
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    // Rutas para que Tailwind escanee todos los archivos del monorepo:
     join(__dirname, 'apps/**/!(*.stories|*.spec).{ts,tsx,html}'),
     join(__dirname, 'libs/**/!(*.stories|*.spec).{ts,tsx,html}'),
     ...createGlobPatternsForDependencies(__dirname),
@@ -12,12 +11,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Colores primarios de tu marca
-        'brand-blue': '#0033A0', // Azul Oscuro (Primario)
-        'brand-yellow': '#FFCD00', // Amarillo (Acento)
-        // Colores semánticos
-        primary: 'var(--color-primary)', 
-        accent: 'var(--color-accent)', 
+        primary: {
+          DEFAULT: '#ff4c41',
+          light: '#ff7a72',
+          dark: '#d93a30',
+        },
+        secondary: {
+          DEFAULT: '#ffd253',
+          light: '#ffe085',
+          dark: '#e6b833',
+        },
+        accent: '#000000',
+      },
+      fontFamily: {
+        heading: ["'Nunito Sans Variable'", "'Nunito Sans'", 'sans-serif'],
+        body: ["'Roboto'", 'sans-serif'],
       },
     },
   },
