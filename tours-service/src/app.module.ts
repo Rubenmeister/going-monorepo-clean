@@ -8,6 +8,8 @@ import { InfrastructureModule } from './infrastructure/persistence/schemas/infra
 import { TourController } from './api/tour.controller';
 import {
   CreateTourUseCase,
+  GetTourByIdUseCase,
+  SearchToursUseCase,
 } from '@going-monorepo-clean/domains-tour-application';
 
 @Module({
@@ -24,6 +26,8 @@ import {
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     CreateTourUseCase,
+    GetTourByIdUseCase,
+    SearchToursUseCase,
   ],
 })
 export class AppModule {}

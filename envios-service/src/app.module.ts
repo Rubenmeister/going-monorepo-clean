@@ -9,6 +9,10 @@ import { ParcelController } from './api/parcel.controller';
 import {
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
+  GetParcelByIdUseCase,
+  AssignDriverToParcelUseCase,
+  MarkParcelInTransitUseCase,
+  DeliverParcelUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
 
 @Module({
@@ -28,6 +32,10 @@ import {
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     CreateParcelUseCase,
     FindParcelsByUserUseCase,
+    GetParcelByIdUseCase,
+    AssignDriverToParcelUseCase,
+    MarkParcelInTransitUseCase,
+    DeliverParcelUseCase,
   ],
 })
 export class AppModule {}

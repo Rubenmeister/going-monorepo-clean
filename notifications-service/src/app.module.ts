@@ -9,6 +9,7 @@ import { NotificationController } from './api/notification.controller';
 import {
   SendNotificationUseCase,
   GetUserNotificationsUseCase,
+  MarkNotificationReadUseCase,
 } from '@going-monorepo-clean/domains-notification-application';
 
 @Module({
@@ -28,6 +29,7 @@ import {
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     SendNotificationUseCase,
     GetUserNotificationsUseCase,
+    MarkNotificationReadUseCase,
   ],
 })
 export class AppModule {}

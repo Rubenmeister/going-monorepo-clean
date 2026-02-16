@@ -8,6 +8,8 @@ import { InfrastructureModule } from './infrastructure/persistence/infrastructur
 import { ExperienceController } from './api/experience.controller';
 import {
   CreateExperienceUseCase,
+  GetExperienceByIdUseCase,
+  SearchExperiencesUseCase,
 } from '@going-monorepo-clean/domains-experience-application';
 
 @Module({
@@ -24,6 +26,8 @@ import {
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     CreateExperienceUseCase,
+    GetExperienceByIdUseCase,
+    SearchExperiencesUseCase,
   ],
 })
 export class AppModule {}

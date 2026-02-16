@@ -9,6 +9,10 @@ import { BookingController } from './api/booking.controller';
 import {
   CreateBookingUseCase,
   FindBookingsByUserUseCase,
+  GetBookingByIdUseCase,
+  ConfirmBookingUseCase,
+  CancelBookingUseCase,
+  CompleteBookingUseCase,
 } from '@going-monorepo-clean/domains-booking-application';
 
 @Module({
@@ -28,6 +32,10 @@ import {
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     CreateBookingUseCase,
     FindBookingsByUserUseCase,
+    GetBookingByIdUseCase,
+    ConfirmBookingUseCase,
+    CancelBookingUseCase,
+    CompleteBookingUseCase,
   ],
 })
 export class AppModule {}

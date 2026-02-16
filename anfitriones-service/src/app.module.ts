@@ -9,6 +9,9 @@ import { AccommodationController } from './api/accommodation.controller';
 import {
   CreateAccommodationUseCase,
   SearchAccommodationUseCase,
+  GetAccommodationByIdUseCase,
+  PublishAccommodationUseCase,
+  GetAccommodationsByHostUseCase,
 } from '@going-monorepo-clean/domains-accommodation-application';
 
 @Module({
@@ -26,6 +29,9 @@ import {
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     CreateAccommodationUseCase,
     SearchAccommodationUseCase,
+    GetAccommodationByIdUseCase,
+    PublishAccommodationUseCase,
+    GetAccommodationsByHostUseCase,
   ],
 })
 export class AppModule {}

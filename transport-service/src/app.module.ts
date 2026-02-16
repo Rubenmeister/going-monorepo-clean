@@ -10,6 +10,11 @@ import {
   RequestTripUseCase,
   AcceptTripUseCase,
   GetActiveTripByUserUseCase,
+  GetTripByIdUseCase,
+  CancelTripUseCase,
+  StartTripUseCase,
+  CompleteTripUseCase,
+  GetTripsByUserUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 
 @Module({
@@ -30,6 +35,11 @@ import {
     RequestTripUseCase,
     AcceptTripUseCase,
     GetActiveTripByUserUseCase,
+    GetTripByIdUseCase,
+    CancelTripUseCase,
+    StartTripUseCase,
+    CompleteTripUseCase,
+    GetTripsByUserUseCase,
   ],
 })
 export class AppModule {}

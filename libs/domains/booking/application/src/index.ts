@@ -1,6 +1,7 @@
-// Exporta los DTOs
 export * from './lib/dto/create-booking.dto';
-
-// Exporta los Casos de Uso
 export * from './lib/use-cases/create-booking.use-case';
 export * from './lib/use-cases/find-bookings-by-user.use-case';
+export * from './lib/use-cases/get-booking-by-id.use-case';
+export * from './lib/use-cases/confirm-booking.use-case';
+export * from './lib/use-cases/cancel-booking.use-case';
+export * from './lib/use-cases/complete-booking.use-case';

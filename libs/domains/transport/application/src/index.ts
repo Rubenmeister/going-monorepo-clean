@@ -3,3 +3,7 @@ export * from './lib/use-cases/request-trip.use-case';
 export * from './lib/use-cases/accept-trip.use-case';
 export * from './lib/use-cases/get-active-trip-by-user.use-case';
 export * from './lib/use-cases/get-trip-by-id.use-case';
+export * from './lib/use-cases/cancel-trip.use-case';
+export * from './lib/use-cases/start-trip.use-case';
+export * from './lib/use-cases/complete-trip.use-case';
+export * from './lib/use-cases/get-trips-by-user.use-case';

@@ -4,6 +4,7 @@ import { NotificationController } from './notification.controller';
 
 const mockSendUseCase = { execute: jest.fn() };
 const mockGetUseCase = { execute: jest.fn() };
+const mockMarkReadUseCase = { execute: jest.fn() };
 
 describe('NotificationController', () => {
   let controller: NotificationController;
@@ -13,6 +14,7 @@ describe('NotificationController', () => {
     controller = new NotificationController(
       mockSendUseCase as any,
       mockGetUseCase as any,
+      mockMarkReadUseCase as any,
     );
   });
 
@@ -32,5 +34,12 @@ describe('NotificationController', () => {
     const result = await controller.getNotifications('user-1');
     expect(result).toHaveLength(1);
     expect(mockGetUseCase.execute).toHaveBeenCalledWith('user-1');
+  });
+
+  it('should mark notification as read', async () => {
+    mockMarkReadUseCase.execute.mockResolvedValue(undefined);
+    const result = await controller.markAsRead('notif-1');
+    expect(result).toEqual({ message: 'Notification marked as read' });
+    expect(mockMarkReadUseCase.execute).toHaveBeenCalledWith('notif-1');
   });
 });
