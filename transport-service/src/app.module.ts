@@ -15,6 +15,11 @@ import {
 } from '@going-monorepo-clean/shared-domain';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TransportController } from './api/transport.controller';
+import { VehicleController } from './api/vehicle.controller';
+import { RouteController } from './api/route.controller';
+import { ShipmentController } from './api/shipment.controller';
+import { RideRequestController } from './api/ride-request.controller';
+import { DriverProfileController } from './api/driver-profile.controller';
 import { HealthController } from './api/health.controller';
 import {
   RequestTripUseCase,
@@ -25,6 +30,13 @@ import {
   StartTripUseCase,
   CompleteTripUseCase,
   GetTripsByUserUseCase,
+  RegisterVehicleUseCase,
+  CreateRouteUseCase,
+  CreateScheduleUseCase,
+  CreateShipmentUseCase,
+  CreateRideRequestUseCase,
+  AssignVehicleUseCase,
+  RegisterDriverProfileUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 
 @Module({
@@ -38,6 +50,11 @@ import {
   ],
   controllers: [
     TransportController,
+    VehicleController,
+    RouteController,
+    ShipmentController,
+    RideRequestController,
+    DriverProfileController,
     HealthController,
   ],
   providers: [
@@ -55,6 +72,13 @@ import {
     StartTripUseCase,
     CompleteTripUseCase,
     GetTripsByUserUseCase,
+    RegisterVehicleUseCase,
+    CreateRouteUseCase,
+    CreateScheduleUseCase,
+    CreateShipmentUseCase,
+    CreateRideRequestUseCase,
+    AssignVehicleUseCase,
+    RegisterDriverProfileUseCase,
   ],
 })
 export class AppModule {}
