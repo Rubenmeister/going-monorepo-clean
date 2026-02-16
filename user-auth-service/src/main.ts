@@ -2,9 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
+  const requiredEnvVars = ['JWT_SECRET', 'USER_DB_URL'];
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+      Logger.error(`Missing required environment variable: ${envVar}`, 'Bootstrap');
+      process.exit(1);
+    }
+  }
+
   const app = await NestFactory.create(AppModule);
+  app.use(helmet());
 
   const port = process.env.PORT || 3009;
 

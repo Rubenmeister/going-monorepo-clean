@@ -6,9 +6,9 @@ import {
 } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 import { LoginUserDto } from '../dto/login-user.dto';
 
-// DTO de respuesta
 export type LoginResponseDto = {
   token: string;
+  refreshToken: string;
   user: {
     id: string;
     email: string;
@@ -50,13 +50,13 @@ export class LoginUserUseCase {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 4. Generar el token (usando el "Puerto")
     const roles = user.roles.map(r => r.toPrimitives());
     const token = this.tokenService.generateAuthToken(user.id, user.email, roles);
+    const refreshToken = this.tokenService.generateRefreshToken(user.id);
 
-    // 5. Devolver el token y los datos del usuario
     return {
       token,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,

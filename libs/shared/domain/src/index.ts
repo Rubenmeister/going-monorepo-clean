@@ -9,6 +9,9 @@ export * from './lib/dtos/shared.dtos';
 // Exporta el Event Bus (puerto)
 export * from './lib/event-bus';
 
+// Exporta Auth Guards y Decorators
+export * from './lib/auth';
+
 // Re-exporta 'neverthrow' para que todos los dominios
 // lo importen desde este único lugar
 export { Result, ok, err } from 'neverthrow';

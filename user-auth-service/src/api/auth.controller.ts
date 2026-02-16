@@ -5,7 +5,10 @@ import {
   RegisterUserUseCase,
   LoginUserDto,
   LoginUserUseCase,
+  RefreshTokenDto,
+  RefreshTokenUseCase,
 } from '@going-monorepo-clean/domains-user-application';
+import { Public } from '@going-monorepo-clean/shared-domain';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -13,8 +16,10 @@ export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
   ) {}
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiBody({ type: RegisterUserDto })
@@ -25,12 +30,23 @@ export class AuthController {
     return this.registerUserUseCase.execute(dto);
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiBody({ type: LoginUserDto })
-  @ApiResponse({ status: 201, description: 'Login exitoso', schema: { properties: { token: { type: 'string' }, user: { type: 'object', properties: { id: { type: 'string' }, email: { type: 'string' }, firstName: { type: 'string' }, roles: { type: 'array', items: { type: 'string' } } } } } } })
+  @ApiResponse({ status: 201, description: 'Login exitoso', schema: { properties: { token: { type: 'string' }, refreshToken: { type: 'string' }, user: { type: 'object', properties: { id: { type: 'string' }, email: { type: 'string' }, firstName: { type: 'string' }, roles: { type: 'array', items: { type: 'string' } } } } } } })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas o cuenta inactiva' })
   async login(@Body() dto: LoginUserDto): Promise<any> {
     return this.loginUserUseCase.execute(dto);
+  }
+
+  @Public()
+  @Post('refresh')
+  @ApiOperation({ summary: 'Renovar token de acceso usando refresh token' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({ status: 201, description: 'Tokens renovados exitosamente', schema: { properties: { token: { type: 'string' }, refreshToken: { type: 'string' } } } })
+  @ApiResponse({ status: 401, description: 'Refresh token inválido o expirado' })
+  async refresh(@Body() dto: RefreshTokenDto): Promise<any> {
+    return this.refreshTokenUseCase.execute(dto);
   }
 }

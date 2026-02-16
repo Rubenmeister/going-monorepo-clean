@@ -9,6 +9,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { Request } from 'express';
 import { HandleStripeEventUseCase } from '@going-monorepo-clean/domains-payment-application';
+import { Public } from '@going-monorepo-clean/shared-domain';
 
 @ApiTags('webhooks')
 @Controller('webhooks')
@@ -17,6 +18,7 @@ export class WebhookController {
     private readonly handleStripeEventUseCase: HandleStripeEventUseCase,
   ) {}
 
+  @Public()
   @Post('stripe')
   @ApiOperation({ summary: 'Webhook de Stripe para eventos de pago' })
   @ApiHeader({ name: 'stripe-signature', description: 'Firma de verificación de Stripe', required: true })

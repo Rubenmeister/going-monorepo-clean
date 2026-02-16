@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from '@going-monorepo-clean/shared-domain';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TrackingController } from './api/tracking.controller';
 import { TrackingGateway } from './api/tracking.gateway';
@@ -11,13 +14,16 @@ import {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 60 }]),
     InfrastructureModule,
   ],
   controllers: [
     TrackingController,
   ],
   providers: [
-    TrackingGateway, 
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    TrackingGateway,
     UpdateLocationUseCase,
     GetActiveDriversUseCase,
   ],

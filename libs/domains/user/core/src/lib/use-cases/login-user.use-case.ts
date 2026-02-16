@@ -8,6 +8,7 @@ import { LoginUserDto } from '../dto/login-user.dto';
 
 export type LoginResponseDto = {
   token: string;
+  refreshToken: string;
   user: {
     id: string;
     email: string;
@@ -48,9 +49,11 @@ export class LoginUserUseCase {
 
     const roles = user.roles.map(r => r.toPrimitives());
     const token = this.tokenService.generateAuthToken(user.id, user.email, roles);
+    const refreshToken = this.tokenService.generateRefreshToken(user.id);
 
     return {
       token,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email,
