@@ -5,7 +5,7 @@ import {
   SendNotificationUseCase,
   GetUserNotificationsUseCase,
 } from '@going-monorepo-clean/domains-notification-application';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { UUID, Roles } from '@going-monorepo-clean/shared-domain';
 
 @ApiTags('notifications')
 @Controller('notifications')
@@ -16,10 +16,12 @@ export class NotificationController {
   ) {}
 
   @Post('send')
-  @ApiOperation({ summary: 'Enviar una notificación' })
+  @Roles('admin')
+  @ApiOperation({ summary: 'Enviar una notificación (solo admin)' })
   @ApiBody({ type: CreateNotificationDto })
   @ApiResponse({ status: 201, description: 'Notificación enviada exitosamente' })
   @ApiResponse({ status: 400, description: 'Error al enviar la notificación' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado: solo admins' })
   async sendNotification(@Body() dto: CreateNotificationDto): Promise<any> {
     const result = await this.sendNotificationUseCase.execute(dto);
 
@@ -31,6 +33,7 @@ export class NotificationController {
   }
 
   @Get('user/:userId')
+  @Roles('user', 'admin')
   @ApiOperation({ summary: 'Obtener notificaciones de un usuario' })
   @ApiParam({ name: 'userId', description: 'ID del usuario', example: '550e8400-e29b-41d4-a716-446655440000' })
   @ApiResponse({ status: 200, description: 'Lista de notificaciones del usuario' })

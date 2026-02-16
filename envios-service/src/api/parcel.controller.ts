@@ -5,7 +5,7 @@ import {
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { UUID, Roles } from '@going-monorepo-clean/shared-domain';
 
 @ApiTags('parcels')
 @Controller('parcels')
@@ -16,15 +16,18 @@ export class ParcelController {
   ) {}
 
   @Post()
+  @Roles('user', 'host', 'admin')
   @ApiOperation({ summary: 'Crear un nuevo envío' })
   @ApiBody({ type: CreateParcelDto })
   @ApiResponse({ status: 201, description: 'Envío creado exitosamente', schema: { properties: { id: { type: 'string' } } } })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  @ApiResponse({ status: 403, description: 'Acceso denegado: rol no autorizado' })
   async createParcel(@Body() dto: CreateParcelDto): Promise<any> {
     return this.createParcelUseCase.execute(dto);
   }
 
   @Get('user/:userId')
+  @Roles('user', 'admin')
   @ApiOperation({ summary: 'Obtener envíos de un usuario' })
   @ApiParam({ name: 'userId', description: 'ID del usuario', example: '550e8400-e29b-41d4-a716-446655440000' })
   @ApiResponse({ status: 200, description: 'Lista de envíos del usuario' })

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { JwtAuthGuard } from '@going-monorepo-clean/shared-domain';
+import { JwtAuthGuard, RolesGuard, AuditLogInterceptor } from '@going-monorepo-clean/shared-domain';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TrackingController } from './api/tracking.controller';
 import { TrackingGateway } from './api/tracking.gateway';
@@ -22,7 +22,9 @@ import {
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
     TrackingGateway,
     UpdateLocationUseCase,
     GetActiveDriversUseCase,

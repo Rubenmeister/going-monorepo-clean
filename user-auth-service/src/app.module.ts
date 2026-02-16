@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -10,7 +10,12 @@ import {
   LoginUserUseCase,
   RefreshTokenUseCase,
 } from '@going-monorepo-clean/domains-user-application';
-import { JwtAuthGuard } from '@going-monorepo-clean/shared-domain';
+import {
+  JwtAuthGuard,
+  RolesGuard,
+  AuditLogInterceptor,
+  AccountLockoutService,
+} from '@going-monorepo-clean/shared-domain';
 
 @Module({
   imports: [
@@ -26,8 +31,11 @@ import { JwtAuthGuard } from '@going-monorepo-clean/shared-domain';
     RegisterUserUseCase,
     LoginUserUseCase,
     RefreshTokenUseCase,
+    AccountLockoutService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],
 })
 export class AppModule {}
