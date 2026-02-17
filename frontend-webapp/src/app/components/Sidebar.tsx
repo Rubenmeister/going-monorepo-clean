@@ -46,7 +46,7 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-going-primary text-white'
+                  ? 'bg-going-primary text-white hover:bg-going-primary-dark'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >

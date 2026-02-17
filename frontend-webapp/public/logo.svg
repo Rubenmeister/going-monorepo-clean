@@ -1,21 +1,36 @@
 <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
-  <circle cx="100" cy="100" r="95" fill="#0033A0" opacity="0.1"/>
+  <!--
+    Going Brand Logo
+    Symbol: Curvilinear G-shape representing movement,
+    with a dot at the end representing the arrival/destination point.
+    Colors: Red #ff4c41 (primary), Yellow #ffd253 (accent), Black #000000
+    Font: Nunito Sans Variable
+  -->
 
-  <!-- Main icon: stylized directional arrow/pin -->
-  <g>
-    <!-- Pin/location base -->
-    <path d="M100 40C85.64 40 74 51.64 74 66C74 85.6 100 130 100 130C100 130 126 85.6 126 66C126 51.64 114.36 40 100 40Z" fill="#0033A0"/>
+  <!-- G arc + horizontal bar (red primary stroke) -->
+  <!-- Circle center: (100, 82), Radius: 55 -->
+  <!-- Start: (139, 43) = upper-right ~1:30 position -->
+  <!-- Large CCW arc to right-middle (155, 82), then bar left to (108, 82) -->
+  <path
+    d="M 139 43 A 55 55 0 1 0 155 82 L 108 82"
+    stroke="#ff4c41"
+    stroke-width="14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
 
-    <!-- Destination dot inside pin -->
-    <circle cx="100" cy="65" r="8" fill="white"/>
+  <!-- Arrival dot — yellow accent, represents destination -->
+  <circle cx="108" cy="82" r="8.5" fill="#ffd253" />
 
-    <!-- Arrow pointing up (direction) -->
-    <g transform="translate(100, 155)">
-      <path d="M0 -8L-6 2L2 2L2 12L-2 12L-2 2L-8 2L0 -8Z" fill="#FF6B35"/>
-    </g>
-  </g>
-
-  <!-- Text: Going -->
-  <text x="100" y="185" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#0033A0">GOING</text>
+  <!-- Wordmark -->
+  <text
+    x="100"
+    y="182"
+    font-family="'Nunito Sans Variable', 'Nunito Sans', Arial, sans-serif"
+    font-size="26"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#000000"
+  >Going</text>
 </svg>
