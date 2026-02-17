@@ -1,2 +1,3 @@
-export * from './lib/entities/experience.entity';
-export * from './lib/ports/iexperience.repository';
+export * from './lib/dto/create-experience.dto';
+export * from './lib/use-cases/create-experience.use-case';
+export * from './lib/use-cases/search-experiences.use-case';

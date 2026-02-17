@@ -42,13 +42,51 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold mb-6 text-[#0033A0]">
             Panel de Administración - Resumen
           </h1>
-          
-          <p className="mb-4">Bienvenido, {auth.user.firstName}. Tienes acceso total.</p>
+
+          <p className="mb-8">Bienvenido, {auth.user.firstName}. Tienes acceso total.</p>
+
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+              <h3 className="text-lg font-semibold mb-2">📊 Reservas</h3>
+              <p className="text-gray-600 mb-4">Gestiona todas las reservas del sistema</p>
+              <Button
+                onClick={() => router.push('/bookings')}
+                variant="primary"
+                className="w-full"
+              >
+                Ver Reservas
+              </Button>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+              <h3 className="text-lg font-semibold mb-2">👥 Usuarios</h3>
+              <p className="text-gray-600 mb-4">Administra usuarios y roles</p>
+              <Button
+                onClick={() => router.push('/users')}
+                variant="primary"
+                className="w-full"
+              >
+                Ver Usuarios
+              </Button>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+              <h3 className="text-lg font-semibold mb-2">💳 Pagos</h3>
+              <p className="text-gray-600 mb-4">Revisa transacciones de pago</p>
+              <Button
+                onClick={() => router.push('/payments')}
+                variant="primary"
+                className="w-full"
+              >
+                Ver Pagos
+              </Button>
+            </div>
+          </div>
 
           <Button onClick={auth.logout} variant="secondary" className="mt-8">
             Cerrar Sesión
           </Button>
-          
+
         </div>
       </div>
     </main>

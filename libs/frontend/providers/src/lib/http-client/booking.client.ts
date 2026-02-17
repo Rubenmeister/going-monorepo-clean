@@ -35,6 +35,20 @@ export class BookingClient {
   async getBookingsByUser(userId: string): Promise<Booking[]> {
     return httpClient.get<Booking[]>(`/bookings/user/${userId}`);
   }
+
+  async confirmBooking(bookingId: string): Promise<{ status: string; message: string }> {
+    return httpClient.patch<{ status: string; message: string }>(
+      `/bookings/${bookingId}/confirm`,
+      {}
+    );
+  }
+
+  async cancelBooking(bookingId: string): Promise<{ status: string; message: string }> {
+    return httpClient.patch<{ status: string; message: string }>(
+      `/bookings/${bookingId}/cancel`,
+      {}
+    );
+  }
 }
 
 export const bookingClient = new BookingClient();

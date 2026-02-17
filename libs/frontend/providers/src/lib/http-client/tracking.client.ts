@@ -1,4 +1,5 @@
 import { httpClient } from './http.client';
+import { trackingWsManager, LocationUpdate, DriverUpdate } from './tracking-websocket';
 
 export interface Driver {
   id: string;
@@ -12,6 +13,7 @@ export interface UpdateLocationRequest {
   driverId: string;
   latitude: number;
   longitude: number;
+  accuracy?: number;
 }
 
 export class TrackingClient {
@@ -20,43 +22,56 @@ export class TrackingClient {
   }
 
   async broadcastLocation(data: UpdateLocationRequest): Promise<{ message: string }> {
-    // Note: This is typically done via WebSocket, but we provide HTTP fallback
-    return { message: 'Location update sent' };
+    // If WebSocket is connected, use it for real-time updates
+    if (trackingWsManager.isConnected()) {
+      trackingWsManager.sendLocationUpdate({
+        driverId: data.driverId,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        accuracy: data.accuracy || 0,
+        timestamp: Date.now(),
+      });
+      return { message: 'Location update sent via WebSocket' };
+    }
+
+    // Fallback to HTTP
+    return httpClient.post<{ message: string }>('/tracking/location', data);
   }
 
-  connectWebSocket(onLocationUpdate?: (location: any) => void): WebSocket | null {
-    if (typeof window === 'undefined') return null;
+  /**
+   * Connect to WebSocket for real-time tracking
+   */
+  async connectWebSocket(): Promise<void> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    await trackingWsManager.connect(token || undefined);
+  }
 
-    const token = localStorage.getItem('authToken');
-    const wsUrl = `ws://localhost:3000?token=${token}`;
+  /**
+   * Disconnect from WebSocket
+   */
+  disconnectWebSocket(): void {
+    trackingWsManager.disconnect();
+  }
 
-    try {
-      const ws = new WebSocket(wsUrl);
+  /**
+   * Subscribe to location updates
+   */
+  onLocationUpdate(handler: (location: LocationUpdate) => void): () => void {
+    return trackingWsManager.onLocationUpdate(handler);
+  }
 
-      ws.onopen = () => {
-        console.log('[Tracking WebSocket] Connected');
-      };
+  /**
+   * Subscribe to driver status changes
+   */
+  onDriverStatusChange(handler: (update: DriverUpdate) => void): () => void {
+    return trackingWsManager.onDriverStatusChange(handler);
+  }
 
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (onLocationUpdate) {
-          onLocationUpdate(data);
-        }
-      };
-
-      ws.onerror = (error) => {
-        console.error('[Tracking WebSocket] Error:', error);
-      };
-
-      ws.onclose = () => {
-        console.log('[Tracking WebSocket] Disconnected');
-      };
-
-      return ws;
-    } catch (error) {
-      console.error('[Tracking WebSocket] Failed to connect:', error);
-      return null;
-    }
+  /**
+   * Check if WebSocket is connected
+   */
+  isConnected(): boolean {
+    return trackingWsManager.isConnected();
   }
 }
 
