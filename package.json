@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:webapp": "cd frontend-webapp && pnpm next dev",
-    "build:webapp": "cd frontend-webapp && pnpm next build",
-    "start:webapp": "cd frontend-webapp && pnpm next start",
-    "lint:webapp": "cd frontend-webapp && pnpm eslint .",
-    "dev:all": "echo 'Starting monorepo in dev mode...' && pnpm dev:webapp",
-    "install:all": "pnpm install"
+    "dev:webapp": "npx nx serve frontend-webapp",
+    "build:webapp": "npx nx build frontend-webapp",
+    "start:webapp": "npx nx serve frontend-webapp --configuration=production",
+    "lint:webapp": "npx nx lint frontend-webapp",
+    "dev:all": "echo 'Starting monorepo in dev mode...' && npm run dev:webapp",
+    "install:all": "npm install"
   },
   "keywords": [],
   "author": "",
