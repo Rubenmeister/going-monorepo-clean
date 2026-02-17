@@ -1,0 +1,12 @@
+{
+  "name": "going-monorepo",
+  "version": "1.0.0",
+  "baseUrl": "http://localhost:3000",
+  "viewportWidth": 1280,
+  "viewportHeight": 720,
+  "setupNodeEvents(on, config) {}",
+  "e2e": {
+    "specPattern": "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
+    "supportFile": "cypress/support/e2e.ts"
+  }
+}
