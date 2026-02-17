@@ -1,6 +1,6 @@
-import { AuthProvider } from '@going-monorepo-clean/frontend-providers'; 
-// Asegúrate de que este path es correcto y que tu global.css existe:
-import './global.css'; 
+import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
+import { Sidebar } from './components/Sidebar';
+import './global.css';
 
 export const metadata = {
   title: 'Going Ecuador: Reserva tu aventura',
@@ -14,10 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>
-        {/* Envuelve TODA la aplicación con el AuthProvider */}
+      <body className="bg-gray-50">
         <AuthProvider>
-          {children}
+          <Sidebar />
+          <main className="ml-64">
+            {children}
+          </main>
         </AuthProvider>
       </body>
     </html>

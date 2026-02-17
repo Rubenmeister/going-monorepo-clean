@@ -14,10 +14,37 @@ module.exports = {
   content: [
     './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
     '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
-    //     ...createGlobPatternsForDependencies(__dirname)
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Going Brand Colors
+        'going-primary': '#0033A0', // Deep blue
+        'going-dark': '#001F5C',    // Darker blue
+        'going-light': '#4D7FD8',   // Lighter blue
+        'going-accent': '#FF6B35',  // Accent orange
+        'going-success': '#06A77D',  // Green
+        'going-warning': '#F4A261',  // Orange
+        'going-danger': '#E76F51',   // Red
+      },
+      fontFamily: {
+        'sans': [
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'Noto Sans',
+          'sans-serif',
+        ],
+      },
+      spacing: {
+        'sidebar': '16rem', // 256px for sidebar
+      },
+    },
   },
   plugins: [],
 };

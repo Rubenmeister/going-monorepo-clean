@@ -1,68 +1,150 @@
 'use client';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Button } from '@going-monorepo-clean/shared-ui'; // Usamos el Button compartido
 
-export default function HomePage() {
-  // 1. Conexión central a toda la lógica Hexagonal
+import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import Link from 'next/link';
+
+export default function DashboardPage() {
   const { auth, domain } = useMonorepoApp();
-  
+
   const handleTestLogin = () => {
-    // 2. Llamada directa al Caso de Uso de Login
     domain.auth.login({ email: 'user@test.com', password: 'password123' });
   };
-  
-  const handleTestSearch = () => {
-    // 3. Llamada a un Caso de Uso de Búsqueda
-    domain.search.accommodations({ city: 'Quito', guests: 2 });
-  };
-  
+
   const handleTestTrip = () => {
-    // 3. Llamada a un Caso de Uso de Transporte
     if (auth.user) {
-        domain.transport.requestTrip({
-            userId: auth.user.id,
-            origin: { address: 'Quito', city: 'Quito', country: 'EC', latitude: -0.18, longitude: -78.47 },
-            destination: { address: 'Guayaquil', city: 'Guayaquil', country: 'EC', latitude: -2.18, longitude: -79.88 },
-            price: { amount: 5000, currency: 'USD' } // $50.00
-        });
+      domain.transport.requestTrip({
+        userId: auth.user.id,
+        origin: {
+          address: 'Quito',
+          city: 'Quito',
+          country: 'EC',
+          latitude: -0.18,
+          longitude: -78.47,
+        },
+        destination: {
+          address: 'Guayaquil',
+          city: 'Guayaquil',
+          country: 'EC',
+          latitude: -2.18,
+          longitude: -79.88,
+        },
+        price: { amount: 5000, currency: 'USD' },
+      });
     }
   };
 
   return (
-    <main className="min-h-screen p-12 bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-[#0033A0] mb-6">
-        Going Monorepo Web App
-      </h1>
-      
-      <div className="mt-8 space-y-4">
-        {auth.isLoading && <p>Cargando sesión...</p>}
-        {auth.error && <p className="text-red-500">Error de Autenticación: {auth.error}</p>}
-        
-        {/* Comprobación de si el usuario está logueado */}
-        {auth.user ? (
-          <div className="space-y-2">
-            <p className="text-xl">¡Bienvenido, {auth.user.firstName}!</p>
-            <p className="text-sm">Tu rol: {auth.user.roles.join(', ')}</p>
-            <Button onClick={handleTestTrip} variant="accent" className="mr-4">
-                Solicitar Viaje (Test)
-            </Button>
-            <Button onClick={handleTestSearch} variant="primary" className="mr-4">
-                Buscar Alojamiento (Test)
-            </Button>
-            <Button onClick={auth.logout} variant="secondary">
-                Cerrar Sesión
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p>Estado: Desconectado</p>
-            <Button onClick={handleTestLogin}>
-              Iniciar Sesión (Test)
-            </Button>
-          </div>
-        )}
-        
+    <div className="min-h-screen p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-going-primary mb-2">
+            Welcome to Going
+          </h1>
+          <p className="text-gray-600">
+            Your all-in-one platform for transport, tours, and accommodation
+          </p>
+        </div>
+
+        {/* Auth Status */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border-l-4 border-going-primary">
+          {auth.isLoading && (
+            <p className="text-gray-600">Loading your session...</p>
+          )}
+          {auth.error && (
+            <p className="text-going-danger font-semibold">
+              Authentication Error: {auth.error}
+            </p>
+          )}
+
+          {auth.user ? (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xl font-semibold text-gray-800">
+                  ¡Bienvenido, {auth.user.firstName}!
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Roles: {auth.user.roles.join(', ')}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleTestTrip}
+                  className="px-4 py-2 bg-going-primary text-white rounded-lg hover:bg-going-dark transition-colors"
+                >
+                  Request a Trip
+                </button>
+                <button
+                  onClick={auth.logout}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-gray-600">You are currently logged out</p>
+              <button
+                onClick={handleTestLogin}
+                className="px-4 py-2 bg-going-primary text-white rounded-lg hover:bg-going-dark transition-colors"
+              >
+                Login (Test)
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <ServiceCard
+            title="Services"
+            description="Explore our range of services"
+            icon="🚗"
+            href="/services"
+          />
+          <ServiceCard
+            title="Account"
+            description="Manage your profile and settings"
+            icon="👤"
+            href="/account"
+          />
+          <ServiceCard
+            title="Going Academy"
+            description="Learn and grow with us"
+            icon="📚"
+            href="/academy"
+          />
+          <ServiceCard
+            title="SOS"
+            description="Emergency assistance available 24/7"
+            icon="🚨"
+            href="/sos"
+          />
+        </div>
       </div>
-    </main>
+    </div>
+  );
+}
+
+function ServiceCard({
+  title,
+  description,
+  icon,
+  href,
+}: {
+  title: string;
+  description: string;
+  icon: string;
+  href: string;
+}) {
+  return (
+    <Link href={href}>
+      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-going-primary cursor-pointer h-full">
+        <div className="text-4xl mb-3">{icon}</div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </Link>
   );
 }
