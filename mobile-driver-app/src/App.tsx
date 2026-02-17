@@ -1,76 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet, View, Alert, Button } from 'react-native';
-import { useMonorepoApp, AuthProvider } from '@going-monorepo-clean/frontend-providers';
+import React, { useState } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { AuthProvider, useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { colors, spacing, fontSizes } from '@going-monorepo-clean/shared-ui';
+import { DashboardScreen } from './screens/DashboardScreen';
+import { ActiveTripScreen } from './screens/ActiveTripScreen';
+import { DriverChatScreen } from './screens/ChatScreen';
 
-const DRIVER_ID = 'b737f525-45c5-41e9-9136-1c2517830d99'; // ID de prueba
+type Screen = 'Dashboard' | 'ActiveTrip' | 'Chat';
+
+const tabs: { key: Screen; icon: string; label: string }[] = [
+  { key: 'Dashboard', icon: '🏠', label: 'Inicio' },
+  { key: 'ActiveTrip', icon: '🗺️', label: 'Viaje' },
+  { key: 'Chat', icon: '💬', label: 'Chat' },
+];
 
 const AppDriverContent = () => {
-  const { auth, domain } = useMonorepoApp();
-  const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState({ lat: 0, lng: 0 });
+  const [activeScreen, setActiveScreen] = useState<Screen>('Dashboard');
+  const [screenParams, setScreenParams] = useState<Record<string, any>>({});
 
-  // 1. Simulación de Envío de Ubicación
-  const handleBroadcastLocation = async () => {
-    if (!auth.user || !auth.user.isDriver()) {
-      Alert.alert("Error", "Debes ser conductor para transmitir tu ubicación.");
-      return;
-    }
-    
-    // Simulación de obtención de GPS real (que se haría con Expo/Geolocation API)
-    const lat = -0.1807 + Math.random() * 0.01;
-    const lng = -78.4678 + Math.random() * 0.01;
-    setCurrentLocation({ lat, lng });
+  const navigate = (screen: string, params?: any) => {
+    setActiveScreen(screen as Screen);
+    if (params) setScreenParams((prev) => ({ ...prev, [screen]: params }));
+  };
 
-    const dto = {
-        driverId: DRIVER_ID,
-        latitude: lat,
-        longitude: lng,
-    };
-    
-    // Llamada al Caso de Uso de Tracking
-    const result = await domain.tracking.broadcastDriverLocation.execute(dto);
-
-    if (result.isErr()) {
-        Alert.alert("Error Tracking", result.error.message);
+  const renderScreen = () => {
+    switch (activeScreen) {
+      case 'Dashboard':
+        return <DashboardScreen onNavigate={navigate} />;
+      case 'ActiveTrip':
+        return <ActiveTripScreen onNavigate={navigate} />;
+      case 'Chat':
+        return (
+          <DriverChatScreen
+            tripId={screenParams.Chat?.tripId}
+            recipientId={screenParams.Chat?.recipientId}
+          />
+        );
+      default:
+        return <DashboardScreen onNavigate={navigate} />;
     }
   };
 
-  useEffect(() => {
-    if (auth.user && auth.user.isDriver()) {
-        // Simular un intervalo de envío de GPS
-        const interval = setInterval(() => {
-            if (isBroadcasting) {
-                handleBroadcastLocation();
-            }
-        }, 5000); // Envía cada 5 segundos
-        return () => clearInterval(interval);
-    }
-  }, [auth.user, isBroadcasting]);
-
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Going App de Conductor</Text>
-      
-      {auth.user && auth.user.isDriver() ? (
-        <View style={styles.statusBox}>
-          <Text style={styles.status}>Modo Conductor Activo</Text>
-          <Text>Último GPS: {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}</Text>
-          
-          <Button 
-            title={isBroadcasting ? "Detener GPS" : "Iniciar Tracking"} 
-            onPress={() => setIsBroadcasting(!isBroadcasting)} 
-            color={isBroadcasting ? '#d93a30' : '#ff4c41'}
-          />
-          
-          <Button title="Cerrar Sesión" onPress={auth.logout} color="gray" />
-        </View>
-      ) : (
-        <View>
-          <Text style={styles.status}>Inicia sesión como Conductor</Text>
-          <Button title="Login Conductor" onPress={() => domain.auth.login({ email: 'driver@test.com', password: 'password123' })} />
-        </View>
-      )}
+    <View style={styles.root}>
+      <View style={styles.screenContainer}>
+        {renderScreen()}
+      </View>
+
+      <View style={styles.tabBar}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={styles.tab}
+            onPress={() => setActiveScreen(tab.key)}
+          >
+            <Text style={[styles.tabIcon, activeScreen === tab.key && styles.tabIconActive]}>
+              {tab.icon}
+            </Text>
+            <Text style={[styles.tabLabel, activeScreen === tab.key && styles.tabLabelActive]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
@@ -84,27 +76,22 @@ const AppDriver = () => (
 );
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
+  safeArea: { flex: 1, backgroundColor: colors.white },
+  root: { flex: 1 },
+  screenContainer: { flex: 1 },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[200],
+    paddingBottom: spacing.xs,
+    paddingTop: spacing.sm,
   },
-  container: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#ff4c41',
-  },
-  status: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  statusBox: {
-    alignItems: 'center',
-  },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tabIcon: { fontSize: 22, marginBottom: 2 },
+  tabIconActive: { transform: [{ scale: 1.15 }] },
+  tabLabel: { fontSize: fontSizes.xs, color: colors.gray[400] },
+  tabLabelActive: { color: colors.primary, fontWeight: '600' },
 });
 
 export default AppDriver;

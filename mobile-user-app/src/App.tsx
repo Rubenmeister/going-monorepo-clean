@@ -1,55 +1,86 @@
-import React from 'react';
-import { SafeAreaView, Text, StyleSheet, View, Button } from 'react-native';
-import { useMonorepoApp, AuthProvider } from '@going-monorepo-clean/frontend-providers'; // Usamos el hook central
+import React, { useState } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { AuthProvider, useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { colors, spacing, fontSizes, borderRadius } from '@going-monorepo-clean/shared-ui';
+import { HomeScreen } from './screens/HomeScreen';
+import { TripTrackingScreen } from './screens/TripTrackingScreen';
+import { ChatScreen } from './screens/ChatScreen';
+import { NotificationsScreen } from './screens/NotificationsScreen';
 
-// 1. Componente de Prueba de Conexión
+type Screen = 'Home' | 'TripTracking' | 'Chat' | 'Notifications';
+
+const tabs: { key: Screen; icon: string; label: string }[] = [
+  { key: 'Home', icon: '🏠', label: 'Inicio' },
+  { key: 'TripTracking', icon: '📍', label: 'Viaje' },
+  { key: 'Chat', icon: '💬', label: 'Chat' },
+  { key: 'Notifications', icon: '🔔', label: 'Alertas' },
+];
+
 const AppContent = () => {
-  const { auth, domain } = useMonorepoApp();
+  const { auth } = useMonorepoApp();
+  const [activeScreen, setActiveScreen] = useState<Screen>('Home');
+  const [screenParams, setScreenParams] = useState<Record<string, any>>({});
 
-  // Simulación de solicitud de viaje (el corazón del app de usuario)
-  const handleRequestTrip = () => {
-    if (auth.user) {
-      domain.transport.requestTrip({
-        userId: auth.user.id,
-        origin: { address: 'Inicio Móvil', city: 'Quito', country: 'EC', latitude: -0.2, longitude: -78.5 },
-        destination: { address: 'Destino Móvil', city: 'Quito', country: 'EC', latitude: -0.3, longitude: -78.6 },
-        price: { amount: 850, currency: 'USD' } // $8.50
-      });
+  const navigate = (screen: string, params?: any) => {
+    setActiveScreen(screen as Screen);
+    if (params) setScreenParams((prev) => ({ ...prev, [screen]: params }));
+  };
+
+  const renderScreen = () => {
+    switch (activeScreen) {
+      case 'Home':
+        return <HomeScreen onNavigate={navigate} />;
+      case 'TripTracking':
+        return (
+          <TripTrackingScreen
+            tripId={screenParams.TripTracking?.tripId}
+            driverId={screenParams.TripTracking?.driverId}
+            onNavigate={navigate}
+          />
+        );
+      case 'Chat':
+        return (
+          <ChatScreen
+            tripId={screenParams.Chat?.tripId}
+            recipientId={screenParams.Chat?.recipientId}
+            role="user"
+          />
+        );
+      case 'Notifications':
+        return <NotificationsScreen />;
+      default:
+        return <HomeScreen onNavigate={navigate} />;
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Going App de Usuario</Text>
-      
-      {auth.isLoading && <Text>Cargando sesión...</Text>}
-      {auth.error && <Text style={{ color: 'red' }}>Error: {auth.error}</Text>}
+    <View style={styles.root}>
+      {/* Screen Content */}
+      <View style={styles.screenContainer}>
+        {renderScreen()}
+      </View>
 
-      {auth.user ? (
-        <View>
-          <Text style={styles.status}>¡Bienvenido, {auth.user.firstName}!</Text>
-          <Text>Rol: {auth.user.roles.join(', ')}</Text>
-
-          <View style={styles.buttonContainer}>
-            <Button title="Solicitar Viaje" onPress={handleRequestTrip} color="#ff4c41" />
-          </View>
-          <View style={styles.buttonContainer}>
-            <Button title="Cerrar Sesión" onPress={auth.logout} color="#666" />
-          </View>
-        </View>
-      ) : (
-        <View>
-          <Text style={styles.status}>Desconectado</Text>
-          <View style={styles.buttonContainer}>
-            <Button title="Login Test" onPress={() => domain.auth.login({ email: 'user@test.com', password: 'password123' })} />
-          </View>
-        </View>
-      )}
+      {/* Bottom Tab Bar */}
+      <View style={styles.tabBar}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={styles.tab}
+            onPress={() => setActiveScreen(tab.key)}
+          >
+            <Text style={[styles.tabIcon, activeScreen === tab.key && styles.tabIconActive]}>
+              {tab.icon}
+            </Text>
+            <Text style={[styles.tabLabel, activeScreen === tab.key && styles.tabLabelActive]}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
 
-// 2. Componente de Exportación (Envuelve con AuthProvider)
 const App = () => (
   <SafeAreaView style={styles.safeArea}>
     <AuthProvider>
@@ -59,28 +90,26 @@ const App = () => (
 );
 
 const styles = StyleSheet.create({
-  safeArea: {
+  safeArea: { flex: 1, backgroundColor: colors.white },
+  root: { flex: 1 },
+  screenContainer: { flex: 1 },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray[200],
+    paddingBottom: spacing.xs,
+    paddingTop: spacing.sm,
+  },
+  tab: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  container: {
-    padding: 20,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#ff4c41',
-  },
-  status: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  buttonContainer: {
-    marginVertical: 8,
-    width: 200,
-  }
+  tabIcon: { fontSize: 22, marginBottom: 2 },
+  tabIconActive: { transform: [{ scale: 1.15 }] },
+  tabLabel: { fontSize: fontSizes.xs, color: colors.gray[400] },
+  tabLabelActive: { color: colors.primary, fontWeight: '600' },
 });
 
 export default App;

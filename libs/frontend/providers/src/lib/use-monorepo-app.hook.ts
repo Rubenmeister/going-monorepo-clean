@@ -1,6 +1,6 @@
 import { dependencyProvider } from './auth-context.provider';
 
-// Stub auth state - will be replaced with real auth state management in Phase 3
+// Auth state types
 interface AuthUser {
   id: string;
   firstName: string;
@@ -22,7 +22,7 @@ export const useMonorepoApp = () => {
     user: null,
     isLoading: false,
     error: null,
-    logout: () => { /* TODO: implement in Phase 3 */ },
+    logout: () => { /* TODO: implement with real token clearing */ },
   };
 
   return {
@@ -54,9 +54,17 @@ export const useMonorepoApp = () => {
       },
       tracking: {
         broadcastDriverLocation: dependencyProvider.broadcastDriverLocationUseCase,
+        trackDriverForTrip: dependencyProvider.trackDriverForTripUseCase,
+        calculateEta: dependencyProvider.calculateEtaUseCase,
+        getTripRoute: dependencyProvider.getTripRouteUseCase,
       },
       notification: {
         getByUser: dependencyProvider.getUserNotificationsUseCase,
+        markAsRead: dependencyProvider.markNotificationReadUseCase,
+      },
+      chat: {
+        send: dependencyProvider.sendChatMessageUseCase,
+        getTripChat: dependencyProvider.getTripChatUseCase,
       },
       search: {
         accommodations: dependencyProvider.searchAccommodationsUseCase,
