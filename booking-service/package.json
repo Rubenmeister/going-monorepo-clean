@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/booking-service",
+  "version": "1.0.0",
+  "description": "booking-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve booking-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

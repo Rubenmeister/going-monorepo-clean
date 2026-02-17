@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/anfitriones-service",
+  "version": "1.0.0",
+  "description": "anfitriones-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve anfitriones-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,37 @@
+packages:
+  # Applications
+  - 'frontend-webapp'
+  - 'admin-dashboard'
+  - 'mobile-driver-app'
+  - 'mobile-user-app'
+
+  # Services
+  - 'api-gateway'
+  - 'user-auth-service'
+  - 'booking-service'
+  - 'anfitriones-service'
+  - 'experiencias-service'
+  - 'tours-service'
+  - 'envios-service'
+  - 'payment-service'
+  - 'transport-service'
+  - 'notifications-service'
+  - 'tracking-service'
+
+  # Libraries
+  - 'libs/**'
+
+  # E2E Tests
+  - 'frontend-webapp-e2e'
+  - 'admin-dashboard-e2e'
+  - 'api-gateway-e2e'
+  - 'user-auth-service-e2e'
+  - 'booking-service-e2e'
+  - 'anfitriones-service-e2e'
+  - 'experiencias-service-e2e'
+  - 'tours-service-e2e'
+  - 'envios-service-e2e'
+  - 'payment-service-e2e'
+  - 'transport-service-e2e'
+  - 'notifications-service-e2e'
+  - 'tracking-service-e2e'

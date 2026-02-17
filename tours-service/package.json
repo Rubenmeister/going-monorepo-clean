@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/tours-service",
+  "version": "1.0.0",
+  "description": "tours-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve tours-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

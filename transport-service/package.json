@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/transport-service",
+  "version": "1.0.0",
+  "description": "transport-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve transport-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

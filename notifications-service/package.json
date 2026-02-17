@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/notifications-service",
+  "version": "1.0.0",
+  "description": "notifications-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve notifications-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
