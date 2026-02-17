@@ -4,6 +4,46 @@
   "sourceRoot": "admin-dashboard",
   "projectType": "application",
   "tags": [],
-  "// targets": "to see all targets run: nx show project admin-dashboard --web",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "root": "admin-dashboard",
+        "outputPath": "dist/admin-dashboard"
+      },
+      "configurations": {
+        "development": {
+          "dev": true
+        },
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/next:serve",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "admin-dashboard:build",
+        "dev": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "admin-dashboard:build:development",
+          "dev": true
+        },
+        "production": {
+          "buildTarget": "admin-dashboard:build:production",
+          "dev": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["admin-dashboard/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  }
 }
