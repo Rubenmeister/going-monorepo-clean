@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 interface NavItem {
@@ -23,11 +24,16 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 shadow-sm overflow-y-auto">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-going-primary">
-          Going
-        </h1>
-        <p className="text-xs text-gray-500 mt-1">Ecuador Platform</p>
+      <div className="p-6 border-b border-gray-200 flex flex-col items-center justify-center">
+        <Image
+          src="/logo.svg"
+          alt="Going Logo"
+          width={120}
+          height={120}
+          className="mb-2"
+          priority
+        />
+        <p className="text-xs text-gray-500 text-center mt-2">Ecuador Platform</p>
       </div>
 
       {/* Navigation */}
