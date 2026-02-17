@@ -4,6 +4,46 @@
   "sourceRoot": "frontend-webapp",
   "projectType": "application",
   "tags": [],
-  "// targets": "to see all targets run: nx show project frontend-webapp --web",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "root": "frontend-webapp",
+        "outputPath": "dist/frontend-webapp"
+      },
+      "configurations": {
+        "development": {
+          "dev": true
+        },
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/next:serve",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "frontend-webapp:build",
+        "dev": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "frontend-webapp:build:development",
+          "dev": true
+        },
+        "production": {
+          "buildTarget": "frontend-webapp:build:production",
+          "dev": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["frontend-webapp/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  }
 }

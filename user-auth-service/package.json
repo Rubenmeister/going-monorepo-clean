@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/user-auth-service",
+  "version": "1.0.0",
+  "description": "user-auth-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve user-auth-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/api-gateway",
+  "version": "1.0.0",
+  "description": "api-gateway for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve api-gateway"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

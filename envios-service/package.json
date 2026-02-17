@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/envios-service",
+  "version": "1.0.0",
+  "description": "envios-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve envios-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

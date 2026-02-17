@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/tracking-service",
+  "version": "1.0.0",
+  "description": "tracking-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve tracking-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

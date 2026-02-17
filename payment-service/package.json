@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/payment-service",
+  "version": "1.0.0",
+  "description": "payment-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve payment-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

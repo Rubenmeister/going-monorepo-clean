@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/experiencias-service",
+  "version": "1.0.0",
+  "description": "experiencias-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve experiencias-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

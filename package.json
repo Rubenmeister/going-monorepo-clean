@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:webapp": "cd frontend-webapp && pnpm next dev",
+    "build:webapp": "cd frontend-webapp && pnpm next build",
+    "start:webapp": "cd frontend-webapp && pnpm next start",
+    "lint:webapp": "cd frontend-webapp && pnpm eslint .",
+    "dev:all": "echo 'Starting monorepo in dev mode...' && pnpm dev:webapp",
+    "install:all": "pnpm install"
   },
   "keywords": [],
   "author": "",
