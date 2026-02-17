@@ -6,7 +6,12 @@ const path = require('path');
  * @type {import('next').NextConfig}
  **/
 const nextConfig = {
-  // Next.js configuration
+  // Compatibilidad con Next.js 15 (webpack) y 16+ (Turbopack por defecto)
+  turbopack: {
+    resolveAlias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
