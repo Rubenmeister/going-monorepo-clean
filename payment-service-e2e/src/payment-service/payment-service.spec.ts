@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../apps/payment-service/src/app.module'; // Módulo principal
+import { AppModule } from '../../../../payment-service/src/app.module'; // Módulo principal
 import { CreatePaymentIntentDto } from '@going-monorepo-clean/domains-payment-application'; // DTO
 import { IPaymentGateway } from '@going-monorepo-clean/domains-payment-core'; // Puerto
 

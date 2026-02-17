@@ -13,7 +13,7 @@
       "path": "./tsconfig.spec.json"
     },
     {
-      "path": "../../apps/user-auth-service/tsconfig.app.json"
+      "path": "../../user-auth-service/tsconfig.app.json"
     }
   ]
 }

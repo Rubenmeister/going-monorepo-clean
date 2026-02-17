@@ -1,4 +1,4 @@
-// apps/tracking-service/src/app.module.ts
+// tracking-service/src/app.module.ts
 
 import {
   UpdateLocationUseCase,
