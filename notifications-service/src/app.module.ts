@@ -15,11 +15,17 @@ import {
 } from '@going-monorepo-clean/shared-domain';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { NotificationController } from './api/notification.controller';
+import { ChatController } from './api/chat.controller';
+import { TemplateNotificationController } from './api/template-notification.controller';
 import { HealthController } from './api/health.controller';
 import {
   SendNotificationUseCase,
   GetUserNotificationsUseCase,
   MarkNotificationReadUseCase,
+  SendTemplateNotificationUseCase,
+  SendChatMessageUseCase,
+  GetTripChatUseCase,
+  MarkChatReadUseCase,
 } from '@going-monorepo-clean/domains-notification-application';
 
 @Module({
@@ -33,6 +39,8 @@ import {
   ],
   controllers: [
     NotificationController,
+    ChatController,
+    TemplateNotificationController,
     HealthController,
   ],
   providers: [
@@ -42,9 +50,15 @@ import {
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: CorrelationIdInterceptor },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
+    // Notification use cases
     SendNotificationUseCase,
     GetUserNotificationsUseCase,
     MarkNotificationReadUseCase,
+    SendTemplateNotificationUseCase,
+    // Chat use cases
+    SendChatMessageUseCase,
+    GetTripChatUseCase,
+    MarkChatReadUseCase,
   ],
 })
 export class AppModule {}
