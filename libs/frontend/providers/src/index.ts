@@ -1,9 +1,6 @@
-export * from './lib/auth-context.provider';
-export * from './lib/use-monorepo-app.hook';
+// Auth Context (React Context + Provider + Hook)
+export { AuthProvider, useAuth } from './lib/auth.context';
+export type { AuthUser, AuthState } from './lib/auth.context';
 
-// Simple AuthProvider wrapper component
-import type React from 'react';
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return children;
-};
+// Hook principal de la app
+export { useMonorepoApp } from './lib/use-monorepo-app.hook';
