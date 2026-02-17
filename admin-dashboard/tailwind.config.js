@@ -5,8 +5,10 @@ import { join } from 'path';
 module.exports = {
   content: [
     // Rutas para que Tailwind escanee todos los archivos del monorepo:
-    join(__dirname, 'apps/**/!(*.stories|*.spec).{ts,tsx,html}'),
-    join(__dirname, 'libs/**/!(*.stories|*.spec).{ts,tsx,html}'),
+    join(__dirname, '../*-service/src/**/!(*.stories|*.spec).{ts,tsx,html}'),
+    join(__dirname, '../*-dashboard/src/**/!(*.stories|*.spec).{ts,tsx,html}'),
+    join(__dirname, '../frontend-webapp/src/**/!(*.stories|*.spec).{ts,tsx,html}'),
+    join(__dirname, '../libs/**/!(*.stories|*.spec).{ts,tsx,html}'),
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {

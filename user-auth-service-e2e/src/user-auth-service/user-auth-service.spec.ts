@@ -1,7 +1,7 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../../apps/user-auth-service/src/app.module'; // Importa el módulo principal
+import { AppModule } from '../../../../user-auth-service/src/app.module'; // Importa el módulo principal
 import { RegisterUserDto } from '@going-monorepo-clean/domains-user-application'; // DTO
 
 describe('AUTH E2E (user-auth-service)', () => {
