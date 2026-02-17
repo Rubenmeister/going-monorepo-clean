@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#0033A0" opacity="0.1"/>
+
+  <!-- Main icon: stylized directional arrow/pin -->
+  <g>
+    <!-- Pin/location base -->
+    <path d="M100 40C85.64 40 74 51.64 74 66C74 85.6 100 130 100 130C100 130 126 85.6 126 66C126 51.64 114.36 40 100 40Z" fill="#0033A0"/>
+
+    <!-- Destination dot inside pin -->
+    <circle cx="100" cy="65" r="8" fill="white"/>
+
+    <!-- Arrow pointing up (direction) -->
+    <g transform="translate(100, 155)">
+      <path d="M0 -8L-6 2L2 2L2 12L-2 12L-2 2L-8 2L0 -8Z" fill="#FF6B35"/>
+    </g>
+  </g>
+
+  <!-- Text: Going -->
+  <text x="100" y="185" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#0033A0">GOING</text>
+</svg>
