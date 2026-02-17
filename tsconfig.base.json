@@ -24,6 +24,96 @@
       "@going-monorepo-clean/domains-user-application": [
         "libs/domains/user/application/src/index.ts"
       ],
+      "@going-monorepo-clean/domains-user-frontend-core": [
+        "libs/domains/user-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-user-frontend-application": [
+        "libs/domains/user-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-user-frontend-infrastructure": [
+        "libs/domains/user-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-booking-frontend-core": [
+        "libs/domains/booking-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-booking-frontend-application": [
+        "libs/domains/booking-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-booking-frontend-infrastructure": [
+        "libs/domains/booking-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-transport-frontend-core": [
+        "libs/domains/transport-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-transport-frontend-application": [
+        "libs/domains/transport-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-transport-frontend-infrastructure": [
+        "libs/domains/transport-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-payment-frontend-core": [
+        "libs/domains/payment-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-payment-frontend-application": [
+        "libs/domains/payment-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-payment-frontend-infrastructure": [
+        "libs/domains/payment-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-parcel-frontend-core": [
+        "libs/domains/parcel-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-parcel-frontend-application": [
+        "libs/domains/parcel-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-parcel-frontend-infrastructure": [
+        "libs/domains/parcel-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-accommodation-frontend-core": [
+        "libs/domains/accommodation-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-accommodation-frontend-application": [
+        "libs/domains/accommodation-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-accommodation-frontend-infrastructure": [
+        "libs/domains/accommodation-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tour-frontend-core": [
+        "libs/domains/tour-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tour-frontend-application": [
+        "libs/domains/tour-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tour-frontend-infrastructure": [
+        "libs/domains/tour-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tracking-frontend-core": [
+        "libs/domains/tracking-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tracking-frontend-application": [
+        "libs/domains/tracking-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-tracking-frontend-infrastructure": [
+        "libs/domains/tracking-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-notification-frontend-core": [
+        "libs/domains/notification-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-notification-frontend-application": [
+        "libs/domains/notification-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-notification-frontend-infrastructure": [
+        "libs/domains/notification-frontend/infrastructure/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-experience-frontend-core": [
+        "libs/domains/experience-frontend/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-experience-frontend-application": [
+        "libs/domains/experience-frontend/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-experience-frontend-infrastructure": [
+        "libs/domains/experience-frontend/infrastructure/src/index.ts"
+      ],
       "@going-monorepo-clean/frontend-providers": [
         "libs/frontend/providers/src/index.ts"
       ],
