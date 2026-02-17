@@ -30,7 +30,7 @@
     "@nx/jest": "22.0.3",
     "@nx/js": "22.0.4",
     "@nx/nest": "^22.0.3",
-    "@nx/next": "^22.0.3",
+    "@nx/next": "22.0.3",
     "@nx/node": "22.0.3",
     "@nx/playwright": "22.0.3",
     "@nx/react-native": "^22.0.4",
