@@ -9,3 +9,4 @@ export { tourClient, TourClient, type CreateTourRequest, type Tour } from './tou
 export { experienceClient, ExperienceClient, type CreateExperienceRequest, type Experience } from './experience.client';
 export { notificationClient, NotificationClient, type CreateNotificationRequest, type Notification } from './notification.client';
 export { trackingClient, TrackingClient, type UpdateLocationRequest, type Driver } from './tracking.client';
+export { trackingWsManager, TrackingWebSocketManager, type LocationUpdate, type DriverUpdate } from './tracking-websocket';

@@ -67,7 +67,6 @@ export const useMonorepoApp = () => {
         create: async (dto: any) => {
           try {
             const result = await bookingClient.createBooking(dto);
-            console.log('[bookings.create] Success:', result);
             return result;
           } catch (error) {
             console.error('[bookings.create] Error:', error);
@@ -81,6 +80,26 @@ export const useMonorepoApp = () => {
           } catch (error) {
             console.error('[bookings.findByUser] Error:', error);
             return [];
+          }
+        },
+        confirm: async (bookingId: string) => {
+          try {
+            const result = await bookingClient.confirmBooking(bookingId);
+            console.log('[bookings.confirm] Success:', result);
+            return result;
+          } catch (error) {
+            console.error('[bookings.confirm] Error:', error);
+            throw error;
+          }
+        },
+        cancel: async (bookingId: string) => {
+          try {
+            const result = await bookingClient.cancelBooking(bookingId);
+            console.log('[bookings.cancel] Success:', result);
+            return result;
+          } catch (error) {
+            console.error('[bookings.cancel] Error:', error);
+            throw error;
           }
         },
       },
@@ -175,8 +194,13 @@ export const useMonorepoApp = () => {
           }
         },
         search: async (query: any) => {
-          console.log('[tour.search] Waiting for backend implementation');
-          return [];
+          try {
+            const tours = await tourClient.searchTours(query);
+            return tours;
+          } catch (error) {
+            console.error('[tour.search] Error:', error);
+            return [];
+          }
         },
       },
 
@@ -192,8 +216,13 @@ export const useMonorepoApp = () => {
           }
         },
         search: async (query: any) => {
-          console.log('[experience.search] Waiting for backend implementation');
-          return [];
+          try {
+            const experiences = await experienceClient.searchExperiences(query);
+            return experiences;
+          } catch (error) {
+            console.error('[experience.search] Error:', error);
+            return [];
+          }
         },
       },
 

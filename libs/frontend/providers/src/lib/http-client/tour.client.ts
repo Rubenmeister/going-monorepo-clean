@@ -38,12 +38,27 @@ export interface Tour {
   createdAt: string;
 }
 
+export interface SearchToursQuery {
+  locationCity?: string;
+  category?: string;
+  maxPrice?: number;
+}
+
 export class TourClient {
   async createTour(data: CreateTourRequest): Promise<{ id: string }> {
     return httpClient.post<{ id: string }>('/tours', data);
   }
 
-  // TODO: Add searchTours when backend implements it
+  async searchTours(query: SearchToursQuery): Promise<Tour[]> {
+    const params = new URLSearchParams();
+    if (query.locationCity) params.append('locationCity', query.locationCity);
+    if (query.category) params.append('category', query.category);
+    if (query.maxPrice) params.append('maxPrice', query.maxPrice.toString());
+
+    return httpClient.get<Tour[]>(
+      `/tours/search?${params.toString()}`
+    );
+  }
 }
 
 export const tourClient = new TourClient();
