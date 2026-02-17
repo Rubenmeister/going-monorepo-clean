@@ -21,7 +21,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/next:serve",
+      "executor": "@nx/next:server",
       "defaultConfiguration": "development",
       "options": {
         "buildTarget": "frontend-webapp:build",
