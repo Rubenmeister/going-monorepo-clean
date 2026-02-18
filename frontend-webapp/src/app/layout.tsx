@@ -1,8 +1,4 @@
-import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
-import { Sidebar } from './components/Sidebar';
-import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { RootLayoutClient } from './RootLayoutClient';
 import './global.css';
 
 export const metadata = {
@@ -18,20 +14,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="bg-gray-50">
-        <LanguageProvider>
-          <AuthProvider>
-            <Navbar />
-            <div className="flex flex-col md:flex-row min-h-screen">
-              <Sidebar />
-              <div className="flex flex-col flex-1 md:ml-0">
-                <main className="flex-1">
-                  {children}
-                </main>
-                <Footer />
-              </div>
-            </div>
-          </AuthProvider>
-        </LanguageProvider>
+        <RootLayoutClient>
+          {children}
+        </RootLayoutClient>
       </body>
     </html>
   );
