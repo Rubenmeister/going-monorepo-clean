@@ -1,5 +1,6 @@
 import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
 import { Sidebar } from './components/Sidebar';
+import { Footer } from './components/Footer';
 import './global.css';
 
 export const metadata = {
@@ -16,11 +17,14 @@ export default function RootLayout({
     <html lang="es">
       <body className="bg-gray-50">
         <AuthProvider>
-          <div className="flex h-screen">
+          <div className="flex flex-col md:flex-row min-h-screen">
             <Sidebar />
-            <main className="flex-1 overflow-auto md:ml-0">
-              {children}
-            </main>
+            <div className="flex flex-col flex-1 md:ml-0">
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
           </div>
         </AuthProvider>
       </body>
