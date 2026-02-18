@@ -4,9 +4,22 @@
   "baseUrl": "http://localhost:3000",
   "viewportWidth": 1280,
   "viewportHeight": 720,
-  "setupNodeEvents(on, config) {}",
   "e2e": {
     "specPattern": "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
-    "supportFile": "cypress/support/e2e.ts"
+    "supportFile": "cypress/support/e2e.ts",
+    "baseUrl": "http://localhost:3000"
+  },
+  "env": {
+    "apiGateway": "http://localhost:3000",
+    "userAuthService": "http://localhost:3009",
+    "bookingService": "http://localhost:3010",
+    "anfitrioneService": "http://localhost:3003",
+    "experienciasService": "http://localhost:3004",
+    "toursService": "http://localhost:3005",
+    "transportService": "http://localhost:3006",
+    "envisosService": "http://localhost:3007",
+    "notificationsService": "http://localhost:3008",
+    "trackingService": "http://localhost:3008",
+    "paymentService": "http://localhost:3001"
   }
 }
