@@ -16,10 +16,12 @@ export default function RootLayout({
     <html lang="es">
       <body className="bg-gray-50">
         <AuthProvider>
-          <Sidebar />
-          <main className="ml-64">
-            {children}
-          </main>
+          <div className="flex h-screen">
+            <Sidebar />
+            <main className="flex-1 overflow-auto md:ml-0">
+              {children}
+            </main>
+          </div>
         </AuthProvider>
       </body>
     </html>
