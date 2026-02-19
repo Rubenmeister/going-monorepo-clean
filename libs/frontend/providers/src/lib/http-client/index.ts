@@ -1,5 +1,33 @@
 export { httpClient, HttpClient } from './http.client';
 export { TokenManager, type TokenRefreshResponse } from '../token-manager';
+export { axiosInstance, createAxiosInstance } from './axios-instance';
+export {
+  ApiError,
+  ApiErrorCode,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  ServerError,
+  NetworkError,
+  ServiceUnavailableError,
+  createApiError,
+  mapHttpStatusToErrorCode,
+  type ApiErrorContext,
+} from './api-error';
+export {
+  apiClient,
+  ApiClient,
+  type LoginRequest,
+  type LoginResponse,
+  type RegisterRequest,
+  type RegisterResponse,
+  type RefreshTokenRequest,
+  type RefreshTokenResponse,
+  type UserProfile,
+  type UpdateProfileRequest,
+} from './api-client';
 export { authClient, AuthClient, type LoginRequest, type LoginResponse, type RegisterRequest, type RegisterResponse } from './auth.client';
 export { bookingClient, BookingClient, type CreateBookingRequest, type Booking } from './booking.client';
 export { transportClient, TransportClient, type RequestTripRequest, type Trip } from './transport.client';
