@@ -6,6 +6,9 @@ import {
   IUserRepository,
   IPasswordHasher,
   ITokenService,
+  IRefreshTokenRepository,
+  ITokenBlacklistRepository,
+  ITokenManager,
 } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 import { MongooseUserRepository } from './persistence/mongoose-user.repository';
 import {
@@ -14,6 +17,9 @@ import {
 } from './persistence/schemas/user.schema';
 import { BcryptHasher } from './services/bcrypt.hasher';
 import { JwtTokenService } from './services/jwt.token.service';
+import { RedisRefreshTokenRepository } from './persistence/redis-refresh-token.repository';
+import { RedisTokenBlacklistRepository } from './persistence/redis-token-blacklist.repository';
+import { TokenManagerService } from './services/token-manager.service';
 
 @Module({
   imports: [
@@ -42,11 +48,28 @@ import { JwtTokenService } from './services/jwt.token.service';
       provide: ITokenService,
       useClass: JwtTokenService,
     },
+    {
+      provide: IRefreshTokenRepository,
+      useClass: RedisRefreshTokenRepository,
+    },
+    {
+      provide: ITokenBlacklistRepository,
+      useClass: RedisTokenBlacklistRepository,
+    },
+    {
+      provide: ITokenManager,
+      useClass: TokenManagerService,
+    },
+    TokenManagerService, // Also provide by class for @Inject
   ],
   exports: [
     IUserRepository,
     IPasswordHasher,
     ITokenService,
+    IRefreshTokenRepository,
+    ITokenBlacklistRepository,
+    ITokenManager,
+    TokenManagerService,
   ],
 })
 export class InfrastructureModule {}

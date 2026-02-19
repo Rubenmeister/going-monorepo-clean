@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { ITokenManager } from '@going-monorepo-clean/shared-domain';
 
@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(
-    private readonly configService: ConfigService,
+    private configService: ConfigService,
     @Inject('ITokenManager')
     private tokenManager: ITokenManager,
   ) {
@@ -73,7 +73,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         if (isBlacklistedResult.value) {
           this.logger.warn(
-            `Access denied: Token revoked for user ${payload.sub || payload.userId}`,
+            `Access denied: Token revoked for user ${payload.userId}`,
           );
           return null;
         }
@@ -81,7 +81,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       // Store original token for logout/revocation
       const user = {
-        userId: payload.sub || payload.userId,
+        userId: payload.userId,
         email: payload.email,
         roles: payload.roles || [],
         accessToken: token, // Store token for logout operations
@@ -89,7 +89,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         exp: payload.exp,
       };
 
-      this.logger.debug(`JWT validated for user ${user.userId}`);
+      this.logger.debug(`JWT validated for user ${payload.userId}`);
       return user;
     } catch (error) {
       this.logger.error(
