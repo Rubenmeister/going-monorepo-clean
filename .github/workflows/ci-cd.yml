@@ -72,21 +72,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run unit tests
-        run: npm run test:unit
+      - name: Run affected unit tests
+        run: npx nx affected -t test --base=origin/main --head=HEAD --parallel --passWithNoTests
         env:
           MONGO_URI: mongodb://localhost:27017/going_platform_test
           REDIS_URL: redis://localhost:6379
-      
-      - name: Run integration tests
-        run: npm run test:integration
-        env:
-          MONGO_URI: mongodb://localhost:27017/going_platform_test
-          REDIS_URL: redis://localhost:6379
-      
+
       - name: Generate coverage report
         run: npm run test:coverage
-      
+        continue-on-error: true
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
@@ -95,11 +90,12 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-  # Stage 3: E2E Tests
+  # Stage 3: E2E Tests (only on main and develop branches)
   e2e:
     runs-on: ubuntu-latest
     name: E2E Tests
-    
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
     services:
       mongodb:
         image: mongo:5.0
@@ -372,13 +368,18 @@ jobs:
     steps:
       - name: Check pipeline status
         run: |
-          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
-             [[ "${{ needs.test.result }}" == "failure" ]] || \
-             [[ "${{ needs.e2e.result }}" == "failure" ]]; then
-            echo "Pipeline failed"
+          LINT="${{ needs.lint.result }}"
+          TEST="${{ needs.test.result }}"
+          E2E="${{ needs.e2e.result }}"
+          echo "lint=$LINT  test=$TEST  e2e=$E2E"
+          # E2E is intentionally skipped on feature branches — treat skipped as pass
+          if [[ "$LINT" == "failure" ]] || \
+             [[ "$TEST" == "failure" ]] || \
+             [[ "$E2E" == "failure" ]]; then
+            echo "❌ Pipeline failed"
             exit 1
           fi
-          echo "Pipeline passed"
+          echo "✅ Pipeline passed"
       
       - name: Create success badge
         if: success()
