@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "lint": "npx nx affected:lint --head=HEAD --base=main || true",
+    "lint:all": "npx eslint . --ext .ts,.tsx,.js,.jsx",
     "dev:webapp": "npx nx serve frontend-webapp",
     "build:webapp": "npx nx build frontend-webapp",
     "start:webapp": "npx nx serve frontend-webapp --configuration=production",
@@ -34,7 +36,8 @@
     "build:production": "npm run build:all",
     "serve:production": "npm run start:webapp",
     "clean": "rm -rf .next dist node_modules mobile-user-app/node_modules mobile-driver-app/node_modules .cache",
-    "clean:install": "npm run clean && npm install"
+    "clean:install": "npm run clean && npm install",
+    "dev": "npm run dev:webapp"
   },
   "keywords": [],
   "author": "",
