@@ -3,11 +3,28 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const port = process.env.PORT || 3000;
+
+  // Security headers
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
+    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+    frameguard: { action: 'deny' },
+    xssFilter: true,
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  }));
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
@@ -24,11 +41,13 @@ async function bootstrap() {
     next();
   });
 
-  // CORS for frontend clients
+  // CORS for frontend clients - use specific origins from environment
+  const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001').split(',').map(o => o.trim());
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
   });
 
   const config = new DocumentBuilder()
@@ -53,5 +72,6 @@ async function bootstrap() {
   await app.listen(port);
   Logger.log(`🚀 API Gateway running on http://localhost:${port}`, 'Bootstrap');
   Logger.log(`📄 API docs available at http://localhost:${port}/docs`, 'Bootstrap');
+  Logger.log(`🔒 Security: Helmet enabled, CORS restricted to: ${corsOrigins.join(', ')}`, 'Bootstrap');
 }
 bootstrap();

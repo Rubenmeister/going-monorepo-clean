@@ -37,6 +37,13 @@ DerivedData
 *.xcuserstate
 **/.xcode.env.local
 
+# Environment Variables (SECRETS - NEVER COMMIT)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.schema.json
+
 # Android/IntelliJ
 #
 build/
