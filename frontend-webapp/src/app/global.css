@@ -402,6 +402,50 @@ summary svg {
   display: inline;
   margin-top: -0.25rem;
 }
+/* Notification animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-in-out;
+}
+
+.animate-slideOutRight {
+  animation: slideOutRight 0.3s ease-in-out;
+}
+
+.animate-shrink {
+  animation: shrink linear forwards;
+}
+
 @media screen and (min-width: 768px) {
   #hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));

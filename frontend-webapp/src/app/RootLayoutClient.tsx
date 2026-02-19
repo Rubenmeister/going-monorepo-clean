@@ -4,6 +4,8 @@ import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { GlobalErrorNotification } from './components/GlobalErrorNotification';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ClientOnly } from './ClientOnly';
 
@@ -13,25 +15,28 @@ export function RootLayoutClient({
   children: React.ReactNode;
 }) {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <ClientOnly>
-          <Navbar />
-        </ClientOnly>
-        <div className="flex flex-col md:flex-row min-h-screen">
+    <ErrorBoundary>
+      <LanguageProvider>
+        <AuthProvider>
+          <GlobalErrorNotification />
           <ClientOnly>
-            <Sidebar />
+            <Navbar />
           </ClientOnly>
-          <div className="flex flex-col flex-1 md:ml-0">
-            <main className="flex-1">
-              {children}
-            </main>
+          <div className="flex flex-col md:flex-row min-h-screen">
             <ClientOnly>
-              <Footer />
+              <Sidebar />
             </ClientOnly>
+            <div className="flex flex-col flex-1 md:ml-0">
+              <main className="flex-1">
+                {children}
+              </main>
+              <ClientOnly>
+                <Footer />
+              </ClientOnly>
+            </div>
           </div>
-        </div>
-      </AuthProvider>
-    </LanguageProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 }
