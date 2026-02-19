@@ -12,7 +12,12 @@ import {
   UpdateLocationUseCase,
 } from '@going-monorepo-clean/domains-tracking-application';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({
+  cors: {
+    origin: (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001').split(','),
+    credentials: true,
+  }
+})
 export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(TrackingGateway.name);
   private validationPipe = new ValidationPipe({ whitelist: true });

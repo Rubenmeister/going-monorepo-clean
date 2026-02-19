@@ -1,0 +1,273 @@
+version: '3.9'
+
+services:
+  # ============================================
+  # DATABASES
+  # ============================================
+  mongodb:
+    image: mongo:7-alpine
+    container_name: going-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ADMIN_PASSWORD:-change_me_in_production}
+      MONGO_INITDB_DATABASE: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongodb-init.js:/docker-entrypoint-initdb.d/init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - going-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: going-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-change_me_in_production}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - going-network
+
+  # ============================================
+  # API GATEWAY (Entry Point)
+  # ============================================
+  api-gateway:
+    build:
+      context: ./
+      dockerfile: api-gateway/Dockerfile
+    container_name: going-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRES_IN: 24h
+      # Service URLs (Docker internal network)
+      USER_AUTH_SERVICE_URL: http://user-auth-service:3009
+      PAYMENT_SERVICE_URL: http://payment-service:3001
+      BOOKING_SERVICE_URL: http://booking-service:3010
+      TRANSPORT_SERVICE_URL: http://transport-service:3006
+      ANFITRIONES_SERVICE_URL: http://anfitriones-service:3003
+      EXPERIENCIAS_SERVICE_URL: http://experiencias-service:3004
+      TOURS_SERVICE_URL: http://tours-service:3005
+      ENVIOS_SERVICE_URL: http://envios-service:3007
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3002
+      TRACKING_SERVICE_URL: http://tracking-service:3008
+    depends_on:
+      - user-auth-service
+      - payment-service
+    healthcheck:
+      test: curl -f http://localhost:3000/docs || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - going-network
+
+  # ============================================
+  # AUTHENTICATION
+  # ============================================
+  user-auth-service:
+    build:
+      context: ./
+      dockerfile: user-auth-service/Dockerfile
+    container_name: going-user-auth
+    ports:
+      - "3009:3009"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3009
+      USER_DB_URL: mongodb://user_service:${USER_SERVICE_PASSWORD:-user_service_pass}@mongodb:27017/user_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  # ============================================
+  # MICROSERVICES
+  # ============================================
+  payment-service:
+    build:
+      context: ./
+      dockerfile: payment-service/Dockerfile
+    container_name: going-payment-service
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      PAYMENT_DB_URL: mongodb://payment_service:${PAYMENT_SERVICE_PASSWORD:-payment_service_pass}@mongodb:27017/payment_db?authSource=admin
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  anfitriones-service:
+    build:
+      context: ./
+      dockerfile: anfitriones-service/Dockerfile
+    container_name: going-anfitriones
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3003
+      ACCOMMODATION_DB_URL: mongodb://accommodation_service:${ACCOMMODATION_SERVICE_PASSWORD:-accommodation_service_pass}@mongodb:27017/accommodation_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  experiencias-service:
+    build:
+      context: ./
+      dockerfile: experiencias-service/Dockerfile
+    container_name: going-experiencias
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3004
+      EXPERIENCE_DB_URL: mongodb://experience_service:${EXPERIENCE_SERVICE_PASSWORD:-experience_service_pass}@mongodb:27017/experience_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  tours-service:
+    build:
+      context: ./
+      dockerfile: tours-service/Dockerfile
+    container_name: going-tours
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3005
+      TOURS_DB_URL: mongodb://tours_service:${TOURS_SERVICE_PASSWORD:-tours_service_pass}@mongodb:27017/tours_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  transport-service:
+    build:
+      context: ./
+      dockerfile: transport-service/Dockerfile
+    container_name: going-transport
+    ports:
+      - "3006:3006"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3006
+      TRANSPORT_DB_URL: mongodb://transport_service:${TRANSPORT_SERVICE_PASSWORD:-transport_service_pass}@mongodb:27017/transport_db?authSource=admin
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change_me_in_production}@redis:6379
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  envios-service:
+    build:
+      context: ./
+      dockerfile: envios-service/Dockerfile
+    container_name: going-envios
+    ports:
+      - "3007:3007"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3007
+      PARCEL_DB_URL: mongodb://parcel_service:${PARCEL_SERVICE_PASSWORD:-parcel_service_pass}@mongodb:27017/parcel_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  notifications-service:
+    build:
+      context: ./
+      dockerfile: notifications-service/Dockerfile
+    container_name: going-notifications
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3002
+      NOTIFICATION_DB_URL: mongodb://notification_service:${NOTIFICATION_SERVICE_PASSWORD:-notification_service_pass}@mongodb:27017/notification_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  tracking-service:
+    build:
+      context: ./
+      dockerfile: tracking-service/Dockerfile
+    container_name: going-tracking
+    ports:
+      - "3008:3008"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3008
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change_me_in_production}@redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - going-network
+
+  booking-service:
+    build:
+      context: ./
+      dockerfile: booking-service/Dockerfile
+    container_name: going-booking
+    ports:
+      - "3010:3010"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3010
+      BOOKING_DB_URL: mongodb://booking_service:${BOOKING_SERVICE_PASSWORD:-booking_service_pass}@mongodb:27017/booking_db?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - going-network
+
+# ============================================
+# NETWORKS & VOLUMES
+# ============================================
+networks:
+  going-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
