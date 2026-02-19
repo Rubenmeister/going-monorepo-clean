@@ -2,12 +2,25 @@ import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import {
   ITrackingRepository,
   ITrackingGateway,
-} from '@going-monorepo-clean/domains-tracking-core';
+  IGeoLocationRepository,
+  IDriverAvailabilityRepository,
+  ITrackingSessionRepository,
+  GeolocationService,
+  DistanceCalculatorService,
+} from '@going/shared-infrastructure';
 import { RedisTrackingRepository } from './persistence/redis-tracking.repository';
+import { RedisGeoRepository } from './persistence/redis-geo.repository';
+import { RedisAvailabilityRepository } from './persistence/redis-availability.repository';
+import { MongoTrackingRepository } from './persistence/mongo-tracking.repository';
 import { SocketIoTrackingGateway } from './gateways/socket-io-tracking.gateway';
+import {
+  TrackingSessionDocument,
+  TrackingSessionSchema,
+} from './schemas/tracking-session.schema';
 
 @Module({
   imports: [
@@ -21,6 +34,12 @@ import { SocketIoTrackingGateway } from './gateways/socket-io-tracking.gateway';
       }),
       isGlobal: true,
     }),
+    MongooseModule.forFeature([
+      {
+        name: 'TrackingSession',
+        schema: TrackingSessionSchema,
+      },
+    ]),
   ],
   providers: [
     {
@@ -31,11 +50,42 @@ import { SocketIoTrackingGateway } from './gateways/socket-io-tracking.gateway';
       provide: ITrackingGateway,
       useClass: SocketIoTrackingGateway,
     },
-    SocketIoTrackingGateway, 
+    {
+      provide: 'IGeoLocationRepository',
+      useClass: RedisGeoRepository,
+    },
+    {
+      provide: 'IDriverAvailabilityRepository',
+      useClass: RedisAvailabilityRepository,
+    },
+    {
+      provide: 'ITrackingSessionRepository',
+      useClass: MongoTrackingRepository,
+    },
+    {
+      provide: 'GeolocationService',
+      useFactory: (
+        geoRepo: IGeoLocationRepository,
+        availRepo: IDriverAvailabilityRepository,
+        distanceCalc: DistanceCalculatorService
+      ) => new GeolocationService(geoRepo, availRepo, distanceCalc),
+      inject: [
+        'IGeoLocationRepository',
+        'IDriverAvailabilityRepository',
+        DistanceCalculatorService,
+      ],
+    },
+    DistanceCalculatorService,
+    SocketIoTrackingGateway,
   ],
   exports: [
     ITrackingRepository,
     ITrackingGateway,
+    'IGeoLocationRepository',
+    'IDriverAvailabilityRepository',
+    'ITrackingSessionRepository',
+    'GeolocationService',
+    DistanceCalculatorService,
   ],
 })
 export class InfrastructureModule {}

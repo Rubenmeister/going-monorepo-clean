@@ -18,3 +18,6 @@ export * from './lib/decorators/audit.decorator';
 export * from './lib/interceptors/audit.interceptor';
 export * from './lib/schemas/audit-log.schema';
 export * from './lib/persistence/mongo-audit-log.repository';
+
+// Geolocation Domain (Phase 4)
+export * from './domains/geolocation';
