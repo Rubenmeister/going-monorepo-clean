@@ -24,3 +24,6 @@ export * from './domains/geolocation';
 
 // Ride Domain (Phase 5)
 export * from './domains/ride';
+
+// Chat Domain (Phase 5)
+export * from './domains/chat';
