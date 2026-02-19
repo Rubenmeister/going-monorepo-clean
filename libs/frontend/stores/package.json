@@ -1,0 +1,12 @@
+{
+  "name": "frontend-stores",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@swc/helpers": "~0.5.11",
+    "zustand": "^4.4.0"
+  }
+}

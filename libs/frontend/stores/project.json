@@ -1,0 +1,19 @@
+{
+  "name": "frontend-stores",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/stores/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/frontend/stores",
+        "main": "libs/frontend/stores/src/index.ts",
+        "tsConfig": "libs/frontend/stores/tsconfig.lib.json",
+        "assets": ["libs/frontend/stores/*.md"]
+      }
+    }
+  }
+}

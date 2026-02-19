@@ -141,6 +141,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "zustand": "^4.5.7"
   }
 }
