@@ -9,7 +9,7 @@ import {
   IRefreshTokenRepository,
   ITokenBlacklistRepository,
   ITokenManager,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+} from '@going-monorepo-clean/domains-user-core';
 import { MongooseUserRepository } from './persistence/mongoose-user.repository';
 import {
   UserModelSchema,
@@ -20,6 +20,7 @@ import { JwtTokenService } from './services/jwt.token.service';
 import { RedisRefreshTokenRepository } from './persistence/redis-refresh-token.repository';
 import { RedisTokenBlacklistRepository } from './persistence/redis-token-blacklist.repository';
 import { TokenManagerService } from './services/token-manager.service';
+import { AccountLockoutService } from './services/account-lockout.service';
 
 @Module({
   imports: [
@@ -60,7 +61,9 @@ import { TokenManagerService } from './services/token-manager.service';
       provide: ITokenManager,
       useClass: TokenManagerService,
     },
-    TokenManagerService, // Also provide by class for @Inject
+    // Security Services
+    TokenManagerService,
+    AccountLockoutService,
   ],
   exports: [
     IUserRepository,
@@ -70,6 +73,7 @@ import { TokenManagerService } from './services/token-manager.service';
     ITokenBlacklistRepository,
     ITokenManager,
     TokenManagerService,
+    AccountLockoutService,
   ],
 })
 export class InfrastructureModule {}
