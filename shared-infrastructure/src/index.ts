@@ -21,3 +21,6 @@ export * from './lib/persistence/mongo-audit-log.repository';
 
 // Geolocation Domain (Phase 4)
 export * from './domains/geolocation';
+
+// Ride Domain (Phase 5)
+export * from './domains/ride';
