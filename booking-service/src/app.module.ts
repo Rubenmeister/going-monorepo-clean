@@ -10,6 +10,8 @@ import { BookingController } from './api/booking.controller';
 import {
   CreateBookingUseCase,
   FindBookingsByUserUseCase,
+  ConfirmBookingUseCase,
+  CancelBookingUseCase,
 } from '@going-monorepo-clean/domains-booking-application';
 
 @Module({
@@ -25,6 +27,8 @@ import {
     // Registra los Casos de Uso como 'providers'
     CreateBookingUseCase,
     FindBookingsByUserUseCase,
+    ConfirmBookingUseCase,
+    CancelBookingUseCase,
   ],
 })
 export class AppModule {}
