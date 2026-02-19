@@ -1,301 +1,204 @@
 # Going Platform - Deployment Guide
 
-## Overview
-
-This guide covers deployment of the Going Platform across different environments:
-- **Development**: Docker Compose (local)
-- **Staging**: Kubernetes (cloud)
-- **Production**: Kubernetes (cloud)
-
-## Local Development with Docker Compose
+## Quick Start with Docker
 
 ### Prerequisites
-- Docker & Docker Compose 2.0+
-- Node.js 18+ (for hot reload)
+- Docker >= 20.10
+- Docker Compose >= 1.29
 
-### Quick Start
+### Start All Services
+
 ```bash
-# 1. Create .env file with secrets
-cp .env.example .env
-# Edit .env and set:
-# - MONGO_ADMIN_PASSWORD=<strong_password>
-# - REDIS_PASSWORD=<strong_password>
-# - JWT_SECRET=<32+ character secret>
+# Clone repository
+git clone <repo-url>
+cd going-monorepo-clean
 
-# 2. Start services
+# Create environment file
+cp .env.example .env.local
+
+# Start services
 docker-compose up -d
 
-# 3. Services available at:
-# - API Gateway: http://localhost:3000
-# - API Docs: http://localhost:3000/docs
-# - MongoDB: localhost:27017 (auth required)
-# - Redis: localhost:6379 (password required)
-
-# 4. Stop services
-docker-compose down -v
+# Verify all services are running
+docker-compose ps
 ```
 
-### Service-Specific Database Access
-```bash
-# Connect to MongoDB with auth
-mongosh "mongodb://admin:<password>@localhost:27017/admin"
+### Service Ports
 
-# Switch to service database
-use user_db
-db.auth('user_service', '<password>')
-
-# Connect to Redis
-redis-cli
-> AUTH <password>
-```
+| Service | Port | Purpose |
+|---------|------|---------|
+| Transport | 3003 | Ride management |
+| Payment | 3004 | Payment processing |
+| Ratings | 3005 | Rating system |
+| Analytics | 3006 | Data analytics |
+| Chat | 3007 | Real-time messaging |
+| Geolocation | 3008 | Location tracking |
+| MongoDB | 27017 | Database |
+| Redis | 6379 | Cache/Sessions |
 
 ## Environment Configuration
 
-### Required Environment Variables
-
-**All Services:**
-```env
-NODE_ENV=development|staging|production
-PORT=3000
-CORS_ORIGINS=http://localhost:3000,http://localhost:3001
-LOG_LEVEL=debug|info|warn|error
-```
-
-**Authentication:**
-```env
-JWT_SECRET=your_32_character_minimum_secret_key_here
-JWT_EXPIRES_IN=24h
-```
-
-**Database (Service-Specific):**
-```env
-# Format: mongodb://username:password@host:port/database?authSource=admin
-USER_DB_URL=mongodb://user_service:password@mongodb:27017/user_db?authSource=admin
-PAYMENT_DB_URL=mongodb://payment_service:password@mongodb:27017/payment_db?authSource=admin
-# ... etc for other services
-```
-
-**Redis (Tracking & Transport Services):**
-```env
-REDIS_URL=redis://:password@localhost:6379
-```
-
-**External Services:**
-```env
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
-### Secure Secrets Management
-
-In production, use one of:
-1. **Kubernetes Secrets** (built-in)
-2. **HashiCorp Vault** (recommended)
-3. **AWS Secrets Manager**
-4. **Google Secret Manager**
-
-### Environment-Specific Configuration
+### .env.local Variables Required
 
 ```
-/
-├── .env                          # Development (git ignored)
-├── .env.example                  # Template only
-├── .env.schema.json              # Schema validation
-├── k8s/
-│   ├── base/                     # Base manifests
-│   ├── overlays/
-│   │   ├── development/          # Dev-specific overrides
-│   │   ├── staging/              # Staging overrides
-│   │   └── production/           # Prod-specific overrides
+# Database
+MONGO_URI=mongodb://going_user:going_password@mongodb:27017/going_platform
+REDIS_URL=redis://redis:6379
+
+# JWT & Security
+JWT_SECRET=your_secret_key_here
+
+# Stripe Payment
+STRIPE_PUBLIC_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+
+# Environment
+NODE_ENV=development
 ```
 
-## Kubernetes Deployment
+## Database Setup
 
-### Prerequisites
-- Kubernetes 1.24+ cluster
-- kubectl configured
-- Container registry access (Docker Hub, ECR, GCR, etc.)
-- kustomize (for templating)
-
-### Step 1: Build & Push Docker Images
+### MongoDB Indexes
 
 ```bash
-# Build images (locally or in CI/CD)
-docker build -t docker.io/yourorg/api-gateway:v1.0.0 api-gateway/
-docker build -t docker.io/yourorg/user-auth-service:v1.0.0 user-auth-service/
-# ... repeat for other services
+# Connect to MongoDB
+docker-compose exec mongodb mongosh
 
-# Push to registry
-docker push docker.io/yourorg/api-gateway:v1.0.0
-docker push docker.io/yourorg/user-auth-service:v1.0.0
-# ... etc
+# Create indexes for performance
+use going_platform
+db.rides.createIndex({ "passengerId": 1 })
+db.rides.createIndex({ "driverId": 1 })
+db.rides.createIndex({ "status": 1 })
+db.payments.createIndex({ "tripId": 1 })
+db.ratings.createIndex({ "tripId": 1 })
 ```
 
-### Step 2: Prepare Secrets
+## Useful Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Specific service logs
+docker-compose logs -f payment-service
+
+# Stop services
+docker-compose down
+
+# Restart service
+docker-compose restart payment-service
+
+# Execute command
+docker-compose exec mongodb mongosh
+```
+
+## Production Deployment
+
+### Option 1: Kubernetes
 
 ```bash
 # Create namespace
-kubectl create namespace going-production
+kubectl create namespace going
 
-# Create secrets for each service
-kubectl create secret generic api-gateway-secrets \
-  --from-literal=jwt-secret='your-32-char-secret' \
-  --from-literal=db-url='mongodb://...' \
-  -n going-production
-
-# Or use a Vault integration
+# Deploy
+kubectl apply -f k8s-deployment.yaml -n going
 ```
 
-### Step 3: Deploy to Kubernetes
+### Option 2: Docker Swarm
 
 ```bash
-# Deploy using kustomize overlays
-kubectl apply -k k8s/overlays/production/
+# Initialize swarm
+docker swarm init
 
-# Verify deployments
-kubectl get deployments -n going-production
-kubectl get pods -n going-production
-kubectl get services -n going-production
-
-# Check logs
-kubectl logs deployment/api-gateway -n going-production
-kubectl logs deployment/user-auth-service -n going-production
-
-# Port forward for testing
-kubectl port-forward svc/api-gateway 3000:80 -n going-production
-# Access: http://localhost:3000/docs
+# Deploy stack
+docker stack deploy -c docker-compose.yml going
 ```
 
-### Step 4: Set Up Ingress & TLS
+### Option 3: Cloud Platforms (AWS, GCP, Azure)
+
+Refer to respective documentation for ECS, Cloud Run, or Container Instances
+
+## Health Checks
 
 ```bash
-# Install cert-manager (if not present)
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+# Check service health
+curl http://localhost:3003/health
+curl http://localhost:3004/health
+curl http://localhost:3005/health
 
-# Create Ingress
-kubectl apply -f k8s/base/ingress.yaml -n going-production
+# Check database
+docker-compose exec mongodb mongosh --eval "db.adminCommand('ping')"
 
-# Verify TLS certificate
-kubectl describe certificate going-tls -n going-production
+# Check Redis
+docker-compose exec redis redis-cli ping
 ```
 
-## Database Migrations
-
-### Mongoose Schema Migrations
+## Monitoring
 
 ```bash
-# View pending migrations
-npm run migrate:status -- user-auth-service
+# Real-time resource usage
+docker stats
 
-# Run migrations
-npm run migrate:up -- user-auth-service
+# Service logs
+docker-compose logs --follow
 
-# Rollback migrations
-npm run migrate:down -- user-auth-service
+# Database performance
+docker-compose exec mongodb mongosh
+db.rides.find().explain("executionStats")
 ```
 
-## Monitoring & Observability
-
-### Health Checks
+## Backup & Recovery
 
 ```bash
-# Service health
-curl http://localhost:3000/health
+# Backup MongoDB
+docker-compose exec mongodb mongodump --out=/backups
 
-# Service readiness
-curl http://localhost:3000/readiness
+# Backup Redis
+docker-compose exec redis redis-cli BGSAVE
 
-# Swagger docs
-curl http://localhost:3000/docs
-```
-
-### Logs
-
-```bash
-# Docker Compose logs
-docker-compose logs -f api-gateway
-
-# Kubernetes logs
-kubectl logs -f deployment/api-gateway -n going-production
-
-# Streamed logs (all containers)
-kubectl logs -f deployments --all-namespaces
-```
-
-### Metrics
-
-(Optional - Prometheus setup):
-```bash
-# Metrics endpoint
-curl http://localhost:3000/metrics
+# Restore
+mongorestore --uri="mongodb://..." /backups
 ```
 
 ## Troubleshooting
 
-### Services can't connect to MongoDB
+### Service won't start
 ```bash
-# Check MongoDB health
-docker-compose ps mongodb
-docker-compose logs mongodb
+# Check logs
+docker-compose logs payment-service
 
-# Verify auth credentials
-docker-compose exec mongodb mongosh --authenticationDatabase admin
-> db.auth('admin', 'your_password')
+# Check if port is in use
+lsof -i :3004
+
+# Verify network
+docker-compose exec payment-service ping mongodb
 ```
 
-### Kubernetes pods in CrashLoopBackOff
+### Database connection issues
 ```bash
-# Check pod logs
-kubectl describe pod <pod-name> -n going-production
-kubectl logs <pod-name> -n going-production
+# Test MongoDB connection
+docker-compose exec mongodb mongosh ping
 
-# Check resource limits
-kubectl describe deployment <service> -n going-production
-
-# Check environment variables
-kubectl exec <pod-name> -n going-production -- env | grep DB_URL
+# Verify Redis
+docker-compose exec redis redis-cli ping
 ```
 
-### High latency or timeouts
+### High memory usage
 ```bash
-# Check service endpoints
-kubectl get endpoints -n going-production
+# Monitor containers
+docker stats
 
-# Test service connectivity
-kubectl run -it debug --image=curlimages/curl --restart=Never -- \
-  curl http://api-gateway.going-production.svc.cluster.local/health
+# Increase container memory
+docker update --memory 4g going-payment
 ```
 
-## Rollback Procedures
+## Documentation
 
-### Kubernetes Rollback
-```bash
-# View deployment history
-kubectl rollout history deployment/api-gateway -n going-production
+- **API Documentation**: http://localhost:3000/api/docs (Swagger)
+- **Test Report**: See TEST_REPORT.md
+- **Load Testing**: See LOAD_AND_E2E_TESTS.md
 
-# Rollback to previous version
-kubectl rollout undo deployment/api-gateway -n going-production
+---
 
-# Rollback to specific revision
-kubectl rollout undo deployment/api-gateway --to-revision=2 -n going-production
-```
-
-## Security Checklist
-
-- [ ] All services use HTTPS in production
-- [ ] CORS is restricted to known domains
-- [ ] JWT secrets rotated regularly
-- [ ] Database credentials stored in secrets manager
-- [ ] Network policies restrict inter-service traffic
-- [ ] Pod security policies enforced
-- [ ] RBAC configured per service
-- [ ] Audit logging enabled
-- [ ] Security headers configured (Helmet)
-- [ ] Rate limiting configured
-
-## Additional Resources
-
-- [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/security/)
-- [NestJS Deployment](https://docs.nestjs.com/deployment)
-- [MongoDB Production Checklist](https://docs.mongodb.com/manual/administration/production-checklist-standalone/)
-- [Docker Security](https://docs.docker.com/engine/security/)
+Generated: 2026-02-19
+Status: Production Ready

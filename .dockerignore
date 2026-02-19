@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.next
+dist
+.env
+.env.local
+.env.*.local
+coverage
+.eslintcache
+.cache
+.DS_Store
+cypress/videos
+cypress/screenshots
+load-test-results.json

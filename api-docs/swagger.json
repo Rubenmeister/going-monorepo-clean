@@ -1,0 +1,1014 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Going Platform API",
+    "description": "Comprehensive REST API documentation for the Going ride-sharing platform",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Going Support",
+      "email": "support@going.com"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.going.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Rides",
+      "description": "Ride management endpoints"
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing endpoints"
+    },
+    {
+      "name": "Ratings",
+      "description": "Rating and review endpoints"
+    },
+    {
+      "name": "Analytics",
+      "description": "Analytics and reporting endpoints"
+    },
+    {
+      "name": "Drivers",
+      "description": "Driver profile and management endpoints"
+    },
+    {
+      "name": "Passengers",
+      "description": "Passenger profile endpoints"
+    },
+    {
+      "name": "Locations",
+      "description": "Location tracking endpoints"
+    },
+    {
+      "name": "Chat",
+      "description": "Real-time messaging endpoints"
+    }
+  ],
+  "paths": {
+    "/rides/request": {
+      "post": {
+        "tags": ["Rides"],
+        "summary": "Request a new ride",
+        "description": "Passenger initiates a ride request with pickup and dropoff locations",
+        "operationId": "requestRide",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ride request created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RideResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "description": "Unauthorized - authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/rides/{tripId}/accept": {
+      "post": {
+        "tags": ["Rides"],
+        "summary": "Accept a ride request",
+        "description": "Driver accepts a pending ride request",
+        "operationId": "acceptRide",
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptRideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ride accepted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RideResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ride not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/rides/{tripId}/complete": {
+      "post": {
+        "tags": ["Rides"],
+        "summary": "Complete a ride",
+        "description": "Mark a ride as completed with final details",
+        "operationId": "completeRide",
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteRideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ride completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RideResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/rides/{tripId}": {
+      "get": {
+        "tags": ["Rides"],
+        "summary": "Get ride details",
+        "description": "Retrieve detailed information about a specific ride",
+        "operationId": "getRideDetails",
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ride details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RideResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ride not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/payments/complete-ride": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Process payment for completed ride",
+        "description": "Process payment after ride completion with fee split",
+        "operationId": "processPayment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payment request"
+          },
+          "402": {
+            "description": "Payment processing failed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/payments/{paymentId}": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "Get payment details",
+        "description": "Retrieve payment information",
+        "operationId": "getPaymentDetails",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/ratings/submit": {
+      "post": {
+        "tags": ["Ratings"],
+        "summary": "Submit a rating",
+        "description": "Passenger or driver submits a rating for the ride",
+        "operationId": "submitRating",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rating submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid rating data"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/ratings/{tripId}": {
+      "get": {
+        "tags": ["Ratings"],
+        "summary": "Get ratings for a trip",
+        "description": "Retrieve rating information for a specific trip",
+        "operationId": "getTripRating",
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rating retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/drivers/{driverId}/profile": {
+      "get": {
+        "tags": ["Drivers"],
+        "summary": "Get driver profile",
+        "description": "Retrieve complete driver profile with ratings and statistics",
+        "operationId": "getDriverProfile",
+        "parameters": [
+          {
+            "name": "driverId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver profile retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverProfile"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Driver not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/locations/track": {
+      "post": {
+        "tags": ["Locations"],
+        "summary": "Track driver location",
+        "description": "Record driver's real-time location during ride",
+        "operationId": "trackLocation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location recorded successfully"
+          },
+          "400": {
+            "description": "Invalid location data"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/analytics/daily": {
+      "get": {
+        "tags": ["Analytics"],
+        "summary": "Get daily analytics",
+        "description": "Retrieve platform analytics for the current day",
+        "operationId": "getDailyAnalytics",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Optional date for historical data (YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/analytics/period": {
+      "get": {
+        "tags": ["Analytics"],
+        "summary": "Get analytics for date range",
+        "description": "Retrieve analytics data for a specific period",
+        "operationId": "getPeriodAnalytics",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Period analytics retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/chat/send": {
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Send a message",
+        "description": "Send a real-time message between passenger and driver",
+        "operationId": "sendMessage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatMessage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully"
+          },
+          "400": {
+            "description": "Invalid message data"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RideRequest": {
+        "type": "object",
+        "required": ["passengerId", "pickupLocation", "dropoffLocation"],
+        "properties": {
+          "passengerId": {
+            "type": "string",
+            "description": "Unique identifier for the passenger"
+          },
+          "pickupLocation": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "dropoffLocation": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "estimatedDistance": {
+            "type": "number",
+            "description": "Estimated distance in kilometers"
+          },
+          "estimatedDuration": {
+            "type": "number",
+            "description": "Estimated duration in minutes"
+          },
+          "rideType": {
+            "type": "string",
+            "enum": ["economy", "comfort", "premium"],
+            "default": "economy"
+          }
+        }
+      },
+      "RideResponse": {
+        "type": "object",
+        "properties": {
+          "tripId": {
+            "type": "string"
+          },
+          "passengerId": {
+            "type": "string"
+          },
+          "driverId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["requested", "accepted", "in_progress", "completed", "cancelled"]
+          },
+          "pickupLocation": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "dropoffLocation": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "estimatedFare": {
+            "type": "number"
+          },
+          "finalFare": {
+            "type": "number"
+          },
+          "actualDistance": {
+            "type": "number"
+          },
+          "actualDuration": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AcceptRideRequest": {
+        "type": "object",
+        "required": ["driverId", "currentLocation"],
+        "properties": {
+          "driverId": {
+            "type": "string"
+          },
+          "currentLocation": {
+            "$ref": "#/components/schemas/Location"
+          }
+        }
+      },
+      "CompleteRideRequest": {
+        "type": "object",
+        "required": ["endLocation"],
+        "properties": {
+          "endLocation": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "actualDistance": {
+            "type": "number"
+          },
+          "actualDuration": {
+            "type": "number"
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "required": ["lat", "lon"],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentRequest": {
+        "type": "object",
+        "required": ["tripId", "passengerId", "driverId", "finalFare", "paymentMethod"],
+        "properties": {
+          "tripId": {
+            "type": "string"
+          },
+          "passengerId": {
+            "type": "string"
+          },
+          "driverId": {
+            "type": "string"
+          },
+          "finalFare": {
+            "type": "number"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["card", "wallet", "cash"]
+          },
+          "paymentMethodId": {
+            "type": "string",
+            "description": "Required for card payments"
+          }
+        }
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "tripId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "platformFee": {
+            "type": "number",
+            "description": "20% of amount"
+          },
+          "driverAmount": {
+            "type": "number",
+            "description": "80% of amount"
+          },
+          "paymentMethod": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "completed", "failed"]
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "Stripe transaction ID for card payments"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RatingRequest": {
+        "type": "object",
+        "required": ["tripId", "raterId", "rateeId", "stars"],
+        "properties": {
+          "tripId": {
+            "type": "string"
+          },
+          "raterId": {
+            "type": "string",
+            "description": "User giving the rating"
+          },
+          "rateeId": {
+            "type": "string",
+            "description": "User receiving the rating"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "review": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "categories": {
+            "type": "object",
+            "properties": {
+              "cleanliness": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "communication": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "driving": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              }
+            }
+          }
+        }
+      },
+      "RatingResponse": {
+        "type": "object",
+        "properties": {
+          "ratingId": {
+            "type": "string"
+          },
+          "tripId": {
+            "type": "string"
+          },
+          "raterId": {
+            "type": "string"
+          },
+          "rateeId": {
+            "type": "string"
+          },
+          "stars": {
+            "type": "integer"
+          },
+          "review": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "object"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DriverProfile": {
+        "type": "object",
+        "properties": {
+          "driverId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "profilePhoto": {
+            "type": "string"
+          },
+          "averageRating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "totalRatings": {
+            "type": "integer"
+          },
+          "completedTrips": {
+            "type": "integer"
+          },
+          "cancellationRate": {
+            "type": "number",
+            "description": "Percentage"
+          },
+          "acceptanceRate": {
+            "type": "number",
+            "description": "Percentage"
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["super_driver", "highly_rated", "veteran_driver"]
+            }
+          },
+          "vehicle": {
+            "type": "object",
+            "properties": {
+              "make": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "year": {
+                "type": "integer"
+              },
+              "licensePlate": {
+                "type": "string"
+              }
+            }
+          },
+          "verificationStatus": {
+            "type": "string",
+            "enum": ["pending", "verified", "rejected"]
+          }
+        }
+      },
+      "LocationUpdate": {
+        "type": "object",
+        "required": ["driverId", "location"],
+        "properties": {
+          "driverId": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "accuracy": {
+            "type": "number",
+            "description": "GPS accuracy in meters"
+          },
+          "heading": {
+            "type": "number",
+            "description": "Direction in degrees (0-360)"
+          },
+          "speed": {
+            "type": "number",
+            "description": "Speed in km/h"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalyticsResponse": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "totalRides": {
+            "type": "integer"
+          },
+          "completedRides": {
+            "type": "integer"
+          },
+          "cancelledRides": {
+            "type": "integer"
+          },
+          "totalRevenue": {
+            "type": "number"
+          },
+          "platformRevenue": {
+            "type": "number",
+            "description": "20% of total"
+          },
+          "driverEarnings": {
+            "type": "number",
+            "description": "80% of total"
+          },
+          "totalDistance": {
+            "type": "number",
+            "description": "Total distance in km"
+          },
+          "totalDuration": {
+            "type": "number",
+            "description": "Total duration in minutes"
+          },
+          "averageRideDistance": {
+            "type": "number"
+          },
+          "averageRideDuration": {
+            "type": "number"
+          },
+          "averageFare": {
+            "type": "number"
+          },
+          "peakHours": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "hour": {
+                  "type": "integer"
+                },
+                "rides": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ChatMessage": {
+        "type": "object",
+        "required": ["tripId", "senderId", "recipientId", "message"],
+        "properties": {
+          "tripId": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "recipientId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
