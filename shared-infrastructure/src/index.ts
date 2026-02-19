@@ -19,6 +19,10 @@ export * from './lib/interceptors/audit.interceptor';
 export * from './lib/schemas/audit-log.schema';
 export * from './lib/persistence/mongo-audit-log.repository';
 
+// Error Tracking (Sentry)
+export * from './lib/interceptors/sentry.interceptor';
+export * from './lib/filters/all-exceptions.filter';
+
 // Geolocation Domain (Phase 4)
 export * from './domains/geolocation';
 
