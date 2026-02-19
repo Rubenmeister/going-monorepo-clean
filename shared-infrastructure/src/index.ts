@@ -12,3 +12,9 @@ export * from './lib/signing/request-signer.service';
 
 // Authentication
 export { CurrentUser } from './lib/decorators/current-user.decorator';
+
+// Audit Logging (Phase 3)
+export * from './lib/decorators/audit.decorator';
+export * from './lib/interceptors/audit.interceptor';
+export * from './lib/schemas/audit-log.schema';
+export * from './lib/persistence/mongo-audit-log.repository';

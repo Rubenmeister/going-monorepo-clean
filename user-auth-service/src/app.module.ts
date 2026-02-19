@@ -6,13 +6,15 @@ import { AuthController } from './api/auth.controller';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
-} from '@going-monorepo-clean/domains-user-application'; // Reemplaza con tu scope
+} from '@going-monorepo-clean/domains-user-application';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.USER_DB_URL), // .env
+    MongooseModule.forRoot(process.env.USER_DB_URL),
     InfrastructureModule,
+    AuditModule,
   ],
   controllers: [
     AuthController,

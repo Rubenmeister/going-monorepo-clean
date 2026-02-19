@@ -9,7 +9,9 @@ import {
   BadRequestException,
   UnauthorizedException,
   Inject,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import {
   RegisterUserDto,
   RegisterUserUseCase,
@@ -18,6 +20,7 @@ import {
 } from '@going-monorepo-clean/domains-user-application';
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
 import { UUID, ITokenManager } from '@going-monorepo-clean/shared-domain';
+import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
 
 /**
  * Auth Controller
@@ -37,6 +40,7 @@ export class AuthController {
     private readonly loginUserUseCase: LoginUserUseCase,
     @Inject('ITokenManager')
     private tokenManager: ITokenManager,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   /**
@@ -45,8 +49,27 @@ export class AuthController {
    */
   @Post('register')
   @HttpCode(201)
-  async register(@Body() dto: RegisterUserDto): Promise<any> {
-    return this.registerUserUseCase.execute(dto);
+  async register(@Body() dto: RegisterUserDto, @Req() req: Request): Promise<any> {
+    const startTime = Date.now();
+    const ip = this.extractIp(req);
+    try {
+      const result = await this.registerUserUseCase.execute(dto);
+      this.auditLogService.recordSuccess(
+        result?.user?.id ?? 'unknown',
+        'user-auth-service', ip, 'REGISTER', 'users',
+        result?.user?.id ?? 'unknown', Date.now() - startTime,
+        undefined, { email: dto.email },
+      );
+      return result;
+    } catch (error) {
+      this.auditLogService.recordFailure(
+        'anonymous', 'user-auth-service', ip, 'REGISTER', 'users',
+        'unknown', Date.now() - startTime,
+        error instanceof Error ? error.message : String(error),
+        { email: dto.email },
+      );
+      throw error;
+    }
   }
 
   /**
@@ -56,8 +79,26 @@ export class AuthController {
    */
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginUserDto): Promise<any> {
-    return this.loginUserUseCase.execute(dto);
+  async login(@Body() dto: LoginUserDto, @Req() req: Request): Promise<any> {
+    const startTime = Date.now();
+    const ip = this.extractIp(req);
+    try {
+      const result = await this.loginUserUseCase.execute(dto);
+      this.auditLogService.recordSuccess(
+        result.user.id, 'user-auth-service', ip,
+        'LOGIN', 'auth', result.user.id, Date.now() - startTime,
+        undefined, { email: dto.email, roles: result.user.roles },
+      );
+      return result;
+    } catch (error) {
+      this.auditLogService.recordFailure(
+        'anonymous', 'user-auth-service', ip, 'LOGIN', 'auth',
+        dto.email, Date.now() - startTime,
+        error instanceof Error ? error.message : String(error),
+        { email: dto.email },
+      );
+      throw error;
+    }
   }
 
   /**
@@ -134,7 +175,10 @@ export class AuthController {
     @CurrentUser('userId') userId: UUID,
     @CurrentUser('accessToken') accessToken: string,
     @Body() request?: { refreshToken?: string },
+    @Req() req?: Request,
   ): Promise<any> {
+    const startTime = Date.now();
+    const ip = this.extractIp(req);
     try {
       // Validate user
       if (!userId) {
@@ -195,6 +239,12 @@ export class AuthController {
         `User ${userId} logged out successfully, revoked ${tokensRevoked} token(s)`,
       );
 
+      this.auditLogService.recordSuccess(
+        userId, 'user-auth-service', ip, 'LOGOUT', 'auth',
+        userId, Date.now() - startTime,
+        undefined, { tokensRevoked },
+      );
+
       return {
         message: 'Logout successful',
         tokensRevoked,
@@ -204,6 +254,11 @@ export class AuthController {
         error instanceof BadRequestException ||
         error instanceof UnauthorizedException
       ) {
+        this.auditLogService.recordFailure(
+          userId ?? 'anonymous', 'user-auth-service', ip, 'LOGOUT', 'auth',
+          userId ?? 'unknown', Date.now() - startTime,
+          error instanceof Error ? error.message : String(error),
+        );
         throw error;
       }
 
@@ -212,6 +267,16 @@ export class AuthController {
       );
       throw new BadRequestException('Failed to logout');
     }
+  }
+
+  /** Extract real client IP honouring reverse-proxy headers */
+  private extractIp(req?: Request): string {
+    if (!req) return 'unknown';
+    const forwarded = req.headers['x-forwarded-for'];
+    if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
+    const realIp = req.headers['x-real-ip'];
+    if (typeof realIp === 'string') return realIp;
+    return req.socket?.remoteAddress ?? 'unknown';
   }
 
   /**
