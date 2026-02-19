@@ -1,12 +1,16 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule, APP_INTERCEPTOR } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { ProxyModule } from './proxy/proxy.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { RbacModule } from './rbac/rbac.module';
-import { HttpsMiddleware } from '@going-monorepo-clean/shared-infrastructure';
-import { RequestSignatureMiddleware } from '@going-monorepo-clean/shared-infrastructure';
+import { AuditModule } from './modules/audit/audit.module';
+import {
+  HttpsMiddleware,
+  RequestSignatureMiddleware,
+  AuditInterceptor,
+} from '@going-monorepo-clean/shared-infrastructure';
 
 /**
  * API Gateway App Module
@@ -28,8 +32,16 @@ import { RequestSignatureMiddleware } from '@going-monorepo-clean/shared-infrast
     ]),
     AuthModule,
     RbacModule,
+    AuditModule,
     ProxyModule,
     TrackingModule,
+  ],
+  providers: [
+    // AuditInterceptor registered globally - captures all @Audit() decorated endpoints
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditInterceptor,
+    },
   ],
 })
 export class AppModule implements NestModule {
