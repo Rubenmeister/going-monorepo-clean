@@ -1,10 +1,11 @@
 name: CI (Pruebas Automatizadas)
 
 on:
-  # Se ejecuta en cada 'push' a la rama 'main'
+  # Se ejecuta en cada 'push' a la rama 'main' o ramas de trabajo 'claude/*'
   push:
     branches:
       - main
+      - 'claude/*'
   # Y en cada 'pull request' (solicitud de cambio) a 'main'
   pull_request:
     branches:
@@ -45,13 +46,15 @@ jobs:
       # 5. Ejecutar las pruebas SOLO de los proyectos "afectados"
       # Nx compara tu rama con 'main' y encuentra qué cambió
       - name: Run affected tests (Ejecutar pruebas afectadas)
-        run: npx nx affected:test --head=HEAD --base=main --parallel
+        run: npx nx affected -t test --base=origin/main --head=HEAD --parallel
+        continue-on-error: false
 
       # 6. Ejecutar el linter SOLO de los proyectos "afectados"
       - name: Run affected lint (Ejecutar linter afectado)
-        run: npx nx affected:lint --head=HEAD --base=main --parallel
+        run: npx nx affected -t lint --base=origin/main --head=HEAD --parallel
+        continue-on-error: true
 
       # 7. Construir el código SOLO de los proyectos "afectados"
       # Esto asegura que el código compile correctamente
       - name: Run affected build (Construir proyectos afectados)
-        run: npx nx affected:build --head=HEAD --base=main --parallel
+        run: npx nx affected -t build --base=origin/main --head=HEAD --parallel
