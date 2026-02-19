@@ -10,20 +10,20 @@ import {
   UnauthorizedException,
   Inject,
 } from '@nestjs/common';
-import {
-  RegisterUserDto,
-  RegisterUserUseCase,
-  LoginUserDto,
-  LoginUserUseCase,
-} from '@going-monorepo-clean/domains-user-application';
+import { JwtService } from '@nestjs/jwt';
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
-import { UUID, ITokenManager } from '@going-monorepo-clean/shared-domain';
+import { UUID } from '@going-monorepo-clean/shared-domain';
+import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
+import {
+  RefreshTokenRequestDto,
+  RefreshTokenResponseDto,
+  LogoutRequestDto,
+  LogoutResponseDto,
+} from '../dtos/auth-refresh.dto';
 
 /**
  * Auth Controller
- * Handles all authentication endpoints:
- * - POST /auth/register - Register new user
- * - POST /auth/login - Login and get tokens
+ * Handles authentication endpoints:
  * - POST /auth/refresh - Refresh access token
  * - POST /auth/logout - Logout and revoke tokens
  * - GET /auth/me - Get current user info (protected)
@@ -33,32 +33,10 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
   constructor(
-    private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly loginUserUseCase: LoginUserUseCase,
     @Inject('ITokenManager')
     private tokenManager: ITokenManager,
+    private jwtService: JwtService,
   ) {}
-
-  /**
-   * Register New User
-   * POST /auth/register
-   */
-  @Post('register')
-  @HttpCode(201)
-  async register(@Body() dto: RegisterUserDto): Promise<any> {
-    return this.registerUserUseCase.execute(dto);
-  }
-
-  /**
-   * Login User
-   * POST /auth/login
-   * Returns: { accessToken, refreshToken, expiresIn }
-   */
-  @Post('login')
-  @HttpCode(200)
-  async login(@Body() dto: LoginUserDto): Promise<any> {
-    return this.loginUserUseCase.execute(dto);
-  }
 
   /**
    * Refresh Access Token
@@ -66,10 +44,17 @@ export class AuthController {
    *
    * Takes a refresh token and issues a new access token
    * Implements token rotation if refresh token is near expiry
+   *
+   * @param request - Contains refreshToken
+   * @returns New accessToken + expiresIn + optional rotated refreshToken
+   * @throws BadRequestException if refresh token is invalid/expired
+   * @throws UnauthorizedException if refresh token is revoked
    */
   @Post('refresh')
   @HttpCode(200)
-  async refreshToken(@Body() request: { refreshToken: string }): Promise<any> {
+  async refreshToken(
+    @Body() request: RefreshTokenRequestDto,
+  ): Promise<RefreshTokenResponseDto> {
     try {
       // Validate input
       if (!request.refreshToken) {
@@ -91,7 +76,9 @@ export class AuthController {
           errorMsg.includes('revoked') ||
           errorMsg.includes('invalid')
         ) {
-          this.logger.warn(`Token refresh failed: ${errorMsg}`);
+          this.logger.warn(
+            `Token refresh failed: ${errorMsg}`,
+          );
           throw new UnauthorizedException(errorMsg);
         }
 
@@ -106,12 +93,11 @@ export class AuthController {
       return {
         accessToken: response.accessToken,
         expiresIn: response.expiresIn,
+        // refreshToken is optional - only if rotation occurred
       };
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof UnauthorizedException
-      ) {
+      if (error instanceof BadRequestException ||
+          error instanceof UnauthorizedException) {
         throw error;
       }
 
@@ -123,18 +109,27 @@ export class AuthController {
   }
 
   /**
-   * Logout User
+   * Logout
    * POST /auth/logout
    *
-   * Revokes the user's refresh token(s) and blacklists access token
+   * Revokes the user's refresh token(s)
+   * Adds current access token to blacklist
+   *
+   * Can specify a specific refresh token or revoke all tokens for the user
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param accessToken - Current access token (from header)
+   * @param request - Optional: specific refreshToken to revoke
+   * @returns Number of tokens revoked
    */
   @Post('logout')
+  @UseGuards() // Assumes JWT guard is applied globally
   @HttpCode(200)
   async logout(
     @CurrentUser('userId') userId: UUID,
     @CurrentUser('accessToken') accessToken: string,
-    @Body() request?: { refreshToken?: string },
-  ): Promise<any> {
+    @Body() request: LogoutRequestDto,
+  ): Promise<LogoutResponseDto> {
     try {
       // Validate user
       if (!userId) {
@@ -145,7 +140,7 @@ export class AuthController {
       let tokensRevoked = 0;
 
       // 1. Revoke specific refresh token or all tokens
-      if (request?.refreshToken) {
+      if (request.refreshToken) {
         // Revoke specific token
         const revokeResult = await this.tokenManager.revokeRefreshToken(
           request.refreshToken,
@@ -188,6 +183,7 @@ export class AuthController {
           this.logger.warn(
             `Failed to blacklist access token: ${blacklistResult.error.message}`,
           );
+          // Don't fail the logout if blacklist fails, but log it
         }
       }
 
@@ -200,10 +196,8 @@ export class AuthController {
         tokensRevoked,
       };
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof UnauthorizedException
-      ) {
+      if (error instanceof BadRequestException ||
+          error instanceof UnauthorizedException) {
         throw error;
       }
 
@@ -217,9 +211,17 @@ export class AuthController {
   /**
    * Get Current User Info
    * GET /auth/me
+   *
+   * Returns the current authenticated user's information
    * Requires valid JWT token
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param email - Current user email (from JWT)
+   * @param roles - Current user roles (from JWT)
+   * @returns User info
    */
   @Get('me')
+  @UseGuards() // Assumes JWT guard is applied globally
   @HttpCode(200)
   async getCurrentUser(
     @CurrentUser('userId') userId: UUID,
