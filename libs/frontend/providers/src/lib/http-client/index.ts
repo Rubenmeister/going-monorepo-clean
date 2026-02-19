@@ -1,4 +1,5 @@
 export { httpClient, HttpClient } from './http.client';
+export { TokenManager, type TokenRefreshResponse } from '../token-manager';
 export { authClient, AuthClient, type LoginRequest, type LoginResponse, type RegisterRequest, type RegisterResponse } from './auth.client';
 export { bookingClient, BookingClient, type CreateBookingRequest, type Booking } from './booking.client';
 export { transportClient, TransportClient, type RequestTripRequest, type Trip } from './transport.client';
