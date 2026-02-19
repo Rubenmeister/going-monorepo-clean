@@ -1,4 +1,9 @@
-import { Module, MiddlewareConsumer, NestModule, APP_INTERCEPTOR } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  APP_INTERCEPTOR,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
@@ -10,6 +15,7 @@ import {
   HttpsMiddleware,
   RequestSignatureMiddleware,
   AuditInterceptor,
+  SentryInterceptor,
 } from '@going-monorepo-clean/shared-infrastructure';
 
 /**
@@ -37,6 +43,11 @@ import {
     TrackingModule,
   ],
   providers: [
+    // Sentry error tracking
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
     // AuditInterceptor registered globally - captures all @Audit() decorated endpoints
     {
       provide: APP_INTERCEPTOR,

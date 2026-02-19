@@ -4,29 +4,40 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+import { initSentry, createSentryErrorHandler } from './sentry.config';
+import { AllExceptionsFilter } from '@going-monorepo-clean/shared-infrastructure';
 
 async function bootstrap() {
+  // Initialize Sentry first
+  initSentry();
+
   const app = await NestFactory.create(AppModule);
 
   const port = process.env.PORT || 3000;
 
   // Security headers
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+        },
       },
-    },
-    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-    frameguard: { action: 'deny' },
-    xssFilter: true,
-    noSniff: true,
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  }));
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      frameguard: { action: 'deny' },
+      xssFilter: true,
+      noSniff: true,
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    })
+  );
+
+  // Sentry error handler
+  app.use(createSentryErrorHandler());
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Request logging middleware
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -35,14 +46,18 @@ async function bootstrap() {
       const duration = Date.now() - start;
       Logger.log(
         `${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`,
-        'HTTP',
+        'HTTP'
       );
     });
     next();
   });
 
   // CORS for frontend clients - use specific origins from environment
-  const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001').split(',').map(o => o.trim());
+  const corsOrigins = (
+    process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001'
+  )
+    .split(',')
+    .map((o) => o.trim());
   app.enableCors({
     origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -71,7 +86,15 @@ async function bootstrap() {
 
   await app.listen(port);
   Logger.log(`🚀 API Gateway running on http://localhost:${port}`, 'Bootstrap');
-  Logger.log(`📄 API docs available at http://localhost:${port}/docs`, 'Bootstrap');
-  Logger.log(`🔒 Security: Helmet enabled, CORS restricted to: ${corsOrigins.join(', ')}`, 'Bootstrap');
+  Logger.log(
+    `📄 API docs available at http://localhost:${port}/docs`,
+    'Bootstrap'
+  );
+  Logger.log(
+    `🔒 Security: Helmet enabled, CORS restricted to: ${corsOrigins.join(
+      ', '
+    )}`,
+    'Bootstrap'
+  );
 }
 bootstrap();
