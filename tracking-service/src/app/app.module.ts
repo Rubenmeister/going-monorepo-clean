@@ -4,7 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
+import { ApplicationModule } from '../application/application.module';
 import { GeoController } from '../api/geo.controller';
+import { LocationTrackingGateway } from '../infrastructure/gateways/location-tracking.gateway';
 
 @Module({
   imports: [
@@ -16,8 +18,9 @@ import { GeoController } from '../api/geo.controller';
       process.env.MONGO_URL || 'mongodb://localhost:27017/tracking-db'
     ),
     InfrastructureModule,
+    ApplicationModule,
   ],
   controllers: [AppController, GeoController],
-  providers: [AppService],
+  providers: [AppService, LocationTrackingGateway],
 })
 export class AppModule {}
