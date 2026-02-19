@@ -9,7 +9,10 @@ import {
   NotificationModelSchema,
   NotificationSchema,
 } from './persistence/schemas/notification.schema';
-import { LogNotificationGateway } from './gateways/log-notification.gateway';
+import { EmailNotificationGateway } from './gateways/email-notification.gateway';
+import { SmsNotificationGateway } from './gateways/sms-notification.gateway';
+import { PushNotificationGateway } from './gateways/push-notification.gateway';
+import { CompositeNotificationGateway } from './gateways/composite-notification.gateway';
 
 @Module({
   imports: [
@@ -22,9 +25,14 @@ import { LogNotificationGateway } from './gateways/log-notification.gateway';
       provide: INotificationRepository,
       useClass: MongooseNotificationRepository,
     },
+    // Channel-specific gateways
+    EmailNotificationGateway,
+    SmsNotificationGateway,
+    PushNotificationGateway,
+    // Composite gateway routes to the correct channel gateway
     {
       provide: INotificationGateway,
-      useClass: LogNotificationGateway,
+      useClass: CompositeNotificationGateway,
     },
   ],
   exports: [

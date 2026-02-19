@@ -1,19 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const port = process.env.PORT || 3010; // Puerto para este microservicio
+  const port = process.env.PORT || 3010;
 
-  // Habilita la validación global de DTOs
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
+  const config = new DocumentBuilder()
+    .setTitle('Booking Service')
+    .setDescription('Booking management & reservations API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
   await app.listen(port);
-  Logger.log(
-    `🚀 Booking-Service está corriendo en http://localhost:${port}`,
-    'Bootstrap',
-  );
+  Logger.log(`🚀 Booking-Service running on http://localhost:${port}`, 'Bootstrap');
+  Logger.log(`📄 API docs available at http://localhost:${port}/docs`, 'Bootstrap');
 }
 bootstrap();

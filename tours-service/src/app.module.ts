@@ -5,6 +5,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TourController } from './api/tour.controller';
 import {
   CreateTourUseCase,
+  SearchToursUseCase,
 } from '@going-monorepo-clean/domains-tour-application';
 
 @Module({
@@ -16,7 +17,7 @@ import {
   controllers: [TourController],
   providers: [
     CreateTourUseCase,
-    // (Aquí añadirías más Casos de Uso)
+    SearchToursUseCase,
   ],
 })
 export class AppModule {}
