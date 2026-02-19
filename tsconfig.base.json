@@ -171,6 +171,9 @@
       "@going-monorepo-clean/frontend-providers": [
         "libs/frontend/providers/src/index.ts"
       ],
+      "@going-monorepo-clean/frontend-stores": [
+        "libs/frontend/stores/src/index.ts"
+      ],
       "@going-monorepo-clean/shared-ui": ["libs/shared/ui/src/index.ts"],
       "accommodation": ["libs/accommodation/src/index.ts"],
       "transport": ["libs/transport/src/index.ts"],
