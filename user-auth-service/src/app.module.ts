@@ -8,6 +8,7 @@ import {
   LoginUserUseCase,
 } from '@going-monorepo-clean/domains-user-application';
 import { AuditModule } from './audit/audit.module';
+import { AccountLockoutService } from './application/account-lockout.service';
 
 @Module({
   imports: [
@@ -16,12 +17,7 @@ import { AuditModule } from './audit/audit.module';
     InfrastructureModule,
     AuditModule,
   ],
-  controllers: [
-    AuthController,
-  ],
-  providers: [
-    RegisterUserUseCase,
-    LoginUserUseCase,
-  ],
+  controllers: [AuthController],
+  providers: [RegisterUserUseCase, LoginUserUseCase, AccountLockoutService],
 })
 export class AppModule {}

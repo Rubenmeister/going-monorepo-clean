@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   Inject,
   Req,
+  TooManyRequestsException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
@@ -21,6 +22,7 @@ import {
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
 import { UUID, ITokenManager } from '@going-monorepo-clean/shared-domain';
 import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
+import { AccountLockoutService } from '../application/account-lockout.service';
 
 /**
  * Auth Controller
@@ -41,6 +43,7 @@ export class AuthController {
     @Inject('ITokenManager')
     private tokenManager: ITokenManager,
     private readonly auditLogService: AuditLogService,
+    private readonly accountLockoutService: AccountLockoutService
   ) {}
 
   /**
@@ -49,24 +52,37 @@ export class AuthController {
    */
   @Post('register')
   @HttpCode(201)
-  async register(@Body() dto: RegisterUserDto, @Req() req: Request): Promise<any> {
+  async register(
+    @Body() dto: RegisterUserDto,
+    @Req() req: Request
+  ): Promise<any> {
     const startTime = Date.now();
     const ip = this.extractIp(req);
     try {
       const result = await this.registerUserUseCase.execute(dto);
       this.auditLogService.recordSuccess(
         result?.user?.id ?? 'unknown',
-        'user-auth-service', ip, 'REGISTER', 'users',
-        result?.user?.id ?? 'unknown', Date.now() - startTime,
-        undefined, { email: dto.email },
+        'user-auth-service',
+        ip,
+        'REGISTER',
+        'users',
+        result?.user?.id ?? 'unknown',
+        Date.now() - startTime,
+        undefined,
+        { email: dto.email }
       );
       return result;
     } catch (error) {
       this.auditLogService.recordFailure(
-        'anonymous', 'user-auth-service', ip, 'REGISTER', 'users',
-        'unknown', Date.now() - startTime,
+        'anonymous',
+        'user-auth-service',
+        ip,
+        'REGISTER',
+        'users',
+        'unknown',
+        Date.now() - startTime,
         error instanceof Error ? error.message : String(error),
-        { email: dto.email },
+        { email: dto.email }
       );
       throw error;
     }
@@ -76,27 +92,107 @@ export class AuthController {
    * Login User
    * POST /auth/login
    * Returns: { accessToken, refreshToken, expiresIn }
+   *
+   * SECURITY: Implements account lockout to prevent brute force attacks
+   * - Tracks failed login attempts
+   * - Locks account after MAX_ATTEMPTS failures
+   * - Uses exponential backoff for lockout duration
+   * - Returns 429 Too Many Requests if account is locked
    */
   @Post('login')
   @HttpCode(200)
   async login(@Body() dto: LoginUserDto, @Req() req: Request): Promise<any> {
     const startTime = Date.now();
     const ip = this.extractIp(req);
+
     try {
-      const result = await this.loginUserUseCase.execute(dto);
-      this.auditLogService.recordSuccess(
-        result.user.id, 'user-auth-service', ip,
-        'LOGIN', 'auth', result.user.id, Date.now() - startTime,
-        undefined, { email: dto.email, roles: result.user.roles },
+      // TODO: In production, fetch real userId from database first
+      // For now, we'll extract from login attempt below
+      const tempUserId = `email:${dto.email}`;
+
+      // SECURITY CHECK: Is account locked?
+      const isLocked = await this.accountLockoutService.isAccountLocked(
+        tempUserId
       );
+      if (isLocked) {
+        const lockoutUntil =
+          await this.accountLockoutService.getLockoutExpiration(tempUserId);
+        this.logger.warn(
+          `🔐 Login attempt on locked account: email=${dto.email}, ip=${ip}`
+        );
+        this.auditLogService.recordFailure(
+          'anonymous',
+          'user-auth-service',
+          ip,
+          'LOGIN',
+          'auth',
+          dto.email,
+          Date.now() - startTime,
+          `Account is locked until ${lockoutUntil?.toISOString()}`,
+          { email: dto.email, locked: true }
+        );
+        throw new TooManyRequestsException(
+          `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}`
+        );
+      }
+
+      // Attempt login
+      const result = await this.loginUserUseCase.execute(dto);
+
+      // LOGIN SUCCESSFUL: Reset lockout counter
+      await this.accountLockoutService.recordSuccessfulLogin(tempUserId);
+
+      this.auditLogService.recordSuccess(
+        result.user.id,
+        'user-auth-service',
+        ip,
+        'LOGIN',
+        'auth',
+        result.user.id,
+        Date.now() - startTime,
+        undefined,
+        { email: dto.email, roles: result.user.roles }
+      );
+
       return result;
     } catch (error) {
+      // LOGIN FAILED: Record failed attempt
+      const tempUserId = `email:${dto.email}`;
+      const failedAttempt =
+        await this.accountLockoutService.recordFailedAttempt(
+          tempUserId,
+          dto.email,
+          ip
+        );
+
+      // Log the failure with lockout information
       this.auditLogService.recordFailure(
-        'anonymous', 'user-auth-service', ip, 'LOGIN', 'auth',
-        dto.email, Date.now() - startTime,
+        'anonymous',
+        'user-auth-service',
+        ip,
+        'LOGIN',
+        'auth',
+        dto.email,
+        Date.now() - startTime,
         error instanceof Error ? error.message : String(error),
-        { email: dto.email },
+        {
+          email: dto.email,
+          attemptCount: failedAttempt.attemptCount,
+          isLocked: failedAttempt.isLocked,
+          lockoutUntil: failedAttempt.lockoutUntil?.toISOString(),
+        }
       );
+
+      // If account was just locked, inform user
+      if (failedAttempt.isLocked) {
+        this.logger.warn(
+          `🔐 Account locked after ${failedAttempt.attemptCount} failed attempts: email=${dto.email}`
+        );
+        throw new TooManyRequestsException(
+          `Too many failed login attempts. Account locked until ${failedAttempt.lockoutUntil?.toLocaleTimeString()}`
+        );
+      }
+
       throw error;
     }
   }
@@ -120,7 +216,7 @@ export class AuthController {
 
       // Use TokenManager to refresh access token
       const result = await this.tokenManager.refreshAccessToken(
-        request.refreshToken,
+        request.refreshToken
       );
 
       // Handle errors
@@ -157,7 +253,9 @@ export class AuthController {
       }
 
       this.logger.error(
-        `Unexpected error during token refresh: ${error instanceof Error ? error.message : String(error)}`,
+        `Unexpected error during token refresh: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       throw new BadRequestException('Failed to refresh token');
     }
@@ -175,7 +273,7 @@ export class AuthController {
     @CurrentUser('userId') userId: UUID,
     @CurrentUser('accessToken') accessToken: string,
     @Body() request?: { refreshToken?: string },
-    @Req() req?: Request,
+    @Req() req?: Request
   ): Promise<any> {
     const startTime = Date.now();
     const ip = this.extractIp(req);
@@ -192,12 +290,12 @@ export class AuthController {
       if (request?.refreshToken) {
         // Revoke specific token
         const revokeResult = await this.tokenManager.revokeRefreshToken(
-          request.refreshToken,
+          request.refreshToken
         );
 
         if (revokeResult.isErr()) {
           this.logger.warn(
-            `Failed to revoke refresh token: ${revokeResult.error.message}`,
+            `Failed to revoke refresh token: ${revokeResult.error.message}`
           );
           throw new BadRequestException('Failed to logout');
         }
@@ -207,12 +305,12 @@ export class AuthController {
         // Revoke all tokens for the user
         const revokeAllResult = await this.tokenManager.revokeAllRefreshTokens(
           userId,
-          'logout',
+          'logout'
         );
 
         if (revokeAllResult.isErr()) {
           this.logger.warn(
-            `Failed to revoke all tokens: ${revokeAllResult.error.message}`,
+            `Failed to revoke all tokens: ${revokeAllResult.error.message}`
           );
           throw new BadRequestException('Failed to logout');
         }
@@ -225,24 +323,30 @@ export class AuthController {
         const blacklistResult = await this.tokenManager.revokeAccessToken(
           accessToken,
           userId,
-          'logout',
+          'logout'
         );
 
         if (blacklistResult.isErr()) {
           this.logger.warn(
-            `Failed to blacklist access token: ${blacklistResult.error.message}`,
+            `Failed to blacklist access token: ${blacklistResult.error.message}`
           );
         }
       }
 
       this.logger.debug(
-        `User ${userId} logged out successfully, revoked ${tokensRevoked} token(s)`,
+        `User ${userId} logged out successfully, revoked ${tokensRevoked} token(s)`
       );
 
       this.auditLogService.recordSuccess(
-        userId, 'user-auth-service', ip, 'LOGOUT', 'auth',
-        userId, Date.now() - startTime,
-        undefined, { tokensRevoked },
+        userId,
+        'user-auth-service',
+        ip,
+        'LOGOUT',
+        'auth',
+        userId,
+        Date.now() - startTime,
+        undefined,
+        { tokensRevoked }
       );
 
       return {
@@ -255,15 +359,22 @@ export class AuthController {
         error instanceof UnauthorizedException
       ) {
         this.auditLogService.recordFailure(
-          userId ?? 'anonymous', 'user-auth-service', ip, 'LOGOUT', 'auth',
-          userId ?? 'unknown', Date.now() - startTime,
-          error instanceof Error ? error.message : String(error),
+          userId ?? 'anonymous',
+          'user-auth-service',
+          ip,
+          'LOGOUT',
+          'auth',
+          userId ?? 'unknown',
+          Date.now() - startTime,
+          error instanceof Error ? error.message : String(error)
         );
         throw error;
       }
 
       this.logger.error(
-        `Unexpected error during logout: ${error instanceof Error ? error.message : String(error)}`,
+        `Unexpected error during logout: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       throw new BadRequestException('Failed to logout');
     }
@@ -289,7 +400,7 @@ export class AuthController {
   async getCurrentUser(
     @CurrentUser('userId') userId: UUID,
     @CurrentUser('email') email: string,
-    @CurrentUser('roles') roles: string[],
+    @CurrentUser('roles') roles: string[]
   ) {
     return {
       userId,
