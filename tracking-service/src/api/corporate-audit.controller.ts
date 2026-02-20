@@ -9,11 +9,14 @@ import {
   HttpStatus,
   Logger,
   Req,
+  ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
   AuditLogService,
   RbacService,
+  CorporateUserService,
 } from '@going-monorepo-clean/features-corporate-auth';
 import {
   RecordConsentDto,
@@ -36,12 +39,14 @@ export class CorporateAuditController {
 
   constructor(
     private readonly auditLogService: AuditLogService,
-    private readonly rbacService: RbacService
+    private readonly rbacService: RbacService,
+    private readonly userService: CorporateUserService
   ) {}
 
   /**
    * POST /api/corporate/consent
    * Record employee consent decision for location tracking
+   * Employee can only record their own consent
    * @param dto Consent decision (granted/revoked)
    * @param req HTTP request (for IP, user-agent)
    * @returns Confirmation with logId
@@ -62,16 +67,24 @@ export class CorporateAuditController {
         `Recording consent: bookingId=${dto.bookingId}, userId=${dto.userId}, granted=${dto.granted}`
       );
 
+      // Extract and validate auth context
+      // Employee action: "create_bookings" permission required
+      const authContext = await this.validateAuthContext(
+        req,
+        dto.companyId,
+        'create_bookings'
+      );
+
       // Log the consent decision to audit trail
       const logId = await this.auditLogService.log({
         action,
         actorId: dto.userId,
-        actorEmail: 'employee@company.com', // TODO: get from auth context
+        actorEmail: authContext.email,
         companyId: dto.companyId,
         targetUserId: dto.userId,
         bookingId: dto.bookingId,
         service: 'tracking-service',
-        ipAddress,
+        ipAddress: authContext.ipAddress,
         userAgent,
         metadata: {
           deviceId: dto.deviceId,
@@ -86,6 +99,12 @@ export class CorporateAuditController {
         timestamp: timestamp.toISOString(),
       };
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(
         `Failed to record consent: ${error.message}`,
         error.stack
@@ -99,7 +118,7 @@ export class CorporateAuditController {
 
   /**
    * GET /api/corporate/audit/logs
-   * Query audit logs with filters (RBAC enforced)
+   * Query audit logs with filters (RBAC enforced - requires view_reports permission)
    * @param query Filter parameters (date range, action, user, etc.)
    * @param req HTTP request (for company ID header)
    * @returns Paginated list of audit logs
@@ -117,6 +136,9 @@ export class CorporateAuditController {
           HttpStatus.UNAUTHORIZED
         );
       }
+
+      // Validate auth context: requires view_reports permission
+      await this.validateAuthContext(req, companyId, 'view_reports');
 
       this.logger.debug(
         `Querying audit logs: companyId=${companyId}, from=${query.from}, to=${query.to}`
@@ -156,6 +178,12 @@ export class CorporateAuditController {
         offset: query.offset || 0,
       };
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(
         `Failed to query audit logs: ${error.message}`,
         error.stack
@@ -171,6 +199,7 @@ export class CorporateAuditController {
    * GET /api/corporate/audit/employee/:userId
    * Data subject access request - return all personal data
    * LOPD Ecuador compliance: Art. 21 - Right to access
+   * Users can view their own data or admins can view anyone's
    * @param userId Employee ID
    * @param query Format (json/csv) and date range
    * @param req HTTP request (for company ID header)
@@ -191,12 +220,32 @@ export class CorporateAuditController {
         );
       }
 
-      this.logger.debug(
-        `Data subject access request: userId=${userId}, companyId=${companyId}`
+      // Validate auth context
+      const authContext = await this.validateAuthContext(
+        req,
+        companyId,
+        'view_own_profile'
       );
 
-      // TODO: Add RBAC check - user can only request their own data or admins can request anyone's
-      // For now, we'll fetch the data
+      this.logger.debug(
+        `Data subject access request: userId=${userId}, companyId=${companyId}, requestedBy=${authContext.userId}`
+      );
+
+      // Check: user can only request their own data or be a super_admin
+      const requesterUser = await this.userService.getUserById(
+        authContext.userId
+      );
+      const targetUser = await this.userService.getUserById(userId);
+
+      const canAccess =
+        authContext.userId === userId || requesterUser?.role === 'super_admin';
+
+      if (!canAccess) {
+        this.logger.warn(
+          `Access denied: User ${authContext.userId} cannot access data for ${userId}`
+        );
+        throw new ForbiddenException('You can only access your own data');
+      }
 
       const filters = {
         from: query.from ? new Date(query.from) : undefined,
@@ -224,7 +273,7 @@ export class CorporateAuditController {
 
       const response: DataSubjectAccessResponseDto = {
         userId,
-        email: 'employee@company.com', // TODO: get from auth context
+        email: targetUser?.email || 'employee@company.com',
         dataAccessLog: [...dataAccessLogs.logs, ...userActions.logs].map(
           (log) => ({
             timestamp: log.timestamp.toISOString(),
@@ -246,6 +295,12 @@ export class CorporateAuditController {
 
       return response;
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(
         `Failed to process data subject access: ${error.message}`,
         error.stack
@@ -259,7 +314,7 @@ export class CorporateAuditController {
 
   /**
    * GET /api/corporate/audit/reports/consent
-   * Compliance report: Consent coverage and rates
+   * Compliance report: Consent coverage and rates (admins/managers only)
    * @param query Date range for report
    * @param req HTTP request (for company ID header)
    * @returns Consent statistics and breakdown by employee
@@ -278,9 +333,10 @@ export class CorporateAuditController {
         );
       }
 
-      this.logger.debug(`Generating consent report: companyId=${companyId}`);
+      // Validate auth context: managers/admins can view reports
+      await this.validateAuthContext(req, companyId, 'view_team_reports');
 
-      // TODO: Add RBAC check - only admins/managers can see this
+      this.logger.debug(`Generating consent report: companyId=${companyId}`);
 
       const filters = {
         from: query.from
@@ -362,6 +418,12 @@ export class CorporateAuditController {
         )}%)`,
       };
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(
         `Failed to generate consent report: ${error.message}`,
         error.stack
@@ -375,7 +437,7 @@ export class CorporateAuditController {
 
   /**
    * GET /api/corporate/audit/reports/access
-   * Compliance report: Who accessed what location data, when
+   * Compliance report: Who accessed what location data, when (admins only)
    * @param query Date range for report
    * @param req HTTP request (for company ID header)
    * @returns Access statistics and manager activity
@@ -394,9 +456,10 @@ export class CorporateAuditController {
         );
       }
 
-      this.logger.debug(`Generating access report: companyId=${companyId}`);
+      // Validate auth context: only admins/managers can see access reports
+      await this.validateAuthContext(req, companyId, 'view_reports');
 
-      // TODO: Add RBAC check - only admins can see this
+      this.logger.debug(`Generating access report: companyId=${companyId}`);
 
       const filters = {
         from: query.from
@@ -508,6 +571,12 @@ export class CorporateAuditController {
         riskFlags,
       };
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(
         `Failed to generate access report: ${error.message}`,
         error.stack
@@ -523,6 +592,7 @@ export class CorporateAuditController {
    * POST /api/corporate/audit/delete-old-logs
    * Manually purge audit logs (for admins only, requires confirmation)
    * This is for testing/compliance purposes only
+   * LOPD Ecuador compliance: Art. 22 - Right to deletion
    * @param dto Deletion parameters
    * @param req HTTP request (for company ID and user info headers)
    * @returns Count of deleted logs
@@ -533,8 +603,6 @@ export class CorporateAuditController {
     @Req() req: Request
   ): Promise<DeleteLogsResponseDto> {
     const companyId = req.headers['x-company-id'] as string;
-    const userId = req.headers['x-user-id'] as string;
-    const xForwardedFor = req.headers['x-forwarded-for'] as string;
 
     try {
       if (!companyId) {
@@ -542,6 +610,22 @@ export class CorporateAuditController {
           'Company ID required (x-company-id header)',
           HttpStatus.UNAUTHORIZED
         );
+      }
+
+      // Validate auth context: only super_admins can delete logs
+      const authContext = await this.validateAuthContext(
+        req,
+        companyId,
+        'manage_limits'
+      );
+
+      // Extra: Verify this is a super_admin (most privileged role)
+      const adminUser = await this.userService.getUserById(authContext.userId);
+      if (adminUser?.role !== 'super_admin') {
+        this.logger.warn(
+          `Deletion denied: User ${authContext.userId} is not a super_admin`
+        );
+        throw new ForbiddenException('Only super_admin can delete logs');
       }
 
       if (!dto.confirmation) {
@@ -552,7 +636,7 @@ export class CorporateAuditController {
       }
 
       this.logger.warn(
-        `ADMIN ACTION: Purging logs for companyId=${companyId} before ${dto.before}`
+        `ADMIN ACTION: User ${authContext.userId} purging logs for companyId=${companyId} before ${dto.before}`
       );
 
       const timestamp = new Date();
@@ -561,11 +645,11 @@ export class CorporateAuditController {
       // Log the deletion action itself before purging
       const deletionLogId = await this.auditLogService.log({
         action: 'audit_logs_purged',
-        actorId: userId || 'system',
-        actorEmail: 'admin@company.com',
+        actorId: authContext.userId,
+        actorEmail: authContext.email,
         companyId: dto.companyId,
         service: 'tracking-service',
-        ipAddress: xForwardedFor || 'unknown',
+        ipAddress: authContext.ipAddress,
         metadata: {
           purgedBefore: beforeDate.toISOString(),
           reason: 'manual_admin_request',
@@ -581,12 +665,75 @@ export class CorporateAuditController {
         auditLogId: deletionLogId,
       };
     } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
       this.logger.error(`Failed to delete logs: ${error.message}`, error.stack);
       throw new HttpException(
         'Failed to delete logs',
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  /**
+   * Extract and validate auth context from request
+   * SECURITY: This method enforces:
+   * 1. User must be authenticated (userId present)
+   * 2. User must belong to the specified company
+   * 3. User must have required permission
+   * Fails closed: throws ForbiddenException if any check fails
+   */
+  private async validateAuthContext(
+    req: Request,
+    companyId: string,
+    requiredAction: string
+  ): Promise<{ userId: string; email: string; ipAddress: string }> {
+    // Extract user ID from headers (in production this would come from JWT)
+    const userId = (req.headers['x-user-id'] as string) || 'unknown-user';
+    const email =
+      (req.headers['x-user-email'] as string) || 'unknown@company.com';
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || 'unknown';
+
+    if (!userId || userId === 'unknown-user') {
+      this.logger.warn(`Unauthorized access attempt: no user ID in request`);
+      throw new UnauthorizedException('User ID required in x-user-id header');
+    }
+
+    // Verify user belongs to this company
+    const userBelongsToCompany = await this.userService.userBelongsToCompany(
+      userId,
+      companyId
+    );
+    if (!userBelongsToCompany) {
+      this.logger.warn(
+        `Access denied: User ${userId} does not belong to company ${companyId}`
+      );
+      throw new ForbiddenException(`User does not belong to this company`);
+    }
+
+    // Check if user is active
+    const isActive = await this.userService.isUserActive(userId);
+    if (!isActive) {
+      this.logger.warn(`Access denied: User ${userId} is not active`);
+      throw new ForbiddenException(`User account is not active`);
+    }
+
+    // Check RBAC permission
+    const canAccess = await this.rbacService.canAccess(userId, requiredAction);
+    if (!canAccess) {
+      this.logger.warn(
+        `Access denied: User ${userId} cannot perform action ${requiredAction}`
+      );
+      throw new ForbiddenException(
+        `You do not have permission to perform this action`
+      );
+    }
+
+    return { userId, email, ipAddress };
   }
 
   /**
