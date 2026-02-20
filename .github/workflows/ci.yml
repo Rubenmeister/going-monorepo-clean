@@ -28,10 +28,6 @@ jobs:
       # Esto instala 'nx' y restaura el caché si existe
       - name: Setup Nx (Configurar Nx)
         uses: nx/setup-nx@v5
-        with:
-          # (Opcional) Si configuraste Nx Cloud, pon tu token aquí
-          # nx-cloud-access-token: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-          
       # 3. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
