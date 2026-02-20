@@ -17,7 +17,7 @@ import {
   Coordinates,
   IGeoLocationRepository,
   IDriverAvailabilityRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Location Tracking Gateway
@@ -72,7 +72,8 @@ export class LocationTrackingGateway
   @SubscribeMessage('driver:register')
   async handleDriverRegister(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { driverId: string; latitude: number; longitude: number }
+    @MessageBody()
+    data: { driverId: string; latitude: number; longitude: number }
   ) {
     this.driverConnections.set(data.driverId, client.id);
     this.logger.log(`Driver registered: ${data.driverId}`);
@@ -134,8 +135,9 @@ export class LocationTrackingGateway
       await this.geoLocationRepo.saveLocation(location);
 
       // Update availability location
-      const availability =
-        await this.availabilityRepo.findByDriverId(data.driverId);
+      const availability = await this.availabilityRepo.findByDriverId(
+        data.driverId
+      );
       if (availability) {
         availability.updateLocation(location);
         await this.availabilityRepo.upsert(availability);
@@ -225,7 +227,8 @@ export class LocationTrackingGateway
   @SubscribeMessage('driver:status:online')
   async handleDriverOnline(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { driverId: string; latitude: number; longitude: number }
+    @MessageBody()
+    data: { driverId: string; latitude: number; longitude: number }
   ) {
     await this.availabilityRepo.setOnline(data.driverId);
     this.logger.log(`Driver online: ${data.driverId}`);
@@ -259,10 +262,7 @@ export class LocationTrackingGateway
   /**
    * Broadcast location update to all users in a trip
    */
-  private broadcastLocationToTrips(
-    driverId: string,
-    locationData: any
-  ): void {
+  private broadcastLocationToTrips(driverId: string, locationData: any): void {
     // Find all trips this driver is on
     for (const [tripId, socketIds] of this.tripRooms.entries()) {
       if (socketIds.size > 0) {

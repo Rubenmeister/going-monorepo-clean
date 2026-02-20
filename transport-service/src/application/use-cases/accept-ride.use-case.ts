@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IRideRepository } from '@going/shared-infrastructure';
+import { IRideRepository } from '../../domain/ports';
 
 /**
  * Accept Ride Use Case
@@ -12,10 +12,7 @@ export class AcceptRideUseCase {
     private readonly rideRepo: IRideRepository
   ) {}
 
-  async execute(input: {
-    rideId: string;
-    driverId: string;
-  }): Promise<any> {
+  async execute(input: { rideId: string; driverId: string }): Promise<any> {
     const { rideId, driverId } = input;
 
     // Get ride

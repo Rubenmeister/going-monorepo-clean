@@ -1,5 +1,8 @@
 import { Controller, Get, Param, Query, HttpStatus } from '@nestjs/common';
-import { IRideAnalyticsRepository, IDriverAnalyticsRepository } from '@going/shared-infrastructure';
+import {
+  IRideAnalyticsRepository,
+  IDriverAnalyticsRepository,
+} from '../../domain/ports';
 
 /**
  * Analytics API Controller
@@ -32,11 +35,17 @@ export class AnalyticsController {
   }
 
   @Get('rides/range')
-  async getRideAnalyticsRange(@Query('start') startStr: string, @Query('end') endStr: string) {
+  async getRideAnalyticsRange(
+    @Query('start') startStr: string,
+    @Query('end') endStr: string
+  ) {
     const startDate = new Date(startStr);
     const endDate = new Date(endStr);
 
-    const analytics = await this.rideAnalyticsRepository.findByDateRange(startDate, endDate);
+    const analytics = await this.rideAnalyticsRepository.findByDateRange(
+      startDate,
+      endDate
+    );
 
     return {
       statusCode: HttpStatus.OK,
@@ -65,7 +74,10 @@ export class AnalyticsController {
 
   @Get('drivers/:driverId/stats')
   async getDriverStats(@Param('driverId') driverId: string) {
-    const analytics = await this.driverAnalyticsRepository.findByDriver(driverId, 30);
+    const analytics = await this.driverAnalyticsRepository.findByDriver(
+      driverId,
+      30
+    );
 
     return {
       statusCode: HttpStatus.OK,
@@ -83,11 +95,12 @@ export class AnalyticsController {
     @Query('date') dateStr: string
   ) {
     const date = dateStr ? new Date(dateStr) : new Date();
-    const analytics = await this.driverAnalyticsRepository.findByDriverAndPeriod(
-      driverId,
-      period,
-      date
-    );
+    const analytics =
+      await this.driverAnalyticsRepository.findByDriverAndPeriod(
+        driverId,
+        period,
+        date
+      );
 
     if (!analytics) {
       return {
@@ -133,7 +146,10 @@ export class AnalyticsController {
     const rideAnalytics = await this.rideAnalyticsRepository.findLatest(days);
 
     // Get top drivers
-    const topDrivers = await this.driverAnalyticsRepository.findTopDrivers('daily', 5);
+    const topDrivers = await this.driverAnalyticsRepository.findTopDrivers(
+      'daily',
+      5
+    );
 
     const summary = this.calculateSummary(rideAnalytics);
 
@@ -155,7 +171,10 @@ export class AnalyticsController {
     @Query('days') daysStr = '30'
   ) {
     const days = parseInt(daysStr, 10);
-    const analytics = await this.driverAnalyticsRepository.findLatestByDriver(driverId, days);
+    const analytics = await this.driverAnalyticsRepository.findLatestByDriver(
+      driverId,
+      days
+    );
 
     if (analytics.length === 0) {
       return {
@@ -227,11 +246,17 @@ export class AnalyticsController {
       platformRevenue: Math.round(totals.platformRevenue * 100) / 100,
       driverEarnings: Math.round(totals.driverEarnings * 100) / 100,
       averageRideDistance:
-        Math.round((totals.totalDistance / Math.max(totals.completedRides, 1)) * 100) / 100,
+        Math.round(
+          (totals.totalDistance / Math.max(totals.completedRides, 1)) * 100
+        ) / 100,
       averageRideDuration:
-        Math.round((totals.totalDuration / Math.max(totals.completedRides, 1)) * 100) / 100,
+        Math.round(
+          (totals.totalDuration / Math.max(totals.completedRides, 1)) * 100
+        ) / 100,
       averageFare:
-        Math.round((totals.totalRevenue / Math.max(totals.completedRides, 1)) * 100) / 100,
+        Math.round(
+          (totals.totalRevenue / Math.max(totals.completedRides, 1)) * 100
+        ) / 100,
       completionRate:
         totals.totalRides > 0
           ? Math.round((totals.completedRides / totals.totalRides) * 100)

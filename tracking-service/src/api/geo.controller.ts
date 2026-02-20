@@ -11,8 +11,7 @@ import {
   HttpStatus,
   Inject,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@going/shared-infrastructure';
-import { CurrentUser } from '@going/shared-infrastructure';
+import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
 import {
   LocationUpdateDto,
   NearbyDriversQueryDto,
@@ -26,7 +25,7 @@ import {
   DistanceCalculatorService,
   Coordinates,
   Distance,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Geolocation Controller
@@ -82,13 +81,11 @@ export class GeoController {
       rating: 4.5, // TODO: Fetch from rating service
       latitude: driver.currentLocation.coordinates.latitude,
       longitude: driver.currentLocation.coordinates.longitude,
-      distance: this.distanceCalculator
-        .calculateDistance(coordinates, driver.currentLocation.coordinates)
-        .kilometers,
-      eta: this.geoService.estimateEta(
-        driver.currentLocation,
-        coordinates
-      ),
+      distance: this.distanceCalculator.calculateDistance(
+        coordinates,
+        driver.currentLocation.coordinates
+      ).kilometers,
+      eta: this.geoService.estimateEta(driver.currentLocation, coordinates),
       availableSeats: driver.availableSeats,
       serviceTypes: driver.serviceTypes,
     }));

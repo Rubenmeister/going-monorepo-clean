@@ -5,7 +5,7 @@ import {
   ITrackingSessionRepository,
   TrackingSession,
   GeoLocation,
-} from '@going/shared-infrastructure';
+} from '../../../domain/ports';
 import { TrackingSessionSchema } from '../schemas/tracking-session.schema';
 
 /**
@@ -63,7 +63,10 @@ export class MongoTrackingRepository implements ITrackingSessionRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async findByUserId(userId: string, limit?: number): Promise<TrackingSession[]> {
+  async findByUserId(
+    userId: string,
+    limit?: number
+  ): Promise<TrackingSession[]> {
     const query = this.trackingSessionModel.find({ userId }).sort({
       createdAt: -1,
     });

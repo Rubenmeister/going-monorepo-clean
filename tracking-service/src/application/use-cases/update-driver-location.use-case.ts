@@ -4,7 +4,7 @@ import {
   Coordinates,
   IGeoLocationRepository,
   IDriverAvailabilityRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Update Driver Location Use Case

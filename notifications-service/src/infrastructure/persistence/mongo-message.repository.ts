@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Message, MessageDocument } from '../schemas/message.schema';
-import { IMessageRepository } from '@going/shared-infrastructure';
+import { IMessageRepository } from '../../../domain/ports';
 
 /**
  * MongoDB Message Repository
@@ -33,9 +33,7 @@ export class MongoMessageRepository implements IMessageRepository {
   }
 
   async findByRideId(rideId: string, limit?: number): Promise<any[]> {
-    const query = this.messageModel
-      .find({ rideId })
-      .sort({ createdAt: -1 });
+    const query = this.messageModel.find({ rideId }).sort({ createdAt: -1 });
 
     if (limit) {
       query.limit(limit);

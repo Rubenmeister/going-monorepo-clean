@@ -10,8 +10,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@going/shared-infrastructure';
-import { CurrentUser } from '@going/shared-infrastructure';
+import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
 import {
   SendMessageDto,
   MessageResponseDto,

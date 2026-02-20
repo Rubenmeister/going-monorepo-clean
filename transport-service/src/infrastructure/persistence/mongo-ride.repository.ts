@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ride, RideDocument } from '../schemas/ride.schema';
-import { IRideRepository, RideStatus } from '@going/shared-infrastructure';
+import { IRideRepository, RideStatus } from '../../../domain/ports';
 
 /**
  * MongoDB Ride Repository
@@ -51,9 +51,7 @@ export class MongoRideRepository implements IRideRepository {
   }
 
   async findByUserId(userId: string, limit?: number): Promise<any[]> {
-    const query = this.rideModel
-      .find({ userId })
-      .sort({ requestedAt: -1 });
+    const query = this.rideModel.find({ userId }).sort({ requestedAt: -1 });
 
     if (limit) {
       query.limit(limit);
@@ -64,9 +62,7 @@ export class MongoRideRepository implements IRideRepository {
   }
 
   async findByDriverId(driverId: string, limit?: number): Promise<any[]> {
-    const query = this.rideModel
-      .find({ driverId })
-      .sort({ requestedAt: -1 });
+    const query = this.rideModel.find({ driverId }).sort({ requestedAt: -1 });
 
     if (limit) {
       query.limit(limit);
@@ -86,11 +82,9 @@ export class MongoRideRepository implements IRideRepository {
   }
 
   async update(id: string, updates: any): Promise<any> {
-    const doc = await this.rideModel.findOneAndUpdate(
-      { rideId: id },
-      updates,
-      { new: true }
-    );
+    const doc = await this.rideModel.findOneAndUpdate({ rideId: id }, updates, {
+      new: true,
+    });
 
     if (!doc) {
       throw new Error(`Ride ${id} not found`);
@@ -109,9 +103,7 @@ export class MongoRideRepository implements IRideRepository {
   }
 
   async findByStatus(status: string, limit?: number): Promise<any[]> {
-    const query = this.rideModel
-      .find({ status })
-      .sort({ requestedAt: -1 });
+    const query = this.rideModel.find({ status }).sort({ requestedAt: -1 });
 
     if (limit) {
       query.limit(limit);

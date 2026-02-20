@@ -2,14 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payment, PaymentDocument } from '../schemas/payment.schema';
-import { IPaymentRepository } from '@going/shared-infrastructure';
+import { IPaymentRepository } from '../../../domain/ports';
 
 /**
  * MongoDB Payment Repository
  */
 @Injectable()
 export class MongoPaymentRepository implements IPaymentRepository {
-  constructor(@InjectModel('Payment') private paymentModel: Model<PaymentDocument>) {}
+  constructor(
+    @InjectModel('Payment') private paymentModel: Model<PaymentDocument>
+  ) {}
 
   async create(payment: any): Promise<any> {
     const created = await this.paymentModel.create({
@@ -97,7 +99,10 @@ export class MongoPaymentRepository implements IPaymentRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async findCompletedByDateRange(startDate: Date, endDate: Date): Promise<any[]> {
+  async findCompletedByDateRange(
+    startDate: Date,
+    endDate: Date
+  ): Promise<any[]> {
     const docs = await this.paymentModel
       .find({
         status: 'completed',
@@ -108,7 +113,11 @@ export class MongoPaymentRepository implements IPaymentRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async calculateDriverRevenue(driverId: string, startDate: Date, endDate: Date): Promise<number> {
+  async calculateDriverRevenue(
+    driverId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<number> {
     const result = await this.paymentModel.aggregate([
       {
         $match: {

@@ -1,16 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { DriverAnalytics, DriverAnalyticsDocument } from '../schemas/driver-analytics.schema';
-import { IDriverAnalyticsRepository } from '@going/shared-infrastructure';
+import {
+  DriverAnalytics,
+  DriverAnalyticsDocument,
+} from '../schemas/driver-analytics.schema';
+import { IDriverAnalyticsRepository } from '../../../domain/ports';
 
 /**
  * MongoDB Driver Analytics Repository
  */
 @Injectable()
-export class MongoDriverAnalyticsRepository implements IDriverAnalyticsRepository {
+export class MongoDriverAnalyticsRepository
+  implements IDriverAnalyticsRepository
+{
   constructor(
-    @InjectModel('DriverAnalytics') private analyticsModel: Model<DriverAnalyticsDocument>
+    @InjectModel('DriverAnalytics')
+    private analyticsModel: Model<DriverAnalyticsDocument>
   ) {}
 
   async create(analytics: any): Promise<any> {
@@ -37,7 +43,11 @@ export class MongoDriverAnalyticsRepository implements IDriverAnalyticsRepositor
     return this.mapToEntity(created);
   }
 
-  async findByDriverAndPeriod(driverId: string, period: string, date: Date): Promise<any> {
+  async findByDriverAndPeriod(
+    driverId: string,
+    period: string,
+    date: Date
+  ): Promise<any> {
     const doc = await this.analyticsModel.findOne({
       driverId,
       period,
@@ -56,7 +66,12 @@ export class MongoDriverAnalyticsRepository implements IDriverAnalyticsRepositor
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async update(driverId: string, period: string, date: Date, updates: any): Promise<any> {
+  async update(
+    driverId: string,
+    period: string,
+    date: Date,
+    updates: any
+  ): Promise<any> {
     const doc = await this.analyticsModel.findOneAndUpdate(
       {
         driverId,
@@ -118,7 +133,11 @@ export class MongoDriverAnalyticsRepository implements IDriverAnalyticsRepositor
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async findMonthlyStats(driverId: string, year: number, month: number): Promise<any[]> {
+  async findMonthlyStats(
+    driverId: string,
+    year: number,
+    month: number
+  ): Promise<any[]> {
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0);
 

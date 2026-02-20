@@ -5,7 +5,7 @@ import {
   Distance,
   IGeoLocationRepository,
   IDriverAvailabilityRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Find Nearby Drivers Use Case
@@ -52,16 +52,14 @@ export class FindNearbyDriversUseCase {
       driverId: driver.driverId,
       latitude: driver.currentLocation.coordinates.latitude,
       longitude: driver.currentLocation.coordinates.longitude,
-      distance: this.distanceCalculator
-        .calculateDistance(
-          { latitude, longitude } as any,
-          driver.currentLocation.coordinates
-        )
-        .kilometers,
-      eta: this.geoService.estimateEta(
-        driver.currentLocation,
-        { latitude, longitude } as any
-      ),
+      distance: this.distanceCalculator.calculateDistance(
+        { latitude, longitude } as any,
+        driver.currentLocation.coordinates
+      ).kilometers,
+      eta: this.geoService.estimateEta(driver.currentLocation, {
+        latitude,
+        longitude,
+      } as any),
       status: driver.status,
       availableSeats: driver.availableSeats,
       serviceTypes: driver.serviceTypes,

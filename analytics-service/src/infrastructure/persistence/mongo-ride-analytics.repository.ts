@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { RideAnalytics, RideAnalyticsDocument } from '../schemas/ride-analytics.schema';
-import { IRideAnalyticsRepository } from '@going/shared-infrastructure';
+import {
+  RideAnalytics,
+  RideAnalyticsDocument,
+} from '../schemas/ride-analytics.schema';
+import { IRideAnalyticsRepository } from '../../../domain/ports';
 
 /**
  * MongoDB Ride Analytics Repository
@@ -10,7 +13,8 @@ import { IRideAnalyticsRepository } from '@going/shared-infrastructure';
 @Injectable()
 export class MongoRideAnalyticsRepository implements IRideAnalyticsRepository {
   constructor(
-    @InjectModel('RideAnalytics') private analyticsModel: Model<RideAnalyticsDocument>
+    @InjectModel('RideAnalytics')
+    private analyticsModel: Model<RideAnalyticsDocument>
   ) {}
 
   async create(analytics: any): Promise<any> {
@@ -25,7 +29,11 @@ export class MongoRideAnalyticsRepository implements IRideAnalyticsRepository {
       platformRevenue: analytics.platformRevenue || 0,
       driverEarnings: analytics.driverEarnings || 0,
       peakHourRides: analytics.peakHourRides || {},
-      ridesByStatus: analytics.ridesByStatus || { completed: 0, cancelled: 0, noShow: 0 },
+      ridesByStatus: analytics.ridesByStatus || {
+        completed: 0,
+        cancelled: 0,
+        noShow: 0,
+      },
       cancellationRateByReason: analytics.cancellationRateByReason || {},
       topRoutes: analytics.topRoutes || [],
     });
@@ -111,7 +119,9 @@ export class MongoRideAnalyticsRepository implements IRideAnalyticsRepository {
       driverEarnings: doc.driverEarnings,
       peakHourRides: Object.fromEntries(doc.peakHourRides || []),
       ridesByStatus: doc.ridesByStatus,
-      cancellationRateByReason: Object.fromEntries(doc.cancellationRateByReason || []),
+      cancellationRateByReason: Object.fromEntries(
+        doc.cancellationRateByReason || []
+      ),
       topRoutes: doc.topRoutes,
     };
   }

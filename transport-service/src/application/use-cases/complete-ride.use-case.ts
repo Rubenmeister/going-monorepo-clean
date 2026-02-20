@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IRideRepository } from '@going/shared-infrastructure';
+import { IRideRepository } from '../../domain/ports';
 
 /**
  * Complete Ride Use Case

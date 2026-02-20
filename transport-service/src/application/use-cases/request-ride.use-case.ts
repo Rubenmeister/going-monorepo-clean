@@ -8,7 +8,7 @@ import {
   GeolocationService,
   Distance,
   IRideRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Request Ride Use Case
@@ -62,7 +62,7 @@ export class RequestRideUseCase {
       surge,
       2.5, // base fare
       0.5, // per km
-      0.1  // per minute
+      0.1 // per minute
     );
 
     // Create ride

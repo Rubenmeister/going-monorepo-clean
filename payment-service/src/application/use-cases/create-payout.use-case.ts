@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IPayoutRepository } from '@going/shared-infrastructure';
+import { IPayoutRepository } from '../../domain/ports';
 import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,7 +21,9 @@ export class CreatePayoutUseCase {
   }): Promise<any> {
     // Get all pending payouts for the driver
     const pendingPayouts = await this.payoutRepository.findByStatus('pending');
-    const driverPayouts = pendingPayouts.filter((p) => p.driverId === input.driverId);
+    const driverPayouts = pendingPayouts.filter(
+      (p) => p.driverId === input.driverId
+    );
 
     if (driverPayouts.length === 0) {
       throw new Error('No pending payouts found for this driver');
