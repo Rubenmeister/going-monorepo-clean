@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Logger,
   Req,
+  UseGuards,
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
   AuditLogService,
   RbacService,
   CorporateUserService,
+  CorporateJwtAuthGuard,
 } from '@going-monorepo-clean/features-corporate-auth';
 import {
   RecordConsentDto,
@@ -33,7 +35,13 @@ import {
   DeleteLogsResponseDto,
 } from './dtos/corporate-audit.dto';
 
+/**
+ * Corporate Audit API Controller
+ * All endpoints are protected by JWT authentication
+ * User identity is extracted from JWT token, not headers
+ */
 @Controller('api/corporate')
+@UseGuards(CorporateJwtAuthGuard)
 export class CorporateAuditController {
   private readonly logger = new Logger(CorporateAuditController.name);
 
@@ -47,8 +55,10 @@ export class CorporateAuditController {
    * POST /api/corporate/consent
    * Record employee consent decision for location tracking
    * Employee can only record their own consent
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param dto Consent decision (granted/revoked)
-   * @param req HTTP request (for IP, user-agent)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns Confirmation with logId
    */
   @Post('consent')
@@ -57,6 +67,31 @@ export class CorporateAuditController {
     @Req() req: Request
   ): Promise<ConsentResponseDto> {
     try {
+      // Extract authenticated user from JWT (set by CorporateJwtAuthGuard)
+      const user = (req as any).user;
+      if (!user || !user.userId) {
+        throw new UnauthorizedException('No authenticated user');
+      }
+
+      // Verify user has permission to create bookings
+      const canAccess = await this.rbacService.canAccess(
+        user.userId,
+        'create_bookings'
+      );
+      if (!canAccess) {
+        throw new ForbiddenException(
+          'You do not have permission to record consent'
+        );
+      }
+
+      // Verify company match
+      if (user.companyId !== dto.companyId) {
+        this.logger.warn(
+          `Company mismatch: JWT=${user.companyId}, DTO=${dto.companyId}`
+        );
+        throw new ForbiddenException('Company mismatch');
+      }
+
       const xForwardedFor = req.headers['x-forwarded-for'] as string;
       const userAgent = req.headers['user-agent'] as string;
       const ipAddress = dto.ipAddress || xForwardedFor || 'unknown';
@@ -64,27 +99,20 @@ export class CorporateAuditController {
       const timestamp = new Date();
 
       this.logger.debug(
-        `Recording consent: bookingId=${dto.bookingId}, userId=${dto.userId}, granted=${dto.granted}`
-      );
-
-      // Extract and validate auth context
-      // Employee action: "create_bookings" permission required
-      const authContext = await this.validateAuthContext(
-        req,
-        dto.companyId,
-        'create_bookings'
+        `Recording consent: bookingId=${dto.bookingId}, targetUserId=${dto.userId}, grantedBy=${user.userId}, granted=${dto.granted}`
       );
 
       // Log the consent decision to audit trail
+      // IMPORTANT: actorId is the AUTHENTICATED user from JWT, not from DTO
       const logId = await this.auditLogService.log({
         action,
-        actorId: dto.userId,
-        actorEmail: authContext.email,
-        companyId: dto.companyId,
-        targetUserId: dto.userId,
+        actorId: user.userId, // From JWT - verified authenticated user
+        actorEmail: user.email, // From JWT - verified email
+        companyId: user.companyId, // From JWT - verified company
+        targetUserId: dto.userId, // Subject of the consent action
         bookingId: dto.bookingId,
         service: 'tracking-service',
-        ipAddress: authContext.ipAddress,
+        ipAddress,
         userAgent,
         metadata: {
           deviceId: dto.deviceId,
@@ -119,8 +147,10 @@ export class CorporateAuditController {
   /**
    * GET /api/corporate/audit/logs
    * Query audit logs with filters (RBAC enforced - requires view_reports permission)
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param query Filter parameters (date range, action, user, etc.)
-   * @param req HTTP request (for company ID header)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns Paginated list of audit logs
    */
   @Get('audit/logs')
@@ -128,24 +158,30 @@ export class CorporateAuditController {
     @Query() query: AuditLogsQueryDto,
     @Req() req: Request
   ): Promise<AuditLogsResponseDto> {
-    const companyId = req.headers['x-company-id'] as string;
     try {
-      if (!companyId) {
-        throw new HttpException(
-          'Company ID required (x-company-id header)',
-          HttpStatus.UNAUTHORIZED
+      // Extract authenticated user from JWT
+      const user = (req as any).user;
+      if (!user || !user.userId || !user.companyId) {
+        throw new UnauthorizedException('No authenticated user with company');
+      }
+
+      // Verify user has permission to view reports
+      const canAccess = await this.rbacService.canAccess(
+        user.userId,
+        'view_reports'
+      );
+      if (!canAccess) {
+        throw new ForbiddenException(
+          'You do not have permission to view audit logs'
         );
       }
 
-      // Validate auth context: requires view_reports permission
-      await this.validateAuthContext(req, companyId, 'view_reports');
-
       this.logger.debug(
-        `Querying audit logs: companyId=${companyId}, from=${query.from}, to=${query.to}`
+        `Querying audit logs: companyId=${user.companyId}, requestedBy=${user.userId}, from=${query.from}, to=${query.to}`
       );
 
       const filters = {
-        companyId,
+        companyId: user.companyId,
         from: query.from ? new Date(query.from) : undefined,
         to: query.to ? new Date(query.to) : undefined,
         action: query.action?.split(',').map((a) => a.trim()),
@@ -154,7 +190,7 @@ export class CorporateAuditController {
         bookingId: query.bookingId,
       };
 
-      const result = await this.auditLogService.queryLogs(companyId, {
+      const result = await this.auditLogService.queryLogs(user.companyId, {
         ...filters,
         limit: query.limit || 100,
         offset: query.offset || 0,
@@ -200,9 +236,11 @@ export class CorporateAuditController {
    * Data subject access request - return all personal data
    * LOPD Ecuador compliance: Art. 21 - Right to access
    * Users can view their own data or admins can view anyone's
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param userId Employee ID
    * @param query Format (json/csv) and date range
-   * @param req HTTP request (for company ID header)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns All data about this employee
    */
   @Get('audit/employee/:userId')
@@ -211,41 +249,28 @@ export class CorporateAuditController {
     @Query() query: DataSubjectAccessDto,
     @Req() req: Request
   ): Promise<DataSubjectAccessResponseDto> {
-    const companyId = req.headers['x-company-id'] as string;
     try {
-      if (!companyId) {
-        throw new HttpException(
-          'Company ID required (x-company-id header)',
-          HttpStatus.UNAUTHORIZED
-        );
+      // Extract authenticated user from JWT
+      const user = (req as any).user;
+      if (!user || !user.userId || !user.companyId) {
+        throw new UnauthorizedException('No authenticated user with company');
       }
 
-      // Validate auth context
-      const authContext = await this.validateAuthContext(
-        req,
-        companyId,
-        'view_own_profile'
-      );
-
       this.logger.debug(
-        `Data subject access request: userId=${userId}, companyId=${companyId}, requestedBy=${authContext.userId}`
+        `Data subject access request: userId=${userId}, companyId=${user.companyId}, requestedBy=${user.userId}`
       );
 
       // Check: user can only request their own data or be a super_admin
-      const requesterUser = await this.userService.getUserById(
-        authContext.userId
-      );
-      const targetUser = await this.userService.getUserById(userId);
-
-      const canAccess =
-        authContext.userId === userId || requesterUser?.role === 'super_admin';
+      const canAccess = user.userId === userId || user.role === 'super_admin';
 
       if (!canAccess) {
         this.logger.warn(
-          `Access denied: User ${authContext.userId} cannot access data for ${userId}`
+          `Access denied: User ${user.userId} cannot access data for ${userId}`
         );
         throw new ForbiddenException('You can only access your own data');
       }
+
+      const targetUser = await this.userService.getUserById(userId);
 
       const filters = {
         from: query.from ? new Date(query.from) : undefined,
@@ -253,19 +278,22 @@ export class CorporateAuditController {
       };
 
       // Get all logs where this user is the subject
-      const dataAccessLogs = await this.auditLogService.queryLogs(companyId, {
-        targetUserId: userId,
-        ...filters,
-      });
+      const dataAccessLogs = await this.auditLogService.queryLogs(
+        user.companyId,
+        {
+          targetUserId: userId,
+          ...filters,
+        }
+      );
 
       // Get all logs where this user is the actor
-      const userActions = await this.auditLogService.queryLogs(companyId, {
+      const userActions = await this.auditLogService.queryLogs(user.companyId, {
         actorId: userId,
         ...filters,
       });
 
       // Get consent history
-      const consentLogs = await this.auditLogService.queryLogs(companyId, {
+      const consentLogs = await this.auditLogService.queryLogs(user.companyId, {
         targetUserId: userId,
         action: ['consent_granted', 'consent_revoked'],
         ...filters,
@@ -315,8 +343,10 @@ export class CorporateAuditController {
   /**
    * GET /api/corporate/audit/reports/consent
    * Compliance report: Consent coverage and rates (admins/managers only)
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param query Date range for report
-   * @param req HTTP request (for company ID header)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns Consent statistics and breakdown by employee
    */
   @Get('audit/reports/consent')
@@ -324,19 +354,27 @@ export class CorporateAuditController {
     @Query() query: ConsentReportDto,
     @Req() req: Request
   ): Promise<ConsentReportResponseDto> {
-    const companyId = req.headers['x-company-id'] as string;
     try {
-      if (!companyId) {
-        throw new HttpException(
-          'Company ID required (x-company-id header)',
-          HttpStatus.UNAUTHORIZED
+      // Extract authenticated user from JWT
+      const user = (req as any).user;
+      if (!user || !user.userId || !user.companyId) {
+        throw new UnauthorizedException('No authenticated user with company');
+      }
+
+      // Verify user has permission to view team reports
+      const canAccess = await this.rbacService.canAccess(
+        user.userId,
+        'view_team_reports'
+      );
+      if (!canAccess) {
+        throw new ForbiddenException(
+          'You do not have permission to view consent reports'
         );
       }
 
-      // Validate auth context: managers/admins can view reports
-      await this.validateAuthContext(req, companyId, 'view_team_reports');
-
-      this.logger.debug(`Generating consent report: companyId=${companyId}`);
+      this.logger.debug(
+        `Generating consent report: companyId=${user.companyId}, requestedBy=${user.userId}`
+      );
 
       const filters = {
         from: query.from
@@ -346,7 +384,7 @@ export class CorporateAuditController {
       };
 
       // Get all trip-related logs
-      const tripLogs = await this.auditLogService.queryLogs(companyId, {
+      const tripLogs = await this.auditLogService.queryLogs(user.companyId, {
         action: ['trip_tracking_started', 'consent_granted', 'consent_revoked'],
         ...filters,
         limit: 10000,
@@ -438,8 +476,10 @@ export class CorporateAuditController {
   /**
    * GET /api/corporate/audit/reports/access
    * Compliance report: Who accessed what location data, when (admins only)
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param query Date range for report
-   * @param req HTTP request (for company ID header)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns Access statistics and manager activity
    */
   @Get('audit/reports/access')
@@ -447,19 +487,27 @@ export class CorporateAuditController {
     @Query() query: AccessReportDto,
     @Req() req: Request
   ): Promise<AccessReportResponseDto> {
-    const companyId = req.headers['x-company-id'] as string;
     try {
-      if (!companyId) {
-        throw new HttpException(
-          'Company ID required (x-company-id header)',
-          HttpStatus.UNAUTHORIZED
+      // Extract authenticated user from JWT
+      const user = (req as any).user;
+      if (!user || !user.userId || !user.companyId) {
+        throw new UnauthorizedException('No authenticated user with company');
+      }
+
+      // Verify user has permission to view reports
+      const canAccess = await this.rbacService.canAccess(
+        user.userId,
+        'view_reports'
+      );
+      if (!canAccess) {
+        throw new ForbiddenException(
+          'You do not have permission to view access reports'
         );
       }
 
-      // Validate auth context: only admins/managers can see access reports
-      await this.validateAuthContext(req, companyId, 'view_reports');
-
-      this.logger.debug(`Generating access report: companyId=${companyId}`);
+      this.logger.debug(
+        `Generating access report: companyId=${user.companyId}, requestedBy=${user.userId}`
+      );
 
       const filters = {
         from: query.from
@@ -469,7 +517,7 @@ export class CorporateAuditController {
       };
 
       // Get all location access logs
-      const accessLogs = await this.auditLogService.queryLogs(companyId, {
+      const accessLogs = await this.auditLogService.queryLogs(user.companyId, {
         action: ['location_viewed'],
         ...filters,
         limit: 10000,
@@ -593,8 +641,10 @@ export class CorporateAuditController {
    * Manually purge audit logs (for admins only, requires confirmation)
    * This is for testing/compliance purposes only
    * LOPD Ecuador compliance: Art. 22 - Right to deletion
+   *
+   * SECURITY: Authenticated user identity comes from JWT token
    * @param dto Deletion parameters
-   * @param req HTTP request (for company ID and user info headers)
+   * @param req HTTP request (authenticated user is in req.user from JWT)
    * @returns Count of deleted logs
    */
   @Post('audit/delete-old-logs')
@@ -602,28 +652,25 @@ export class CorporateAuditController {
     @Body() dto: DeleteLogsDto,
     @Req() req: Request
   ): Promise<DeleteLogsResponseDto> {
-    const companyId = req.headers['x-company-id'] as string;
-
     try {
-      if (!companyId) {
-        throw new HttpException(
-          'Company ID required (x-company-id header)',
-          HttpStatus.UNAUTHORIZED
-        );
+      // Extract authenticated user from JWT
+      const user = (req as any).user;
+      if (!user || !user.userId || !user.companyId) {
+        throw new UnauthorizedException('No authenticated user with company');
       }
 
-      // Validate auth context: only super_admins can delete logs
-      const authContext = await this.validateAuthContext(
-        req,
-        companyId,
-        'manage_limits'
-      );
-
-      // Extra: Verify this is a super_admin (most privileged role)
-      const adminUser = await this.userService.getUserById(authContext.userId);
-      if (adminUser?.role !== 'super_admin') {
+      // Verify company match
+      if (user.companyId !== dto.companyId) {
         this.logger.warn(
-          `Deletion denied: User ${authContext.userId} is not a super_admin`
+          `Company mismatch: JWT=${user.companyId}, DTO=${dto.companyId}`
+        );
+        throw new ForbiddenException('Company mismatch');
+      }
+
+      // Verify this is a super_admin (most privileged role)
+      if (user.role !== 'super_admin') {
+        this.logger.warn(
+          `Deletion denied: User ${user.userId} is not a super_admin`
         );
         throw new ForbiddenException('Only super_admin can delete logs');
       }
@@ -635,21 +682,25 @@ export class CorporateAuditController {
         );
       }
 
+      const xForwardedFor = req.headers['x-forwarded-for'] as string;
+      const ipAddress = xForwardedFor || 'unknown';
+
       this.logger.warn(
-        `ADMIN ACTION: User ${authContext.userId} purging logs for companyId=${companyId} before ${dto.before}`
+        `ADMIN ACTION: User ${user.userId} purging logs for companyId=${user.companyId} before ${dto.before}`
       );
 
       const timestamp = new Date();
       const beforeDate = dto.before ? new Date(dto.before) : new Date();
 
       // Log the deletion action itself before purging
+      // IMPORTANT: actorId is the AUTHENTICATED user from JWT, not from DTO
       const deletionLogId = await this.auditLogService.log({
         action: 'audit_logs_purged',
-        actorId: authContext.userId,
-        actorEmail: authContext.email,
-        companyId: dto.companyId,
+        actorId: user.userId, // From JWT - verified authenticated user
+        actorEmail: user.email, // From JWT - verified email
+        companyId: user.companyId, // From JWT - verified company
         service: 'tracking-service',
-        ipAddress: authContext.ipAddress,
+        ipAddress,
         metadata: {
           purgedBefore: beforeDate.toISOString(),
           reason: 'manual_admin_request',
@@ -677,63 +728,6 @@ export class CorporateAuditController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
-  }
-
-  /**
-   * Extract and validate auth context from request
-   * SECURITY: This method enforces:
-   * 1. User must be authenticated (userId present)
-   * 2. User must belong to the specified company
-   * 3. User must have required permission
-   * Fails closed: throws ForbiddenException if any check fails
-   */
-  private async validateAuthContext(
-    req: Request,
-    companyId: string,
-    requiredAction: string
-  ): Promise<{ userId: string; email: string; ipAddress: string }> {
-    // Extract user ID from headers (in production this would come from JWT)
-    const userId = (req.headers['x-user-id'] as string) || 'unknown-user';
-    const email =
-      (req.headers['x-user-email'] as string) || 'unknown@company.com';
-    const ipAddress = (req.headers['x-forwarded-for'] as string) || 'unknown';
-
-    if (!userId || userId === 'unknown-user') {
-      this.logger.warn(`Unauthorized access attempt: no user ID in request`);
-      throw new UnauthorizedException('User ID required in x-user-id header');
-    }
-
-    // Verify user belongs to this company
-    const userBelongsToCompany = await this.userService.userBelongsToCompany(
-      userId,
-      companyId
-    );
-    if (!userBelongsToCompany) {
-      this.logger.warn(
-        `Access denied: User ${userId} does not belong to company ${companyId}`
-      );
-      throw new ForbiddenException(`User does not belong to this company`);
-    }
-
-    // Check if user is active
-    const isActive = await this.userService.isUserActive(userId);
-    if (!isActive) {
-      this.logger.warn(`Access denied: User ${userId} is not active`);
-      throw new ForbiddenException(`User account is not active`);
-    }
-
-    // Check RBAC permission
-    const canAccess = await this.rbacService.canAccess(userId, requiredAction);
-    if (!canAccess) {
-      this.logger.warn(
-        `Access denied: User ${userId} cannot perform action ${requiredAction}`
-      );
-      throw new ForbiddenException(
-        `You do not have permission to perform this action`
-      );
-    }
-
-    return { userId, email, ipAddress };
   }
 
   /**
