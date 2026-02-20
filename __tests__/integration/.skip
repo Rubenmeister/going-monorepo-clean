@@ -1,0 +1,15 @@
+# Integration tests are skipped in CI/CD
+# These tests require running service instances
+#
+# To run integration tests locally:
+#
+# 1. Start the services:
+#    npm run dev:notifications &
+#    npm run dev:transport
+#
+# 2. Run the tests:
+#    npm run test:integration
+#
+# Services configuration:
+# - notifications-service: http://localhost:3001
+# - transport-service: http://localhost:3002
