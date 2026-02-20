@@ -5,7 +5,7 @@ import {
   GeoLocation,
   Coordinates,
   Distance,
-} from '@going/shared-infrastructure';
+} from '../../../domain/ports';
 
 /**
  * Redis Geo Repository
@@ -28,17 +28,14 @@ export class RedisGeoRepository implements IGeoLocationRepository {
     );
 
     // Store full location data as hash
-    await this.redis.hset(
-      `${this.LOCATION_HASH_KEY}:${location.driverId}`,
-      {
-        latitude: location.coordinates.latitude.toString(),
-        longitude: location.coordinates.longitude.toString(),
-        accuracy: location.accuracy.toString(),
-        heading: (location.heading || 0).toString(),
-        speed: (location.speed || 0).toString(),
-        timestamp: location.timestamp.toISOString(),
-      }
-    );
+    await this.redis.hset(`${this.LOCATION_HASH_KEY}:${location.driverId}`, {
+      latitude: location.coordinates.latitude.toString(),
+      longitude: location.coordinates.longitude.toString(),
+      accuracy: location.accuracy.toString(),
+      heading: (location.heading || 0).toString(),
+      speed: (location.speed || 0).toString(),
+      timestamp: location.timestamp.toISOString(),
+    });
 
     // Set expiration (6 hours)
     await this.redis.expire(

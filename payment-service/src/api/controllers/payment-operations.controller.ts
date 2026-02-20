@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Param, Body, HttpStatus } from '@nestjs/common';
-import { IPaymentRepository, IPayoutRepository } from '@going/shared-infrastructure';
+import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from '../../application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from '../../application/use-cases/create-payout.use-case';
@@ -100,7 +100,10 @@ export class PaymentOperationsController {
 
   @Get('passenger/:passengerId')
   async getPassengerPayments(@Param('passengerId') passengerId: string) {
-    const payments = await this.paymentRepository.findByPassenger(passengerId, 50);
+    const payments = await this.paymentRepository.findByPassenger(
+      passengerId,
+      50
+    );
 
     return {
       statusCode: HttpStatus.OK,
@@ -175,7 +178,9 @@ export class PaymentOperationsController {
 
   @Get('driver/:driverId/balance')
   async getDriverBalance(@Param('driverId') driverId: string) {
-    const balance = await this.payoutRepository.calculateDriverBalance(driverId);
+    const balance = await this.payoutRepository.calculateDriverBalance(
+      driverId
+    );
 
     return {
       statusCode: HttpStatus.OK,

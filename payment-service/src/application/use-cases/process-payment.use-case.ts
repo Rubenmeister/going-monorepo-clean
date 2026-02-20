@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IPaymentRepository } from '@going/shared-infrastructure';
+import { IPaymentRepository } from '../../domain/ports';
 import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { v4 as uuidv4 } from 'uuid';
 

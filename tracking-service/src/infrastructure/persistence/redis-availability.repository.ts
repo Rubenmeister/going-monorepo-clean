@@ -6,14 +6,16 @@ import {
   GeoLocation,
   Coordinates,
   DriverAvailabilityStatus,
-} from '@going/shared-infrastructure';
+} from '../../../domain/ports';
 
 /**
  * Redis Availability Repository
  * Manages driver availability status in Redis
  */
 @Injectable()
-export class RedisAvailabilityRepository implements IDriverAvailabilityRepository {
+export class RedisAvailabilityRepository
+  implements IDriverAvailabilityRepository
+{
   private readonly AVAILABILITY_KEY = 'going:driver_availability';
   private readonly AVAILABILITY_SET_KEY = 'going:drivers:by_status:';
 
@@ -47,9 +49,7 @@ export class RedisAvailabilityRepository implements IDriverAvailabilityRepositor
     return availability;
   }
 
-  async findByDriverId(
-    driverId: string
-  ): Promise<DriverAvailability | null> {
+  async findByDriverId(driverId: string): Promise<DriverAvailability | null> {
     const data = await this.redis.hgetall(
       `${this.AVAILABILITY_KEY}:${driverId}`
     );

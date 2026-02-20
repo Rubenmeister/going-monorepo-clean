@@ -5,7 +5,7 @@ import {
   GeoLocation,
   Coordinates,
   ITrackingSessionRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Create Tracking Session Use Case

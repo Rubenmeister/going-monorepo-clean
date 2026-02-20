@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IPaymentRepository, IPayoutRepository } from '@going/shared-infrastructure';
+import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from './process-payment.use-case';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -63,7 +63,10 @@ export class CompleteRideUseCase {
     };
   }
 
-  private async recordDriverPayout(driverId: string, payment: any): Promise<void> {
+  private async recordDriverPayout(
+    driverId: string,
+    payment: any
+  ): Promise<void> {
     try {
       // Get current date for payout period (weekly)
       const today = new Date();
@@ -87,9 +90,15 @@ export class CompleteRideUseCase {
         // Update existing payout
         await this.payoutRepository.update(existingPayout.id, {
           amount: existingPayout.amount + payment.driverAmount,
-          netAmount: existingPayout.netAmount + payment.driverAmount - (existingPayout.fees || 0),
+          netAmount:
+            existingPayout.netAmount +
+            payment.driverAmount -
+            (existingPayout.fees || 0),
           transactionCount: existingPayout.transactionCount + 1,
-          transactionIds: [...(existingPayout.transactionIds || []), payment.id],
+          transactionIds: [
+            ...(existingPayout.transactionIds || []),
+            payment.id,
+          ],
         });
       } else {
         // Create new payout for the week

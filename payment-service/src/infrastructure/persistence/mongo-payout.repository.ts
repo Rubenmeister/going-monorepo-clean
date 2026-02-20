@@ -2,14 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payout, PayoutDocument } from '../schemas/payout.schema';
-import { IPayoutRepository } from '@going/shared-infrastructure';
+import { IPayoutRepository } from '../../../domain/ports';
 
 /**
  * MongoDB Payout Repository
  */
 @Injectable()
 export class MongoPayoutRepository implements IPayoutRepository {
-  constructor(@InjectModel('Payout') private payoutModel: Model<PayoutDocument>) {}
+  constructor(
+    @InjectModel('Payout') private payoutModel: Model<PayoutDocument>
+  ) {}
 
   async create(payout: any): Promise<any> {
     const created = await this.payoutModel.create({
@@ -54,7 +56,11 @@ export class MongoPayoutRepository implements IPayoutRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async findByDriverAndPeriod(driverId: string, periodStart: Date, periodEnd: Date): Promise<any> {
+  async findByDriverAndPeriod(
+    driverId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<any> {
     const doc = await this.payoutModel.findOne({
       driverId,
       periodStart: { $gte: periodStart },
@@ -90,7 +96,10 @@ export class MongoPayoutRepository implements IPayoutRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async calculateDriverBalance(driverId: string, upTo = new Date()): Promise<number> {
+  async calculateDriverBalance(
+    driverId: string,
+    upTo = new Date()
+  ): Promise<number> {
     const result = await this.payoutModel.aggregate([
       {
         $match: {

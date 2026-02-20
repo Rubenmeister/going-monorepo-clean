@@ -11,7 +11,7 @@ import {
   ITrackingSessionRepository,
   GeolocationService,
   DistanceCalculatorService,
-} from '@going/shared-infrastructure';
+} from '../domain/ports';
 import { RedisTrackingRepository } from './persistence/redis-tracking.repository';
 import { RedisGeoRepository } from './persistence/redis-geo.repository';
 import { RedisAvailabilityRepository } from './persistence/redis-availability.repository';
