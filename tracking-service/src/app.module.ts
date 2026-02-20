@@ -4,6 +4,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TrackingController } from './api/tracking.controller';
 import { TrackingGateway } from './api/tracking.gateway';
 import { CorporateAuditController } from './api/corporate-audit.controller';
+import { CorporateTrackingModule } from './api/corporate-tracking.module';
 import {
   UpdateLocationUseCase,
   GetActiveDriversUseCase,
@@ -15,6 +16,7 @@ import { CorporateAuthModule } from '@going-monorepo-clean/features-corporate-au
     ConfigModule.forRoot({ isGlobal: true }),
     InfrastructureModule,
     CorporateAuthModule,
+    CorporateTrackingModule,
   ],
   controllers: [TrackingController, CorporateAuditController],
   providers: [TrackingGateway, UpdateLocationUseCase, GetActiveDriversUseCase],
