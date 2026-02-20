@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuditLogService } from './services/audit-log.service';
+import { RbacService } from './services/rbac.service';
+import { TokenService } from './services/token.service';
 
 /**
  * Corporate Authentication Module
- * Provides SSO, RBAC, and MFA support for B2B portal
+ * Provides SSO, RBAC, MFA, and Audit Logging for B2B portal
  */
 @Module({
   imports: [
@@ -22,17 +25,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [
-    // Strategies will be registered separately
-    // SSOStrategyFactory,
-    // MFAService,
-    // RBACService,
-    // TokenService,
-  ],
+  providers: [AuditLogService, RbacService, TokenService],
   exports: [
     PassportModule,
     JwtModule,
-    // Service exports will go here
+    AuditLogService,
+    RbacService,
+    TokenService,
   ],
 })
 export class CorporateAuthModule {}
