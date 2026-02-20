@@ -3,3 +3,8 @@ export * from './interfaces/sso-config.interface';
 export * from './interfaces/corporate-auth.service';
 export * from './lib/corporate-auth.module';
 export * from './lib/sso.strategy';
+export * from './lib/services/audit-log.service';
+export * from './lib/services/rbac.service';
+export * from './lib/services/token.service';
+export * from './lib/services/corporate-auth.service';
+export * from './lib/services/mfa.service';

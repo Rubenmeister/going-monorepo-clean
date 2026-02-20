@@ -3,23 +3,20 @@ import { ConfigModule } from '@nestjs/config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TrackingController } from './api/tracking.controller';
 import { TrackingGateway } from './api/tracking.gateway';
+import { CorporateAuditController } from './api/corporate-audit.controller';
 import {
   UpdateLocationUseCase,
   GetActiveDriversUseCase,
 } from '@going-monorepo-clean/domains-tracking-application';
+import { CorporateAuthModule } from '@going-monorepo-clean/features-corporate-auth';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     InfrastructureModule,
+    CorporateAuthModule,
   ],
-  controllers: [
-    TrackingController,
-  ],
-  providers: [
-    TrackingGateway, 
-    UpdateLocationUseCase,
-    GetActiveDriversUseCase,
-  ],
+  controllers: [TrackingController, CorporateAuditController],
+  providers: [TrackingGateway, UpdateLocationUseCase, GetActiveDriversUseCase],
 })
 export class AppModule {}
