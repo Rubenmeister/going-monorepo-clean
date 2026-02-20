@@ -2,14 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Rating, RatingDocument } from '../schemas/rating.schema';
-import { IRatingRepository } from '@going/shared-infrastructure';
+import { IRatingRepository } from '../../domain/ports';
 
 /**
  * MongoDB Rating Repository
  */
 @Injectable()
 export class MongoRatingRepository implements IRatingRepository {
-  constructor(@InjectModel('Rating') private ratingModel: Model<RatingDocument>) {}
+  constructor(
+    @InjectModel('Rating') private ratingModel: Model<RatingDocument>
+  ) {}
 
   async create(rating: any): Promise<any> {
     const created = await this.ratingModel.create({
@@ -53,6 +55,15 @@ export class MongoRatingRepository implements IRatingRepository {
       .limit(limit);
 
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async update(id: string, data: any): Promise<any> {
+    const updated = await this.ratingModel.findOneAndUpdate(
+      { ratingId: id },
+      { $set: data },
+      { new: true }
+    );
+    return updated ? this.mapToEntity(updated) : null;
   }
 
   async delete(id: string): Promise<void> {

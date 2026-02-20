@@ -1,5 +1,8 @@
 import { Controller, Post, Get, Param, Body, HttpStatus } from '@nestjs/common';
-import { IRatingRepository, IDriverProfileRepository } from '@going/shared-infrastructure';
+import {
+  IRatingRepository,
+  IDriverProfileRepository,
+} from '../../domain/ports';
 import { SubmitRatingUseCase } from '../../application/use-cases/submit-rating.use-case';
 import { v4 as uuidv4 } from 'uuid';
 

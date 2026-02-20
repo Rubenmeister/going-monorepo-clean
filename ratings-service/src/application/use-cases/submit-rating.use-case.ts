@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { IRatingRepository, IDriverProfileRepository } from '@going/shared-infrastructure';
+import {
+  IRatingRepository,
+  IDriverProfileRepository,
+} from '../../domain/ports';
 
 /**
  * Submit Rating Use Case
@@ -53,7 +56,10 @@ export class SubmitRatingUseCase {
   private async updateDriverProfileStats(driverId: string): Promise<void> {
     try {
       const profile = await this.driverProfileRepository.findByDriver(driverId);
-      const recentRatings = await this.ratingRepository.findByRatee(driverId, 100);
+      const recentRatings = await this.ratingRepository.findByRatee(
+        driverId,
+        100
+      );
 
       if (recentRatings.length === 0) return;
 
@@ -69,19 +75,28 @@ export class SubmitRatingUseCase {
       recentRatings.forEach((r) => {
         totalStars += r.stars;
         if (r.categories) {
-          if (r.categories.cleanliness) categoryAverages.cleanliness += r.categories.cleanliness;
-          if (r.categories.communication) categoryAverages.communication += r.categories.communication;
-          if (r.categories.driving) categoryAverages.driving += r.categories.driving;
-          if (r.categories.behavior) categoryAverages.behavior += r.categories.behavior;
+          if (r.categories.cleanliness)
+            categoryAverages.cleanliness += r.categories.cleanliness;
+          if (r.categories.communication)
+            categoryAverages.communication += r.categories.communication;
+          if (r.categories.driving)
+            categoryAverages.driving += r.categories.driving;
+          if (r.categories.behavior)
+            categoryAverages.behavior += r.categories.behavior;
           if (Object.keys(r.categories).length > 0) categoryCount++;
         }
       });
 
-      const averageRating = Math.round((totalStars / recentRatings.length) * 10) / 10;
+      const averageRating =
+        Math.round((totalStars / recentRatings.length) * 10) / 10;
 
       // Update badges
       const badges = [];
-      if (averageRating >= 4.8 && profile.completedTrips >= 100 && profile.cancellationRate <= 2) {
+      if (
+        averageRating >= 4.8 &&
+        profile.completedTrips >= 100 &&
+        profile.cancellationRate <= 2
+      ) {
         badges.push('super_driver');
       }
       if (averageRating >= 4.7) {
