@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { DriverProfile, DriverProfileDocument } from '../schemas/driver-profile.schema';
-import { IDriverProfileRepository } from '@going/shared-infrastructure';
+import {
+  DriverProfile,
+  DriverProfileDocument,
+} from '../schemas/driver-profile.schema';
+import { IDriverProfileRepository } from '../../domain/ports';
 
 /**
  * MongoDB Driver Profile Repository
@@ -10,7 +13,8 @@ import { IDriverProfileRepository } from '@going/shared-infrastructure';
 @Injectable()
 export class MongoDriverProfileRepository implements IDriverProfileRepository {
   constructor(
-    @InjectModel('DriverProfile') private profileModel: Model<DriverProfileDocument>
+    @InjectModel('DriverProfile')
+    private profileModel: Model<DriverProfileDocument>
   ) {}
 
   async create(profile: any): Promise<any> {

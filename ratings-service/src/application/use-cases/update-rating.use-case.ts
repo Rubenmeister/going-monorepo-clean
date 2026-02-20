@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
-} from '@going/shared-infrastructure';
+} from '../../domain/ports';
 
 /**
  * Update Rating Use Case

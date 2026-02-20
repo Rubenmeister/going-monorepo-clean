@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IRatingRepository } from '@going/shared-infrastructure';
+import { IRatingRepository } from '../../domain/ports';
 
 /**
  * List Ratings Use Case
