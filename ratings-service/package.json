@@ -1,0 +1,17 @@
+{
+  "name": "ratings-service",
+  "version": "1.0.0",
+  "description": "Ratings and reviews microservice",
+  "main": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "build": "webpack-cli build",
+    "dev": "ts-node src/main.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
