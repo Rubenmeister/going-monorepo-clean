@@ -1,0 +1,135 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction" />
+
+# Going Platform — Shared UI Component Library
+
+Welcome to the **Going Platform Component Library** — the single source of truth for all UI components across the Going monorepo.
+
+## What's in this library?
+
+All apps in the monorepo (`frontend-webapp`, `admin-dashboard`, and any future apps) import components from this shared library.
+
+```tsx
+import {
+  Button, Card, CardHeader, CardBody, CardFooter,
+  Input, Textarea, Select,
+  Alert, Badge,
+  Modal, ModalFooter,
+  Loading, EmptyState, ErrorState,
+} from '@going-monorepo-clean/shared-ui';
+```
+
+---
+
+## Component Categories
+
+### UI Components
+
+| Component | Description | Variants |
+|-----------|-------------|----------|
+| **Button** | Interactive CTA element | primary, secondary, danger, success, ghost |
+| **Card** | Content container | With/without header, body, footer |
+| **Input** | Text form field | Default, error, disabled, required |
+| **Textarea** | Multi-line text input | With label, error, helper |
+| **Select** | Dropdown selector | With label, error, helper |
+| **Alert** | Contextual notification | success, error, warning, info |
+| **Badge** | Status label | primary, secondary, success, warning, error, info |
+| **Modal** | Dialog overlay | With/without footer |
+
+### Common Components
+
+| Component | Description |
+|-----------|-------------|
+| **Loading** | Loading spinner with optional message |
+| **EmptyState** | No-data display with action |
+| **ErrorState** | Error display with retry action |
+
+---
+
+## Design Principles
+
+### 1. Single Source of Truth
+Every component lives in `libs/shared/ui`. Updates to components automatically propagate to all applications.
+
+### 2. Type Safety
+All components are fully typed with TypeScript. Props are documented with JSDoc.
+
+### 3. Tailwind CSS
+Components use Tailwind CSS utility classes. The Going design system colors and spacing are pre-configured.
+
+### 4. Controlled Components
+All components are purely presentational — they receive state via props and emit events via callbacks.
+
+### 5. Accessibility
+Components include proper ARIA attributes, keyboard navigation support, and semantic HTML.
+
+---
+
+## Quick Start
+
+```tsx
+// 1. Import the component
+import { Button, Card, CardBody, Alert } from '@going-monorepo-clean/shared-ui';
+
+// 2. Use in your component
+export function BookingCard() {
+  return (
+    <Card>
+      <CardBody>
+        <Alert type="success">Driver found in 2 minutes</Alert>
+        <Button variant="primary" fullWidth>
+          Confirm Booking
+        </Button>
+      </CardBody>
+    </Card>
+  );
+}
+```
+
+---
+
+## File Structure
+
+```
+libs/shared/ui/src/
+├── index.ts           # Main library export
+├── ui/                # Presentational components
+│   ├── Button.tsx
+│   ├── Card.tsx
+│   ├── Input.tsx
+│   ├── Alert.tsx
+│   ├── Badge.tsx
+│   ├── Modal.tsx
+│   └── index.ts
+├── common/            # Utility components
+│   ├── Loading.tsx
+│   ├── EmptyState.tsx
+│   ├── ErrorState.tsx
+│   └── index.ts
+└── stories/           # Storybook documentation
+    ├── Introduction.mdx
+    ├── Button.stories.tsx
+    ├── Card.stories.tsx
+    ├── Input.stories.tsx
+    ├── Alert.stories.tsx
+    ├── Badge.stories.tsx
+    ├── Modal.stories.tsx
+    ├── Loading.stories.tsx
+    ├── EmptyState.stories.tsx
+    └── ErrorState.stories.tsx
+```
+
+---
+
+## Contributing
+
+When adding a new component:
+1. Create the component in `libs/shared/ui/src/ui/` or `libs/shared/ui/src/common/`
+2. Export it from the appropriate `index.ts`
+3. Export it from the main `libs/shared/ui/src/index.ts`
+4. Create a `.stories.tsx` file documenting all variants
+
+---
+
+*Built with ❤️ for the Going Platform monorepo*
