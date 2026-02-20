@@ -31,9 +31,8 @@ export class CorporateAuthService implements ICorporateAuthService {
   private readonly logger = new Logger(CorporateAuthService.name);
 
   constructor(
-    private jwtService: JwtService
-  ) // private mongoService: MongoService, // Will be injected
-  // private mfaService: IMFAService, // Will be injected
+    private jwtService: JwtService // private mongoService: MongoService, // Will be injected
+  ) // private mfaService: IMFAService, // Will be injected
   // private ssoConfigService: SSOConfigService, // Will be injected
   {}
 
@@ -60,10 +59,14 @@ export class CorporateAuthService implements ICorporateAuthService {
         mfaEnabled: false,
       };
 
+      // Include companyId in JWT for multi-tenant isolation
+      // TODO: Get companyId from user lookup or request parameter
       const accessToken = this.jwtService.sign({
         userId: mockUser.userId,
+        companyId: 'company-default', // Placeholder - should come from user context
         email: mockUser.email,
         role: mockUser.role,
+        ssoProvider: 'none',
       });
 
       return {
@@ -144,6 +147,7 @@ export class CorporateAuthService implements ICorporateAuthService {
         companyId,
         email: mockUser.email,
         role: mockUser.role,
+        ssoProvider: provider,
       });
 
       return {
@@ -189,6 +193,7 @@ export class CorporateAuthService implements ICorporateAuthService {
         companyId,
         email: mockUser.email,
         role: mockUser.role,
+        ssoProvider: 'saml',
       });
 
       return {

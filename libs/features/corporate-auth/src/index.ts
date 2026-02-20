@@ -9,3 +9,5 @@ export * from './lib/services/token.service';
 export * from './lib/services/corporate-auth.service';
 export * from './lib/services/mfa.service';
 export * from './lib/services/corporate-user.service';
+export * from './lib/strategies/corporate-jwt.strategy';
+export * from './lib/guards/corporate-jwt-auth.guard';
