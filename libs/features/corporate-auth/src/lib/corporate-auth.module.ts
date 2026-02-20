@@ -6,6 +6,8 @@ import { AuditLogService } from './services/audit-log.service';
 import { RbacService } from './services/rbac.service';
 import { TokenService } from './services/token.service';
 import { CorporateUserService } from './services/corporate-user.service';
+import { CorporateJwtStrategy } from './strategies/corporate-jwt.strategy';
+import { CorporateJwtAuthGuard } from './guards/corporate-jwt-auth.guard';
 
 /**
  * Corporate Authentication Module
@@ -32,7 +34,14 @@ import { CorporateUserService } from './services/corporate-user.service';
       }),
     }),
   ],
-  providers: [AuditLogService, RbacService, TokenService, CorporateUserService],
+  providers: [
+    AuditLogService,
+    RbacService,
+    TokenService,
+    CorporateUserService,
+    CorporateJwtStrategy,
+    CorporateJwtAuthGuard,
+  ],
   exports: [
     PassportModule,
     JwtModule,
@@ -40,6 +49,8 @@ import { CorporateUserService } from './services/corporate-user.service';
     RbacService,
     TokenService,
     CorporateUserService,
+    CorporateJwtStrategy,
+    CorporateJwtAuthGuard,
   ],
 })
 export class CorporateAuthModule {}
