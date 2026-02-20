@@ -1,0 +1,147 @@
+/**
+ * NotificationDrawer Styles
+ */
+
+.notification-drawer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.notification-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out;
+  pointer-events: auto;
+  border-left: 4px solid #4299E1;
+}
+
+.notification-toast.priority-urgent {
+  border-left-color: #F56565;
+  background: #FFF5F5;
+}
+
+.notification-toast.priority-high {
+  border-left-color: #ED8936;
+  background: #FFFAF0;
+}
+
+.notification-toast.priority-normal {
+  border-left-color: #4299E1;
+  background: #EBF8FF;
+}
+
+.notification-toast.priority-low {
+  border-left-color: #48BB78;
+  background: #F0FFF4;
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: #4299E1;
+}
+
+.notification-toast.priority-urgent .toast-icon {
+  color: #F56565;
+}
+
+.notification-toast.priority-high .toast-icon {
+  color: #ED8936;
+}
+
+.notification-toast.priority-low .toast-icon {
+  color: #48BB78;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A202C;
+}
+
+.toast-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #4A5568;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.toast-dismiss {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #A0AEC0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  opacity: 0.6;
+}
+
+.toast-dismiss:hover {
+  color: #4A5568;
+  opacity: 1;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .notification-drawer {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .notification-toast {
+    width: 100%;
+  }
+}
