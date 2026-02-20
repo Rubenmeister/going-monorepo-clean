@@ -17,3 +17,7 @@ export { chatService } from './chat';
 export type { SendMessageRequest } from './chat';
 
 export { wsService } from './websocket';
+
+export { paymentService } from './payment';
+
+export { ratingService } from './rating';
