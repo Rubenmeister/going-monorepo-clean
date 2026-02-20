@@ -1,0 +1,274 @@
+/**
+ * NotificationCenter Styles
+ */
+
+.notification-center {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F7FAFC;
+}
+
+.notification-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.notification-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1A202C;
+}
+
+.notification-title svg {
+  color: #4299E1;
+}
+
+.unread-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: #F56565;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mark-all-read-btn {
+  padding: 8px 12px;
+  background: #4299E1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.mark-all-read-btn:hover {
+  background: #3182CE;
+}
+
+.mark-all-read-btn:disabled {
+  background: #CBD5E0;
+  cursor: not-allowed;
+}
+
+.loading,
+.error,
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #718096;
+  text-align: center;
+  flex: 1;
+}
+
+.empty-state {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty-state svg {
+  color: #CBD5E0;
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+.error {
+  background: #FFF5F5;
+  color: #C53030;
+  border: 1px solid #FED7D7;
+  margin: 12px;
+  border-radius: 4px;
+}
+
+.notification-list {
+  flex: 1;
+  overflow-y: auto;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #EDF2F7;
+  border-left: 4px solid #4299E1;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notification-item:hover {
+  background: #F7FAFC;
+}
+
+.notification-item.read {
+  opacity: 0.75;
+  background: #F7FAFC;
+}
+
+.notification-status {
+  display: flex;
+  align-items: flex-start;
+  font-size: 18px;
+  color: #4299E1;
+  min-width: 20px;
+  padding-top: 2px;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.notification-header-row h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A202C;
+  flex: 1;
+}
+
+.notification-type {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #E6FFFA;
+  color: #234E52;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.notification-message {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #4A5568;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notification-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #A0AEC0;
+}
+
+.notification-footer time {
+  white-space: nowrap;
+}
+
+.action-label {
+  color: #4299E1;
+  font-weight: 500;
+}
+
+.read-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #4299E1;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.read-btn:hover {
+  color: #3182CE;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #EDF2F7;
+  font-size: 13px;
+  color: #718096;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  background: #EDF2F7;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #E2E8F0;
+}
+
+.pagination button:disabled {
+  background: #EDF2F7;
+  color: #CBD5E0;
+  cursor: not-allowed;
+}
+
+/* Scrollbar styling */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #CBD5E0;
+  border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #A0AEC0;
+}
