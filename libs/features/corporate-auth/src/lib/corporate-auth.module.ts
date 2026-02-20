@@ -5,10 +5,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuditLogService } from './services/audit-log.service';
 import { RbacService } from './services/rbac.service';
 import { TokenService } from './services/token.service';
+import { CorporateUserService } from './services/corporate-user.service';
 
 /**
  * Corporate Authentication Module
- * Provides SSO, RBAC, MFA, and Audit Logging for B2B portal
+ * Provides SSO, RBAC, MFA, Audit Logging, and User Management for B2B portal
+ *
+ * SECURITY: This module implements:
+ * - Mandatory RBAC with database-backed permission checks
+ * - Complete audit logging of all access and role changes
+ * - User status validation (active/suspended/inactive)
+ * - Company-scoped user isolation
  */
 @Module({
   imports: [
@@ -25,13 +32,14 @@ import { TokenService } from './services/token.service';
       }),
     }),
   ],
-  providers: [AuditLogService, RbacService, TokenService],
+  providers: [AuditLogService, RbacService, TokenService, CorporateUserService],
   exports: [
     PassportModule,
     JwtModule,
     AuditLogService,
     RbacService,
     TokenService,
+    CorporateUserService,
   ],
 })
 export class CorporateAuthModule {}

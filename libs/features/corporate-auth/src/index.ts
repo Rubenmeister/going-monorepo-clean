@@ -8,3 +8,4 @@ export * from './lib/services/rbac.service';
 export * from './lib/services/token.service';
 export * from './lib/services/corporate-auth.service';
 export * from './lib/services/mfa.service';
+export * from './lib/services/corporate-user.service';
