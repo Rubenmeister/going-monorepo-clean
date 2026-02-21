@@ -172,6 +172,135 @@ services:
     networks:
       - going_network
 
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+        SERVICE_PORT: 3000
+    container_name: going-api-gateway
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      USER_AUTH_SERVICE_URL: http://user-auth-service:3001
+      BOOKING_SERVICE_URL: http://booking-service:3002
+      TRANSPORT_SERVICE_URL: http://transport-service:3003
+      PAYMENT_SERVICE_URL: http://payment-service:3004
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:3012
+      TRACKING_SERVICE_URL: http://tracking-service:3011
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-auth-service
+    networks:
+      - going_network
+
+  # User Auth Service
+  user-auth-service:
+    build:
+      context: .
+      dockerfile: user-auth-service/Dockerfile
+      args:
+        SERVICE_NAME: user-auth-service
+        SERVICE_PORT: 3001
+    container_name: going-user-auth
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      USER_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    ports:
+      - "3001:3001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Booking Service
+  booking-service:
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+      args:
+        SERVICE_NAME: booking-service
+        SERVICE_PORT: 3002
+    container_name: going-booking
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      BOOKING_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Tracking Service
+  tracking-service:
+    build:
+      context: .
+      dockerfile: tracking-service/Dockerfile
+      args:
+        SERVICE_NAME: tracking-service
+        SERVICE_PORT: 3011
+    container_name: going-tracking
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3011
+      MONGO_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3011:3011"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Notifications Service
+  notifications-service:
+    build:
+      context: .
+      dockerfile: notifications-service/Dockerfile
+      args:
+        SERVICE_NAME: notifications-service
+        SERVICE_PORT: 3012
+    container_name: going-notifications
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3012
+      NOTIFICATION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3012:3012"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
 volumes:
   mongodb_data:
     driver: local

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TrackingController } from './api/tracking.controller';
+import { HealthController } from './api/health.controller';
 import { TrackingGateway } from './api/tracking.gateway';
 import { CorporateAuditController } from './api/corporate-audit.controller';
 import { CorporateTrackingModule } from './api/corporate-tracking.module';
@@ -18,7 +19,7 @@ import { CorporateAuthModule } from '@going-monorepo-clean/features-corporate-au
     CorporateAuthModule,
     CorporateTrackingModule,
   ],
-  controllers: [TrackingController, CorporateAuditController],
+  controllers: [TrackingController, CorporateAuditController, HealthController],
   providers: [TrackingGateway, UpdateLocationUseCase, GetActiveDriversUseCase],
 })
 export class AppModule {}

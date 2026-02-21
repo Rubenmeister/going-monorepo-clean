@@ -1,17 +1,31 @@
 import React from 'react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-export const metadata = {
-  title: 'Blog Post - Going Platform',
-  description: 'Read the latest article from Going Platform blog.',
-};
+interface BlogPostPageProps {
+  params: Promise<{ slug: string }>;
+}
 
-export default function BlogPostPage() {
+export async function generateMetadata({ params }: BlogPostPageProps) {
+  const { slug } = await params;
+  return {
+    title: `${slug.replace(/-/g, ' ')} - Going Platform Blog`,
+    description: 'Read the latest article from Going Platform blog.',
+  };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params;
+
+  if (!slug) {
+    notFound();
+  }
+
   const post = {
-    title: 'Top 10 Tips for Safe Driving on Going Platform',
-    author: 'Maria Santos',
-    date: '2026-02-15',
-    readTime: 8,
+    title: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    author: 'Going Editorial Team',
+    date: new Date().toISOString().split('T')[0],
+    readTime: 5,
   };
 
   return (
