@@ -1,0 +1,20 @@
+{
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "button": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "close": "Close",
+    "ok": "OK"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email",
+    "minLength": "Minimum {{count}} characters"
+  }
+}

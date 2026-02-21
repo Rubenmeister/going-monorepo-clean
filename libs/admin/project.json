@@ -1,0 +1,11 @@
+{
+  "name": "admin",
+  "sourceRoot": "libs/admin/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:admin"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
