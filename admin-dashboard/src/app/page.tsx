@@ -25,7 +25,7 @@ export default function DashboardPage() {
   }
 
   // 2. Comprobación de Rol (La Seguridad del Dashboard)
-  if (!auth.user.isAdmin()) {
+  if (!auth.user.isAdmin?.()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <ErrorState

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRideStore, type Location, type Ride } from '@/app/stores/rideStore';
+import { useRideStore, type Location, type Ride } from '@/stores/rideStore';
 import { LocationSelector } from './LocationSelector';
 
 interface RideRequestFormProps {
@@ -23,14 +23,17 @@ export function RideRequestForm({ onRideCreated }: RideRequestFormProps) {
     setError,
   } = useRideStore();
 
-  const [selectedRideType, setSelectedRideType] = useState<'economy' | 'comfort' | 'premium'>('economy');
+  const [selectedRideType, setSelectedRideType] = useState<
+    'economy' | 'comfort' | 'premium'
+  >('economy');
 
   // Calculate fare based on distance
   const calculateFare = (pickup: Location, dropoff: Location) => {
-    const distance = Math.sqrt(
-      Math.pow(dropoff.lat - pickup.lat, 2) +
-        Math.pow(dropoff.lon - pickup.lon, 2)
-    ) * 111; // Rough conversion to km
+    const distance =
+      Math.sqrt(
+        Math.pow(dropoff.lat - pickup.lat, 2) +
+          Math.pow(dropoff.lon - pickup.lon, 2)
+      ) * 111; // Rough conversion to km
 
     const baseFare = 2.5;
     const perKm = 0.5;
@@ -82,15 +85,17 @@ export function RideRequestForm({ onRideCreated }: RideRequestFormProps) {
         pickup: pickupLocation,
         dropoff: dropoffLocation,
         estimatedFare,
-        distance: Math.sqrt(
-          Math.pow(dropoffLocation.lat - pickupLocation.lat, 2) +
-            Math.pow(dropoffLocation.lon - pickupLocation.lon, 2)
-        ) * 111,
-        duration: Math.round(
-          (Math.sqrt(
+        distance:
+          Math.sqrt(
             Math.pow(dropoffLocation.lat - pickupLocation.lat, 2) +
               Math.pow(dropoffLocation.lon - pickupLocation.lon, 2)
-          ) * 111) *
+          ) * 111,
+        duration: Math.round(
+          Math.sqrt(
+            Math.pow(dropoffLocation.lat - pickupLocation.lat, 2) +
+              Math.pow(dropoffLocation.lon - pickupLocation.lon, 2)
+          ) *
+            111 *
             2.5
         ),
         status: 'pending',
@@ -176,8 +181,14 @@ export function RideRequestForm({ onRideCreated }: RideRequestFormProps) {
                     <p>
                       {Math.round(
                         Math.sqrt(
-                          Math.pow(dropoffLocation.lat - pickupLocation.lat, 2) +
-                            Math.pow(dropoffLocation.lon - pickupLocation.lon, 2)
+                          Math.pow(
+                            dropoffLocation.lat - pickupLocation.lat,
+                            2
+                          ) +
+                            Math.pow(
+                              dropoffLocation.lon - pickupLocation.lon,
+                              2
+                            )
                         ) * 111
                       )}{' '}
                       km
@@ -185,10 +196,17 @@ export function RideRequestForm({ onRideCreated }: RideRequestFormProps) {
                     <p>
                       ~
                       {Math.round(
-                        (Math.sqrt(
-                          Math.pow(dropoffLocation.lat - pickupLocation.lat, 2) +
-                            Math.pow(dropoffLocation.lon - pickupLocation.lon, 2)
-                        ) * 111) *
+                        Math.sqrt(
+                          Math.pow(
+                            dropoffLocation.lat - pickupLocation.lat,
+                            2
+                          ) +
+                            Math.pow(
+                              dropoffLocation.lon - pickupLocation.lon,
+                              2
+                            )
+                        ) *
+                          111 *
                           2.5
                       )}{' '}
                       min

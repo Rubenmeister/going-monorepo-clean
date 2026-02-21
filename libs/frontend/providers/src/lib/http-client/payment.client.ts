@@ -21,7 +21,14 @@ export class PaymentClient {
   async requestPaymentIntent(
     data: CreatePaymentIntentRequest
   ): Promise<PaymentIntent> {
-    return httpClient.post<PaymentIntent>('/payments/intent', data);
+    const result = await httpClient.post<PaymentIntent>(
+      '/payments/intent',
+      data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

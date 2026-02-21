@@ -1,6 +1,6 @@
 'use client';
 
-import { useRideStore } from '@/app/stores/rideStore';
+import { useRideStore } from '@/stores/rideStore';
 
 export function TrackingMap() {
   const { activeRide } = useRideStore();
@@ -34,31 +34,24 @@ export function TrackingMap() {
             height="40"
             patternUnits="userSpaceOnUse"
           >
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e0e7ff" strokeWidth="0.5" />
+            <path
+              d="M 40 0 L 0 0 0 40"
+              fill="none"
+              stroke="#e0e7ff"
+              strokeWidth="0.5"
+            />
           </pattern>
         </defs>
         <rect width="400" height="300" fill="url(#grid)" />
 
         {/* Pickup location */}
-        <circle
-          cx="50"
-          cy="80"
-          r="8"
-          fill="#10b981"
-          opacity="0.8"
-        />
+        <circle cx="50" cy="80" r="8" fill="#10b981" opacity="0.8" />
         <text x="65" y="85" fontSize="12" fill="#1f2937">
           Pickup
         </text>
 
         {/* Dropoff location */}
-        <circle
-          cx="350"
-          cy="220"
-          r="8"
-          fill="#ef4444"
-          opacity="0.8"
-        />
+        <circle cx="350" cy="220" r="8" fill="#ef4444" opacity="0.8" />
         <text x="280" y="225" fontSize="12" fill="#1f2937">
           Dropoff
         </text>
@@ -76,13 +69,7 @@ export function TrackingMap() {
         />
 
         {/* Driver location (animated) */}
-        <circle
-          cx="200"
-          cy="150"
-          r="10"
-          fill="#ff6b35"
-          opacity="0.9"
-        />
+        <circle cx="200" cy="150" r="10" fill="#ff6b35" opacity="0.9" />
         <circle
           cx="200"
           cy="150"
@@ -117,7 +104,9 @@ export function TrackingMap() {
         <p className="text-xs font-semibold text-gray-700">
           Distance: {activeRide.distance.toFixed(1)} km
         </p>
-        <p className="text-xs text-gray-600">Duration: ~{activeRide.duration} min</p>
+        <p className="text-xs text-gray-600">
+          Duration: ~{activeRide.duration} min
+        </p>
       </div>
 
       <div data-testid="live-tracking-map" className="hidden">

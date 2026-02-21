@@ -1,12 +1,21 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 
 // --- Auth Types ---
 export interface AuthUser {
   id: string;
   firstName: string;
+  lastName?: string;
+  email?: string;
   roles: string[];
+  isAdmin?: () => boolean;
 }
 
 export interface AuthState {
@@ -22,7 +31,9 @@ const AUTH_TOKEN_KEY = 'authToken';
 const AuthContext = createContext<AuthState | null>(null);
 
 // --- AuthProvider Component ---
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +87,7 @@ export const useAuth = (): AuthState => {
 export const loginUser = async (
   credentials: { email: string; password: string },
   setUser: React.Dispatch<React.SetStateAction<AuthUser | null>>,
-  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
 ) => {
   try {
     const response = await fetch('/api/auth/login', {

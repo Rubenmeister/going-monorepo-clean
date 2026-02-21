@@ -38,11 +38,25 @@ export interface RegisterResponse {
 
 export class AuthClient {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    return httpClient.post<LoginResponse>('/auth/login', credentials);
+    const result = await httpClient.post<LoginResponse>(
+      '/auth/login',
+      credentials
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async register(data: RegisterRequest): Promise<RegisterResponse> {
-    return httpClient.post<RegisterResponse>('/auth/register', data);
+    const result = await httpClient.post<RegisterResponse>(
+      '/auth/register',
+      data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

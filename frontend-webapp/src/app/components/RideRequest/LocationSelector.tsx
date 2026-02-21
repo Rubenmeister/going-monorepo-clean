@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Location } from '@/app/stores/rideStore';
+import { Location } from '@/stores/rideStore';
 
 interface LocationSelectorProps {
   type: 'pickup' | 'dropoff';
@@ -22,7 +22,7 @@ export function LocationSelector({
 
   // Mock location suggestions
   const mockLocations: Record<string, Location[]> = {
-    'times': [
+    times: [
       {
         address: 'Times Square, New York',
         lat: 40.758,
@@ -30,7 +30,7 @@ export function LocationSelector({
         city: 'New York',
       },
     ],
-    'central': [
+    central: [
       {
         address: 'Central Park, New York',
         lat: 40.7829,
@@ -38,7 +38,7 @@ export function LocationSelector({
         city: 'New York',
       },
     ],
-    'empire': [
+    empire: [
       {
         address: 'Empire State Building, New York',
         lat: 40.7484,
@@ -55,9 +55,7 @@ export function LocationSelector({
     // Find matching suggestions
     const matches = Object.values(mockLocations)
       .flat()
-      .filter((loc) =>
-        loc.address.toLowerCase().includes(value.toLowerCase())
-      );
+      .filter((loc) => loc.address.toLowerCase().includes(value.toLowerCase()));
 
     setSuggestions(matches);
     setShowSuggestions(true);

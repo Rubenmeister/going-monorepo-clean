@@ -29,25 +29,45 @@ export interface Booking {
 
 export class BookingClient {
   async createBooking(data: CreateBookingRequest): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/bookings', data);
+    const result = await httpClient.post<{ id: string }>('/bookings', data);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async getBookingsByUser(userId: string): Promise<Booking[]> {
-    return httpClient.get<Booking[]>(`/bookings/user/${userId}`);
+    const result = await httpClient.get<Booking[]>(`/bookings/user/${userId}`);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
-  async confirmBooking(bookingId: string): Promise<{ status: string; message: string }> {
-    return httpClient.patch<{ status: string; message: string }>(
+  async confirmBooking(
+    bookingId: string
+  ): Promise<{ status: string; message: string }> {
+    const result = await httpClient.patch<{ status: string; message: string }>(
       `/bookings/${bookingId}/confirm`,
       {}
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
-  async cancelBooking(bookingId: string): Promise<{ status: string; message: string }> {
-    return httpClient.patch<{ status: string; message: string }>(
+  async cancelBooking(
+    bookingId: string
+  ): Promise<{ status: string; message: string }> {
+    const result = await httpClient.patch<{ status: string; message: string }>(
       `/bookings/${bookingId}/cancel`,
       {}
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

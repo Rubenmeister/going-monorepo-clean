@@ -46,7 +46,11 @@ export interface SearchToursQuery {
 
 export class TourClient {
   async createTour(data: CreateTourRequest): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/tours', data);
+    const result = await httpClient.post<{ id: string }>('/tours', data);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async searchTours(query: SearchToursQuery): Promise<Tour[]> {
@@ -55,9 +59,13 @@ export class TourClient {
     if (query.category) params.append('category', query.category);
     if (query.maxPrice) params.append('maxPrice', query.maxPrice.toString());
 
-    return httpClient.get<Tour[]>(
+    const result = await httpClient.get<Tour[]>(
       `/tours/search?${params.toString()}`
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

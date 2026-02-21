@@ -1,6 +1,6 @@
 'use client';
 
-import { useRideStore } from '@/app/stores/rideStore';
+import { useRideStore } from '@/stores/rideStore';
 
 export function RideStatus() {
   const { activeRide } = useRideStore();
@@ -42,11 +42,13 @@ export function RideStatus() {
     },
   };
 
-  const config = statusConfig[activeRide.status];
+  const config = statusConfig[activeRide.status as keyof typeof statusConfig];
 
   return (
     <div
-      className={`rounded-lg p-4 ${config.color} border-2 ${config.textColor.replace('text', 'border')}`}
+      className={`rounded-lg p-4 ${
+        config.color
+      } border-2 ${config.textColor.replace('text', 'border')}`}
       data-testid="ride-status"
     >
       <div className="flex items-center justify-between">
@@ -99,7 +101,9 @@ export function RideStatus() {
               </div>
             </div>
             <div className="text-right" data-testid="vehicle-info">
-              <p className="text-sm font-medium">{activeRide.driverInfo.vehicle}</p>
+              <p className="text-sm font-medium">
+                {activeRide.driverInfo.vehicle}
+              </p>
               <p className="text-xs text-gray-600">
                 {activeRide.driverInfo.licensePlate}
               </p>

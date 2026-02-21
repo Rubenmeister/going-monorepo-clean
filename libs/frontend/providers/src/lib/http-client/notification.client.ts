@@ -17,14 +17,27 @@ export interface Notification {
 }
 
 export class NotificationClient {
-  async sendNotification(data: CreateNotificationRequest): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/notifications/send', data);
+  async sendNotification(
+    data: CreateNotificationRequest
+  ): Promise<{ id: string }> {
+    const result = await httpClient.post<{ id: string }>(
+      '/notifications/send',
+      data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async getNotificationsByUser(userId: string): Promise<Notification[]> {
-    return httpClient.get<Notification[]>(
+    const result = await httpClient.get<Notification[]>(
       `/notifications/user/${userId}`
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

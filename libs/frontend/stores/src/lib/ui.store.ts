@@ -46,7 +46,9 @@ export interface UIState {
   isModalOpen: (id: string) => boolean;
 
   // Notification actions
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void;
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'timestamp'>
+  ) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
 
@@ -101,13 +103,10 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   closeAllModals: () => {
     set((state) => {
-      const allClosed = Object.keys(state.modals).reduce(
-        (acc, key) => {
-          acc[key] = { isOpen: false };
-          return acc;
-        },
-        {} as Record<string, ModalState>
-      );
+      const allClosed = Object.keys(state.modals).reduce((acc, key) => {
+        acc[key] = { isOpen: false };
+        return acc;
+      }, {} as Record<string, ModalState>);
       return { modals: allClosed };
     });
   },
@@ -132,7 +131,7 @@ export const useUIStore = create<UIState>((set, get) => ({
     }));
 
     // Auto-dismiss notification after duration
-    if (fullNotification.duration > 0) {
+    if (fullNotification.duration != null && fullNotification.duration > 0) {
       setTimeout(() => {
         get().removeNotification(id);
       }, fullNotification.duration);

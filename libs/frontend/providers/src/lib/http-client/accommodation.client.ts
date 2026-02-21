@@ -46,7 +46,14 @@ export class AccommodationClient {
   async createAccommodation(
     data: CreateAccommodationRequest
   ): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/accommodations', data);
+    const result = await httpClient.post<{ id: string }>(
+      '/accommodations',
+      data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async searchAccommodations(
@@ -57,9 +64,13 @@ export class AccommodationClient {
     if (query.country) params.append('country', query.country);
     if (query.capacity) params.append('capacity', query.capacity.toString());
 
-    return httpClient.get<Accommodation[]>(
+    const result = await httpClient.get<Accommodation[]>(
       `/accommodations/search?${params.toString()}`
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

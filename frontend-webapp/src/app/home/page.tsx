@@ -13,6 +13,7 @@ const Colors = {
 };
 
 const Spacing = {
+  2: '8px',
   4: '16px',
   6: '24px',
   8: '32px',
@@ -67,20 +68,32 @@ export default function HomePage() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }}
       >
-        <div style={{ fontSize: '28px', fontWeight: 'bold', color: Colors.primary }}>
+        <div
+          style={{
+            fontSize: '28px',
+            fontWeight: 'bold',
+            color: Colors.primary,
+          }}
+        >
           🌍 Going
         </div>
         <div style={{ display: 'flex', gap: Spacing[4], alignItems: 'center' }}>
           {auth.user ? (
             <>
-              <span style={{ color: Colors.gray900 }}>Hola, {auth.user.firstName}</span>
+              <span style={{ color: Colors.gray900 }}>
+                Hola, {auth.user.firstName}
+              </span>
               <Button variant="outline" onClick={auth.logout} size="sm">
                 Cerrar Sesión
               </Button>
             </>
           ) : (
             <>
-              <Button variant="ghost" onClick={() => router.push('/login')} size="sm">
+              <Button
+                variant="ghost"
+                onClick={() => router.push('/login')}
+                size="sm"
+              >
                 Iniciar Sesión
               </Button>
               <Button onClick={() => router.push('/register')} size="sm">
@@ -160,7 +173,8 @@ export default function HomePage() {
               textShadow: '0 1px 5px rgba(0,0,0,0.3)',
             }}
           >
-            Viaja, explora experiencias, alójate en lugares increíbles. Todo en un lugar.
+            Viaja, explora experiencias, alójate en lugares increíbles. Todo en
+            un lugar.
           </p>
         </div>
 
@@ -401,10 +415,18 @@ export default function HomePage() {
               >
                 {service.icon}
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: Spacing[2] }}>
+              <h3
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  marginBottom: Spacing[2],
+                }}
+              >
                 {service.title}
               </h3>
-              <p style={{ color: '#6B7280', lineHeight: 1.5 }}>{service.description}</p>
+              <p style={{ color: '#6B7280', lineHeight: 1.5 }}>
+                {service.description}
+              </p>
             </Card>
           ))}
         </div>
@@ -420,7 +442,13 @@ export default function HomePage() {
           marginTop: Spacing[12],
         }}
       >
-        <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: Spacing[4] }}>
+        <h2
+          style={{
+            fontSize: '36px',
+            fontWeight: 'bold',
+            marginBottom: Spacing[4],
+          }}
+        >
           ¿Listo para tu próxima aventura?
         </h2>
         <p style={{ fontSize: '18px', marginBottom: Spacing[8], opacity: 0.9 }}>
@@ -446,7 +474,9 @@ export default function HomePage() {
           textAlign: 'center',
         }}
       >
-        <p style={{ opacity: 0.7 }}>© 2025 Going. Todos los derechos reservados.</p>
+        <p style={{ opacity: 0.7 }}>
+          © 2025 Going. Todos los derechos reservados.
+        </p>
       </footer>
     </main>
   );
