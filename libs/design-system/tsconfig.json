@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSourceMap": true,
+    "types": ["node"]
+  },
+  "files": ["index.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
