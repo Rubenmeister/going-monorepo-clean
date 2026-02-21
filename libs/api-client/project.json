@@ -1,0 +1,11 @@
+{
+  "name": "api-client",
+  "sourceRoot": "libs/api-client/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

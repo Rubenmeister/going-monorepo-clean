@@ -1,0 +1,11 @@
+{
+  "name": "shared-theme",
+  "sourceRoot": "libs/shared/theme/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

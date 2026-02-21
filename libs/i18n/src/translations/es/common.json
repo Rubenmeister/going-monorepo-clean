@@ -1,0 +1,20 @@
+{
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "button": {
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "ok": "Aceptar"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "email": "Por favor ingrese un correo válido",
+    "minLength": "Mínimo {{count}} caracteres"
+  }
+}
