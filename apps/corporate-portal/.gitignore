@@ -1,0 +1,23 @@
+# Next.js
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+.nyc_output
+coverage
+
+# Misc
+.DS_Store
+*.log
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local
