@@ -24,10 +24,12 @@ jobs:
           # Necesario para que Nx pueda comparar los cambios
           fetch-depth: 0 
 
-      # 2. Configurar Nx (El paso más importante)
-      # Esto instala 'nx' y restaura el caché si existe
-      - name: Setup Nx (Configurar Nx)
-        uses: nx/setup-nx@v5
+      # 2. Configurar las SHAs de Nx para detección de cambios
+      - name: Set Nx SHAs (Configurar SHAs de Nx)
+        uses: nrwl/nx-set-shas@v4
+        with:
+          main-branch-name: main
+
       # 3. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
