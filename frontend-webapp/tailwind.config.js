@@ -1,56 +1,107 @@
-// const { createGlobPatternsForDependencies } = require('@nx/next/tailwind');
-
-// The above utility import will not work if you are using Next.js' --turbo.
-// Instead you will have to manually add the dependent paths to be included.
-// For example
-// ../libs/buttons/**/*.{ts,tsx,js,jsx,html}',                 <--- Adding a shared lib
-// !../libs/buttons/**/*.{stories,spec}.{ts,tsx,js,jsx,html}', <--- Skip adding spec/stories files from shared lib
-
-// If you are **not** using `--turbo` you can uncomment both lines 1 & 19.
-// A discussion of the issue can be found: https://github.com/nrwl/nx/issues/26510
-
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
-  content: [
-    './{src,pages,components,app}/**/*.{ts,tsx,js,jsx,html}',
-    '!./{src,pages,components,app}/**/*.{stories,spec}.{ts,tsx,js,jsx,html}',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Going Brand Colors — Going_Branding Guidelines_2024
-        'going-primary': '#ff4c41', // Red (dominant brand color)
-        'going-primary-dark': '#cc3c33', // Darker red for hover states
-        'going-accent': '#ffd253',  // Yellow (chromatic accent)
-        'going-black': '#000000',   // Black
-        'going-success': '#06A77D', // Green
-        'going-warning': '#F4A261', // Warning orange
+        // Primary Blue (#5B8EFF)
+        primary: '#5B8EFF',
+        'primary-50': '#F0F5FF',
+        'primary-100': '#E0EBFF',
+        'primary-200': '#C1D7FF',
+        'primary-300': '#A3C3FF',
+        'primary-400': '#7FA8FF',
+        'primary-500': '#5B8EFF',
+        'primary-600': '#4B7AE8',
+        'primary-700': '#3B66D1',
+        'primary-800': '#2B52BA',
+        'primary-900': '#1B3EA3',
+
+        // Accent Orange (#FF9A5B)
+        accent: '#FF9A5B',
+        'accent-50': '#FFF5F0',
+        'accent-100': '#FFEBE0',
+        'accent-200': '#FFD7C1',
+        'accent-300': '#FFC3A3',
+        'accent-400': '#FFAE7F',
+        'accent-500': '#FF9A5B',
+        'accent-600': '#E8854B',
+        'accent-700': '#D1703B',
+        'accent-800': '#BA5B2B',
+
+        // Semantic
+        success: '#10B981',
+        warning: '#F59E0B',
+        error: '#EF4444',
+        info: '#3B82F6',
       },
+
       fontFamily: {
-        // Going Brand Typography
-        'sans': [
-          'Nunito Sans Variable',
-          'Nunito Sans',
-          'ui-sans-serif',
-          'system-ui',
+        sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
-          'Arial',
           'sans-serif',
         ],
-        'body': [
-          'Roboto',
-          'ui-sans-serif',
-          'system-ui',
-          'Arial',
-          'sans-serif',
-        ],
+        display: ['Poppins', 'Inter', 'sans-serif'],
+        mono: ['Fira Code', 'Courier New', 'monospace'],
       },
+
+      fontSize: {
+        xs: '0.75rem',
+        sm: '0.875rem',
+        base: '1rem',
+        lg: '1.125rem',
+        xl: '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+        '4xl': '2.25rem',
+        '5xl': '3rem',
+      },
+
       spacing: {
-        'sidebar': '16rem', // 256px for sidebar
+        0: '0',
+        1: '0.25rem',
+        2: '0.5rem',
+        3: '0.75rem',
+        4: '1rem',
+        5: '1.25rem',
+        6: '1.5rem',
+        8: '2rem',
+        10: '2.5rem',
+        12: '3rem',
+        16: '4rem',
+        20: '5rem',
+        24: '6rem',
+      },
+
+      boxShadow: {
+        xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      },
+
+      borderRadius: {
+        sm: '0.25rem',
+        md: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+        '2xl': '1.5rem',
+        full: '9999px',
+      },
+
+      transitionDuration: {
+        150: '150ms',
+        200: '200ms',
+        300: '300ms',
       },
     },
   },
+
   plugins: [],
 };
