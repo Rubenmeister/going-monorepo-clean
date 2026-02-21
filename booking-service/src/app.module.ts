@@ -5,6 +5,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 
 // Importa los Controladores
 import { BookingController } from './api/booking.controller';
+import { HealthController } from './api/health.controller';
 
 // Importa los Casos de Uso
 import {
@@ -20,9 +21,7 @@ import {
     MongooseModule.forRoot(process.env.BOOKING_DB_URL), // .env
     InfrastructureModule, // Importa el módulo que provee los repositorios
   ],
-  controllers: [
-    BookingController,
-  ],
+  controllers: [BookingController, HealthController],
   providers: [
     // Registra los Casos de Uso como 'providers'
     CreateBookingUseCase,

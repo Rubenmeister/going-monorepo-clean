@@ -10,6 +10,7 @@ import { ListRatingsUseCase } from './application/use-cases/list-ratings.use-cas
 import { UpdateRatingUseCase } from './application/use-cases/update-rating.use-case';
 import { DeleteRatingUseCase } from './application/use-cases/delete-rating.use-case';
 import { RatingController } from './api/controllers/rating.controller';
+import { HealthController } from './api/health.controller';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { RatingController } from './api/controllers/rating.controller';
     UpdateRatingUseCase,
     DeleteRatingUseCase,
   ],
-  controllers: [RatingController],
+  controllers: [RatingController, HealthController],
   exports: [MongoRatingRepository, MongoDriverProfileRepository],
 })
 export class AppModule {}

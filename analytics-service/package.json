@@ -1,0 +1,12 @@
+{
+  "name": "@going-monorepo-clean/analytics-service",
+  "version": "1.0.0",
+  "description": "analytics-service for Going platform",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve analytics-service"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

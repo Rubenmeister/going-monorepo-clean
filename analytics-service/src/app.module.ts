@@ -6,6 +6,7 @@ import { DriverAnalyticsSchema } from './infrastructure/schemas/driver-analytics
 import { MongoRideAnalyticsRepository } from './infrastructure/persistence/mongo-ride-analytics.repository';
 import { MongoDriverAnalyticsRepository } from './infrastructure/persistence/mongo-driver-analytics.repository';
 import { AnalyticsController } from './api/controllers/analytics.controller';
+import { HealthController } from './api/health.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,9 @@ import { AnalyticsController } from './api/controllers/analytics.controller';
     }),
     MongooseModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI') || 'mongodb://localhost:27017/going_analytics',
+        uri:
+          configService.get<string>('MONGODB_URI') ||
+          'mongodb://localhost:27017/going_analytics',
       }),
       inject: [ConfigService],
     }),
@@ -24,7 +27,7 @@ import { AnalyticsController } from './api/controllers/analytics.controller';
     ]),
   ],
   providers: [MongoRideAnalyticsRepository, MongoDriverAnalyticsRepository],
-  controllers: [AnalyticsController],
+  controllers: [AnalyticsController, HealthController],
   exports: [MongoRideAnalyticsRepository, MongoDriverAnalyticsRepository],
 })
 export class AppModule {}

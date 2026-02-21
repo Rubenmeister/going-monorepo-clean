@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
+import { HealthController } from './api/health.controller';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -17,7 +18,7 @@ import { AccountLockoutService } from './application/account-lockout.service';
     InfrastructureModule,
     AuditModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, HealthController],
   providers: [RegisterUserUseCase, LoginUserUseCase, AccountLockoutService],
 })
 export class AppModule {}

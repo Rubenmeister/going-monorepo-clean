@@ -169,6 +169,9 @@
       "@going-monorepo-clean/domains-experience-frontend-infrastructure": [
         "libs/domains/experience-frontend/infrastructure/src/index.ts"
       ],
+      "@going-monorepo-clean/features-corporate-auth": [
+        "libs/features/corporate-auth/src/index.ts"
+      ],
       "@going-monorepo-clean/frontend-providers": [
         "libs/frontend/providers/src/index.ts"
       ],

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { TransportController } from './api/transport.controller';
+import { HealthController } from './api/health.controller';
 import {
   RequestTripUseCase,
   AcceptTripUseCase,
@@ -14,12 +15,7 @@ import {
     MongooseModule.forRoot(process.env.TRANSPORT_DB_URL), // .env
     InfrastructureModule,
   ],
-  controllers: [
-    TransportController,
-  ],
-  providers: [
-    RequestTripUseCase,
-    AcceptTripUseCase,
-  ],
+  controllers: [TransportController, HealthController],
+  providers: [RequestTripUseCase, AcceptTripUseCase],
 })
 export class AppModule {}
