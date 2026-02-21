@@ -85,12 +85,9 @@ export class HttpClient {
         return new NetworkError(error.message);
       }
 
-      return new ApiError(
-        error.message,
-        'UNKNOWN_ERROR' as any,
-        0,
-        { details: error.message }
-      );
+      return new ApiError(error.message, 'UNKNOWN_ERROR' as any, 0, {
+        details: { message: error.message },
+      });
     }
 
     return new NetworkError('Unknown network error');

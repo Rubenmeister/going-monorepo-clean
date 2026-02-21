@@ -173,7 +173,8 @@ export const useMonorepoApp = () => {
         },
         search: async (query: any) => {
           try {
-            const accommodations = await accommodationClient.searchAccommodations(query);
+            const accommodations =
+              await accommodationClient.searchAccommodations(query);
             return accommodations;
           } catch (error) {
             console.error('[accommodation.search] Error:', error);
@@ -246,7 +247,11 @@ export const useMonorepoApp = () => {
           }
         },
         connectWebSocket: (onLocationUpdate?: (location: any) => void) => {
-          return trackingClient.connectWebSocket(onLocationUpdate);
+          const promise = trackingClient.connectWebSocket();
+          if (onLocationUpdate) {
+            trackingClient.onLocationUpdate(onLocationUpdate);
+          }
+          return promise;
         },
       },
 
@@ -262,7 +267,8 @@ export const useMonorepoApp = () => {
         },
         getByUser: async (userId: string) => {
           try {
-            const notifications = await notificationClient.getNotificationsByUser(userId);
+            const notifications =
+              await notificationClient.getNotificationsByUser(userId);
             return notifications;
           } catch (error) {
             console.error('[notifications.getByUser] Error:', error);

@@ -1,75 +1,103 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
-import { useRideStore } from '../stores/rideStore'
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useRideStore } from '../stores/rideStore';
 
 // Dynamic imports to avoid SSR issues
-const RideRequestForm = dynamic(() => import('../components/RideRequest/RideRequestForm'), {
-  ssr: false,
-  loading: () => <div className="animate-pulse bg-gray-100 rounded-xl h-96" />,
-})
+const RideRequestForm = dynamic(
+  () =>
+    import('../components/RideRequest/RideRequestForm').then((m) => ({
+      default: m.RideRequestForm,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse bg-gray-100 rounded-xl h-96" />
+    ),
+  }
+);
 
 const TrackingMap = dynamic(
-  () => import('../components/RideTracking/TrackingMap').then((m) => ({ default: m.TrackingMap || m.default })),
-  { ssr: false, loading: () => <div className="animate-pulse bg-gray-100 rounded-xl h-64" /> }
-)
+  () =>
+    import('../components/RideTracking/TrackingMap').then((m) => ({
+      default: m.TrackingMap,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse bg-gray-100 rounded-xl h-64" />
+    ),
+  }
+);
 
 const RideStatus = dynamic(
-  () => import('../components/RideTracking/RideStatus').then((m) => ({ default: m.RideStatus || m.default })),
+  () =>
+    import('../components/RideTracking/RideStatus').then((m) => ({
+      default: m.RideStatus,
+    })),
   { ssr: false }
-)
+);
 
 const PaymentForm = dynamic(
-  () => import('../components/Payment/PaymentForm').then((m) => ({ default: m.PaymentForm || m.default })),
+  () =>
+    import('../components/Payment/PaymentForm').then((m) => ({
+      default: m.PaymentForm || m.default,
+    })),
   { ssr: false }
-)
+);
 
 const RatingForm = dynamic(
-  () => import('../components/Rating/RatingForm').then((m) => ({ default: m.RatingForm || m.default })),
+  () =>
+    import('../components/Rating/RatingForm').then((m) => ({
+      default: m.RatingForm || m.default,
+    })),
   { ssr: false }
-)
+);
 
-const ChatInterface = dynamic(() => import('../components/Chat/ChatInterface'), { ssr: false })
+const ChatInterface = dynamic(
+  () => import('../components/Chat/ChatInterface'),
+  { ssr: false }
+);
 
-type Step = 'request' | 'tracking' | 'payment' | 'rating'
+type Step = 'request' | 'tracking' | 'payment' | 'rating';
 
 export default function RidePage() {
-  const { activeRide, clearRide } = useRideStore()
-  const [step, setStep] = useState<Step>('request')
-  const [paymentAmount, setPaymentAmount] = useState(0)
+  const { activeRide, clearRide } = useRideStore();
+  const [step, setStep] = useState<Step>('request');
+  const [paymentAmount, setPaymentAmount] = useState(0);
 
   // Move to tracking when ride is created
   useEffect(() => {
     if (activeRide && step === 'request') {
-      setPaymentAmount(activeRide.estimatedFare)
-      setStep('tracking')
+      setPaymentAmount(activeRide.estimatedFare);
+      setStep('tracking');
     }
-  }, [activeRide, step])
+  }, [activeRide, step]);
 
   // Move to payment when ride is completed
   useEffect(() => {
     if (activeRide?.status === 'completed' && step === 'tracking') {
-      setStep('payment')
+      setStep('payment');
     }
-  }, [activeRide?.status, step])
+  }, [activeRide?.status, step]);
 
   const handlePaymentComplete = () => {
-    setStep('rating')
-  }
+    setStep('rating');
+  };
 
   const handleRatingComplete = () => {
-    clearRide()
-    setStep('request')
-  }
+    clearRide();
+    setStep('request');
+  };
 
   const handleCancelRide = () => {
-    clearRide()
-    setStep('request')
-  }
+    clearRide();
+    setStep('request');
+  };
 
-  const stepOrder: Step[] = ['request', 'tracking', 'payment', 'rating']
-  const currentStepIndex = stepOrder.indexOf(step)
+  const stepOrder: Step[] = ['request', 'tracking', 'payment', 'rating'];
+  const currentStepIndex = stepOrder.indexOf(step);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -99,14 +127,18 @@ export default function RidePage() {
                 </div>
                 <span
                   className={`ml-1 text-xs ${
-                    i === currentStepIndex ? 'text-blue-600 font-medium' : 'text-gray-400'
+                    i === currentStepIndex
+                      ? 'text-blue-600 font-medium'
+                      : 'text-gray-400'
                   }`}
                 >
                   {s.label}
                 </span>
                 {i < 3 && (
                   <div
-                    className={`mx-2 h-0.5 w-6 ${i < currentStepIndex ? 'bg-green-400' : 'bg-gray-200'}`}
+                    className={`mx-2 h-0.5 w-6 ${
+                      i < currentStepIndex ? 'bg-green-400' : 'bg-gray-200'
+                    }`}
                   />
                 )}
               </div>
@@ -167,5 +199,5 @@ export default function RidePage() {
         />
       )}
     </div>
-  )
+  );
 }

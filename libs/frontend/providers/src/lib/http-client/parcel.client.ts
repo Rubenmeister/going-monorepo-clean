@@ -33,11 +33,19 @@ export interface Parcel {
 
 export class ParcelClient {
   async createParcel(data: CreateParcelRequest): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/parcels', data);
+    const result = await httpClient.post<{ id: string }>('/parcels', data);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   async getParcelsByUser(userId: string): Promise<Parcel[]> {
-    return httpClient.get<Parcel[]>(`/parcels/user/${userId}`);
+    const result = await httpClient.get<Parcel[]>(`/parcels/user/${userId}`);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

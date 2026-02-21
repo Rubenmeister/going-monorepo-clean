@@ -8,6 +8,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   hoverable?: boolean;
   shadow?: 'sm' | 'md' | 'lg' | 'none';
+  padding?: 'sm' | 'md' | 'lg' | 'none';
 }
 
 const shadowStyles = {
@@ -15,6 +16,13 @@ const shadowStyles = {
   md: 'shadow-md',
   lg: 'shadow-lg',
   none: 'shadow-none',
+};
+
+const paddingStyles = {
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-6',
+  none: 'p-0',
 };
 
 /**
@@ -29,6 +37,7 @@ export function Card({
   children,
   hoverable = false,
   shadow = 'md',
+  padding,
   className,
   ...props
 }: CardProps) {
@@ -38,6 +47,7 @@ export function Card({
         bg-white rounded-lg
         ${shadowStyles[shadow]}
         border border-gray-200
+        ${padding ? paddingStyles[padding] : ''}
         ${hoverable ? 'hover:shadow-lg transition-shadow' : ''}
         ${className || ''}
       `}

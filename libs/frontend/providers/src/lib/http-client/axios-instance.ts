@@ -19,7 +19,8 @@ function generateRequestId(): string {
  */
 export function createAxiosInstance(): AxiosInstance {
   const instance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api',
+    baseURL:
+      process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api',
     timeout: 15000, // 15 seconds
     headers: {
       'Content-Type': 'application/json',
@@ -107,16 +108,12 @@ export function createAxiosInstance(): AxiosInstance {
           } else {
             // Refresh failed, clear auth and reject
             TokenManager.clearToken();
-            const apiError = createApiError(
-              401,
-              error.response?.data,
-              {
-                endpoint: config.url,
-                method: config.method,
-                requestId,
-                details: { cause: 'Token refresh failed' },
-              }
-            );
+            const apiError = createApiError(401, error.response?.data, {
+              endpoint: config.url,
+              method: config.method,
+              requestId,
+              details: { cause: 'Token refresh failed' },
+            });
             return Promise.reject(apiError);
           }
         }
@@ -135,7 +132,7 @@ export function createAxiosInstance(): AxiosInstance {
           endpoint: config?.url,
           method: config?.method,
           requestId,
-          details: error.response?.data,
+          details: error.response?.data as Record<string, unknown> | undefined,
         }
       );
 

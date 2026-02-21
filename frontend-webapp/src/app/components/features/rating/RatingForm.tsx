@@ -183,7 +183,7 @@ function CategoryRatingsSection({
           ]
         >
       ).map(([category, config]) => (
-        <div key={category}>
+        <div key={String(category)}>
           <p className="text-xs text-gray-600 capitalize mb-2">
             {config.emoji} {config.name}
           </p>
@@ -194,7 +194,7 @@ function CategoryRatingsSection({
                 type="button"
                 onClick={() => onCategoryChange(category, star as StarRating)}
                 className="text-xl transition"
-                data-testid={`category-${category}-${star}`}
+                data-testid={`category-${String(category)}-${star}`}
               >
                 {star <= categories[category] ? '⭐' : '☆'}
               </button>

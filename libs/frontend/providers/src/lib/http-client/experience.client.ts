@@ -40,18 +40,30 @@ export interface SearchExperiencesQuery {
 }
 
 export class ExperienceClient {
-  async createExperience(data: CreateExperienceRequest): Promise<{ id: string }> {
-    return httpClient.post<{ id: string }>('/experiences', data);
+  async createExperience(
+    data: CreateExperienceRequest
+  ): Promise<{ id: string }> {
+    const result = await httpClient.post<{ id: string }>('/experiences', data);
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
-  async searchExperiences(query: SearchExperiencesQuery): Promise<Experience[]> {
+  async searchExperiences(
+    query: SearchExperiencesQuery
+  ): Promise<Experience[]> {
     const params = new URLSearchParams();
     if (query.locationCity) params.append('locationCity', query.locationCity);
     if (query.maxPrice) params.append('maxPrice', query.maxPrice.toString());
 
-    return httpClient.get<Experience[]>(
+    const result = await httpClient.get<Experience[]>(
       `/experiences/search?${params.toString()}`
     );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 }
 

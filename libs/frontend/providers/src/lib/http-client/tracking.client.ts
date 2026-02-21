@@ -1,5 +1,9 @@
 import { httpClient } from './http.client';
-import { trackingWsManager, LocationUpdate, DriverUpdate } from './tracking-websocket';
+import {
+  trackingWsManager,
+  LocationUpdate,
+  DriverUpdate,
+} from './tracking-websocket';
 
 export interface Driver {
   id: string;
@@ -18,10 +22,16 @@ export interface UpdateLocationRequest {
 
 export class TrackingClient {
   async getActiveDrivers(): Promise<Driver[]> {
-    return httpClient.get<Driver[]>('/tracking/active-drivers');
+    const result = await httpClient.get<Driver[]>('/tracking/active-drivers');
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
-  async broadcastLocation(data: UpdateLocationRequest): Promise<{ message: string }> {
+  async broadcastLocation(
+    data: UpdateLocationRequest
+  ): Promise<{ message: string }> {
     // If WebSocket is connected, use it for real-time updates
     if (trackingWsManager.isConnected()) {
       trackingWsManager.sendLocationUpdate({
@@ -35,14 +45,22 @@ export class TrackingClient {
     }
 
     // Fallback to HTTP
-    return httpClient.post<{ message: string }>('/tracking/location', data);
+    const result = await httpClient.post<{ message: string }>(
+      '/tracking/location',
+      data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
   }
 
   /**
    * Connect to WebSocket for real-time tracking
    */
   async connectWebSocket(): Promise<void> {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     await trackingWsManager.connect(token || undefined);
   }
 

@@ -143,7 +143,9 @@ describe('Authentication & Authorization Security Tests', () => {
       );
 
       // Should not throw
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & {
+        userId: string;
+      };
       expect(decoded.userId).toBe('passenger-001');
     });
 
@@ -459,7 +461,10 @@ describe('Authentication & Authorization Security Tests', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/rides/${maliciousInput}`)
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        )
         .expect(HttpStatus.BAD_REQUEST);
 
       expect(response.body.message).toContain('invalid');
@@ -470,7 +475,10 @@ describe('Authentication & Authorization Security Tests', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/rides/filter')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        )
         .send({
           passengerId: maliciousInput,
         })
@@ -484,7 +492,13 @@ describe('Authentication & Authorization Security Tests', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/ratings/submit')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'passenger-001', role: 'passenger' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign(
+            { userId: 'passenger-001', role: 'passenger' },
+            JWT_SECRET
+          )}`
+        )
         .send({
           review: xssPayload,
         })
@@ -496,7 +510,10 @@ describe('Authentication & Authorization Security Tests', () => {
     it('should sanitize output to prevent XSS', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/rides/123')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        )
         .expect(HttpStatus.OK);
 
       // Response should not contain unescaped HTML
@@ -506,7 +523,10 @@ describe('Authentication & Authorization Security Tests', () => {
     it('should enforce input type validation', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/payments/process')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'passenger-001' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'passenger-001' }, JWT_SECRET)}`
+        )
         .send({
           amount: 'not_a_number', // Should be number
           paymentMethod: 'card',
@@ -543,12 +563,16 @@ describe('Authentication & Authorization Security Tests', () => {
       const response = await request(app.getHttpServer())
         .get('/api/rides')
         .set('Origin', 'http://malicious.com')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`);
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        );
 
       // Should either block or include proper CORS headers
       expect(
         response.headers['access-control-allow-origin'] === undefined ||
-        response.headers['access-control-allow-origin'] !== 'http://malicious.com'
+          response.headers['access-control-allow-origin'] !==
+            'http://malicious.com'
       ).toBe(true);
     });
 
@@ -556,7 +580,10 @@ describe('Authentication & Authorization Security Tests', () => {
       const response = await request(app.getHttpServer())
         .get('/api/rides')
         .set('Origin', 'http://localhost:3000')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        )
         .expect(HttpStatus.OK);
 
       expect(response.headers['access-control-allow-origin']).toBeDefined();
@@ -584,7 +611,10 @@ describe('Authentication & Authorization Security Tests', () => {
     });
 
     it('should enforce rate limiting on API endpoints', async () => {
-      const token = jwt.sign({ userId: 'passenger-001', role: 'passenger' }, JWT_SECRET);
+      const token = jwt.sign(
+        { userId: 'passenger-001', role: 'passenger' },
+        JWT_SECRET
+      );
 
       for (let i = 0; i < 101; i++) {
         const response = await request(app.getHttpServer())
@@ -604,7 +634,10 @@ describe('Authentication & Authorization Security Tests', () => {
     it('should not expose sensitive data in error messages', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/payments/invalid-id')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'test' }, JWT_SECRET)}`
+        )
         .expect(HttpStatus.NOT_FOUND);
 
       // Error message should not contain DB details
@@ -623,7 +656,10 @@ describe('Authentication & Authorization Security Tests', () => {
     it('should encrypt sensitive data in transit', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/payments/process')
-        .set('Authorization', `Bearer ${jwt.sign({ userId: 'passenger-001' }, JWT_SECRET)}`)
+        .set(
+          'Authorization',
+          `Bearer ${jwt.sign({ userId: 'passenger-001' }, JWT_SECRET)}`
+        )
         .send({
           cardNumber: '4111-1111-1111-1111',
           amount: 100,
