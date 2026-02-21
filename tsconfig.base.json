@@ -176,6 +176,9 @@
       ],
       "@going-monorepo-clean/shared-ui": ["libs/shared/ui/src/index.ts"],
       "@going-monorepo-clean/shared-theme": ["libs/shared/theme/src/index.ts"],
+      "@going-monorepo-clean/design-system": [
+        "libs/design-system/src/index.ts"
+      ],
       "@going-monorepo-clean/admin": ["libs/admin/src/index.ts"],
       "@going-monorepo-clean/i18n": ["libs/i18n/src/index.ts"],
       "@going-monorepo-clean/api-client": ["libs/api-client/src/index.ts"],

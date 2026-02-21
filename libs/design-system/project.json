@@ -1,0 +1,11 @@
+{
+  "name": "design-system",
+  "sourceRoot": "libs/design-system/src",
+  "projectType": "library",
+  "tags": ["design", "tokens", "shared"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
