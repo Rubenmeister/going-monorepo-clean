@@ -16,7 +16,7 @@
     "test:payment": "jest payment-service --coverage",
     "test:ratings": "jest ratings-service --coverage",
     "test:analytics": "jest analytics-service --coverage",
-    "lint": "npx nx affected:lint --head=HEAD --base=main || true",
+    "lint": "npx nx affected:lint --head=HEAD --base=main",
     "lint:all": "npx eslint . --ext .ts,.tsx,.js,.jsx",
     "dev:webapp": "npx nx serve frontend-webapp",
     "build:webapp": "npx nx build frontend-webapp",
