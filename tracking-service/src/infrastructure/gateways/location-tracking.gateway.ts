@@ -18,6 +18,7 @@ import {
   IGeoLocationRepository,
   IDriverAvailabilityRepository,
 } from '../../domain/ports';
+import { WebSocketJwtService } from '@going-monorepo-clean/shared-infrastructure';
 
 /**
  * Location Tracking Gateway
@@ -51,16 +52,45 @@ export class LocationTrackingGateway
     @Inject('IGeoLocationRepository')
     private geoLocationRepo: IGeoLocationRepository,
     @Inject('IDriverAvailabilityRepository')
-    private availabilityRepo: IDriverAvailabilityRepository
+    private availabilityRepo: IDriverAvailabilityRepository,
+    private wsJwtService: WebSocketJwtService
   ) {}
 
   afterInit(server: Server) {
     this.logger.log('LocationTrackingGateway initialized');
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Client connected: ${client.id}`);
-    // TODO: Validate JWT token from handshake
+  async handleConnection(client: Socket, ...args: any[]) {
+    try {
+      // Validate JWT token from handshake
+      const authResult = await this.wsJwtService.authenticateConnection(client);
+
+      if (!authResult.isValid) {
+        this.logger.warn(
+          `Unauthorized WebSocket connection attempted: ${authResult.error}`
+        );
+        client.disconnect(true);
+        return;
+      }
+
+      // Attach authenticated user to socket for later reference
+      (client as any).authenticatedUser = {
+        userId: authResult.userId,
+        driverId: authResult.driverId,
+        payload: authResult.payload,
+      };
+
+      this.logger.log(
+        `Client connected and authenticated: ${client.id} (userId: ${authResult.userId})`
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error during WebSocket connection: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+      client.disconnect(true);
+    }
   }
 
   handleDisconnect(client: Socket) {
@@ -77,6 +107,7 @@ export class LocationTrackingGateway
   /**
    * Driver registers for location tracking
    * Sent by driver app on startup
+   * Validates that authenticated user is registering for their own ID
    */
   @SubscribeMessage('driver:register')
   async handleDriverRegister(
@@ -84,6 +115,20 @@ export class LocationTrackingGateway
     @MessageBody()
     data: { driverId: string; latitude: number; longitude: number }
   ) {
+    // Validate ownership: authenticated user must be the driver
+    const authenticatedUser = (client as any).authenticatedUser;
+    if (
+      !authenticatedUser ||
+      (authenticatedUser.driverId !== data.driverId &&
+        authenticatedUser.userId !== data.driverId)
+    ) {
+      this.logger.warn(
+        `Unauthorized driver registration attempt: user=${authenticatedUser?.userId} tried to register driver=${data.driverId}`
+      );
+      client.emit('error', { message: 'Unauthorized driver registration' });
+      return;
+    }
+
     this.driverConnections.set(data.driverId, client.id);
     this.logger.log(`Driver registered: ${data.driverId}`);
 
