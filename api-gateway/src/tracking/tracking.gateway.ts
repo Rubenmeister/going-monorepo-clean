@@ -12,20 +12,35 @@ import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { firstValueFrom } from 'rxjs';
 
-@WebSocketGateway({ cors: { origin: '*' } })
-export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
+@WebSocketGateway({
+  cors: {
+    origin: (
+      process.env.WEBSOCKET_CORS_ORIGINS ||
+      process.env.CORS_ORIGINS ||
+      'http://localhost:3000,http://localhost:3001'
+    ).split(','),
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+  },
+})
+export class TrackingGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
-  
+
   private readonly logger = new Logger(TrackingGateway.name);
   private trackingServiceHttpUrl: string;
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {
     // URL del endpoint HTTP del tracking-service
-    this.trackingServiceHttpUrl = `${this.configService.get('TRACKING_SERVICE_URL')}/tracking`;
+    this.trackingServiceHttpUrl = `${this.configService.get(
+      'TRACKING_SERVICE_URL'
+    )}/tracking`;
   }
 
   handleConnection(client: Socket) {
@@ -49,10 +64,16 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
       // (que a su vez llama al UpdateLocationUseCase)
       // ESTO ES MÁS ROBUSTO QUE UN WEBSOCKET AL WEBSOCKET
       await firstValueFrom(
-        this.httpService.post(`${this.trackingServiceHttpUrl}/update-location-internal`, payload)
+        this.httpService.post(
+          `${this.trackingServiceHttpUrl}/update-location-internal`,
+          payload
+        )
       );
     } catch (error) {
-      this.logger.error('Error reenviando ubicación al tracking-service', error.message);
+      this.logger.error(
+        'Error reenviando ubicación al tracking-service',
+        error.message
+      );
     }
   }
 }

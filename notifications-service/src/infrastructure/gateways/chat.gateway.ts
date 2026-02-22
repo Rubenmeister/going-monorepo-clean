@@ -16,7 +16,16 @@ import { Logger } from '@nestjs/common';
  */
 @WebSocketGateway({
   namespace: 'chat',
-  cors: { origin: '*' },
+  cors: {
+    origin: (
+      process.env.WEBSOCKET_CORS_ORIGINS ||
+      process.env.CORS_ORIGINS ||
+      'http://localhost:3000,http://localhost:3001'
+    ).split(','),
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+  },
   transports: ['websocket', 'polling'],
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -84,9 +93,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timestamp: new Date().toISOString(),
     });
 
-    this.logger.debug(
-      `Message from ${data.senderId} in ride ${data.rideId}`
-    );
+    this.logger.debug(`Message from ${data.senderId} in ride ${data.rideId}`);
   }
 
   /**
