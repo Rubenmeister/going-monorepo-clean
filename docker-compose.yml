@@ -301,6 +301,232 @@ services:
     networks:
       - going_network
 
+  # Billing Service
+  billing-service:
+    build:
+      context: .
+      dockerfile: billing-service/Dockerfile
+      args:
+        SERVICE_NAME: billing-service
+        SERVICE_PORT: 3013
+    container_name: going-billing
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3013
+      BILLING_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3013:3013"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Admin Service
+  admin-service:
+    build:
+      context: .
+      dockerfile: admin-service/Dockerfile
+      args:
+        SERVICE_NAME: admin-service
+        SERVICE_PORT: 3014
+    container_name: going-admin
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3014
+      ADMIN_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+    ports:
+      - "3014:3014"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Voice Service
+  voice-service:
+    build:
+      context: .
+      dockerfile: voice-service/Dockerfile
+      args:
+        SERVICE_NAME: voice-service
+        SERVICE_PORT: 3015
+    container_name: going-voice
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3015
+      VOICE_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3015:3015"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # AR Service (Augmented Reality)
+  ar-service:
+    build:
+      context: .
+      dockerfile: ar-service/Dockerfile
+      args:
+        SERVICE_NAME: ar-service
+        SERVICE_PORT: 3016
+    container_name: going-ar
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3016
+      AR_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3016:3016"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # ML Service (Machine Learning)
+  ml-service:
+    build:
+      context: .
+      dockerfile: ml-service/Dockerfile
+      args:
+        SERVICE_NAME: ml-service
+        SERVICE_PORT: 3017
+    container_name: going-ml
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3017
+      ML_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3017:3017"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Blockchain Service
+  blockchain-service:
+    build:
+      context: .
+      dockerfile: blockchain-service/Dockerfile
+      args:
+        SERVICE_NAME: blockchain-service
+        SERVICE_PORT: 3018
+    container_name: going-blockchain
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3018
+      BLOCKCHAIN_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3018:3018"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # IoT Service (Internet of Things)
+  iot-service:
+    build:
+      context: .
+      dockerfile: iot-service/Dockerfile
+      args:
+        SERVICE_NAME: iot-service
+        SERVICE_PORT: 3019
+    container_name: going-iot
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3019
+      IOT_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3019:3019"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Recommendation Service
+  recommendation-service:
+    build:
+      context: .
+      dockerfile: recommendation-service/Dockerfile
+      args:
+        SERVICE_NAME: recommendation-service
+        SERVICE_PORT: 3020
+    container_name: going-recommendation
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3020
+      RECOMMENDATION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3020:3020"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
+  # Subscription Service
+  subscription-service:
+    build:
+      context: .
+      dockerfile: subscription-service/Dockerfile
+      args:
+        SERVICE_NAME: subscription-service
+        SERVICE_PORT: 3021
+    container_name: going-subscription
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3021
+      SUBSCRIPTION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3021:3021"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+
   # ======================== OBSERVABILITY STACK ========================
   # Elasticsearch - Log storage and search
   elasticsearch:
@@ -431,6 +657,10 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  blockchain_data:
+    driver: local
+  iot_data:
     driver: local
 
 networks:
