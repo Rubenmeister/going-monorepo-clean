@@ -1,13 +1,9 @@
 {
-  "installation": {
-    "version": "22.0.3"
-  },
+  "installation": { "version": "22.0.3" },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "nxCloudId": "6917d377bd06835f3b2d7464",
+  "nxCloudId": "699a773895ea6377ebd8132b",
   "targetDefaults": {
-    "test": {
-      "cache": true
-    },
+    "test": { "cache": true },
     "@nx/js:swc": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -31,23 +27,11 @@
         "watchDepsTargetName": "watch-deps"
       }
     },
-    {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    },
+    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } },
+    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } },
     {
       "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      },
+      "options": { "targetName": "test" },
       "exclude": [
         "api-gateway-e2e/**/*",
         "user-auth-service-e2e/**/*",
@@ -103,11 +87,6 @@
     }
   ],
   "generators": {
-    "@nx/next": {
-      "application": {
-        "style": "tailwind",
-        "linter": "eslint"
-      }
-    }
+    "@nx/next": { "application": { "style": "tailwind", "linter": "eslint" } }
   }
 }
