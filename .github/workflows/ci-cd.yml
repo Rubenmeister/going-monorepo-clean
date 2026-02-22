@@ -13,32 +13,37 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     name: Lint & Code Quality
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
       
       - name: Run ESLint
-        run: npm run lint:all
+        run: pnpm run lint:all
         continue-on-error: true
-      
+
       - name: Run Prettier check
-        run: npx prettier --check "**/*.{ts,tsx,js,jsx,json,md}"
+        run: pnpm prettier --check "**/*.{ts,tsx,js,jsx,json,md}"
         continue-on-error: true
 
   # Stage 2: Unit & Integration Tests
   test:
     runs-on: ubuntu-latest
     name: Unit & Integration Tests
-    
+
     services:
       mongodb:
         image: mongo:5.0
@@ -49,7 +54,7 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -59,27 +64,32 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: pnpm install
+
       - name: Run affected unit tests
-        run: npx nx affected -t test --base=origin/main --head=HEAD --parallel --passWithNoTests
+        run: pnpm nx affected -t test --base=origin/main --head=HEAD --parallel --passWithNoTests
         env:
           MONGO_URI: mongodb://localhost:27017/going_platform_test
           REDIS_URL: redis://localhost:6379
 
       - name: Generate coverage report
-        run: npm run test:coverage
+        run: pnpm run test:coverage
         continue-on-error: true
 
       - name: Upload coverage to Codecov
@@ -119,30 +129,35 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: pnpm install
+
       - name: Build applications
-        run: npm run build:all
-      
+        run: pnpm run build:all
+
       - name: Start services
-        run: npm run dev:all &
+        run: pnpm run dev:all &
         env:
           MONGO_URI: mongodb://localhost:27017/going_platform_test
           REDIS_URL: redis://localhost:6379
-      
+
       - name: Wait for services
         run: sleep 30
-      
+
       - name: Run E2E tests
-        run: npm run test:e2e:ci
+        run: pnpm run test:e2e:ci
       
       - name: Upload Cypress videos
         if: failure()
@@ -162,7 +177,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     name: Security Testing
-    
+
     services:
       mongodb:
         image: mongo:5.0
@@ -173,31 +188,36 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: pnpm install
+
       - name: Run security tests
-        run: npm run test:security
+        run: pnpm run test:security
         continue-on-error: true
         env:
           MONGO_URI: mongodb://localhost:27017/going_platform_test
-      
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
+
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=moderate
         continue-on-error: true
-      
+
       - name: Check for vulnerable dependencies
-        run: npx snyk test --severity-threshold=high
+        run: pnpm snyk test --severity-threshold=high
         continue-on-error: true
 
   # Stage 5: Build Docker Images
@@ -236,23 +256,89 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy to Staging
     needs: [build, security]
-    
+
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    
+
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Deploy to staging
+
+      - name: Configure kubectl
         run: |
-          echo "Deploying to staging environment..."
-          # Add actual deployment commands
-          # kubectl set image deployment/transport-service transport-service=${{ secrets.DOCKER_REGISTRY }}/going-transport:${{ github.sha }} -n staging
-      
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy API Gateway
+        run: |
+          kubectl set image deployment/api-gateway \
+            api-gateway=${{ secrets.DOCKER_REGISTRY }}/going-api-gateway:${{ github.sha }} \
+            -n staging
+          kubectl rollout status deployment/api-gateway -n staging --timeout=5m
+
+      - name: Deploy Booking Service
+        run: |
+          kubectl set image deployment/booking-service \
+            booking-service=${{ secrets.DOCKER_REGISTRY }}/going-booking:${{ github.sha }} \
+            -n staging
+          kubectl rollout status deployment/booking-service -n staging --timeout=5m
+
+      - name: Deploy Payment Service
+        run: |
+          kubectl set image deployment/payment-service \
+            payment-service=${{ secrets.DOCKER_REGISTRY }}/going-payment:${{ github.sha }} \
+            -n staging
+          kubectl rollout status deployment/payment-service -n staging --timeout=5m
+
+      - name: Wait for services
+        run: sleep 15
+
+      - name: Run health checks
+        run: |
+          echo "Checking API Gateway health..."
+          for i in {1..30}; do
+            if curl -f http://staging-api.going.local/api/health; then
+              echo "✅ API Gateway healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ API Gateway failed to become healthy"
+              exit 1
+            fi
+            echo "⏳ Waiting for service... ($i/30)"
+            sleep 10
+          done
+
+          echo "Checking Booking Service health..."
+          for i in {1..30}; do
+            if curl -f http://staging-booking.going.local/api/health; then
+              echo "✅ Booking Service healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Booking Service failed to become healthy"
+              exit 1
+            fi
+            echo "⏳ Waiting for service... ($i/30)"
+            sleep 10
+          done
+
       - name: Run smoke tests
         run: |
           echo "Running smoke tests..."
-          # curl -f http://staging.going.com/api/health || exit 1
-      
+          curl -f http://staging-api.going.local/api/health/live || exit 1
+          curl -f http://staging-api.going.local/api/health/ready || exit 1
+          echo "✅ Smoke tests passed"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed, rolling back..."
+          kubectl rollout undo deployment/api-gateway -n staging
+          kubectl rollout undo deployment/booking-service -n staging
+          kubectl rollout undo deployment/payment-service -n staging
+          kubectl rollout status deployment/api-gateway -n staging --timeout=5m
+          exit 1
+
       - name: Slack notification
         if: always()
         uses: slackapi/slack-github-action@v1
@@ -266,7 +352,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Going Platform - Staging Deployment*\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}"
+                    "text": "*Going Platform - Staging Deployment*\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
                   }
                 }
               ]
@@ -277,12 +363,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy to Production
     needs: [build]
-    
+
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Create deployment
         uses: actions/github-script@v6
         with:
@@ -295,20 +381,88 @@ jobs:
               description: 'Production deployment',
               auto_merge: false
             });
-      
-      - name: Deploy to production
+
+      - name: Configure kubectl
         run: |
-          echo "Deploying to production environment..."
-          # Add actual production deployment commands
-          # kubectl set image deployment/transport-service transport-service=${{ secrets.DOCKER_REGISTRY }}/going-transport:${{ github.sha }} -n production
-      
-      - name: Health check
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy API Gateway
         run: |
-          echo "Running health checks..."
-          # for i in {1..5}; do
-          #   curl -f https://api.going.com/api/health && break || sleep 10
-          # done
-      
+          kubectl set image deployment/api-gateway \
+            api-gateway=${{ secrets.DOCKER_REGISTRY }}/going-api-gateway:${{ github.sha }} \
+            -n production
+          kubectl rollout status deployment/api-gateway -n production --timeout=5m
+
+      - name: Deploy Booking Service
+        run: |
+          kubectl set image deployment/booking-service \
+            booking-service=${{ secrets.DOCKER_REGISTRY }}/going-booking:${{ github.sha }} \
+            -n production
+          kubectl rollout status deployment/booking-service -n production --timeout=5m
+
+      - name: Deploy Payment Service
+        run: |
+          kubectl set image deployment/payment-service \
+            payment-service=${{ secrets.DOCKER_REGISTRY }}/going-payment:${{ github.sha }} \
+            -n production
+          kubectl rollout status deployment/payment-service -n production --timeout=5m
+
+      - name: Deploy Transport Service
+        run: |
+          kubectl set image deployment/transport-service \
+            transport-service=${{ secrets.DOCKER_REGISTRY }}/going-transport:${{ github.sha }} \
+            -n production
+          kubectl rollout status deployment/transport-service -n production --timeout=5m
+
+      - name: Wait for services
+        run: sleep 15
+
+      - name: Run health checks
+        run: |
+          echo "Checking production services health..."
+          for i in {1..30}; do
+            if curl -f https://api.going.com/api/health; then
+              echo "✅ API Gateway healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ API Gateway failed to become healthy"
+              exit 1
+            fi
+            echo "⏳ Waiting for service... ($i/30)"
+            sleep 10
+          done
+
+          for service in "booking" "payment" "transport"; do
+            echo "Checking $service service..."
+            if ! curl -f "https://api.going.com/api/$service/health"; then
+              echo "❌ $service service unhealthy"
+              exit 1
+            fi
+            echo "✅ $service service healthy"
+          done
+
+      - name: Run production smoke tests
+        run: |
+          echo "Running production smoke tests..."
+          curl -f https://api.going.com/api/health/live || exit 1
+          curl -f https://api.going.com/api/health/ready || exit 1
+          echo "✅ Production smoke tests passed"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed, initiating rollback..."
+          kubectl rollout undo deployment/api-gateway -n production
+          kubectl rollout undo deployment/booking-service -n production
+          kubectl rollout undo deployment/payment-service -n production
+          kubectl rollout undo deployment/transport-service -n production
+          echo "Waiting for rollback to complete..."
+          kubectl rollout status deployment/api-gateway -n production --timeout=5m
+          exit 1
+
       - name: Slack notification
         if: always()
         uses: slackapi/slack-github-action@v1
@@ -322,7 +476,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Going Platform - Production Deployment*\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}"
+                    "text": "*Going Platform - Production Deployment*\nStatus: ${{ job.status }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
                   }
                 }
               ]
@@ -332,12 +486,12 @@ jobs:
   load-test:
     runs-on: ubuntu-latest
     name: Load Testing
-    
+
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup K6
         run: |
           sudo apt-get update
@@ -346,11 +500,11 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/apt stable main" | sudo tee /etc/apt/sources.list.d/k6-stable.list
           sudo apt-get update
           sudo apt-get install k6
-      
+
       - name: Run load tests
         run: k6 run __tests__/load/ride-load-test.js --vus 50 --duration 5m
         continue-on-error: true
-      
+
       - name: Upload load test results
         if: always()
         uses: actions/upload-artifact@v3
