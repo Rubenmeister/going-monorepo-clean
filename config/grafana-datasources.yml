@@ -1,0 +1,29 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: true
+    jsonData:
+      timeInterval: '15s'
+
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: "[going-logs-]YYYY.MM.DD"
+    version: 8.0
+    editable: true
+    jsonData:
+      esVersion: 8
+      maxConcurrentShardRequests: 5
+      tlsAuthWithCACert: false
+      timeField: "@timestamp"
+    secureJsonData:
+      basicAuthPassword: "ElasticPassword123!"
+    basicAuth: true
+    basicAuthUser: elastic

@@ -1,0 +1,27 @@
+{
+  "name": "@going-platform/shared-observability",
+  "version": "1.0.0",
+  "description": "Shared observability (logging, metrics, health checks) library for Going Platform",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "keywords": [
+    "logging",
+    "metrics",
+    "observability",
+    "health-check"
+  ],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "prom-client": "^15.0.0",
+    "winston": "^3.11.0",
+    "winston-elasticsearch": "^0.17.0"
+  }
+}

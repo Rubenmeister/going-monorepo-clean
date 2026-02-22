@@ -1,0 +1,96 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'going-platform'
+    environment: 'local'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # User Auth Service
+  - job_name: 'user-auth-service'
+    static_configs:
+      - targets: ['user-auth-service:3001']
+    metrics_path: '/metrics'
+
+  # Booking Service
+  - job_name: 'booking-service'
+    static_configs:
+      - targets: ['booking-service:3002']
+    metrics_path: '/metrics'
+
+  # Transport Service
+  - job_name: 'transport-service'
+    static_configs:
+      - targets: ['transport-service:3003']
+    metrics_path: '/metrics'
+
+  # Payment Service
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:3004']
+    metrics_path: '/metrics'
+
+  # Ratings Service
+  - job_name: 'ratings-service'
+    static_configs:
+      - targets: ['ratings-service:3005']
+    metrics_path: '/metrics'
+
+  # Analytics Service
+  - job_name: 'analytics-service'
+    static_configs:
+      - targets: ['analytics-service:3006']
+    metrics_path: '/metrics'
+
+  # Chat Service
+  - job_name: 'chat-service'
+    static_configs:
+      - targets: ['chat-service:3007']
+    metrics_path: '/metrics'
+
+  # Geolocation Service
+  - job_name: 'geolocation-service'
+    static_configs:
+      - targets: ['geolocation-service:3008']
+    metrics_path: '/metrics'
+
+  # Tracking Service
+  - job_name: 'tracking-service'
+    static_configs:
+      - targets: ['tracking-service:3011']
+    metrics_path: '/metrics'
+
+  # Notifications Service
+  - job_name: 'notifications-service'
+    static_configs:
+      - targets: ['notifications-service:3012']
+    metrics_path: '/metrics'
+
+  # Elasticsearch
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch:9200']
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
