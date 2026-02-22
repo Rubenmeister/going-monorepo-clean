@@ -3,6 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payment, PaymentDocument } from '../schemas/payment.schema';
 import { IPaymentRepository } from '../../../domain/ports';
+import {
+  PaginationDto,
+  PaginatedResult,
+  getPaginationOptions,
+  createPaginatedResponse,
+} from '@going-monorepo-clean/shared-database';
 
 /**
  * MongoDB Payment Repository
@@ -53,6 +59,28 @@ export class MongoPaymentRepository implements IPaymentRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
+  async findByPassengerPaginated(
+    passengerId: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.paymentModel
+        .find({ passengerId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.paymentModel.countDocuments({ passengerId }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
+  }
+
   async findByDriver(driverId: string, limit = 20): Promise<any[]> {
     const docs = await this.paymentModel
       .find({ driverId })
@@ -62,6 +90,28 @@ export class MongoPaymentRepository implements IPaymentRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
+  async findByDriverPaginated(
+    driverId: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.paymentModel
+        .find({ driverId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.paymentModel.countDocuments({ driverId }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
+  }
+
   async findByStatus(status: string, limit = 50): Promise<any[]> {
     const docs = await this.paymentModel
       .find({ status })
@@ -69,6 +119,28 @@ export class MongoPaymentRepository implements IPaymentRepository {
       .limit(limit);
 
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async findByStatusPaginated(
+    status: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.paymentModel
+        .find({ status })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.paymentModel.countDocuments({ status }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
   }
 
   async update(id: string, updates: any): Promise<any> {
