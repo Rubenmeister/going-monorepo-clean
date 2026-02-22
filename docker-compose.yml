@@ -7,8 +7,8 @@ services:
     container_name: going-mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: going_user
-      MONGO_INITDB_ROOT_PASSWORD: going_password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-}
       MONGO_INITDB_DATABASE: going_platform
     ports:
       - "27017:27017"
@@ -28,6 +28,7 @@ services:
     image: redis:7-alpine
     container_name: going-redis
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-}
     ports:
       - "6379:6379"
     volumes:
@@ -35,7 +36,7 @@ services:
     networks:
       - going_network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,8 +50,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3003
     ports:
       - "3003:3003"
@@ -71,8 +72,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3004
     ports:
       - "3004:3004"
@@ -93,8 +94,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3005
     ports:
       - "3005:3005"
@@ -115,8 +116,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3006
     ports:
       - "3006:3006"
@@ -137,8 +138,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3007
     ports:
       - "3007:3007"
@@ -159,8 +160,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       PORT: 3008
     ports:
       - "3008:3008"
@@ -185,7 +186,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      JWT_SECRET: ${JWT_SECRET:-}
       USER_AUTH_SERVICE_URL: http://user-auth-service:3001
       BOOKING_SERVICE_URL: http://booking-service:3002
       TRANSPORT_SERVICE_URL: http://transport-service:3003
@@ -212,9 +213,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      USER_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      USER_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
     ports:
       - "3001:3001"
@@ -239,8 +240,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3002
-      BOOKING_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      BOOKING_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3002:3002"
     depends_on:
@@ -264,8 +265,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3011
-      MONGO_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      MONGO_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3011:3011"
     depends_on:
@@ -289,8 +290,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3012
-      NOTIFICATION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      NOTIFICATION_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3012:3012"
     depends_on:
@@ -314,8 +315,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3013
-      BILLING_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      BILLING_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3013:3013"
     depends_on:
@@ -339,9 +340,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3014
-      ADMIN_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-changeme_in_production}
+      ADMIN_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-}
     ports:
       - "3014:3014"
     depends_on:
@@ -365,8 +366,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3015
-      VOICE_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      VOICE_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3015:3015"
     depends_on:
@@ -390,8 +391,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3016
-      AR_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      AR_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3016:3016"
     depends_on:
@@ -415,8 +416,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3017
-      ML_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      ML_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3017:3017"
     depends_on:
@@ -440,8 +441,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3018
-      BLOCKCHAIN_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      BLOCKCHAIN_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3018:3018"
     depends_on:
@@ -465,8 +466,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3019
-      IOT_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      IOT_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3019:3019"
     depends_on:
@@ -490,8 +491,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3020
-      RECOMMENDATION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      RECOMMENDATION_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3020:3020"
     depends_on:
@@ -515,8 +516,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3021
-      SUBSCRIPTION_DB_URL: mongodb://going_user:going_password@mongodb:27017/going_platform
-      REDIS_URL: redis://redis:6379
+      SUBSCRIPTION_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3021:3021"
     depends_on:
@@ -537,7 +538,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=true
       - xpack.security.enrollment.enabled=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-ElasticPassword123!}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-}
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9200:9200"
@@ -627,7 +628,7 @@ services:
     container_name: going-grafana
     restart: unless-stopped
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-}
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
     ports:
       - "3100:3000"
