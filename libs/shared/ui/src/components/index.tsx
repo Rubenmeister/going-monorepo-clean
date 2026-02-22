@@ -1,5 +1,11 @@
 import React from 'react';
-import { Colors, Spacing, BorderRadius, Shadows, Typography } from './design-tokens';
+import {
+  Colors,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  Typography,
+} from './design-tokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -9,48 +15,77 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'primary', size = 'md', fullWidth, loading, className, children, ...props }, ref) => {
-    const baseStyles = `
-      font-family: ${Typography.fontFamily.sans};
-      font-weight: ${Typography.fontWeight.semibold};
-      border: none;
-      border-radius: ${BorderRadius.lg};
-      transition: ${require('./design-tokens').Transitions.normal};
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: ${Spacing[2]};
-      ${fullWidth ? 'width: 100%;' : ''}
-      ${loading ? 'opacity: 0.7; cursor: not-allowed;' : ''}
-    `;
+  (
+    {
+      variant = 'primary',
+      size = 'md',
+      fullWidth,
+      loading,
+      className,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    // Build style object safely without eval()
+    const sizeStyleMap = {
+      sm: {
+        padding: `${Spacing[2]} ${Spacing[4]}`,
+        fontSize: Typography.fontSize.sm,
+      },
+      md: {
+        padding: `${Spacing[3]} ${Spacing[6]}`,
+        fontSize: Typography.fontSize.base,
+      },
+      lg: {
+        padding: `${Spacing[4]} ${Spacing[8]}`,
+        fontSize: Typography.fontSize.lg,
+      },
+    };
 
-    const sizeStyles = {
-      sm: `padding: ${Spacing[2]} ${Spacing[4]}; font-size: ${Typography.fontSize.sm};`,
-      md: `padding: ${Spacing[3]} ${Spacing[6]}; font-size: ${Typography.fontSize.base};`,
-      lg: `padding: ${Spacing[4]} ${Spacing[8]}; font-size: ${Typography.fontSize.lg};`,
-    }[size];
+    const variantStyleMap = {
+      primary: {
+        backgroundColor: Colors.primary,
+        color: Colors.white,
+        boxShadow: Shadows.md,
+      },
+      secondary: {
+        backgroundColor: Colors.secondary,
+        color: Colors.white,
+      },
+      outline: {
+        backgroundColor: 'transparent',
+        border: `2px solid ${Colors.primary}`,
+        color: Colors.primary,
+      },
+      ghost: {
+        backgroundColor: 'transparent',
+        color: Colors.primary,
+      },
+    };
 
-    const variantStyles = {
-      primary: `background-color: ${Colors.primary}; color: ${Colors.white}; box-shadow: ${Shadows.md};
-                 &:hover { background-color: ${Colors.primaryLight}; box-shadow: ${Shadows.lg}; }
-                 &:active { background-color: ${Colors.primaryDark}; }`,
-      secondary: `background-color: ${Colors.secondary}; color: ${Colors.white};
-                  &:hover { background-color: ${Colors.secondaryLight}; }
-                  &:active { background-color: ${Colors.secondaryDark}; }`,
-      outline: `background-color: transparent; border: 2px solid ${Colors.primary}; color: ${Colors.primary};
-                 &:hover { background-color: ${Colors.gray50}; }`,
-      ghost: `background-color: transparent; color: ${Colors.primary};
-               &:hover { background-color: ${Colors.gray100}; }`,
-    }[variant];
+    const styleObject = {
+      fontFamily: Typography.fontFamily.sans,
+      fontWeight: Typography.fontWeight.semibold,
+      border: 'none',
+      borderRadius: BorderRadius.lg,
+      transition: require('./design-tokens').Transitions.normal,
+      cursor: loading ? 'not-allowed' : 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing[2],
+      width: fullWidth ? '100%' : 'auto',
+      opacity: loading ? 0.7 : 1,
+      ...sizeStyleMap[size],
+      ...(variantStyleMap[variant] || variantStyleMap.primary),
+    };
 
     return (
       <button
         ref={ref}
         className={className}
-        style={{
-          ...eval(`({ ${baseStyles} ${sizeStyles} ${variantStyles} })`),
-        }}
+        style={styleObject}
         disabled={loading || props.disabled}
         {...props}
       >
@@ -101,12 +136,24 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p style={{ color: Colors.error, fontSize: Typography.fontSize.sm, marginTop: Spacing[1] }}>
+          <p
+            style={{
+              color: Colors.error,
+              fontSize: Typography.fontSize.sm,
+              marginTop: Spacing[1],
+            }}
+          >
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p style={{ color: Colors.gray500, fontSize: Typography.fontSize.sm, marginTop: Spacing[1] }}>
+          <p
+            style={{
+              color: Colors.gray500,
+              fontSize: Typography.fontSize.sm,
+              marginTop: Spacing[1],
+            }}
+          >
             {helperText}
           </p>
         )}
@@ -157,7 +204,10 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ variant = 'primary', size = 'md', className, children, ...props }, ref) => {
+  (
+    { variant = 'primary', size = 'md', className, children, ...props },
+    ref
+  ) => {
     const variantColors = {
       primary: { bg: Colors.primary, text: Colors.white },
       success: { bg: Colors.success, text: Colors.white },
@@ -167,8 +217,14 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     }[variant];
 
     const sizeStyles = {
-      sm: { padding: `${Spacing[1]} ${Spacing[2]}`, fontSize: Typography.fontSize.xs },
-      md: { padding: `${Spacing[2]} ${Spacing[3]}`, fontSize: Typography.fontSize.sm },
+      sm: {
+        padding: `${Spacing[1]} ${Spacing[2]}`,
+        fontSize: Typography.fontSize.xs,
+      },
+      md: {
+        padding: `${Spacing[2]} ${Spacing[3]}`,
+        fontSize: Typography.fontSize.sm,
+      },
     }[size];
 
     return (
