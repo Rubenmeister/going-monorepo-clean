@@ -25,7 +25,16 @@ import {
  */
 @WebSocketGateway({
   namespace: 'tracking',
-  cors: { origin: '*' },
+  cors: {
+    origin: (
+      process.env.WEBSOCKET_CORS_ORIGINS ||
+      process.env.CORS_ORIGINS ||
+      'http://localhost:3000,http://localhost:3001'
+    ).split(','),
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+  },
   transports: ['websocket', 'polling'],
 })
 export class LocationTrackingGateway
