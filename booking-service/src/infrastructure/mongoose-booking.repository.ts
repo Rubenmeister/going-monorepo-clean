@@ -8,16 +8,19 @@ import {
   ServiceType,
 } from '@going-monorepo-clean/domains-booking-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+import { BookingDocument, BookingModelSchema } from './schemas/booking.schema';
 import {
-  BookingDocument,
-  BookingModelSchema,
-} from './schemas/booking.schema';
+  PaginationDto,
+  PaginatedResult,
+  getPaginationOptions,
+  createPaginatedResponse,
+} from '@going-monorepo-clean/shared-database';
 
 @Injectable()
 export class MongooseBookingRepository implements IBookingRepository {
   constructor(
     @InjectModel(BookingModelSchema.name)
-    private readonly model: Model<BookingDocument>,
+    private readonly model: Model<BookingDocument>
   ) {}
 
   async save(booking: Booking): Promise<Result<void, Error>> {
@@ -54,17 +57,69 @@ export class MongooseBookingRepository implements IBookingRepository {
 
   async findByUserId(userId: UUID): Promise<Result<Booking[], Error>> {
     try {
-      const docs = await this.model.find({ userId }).sort({ createdAt: -1 }).exec();
+      const docs = await this.model
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .exec();
       return ok(docs.map(this.toDomain));
     } catch (error) {
       return err(new Error(error.message));
     }
   }
 
-  async findByServiceId(serviceId: UUID, serviceType: ServiceType): Promise<Result<Booking[], Error>> {
+  async findByUserIdPaginated(
+    userId: UUID,
+    pagination?: PaginationDto
+  ): Promise<Result<PaginatedResult<Booking>, Error>> {
+    try {
+      const { skip, limit } = getPaginationOptions(pagination);
+      const [docs, total] = await Promise.all([
+        this.model
+          .find({ userId })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.model.countDocuments({ userId }),
+      ]);
+      return ok(
+        createPaginatedResponse(docs.map(this.toDomain), total, skip, limit)
+      );
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
+  async findByServiceId(
+    serviceId: UUID,
+    serviceType: ServiceType
+  ): Promise<Result<Booking[], Error>> {
     try {
       const docs = await this.model.find({ serviceId, serviceType }).exec();
       return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
+  async findByServiceIdPaginated(
+    serviceId: UUID,
+    serviceType: ServiceType,
+    pagination?: PaginationDto
+  ): Promise<Result<PaginatedResult<Booking>, Error>> {
+    try {
+      const { skip, limit } = getPaginationOptions(pagination);
+      const [docs, total] = await Promise.all([
+        this.model
+          .find({ serviceId, serviceType })
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.model.countDocuments({ serviceId, serviceType }),
+      ]);
+      return ok(
+        createPaginatedResponse(docs.map(this.toDomain), total, skip, limit)
+      );
     } catch (error) {
       return err(new Error(error.message));
     }

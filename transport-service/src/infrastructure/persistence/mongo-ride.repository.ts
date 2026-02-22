@@ -3,6 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ride, RideDocument } from '../schemas/ride.schema';
 import { IRideRepository, RideStatus } from '../../../domain/ports';
+import {
+  PaginationDto,
+  PaginatedResult,
+  getPaginationOptions,
+  createPaginatedResponse,
+} from '@going-monorepo-clean/shared-database';
 
 /**
  * MongoDB Ride Repository
@@ -61,6 +67,28 @@ export class MongoRideRepository implements IRideRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
+  async findByUserIdPaginated(
+    userId: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.rideModel
+        .find({ userId })
+        .sort({ requestedAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.rideModel.countDocuments({ userId }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
+  }
+
   async findByDriverId(driverId: string, limit?: number): Promise<any[]> {
     const query = this.rideModel.find({ driverId }).sort({ requestedAt: -1 });
 
@@ -70,6 +98,28 @@ export class MongoRideRepository implements IRideRepository {
 
     const docs = await query;
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async findByDriverIdPaginated(
+    driverId: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.rideModel
+        .find({ driverId })
+        .sort({ requestedAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.rideModel.countDocuments({ driverId }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
   }
 
   async findActiveByDriverId(driverId: string): Promise<any[]> {
@@ -111,6 +161,28 @@ export class MongoRideRepository implements IRideRepository {
 
     const docs = await query;
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async findByStatusPaginated(
+    status: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<any>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.rideModel
+        .find({ status })
+        .sort({ requestedAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.rideModel.countDocuments({ status }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
   }
 
   async delete(id: string): Promise<void> {

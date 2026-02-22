@@ -7,6 +7,12 @@ import {
   GeoLocation,
 } from '../../../domain/ports';
 import { TrackingSessionSchema } from '../schemas/tracking-session.schema';
+import {
+  PaginationDto,
+  PaginatedResult,
+  getPaginationOptions,
+  createPaginatedResponse,
+} from '@going-monorepo-clean/shared-database';
 
 /**
  * MongoDB Tracking Repository
@@ -79,6 +85,28 @@ export class MongoTrackingRepository implements ITrackingSessionRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
+  async findByUserIdPaginated(
+    userId: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<TrackingSession>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const [docs, total] = await Promise.all([
+      this.trackingSessionModel
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.trackingSessionModel.countDocuments({ userId }),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
+  }
+
   async update(
     id: string,
     updates: Partial<TrackingSession>
@@ -140,6 +168,41 @@ export class MongoTrackingRepository implements ITrackingSessionRepository {
     });
 
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async findByDateRangePaginated(
+    startDate: Date,
+    endDate: Date,
+    driverId?: string,
+    pagination?: PaginationDto
+  ): Promise<PaginatedResult<TrackingSession>> {
+    const { skip, limit } = getPaginationOptions(pagination);
+    const query: any = {
+      createdAt: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    };
+
+    if (driverId) {
+      query.driverId = driverId;
+    }
+
+    const [docs, total] = await Promise.all([
+      this.trackingSessionModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      this.trackingSessionModel.countDocuments(query),
+    ]);
+
+    return createPaginatedResponse(
+      docs.map((doc) => this.mapToEntity(doc)),
+      total,
+      skip,
+      limit
+    );
   }
 
   private mapToEntity(doc: any): TrackingSession {
