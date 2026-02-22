@@ -49,21 +49,21 @@ step_validate() {
     log_success "Branch correct: $BRANCH"
 
     log_info "Running test suite..."
-    npm test -- --coverage --silent || {
+    pnpm test -- --coverage --silent || {
         log_error "Tests failed"
         exit 1
     }
     log_success "All tests passing"
 
     log_info "Building packages..."
-    npm run build || {
+    pnpm build || {
         log_error "Build failed"
         exit 1
     }
     log_success "Build successful"
 
     log_info "TypeScript validation..."
-    npm run typecheck || {
+    pnpm typecheck || {
         log_error "TypeScript errors"
         exit 1
     }
@@ -186,13 +186,13 @@ step_run_tests() {
     log_info "Step 6: Running Validation Tests"
 
     log_info "Running pagination tests..."
-    npm run test:pagination || log_warn "Pagination tests skipped"
+    pnpm test:pagination || log_warn "Pagination tests skipped"
 
     log_info "Running circuit breaker tests..."
-    npm run test:circuit-breaker || log_warn "Circuit breaker tests skipped"
+    pnpm test:circuit-breaker || log_warn "Circuit breaker tests skipped"
 
     log_info "Running integration tests..."
-    npm run test:integration || log_warn "Integration tests skipped"
+    pnpm test:integration || log_warn "Integration tests skipped"
 
     log_success "Validation tests complete"
 }
@@ -255,7 +255,7 @@ main() {
     log_success "=========================================="
     log_info "Next Steps:"
     log_info "1. Monitor staging environment for 24 hours"
-    log_info "2. Run load tests: npm run load:test"
+    log_info "2. Run load tests: pnpm run load:test"
     log_info "3. Validate all scenarios in STAGING_DEPLOYMENT_VALIDATION.md"
     log_info "4. Get team sign-off"
     log_info "5. Proceed with production deployment"
