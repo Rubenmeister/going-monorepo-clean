@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: default
+data:
+  elasticsearch.yml: |
+    cluster.name: going-cluster
+    discovery.type: single-node
+    xpack.security.enabled: true
+    xpack.security.enrollment.enabled: true
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch-secret
+  namespace: default
+type: Opaque
+stringData:
+  ELASTIC_PASSWORD: "ElasticPassword123!"
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: default
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        ports:
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: transport
+        env:
+        - name: discovery.type
+          value: "single-node"
+        - name: xpack.security.enabled
+          value: "true"
+        - name: xpack.security.enrollment.enabled
+          value: "true"
+        - name: ELASTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-secret
+              key: ELASTIC_PASSWORD
+        - name: ES_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTPS
+            httpHeaders:
+            - name: Authorization
+              value: "Basic ZWxhc3RpYzpFbGFzdGljUGFzc3dvcmQxMjMh" # base64(elastic:ElasticPassword123!)
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTPS
+            httpHeaders:
+            - name: Authorization
+              value: "Basic ZWxhc3RpYzpFbGFzdGljUGFzc3dvcmQxMjMh"
+          initialDelaySeconds: 20
+          periodSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      volumes:
+      - name: data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
+    name: http
+  - port: 9300
+    targetPort: 9300
+    name: transport
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-external
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
