@@ -113,10 +113,28 @@ export class Ride {
 
 export const RideSchema = SchemaFactory.createForClass(Ride);
 
-// Create indexes for queries
+// Compound indexes for common queries
 RideSchema.index({ userId: 1, createdAt: -1 });
+RideSchema.index({ userId: 1, status: 1 });
 RideSchema.index({ driverId: 1, createdAt: -1 });
-RideSchema.index({ status: 1 });
+RideSchema.index({ driverId: 1, status: 1 });
+RideSchema.index({ status: 1, createdAt: -1 });
+RideSchema.index({ status: 1, requestedAt: -1 });
+
+// Geospatial indexes for location queries
 RideSchema.index({ pickupLocation: '2dsphere' });
 RideSchema.index({ dropoffLocation: '2dsphere' });
-RideSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
+
+// Compound geospatial index
+RideSchema.index({
+  pickupLocation: '2dsphere',
+  status: 1,
+  createdAt: -1,
+});
+
+// TTL index for automatic expiration
+RideSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Index for ride history and analytics
+RideSchema.index({ completedAt: -1 });
+RideSchema.index({ requestedAt: 1, completedAt: 1 });

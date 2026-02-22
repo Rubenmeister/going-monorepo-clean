@@ -67,8 +67,17 @@ export class Payment {
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
-// Create indexes for efficient queries
+// Single field indexes
+PaymentSchema.index({ tripId: 1 });
+PaymentSchema.index({ paymentMethod: 1 });
+
+// Compound indexes for common queries
 PaymentSchema.index({ passengerId: 1, createdAt: -1 });
 PaymentSchema.index({ driverId: 1, createdAt: -1 });
 PaymentSchema.index({ status: 1, createdAt: -1 });
+PaymentSchema.index({ passengerId: 1, status: 1 });
+PaymentSchema.index({ driverId: 1, status: 1 });
+PaymentSchema.index({ status: 1, paymentMethod: 1 });
+PaymentSchema.index({ createdAt: 1, status: 1, driverId: 1 }); // For revenue reports
 PaymentSchema.index({ amount: -1 });
+PaymentSchema.index({ completedAt: -1 }); // For completed payments queries
