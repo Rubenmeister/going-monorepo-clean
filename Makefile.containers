@@ -1,0 +1,198 @@
+.PHONY: help build push buildx build-dry push-dry auth-docker-hub auth-gcr auth-ecr auth-custom auth-status auth-logout status \
+        build-transport build-payment build-ratings build-analytics build-chat build-geolocation \
+        push-transport push-payment push-ratings push-analytics push-chat push-geolocation \
+        clean
+
+# Configuration
+REGISTRY ?= docker.io
+NAMESPACE ?= going-platform
+TAG ?= latest
+PARALLEL_JOBS ?= 4
+PLATFORMS ?= linux/amd64,linux/arm64
+SCRIPTS_DIR := scripts
+
+# Colors
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+RED := \033[0;31m
+NC := \033[0m
+
+help: ## Show this help message
+	@echo "$(BLUE)Going Platform - Container Build System$(NC)"
+	@echo ""
+	@echo "$(GREEN)Usage:$(NC) make [command] [OPTIONS]"
+	@echo ""
+	@echo "$(YELLOW)Core Commands:$(NC)"
+	@echo "  build              Build all containers"
+	@echo "  push               Build and push all containers"
+	@echo "  buildx             Build with buildx (multi-platform)"
+	@echo "  status             Show build system status"
+	@echo ""
+	@echo "$(YELLOW)Build Options:$(NC)"
+	@echo "  REGISTRY           Docker registry (default: $(REGISTRY))"
+	@echo "  NAMESPACE          Image namespace (default: $(NAMESPACE))"
+	@echo "  TAG                Image tag (default: $(TAG))"
+	@echo "  PARALLEL_JOBS      Parallel jobs (default: $(PARALLEL_JOBS))"
+	@echo ""
+	@echo "$(YELLOW)Authentication:$(NC)"
+	@echo "  auth-docker-hub    Login to Docker Hub"
+	@echo "  auth-gcr           Login to Google Container Registry"
+	@echo "  auth-ecr           Login to AWS ECR"
+	@echo "  auth-status        Show authentication status"
+	@echo ""
+	@echo "$(YELLOW)Individual Service Builds:$(NC)"
+	@echo "  build-transport    Build transport-service"
+	@echo "  build-payment      Build payment-service"
+	@echo "  build-ratings      Build ratings-service"
+	@echo "  build-analytics    Build analytics-service"
+	@echo "  build-chat         Build chat-service"
+	@echo "  build-geolocation  Build geolocation-service"
+	@echo ""
+	@echo "$(YELLOW)Examples:$(NC)"
+	@echo "  make build"
+	@echo "  make push TAG=v1.0.0"
+	@echo "  make buildx PLATFORMS=linux/amd64"
+	@echo "  make build SERVICES=transport-service,payment-service"
+	@echo "  make auth-docker-hub"
+	@echo ""
+
+# Main build targets
+build: ## Build all containers
+	@echo "$(BLUE)[INFO]$(NC) Building containers..."
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh \
+		-r $(REGISTRY) \
+		-n $(NAMESPACE) \
+		-t $(TAG) \
+		-j $(PARALLEL_JOBS)
+
+push: auth-check ## Build and push all containers
+	@echo "$(BLUE)[INFO]$(NC) Building and pushing containers..."
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh \
+		-r $(REGISTRY) \
+		-n $(NAMESPACE) \
+		-t $(TAG) \
+		-j $(PARALLEL_JOBS)
+
+buildx: auth-check ## Build with buildx (multi-platform)
+	@echo "$(BLUE)[INFO]$(NC) Building with buildx..."
+	@bash $(SCRIPTS_DIR)/build-and-push-buildx.sh \
+		-r $(REGISTRY) \
+		-n $(NAMESPACE) \
+		-t $(TAG) \
+		-p $(PLATFORMS) \
+		--push
+
+build-dry: ## Dry run of build (shows what would be done)
+	@echo "$(BLUE)[INFO]$(NC) Dry run - showing what would be built..."
+	@DRY_RUN=true bash $(SCRIPTS_DIR)/build-and-push-containers.sh \
+		-r $(REGISTRY) \
+		-n $(NAMESPACE) \
+		-t $(TAG)
+
+push-dry: ## Dry run of push
+	@echo "$(BLUE)[INFO]$(NC) Dry run - showing what would be pushed..."
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh \
+		-r $(REGISTRY) \
+		-n $(NAMESPACE) \
+		-t $(TAG) \
+		--dry-run
+
+# Individual service builds
+build-transport: ## Build transport-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s transport-service
+
+build-payment: ## Build payment-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s payment-service
+
+build-ratings: ## Build ratings-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s ratings-service
+
+build-analytics: ## Build analytics-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s analytics-service
+
+build-chat: ## Build chat-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s chat-service
+
+build-geolocation: ## Build geolocation-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s geolocation-service
+
+# Push individual services
+push-transport: auth-check ## Push transport-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s transport-service
+
+push-payment: auth-check ## Push payment-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s payment-service
+
+push-ratings: auth-check ## Push ratings-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s ratings-service
+
+push-analytics: auth-check ## Push analytics-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s analytics-service
+
+push-chat: auth-check ## Push chat-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s chat-service
+
+push-geolocation: auth-check ## Push geolocation-service
+	@bash $(SCRIPTS_DIR)/build-and-push-containers.sh -r $(REGISTRY) -n $(NAMESPACE) -t $(TAG) -s geolocation-service
+
+# Authentication targets
+auth-docker-hub: ## Login to Docker Hub
+	@bash $(SCRIPTS_DIR)/docker-auth.sh docker-hub
+
+auth-gcr: ## Login to Google Container Registry
+	@bash $(SCRIPTS_DIR)/docker-auth.sh gcr
+
+auth-ecr: ## Login to AWS ECR
+	@bash $(SCRIPTS_DIR)/docker-auth.sh ecr
+
+auth-custom: ## Login to custom registry
+	@bash $(SCRIPTS_DIR)/docker-auth.sh custom
+
+auth-status: ## Show authentication status
+	@bash $(SCRIPTS_DIR)/docker-auth.sh status
+
+auth-logout: ## Logout from all registries
+	@bash $(SCRIPTS_DIR)/docker-auth.sh logout
+
+# System targets
+status: ## Show build system status
+	@bash $(SCRIPTS_DIR)/build.sh status
+
+auth-check: ## Check if authenticated (internal)
+	@if ! docker info > /dev/null 2>&1; then \
+		echo "$(RED)[ERROR]$(NC) Docker daemon not running"; \
+		exit 1; \
+	fi
+
+clean: ## Clean build artifacts and logs
+	@echo "$(BLUE)[INFO]$(NC) Cleaning build artifacts..."
+	@rm -f /tmp/*_build.log /tmp/*_push.log /tmp/*_buildx.log
+	@echo "$(GREEN)[SUCCESS]$(NC) Cleaned up logs"
+
+.PHONY: docker-version
+docker-version: ## Show Docker version info
+	@docker --version
+	@docker buildx version 2>/dev/null || echo "Docker buildx: not installed"
+
+.PHONY: list-services
+list-services: ## List available services
+	@echo "$(BLUE)Multi-stage services (from root Dockerfile):$(NC)"
+	@echo "  - transport-service"
+	@echo "  - payment-service"
+	@echo "  - ratings-service"
+	@echo "  - analytics-service"
+	@echo "  - chat-service"
+	@echo "  - geolocation-service"
+	@echo ""
+	@echo "$(BLUE)Individual service Dockerfiles:$(NC)"
+	@echo "  - admin-dashboard"
+	@echo "  - anfitriones-service"
+	@echo "  - api-gateway"
+	@echo "  - booking-service"
+	@echo "  - envios-service"
+	@echo "  - experiencias-service"
+	@echo "  - notifications-service"
+	@echo "  - tours-service"
+	@echo "  - tracking-service"
+	@echo "  - user-auth-service"
