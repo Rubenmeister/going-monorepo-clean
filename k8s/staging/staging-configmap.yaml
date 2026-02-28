@@ -1,0 +1,173 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: staging
+  labels:
+    app: going-platform
+    environment: staging
+data:
+  # Application Configuration
+  NODE_ENV: "staging"
+  LOG_LEVEL: "debug"
+  SERVICE_DISCOVERY: "kubernetes"
+
+  # API Gateway Configuration
+  API_GATEWAY_PORT: "3000"
+  API_GATEWAY_HOST: "0.0.0.0"
+  CORS_ORIGINS: "https://staging.going.com,http://localhost:3001,http://localhost:3000"
+  API_RATE_LIMIT: "100"
+  API_RATE_LIMIT_WINDOW: "1m"
+
+  # Database Configuration
+  MONGODB_HOST: "mongodb"
+  MONGODB_PORT: "27017"
+  MONGODB_DATABASE: "going-staging"
+
+  # Redis Configuration
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DATABASE: "0"
+
+  # Elasticsearch Configuration
+  ELASTICSEARCH_HOST: "elasticsearch"
+  ELASTICSEARCH_PORT: "9200"
+  ELASTICSEARCH_INDEX: "going-staging"
+
+  # Logging Configuration
+  LOGSTASH_HOST: "logstash"
+  LOGSTASH_PORT: "5000"
+
+  # Observability
+  PROMETHEUS_ENABLED: "true"
+  PROMETHEUS_PORT: "9090"
+  METRICS_ENABLED: "true"
+  TRACES_ENABLED: "true"
+
+  # Feature Flags (Staging Environment)
+  FEATURE_ADVANCED_BOOKING: "true"
+  FEATURE_PAYMENT_METHODS: "true"
+  FEATURE_REAL_TIME_TRACKING: "true"
+  FEATURE_ANALYTICS: "true"
+
+  # Payment Configuration (Test/Sandbox)
+  STRIPE_PUBLISHABLE_KEY: "pk_test_staging"
+  PAYMENT_MODE: "test"
+
+  # Notifications
+  NOTIFICATIONS_ENABLED: "true"
+  EMAIL_PROVIDER: "sendgrid"
+  SMS_PROVIDER: "twilio"
+
+  # Session Configuration
+  SESSION_TIMEOUT: "3600"
+  TOKEN_EXPIRATION: "86400"
+
+  # Ingress Configuration
+  INGRESS_HOST: "api.staging.going.com"
+  INGRESS_TLS_ENABLED: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: staging
+  labels:
+    app: prometheus
+    environment: staging
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        environment: staging
+        cluster: gke-staging
+
+    scrape_configs:
+    - job_name: 'kubernetes-apiservers'
+      kubernetes_sd_configs:
+      - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+    - job_name: 'kubernetes-nodes'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+    - job_name: 'going-api-gateway'
+      static_configs:
+      - targets: ['api-gateway:3000']
+      metrics_path: '/metrics'
+      scrape_interval: 10s
+
+    - job_name: 'going-booking-service'
+      static_configs:
+      - targets: ['booking-service:3001']
+      metrics_path: '/metrics'
+      scrape_interval: 10s
+
+    - job_name: 'going-payment-service'
+      static_configs:
+      - targets: ['payment-service:3002']
+      metrics_path: '/metrics'
+      scrape_interval: 10s
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: staging
+  labels:
+    app: nginx-ingress
+    environment: staging
+data:
+  client_max_body_size: "100m"
+  proxy_connect_timeout: "600"
+  proxy_send_timeout: "600"
+  proxy_read_timeout: "600"
+  proxy_buffering: "off"

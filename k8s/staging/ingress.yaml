@@ -1,0 +1,72 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: staging-ingress
+  namespace: staging
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "going-staging-ip"
+    networking.gke.io/managed-certificates: "staging-cert"
+    kubernetes.io/ingress.allow-http: "false"
+    ingress.gcp.kubernetes.io/pre-shared-cert: "going-staging-ssl"
+spec:
+  rules:
+  - host: api.staging.going.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 80
+  - host: staging.going.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: corporate-portal
+            port:
+              number: 80
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeBackendService
+metadata:
+  name: api-gateway-backend
+  namespace: staging
+spec:
+  loadBalancingScheme: EXTERNAL
+  protocol: HTTP
+  portName: http
+  timeoutSec: 30
+  healthChecks:
+  - name: api-gateway-health-check
+  sessionAffinity: NONE
+  affinityCookieTtlSec: 0
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeHealthCheck
+metadata:
+  name: api-gateway-health-check
+  namespace: staging
+spec:
+  checkIntervalSec: 10
+  timeoutSec: 5
+  healthyThreshold: 2
+  unhealthyThreshold: 3
+  httpHealthCheck:
+    port: 3000
+    requestPath: /health
+---
+apiVersion: cloud.google.com/v1
+kind: ManagedCertificate
+metadata:
+  name: staging-cert
+  namespace: staging
+spec:
+  domains:
+  - api.staging.going.com
+  - staging.going.com

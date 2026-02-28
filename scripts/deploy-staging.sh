@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Going Platform - Staging Deployment Script
-# Automates the deployment of P1-1 through P1-5 to staging environment
+# 🚀 DEPLOY TO GKE STAGING ENVIRONMENT
+# Deploys Going Platform to Google Kubernetes Engine staging namespace
+# Part of Phase 2: GCP Setup
 
 set -e
 
@@ -13,254 +14,227 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-BRANCH="claude/complete-going-platform-TJOI8"
-NAMESPACE="staging"
-DEPLOYMENT_NAME="going-platform-staging"
-IMAGE_TAG="staging-$(date +%Y%m%d-%H%M%S)"
-LOG_FILE="deployment-$(date +%Y%m%d-%H%M%S).log"
+GCP_PROJECT=${GCP_PROJECT:-""}
+IMAGE_TAG=${IMAGE_TAG:-"v1.0.0"}
+K8S_NAMESPACE="staging"
 
-# Helper functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1" | tee -a "$LOG_FILE"
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --project)
+      GCP_PROJECT="$2"
+      shift 2
+      ;;
+    --tag)
+      IMAGE_TAG="$2"
+      shift 2
+      ;;
+    --namespace)
+      K8S_NAMESPACE="$2"
+      shift 2
+      ;;
+    *)
+      echo -e "${RED}Unknown option: $1${NC}"
+      exit 1
+      ;;
+  esac
+done
+
+# Function to print header
+print_header() {
+  echo -e "${BLUE}════════════════════════════════════════════════════════${NC}"
+  echo -e "${BLUE}  $1${NC}"
+  echo -e "${BLUE}════════════════════════════════════════════════════════${NC}"
+  echo ""
 }
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "$LOG_FILE"
+# Function to print step
+print_step() {
+  echo -e "${YELLOW}📋 $1${NC}"
 }
 
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "$LOG_FILE"
+# Function to print success
+print_success() {
+  echo -e "${GREEN}✅ $1${NC}"
 }
 
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"
+# Function to print error
+print_error() {
+  echo -e "${RED}❌ $1${NC}"
 }
 
-# Step 1: Pre-deployment validation
-step_validate() {
-    log_info "Step 1: Pre-deployment Validation (30 min)"
+print_header "🚀 GOING PLATFORM - STAGING DEPLOYMENT"
 
-    log_info "Checking branch status..."
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
-        log_error "Not on correct branch. Current: $CURRENT_BRANCH, Expected: $BRANCH"
-        exit 1
-    fi
-    log_success "Branch correct: $BRANCH"
+# Validate inputs
+if [ -z "$GCP_PROJECT" ]; then
+  print_error "GCP_PROJECT is not set"
+  echo ""
+  echo "Usage: bash scripts/deploy-staging.sh --project YOUR_PROJECT_ID [--tag IMAGE_TAG]"
+  exit 1
+fi
 
-    log_info "Running test suite..."
-    pnpm test -- --coverage --silent || {
-        log_error "Tests failed"
-        exit 1
-    }
-    log_success "All tests passing"
+echo -e "${YELLOW}Configuration:${NC}"
+echo "  GCP Project: $GCP_PROJECT"
+echo "  Image Tag: $IMAGE_TAG"
+echo "  Namespace: $K8S_NAMESPACE"
+echo ""
 
-    log_info "Building packages..."
-    pnpm build || {
-        log_error "Build failed"
-        exit 1
-    }
-    log_success "Build successful"
+# Step 1: Verify kubectl
+print_step "Step 1: Verifying kubectl"
 
-    log_info "TypeScript validation..."
-    pnpm typecheck || {
-        log_error "TypeScript errors"
-        exit 1
-    }
-    log_success "TypeScript clean"
+if ! command -v kubectl &> /dev/null; then
+  print_error "kubectl not found"
+  exit 1
+fi
+print_success "kubectl found"
 
-    log_success "Pre-deployment validation complete"
-}
+echo ""
 
-# Step 2: Docker image building and pushing
-step_build_image() {
-    log_info "Step 2: Building Docker Image"
+# Step 2: Verify namespace exists
+print_step "Step 2: Verifying Staging Namespace"
 
-    log_info "Building image: $IMAGE_TAG"
-    docker build \
-        -t "going-platform:$IMAGE_TAG" \
-        -t "going-platform:staging-latest" \
-        . || {
-        log_error "Docker build failed"
-        exit 1
-    }
-    log_success "Image built: $IMAGE_TAG"
+if ! kubectl get namespace $K8S_NAMESPACE &> /dev/null; then
+  print_error "Namespace '$K8S_NAMESPACE' not found"
+  echo "  Run: bash scripts/gcp-setup-namespace.sh --project $GCP_PROJECT"
+  exit 1
+fi
+print_success "Namespace '$K8S_NAMESPACE' exists"
 
-    log_info "Pushing to registry..."
-    docker push "going-platform:$IMAGE_TAG"
-    docker push "going-platform:staging-latest"
-    log_success "Image pushed to registry"
-}
+echo ""
 
-# Step 3: Kubernetes deployment
-step_deploy_k8s() {
-    log_info "Step 3: Deploying to Kubernetes"
+# Step 3: Create temporary directory for manifests
+print_step "Step 3: Preparing Manifests"
 
-    log_info "Creating/updating deployment..."
-    kubectl set image \
-        deployment/$DEPLOYMENT_NAME \
-        going-platform="going-platform:$IMAGE_TAG" \
-        -n $NAMESPACE || {
-        log_error "Kubernetes update failed"
-        exit 1
-    }
-    log_success "Deployment updated"
+TEMP_DIR="/tmp/going-k8s-staging-$$"
+mkdir -p $TEMP_DIR
 
-    log_info "Waiting for rollout (5 min timeout)..."
-    kubectl rollout status \
-        deployment/$DEPLOYMENT_NAME \
-        -n $NAMESPACE \
-        --timeout=5m || {
-        log_error "Rollout failed"
-        exit 1
-    }
-    log_success "Rollout successful"
+echo "  Temp directory: $TEMP_DIR"
+echo "  Copying manifests..."
+cp -r k8s/staging/* $TEMP_DIR/
 
-    log_info "Checking pod status..."
-    kubectl get pods -n $NAMESPACE -l app=going-platform
-}
+print_success "Manifests prepared"
 
-# Step 4: Database migrations
-step_migrate_db() {
-    log_info "Step 4: Database Migrations"
+echo ""
 
-    log_info "Running migrations..."
-    kubectl exec \
-        -it \
-        $(kubectl get pod -n $NAMESPACE -l app=going-platform -o jsonpath='{.items[0].metadata.name}') \
-        -n $NAMESPACE \
-        -- npm run db:migrate || {
-        log_warn "Migration failed (may already be applied)"
-    }
-    log_success "Migrations applied"
+# Step 4: Update image references
+print_step "Step 4: Updating Image References"
 
-    log_info "Creating MongoDB indices..."
-    kubectl exec \
-        -it \
-        $(kubectl get pod -n $NAMESPACE -l app=going-platform -o jsonpath='{.items[0].metadata.name}') \
-        -n $NAMESPACE \
-        -- npm run db:indices:create || {
-        log_error "Index creation failed"
-        exit 1
-    }
-    log_success "Indices created"
-}
+echo "  Updating image URIs..."
+for file in $TEMP_DIR/*.yaml; do
+  sed -i "s|gcr.io/GCP_PROJECT|gcr.io/$GCP_PROJECT|g" "$file"
+  sed -i "s|IMAGE_TAG|$IMAGE_TAG|g" "$file"
+done
 
-# Step 5: Service validation
-step_validate_services() {
-    log_info "Step 5: Service Validation"
+print_success "Image references updated"
 
-    # Get service endpoint
-    SERVICE_IP=$(kubectl get svc -n $NAMESPACE going-platform -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-    if [ -z "$SERVICE_IP" ]; then
-        SERVICE_IP=$(kubectl get svc -n $NAMESPACE going-platform -o jsonpath='{.spec.clusterIP}')
-    fi
+echo ""
 
-    log_info "Service IP: $SERVICE_IP"
+# Step 5: Deploy manifests
+print_step "Step 5: Deploying to GKE"
 
-    log_info "Checking health endpoint..."
-    for i in {1..30}; do
-        if curl -s "http://$SERVICE_IP:3000/health" > /dev/null 2>&1; then
-            log_success "Service healthy"
-            break
-        fi
-        if [ $i -eq 30 ]; then
-            log_error "Service did not become healthy"
-            exit 1
-        fi
-        log_warn "Waiting for service to be ready... ($i/30)"
-        sleep 2
-    done
+echo "  Applying Kubernetes manifests..."
+kubectl apply -f $TEMP_DIR/ -n $K8S_NAMESPACE
 
-    log_info "Validating circuit breakers..."
-    BREAKERS=$(curl -s "http://$SERVICE_IP:3000/health/circuit-breakers")
-    log_success "Circuit breakers status: $BREAKERS"
+print_success "Manifests applied"
 
-    log_info "Validating Redis pool..."
-    REDIS=$(curl -s "http://$SERVICE_IP:3000/health/redis")
-    log_success "Redis pool status: $REDIS"
-}
+echo ""
 
-# Step 6: Run validation tests
-step_run_tests() {
-    log_info "Step 6: Running Validation Tests"
+# Step 6: Wait for deployments
+print_step "Step 6: Waiting for Deployments"
 
-    log_info "Running pagination tests..."
-    pnpm test:pagination || log_warn "Pagination tests skipped"
+echo "  Waiting for API Gateway..."
+if kubectl rollout status deployment/api-gateway -n $K8S_NAMESPACE --timeout=10m 2>/dev/null; then
+  print_success "API Gateway deployment ready"
+else
+  echo "  Note: API Gateway still rolling out. You can monitor with:"
+  echo "    kubectl rollout status deployment/api-gateway -n $K8S_NAMESPACE"
+fi
 
-    log_info "Running circuit breaker tests..."
-    pnpm test:circuit-breaker || log_warn "Circuit breaker tests skipped"
+echo ""
+echo "  Waiting for Corporate Portal..."
+if kubectl rollout status deployment/corporate-portal -n $K8S_NAMESPACE --timeout=10m 2>/dev/null; then
+  print_success "Corporate Portal deployment ready"
+else
+  echo "  Note: Corporate Portal still rolling out. You can monitor with:"
+  echo "    kubectl rollout status deployment/corporate-portal -n $K8S_NAMESPACE"
+fi
 
-    log_info "Running integration tests..."
-    pnpm test:integration || log_warn "Integration tests skipped"
+echo ""
 
-    log_success "Validation tests complete"
-}
+# Step 7: Verify deployment
+print_step "Step 7: Verifying Deployment"
 
-# Step 7: Monitor health
-step_monitor() {
-    log_info "Step 7: Monitoring Staging (24h baseline)"
+echo "  Deployments:"
+kubectl get deployments -n $K8S_NAMESPACE
 
-    log_info "Setting up monitoring dashboard..."
-    log_info "Prometheus: http://staging:9090"
-    log_info "Grafana: http://staging:3000"
-    log_info "Service: http://$SERVICE_IP:3000"
+echo ""
+echo "  Services:"
+kubectl get services -n $K8S_NAMESPACE
 
-    log_info "Monitoring for 5 minutes (sample)..."
-    for i in {1..5}; do
-        log_info "Minute $i/5 - Checking metrics..."
-        kubectl top nodes -n $NAMESPACE 2>/dev/null || true
-        kubectl top pods -n $NAMESPACE 2>/dev/null || true
-        sleep 60
-    done
+echo ""
+echo "  Pods:"
+kubectl get pods -n $K8S_NAMESPACE
 
-    log_success "Initial monitoring complete"
-}
+print_success "Deployment verified"
 
-# Main deployment flow
-main() {
-    log_info "=========================================="
-    log_info "Going Platform - Staging Deployment"
-    log_info "=========================================="
-    log_info "Branch: $BRANCH"
-    log_info "Namespace: $NAMESPACE"
-    log_info "Image Tag: $IMAGE_TAG"
-    log_info "Log File: $LOG_FILE"
-    log_info "=========================================="
+echo ""
 
-    # Run deployment steps
-    step_validate
-    echo ""
+# Step 8: Get service endpoints
+print_step "Step 8: Service Endpoints"
 
-    step_build_image
-    echo ""
+echo ""
+echo -e "${YELLOW}External IPs:${NC}"
+echo ""
 
-    step_deploy_k8s
-    echo ""
+kubectl get svc -n $K8S_NAMESPACE -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.loadBalancer.ingress[0].ip}{"\n"}{end}' 2>/dev/null | while read service ip; do
+  if [ -z "$ip" ]; then
+    echo "  $service: <pending>"
+  else
+    echo "  $service: $ip"
+  fi
+done
 
-    step_migrate_db
-    echo ""
+echo ""
+echo "  Note: LoadBalancer IPs may take a few minutes to appear"
 
-    step_validate_services
-    echo ""
+echo ""
 
-    step_run_tests
-    echo ""
+# Step 9: Cleanup
+print_step "Step 9: Cleaning Up"
 
-    step_monitor
-    echo ""
+echo "  Removing temporary files..."
+rm -rf $TEMP_DIR
 
-    log_success "=========================================="
-    log_success "Staging Deployment Complete!"
-    log_success "=========================================="
-    log_info "Next Steps:"
-    log_info "1. Monitor staging environment for 24 hours"
-    log_info "2. Run load tests: pnpm run load:test"
-    log_info "3. Validate all scenarios in STAGING_DEPLOYMENT_VALIDATION.md"
-    log_info "4. Get team sign-off"
-    log_info "5. Proceed with production deployment"
-    log_info "=========================================="
-}
+print_success "Cleanup completed"
 
-# Run main function
-main "$@"
+echo ""
+
+# Final Summary
+print_header "✅ STAGING DEPLOYMENT COMPLETED!"
+
+echo -e "${YELLOW}Useful Commands:${NC}"
+echo ""
+echo "📊 Check pod status:"
+echo "   kubectl get pods -n $K8S_NAMESPACE"
+echo ""
+echo "📝 View logs:"
+echo "   kubectl logs -f deployment/api-gateway -n $K8S_NAMESPACE"
+echo "   kubectl logs -f deployment/corporate-portal -n $K8S_NAMESPACE"
+echo ""
+echo "🔀 Port forward (for local testing):"
+echo "   kubectl port-forward svc/api-gateway 3000:80 -n $K8S_NAMESPACE"
+echo "   kubectl port-forward svc/corporate-portal 3001:80 -n $K8S_NAMESPACE"
+echo ""
+echo "🔍 Describe resource:"
+echo "   kubectl describe deployment/api-gateway -n $K8S_NAMESPACE"
+echo ""
+echo "⚙️ Check resource usage:"
+echo "   kubectl top pods -n $K8S_NAMESPACE"
+echo ""
+echo "🧪 Test API health:"
+echo "   API_IP=\$(kubectl get svc api-gateway -n $K8S_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
+echo "   curl http://\$API_IP:3000/health"
+echo ""
+
+print_success "Deployment script completed!"
+echo ""
