@@ -1,5 +1,4 @@
 # Dockerfile para Cloud Run - API Gateway
-# Bypasses Nx project graph by calling webpack-cli directly
 FROM node:20-slim AS builder
 
 # Instalar pnpm via corepack
@@ -7,31 +6,35 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copiar archivos de configuración del workspace (pnpm necesita pnpm-workspace.yaml)
+# Copiar archivos de configuración del workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
 
 # Copiar código fuente ANTES de instalar (para que pnpm resuelva workspace packages)
 COPY api-gateway/ ./api-gateway/
 COPY libs/ ./libs/
 
-# Instalar todas las dependencias (--no-frozen-lockfile evita error de pnpmfileChecksum)
+# Instalar todas las dependencias
 RUN pnpm install --no-frozen-lockfile
 
-# Build directamente con webpack-cli desde el directorio api-gateway
-# Esto bypasea el Nx project graph (que falla por version mismatch de @nx/jest)
-WORKDIR /app/api-gateway
-RUN npx webpack-cli build --node-env=production
+# Eliminar plugins problemáticos de nx.json antes de hacer el build.
+# @nx/jest tiene un version mismatch que rompe el project graph.
+# (Solo necesitamos el build target explícito de api-gateway/project.json)
+RUN node -e "const fs=require('fs');const nx=JSON.parse(fs.readFileSync('nx.json','utf8'));nx.plugins=[];fs.writeFileSync('nx.json',JSON.stringify(nx,null,2));console.log('Stripped nx plugins for clean project graph');"
+
+# Build con Nx (ahora el project graph se puede crear sin errores de plugins)
+# NxAppWebpackPlugin requiere el cached project graph que Nx crea aquí
+ENV NX_DAEMON=false
+RUN pnpm exec nx build api-gateway --skip-nx-cache
 
 # --- Imagen final ---
 FROM node:20-alpine AS final
 
 WORKDIR /app
 
-# Usar el package.json generado por NxAppWebpackPlugin (solo deps runtime reales)
-# generatePackageJson: true en webpack.config.js crea este archivo
+# Usar el package.json generado por NxAppWebpackPlugin (solo deps runtime)
 COPY --from=builder /app/dist/api-gateway/package.json ./package.json
 
-# Instalar solo dependencias de producción (imagen mínima)
+# Instalar solo dependencias de producción
 RUN npm install --production --ignore-scripts
 
 # Copiar código compilado del api-gateway
