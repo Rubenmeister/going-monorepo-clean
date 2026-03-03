@@ -6,7 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { ProxyModule } from './proxy/proxy.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { RbacModule } from './rbac/rbac.module';
-import { AuditModule } from './modules/audit/audit.module';
+// AuditModule temporarily disabled (pending domains-audit-core/application libs)
+// import { AuditModule } from './modules/audit/audit.module';
 import {
   HttpsMiddleware,
   RequestSignatureMiddleware,
@@ -35,7 +36,6 @@ import { HealthController } from './app/health.controller';
     ]),
     AuthModule,
     RbacModule,
-    AuditModule,
     ProxyModule,
     TrackingModule,
   ],
