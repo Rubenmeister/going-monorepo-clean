@@ -48,7 +48,7 @@ steps:
       - '--max-instances'
       - '10'
       - '--set-env-vars'
-      - 'NODE_ENV=production,JWT_SECRET=placeholder-update-in-cloud-run-console,JWT_EXPIRES_IN=15m'
+      - 'NODE_ENV=production,JWT_SECRET=placeholder-update-in-cloud-run-console,JWT_EXPIRES_IN=15m,USER_AUTH_SERVICE_URL=http://localhost:3009,TRANSPORT_SERVICE_URL=http://localhost:3006,PAYMENT_SERVICE_URL=http://localhost:3001,TOURS_SERVICE_URL=http://localhost:3005,ANFITRIONES_SERVICE_URL=http://localhost:3003,EXPERIENCIAS_SERVICE_URL=http://localhost:3004,ENVIOS_SERVICE_URL=http://localhost:3007,NOTIFICATIONS_SERVICE_URL=http://localhost:3008,TRACKING_SERVICE_URL=http://localhost:3002,BOOKING_SERVICE_URL=http://localhost:3010'
 
 images:
   - 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID'
