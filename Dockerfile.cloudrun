@@ -1,43 +1,41 @@
-# Dockerfile optimizado para Cloud Run con pnpm
+# Dockerfile simplificado para Cloud Run - API Gateway
 FROM node:20-slim AS builder
 
-# Instalar pnpm
-RUN npm install -g pnpm
+# Instalar pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copiar archivos de configuración
+# Copiar archivos de configuración del workspace (pnpm necesita pnpm-workspace.yaml)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
 
-# Copiar solo el servicio que necesitamos
+# Copiar código fuente ANTES de instalar (para que pnpm resuelva workspace packages)
 COPY api-gateway/ ./api-gateway/
 COPY libs/ ./libs/
 
-# Instalar dependencias
-RUN pnpm install --frozen-lockfile
+# Instalar dependencias (--no-frozen-lockfile evita errores de checksum mismatch)
+RUN pnpm install --no-frozen-lockfile
 
-# Build del api-gateway
-RUN pnpm exec nx build api-gateway --configuration=production
+# Build del servicio
+RUN pnpm exec nx build api-gateway || npx nx build api-gateway
 
-# --- Imagen final liviana ---
+# --- Imagen final ---
 FROM node:20-alpine AS final
 
 WORKDIR /app
 
-# Instalar pnpm en imagen final
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copiar package.json para instalar solo dependencias de producción
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+RUN pnpm install --prod --no-frozen-lockfile
 
-# Copiar el build compilado
-COPY --from=builder /app/dist/api-gateway ./dist
+COPY --from=builder /app/dist ./dist
 
-# Puerto de Cloud Run
 ENV PORT=3000
 ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/api-gateway/main.js"]

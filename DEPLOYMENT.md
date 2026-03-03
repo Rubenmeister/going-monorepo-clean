@@ -20,34 +20,41 @@ cdn.goingec.com          → Static assets CDN
 
 **A Records (Point to server IP)**
 
-```
+````
 Domain              A Record            Server IP
 -----               --------            ---------
 goingec.com         A                   YOUR_SERVER_IP
 *.goingec.com       A (wildcard)        YOUR_SERVER_IP
-app.goingec.com     A                   YOUR_SERVER_IP
-admin.goingec.com   A                   YOUR_SERVER_IP
-drivers.goingec.com A                   YOUR_SERVER_IP
 corporate.goingec.com A                 YOUR_SERVER_IP
 api.goingec.com     A                   YOUR_SERVER_IP
-```
+```app.goingec.com     A                   YOUR_SERVER_IP
+admin.goingec.com   A                   YOUR_SERVER_IP
+drivers.goingec.com  A
 
 **CNAME Records (For CDN/Services)**
 
-```
-CDN                 CNAME               Service
----                 -----               -------
-cdn.goingec.com     CNAME               cloudfront.amazonaws.com
+````
+
+CDN CNAME Service
+
+---
+
+cdn.goingec.com CNAME cloudfront.amazonaws.com
+
 ```
 
 **TXT Records (For verification)**
 
 ```
-Domain              TXT Record          Purpose
-------              ----------          -------
-goingec.com         v=spf1 ...          Email SPF
-goingec.com         _dmarc=v=DMARC1     Email DMARC
-```
+
+Domain TXT Record Purpose
+
+---
+
+goingec.com v=spf1 ... Email SPF
+goingec.com \_dmarc=v=DMARC1 Email DMARC
+
+````
 
 ---
 
@@ -67,11 +74,11 @@ sudo certbot certonly --nginx \
   -d admin.goingec.com \
   -d drivers.goingec.com \
   -d corporate.goingec.com \
-  -d api.goingec.com
+  -d api.goingecom
 
-# Auto-renewal
+# Auto-renewal.c
 sudo certbot renew --dry-run
-```
+````
 
 #### Wildcard Certificate
 
