@@ -1,7 +1,8 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import * as passport from 'passport'; // Necesario para el middleware de Auth
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const passport = require('passport'); // CJS require avoids ESM/CJS interop issue with 'import * as'
 
 @Module({})
 export class ProxyModule implements NestModule {
@@ -29,7 +30,7 @@ export class ProxyModule implements NestModule {
           target: services.auth,
           changeOrigin: true,
           pathRewrite: { '^/api/auth': '/' }, // Quita /api/auth
-        }),
+        })
       )
       .forRoutes('auth'); // Aplica a /api/auth/*
 
@@ -39,15 +40,16 @@ export class ProxyModule implements NestModule {
       consumer
         .apply(
           passport.authenticate('jwt', { session: false }), // 1. Valida el JWT
-          createProxyMiddleware({                         // 2. Si es válido, reenvía
+          createProxyMiddleware({
+            // 2. Si es válido, reenvía
             target: targetService,
             changeOrigin: true,
             pathRewrite: { [`^/api/${path}`]: '/' },
-          }),
+          })
         )
         .forRoutes(path); // Aplica a /api/{path}/*
     };
-    
+
     // Aplica el proxy protegido a cada microservicio
     applyAuthProxy('transport', services.transport);
     applyAuthProxy('payments', services.payments);
