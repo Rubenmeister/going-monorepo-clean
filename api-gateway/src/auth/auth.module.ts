@@ -4,13 +4,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GatewayTokenManagerService } from './gateway-token-manager.service';
 
 /**
  * Auth Module for API Gateway
  * Provides:
  * - JWT Strategy for token validation
  * - JWT Auth Guard for route protection
- * - Token blacklist checking
+ * - ITokenManager stub (GatewayTokenManagerService) for token blacklist checking
  *
  * Usage in feature modules:
  * @Module({
@@ -38,7 +39,22 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
       }),
     }),
   ],
-  providers: [JwtStrategy, JwtAuthGuard],
-  exports: [JwtStrategy, JwtAuthGuard, PassportModule, JwtModule],
+  providers: [
+    JwtStrategy,
+    JwtAuthGuard,
+    GatewayTokenManagerService,
+    {
+      provide: 'ITokenManager',
+      useExisting: GatewayTokenManagerService,
+    },
+  ],
+  exports: [
+    JwtStrategy,
+    JwtAuthGuard,
+    PassportModule,
+    JwtModule,
+    GatewayTokenManagerService,
+    'ITokenManager',
+  ],
 })
 export class AuthModule {}
