@@ -1,0 +1,43 @@
+# Dockerfile optimizado para Cloud Run con pnpm
+FROM node:20-slim AS builder
+
+# Instalar pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copiar archivos de configuración
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
+
+# Copiar solo el servicio que necesitamos
+COPY api-gateway/ ./api-gateway/
+COPY libs/ ./libs/
+
+# Instalar dependencias
+RUN pnpm install --frozen-lockfile
+
+# Build del api-gateway
+RUN pnpm exec nx build api-gateway --configuration=production
+
+# --- Imagen final liviana ---
+FROM node:20-alpine AS final
+
+WORKDIR /app
+
+# Instalar pnpm en imagen final
+RUN npm install -g pnpm
+
+# Copiar package.json para instalar solo dependencias de producción
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --prod --frozen-lockfile
+
+# Copiar el build compilado
+COPY --from=builder /app/dist/api-gateway ./dist
+
+# Puerto de Cloud Run
+ENV PORT=3000
+ENV NODE_ENV=production
+
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]

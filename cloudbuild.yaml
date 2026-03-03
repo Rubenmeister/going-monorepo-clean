@@ -1,20 +1,16 @@
 steps:
-  # Step 1: Build Docker image del API Gateway
+  # Step 1: Build Docker image con Dockerfile.cloudrun
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
       - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
-      - '--build-arg'
-      - 'SERVICE_NAME=api-gateway'
-      - '--build-arg'
-      - 'SERVICE_PORT=3000'
       - '-f'
-      - 'api-gateway/Dockerfile'
+      - 'Dockerfile.cloudrun'
       - '.'
-    timeout: '1200s'
+    timeout: '1800s'
 
-  # Step 2: Push imagen a Container Registry
+  # Step 2: Push imagen a Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
