@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 export function initSentry() {
   const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -9,18 +8,19 @@ export function initSentry() {
     console.warn('[Sentry] SENTRY_DSN not configured in production');
   }
 
+  if (!sentryDsn) {
+    return; // Skip initialization without DSN
+  }
+
   Sentry.init({
     dsn: sentryDsn,
     environment: process.env.NODE_ENV || 'development',
     integrations: [
-      nodeProfilingIntegration(),
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.OnUncaughtException(),
-      new Sentry.Integrations.OnUnhandledRejection(),
+      // Sentry v10+ API: use httpIntegration() instead of deprecated Sentry.Integrations.Http
+      Sentry.httpIntegration({ tracing: true }),
     ],
     // Performance Monitoring
     tracesSampleRate: isDevelopment ? 1.0 : 0.1,
-    profilesSampleRate: isDevelopment ? 1.0 : 0.1,
     // Release tracking
     release: process.env.VERSION || '1.0.0',
     // Capture breadcrumbs
@@ -43,9 +43,16 @@ export function initSentry() {
 }
 
 export function createSentryErrorHandler() {
-  return Sentry.Handlers.errorHandler();
+  // Sentry v10+ API: expressErrorHandler() replaces Handlers.errorHandler()
+  const sentryAny = Sentry as any;
+  if (typeof sentryAny.expressErrorHandler === 'function') {
+    return sentryAny.expressErrorHandler();
+  }
+  // Fallback: pass-through error middleware
+  return (err: any, req: any, res: any, next: any) => next(err);
 }
 
 export function createSentryRequestHandler() {
-  return Sentry.Handlers.requestHandler();
+  // Sentry v10+ handles request tracking automatically via httpIntegration
+  return (req: any, res: any, next: any) => next();
 }

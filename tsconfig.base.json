@@ -16,6 +16,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["frontend-webapp/src/app/*"],
+      "@going-monorepo-clean/shared-infrastructure": [
+        "libs/shared/infrastructure/src/index.ts"
+      ],
       "@going-monorepo-clean/shared-domain": [
         "libs/shared/domain/src/index.ts"
       ],

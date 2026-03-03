@@ -1,0 +1,8 @@
+{
+  "name": "@going-monorepo-clean/shared-infrastructure",
+  "version": "1.0.0",
+  "description": "Shared infrastructure utilities for Going platform",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {}
+}
