@@ -35,14 +35,15 @@ FROM node:20-alpine AS final
 
 WORKDIR /app
 
-# Usar el package.json generado por NxAppWebpackPlugin (solo deps runtime)
-COPY --from=builder /app/dist/api-gateway/package.json ./package.json
-
-# Instalar solo dependencias de producción
-RUN npm install --production --ignore-scripts
-
 # Copiar código compilado del api-gateway
 COPY --from=builder /app/dist/api-gateway ./dist
+
+# Usar el package.json raíz para garantizar que TODAS las deps runtime estén disponibles.
+# (El package.json generado por NxAppWebpackPlugin puede omitir deps como neverthrow)
+COPY --from=builder /app/package.json ./package.json
+
+# Instalar solo dependencias de producción (omit=dev)
+RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps
 
 ENV PORT=3000
 ENV NODE_ENV=production
