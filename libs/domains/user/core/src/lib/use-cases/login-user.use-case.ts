@@ -1,9 +1,12 @@
-import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import {
-  IUserRepository,
-  IPasswordHasher,
-  ITokenService,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { IUserRepository } from '../ports/iuser.repository';
+import { IPasswordHasher } from '../ports/ipassword-hasher';
+import { ITokenService } from '../ports/itoken.service';
 import { LoginUserDto } from '../dto/login-user.dto';
 
 export type LoginResponseDto = {
@@ -24,7 +27,7 @@ export class LoginUserUseCase {
     @Inject(IPasswordHasher)
     private readonly passwordHasher: IPasswordHasher,
     @Inject(ITokenService)
-    private readonly tokenService: ITokenService,
+    private readonly tokenService: ITokenService
   ) {}
 
   async execute(dto: LoginUserDto): Promise<LoginResponseDto> {
@@ -41,13 +44,20 @@ export class LoginUserUseCase {
       throw new UnauthorizedException('Account is not active');
     }
 
-    const isPasswordValid = await user.checkPassword(dto.password, this.passwordHasher);
+    const isPasswordValid = await user.checkPassword(
+      dto.password,
+      this.passwordHasher
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const roles = user.roles.map(r => r.toPrimitives());
-    const token = this.tokenService.generateAuthToken(user.id, user.email, roles);
+    const roles = user.roles.map((r) => r.toPrimitives());
+    const token = this.tokenService.generateAuthToken(
+      user.id,
+      user.email,
+      roles
+    );
 
     return {
       token,

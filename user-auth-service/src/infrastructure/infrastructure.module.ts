@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Redis } from 'ioredis';
 import {
   IUserRepository,
   IPasswordHasher,
@@ -34,6 +35,19 @@ import { AccountLockoutService } from './services/account-lockout.service';
     }),
   ],
   providers: [
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: (configService: ConfigService) => {
+        const url = configService.get('REDIS_URL') || 'redis://localhost:6379';
+        return new Redis(url, {
+          lazyConnect: true,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 0,
+          connectTimeout: 3000,
+        });
+      },
+      inject: [ConfigService],
+    },
     {
       provide: IUserRepository,
       useClass: MongooseUserRepository,

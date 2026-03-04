@@ -1,10 +1,13 @@
-import { Inject, Injectable, InternalServerErrorException, ConflictException } from '@nestjs/common';
 import {
-  User,
-  Role,
-  IUserRepository,
-  IPasswordHasher,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  ConflictException,
+} from '@nestjs/common';
+import { User } from '../entities/user.entity';
+import { Role } from '../value-objects/role.vo';
+import { IUserRepository } from '../ports/iuser.repository';
+import { IPasswordHasher } from '../ports/ipassword-hasher';
 import { RegisterUserDto } from '../dto/register-user.dto';
 
 @Injectable()
@@ -13,7 +16,7 @@ export class RegisterUserUseCase {
     @Inject(IUserRepository)
     private readonly userRepo: IUserRepository,
     @Inject(IPasswordHasher)
-    private readonly passwordHasher: IPasswordHasher,
+    private readonly passwordHasher: IPasswordHasher
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<{ id: string }> {
