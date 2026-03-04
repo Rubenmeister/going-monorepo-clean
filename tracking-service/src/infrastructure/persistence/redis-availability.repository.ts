@@ -6,7 +6,7 @@ import {
   GeoLocation,
   Coordinates,
   DriverAvailabilityStatus,
-} from '../../../domain/ports';
+} from '../../domain/ports';
 
 /**
  * Redis Availability Repository

@@ -11,7 +11,7 @@ export type NotificationType =
 
 @Schema({ _id: false })
 class DeviceTokenSchema {
-  @Prop({ required: true, enum: ['ios', 'android', 'web'] })
+  @Prop({ required: true, type: String, enum: ['ios', 'android', 'web'] })
   platform: 'ios' | 'android' | 'web';
 
   @Prop({ required: true, index: true })
@@ -51,6 +51,7 @@ export class NotificationExtendedModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['RIDE_MATCH', 'MESSAGE', 'STATUS_UPDATE', 'RATE_REMINDER', 'ALERT'],
     index: true,
   })
@@ -73,6 +74,7 @@ export class NotificationExtendedModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['PENDING', 'SENT', 'FAILED', 'READ'],
     index: true,
   })

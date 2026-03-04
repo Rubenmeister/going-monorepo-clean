@@ -25,7 +25,11 @@ export class UserModelSchema {
   @Prop([String])
   roles: string[];
 
-  @Prop({ required: true, enum: ['pending_verification', 'active', 'suspended'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['pending_verification', 'active', 'suspended'],
+  })
   status: UserStatus;
 
   @Prop()

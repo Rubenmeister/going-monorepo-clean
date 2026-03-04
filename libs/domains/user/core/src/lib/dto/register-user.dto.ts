@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsEmail, MinLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEmail,
+  MinLength,
+  IsOptional,
+  IsIn,
+  IsArray,
+} from 'class-validator';
 import { RoleType } from '@going-monorepo-clean/domains-user-core'; // Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
 
 export class RegisterUserDto {
@@ -24,6 +32,7 @@ export class RegisterUserDto {
   phone?: string;
 
   @IsNotEmpty()
-  @IsEnum(RoleType, { each: true })
+  @IsArray()
+  @IsIn(['admin', 'host', 'driver', 'user'], { each: true })
   roles: RoleType[];
 }

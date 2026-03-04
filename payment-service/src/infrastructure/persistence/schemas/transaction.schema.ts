@@ -27,7 +27,11 @@ export class TransactionModelSchema {
   @Prop({ required: true, type: MoneySchema })
   amount: MoneySchema;
 
-  @Prop({ required: true, enum: ['pending', 'succeeded', 'failed'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['pending', 'succeeded', 'failed'],
+  })
   status: TransactionStatus;
 
   @Prop()
@@ -35,5 +39,6 @@ export class TransactionModelSchema {
 }
 
 export type TransactionDocument = TransactionModelSchema & Document;
-export const TransactionSchema = SchemaFactory.createForClass(TransactionModelSchema);
-
+export const TransactionSchema = SchemaFactory.createForClass(
+  TransactionModelSchema
+);

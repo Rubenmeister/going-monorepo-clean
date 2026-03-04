@@ -172,6 +172,15 @@
       "@going-monorepo-clean/domains-experience-frontend-infrastructure": [
         "libs/domains/experience-frontend/infrastructure/src/index.ts"
       ],
+      "@going-monorepo-clean/domains-audit-core": [
+        "libs/domains/audit/core/src/index.ts"
+      ],
+      "@going-monorepo-clean/domains-audit-application": [
+        "libs/domains/audit/application/src/index.ts"
+      ],
+      "@going-monorepo-clean/shared-database": [
+        "libs/shared/database/src/index.ts"
+      ],
       "@going-monorepo-clean/features-corporate-auth": [
         "libs/features/corporate-auth/src/index.ts"
       ],

@@ -1,0 +1,83 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Frontend Webapp",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:webapp"],
+      "port": 3000
+    },
+    {
+      "name": "Admin Dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:admin"],
+      "port": 3001
+    },
+    {
+      "name": "Mobile User App (Web)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:mobile:user:web"],
+      "port": 8081
+    },
+    {
+      "name": "Mobile Driver App (Web)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:mobile:driver:web"],
+      "port": 8082
+    },
+    {
+      "name": "API Gateway",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "api-gateway"],
+      "port": 3000
+    },
+    {
+      "name": "User Auth Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "user-auth-service"],
+      "port": 3003
+    },
+    {
+      "name": "Payment Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "payment-service"],
+      "port": 3002
+    },
+    {
+      "name": "Booking Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "booking-service"],
+      "port": 3005
+    },
+    {
+      "name": "Analytics Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "analytics-service"],
+      "port": 3006
+    },
+    {
+      "name": "Transport Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "transport-service"],
+      "port": 3007
+    },
+    {
+      "name": "Notifications Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "notifications-service"],
+      "port": 3008
+    },
+    {
+      "name": "Tracking Service",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "tracking-service"],
+      "port": 3009
+    },
+    {
+      "name": "Storybook Design System",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "storybook"],
+      "port": 6006
+    }
+  ]
+}

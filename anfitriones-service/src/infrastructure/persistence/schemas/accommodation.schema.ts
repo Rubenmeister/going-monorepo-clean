@@ -52,7 +52,11 @@ export class AccommodationModelSchema {
   @Prop([String])
   amenities: string[];
 
-  @Prop({ required: true, enum: ['draft', 'published', 'archived'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+  })
   status: AccommodationStatus;
 
   @Prop()

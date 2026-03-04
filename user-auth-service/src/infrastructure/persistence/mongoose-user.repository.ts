@@ -2,18 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Result, ok, err } from 'neverthrow';
-import {
-  User,
-  IUserRepository,
-} from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
+import { User, IUserRepository } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 import { UUID } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope
-import { UserDocument, UserModelSchema } from './schemas/user.schema';
+import { UserDocument, UserModelSchema } from '../user.schema';
 
 @Injectable()
 export class MongooseUserRepository implements IUserRepository {
   constructor(
     @InjectModel(UserModelSchema.name)
-    private readonly model: Model<UserDocument>,
+    private readonly model: Model<UserDocument>
   ) {}
 
   async save(user: User): Promise<Result<void, Error>> {
@@ -33,9 +30,7 @@ export class MongooseUserRepository implements IUserRepository {
   async update(user: User): Promise<Result<void, Error>> {
     try {
       const primitives = user.toPrimitives();
-      await this.model
-        .updateOne({ id: user.id }, { $set: primitives })
-        .exec();
+      await this.model.updateOne({ id: user.id }, { $set: primitives }).exec();
       return ok(undefined);
     } catch (error) {
       return err(new Error(error.message));
@@ -60,7 +55,9 @@ export class MongooseUserRepository implements IUserRepository {
     }
   }
 
-  async findByVerificationToken(token: string): Promise<Result<User | null, Error>> {
+  async findByVerificationToken(
+    token: string
+  ): Promise<Result<User | null, Error>> {
     try {
       const doc = await this.model.findOne({ verificationToken: token }).exec();
       return ok(doc ? this.toDomain(doc) : null);

@@ -30,6 +30,7 @@ export class BookingModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['transport', 'accommodation', 'tour', 'experience'],
   })
   serviceType: ServiceType;
@@ -39,6 +40,7 @@ export class BookingModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
   })
   status: BookingStatus;

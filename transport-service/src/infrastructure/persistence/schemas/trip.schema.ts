@@ -42,7 +42,17 @@ export class TripModelSchema {
   @Prop({ required: true, type: MoneySchema })
   price: MoneySchema;
 
-  @Prop({ required: true, enum: ['pending', 'driver_assigned', 'in_progress', 'completed', 'cancelled'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: [
+      'pending',
+      'driver_assigned',
+      'in_progress',
+      'completed',
+      'cancelled',
+    ],
+  })
   status: TripStatus;
 
   @Prop()

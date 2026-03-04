@@ -15,7 +15,6 @@ export class TrackingSessionDocument {
   userId: string;
 
   @Prop({
-    required: true,
     type: {
       type: { type: String, enum: ['Point'], default: 'Point' },
       coordinates: [Number],

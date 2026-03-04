@@ -10,7 +10,11 @@ export class NotificationModelSchema {
   @Prop({ required: true, index: true })
   userId: string;
 
-  @Prop({ required: true, enum: Object.values(NotificationChannelType) })
+  @Prop({
+    required: true,
+    type: String,
+    enum: Object.values(NotificationChannelType),
+  })
   channel: string;
 
   @Prop({ required: true })
@@ -19,7 +23,11 @@ export class NotificationModelSchema {
   @Prop({ required: true })
   body: string;
 
-  @Prop({ required: true, enum: ['PENDING', 'SENT', 'FAILED', 'READ'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['PENDING', 'SENT', 'FAILED', 'READ'],
+  })
   status: string;
 
   @Prop()
@@ -33,4 +41,6 @@ export class NotificationModelSchema {
 }
 
 export type NotificationDocument = NotificationModelSchema & Document;
-export const NotificationSchema = SchemaFactory.createForClass(NotificationModelSchema);
+export const NotificationSchema = SchemaFactory.createForClass(
+  NotificationModelSchema
+);

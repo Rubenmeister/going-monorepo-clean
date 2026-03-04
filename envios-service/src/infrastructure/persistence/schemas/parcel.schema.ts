@@ -45,7 +45,17 @@ export class ParcelModelSchema {
   @Prop({ required: true, type: MoneySchema })
   price: MoneySchema;
 
-  @Prop({ required: true, enum: ['pending', 'pickup_assigned', 'in_transit', 'delivered', 'cancelled'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: [
+      'pending',
+      'pickup_assigned',
+      'in_transit',
+      'delivered',
+      'cancelled',
+    ],
+  })
   status: ParcelStatus;
 
   @Prop()

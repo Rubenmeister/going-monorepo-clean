@@ -7,7 +7,6 @@ import {
   ValidateNested,
   IsUUID,
   IsIn,
-  IsEnum,
   Max,
   IsLatitude,
   IsLongitude,
@@ -29,7 +28,7 @@ class LocationDto {
   @IsNotEmpty()
   @IsString()
   address: string;
-  
+
   @IsNotEmpty()
   @IsString()
   city: string;
@@ -81,6 +80,6 @@ export class CreateTourDto {
   maxGuests: number;
 
   @IsNotEmpty()
-  @IsEnum(TourCategory)
+  @IsIn(['ADVENTURE', 'CULTURAL', 'GASTRONOMY', 'NATURE'])
   category: TourCategory;
 }

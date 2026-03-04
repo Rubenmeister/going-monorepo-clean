@@ -49,12 +49,18 @@ export class ExperienceModelSchema {
   @Prop({ required: true })
   durationHours: number;
 
-  @Prop({ required: true, enum: ['draft', 'published', 'archived'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+  })
   status: ExperienceStatus;
 
   @Prop()
   createdAt: Date;
 }
 
-export const ExperienceSchema = SchemaFactory.createForClass(ExperienceModelSchema);
+export const ExperienceSchema = SchemaFactory.createForClass(
+  ExperienceModelSchema
+);
 ExperienceSchema.index({ 'location.city': 1 });

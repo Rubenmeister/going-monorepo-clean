@@ -5,7 +5,7 @@ import {
   GeoLocation,
   Coordinates,
   Distance,
-} from '../../../domain/ports';
+} from '../../domain/ports';
 
 /**
  * Redis Geo Repository

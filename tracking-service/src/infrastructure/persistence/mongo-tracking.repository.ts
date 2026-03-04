@@ -5,7 +5,7 @@ import {
   ITrackingSessionRepository,
   TrackingSession,
   GeoLocation,
-} from '../../../domain/ports';
+} from '../../domain/ports';
 import { TrackingSessionSchema } from '../schemas/tracking-session.schema';
 import {
   PaginationDto,

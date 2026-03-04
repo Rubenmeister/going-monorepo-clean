@@ -1,6 +1,6 @@
 import {
   IsString,
-  IsEnum,
+  IsIn,
   IsOptional,
   IsUUID,
   IsArray,
@@ -18,7 +18,7 @@ export class SendNotificationDto {
   @IsUUID()
   userId: string;
 
-  @IsEnum(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'])
+  @IsIn(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'])
   type: string;
 
   @IsString()
@@ -33,7 +33,7 @@ export class SendNotificationDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(['PUSH', 'SMS', 'EMAIL', 'IN_APP'], { each: true })
+  @IsIn(['PUSH', 'SMS', 'EMAIL', 'IN_APP'], { each: true })
   channels?: string[];
 
   @IsOptional()
@@ -91,11 +91,11 @@ export class GetUserNotificationsQueryDto {
   limit?: number;
 
   @IsOptional()
-  @IsEnum(['all', 'unread'])
+  @IsIn(['all', 'unread'])
   filter?: string;
 
   @IsOptional()
-  @IsEnum(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'])
+  @IsIn(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'])
   type?: string;
 }
 
@@ -153,7 +153,7 @@ export class RegisterDeviceTokenDto {
   @IsString()
   token: string;
 
-  @IsEnum(['ios', 'android', 'web'])
+  @IsIn(['ios', 'android', 'web'])
   platform: string;
 
   @IsOptional()
@@ -223,7 +223,7 @@ export class NotificationPreferencesDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'], {
+  @IsIn(['RIDE_MATCH', 'MESSAGE', 'STATUS', 'RATE_REMINDER', 'ALERT'], {
     each: true,
   })
   disabledTypes?: string[];

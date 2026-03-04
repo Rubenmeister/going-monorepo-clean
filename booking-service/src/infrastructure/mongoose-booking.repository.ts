@@ -8,7 +8,10 @@ import {
   ServiceType,
 } from '@going-monorepo-clean/domains-booking-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
-import { BookingDocument, BookingModelSchema } from './schemas/booking.schema';
+import {
+  BookingDocument,
+  BookingModelSchema,
+} from './persistence/schemas/booking.schema';
 import {
   PaginationDto,
   PaginatedResult,

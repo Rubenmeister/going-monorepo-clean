@@ -1,12 +1,12 @@
 # Parameterized Cloud Build for Going platform microservices
 # Usage:
 #   gcloud builds submit --config=cloudbuild-microservices.yaml \
-#     --substitutions=_SERVICE_NAME=user-auth-service,_SERVICE_PORT=3009,_MONGODB_URL=mongodb+srv://... \
+#     --substitutions=_SERVICE_NAME=user-auth-service,_MONGODB_URL=mongodb+srv://... \
 #     --project=going-5d1ae .
 
 substitutions:
   _SERVICE_NAME: user-auth-service
-  _SERVICE_PORT: '3000'
+  _DB_VAR_NAME: 'USER_DB_URL'
   _MONGODB_URL: 'mongodb://placeholder:27017/going'
   _JWT_SECRET: 'placeholder-update-in-cloud-run-console'
   _REDIS_URL: 'redis://localhost:6379'
@@ -66,7 +66,7 @@ steps:
       - '--timeout'
       - '60'
       - '--set-env-vars'
-      - 'NODE_ENV=production,JWT_SECRET=${_JWT_SECRET},JWT_EXPIRES_IN=15m,MONGODB_URL=${_MONGODB_URL},REDIS_URL=${_REDIS_URL}'
+      - 'NODE_ENV=production,JWT_SECRET=${_JWT_SECRET},JWT_EXPIRES_IN=15m,${_DB_VAR_NAME}=${_MONGODB_URL},REDIS_URL=${_REDIS_URL}'
 
 images:
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'

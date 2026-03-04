@@ -11,10 +11,7 @@ import {
   ITokenManager,
 } from '@going-monorepo-clean/domains-user-core';
 import { MongooseUserRepository } from './persistence/mongoose-user.repository';
-import {
-  UserModelSchema,
-  UserSchema,
-} from './persistence/schemas/user.schema';
+import { UserModelSchema, UserSchema } from './user.schema';
 import { BcryptHasher } from './services/bcrypt.hasher';
 import { JwtTokenService } from './services/jwt.token.service';
 import { RedisRefreshTokenRepository } from './persistence/redis-refresh-token.repository';

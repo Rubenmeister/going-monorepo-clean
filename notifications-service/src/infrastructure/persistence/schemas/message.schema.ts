@@ -11,7 +11,7 @@ export type MessageType = 'TEXT' | 'IMAGE' | 'MEDIA' | 'SYSTEM';
 
 @Schema({ _id: false })
 class MessageAttachmentSchema {
-  @Prop({ required: true, enum: ['image', 'file'] })
+  @Prop({ required: true, type: String, enum: ['image', 'file'] })
   type: 'image' | 'file';
 
   @Prop({ required: true })
@@ -60,6 +60,7 @@ export class MessageModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['PENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED'],
     index: true,
   })
@@ -67,6 +68,7 @@ export class MessageModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     enum: ['TEXT', 'IMAGE', 'MEDIA', 'SYSTEM'],
     default: 'TEXT',
   })

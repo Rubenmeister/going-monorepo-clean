@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { IBookingRepository } from '@going-monorepo-clean/domains-booking-core';
-import { MongooseBookingRepository } from './persistence/mongoose-booking.repository';
+import { MongooseBookingRepository } from './mongoose-booking.repository';
 import {
   BookingModelSchema,
   BookingSchema,

@@ -14,7 +14,12 @@ export class DeviceTokenModelSchema {
   @Prop({ required: true, index: true })
   userId: string;
 
-  @Prop({ required: true, enum: ['ios', 'android', 'web'], index: true })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['ios', 'android', 'web'],
+    index: true,
+  })
   platform: DevicePlatform;
 
   @Prop({ required: true, index: true })
@@ -22,6 +27,7 @@ export class DeviceTokenModelSchema {
 
   @Prop({
     required: true,
+    type: String,
     default: 'ACTIVE',
     enum: ['ACTIVE', 'INACTIVE', 'INVALID'],
   })

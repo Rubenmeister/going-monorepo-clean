@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { Result, ok, err } from 'neverthrow';
-import { IPaymentGateway, PaymentIntentResult } from '@going-monorepo-clean/domains-payment-core';
+import {
+  IPaymentGateway,
+  PaymentIntentResult,
+} from '@going-monorepo-clean/domains-payment-core';
 import { Money } from '@going-monorepo-clean/shared-domain';
 
 @Injectable()
@@ -16,14 +19,18 @@ export class StripeGateway implements IPaymentGateway {
     this.webhookSecret = this.configService.get('STRIPE_WEBHOOK_SECRET');
 
     if (!secretKey || !this.webhookSecret) {
-      this.logger.error('Stripe keys not configured');
-      throw new Error('Stripe keys not configured');
+      this.logger.warn(
+        'Stripe keys not configured - payment operations will fail until keys are set'
+      );
+      return;
     }
 
     this.stripe = new Stripe(secretKey, { apiVersion: '2024-06-20' as any });
   }
 
-  async createPaymentIntent(amount: Money): Promise<Result<PaymentIntentResult, Error>> {
+  async createPaymentIntent(
+    amount: Money
+  ): Promise<Result<PaymentIntentResult, Error>> {
     try {
       const intent = await this.stripe.paymentIntents.create({
         amount: amount.amount,
@@ -43,12 +50,15 @@ export class StripeGateway implements IPaymentGateway {
     }
   }
 
-  async constructWebhookEvent(payload: Buffer, signature: string): Promise<Result<any, Error>> {
+  async constructWebhookEvent(
+    payload: Buffer,
+    signature: string
+  ): Promise<Result<any, Error>> {
     try {
       const event = this.stripe.webhooks.constructEvent(
         payload,
         signature,
-        this.webhookSecret,
+        this.webhookSecret
       );
       return ok(event);
     } catch (err: any) {

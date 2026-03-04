@@ -55,10 +55,18 @@ export class TourModelSchema {
   @Prop({ required: true })
   maxGuests: number;
 
-  @Prop({ required: true, enum: Object.values(TourCategory) })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['ADVENTURE', 'CULTURAL', 'GASTRONOMY', 'NATURE'],
+  })
   category: TourCategory;
 
-  @Prop({ required: true, enum: ['draft', 'published', 'archived'] })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+  })
   status: TourStatus;
 
   @Prop()
