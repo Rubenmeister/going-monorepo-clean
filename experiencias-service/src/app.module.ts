@@ -11,13 +11,16 @@ import {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.EXPERIENCE_DB_URL), // .env
+    MongooseModule.forRoot(process.env.EXPERIENCE_DB_URL, {
+      lazyConnection: true,
+      connectionFactory: (conn) => {
+        conn.on('error', (e) => console.warn('MongoDB:', e.message));
+        return conn;
+      },
+    }), // .env
     InfrastructureModule,
   ],
   controllers: [ExperienceController],
-  providers: [
-    CreateExperienceUseCase,
-    SearchExperiencesUseCase,
-  ],
+  providers: [CreateExperienceUseCase, SearchExperiencesUseCase],
 })
 export class AppModule {}

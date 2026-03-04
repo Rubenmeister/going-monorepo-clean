@@ -8,6 +8,9 @@ ARG SERVICE_NAME=user-auth-service
 FROM node:20-slim AS builder
 ARG SERVICE_NAME
 
+# Install build tools required for native modules (bcrypt, etc.)
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 # Install pnpm via corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -53,7 +56,8 @@ ENV NX_DAEMON=false
 RUN pnpm exec nx build ${SERVICE_NAME} --skip-nx-cache
 
 # ── Stage 2: Production image ────────────────────────────────────────────────
-FROM node:20-alpine AS final
+# Use node:20-slim (glibc) to match builder so native modules work
+FROM node:20-slim AS final
 ARG SERVICE_NAME
 
 WORKDIR /app
@@ -61,12 +65,10 @@ WORKDIR /app
 # Copy compiled output
 COPY --from=builder /app/dist/${SERVICE_NAME} ./dist
 
-# Use root package.json so ALL declared runtime deps are available.
-# (The NxAppWebpackPlugin-generated package.json can miss transitive deps)
+# Copy node_modules from builder (includes compiled native modules for glibc)
+# This avoids re-running npm install and handles packages like bcrypt
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-
-# Install production deps only
-RUN npm install --omit=dev --ignore-scripts --legacy-peer-deps
 
 ENV NODE_ENV=production
 # Cloud Run injects PORT=8080 (overrides service default)

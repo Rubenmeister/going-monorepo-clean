@@ -14,7 +14,13 @@ import { AccountLockoutService } from './application/account-lockout.service';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.USER_DB_URL),
+    MongooseModule.forRoot(process.env.USER_DB_URL, {
+      lazyConnection: true,
+      connectionFactory: (conn) => {
+        conn.on('error', (e) => console.warn('MongoDB:', e.message));
+        return conn;
+      },
+    }),
     InfrastructureModule,
     AuditModule,
   ],

@@ -18,7 +18,13 @@ import {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.BOOKING_DB_URL), // .env
+    MongooseModule.forRoot(process.env.BOOKING_DB_URL, {
+      lazyConnection: true,
+      connectionFactory: (conn) => {
+        conn.on('error', (e) => console.warn('MongoDB:', e.message));
+        return conn;
+      },
+    }), // .env
     InfrastructureModule, // Importa el módulo que provee los repositorios
   ],
   controllers: [BookingController, HealthController],

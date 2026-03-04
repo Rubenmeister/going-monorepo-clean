@@ -12,7 +12,13 @@ import {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.TRANSPORT_DB_URL), // .env
+    MongooseModule.forRoot(process.env.TRANSPORT_DB_URL, {
+      lazyConnection: true,
+      connectionFactory: (conn) => {
+        conn.on('error', (e) => console.warn('MongoDB:', e.message));
+        return conn;
+      },
+    }), // .env
     InfrastructureModule,
   ],
   controllers: [TransportController, HealthController],

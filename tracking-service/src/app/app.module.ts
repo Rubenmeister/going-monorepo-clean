@@ -15,7 +15,14 @@ import { LocationTrackingGateway } from '../infrastructure/gateways/location-tra
       envFilePath: ['.env.local', '.env'],
     }),
     MongooseModule.forRoot(
-      process.env.MONGO_URL || 'mongodb://localhost:27017/tracking-db'
+      process.env.MONGO_URL || 'mongodb://localhost:27017/tracking-db',
+      {
+        lazyConnection: true,
+        connectionFactory: (conn) => {
+          conn.on('error', (e) => console.warn('MongoDB:', e.message));
+          return conn;
+        },
+      }
     ),
     InfrastructureModule,
     ApplicationModule,
