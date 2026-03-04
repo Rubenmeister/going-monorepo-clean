@@ -28,14 +28,26 @@ import { RedisPoolService } from '@going-monorepo-clean/shared-infrastructure';
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        store: await redisStore({
-          url: configService.get('REDIS_URL') || 'redis://localhost:6379',
-          lazyConnect: true,
-          enableOfflineQueue: false,
-          maxRetriesPerRequest: 1,
-        }),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const redisUrl =
+          configService.get('REDIS_URL') || 'redis://localhost:6379';
+        try {
+          const store = await redisStore({
+            url: redisUrl,
+            lazyConnect: true,
+            enableOfflineQueue: false,
+            maxRetriesPerRequest: 0,
+            connectTimeout: 3000,
+          });
+          return { store };
+        } catch (e) {
+          console.warn(
+            `[Cache] Redis unavailable (${redisUrl}), using memory store:`,
+            (e as Error).message
+          );
+          return {}; // falls back to default in-memory store
+        }
+      },
       isGlobal: true,
     }),
     MongooseModule.forFeature([

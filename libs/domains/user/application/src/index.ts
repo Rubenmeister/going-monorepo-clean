@@ -1,3 +1,12 @@
+// Re-export use cases and DTOs from domains-user-core
+// (the use-case implementations live in core to avoid infra import leakage)
+export {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  RegisterUserDto,
+  LoginUserDto,
+} from '@going-monorepo-clean/domains-user-core';
+
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 

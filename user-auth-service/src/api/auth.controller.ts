@@ -20,7 +20,8 @@ import {
   LoginUserUseCase,
 } from '@going-monorepo-clean/domains-user-application';
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
-import { UUID, ITokenManager } from '@going-monorepo-clean/shared-domain';
+import { UUID } from '@going-monorepo-clean/shared-domain';
+import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
 import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
 import { AccountLockoutService } from '../application/account-lockout.service';
 
@@ -40,7 +41,7 @@ export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
-    @Inject('ITokenManager')
+    @Inject(ITokenManager)
     private tokenManager: ITokenManager,
     private readonly auditLogService: AuditLogService,
     private readonly accountLockoutService: AccountLockoutService

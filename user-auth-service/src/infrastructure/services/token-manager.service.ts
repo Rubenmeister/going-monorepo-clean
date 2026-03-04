@@ -26,12 +26,12 @@ export class TokenManagerService implements ITokenManager {
   private readonly logger = new Logger(TokenManagerService.name);
 
   constructor(
-    @Inject('ITokenService')
+    @Inject(ITokenService)
     private tokenService: ITokenService,
-    @Inject('IRefreshTokenRepository')
+    @Inject(IRefreshTokenRepository)
     private refreshTokenRepo: IRefreshTokenRepository,
-    @Inject('ITokenBlacklistRepository')
-    private blacklistRepo: ITokenBlacklistRepository,
+    @Inject(ITokenBlacklistRepository)
+    private blacklistRepo: ITokenBlacklistRepository
   ) {}
 
   /**
@@ -40,14 +40,14 @@ export class TokenManagerService implements ITokenManager {
   async createTokenPair(
     userId: UUID,
     email: string,
-    roles: string[],
+    roles: string[]
   ): Promise<Result<TokenPair, Error>> {
     try {
       // 1. Generate access token (15 minutes)
       const accessToken = this.tokenService.generateAccessToken(
         userId,
         email,
-        roles,
+        roles
       );
 
       // 2. Generate refresh token (opaque, 7 days)
@@ -58,23 +58,30 @@ export class TokenManagerService implements ITokenManager {
       expiresAt.setDate(expiresAt.getDate() + 7);
 
       // 4. Create and save refresh token entity
-      const refreshToken = RefreshToken.create(userId, refreshTokenValue, expiresAt);
+      const refreshToken = RefreshToken.create(
+        userId,
+        refreshTokenValue,
+        expiresAt
+      );
       const saveResult = await this.refreshTokenRepo.save(refreshToken);
 
       if (saveResult.isErr()) {
         this.logger.error(
-          `Failed to save refresh token for user ${userId}: ${saveResult.error.message}`,
+          `Failed to save refresh token for user ${userId}: ${saveResult.error.message}`
         );
         return err(
-          new Error('Failed to create refresh token: ' + saveResult.error.message),
+          new Error(
+            'Failed to create refresh token: ' + saveResult.error.message
+          )
         );
       }
 
       // 5. Return token pair
-      const accessTokenExpiresIn = this.tokenService.getAccessTokenExpirationSeconds?.() || 900; // 15 min default
+      const accessTokenExpiresIn =
+        this.tokenService.getAccessTokenExpirationSeconds?.() || 900; // 15 min default
 
       this.logger.debug(
-        `Created token pair for user ${userId}: access token 15m, refresh token 7d`,
+        `Created token pair for user ${userId}: access token 15m, refresh token 7d`
       );
 
       return ok({
@@ -84,12 +91,14 @@ export class TokenManagerService implements ITokenManager {
       });
     } catch (error) {
       this.logger.error(
-        `Error creating token pair: ${error instanceof Error ? error.message : String(error)}`,
+        `Error creating token pair: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to create token pair'),
+          : new Error('Failed to create token pair')
       );
     }
   }
@@ -98,7 +107,7 @@ export class TokenManagerService implements ITokenManager {
    * Refresh an access token using a valid refresh token
    */
   async refreshAccessToken(
-    refreshToken: string,
+    refreshToken: string
   ): Promise<Result<AccessTokenResponse, Error>> {
     try {
       // 1. Validate refresh token exists and is not revoked
@@ -106,7 +115,7 @@ export class TokenManagerService implements ITokenManager {
 
       if (tokenResult.isErr()) {
         this.logger.warn(
-          `Error finding refresh token: ${tokenResult.error.message}`,
+          `Error finding refresh token: ${tokenResult.error.message}`
         );
         return err(new Error('Invalid refresh token'));
       }
@@ -121,14 +130,14 @@ export class TokenManagerService implements ITokenManager {
       // 2. Check if token is valid (not expired, not revoked)
       if (!storedToken.isValid()) {
         this.logger.warn(
-          `Refresh token invalid for user ${storedToken.userId}`,
+          `Refresh token invalid for user ${storedToken.userId}`
         );
         return err(
           new Error(
             storedToken.isExpired()
               ? 'Refresh token expired'
-              : 'Refresh token revoked',
-          ),
+              : 'Refresh token revoked'
+          )
         );
       }
 
@@ -142,7 +151,7 @@ export class TokenManagerService implements ITokenManager {
       const newAccessToken = this.tokenService.generateAccessToken(
         storedToken.userId,
         '', // Would be fetched from user in production
-        [], // Would be fetched from user in production
+        [] // Would be fetched from user in production
       );
 
       // 5. Optionally rotate refresh token if < 1 day remaining
@@ -154,12 +163,12 @@ export class TokenManagerService implements ITokenManager {
         // Token rotation: revoke old, create new
         const revokeResult = await this.refreshTokenRepo.revoke(
           refreshToken,
-          'rotated',
+          'rotated'
         );
 
         if (revokeResult.isErr()) {
           this.logger.warn(
-            `Failed to revoke old refresh token during rotation`,
+            `Failed to revoke old refresh token during rotation`
           );
           // Don't fail the request, just continue with old token
         } else {
@@ -171,11 +180,11 @@ export class TokenManagerService implements ITokenManager {
           const newRefreshTokenEntity = RefreshToken.create(
             storedToken.userId,
             newRefreshToken,
-            newExpiresAt,
+            newExpiresAt
           );
 
           const saveResult = await this.refreshTokenRepo.save(
-            newRefreshTokenEntity,
+            newRefreshTokenEntity
           );
 
           if (saveResult.isErr()) {
@@ -185,10 +194,11 @@ export class TokenManagerService implements ITokenManager {
         }
       }
 
-      const accessTokenExpiresIn = this.tokenService.getAccessTokenExpirationSeconds?.() || 900;
+      const accessTokenExpiresIn =
+        this.tokenService.getAccessTokenExpirationSeconds?.() || 900;
 
       this.logger.debug(
-        `Refreshed access token for user ${storedToken.userId}`,
+        `Refreshed access token for user ${storedToken.userId}`
       );
 
       return ok({
@@ -197,12 +207,14 @@ export class TokenManagerService implements ITokenManager {
       });
     } catch (error) {
       this.logger.error(
-        `Error refreshing access token: ${error instanceof Error ? error.message : String(error)}`,
+        `Error refreshing access token: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to refresh access token'),
+          : new Error('Failed to refresh access token')
       );
     }
   }
@@ -211,13 +223,15 @@ export class TokenManagerService implements ITokenManager {
    * Validate a refresh token and get its data
    */
   async validateRefreshToken(
-    refreshToken: string,
+    refreshToken: string
   ): Promise<Result<RefreshTokenData, Error>> {
     try {
       const tokenResult = await this.refreshTokenRepo.findByToken(refreshToken);
 
       if (tokenResult.isErr()) {
-        return err(new Error(`Failed to validate: ${tokenResult.error.message}`));
+        return err(
+          new Error(`Failed to validate: ${tokenResult.error.message}`)
+        );
       }
 
       if (!tokenResult.value) {
@@ -228,9 +242,7 @@ export class TokenManagerService implements ITokenManager {
 
       if (!token.isValid()) {
         return err(
-          new Error(
-            token.isExpired() ? 'Token expired' : 'Token revoked',
-          ),
+          new Error(token.isExpired() ? 'Token expired' : 'Token revoked')
         );
       }
 
@@ -244,7 +256,7 @@ export class TokenManagerService implements ITokenManager {
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to validate refresh token'),
+          : new Error('Failed to validate refresh token')
       );
     }
   }
@@ -252,15 +264,13 @@ export class TokenManagerService implements ITokenManager {
   /**
    * Revoke a single refresh token (logout)
    */
-  async revokeRefreshToken(
-    refreshToken: string,
-  ): Promise<Result<void, Error>> {
+  async revokeRefreshToken(refreshToken: string): Promise<Result<void, Error>> {
     try {
       const result = await this.refreshTokenRepo.revoke(refreshToken, 'logout');
 
       if (result.isErr()) {
         this.logger.warn(
-          `Failed to revoke refresh token: ${result.error.message}`,
+          `Failed to revoke refresh token: ${result.error.message}`
         );
         return err(result.error);
       }
@@ -271,7 +281,7 @@ export class TokenManagerService implements ITokenManager {
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to revoke refresh token'),
+          : new Error('Failed to revoke refresh token')
       );
     }
   }
@@ -281,30 +291,30 @@ export class TokenManagerService implements ITokenManager {
    */
   async revokeAllRefreshTokens(
     userId: UUID,
-    reason: string,
+    reason: string
   ): Promise<Result<number, Error>> {
     try {
       const result = await this.refreshTokenRepo.revokeAllByUserId(
         userId,
-        reason,
+        reason
       );
 
       if (result.isErr()) {
         this.logger.warn(
-          `Failed to revoke all tokens for user ${userId}: ${result.error.message}`,
+          `Failed to revoke all tokens for user ${userId}: ${result.error.message}`
         );
         return err(result.error);
       }
 
       this.logger.debug(
-        `Revoked all refresh tokens for user ${userId}, reason: ${reason}`,
+        `Revoked all refresh tokens for user ${userId}, reason: ${reason}`
       );
       return ok(result.value);
     } catch (error) {
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to revoke all refresh tokens'),
+          : new Error('Failed to revoke all refresh tokens')
       );
     }
   }
@@ -315,7 +325,7 @@ export class TokenManagerService implements ITokenManager {
   async revokeAccessToken(
     accessToken: string,
     userId: UUID,
-    reason: string,
+    reason: string
   ): Promise<Result<void, Error>> {
     try {
       // Extract JTI from token
@@ -338,12 +348,12 @@ export class TokenManagerService implements ITokenManager {
           jti,
           userId,
           reason as any,
-          expiresAt,
+          expiresAt
         );
 
         if (result.isErr()) {
           this.logger.warn(
-            `Failed to blacklist access token: ${result.error.message}`,
+            `Failed to blacklist access token: ${result.error.message}`
           );
           return err(result.error);
         }
@@ -359,7 +369,7 @@ export class TokenManagerService implements ITokenManager {
           jti,
           userId,
           reason as any,
-          futureExpiry,
+          futureExpiry
         );
 
         if (result.isErr()) {
@@ -370,12 +380,14 @@ export class TokenManagerService implements ITokenManager {
       }
     } catch (error) {
       this.logger.error(
-        `Error revoking access token: ${error instanceof Error ? error.message : String(error)}`,
+        `Error revoking access token: ${
+          error instanceof Error ? error.message : String(error)
+        }`
       );
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to revoke access token'),
+          : new Error('Failed to revoke access token')
       );
     }
   }
@@ -384,7 +396,7 @@ export class TokenManagerService implements ITokenManager {
    * Check if an access token is revoked
    */
   async isAccessTokenRevoked(
-    accessToken: string,
+    accessToken: string
   ): Promise<Result<boolean, Error>> {
     try {
       const jti = this.tokenService.extractJti(accessToken);
@@ -396,9 +408,7 @@ export class TokenManagerService implements ITokenManager {
       const result = await this.blacklistRepo.isBlacklisted(jti);
 
       if (result.isErr()) {
-        this.logger.warn(
-          `Error checking blacklist: ${result.error.message}`,
-        );
+        this.logger.warn(`Error checking blacklist: ${result.error.message}`);
         return err(result.error);
       }
 
@@ -407,7 +417,7 @@ export class TokenManagerService implements ITokenManager {
       return err(
         error instanceof Error
           ? error
-          : new Error('Failed to check token revocation'),
+          : new Error('Failed to check token revocation')
       );
     }
   }
