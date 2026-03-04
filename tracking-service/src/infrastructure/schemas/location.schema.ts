@@ -30,13 +30,8 @@ export class LocationSchema extends Document {
   @Prop({
     required: true,
     type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true,
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: [Number],
     },
   })
   coordinates: {

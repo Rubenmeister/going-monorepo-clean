@@ -9,9 +9,9 @@ import {
   NotificationModelSchema,
   NotificationSchema,
 } from './persistence/schemas/notification.schema';
-import { EmailNotificationGateway } from './gateways/email-notification.gateway';
-import { SmsNotificationGateway } from './gateways/sms-notification.gateway';
-import { PushNotificationGateway } from './gateways/push-notification.gateway';
+import { SendGridEmailGateway } from './gateways/email-notification.gateway';
+import { TwilioSmsGateway } from './gateways/sms-notification.gateway';
+import { FirebasePushNotificationGateway } from './gateways/push-notification.gateway';
 import { CompositeNotificationGateway } from './gateways/composite-notification.gateway';
 
 @Module({
@@ -26,18 +26,15 @@ import { CompositeNotificationGateway } from './gateways/composite-notification.
       useClass: MongooseNotificationRepository,
     },
     // Channel-specific gateways
-    EmailNotificationGateway,
-    SmsNotificationGateway,
-    PushNotificationGateway,
+    SendGridEmailGateway,
+    TwilioSmsGateway,
+    FirebasePushNotificationGateway,
     // Composite gateway routes to the correct channel gateway
     {
       provide: INotificationGateway,
       useClass: CompositeNotificationGateway,
     },
   ],
-  exports: [
-    INotificationRepository,
-    INotificationGateway,
-  ],
+  exports: [INotificationRepository, INotificationGateway],
 })
 export class InfrastructureModule {}

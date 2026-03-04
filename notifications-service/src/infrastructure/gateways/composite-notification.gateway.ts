@@ -4,9 +4,9 @@ import {
   Notification,
   INotificationGateway,
 } from '@going-monorepo-clean/domains-notification-core';
-import { EmailNotificationGateway } from './email-notification.gateway';
-import { SmsNotificationGateway } from './sms-notification.gateway';
-import { PushNotificationGateway } from './push-notification.gateway';
+import { SendGridEmailGateway } from './email-notification.gateway';
+import { TwilioSmsGateway } from './sms-notification.gateway';
+import { FirebasePushNotificationGateway } from './push-notification.gateway';
 
 /**
  * Composite gateway that routes notifications to the appropriate
@@ -17,9 +17,9 @@ export class CompositeNotificationGateway implements INotificationGateway {
   private readonly logger = new Logger(CompositeNotificationGateway.name);
 
   constructor(
-    private readonly emailGateway: EmailNotificationGateway,
-    private readonly smsGateway: SmsNotificationGateway,
-    private readonly pushGateway: PushNotificationGateway,
+    private readonly emailGateway: SendGridEmailGateway,
+    private readonly smsGateway: TwilioSmsGateway,
+    private readonly pushGateway: FirebasePushNotificationGateway
   ) {}
 
   async send(notification: Notification): Promise<Result<void, Error>> {
