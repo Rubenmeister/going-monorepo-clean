@@ -16,7 +16,7 @@ export class FindNearbyDriversUseCase {
   constructor(
     @Inject('GeolocationService')
     private readonly geoService: GeolocationService,
-    @Inject('DistanceCalculatorService')
+    @Inject(DistanceCalculatorService)
     private readonly distanceCalculator: DistanceCalculatorService,
     @Inject('IGeoLocationRepository')
     private readonly geoLocationRepo: IGeoLocationRepository,
