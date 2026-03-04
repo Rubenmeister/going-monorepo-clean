@@ -27,6 +27,9 @@ COPY libs/ ./libs/
 # Install all dependencies (pnpm workspace-aware)
 RUN pnpm install --no-frozen-lockfile
 
+# pnpm v9 blocks install scripts by default - explicitly rebuild native modules
+RUN pnpm rebuild bcrypt || true
+
 # Strip @nx/jest plugin (version mismatch breaks project graph)
 RUN node -e "\
   const fs = require('fs');\

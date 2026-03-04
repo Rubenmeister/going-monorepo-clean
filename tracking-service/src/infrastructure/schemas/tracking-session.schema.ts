@@ -17,13 +17,8 @@ export class TrackingSessionDocument {
   @Prop({
     required: true,
     type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      required: true,
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: [Number],
     },
   })
   startLocation: {
@@ -33,12 +28,8 @@ export class TrackingSessionDocument {
 
   @Prop({
     type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-    },
-    coordinates: {
-      type: [Number],
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: [Number],
     },
   })
   endLocation?: {
@@ -86,8 +77,9 @@ export class TrackingSessionDocument {
   expiresAt: Date;
 }
 
-export const TrackingSessionSchema =
-  SchemaFactory.createForClass(TrackingSessionDocument);
+export const TrackingSessionSchema = SchemaFactory.createForClass(
+  TrackingSessionDocument
+);
 
 // Create GeoJSON index for location queries
 TrackingSessionSchema.index({ startLocation: '2dsphere' });
