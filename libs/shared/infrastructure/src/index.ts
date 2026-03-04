@@ -1,3 +1,6 @@
+// Decorators
+export { CurrentUser } from './decorators/current-user.decorator';
+
 // Filters
 export { AllExceptionsFilter } from './filters/all-exceptions.filter';
 

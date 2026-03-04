@@ -3,7 +3,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RedisPoolService } from '@going-monorepo-clean/shared-infrastructure';
 import {
   ITrackingRepository,
   ITrackingGateway,
@@ -27,26 +26,15 @@ import {
   imports: [
     CacheModule.registerAsync({
       imports: [ConfigModule],
-      inject: [ConfigService, RedisPoolService],
-      useFactory: async (
-        configService: ConfigService,
-        redisPoolService: RedisPoolService
-      ) => {
-        const storeOptions = redisPoolService.getStoreOptions();
-        return {
-          store: await redisStore({
-            url: configService.get('REDIS_URL'),
-            // Connection pool settings
-            maxRetriesPerRequest: storeOptions.maxRetriesPerRequest,
-            enableReadyCheck: storeOptions.enableReadyCheck,
-            enableOfflineQueue: storeOptions.enableOfflineQueue,
-            connectTimeout: storeOptions.connectTimeout,
-            retryStrategy: storeOptions.retryStrategy,
-            keepAlive: storeOptions.keepAliveInterval,
-            lazyConnect: storeOptions.lazyConnect,
-          }),
-        };
-      },
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          url: configService.get('REDIS_URL') || 'redis://localhost:6379',
+          lazyConnect: true,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 1,
+        }),
+      }),
       isGlobal: true,
     }),
     MongooseModule.forFeature([
@@ -57,7 +45,6 @@ import {
     ]),
   ],
   providers: [
-    RedisPoolService,
     {
       provide: ITrackingRepository,
       useClass: RedisTrackingRepository,
