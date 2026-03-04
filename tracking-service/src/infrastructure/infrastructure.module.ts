@@ -21,6 +21,7 @@ import {
   TrackingSessionDocument,
   TrackingSessionSchema,
 } from './schemas/tracking-session.schema';
+import { RedisPoolService } from '@going-monorepo-clean/shared-infrastructure';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import {
     ]),
   ],
   providers: [
+    RedisPoolService,
     {
       provide: ITrackingRepository,
       useClass: RedisTrackingRepository,
