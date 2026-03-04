@@ -3,6 +3,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { Redis } from 'ioredis';
 import {
   ITrackingRepository,
   ITrackingGateway,
@@ -58,6 +59,19 @@ import { RedisPoolService } from '@going-monorepo-clean/shared-infrastructure';
     ]),
   ],
   providers: [
+    {
+      provide: Redis,
+      useFactory: (configService: ConfigService) => {
+        const url = configService.get('REDIS_URL') || 'redis://localhost:6379';
+        return new Redis(url, {
+          lazyConnect: true,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 0,
+          connectTimeout: 3000,
+        });
+      },
+      inject: [ConfigService],
+    },
     RedisPoolService,
     {
       provide: ITrackingRepository,
