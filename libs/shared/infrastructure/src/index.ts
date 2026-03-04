@@ -13,4 +13,4 @@ export { SentryInterceptor } from './interceptors/sentry.interceptor';
 export { CircuitBreakerService } from './services/circuit-breaker.service';
 export { RedisPoolService } from './services/redis-pool.service';
 export { TokenBucketService } from './services/token-bucket.service';
-export { WebsocketJwtService } from './services/websocket-jwt.service';
+export { WebSocketJwtService } from './services/websocket-jwt.service';
