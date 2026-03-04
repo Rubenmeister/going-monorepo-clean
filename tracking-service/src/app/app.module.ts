@@ -5,7 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { ApplicationModule } from '../application/application.module';
-import { GeoController } from '../api/geo.controller';
 import { LocationTrackingGateway } from '../infrastructure/gateways/location-tracking.gateway';
 
 @Module({
@@ -27,7 +26,7 @@ import { LocationTrackingGateway } from '../infrastructure/gateways/location-tra
     InfrastructureModule,
     ApplicationModule,
   ],
-  controllers: [AppController, GeoController],
+  controllers: [AppController],
   providers: [AppService, LocationTrackingGateway],
 })
 export class AppModule {}

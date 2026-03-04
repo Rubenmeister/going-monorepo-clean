@@ -1,6 +1,5 @@
-import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { UserStatus } from '@going-monorepo-clean/domains-user-core'; // Reemplaza con tu scope
 
 @Schema({ timestamps: true, _id: false })
 export class UserModelSchema {
@@ -25,14 +24,12 @@ export class UserModelSchema {
   @Prop([String])
   roles: string[];
 
-  @Prop(
-    raw({
-      type: String,
-      required: true,
-      enum: ['pending_verification', 'active', 'suspended'],
-    })
-  )
-  status: UserStatus;
+  @Prop({
+    type: String,
+    required: true,
+    enum: ['pending_verification', 'active', 'suspended'],
+  })
+  status: string;
 
   @Prop()
   createdAt: Date;
