@@ -16,15 +16,12 @@ export { SentryInterceptor } from './interceptors/sentry.interceptor';
 export { CircuitBreakerService } from './services/circuit-breaker.service';
 export { RedisPoolService } from './services/redis-pool.service';
 export { TokenBucketService } from './services/token-bucket.service';
-export { WebSocketJwtService } from './services/websocket-jwt.service';
 export {
+  WebSocketJwtService,
   WebSocketAuthPayload,
   WebSocketAuthResult,
 } from './services/websocket-jwt.service';
 
 // Audit log (shared persistence)
-export {
-  AuditLogDocument,
-  AuditLogSchema,
-} from '../../../../shared-infrastructure/src/lib/schemas/audit-log.schema';
-export { MongoAuditLogRepository } from '../../../../shared-infrastructure/src/lib/persistence/mongo-audit-log.repository';
+export { AuditLogDocument, AuditLogSchema } from './schemas/audit-log.schema';
+export { MongoAuditLogRepository } from './persistence/mongo-audit-log.repository';
