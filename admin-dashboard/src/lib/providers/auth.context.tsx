@@ -14,6 +14,7 @@ export interface AuthUser {
   lastName?: string;
   email?: string;
   roles: string[];
+  isAdmin?: () => boolean;
 }
 
 export interface AuthState {
@@ -38,10 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = localStorage.getItem(AUTH_TOKEN_KEY);
       if (token) {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        const roles = payload.roles || ['admin'];
         setUser({
           id: payload.sub || payload.userId,
           firstName: payload.firstName || 'Admin',
-          roles: payload.roles || ['admin'],
+          roles,
+          isAdmin: () => roles.includes('admin'),
         });
       }
     } catch {
