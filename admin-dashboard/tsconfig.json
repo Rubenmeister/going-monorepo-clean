@@ -1,6 +1,6 @@
 {
-  "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "target": "es2020",
     "jsx": "preserve",
     "strict": true,
     "noEmit": true,
@@ -14,30 +14,23 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "types": ["jest", "node"]
+    "plugins": [{ "name": "next" }]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "../admin-dashboard/.next/types/**/*.ts",
-    "../dist/admin-dashboard/.next/types/**/*.ts",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "jest.config.ts",
     "jest.config.cts",
     "**/*.spec.ts",
-    "**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts"
+    "**/*.test.ts"
   ]
 }
