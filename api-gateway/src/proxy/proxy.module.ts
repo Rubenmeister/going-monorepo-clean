@@ -1,17 +1,72 @@
-import { Module, MiddlewareConsumer, NestModule, Logger } from '@nestjs/common';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  Logger,
+  Injectable,
+  NestMiddleware,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import * as https from 'https';
+import * as http from 'http';
+import { URL } from 'url';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const passport = require('passport'); // CJS require avoids ESM/CJS interop issue with 'import * as'
+const passport = require('passport');
 
-// Force HTTP/1.1 agent — Cloud Run HTTPS uses HTTP/2 by default
-// but http-proxy doesn't support HTTP/2, causing silent hangs.
-const httpsAgent = new https.Agent({
-  rejectUnauthorized: false, // skip TLS verification for internal Cloud Run calls
-  keepAlive: false, // no keep-alive to avoid connection reuse issues
-  ALPNProtocols: ['http/1.1'], // force HTTP/1.1
-});
+/**
+ * Creates a pure Node.js reverse-proxy middleware targeting the given service URL.
+ * Avoids http-proxy-middleware entirely — it silently hangs on Cloud Run HTTPS (HTTP/2).
+ */
+function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
+  const logger = new Logger(`Proxy:${stripPrefix}`);
+  const parsed = new URL(targetBase);
+  const isHttps = parsed.protocol === 'https:';
+  const hostname = parsed.hostname;
+  const port = parsed.port ? parseInt(parsed.port) : isHttps ? 443 : 80;
+  const transport = isHttps ? https : http;
+
+  return (req: any, res: any, next: () => void) => {
+    // Strip prefix from path: /auth/register → /auth/register (kept as-is for auth)
+    // because user-auth-service already serves /auth/*
+    const rawPath = req.url || '/';
+    logger.debug(`→ ${req.method} ${rawPath} to ${targetBase}`);
+
+    const options: https.RequestOptions = {
+      hostname,
+      port,
+      path: rawPath,
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: hostname, // rewrite host header
+      },
+      rejectUnauthorized: false, // skip TLS verification for internal Cloud Run calls
+    };
+
+    const proxyReq = transport.request(options, (proxyRes) => {
+      logger.debug(`← ${proxyRes.statusCode} from ${targetBase}${rawPath}`);
+      res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+
+    proxyReq.on('error', (err) => {
+      logger.error(`Proxy error: ${err.message}`);
+      if (!res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({ statusCode: 502, message: 'Service unavailable' })
+        );
+      }
+    });
+
+    proxyReq.setTimeout(25000, () => {
+      logger.error(`Proxy timeout for ${targetBase}${rawPath}`);
+      proxyReq.destroy();
+    });
+
+    req.pipe(proxyReq, { end: true });
+  };
+}
 
 @Module({})
 export class ProxyModule implements NestModule {
@@ -20,69 +75,54 @@ export class ProxyModule implements NestModule {
   constructor(private readonly configService: ConfigService) {}
 
   configure(consumer: MiddlewareConsumer) {
-    const services = {
-      auth: this.configService.get('USER_AUTH_SERVICE_URL'),
-      transport: this.configService.get('TRANSPORT_SERVICE_URL'),
-      payments: this.configService.get('PAYMENT_SERVICE_URL'),
-      tours: this.configService.get('TOURS_SERVICE_URL'),
-      accommodations: this.configService.get('ANFITRIONES_SERVICE_URL'),
-      experiences: this.configService.get('EXPERIENCIAS_SERVICE_URL'),
-      parcels: this.configService.get('ENVIOS_SERVICE_URL'),
-      notifications: this.configService.get('NOTIFICATIONS_SERVICE_URL'),
-      tracking: this.configService.get('TRACKING_SERVICE_URL'),
-      bookings: this.configService.get('BOOKING_SERVICE_URL'),
+    const svc = {
+      auth: this.configService.get<string>('USER_AUTH_SERVICE_URL', ''),
+      transport: this.configService.get<string>('TRANSPORT_SERVICE_URL', ''),
+      payments: this.configService.get<string>('PAYMENT_SERVICE_URL', ''),
+      tours: this.configService.get<string>('TOURS_SERVICE_URL', ''),
+      accommodations: this.configService.get<string>(
+        'ANFITRIONES_SERVICE_URL',
+        ''
+      ),
+      experiences: this.configService.get<string>(
+        'EXPERIENCIAS_SERVICE_URL',
+        ''
+      ),
+      parcels: this.configService.get<string>('ENVIOS_SERVICE_URL', ''),
+      notifications: this.configService.get<string>(
+        'NOTIFICATIONS_SERVICE_URL',
+        ''
+      ),
+      tracking: this.configService.get<string>('TRACKING_SERVICE_URL', ''),
+      bookings: this.configService.get<string>('BOOKING_SERVICE_URL', ''),
     };
 
-    this.logger.log(`Proxy configured → auth: ${services.auth}`);
+    this.logger.log(`Proxy ready → auth: ${svc.auth}`);
 
-    const makeProxy = (target: string, prefix: string) =>
-      createProxyMiddleware({
-        target,
-        changeOrigin: true,
-        secure: false,
-        agent: httpsAgent,
-        pathRewrite: (path: string) =>
-          path.replace(new RegExp(`^/${prefix}`), '') || '/',
-        on: {
-          error: (err: Error, _req: any, res: any) => {
-            this.logger.error(`Proxy error [${prefix}]: ${err.message}`);
-            if (!res.headersSent) {
-              res.writeHead(502, { 'Content-Type': 'application/json' });
-              res.end(
-                JSON.stringify({
-                  statusCode: 502,
-                  message: 'Service unavailable',
-                })
-              );
-            }
-          },
-          proxyReq: (_proxyReq: any, req: any) => {
-            this.logger.debug(`→ [${prefix}] ${req.method} ${req.url}`);
-          },
-        },
-      } as any);
+    // --- PUBLIC: /auth/* → user-auth-service (no JWT required) ---
+    if (svc.auth) {
+      consumer.apply(makeForwardMiddleware(svc.auth, 'auth')).forRoutes('auth');
+    }
 
-    // --- PUBLIC: /auth/* → user-auth-service ---
-    consumer.apply(makeProxy(services.auth, 'auth')).forRoutes('auth');
-
-    // --- PROTECTED: JWT + proxy ---
-    const guard = (path: string, target: string) => {
+    // --- PROTECTED: JWT guard + forward ---
+    const guard = (prefix: string, target: string) => {
+      if (!target) return;
       consumer
         .apply(
           passport.authenticate('jwt', { session: false }),
-          makeProxy(target, path)
+          makeForwardMiddleware(target, prefix)
         )
-        .forRoutes(path);
+        .forRoutes(prefix);
     };
 
-    guard('transport', services.transport);
-    guard('payments', services.payments);
-    guard('tours', services.tours);
-    guard('accommodations', services.accommodations);
-    guard('experiences', services.experiences);
-    guard('parcels', services.parcels);
-    guard('notifications', services.notifications);
-    guard('tracking', services.tracking);
-    guard('bookings', services.bookings);
+    guard('transport', svc.transport);
+    guard('payments', svc.payments);
+    guard('tours', svc.tours);
+    guard('accommodations', svc.accommodations);
+    guard('experiences', svc.experiences);
+    guard('parcels', svc.parcels);
+    guard('notifications', svc.notifications);
+    guard('tracking', svc.tracking);
+    guard('bookings', svc.bookings);
   }
 }
