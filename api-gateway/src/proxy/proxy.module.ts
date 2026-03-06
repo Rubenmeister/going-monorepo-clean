@@ -28,13 +28,17 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
   return (req: any, res: any, next: () => void) => {
     // Strip prefix from path: /auth/register → /auth/register (kept as-is for auth)
     // because user-auth-service already serves /auth/*
+    // NestJS strips the route prefix from req.url when mounting middleware via forRoutes().
+    // e.g. forRoutes('auth') + incoming /auth/register → req.url = /register
+    // We must prepend the prefix back so the upstream service gets /auth/register.
     const rawPath = req.url || '/';
-    logger.debug(`→ ${req.method} ${rawPath} to ${targetBase}`);
+    const proxiedPath = `/${stripPrefix}${rawPath === '/' ? '' : rawPath}`;
+    logger.debug(`→ ${req.method} ${proxiedPath} to ${targetBase}`);
 
     const options: https.RequestOptions = {
       hostname,
       port,
-      path: rawPath,
+      path: proxiedPath,
       method: req.method,
       headers: {
         ...req.headers,
@@ -60,7 +64,7 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
     });
 
     proxyReq.setTimeout(25000, () => {
-      logger.error(`Proxy timeout for ${targetBase}${rawPath}`);
+      logger.error(`Proxy timeout for ${targetBase}${proxiedPath}`);
       proxyReq.destroy();
     });
 
