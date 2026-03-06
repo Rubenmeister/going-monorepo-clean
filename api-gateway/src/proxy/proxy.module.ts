@@ -35,6 +35,14 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
     const proxiedPath = `/${stripPrefix}${rawPath === '/' ? '' : rawPath}`;
     logger.debug(`→ ${req.method} ${proxiedPath} to ${targetBase}`);
 
+    // NestJS body-parser already consumed the request stream before middleware runs.
+    // Must re-serialize from req.body instead of piping the raw stream.
+    const bodyStr =
+      req.body && Object.keys(req.body).length > 0
+        ? JSON.stringify(req.body)
+        : '';
+    const bodyBuf = Buffer.from(bodyStr, 'utf8');
+
     const options: https.RequestOptions = {
       hostname,
       port,
@@ -42,13 +50,15 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
       method: req.method,
       headers: {
         ...req.headers,
-        host: hostname, // rewrite host header
+        host: hostname,
+        'content-type': 'application/json',
+        'content-length': bodyBuf.length,
       },
-      rejectUnauthorized: false, // skip TLS verification for internal Cloud Run calls
+      rejectUnauthorized: false,
     };
 
     const proxyReq = transport.request(options, (proxyRes) => {
-      logger.debug(`← ${proxyRes.statusCode} from ${targetBase}${rawPath}`);
+      logger.debug(`← ${proxyRes.statusCode} from ${targetBase}${proxiedPath}`);
       res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
       proxyRes.pipe(res, { end: true });
     });
@@ -68,7 +78,8 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
       proxyReq.destroy();
     });
 
-    req.pipe(proxyReq, { end: true });
+    if (bodyBuf.length > 0) proxyReq.write(bodyBuf);
+    proxyReq.end();
   };
 }
 
