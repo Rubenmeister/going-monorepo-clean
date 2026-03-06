@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { Button } from '@going-monorepo-clean/shared-ui';
 import { useRouter } from 'next/navigation';
@@ -54,7 +55,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const [stats, setStats] = useState({
     totalBookings: 156,
-    totalRevenue: 18450.50,
+    totalRevenue: 18450.5,
     activeUsers: 342,
     completedBookings: 128,
     conversionRate: 82.05,
@@ -103,38 +104,56 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-6 gap-4 mb-8">
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Total Reservas</h4>
-              <p className="text-2xl font-bold text-[#0033A0]">{stats.totalBookings}</p>
-              <p className="text-xs text-green-600 mt-1">+12% vs mes anterior</p>
+              <p className="text-2xl font-bold text-[#0033A0]">
+                {stats.totalBookings}
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                +12% vs mes anterior
+              </p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Ingresos</h4>
-              <p className="text-2xl font-bold text-green-600">${stats.totalRevenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-green-600">
+                ${stats.totalRevenue.toFixed(2)}
+              </p>
               <p className="text-xs text-green-600 mt-1">+8% vs mes anterior</p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Usuarios Activos</h4>
-              <p className="text-2xl font-bold text-blue-600">{stats.activeUsers}</p>
-              <p className="text-xs text-green-600 mt-1">+15% vs mes anterior</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {stats.activeUsers}
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                +15% vs mes anterior
+              </p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Completadas</h4>
-              <p className="text-2xl font-bold text-purple-600">{stats.completedBookings}</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {stats.completedBookings}
+              </p>
               <p className="text-xs text-green-600 mt-1">+5% vs mes anterior</p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Conversión</h4>
-              <p className="text-2xl font-bold text-orange-600">{stats.conversionRate}%</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {stats.conversionRate}%
+              </p>
               <p className="text-xs text-red-600 mt-1">-2% vs mes anterior</p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-4">
               <h4 className="text-gray-600 text-sm mb-1">Rating Promedio</h4>
-              <p className="text-2xl font-bold text-yellow-600">⭐ {stats.averageRating}</p>
-              <p className="text-xs text-green-600 mt-1">+0.2 vs mes anterior</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                ⭐ {stats.averageRating}
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                +0.2 vs mes anterior
+              </p>
             </div>
           </div>
 
@@ -169,22 +188,30 @@ export default function AnalyticsPage() {
               <tbody>
                 <tr className="border-b">
                   <td className="py-2">Ingresos Totales</td>
-                  <td className="text-right font-semibold">${stats.totalRevenue.toFixed(2)}</td>
+                  <td className="text-right font-semibold">
+                    ${stats.totalRevenue.toFixed(2)}
+                  </td>
                   <td className="text-right text-green-600">+8%</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Promedio por Reserva</td>
-                  <td className="text-right font-semibold">${(stats.totalRevenue / stats.totalBookings).toFixed(2)}</td>
+                  <td className="text-right font-semibold">
+                    ${(stats.totalRevenue / stats.totalBookings).toFixed(2)}
+                  </td>
                   <td className="text-right text-green-600">+3%</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Ingresos Pendientes</td>
-                  <td className="text-right font-semibold">${(stats.totalRevenue * 0.15).toFixed(2)}</td>
+                  <td className="text-right font-semibold">
+                    ${(stats.totalRevenue * 0.15).toFixed(2)}
+                  </td>
                   <td className="text-right text-yellow-600">±0%</td>
                 </tr>
                 <tr>
                   <td className="py-2 font-semibold">Ingresos Netos</td>
-                  <td className="text-right font-semibold text-green-600">${(stats.totalRevenue * 0.85).toFixed(2)}</td>
+                  <td className="text-right font-semibold text-green-600">
+                    ${(stats.totalRevenue * 0.85).toFixed(2)}
+                  </td>
                   <td className="text-right text-green-600">+8%</td>
                 </tr>
               </tbody>

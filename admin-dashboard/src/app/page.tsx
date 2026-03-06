@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { Card, CardBody, Button, Alert } from '@going-monorepo-clean/shared-ui';
 import { useRouter } from 'next/navigation';

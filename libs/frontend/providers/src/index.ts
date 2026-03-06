@@ -1,3 +1,4 @@
+'use client';
 // Auth Context (React Context + Provider + Hook)
 export { AuthProvider, useAuth } from './lib/auth.context';
 export type { AuthUser, AuthState } from './lib/auth.context';

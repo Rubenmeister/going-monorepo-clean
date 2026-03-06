@@ -146,7 +146,7 @@
     "lint-staged": "^16.2.7",
     "metro-config": "~0.82.4",
     "metro-resolver": "~0.82.4",
-    "nx": "22.0.3",
+    "nx": "22.2.0",
     "postcss": "8.4.38",
     "prettier": "^2.6.2",
     "react-native-svg": "~15.11.2",
