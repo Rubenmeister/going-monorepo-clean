@@ -16,6 +16,11 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@going-monorepo-clean/frontend-providers": ["./src/lib/providers"],
+      "@going-monorepo-clean/shared-ui": ["./src/lib/shared-ui"]
+    },
     "plugins": [{ "name": "next" }]
   },
   "include": [
