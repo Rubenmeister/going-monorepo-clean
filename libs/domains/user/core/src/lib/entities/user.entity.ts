@@ -52,7 +52,6 @@ export class User {
     phone?: string;
     roles: Role[];
   }): Result<User, Error> {
-    
     if (props.firstName.length < 2) {
       return err(new Error('First name is too short'));
     }
@@ -60,9 +59,9 @@ export class User {
     const user = new User({
       id: uuidv4(),
       ...props,
-      status: 'pending_verification',
+      status: 'active',
       createdAt: new Date(),
-      verificationToken: uuidv4(),
+      verificationToken: undefined,
     });
 
     return ok(user);
@@ -76,7 +75,7 @@ export class User {
       firstName: this.firstName,
       lastName: this.lastName,
       phone: this.phone,
-      roles: this.roles.map(role => role.toPrimitives()),
+      roles: this.roles.map((role) => role.toPrimitives()),
       status: this.status,
       createdAt: this.createdAt,
       verificationToken: this.verificationToken,
@@ -99,11 +98,14 @@ export class User {
     return ok(undefined);
   }
 
-  public checkPassword(password: string, hasher: IPasswordHasher): Promise<boolean> {
+  public checkPassword(
+    password: string,
+    hasher: IPasswordHasher
+  ): Promise<boolean> {
     return hasher.compare(password, this.passwordHash);
   }
-  
+
   public hasRole(role: RoleType): boolean {
-    return this.roles.some(r => r.value === role);
+    return this.roles.some((r) => r.value === role);
   }
 }
