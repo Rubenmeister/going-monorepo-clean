@@ -16,7 +16,7 @@ export class MongooseUserRepository implements IUserRepository {
   async save(user: User): Promise<Result<void, Error>> {
     try {
       const primitives = user.toPrimitives();
-      const newDoc = new this.model(primitives);
+      const newDoc = new this.model({ ...primitives, _id: primitives.id });
       await newDoc.save();
       return ok(undefined);
     } catch (error) {
