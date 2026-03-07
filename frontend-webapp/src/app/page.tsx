@@ -11,10 +11,10 @@ const SERVICES = [
     icon: '🚗',
     title: 'Transporte',
     description:
-      'Viaja cómodo y seguro a cualquier destino. Conductores verificados, tarifas transparentes.',
+      'Privado (Economy, Comfort, Premium) o Compartido para ahorrar hasta 60%. Conductores verificados, seguimiento en tiempo real.',
     photo:
       'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80&auto=format',
-    href: '/services',
+    href: '/services/transport',
     color: '#ff4c41',
   },
   {
