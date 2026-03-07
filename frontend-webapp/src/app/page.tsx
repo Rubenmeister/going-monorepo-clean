@@ -125,6 +125,87 @@ const TESTIMONIALS = [
   },
 ];
 
+const PROVIDERS = [
+  {
+    icon: '🚗',
+    title: 'Conductor',
+    description:
+      'Genera ingresos manejando tu propio vehículo. Tú decides tus horarios y zonas de trabajo.',
+    stats: '+40% ingresos promedio',
+    href: '/auth/register',
+    color: '#ff4c41',
+  },
+  {
+    icon: '🏨',
+    title: 'Anfitrión',
+    description:
+      'Alquila tu propiedad o habitaciones a viajeros verificados. Gestión simple desde la app.',
+    stats: '98% tasa de ocupación',
+    href: '/auth/register',
+    color: '#10B981',
+  },
+  {
+    icon: '🗺️',
+    title: 'Guía de Tours',
+    description:
+      'Comparte tu conocimiento local y lleva a viajeros a descubrir los mejores rincones de Ecuador.',
+    stats: 'Agenda siempre llena',
+    href: '/auth/register',
+    color: '#3B82F6',
+  },
+  {
+    icon: '🎭',
+    title: 'Operador de Experiencias',
+    description:
+      'Ofrece gastronomía, aventura, artesanía y cultura local. Conecta con miles de turistas.',
+    stats: '5K+ turistas al mes',
+    href: '/auth/register',
+    color: '#F59E0B',
+  },
+];
+
+const ACADEMY_PREVIEW = [
+  {
+    icon: '🚗',
+    category: 'Conductores',
+    title: 'Cómo ser conductor Going',
+    description:
+      'Aprende todo lo que necesitas para empezar a generar ingresos como conductor verificado.',
+    lessons: 8,
+    duration: '2h 30min',
+    level: 'Principiante',
+    levelColor: 'text-green-700 bg-green-100',
+    students: 5234,
+    rating: 4.8,
+  },
+  {
+    icon: '🏨',
+    category: 'Anfitriones',
+    title: 'Gestiona tu alojamiento',
+    description:
+      'Maximiza tus ingresos: fotografía profesional, precios dinámicos y atención al huésped.',
+    lessons: 12,
+    duration: '4h 15min',
+    level: 'Intermedio',
+    levelColor: 'text-yellow-700 bg-yellow-100',
+    students: 3421,
+    rating: 4.9,
+  },
+  {
+    icon: '🗺️',
+    category: 'Guías y Operadores',
+    title: 'Crea experiencias únicas',
+    description:
+      'Diseña tours y experiencias memorables que atraigan a viajeros nacionales e internacionales.',
+    lessons: 10,
+    duration: '3h 00min',
+    level: 'Avanzado',
+    levelColor: 'text-red-700 bg-red-100',
+    students: 1823,
+    rating: 4.7,
+  },
+];
+
 export default function Home() {
   const { auth } = useMonorepoApp();
   const [searchFrom, setSearchFrom] = useState('');
@@ -418,6 +499,159 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── Únete como proveedor ───────────────────────────── */}
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-10">
+          <span
+            className="inline-block text-sm font-bold uppercase tracking-widest mb-3 px-4 py-1.5 rounded-full"
+            style={{ backgroundColor: '#fff2f2', color: '#ff4c41' }}
+          >
+            Para proveedores
+          </span>
+          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            Únete a la plataforma y genera ingresos
+          </h2>
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+            Conductores, anfitriones, guías de tours y operadores de
+            experiencias. Going te da las herramientas para crecer tu negocio.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {PROVIDERS.map((p) => (
+            <Link
+              key={p.title}
+              href={p.href}
+              className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col"
+            >
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-4 transition-transform group-hover:scale-110"
+                style={{ backgroundColor: `${p.color}18` }}
+              >
+                {p.icon}
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {p.title}
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-4">
+                {p.description}
+              </p>
+              <div
+                className="text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-4"
+                style={{ backgroundColor: `${p.color}15`, color: p.color }}
+              >
+                ✓ {p.stats}
+              </div>
+              <div
+                className="text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all"
+                style={{ color: '#ff4c41' }}
+              >
+                Registrarse como {p.title} →
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Academia Going ─────────────────────────────────── */}
+      <section className="py-16 px-4" style={{ backgroundColor: '#0f172a' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <span
+                className="inline-block text-sm font-bold uppercase tracking-widest mb-3 px-4 py-1.5 rounded-full"
+                style={{ backgroundColor: '#ff4c411a', color: '#ff6b60' }}
+              >
+                📚 Academia Going
+              </span>
+              <h2 className="text-4xl font-bold text-white mb-3">
+                Capacítate y crece con Going
+              </h2>
+              <p className="text-gray-400 text-lg max-w-xl">
+                Cursos gratuitos para conductores, anfitriones, guías de tours y
+                operadores de experiencias. Aprende a tu ritmo.
+              </p>
+            </div>
+            <Link
+              href="/academy"
+              className="flex-shrink-0 px-6 py-3 border border-gray-600 text-gray-300 font-semibold rounded-xl hover:border-gray-400 hover:text-white transition-all text-sm"
+            >
+              Ver todos los cursos →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {ACADEMY_PREVIEW.map((course) => (
+              <Link
+                key={course.title}
+                href="/academy"
+                className="group bg-gray-800/60 border border-gray-700 rounded-2xl overflow-hidden hover:border-gray-500 hover:bg-gray-800 transition-all"
+              >
+                <div className="h-2" style={{ backgroundColor: '#ff4c41' }} />
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wide text-gray-400">
+                      {course.category}
+                    </span>
+                    <span
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full ${course.levelColor}`}
+                    >
+                      {course.level}
+                    </span>
+                  </div>
+                  <div className="text-4xl mb-3">{course.icon}</div>
+                  <h3 className="text-lg font-bold text-white mb-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                    {course.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                    <span>📖 {course.lessons} lecciones</span>
+                    <span>⏱️ {course.duration}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-500">
+                      ⭐ {course.rating} · {course.students.toLocaleString()}{' '}
+                      estudiantes
+                    </div>
+                    <span
+                      className="text-xs font-semibold group-hover:gap-1"
+                      style={{ color: '#ff6b60' }}
+                    >
+                      Comenzar →
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Academy stats bar */}
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { n: '6', label: 'Cursos disponibles' },
+              { n: 'Gratis', label: 'Siempre gratuito' },
+              { n: '27K+', label: 'Estudiantes activos' },
+              { n: '4.8★', label: 'Calificación promedio' },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="bg-gray-800/40 border border-gray-700 rounded-xl p-4 text-center"
+              >
+                <div
+                  className="text-2xl font-bold mb-1"
+                  style={{ color: '#ff6b60' }}
+                >
+                  {s.n}
+                </div>
+                <div className="text-xs text-gray-500">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA ────────────────────────────────────────────── */}
       {!auth.user && (
         <section
@@ -452,38 +686,161 @@ export default function Home() {
         </section>
       )}
 
-      {/* ─── Quick Links ────────────────────────────────────── */}
-      <section className="bg-gray-900 py-10 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Image
-              src="/going-logo-white-h.png"
-              alt="Going"
-              width={120}
-              height={40}
-              className="h-8 w-auto"
-            />
-            <div className="flex flex-wrap gap-6 justify-center">
-              {[
-                { title: 'Academia', href: '/academy' },
-                { title: 'Servicios', href: '/services' },
-                { title: 'Mis Reservas', href: '/bookings' },
-                { title: 'Emergencias', href: '/sos' },
-                { title: 'Mi Cuenta', href: '/account' },
-              ].map((link) => (
-                <Link
-                  key={link.title}
-                  href={link.href}
-                  className="text-gray-400 hover:text-white text-sm font-medium transition-colors"
-                >
-                  {link.title}
-                </Link>
-              ))}
+      {/* ─── Footer ─────────────────────────────────────────── */}
+      <footer className="bg-gray-900 px-4 pt-14 pb-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Top row */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+            {/* Brand column */}
+            <div className="col-span-2 md:col-span-1">
+              <Image
+                src="/going-logo-white-h.png"
+                alt="Going"
+                width={110}
+                height={38}
+                className="h-8 w-auto mb-4"
+              />
+              <p className="text-gray-500 text-sm leading-relaxed">
+                La plataforma de movilidad y servicios de Ecuador.
+              </p>
+              <div className="flex gap-3 mt-4">
+                {['📱', '🤖', '🌐'].map((icon, i) => (
+                  <div
+                    key={i}
+                    className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-gray-700 transition-colors"
+                  >
+                    {icon}
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-gray-600 text-xs">© 2026 Going · Ecuador</p>
+
+            {/* Servicios */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3">
+                Servicios
+              </h4>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Transporte', href: '/services' },
+                  { label: 'Alojamiento', href: '/services' },
+                  { label: 'Tours', href: '/services' },
+                  { label: 'Experiencias', href: '/services' },
+                  { label: 'Envíos', href: '/services' },
+                  { label: 'Pagos', href: '/services' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Academia */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3">
+                Academia
+              </h4>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Para Conductores', href: '/academy' },
+                  { label: 'Para Anfitriones', href: '/academy' },
+                  { label: 'Para Guías', href: '/academy' },
+                  { label: 'Para Operadores', href: '/academy' },
+                  { label: 'Para Viajeros', href: '/academy' },
+                  { label: 'Todos los cursos', href: '/academy' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Empresa */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3">Empresa</h4>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Nosotros', href: '/about' },
+                  { label: 'Blog', href: '/blog' },
+                  { label: 'Noticias', href: '/news' },
+                  { label: 'Carreras', href: '/careers' },
+                  { label: 'Comunidad', href: '/community' },
+                  { label: 'Sostenibilidad', href: '/sustainability' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Soporte */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3">Soporte</h4>
+              <ul className="space-y-2">
+                {[
+                  { label: 'Centro de Ayuda', href: '/help' },
+                  { label: 'SOS / Emergencias', href: '/sos' },
+                  { label: 'Contacto', href: '/contact' },
+                  { label: 'Seguridad', href: '/security' },
+                  { label: 'Estado del sistema', href: '/status' },
+                  { label: 'Documentación', href: '/documentation' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <Link
+                      href={l.href}
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-800 pt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-gray-600 text-xs">
+                © 2026 Going · Todos los derechos reservados · Ecuador
+              </p>
+              <div className="flex gap-5">
+                {[
+                  { label: 'Términos', href: '/legal/terms' },
+                  { label: 'Privacidad', href: '/legal/privacy' },
+                  { label: 'Cookies', href: '/legal/cookies' },
+                ].map((l) => (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </footer>
     </main>
   );
 }

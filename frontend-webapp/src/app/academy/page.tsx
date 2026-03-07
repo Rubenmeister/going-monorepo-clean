@@ -120,24 +120,84 @@ export default function AcademyPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-[#ff4c41] to-[#e63a2f] text-white py-12 px-6">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">📚 Academia Going</h1>
-          <p className="text-indigo-100 text-lg">
-            Aprende, crece y maximiza tu experiencia en la plataforma
+      <div
+        className="relative text-white py-16 px-6 overflow-hidden"
+        style={{
+          background:
+            'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #ff4c4122 100%)',
+        }}
+      >
+        {/* Decorative */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5 bg-white -translate-y-1/2 translate-x-1/3" />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <span
+            className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
+            style={{ backgroundColor: '#ff4c4122', color: '#ff6b60' }}
+          >
+            📚 Academia Going
+          </span>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            Capacítate y crece en la plataforma
+          </h1>
+          <p className="text-gray-300 text-lg max-w-2xl mb-6">
+            Cursos gratuitos diseñados para conductores, anfitriones, guías de
+            tours, operadores de experiencias y viajeros. Aprende a tu ritmo y
+            maximiza tu rendimiento en Going.
           </p>
-          <div className="flex gap-8 mt-6">
+
+          {/* Who is it for */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            {[
+              { icon: '🚗', label: 'Conductores' },
+              { icon: '🏨', label: 'Anfitriones' },
+              { icon: '🗺️', label: 'Guías de Tours' },
+              { icon: '🎭', label: 'Operadores de Experiencias' },
+              { icon: '📦', label: 'Envíos' },
+              { icon: '🌍', label: 'Viajeros' },
+            ].map((tag) => (
+              <span
+                key={tag.label}
+                className="text-sm px-3 py-1.5 rounded-full border border-gray-600 text-gray-300"
+              >
+                {tag.icon} {tag.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Stats */}
+          <div className="flex flex-wrap gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold">{COURSES.length}</div>
-              <div className="text-indigo-200 text-sm">Cursos disponibles</div>
+              <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>
+                {COURSES.length}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">
+                Cursos disponibles
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">{inProgress.length}</div>
-              <div className="text-indigo-200 text-sm">En progreso</div>
+              <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>
+                27K+
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Estudiantes</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold">{completed.length}</div>
-              <div className="text-indigo-200 text-sm">Completados</div>
+              <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>
+                Gratis
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Siempre gratuito</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>
+                {inProgress.length}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">En progreso</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>
+                {completed.length}
+              </div>
+              <div className="text-gray-400 text-sm mt-1">Completados</div>
             </div>
           </div>
         </div>
