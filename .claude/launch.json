@@ -15,9 +15,27 @@
     },
     {
       "name": "Admin Dashboard",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:admin"],
-      "port": 3001
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "dev",
+        "--prefix",
+        "admin-dashboard"
+      ],
+      "port": 3002
+    },
+    {
+      "name": "Corporate Portal (Empresas)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "dev",
+        "--prefix",
+        "apps/corporate-portal"
+      ],
+      "port": 3003
     },
     {
       "name": "Mobile User App (Web)",

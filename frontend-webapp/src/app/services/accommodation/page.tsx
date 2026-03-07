@@ -1,11 +1,25 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-// ── EDITABLE CONTENT ───────────────────────────────────────────────
-// Edit name, tagline, desc, features, price without touching the JSX.
+// ── API MAPPING ───────────────────────────────────────────────────────
+function mapApiAccommodation(a: any) {
+  return {
+    icon: '🏠',
+    name: a.title,
+    tagline: a.location?.city ? `${a.location.city}, Ecuador` : 'Ecuador',
+    desc: a.description,
+    features: (a.amenities ?? []).slice(0, 4),
+    price: `Desde $${a.pricePerNight?.amount ?? 0}/noche`,
+    photo:
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&auto=format',
+    color: '#10B981',
+  };
+}
 
-const ACCOMMODATION_TYPES = [
+// ── FALLBACK DATA (visible mientras la API carga o si está vacía) ─────
+const ACCOMMODATION_TYPES_FALLBACK = [
   {
     icon: '🏨',
     name: 'Hoteles',
@@ -133,9 +147,23 @@ const BENEFITS = [
     desc: 'Todas las fotografías son verificadas por nuestro equipo — sin sorpresas al llegar.',
   },
 ];
-// ── END EDITABLE CONTENT ───────────────────────────────────────────
+// ── END CONTENT ───────────────────────────────────────────────────────
 
 export default function AccommodationPage() {
+  const [items, setItems] = useState(ACCOMMODATION_TYPES_FALLBACK);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) return;
+    fetch(`${apiUrl}/accommodations/search`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0)
+          setItems(data.map(mapApiAccommodation));
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero */}
@@ -179,7 +207,7 @@ export default function AccommodationPage() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {ACCOMMODATION_TYPES.map((item) => (
+          {items.map((item) => (
             <div
               key={item.name}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
@@ -224,22 +252,24 @@ export default function AccommodationPage() {
                   {item.desc}
                 </p>
 
-                <ul className="space-y-1.5 mb-5">
-                  {item.features.map((f) => (
-                    <li
-                      key={f}
-                      className="text-sm text-gray-600 flex items-center gap-2"
-                    >
-                      <span
-                        className="font-bold text-xs"
-                        style={{ color: '#ff4c41' }}
+                {item.features.length > 0 && (
+                  <ul className="space-y-1.5 mb-5">
+                    {item.features.map((f) => (
+                      <li
+                        key={f}
+                        className="text-sm text-gray-600 flex items-center gap-2"
                       >
-                        ✓
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+                        <span
+                          className="font-bold text-xs"
+                          style={{ color: '#ff4c41' }}
+                        >
+                          ✓
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <button
                   className="w-full py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:shadow-md"

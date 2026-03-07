@@ -1,9 +1,27 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-// ── EDITABLE CONTENT ───────────────────────────────────────────────
-const EXPERIENCES = [
+// ── API MAPPING ───────────────────────────────────────────────────────
+function mapApiExperience(e: any) {
+  return {
+    icon: '🎭',
+    name: e.title,
+    tagline: e.location?.city ? `${e.location.city}, Ecuador` : 'Ecuador',
+    desc: e.description,
+    includes: [],
+    price: `Desde $${e.price?.amount ?? 0}`,
+    duration: e.durationHours ? `${e.durationHours}h` : 'Variable',
+    photo:
+      'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&q=80&auto=format',
+    color: '#0ea5e9',
+    tag: 'CULTURAL',
+  };
+}
+
+// ── FALLBACK DATA (visible mientras la API carga o si está vacía) ─────
+const EXPERIENCES_FALLBACK = [
   {
     icon: '🤿',
     name: 'Buceo y Snorkel',
@@ -158,9 +176,29 @@ const STATS = [
   { number: '8K+', label: 'Participantes este año' },
   { number: '100%', label: 'Anfitriones verificados' },
 ];
-// ── END EDITABLE CONTENT ───────────────────────────────────────────
+// ── END CONTENT ───────────────────────────────────────────────────────
 
 export default function ExperiencesPage() {
+  const [experiences, setExperiences] = useState(EXPERIENCES_FALLBACK);
+  const [activeTag, setActiveTag] = useState('TODOS');
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) return;
+    fetch(`${apiUrl}/experiences/search`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0)
+          setExperiences(data.map(mapApiExperience));
+      })
+      .catch(() => {});
+  }, []);
+
+  const filtered =
+    activeTag === 'TODOS'
+      ? experiences
+      : experiences.filter((e) => e.tag === activeTag);
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero */}
@@ -210,14 +248,15 @@ export default function ExperiencesPage() {
           Más de 95 experiencias únicas para todos los gustos y presupuestos
         </p>
 
-        {/* Tag filter — decorative only, no state needed for static rendering */}
+        {/* Tag filter */}
         <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {TAGS.map((tag, i) => (
-            <span
+          {TAGS.map((tag) => (
+            <button
               key={tag}
+              onClick={() => setActiveTag(tag)}
               className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all cursor-pointer"
               style={
-                i === 0
+                tag === activeTag
                   ? { backgroundColor: '#ff4c41', color: '#fff' }
                   : {
                       backgroundColor: '#fff',
@@ -227,12 +266,12 @@ export default function ExperiencesPage() {
               }
             >
               {tag}
-            </span>
+            </button>
           ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {EXPERIENCES.map((exp) => (
+          {filtered.map((exp) => (
             <div
               key={exp.name}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
@@ -281,19 +320,24 @@ export default function ExperiencesPage() {
                   {exp.desc}
                 </p>
 
-                <ul className="space-y-1 mb-4">
-                  {exp.includes.slice(0, 3).map((inc) => (
-                    <li
-                      key={inc}
-                      className="text-xs text-gray-600 flex items-center gap-1.5"
-                    >
-                      <span className="font-bold" style={{ color: '#ff4c41' }}>
-                        ✓
-                      </span>
-                      {inc}
-                    </li>
-                  ))}
-                </ul>
+                {exp.includes.length > 0 && (
+                  <ul className="space-y-1 mb-4">
+                    {exp.includes.slice(0, 3).map((inc) => (
+                      <li
+                        key={inc}
+                        className="text-xs text-gray-600 flex items-center gap-1.5"
+                      >
+                        <span
+                          className="font-bold"
+                          style={{ color: '#ff4c41' }}
+                        >
+                          ✓
+                        </span>
+                        {inc}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs text-gray-400">
@@ -311,6 +355,15 @@ export default function ExperiencesPage() {
             </div>
           ))}
         </div>
+
+        {filtered.length === 0 && (
+          <div className="text-center py-16 text-gray-400">
+            <div className="text-4xl mb-3">🔍</div>
+            <p className="text-lg font-medium">
+              No hay experiencias en esta categoría aún.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* CTA */}

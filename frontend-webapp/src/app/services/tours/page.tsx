@@ -1,9 +1,50 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-// ── EDITABLE CONTENT ───────────────────────────────────────────────
-const TOURS = [
+// ── API MAPPING ───────────────────────────────────────────────────────
+const CATEGORY_ICONS: Record<string, string> = {
+  ADVENTURE: '🏔️',
+  CULTURAL: '🎨',
+  GASTRONOMY: '🍽️',
+  NATURE: '🌿',
+};
+const CATEGORY_COLORS: Record<string, string> = {
+  ADVENTURE: '#EF4444',
+  CULTURAL: '#8B5CF6',
+  GASTRONOMY: '#F59E0B',
+  NATURE: '#22C55E',
+};
+const CATEGORY_PHOTOS: Record<string, string> = {
+  ADVENTURE:
+    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80&auto=format',
+  CULTURAL:
+    'https://images.unsplash.com/photo-1509400449-534e54d0b4cf?w=600&q=80&auto=format',
+  GASTRONOMY:
+    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80&auto=format',
+  NATURE:
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80&auto=format',
+};
+
+function mapApiTour(t: any) {
+  const cat = (t.category as string) ?? 'ADVENTURE';
+  return {
+    icon: CATEGORY_ICONS[cat] ?? '🗺️',
+    name: t.title,
+    tagline: t.location?.city ? `${t.location.city}, Ecuador` : 'Ecuador',
+    desc: t.description,
+    highlights: (t.amenities ?? []).slice(0, 4),
+    duration: t.durationHours ? `${t.durationHours}h` : 'Variable',
+    from: `Desde $${t.price?.amount ?? 0}`,
+    photo: CATEGORY_PHOTOS[cat] ?? CATEGORY_PHOTOS['ADVENTURE'],
+    color: CATEGORY_COLORS[cat] ?? '#EF4444',
+    featured: false,
+  };
+}
+
+// ── FALLBACK DATA (visible mientras la API carga o si está vacía) ─────
+const TOURS_FALLBACK = [
   {
     icon: '🌋',
     name: 'Volcanes y Andes',
@@ -143,11 +184,28 @@ const WHY_GOING = [
     desc: 'Recogida y retorno desde tu hotel o punto acordado en todas las ciudades principales.',
   },
 ];
-// ── END EDITABLE CONTENT ───────────────────────────────────────────
+// ── END CONTENT ───────────────────────────────────────────────────────
 
 export default function ToursPage() {
-  const featured = TOURS.filter((t) => t.featured);
-  const rest = TOURS.filter((t) => !t.featured);
+  const [tours, setTours] = useState(TOURS_FALLBACK);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) return;
+    fetch(`${apiUrl}/tours/search`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0)
+          setTours(data.map(mapApiTour));
+      })
+      .catch(() => {});
+  }, []);
+
+  const featured = tours.filter((t) => t.featured);
+  const rest = tours.filter((t) => !t.featured);
+  // If no featured (API data has none), show first 2 as featured
+  const displayFeatured = featured.length > 0 ? featured : tours.slice(0, 2);
+  const displayRest = featured.length > 0 ? rest : tours.slice(2);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -189,7 +247,7 @@ export default function ToursPage() {
         </h2>
         <p className="text-gray-500 mb-8">Los favoritos de nuestra comunidad</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {featured.map((tour) => (
+          {displayFeatured.map((tour) => (
             <div
               key={tour.name}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
@@ -228,22 +286,24 @@ export default function ToursPage() {
                 <p className="text-gray-500 text-sm mb-4 leading-relaxed">
                   {tour.desc}
                 </p>
-                <ul className="grid grid-cols-2 gap-1.5 mb-5">
-                  {tour.highlights.map((h) => (
-                    <li
-                      key={h}
-                      className="text-sm text-gray-600 flex items-center gap-1.5"
-                    >
-                      <span
-                        className="font-bold text-xs"
-                        style={{ color: '#ff4c41' }}
+                {tour.highlights.length > 0 && (
+                  <ul className="grid grid-cols-2 gap-1.5 mb-5">
+                    {tour.highlights.map((h) => (
+                      <li
+                        key={h}
+                        className="text-sm text-gray-600 flex items-center gap-1.5"
                       >
-                        ✓
-                      </span>
-                      {h}
-                    </li>
-                  ))}
-                </ul>
+                        <span
+                          className="font-bold text-xs"
+                          style={{ color: '#ff4c41' }}
+                        >
+                          ✓
+                        </span>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <div className="flex gap-3">
                   <div className="flex-1 text-center py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-500">
                     ⏱ {tour.duration}
@@ -262,65 +322,69 @@ export default function ToursPage() {
       </section>
 
       {/* All Tours */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2 mt-8">
-          Más tours
-        </h2>
-        <p className="text-gray-500 mb-8">Toda Ecuador en un clic</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {rest.map((tour) => (
-            <div
-              key={tour.name}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={tour.photo}
-                  alt={tour.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                />
-                <div
-                  className="absolute inset-0 opacity-50"
-                  style={{
-                    background: `linear-gradient(to top, ${tour.color}, transparent)`,
-                  }}
-                />
-                <div className="absolute bottom-3 left-3 text-2xl">
-                  {tour.icon}
+      {displayRest.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 pb-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 mt-8">
+            Más tours
+          </h2>
+          <p className="text-gray-500 mb-8">Toda Ecuador en un clic</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {displayRest.map((tour) => (
+              <div
+                key={tour.name}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
+              >
+                <div className="relative h-40 overflow-hidden">
+                  <img
+                    src={tour.photo}
+                    alt={tour.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div
+                    className="absolute inset-0 opacity-50"
+                    style={{
+                      background: `linear-gradient(to top, ${tour.color}, transparent)`,
+                    }}
+                  />
+                  <div className="absolute bottom-3 left-3 text-2xl">
+                    {tour.icon}
+                  </div>
+                  <div
+                    className="absolute top-2 right-2 bg-white/90 text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{ color: tour.color }}
+                  >
+                    {tour.from}
+                  </div>
                 </div>
-                <div
-                  className="absolute top-2 right-2 bg-white/90 text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ color: tour.color }}
-                >
-                  {tour.from}
+                <div className="p-5">
+                  <h3 className="font-bold text-gray-900 mb-0.5">
+                    {tour.name}
+                  </h3>
+                  <p
+                    className="text-xs font-semibold mb-2"
+                    style={{ color: '#ff4c41' }}
+                  >
+                    {tour.tagline}
+                  </p>
+                  <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
+                    {tour.desc}
+                  </p>
+                  <div className="text-xs text-gray-400 mb-3">
+                    ⏱ {tour.duration}
+                  </div>
+                  <button
+                    className="w-full py-2 rounded-xl font-semibold text-xs text-white transition-all hover:shadow-md"
+                    style={{ backgroundColor: '#ff4c41' }}
+                  >
+                    Ver tour
+                  </button>
                 </div>
               </div>
-              <div className="p-5">
-                <h3 className="font-bold text-gray-900 mb-0.5">{tour.name}</h3>
-                <p
-                  className="text-xs font-semibold mb-2"
-                  style={{ color: '#ff4c41' }}
-                >
-                  {tour.tagline}
-                </p>
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">
-                  {tour.desc}
-                </p>
-                <div className="text-xs text-gray-400 mb-3">
-                  ⏱ {tour.duration}
-                </div>
-                <button
-                  className="w-full py-2 rounded-xl font-semibold text-xs text-white transition-all hover:shadow-md"
-                  style={{ backgroundColor: '#ff4c41' }}
-                >
-                  Ver tour
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Why Going */}
       <section className="bg-white py-16 px-4">
