@@ -8,6 +8,7 @@ import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 const NAV_LINKS = [
   { label: 'INICIO', href: '/' },
+  { label: 'DESTINOS', href: '/destinations' },
   { label: 'SERVICIOS', href: '/services' },
   { label: 'GOING', href: '/about' },
   { label: 'CONTACTO', href: '/contact' },

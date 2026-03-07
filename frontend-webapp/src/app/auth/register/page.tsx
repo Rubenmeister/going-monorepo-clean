@@ -49,11 +49,11 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="relative z-10">
           <Image
-            src="/going-logo.png"
+            src="/going-logo-white-h.png"
             alt="Going"
-            width={160}
-            height={110}
-            className="brightness-0 invert"
+            width={180}
+            height={62}
+            className="h-12 w-auto object-contain"
             priority
           />
         </div>
