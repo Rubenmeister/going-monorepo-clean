@@ -1,17 +1,129 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
+/* ── Saved locations hook (localStorage) ───────────────────── */
+function useSavedLocations() {
+  const [saved, setSaved] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('going_locations');
+      if (raw) setSaved(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const add = (loc: string) => {
+    const trimmed = loc.trim();
+    if (!trimmed) return;
+    const updated = [trimmed, ...saved.filter((l) => l !== trimmed)].slice(
+      0,
+      6
+    );
+    setSaved(updated);
+    try {
+      localStorage.setItem('going_locations', JSON.stringify(updated));
+    } catch {}
+  };
+
+  return { saved, add };
+}
+
+/* ── Location Input with dropdown suggestions ──────────────── */
+function LocationInput({
+  label,
+  placeholder,
+  value,
+  onChange,
+  suggestions,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  suggestions: string[];
+}) {
+  const [focused, setFocused] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = suggestions.filter(
+    (s) => s.toLowerCase().includes(value.toLowerCase()) && s !== value
+  );
+  const showDrop =
+    focused && (filtered.length > 0 || (!value && suggestions.length > 0));
+  const dropItems = value ? filtered : suggestions;
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <label className="text-xs font-bold text-gray-500 mb-1 block uppercase tracking-wide">
+        {label}
+      </label>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
+      />
+      {showDrop && dropItems.length > 0 && (
+        <ul className="absolute z-30 top-full mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden">
+          {dropItems.map((s) => (
+            <li key={s}>
+              <button
+                type="button"
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-[#ff4c41] flex items-center gap-2"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(s);
+                  setFocused(false);
+                }}
+              >
+                <svg
+                  className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {s}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/* ── Static data ────────────────────────────────────────────── */
 const SERVICES = [
   {
     id: 'transport',
     icon: '🚗',
     title: 'Transporte',
     description:
-      'Privado (Economy, Comfort, Premium) o Compartido para ahorrar hasta 60%. Conductores verificados, seguimiento en tiempo real.',
+      'Privado (Economy, Comfort, Premium) o Compartido. Ahorra hasta 60%. Conductores verificados, seguimiento en tiempo real.',
     photo:
       'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80&auto=format',
     href: '/services/transport',
@@ -25,7 +137,7 @@ const SERVICES = [
       'Hospedaje verificado en las mejores ubicaciones. Desde hostales hasta hoteles boutique.',
     photo:
       'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&auto=format',
-    href: '/services',
+    href: '/services/accommodation',
     color: '#10B981',
   },
   {
@@ -36,7 +148,7 @@ const SERVICES = [
       'Descubre Ecuador con guías locales expertos. Aventura, cultura y naturaleza.',
     photo:
       'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80&auto=format',
-    href: '/services',
+    href: '/services/tours',
     color: '#3B82F6',
   },
   {
@@ -47,7 +159,7 @@ const SERVICES = [
       'Gastronomía, aventura extrema, artesanía local. Crea recuerdos únicos.',
     photo:
       'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=80&auto=format',
-    href: '/services',
+    href: '/services/experiences',
     color: '#F59E0B',
   },
   {
@@ -62,14 +174,14 @@ const SERVICES = [
     color: '#8B5CF6',
   },
   {
-    id: 'payments',
-    icon: '💳',
-    title: 'Pagos Seguros',
+    id: 'academy',
+    icon: '📚',
+    title: 'Academia Going',
     description:
-      'Múltiples métodos de pago. Transacciones protegidas y facturación electrónica.',
+      'Cursos gratuitos para conductores, anfitriones, guías y operadores de experiencias.',
     photo:
-      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&auto=format',
-    href: '/services',
+      'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80&auto=format',
+    href: '/academy',
     color: '#EC4899',
   },
 ];
@@ -206,59 +318,68 @@ const ACADEMY_PREVIEW = [
   },
 ];
 
+/* ── Page ─────────────────────────────────────────────────── */
 export default function Home() {
   const { auth } = useMonorepoApp();
+  const { saved: savedLocations, add: saveLocation } = useSavedLocations();
   const [searchFrom, setSearchFrom] = useState('');
   const [searchTo, setSearchTo] = useState('');
   const [searchDate, setSearchDate] = useState('');
+  const [searchTime, setSearchTime] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    // Save both locations to recent history
+    if (searchFrom) saveLocation(searchFrom);
+    if (searchTo) saveLocation(searchTo);
     const params = new URLSearchParams({
       from: searchFrom,
       to: searchTo,
       date: searchDate,
+      time: searchTime,
     });
-    window.location.href = `/services?${params.toString()}`;
+    window.location.href = `/services/transport?${params.toString()}`;
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* ─── Hero ──────────────────────────────────────────── */}
-      <section className="relative h-[560px] overflow-hidden">
-        {/* Background image */}
+    <div className="min-h-screen bg-gray-50">
+      {/* ─── Hero — touristic landscape, dark overlay ───────── */}
+      <section className="relative h-[580px] overflow-hidden">
+        {/* Background — vibrant Ecuador landscape photo */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center scale-105"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1600&q=80&auto=format')",
+              "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1800&q=85&auto=format')",
+            transformOrigin: 'center',
           }}
         />
-        {/* Overlay */}
+        {/* Dark overlay — let the photo breathe, no heavy red */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(135deg, rgba(255,76,65,0.88) 0%, rgba(230,58,47,0.75) 60%, rgba(0,0,0,0.55) 100%)',
+              'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)',
           }}
         />
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-white text-center px-4">
-          <div className="mb-6">
+          {/* Primary logo — white version over dark overlay */}
+          <div className="mb-6 drop-shadow-lg">
             <Image
-              src="/going-logo.png"
+              src="/going-logo-white-h.png"
               alt="Going"
-              width={140}
-              height={95}
-              className="brightness-0 invert mx-auto"
+              width={200}
+              height={68}
+              className="h-14 w-auto mx-auto object-contain"
               priority
             />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight max-w-3xl">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-3 leading-tight max-w-3xl drop-shadow-md">
             Viaja, explora y vive Ecuador
           </h1>
-          <p className="text-xl md:text-2xl text-white/85 mb-8 max-w-2xl">
+          <p className="text-lg md:text-xl text-white/85 mb-8 max-w-xl drop-shadow">
             Transporte, alojamiento, tours, experiencias y envíos en una sola
             plataforma.
           </p>
@@ -266,63 +387,62 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-3">
               <a
                 href="/auth/register"
-                className="px-8 py-4 bg-white font-bold rounded-xl transition-all hover:bg-gray-100 hover:shadow-lg"
+                className="px-8 py-3.5 bg-white font-bold rounded-xl transition-all hover:bg-gray-100 hover:shadow-lg text-sm"
                 style={{ color: '#ff4c41' }}
               >
                 Comenzar Gratis
               </a>
               <a
                 href="/auth/login"
-                className="px-8 py-4 border-2 border-white text-white font-bold rounded-xl transition-all hover:bg-white/10"
+                className="px-8 py-3.5 border-2 border-white text-white font-bold rounded-xl transition-all hover:bg-white/10 text-sm"
               >
                 Iniciar Sesión
               </a>
             </div>
           )}
           {auth.user && (
-            <div className="px-8 py-4 bg-white/15 border border-white/30 rounded-2xl text-white backdrop-blur-sm">
+            <div className="px-8 py-3.5 bg-white/15 border border-white/30 rounded-2xl text-white backdrop-blur-sm text-sm font-semibold">
               Bienvenido, <strong>{auth.user.firstName}</strong> 👋
             </div>
           )}
         </div>
       </section>
 
-      {/* ─── Search Bar ─────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-4 -mt-10 relative z-20 mb-12">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">
-            🔍 ¿A dónde quieres ir?
+      {/* ─── Search Bar with time + saved locations ─────────── */}
+      <section className="max-w-5xl mx-auto px-4 -mt-12 relative z-20 mb-14">
+        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span>🔍</span> ¿A dónde quieres ir?
           </h2>
           <form
             onSubmit={handleSearch}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
           >
-            <div>
-              <label className="text-xs font-semibold text-gray-500 mb-1 block uppercase tracking-wide">
-                Origen
-              </label>
-              <input
-                type="text"
+            {/* Origen — with saved locations dropdown */}
+            <div className="lg:col-span-1">
+              <LocationInput
+                label="Origen"
                 placeholder="Ciudad de origen"
                 value={searchFrom}
-                onChange={(e) => setSearchFrom(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
+                onChange={setSearchFrom}
+                suggestions={savedLocations}
               />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-500 mb-1 block uppercase tracking-wide">
-                Destino
-              </label>
-              <input
-                type="text"
+
+            {/* Destino — with saved locations dropdown */}
+            <div className="lg:col-span-1">
+              <LocationInput
+                label="Destino"
                 placeholder="Ciudad destino"
                 value={searchTo}
-                onChange={(e) => setSearchTo(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
+                onChange={setSearchTo}
+                suggestions={savedLocations}
               />
             </div>
+
+            {/* Fecha */}
             <div>
-              <label className="text-xs font-semibold text-gray-500 mb-1 block uppercase tracking-wide">
+              <label className="text-xs font-bold text-gray-500 mb-1 block uppercase tracking-wide">
                 Fecha
               </label>
               <input
@@ -332,6 +452,21 @@ export default function Home() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
               />
             </div>
+
+            {/* Hora de salida */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 mb-1 block uppercase tracking-wide">
+                Hora salida
+              </label>
+              <input
+                type="time"
+                value={searchTime}
+                onChange={(e) => setSearchTime(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
+              />
+            </div>
+
+            {/* Buscar */}
             <div className="flex items-end">
               <button
                 type="submit"
@@ -342,10 +477,28 @@ export default function Home() {
               </button>
             </div>
           </form>
+          {savedLocations.length > 0 && (
+            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Haz clic en Origen o Destino para ver tus últimas búsquedas
+            </p>
+          )}
         </div>
       </section>
 
-      {/* ─── Stats ──────────────────────────────────────────── */}
+      {/* ─── Stats ─────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-4 mb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {STATS.map((stat) => (
@@ -365,18 +518,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Services Grid ──────────────────────────────────── */}
+      {/* ─── Services Grid ─────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 mb-16">
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Nuestros Servicios
           </h2>
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
-            Todo lo que necesitas para moverte, alojarte y explorar Ecuador en
-            un solo lugar.
+            Todo lo que necesitas para moverte, alojarte y explorar Ecuador.
           </p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {SERVICES.map((service) => (
             <Link
@@ -384,7 +535,6 @@ export default function Home() {
               href={service.href}
               className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
             >
-              {/* Photo */}
               <div className="relative h-48 overflow-hidden">
                 <img
                   src={service.photo}
@@ -402,8 +552,6 @@ export default function Home() {
                   {service.icon}
                 </div>
               </div>
-
-              {/* Content */}
               <div className="p-5">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {service.title}
@@ -423,23 +571,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── How It Works ───────────────────────────────────── */}
-      <section className="py-16 px-4" style={{ backgroundColor: '#fff8f8' }}>
+      {/* ─── How It Works ──────────────────────────────────────── */}
+      <section className="py-16 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
               ¿Cómo funciona?
             </h2>
             <p className="text-gray-500 text-lg">Reserva en 4 simples pasos</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {HOW_IT_WORKS.map((step, i) => (
               <div key={step.num} className="text-center relative">
-                {/* Connector line (between cards) */}
                 {i < HOW_IT_WORKS.length - 1 && (
                   <div
-                    className="hidden md:block absolute top-8 left-[calc(50%+2rem)] right-0 h-0.5 opacity-30"
+                    className="hidden md:block absolute top-8 left-[calc(50%+2rem)] right-0 h-0.5 opacity-20"
                     style={{ backgroundColor: '#ff4c41' }}
                   />
                 )}
@@ -461,17 +607,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Testimonials ───────────────────────────────────── */}
+      {/* ─── Testimonials ──────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Lo que dicen nuestros usuarios
           </h2>
           <p className="text-gray-500 text-lg">
             Historias reales de la comunidad Going
           </p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map((t) => (
             <div
@@ -499,7 +644,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Únete como proveedor ───────────────────────────── */}
+      {/* ─── Únete como proveedor ──────────────────────────────── */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
           <span
@@ -508,15 +653,14 @@ export default function Home() {
           >
             Para proveedores
           </span>
-          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Únete a la plataforma y genera ingresos
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
             Conductores, anfitriones, guías de tours y operadores de
-            experiencias. Going te da las herramientas para crecer tu negocio.
+            experiencias.
           </p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {PROVIDERS.map((p) => (
             <Link
@@ -553,23 +697,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Academia Going ─────────────────────────────────── */}
+      {/* ─── Academia Going ────────────────────────────────────── */}
       <section className="py-16 px-4" style={{ backgroundColor: '#0f172a' }}>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <span
                 className="inline-block text-sm font-bold uppercase tracking-widest mb-3 px-4 py-1.5 rounded-full"
-                style={{ backgroundColor: '#ff4c411a', color: '#ff6b60' }}
+                style={{ backgroundColor: '#ff4c4120', color: '#ff6b60' }}
               >
                 📚 Academia Going
               </span>
-              <h2 className="text-4xl font-bold text-white mb-3">
+              <h2 className="text-3xl font-bold text-white mb-3">
                 Capacítate y crece con Going
               </h2>
               <p className="text-gray-400 text-lg max-w-xl">
-                Cursos gratuitos para conductores, anfitriones, guías de tours y
-                operadores de experiencias. Aprende a tu ritmo.
+                Cursos gratuitos para conductores, anfitriones, guías y
+                operadores. Aprende a tu ritmo.
               </p>
             </div>
             <Link
@@ -616,7 +760,7 @@ export default function Home() {
                       estudiantes
                     </div>
                     <span
-                      className="text-xs font-semibold group-hover:gap-1"
+                      className="text-xs font-semibold"
                       style={{ color: '#ff6b60' }}
                     >
                       Comenzar →
@@ -627,7 +771,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Academy stats bar */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { n: '6', label: 'Cursos disponibles' },
@@ -652,32 +795,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── CTA ────────────────────────────────────────────── */}
+      {/* ─── CTA — dark navy instead of solid red ──────────────── */}
       {!auth.user && (
         <section
-          className="py-20 px-4 text-white text-center"
-          style={{
-            background: 'linear-gradient(135deg, #ff4c41 0%, #e63a2f 100%)',
-          }}
+          className="py-20 px-4 text-center"
+          style={{ backgroundColor: '#011627' }}
         >
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold mb-4">
+            <div className="mb-6">
+              <Image
+                src="/going-logo-white-h.png"
+                alt="Going"
+                width={140}
+                height={48}
+                className="h-12 w-auto mx-auto object-contain opacity-90"
+              />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4">
               ¿Listo para tu próxima aventura?
             </h2>
-            <p className="text-xl text-white/85 mb-8">
+            <p className="text-xl text-white/70 mb-8">
               Únete a más de 1 millón de ecuatorianos que ya usan Going
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/auth/register"
-                className="px-10 py-4 bg-white font-bold rounded-xl text-lg hover:bg-gray-100 transition-all hover:shadow-lg"
-                style={{ color: '#ff4c41' }}
+                className="px-10 py-4 font-bold rounded-xl text-sm hover:opacity-90 transition-all shadow-lg"
+                style={{ backgroundColor: '#ff4c41', color: 'white' }}
               >
                 Crear cuenta gratis
               </a>
               <a
                 href="/services"
-                className="px-10 py-4 border-2 border-white text-white font-bold rounded-xl text-lg hover:bg-white/10 transition-all"
+                className="px-10 py-4 border-2 border-white/30 text-white font-bold rounded-xl text-sm hover:border-white/60 hover:bg-white/5 transition-all"
               >
                 Ver servicios
               </a>
@@ -685,162 +835,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* ─── Footer ─────────────────────────────────────────── */}
-      <footer className="bg-gray-900 px-4 pt-14 pb-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Top row */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
-            {/* Brand column */}
-            <div className="col-span-2 md:col-span-1">
-              <Image
-                src="/going-logo-white-h.png"
-                alt="Going"
-                width={110}
-                height={38}
-                className="h-8 w-auto mb-4"
-              />
-              <p className="text-gray-500 text-sm leading-relaxed">
-                La plataforma de movilidad y servicios de Ecuador.
-              </p>
-              <div className="flex gap-3 mt-4">
-                {['📱', '🤖', '🌐'].map((icon, i) => (
-                  <div
-                    key={i}
-                    className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-gray-700 transition-colors"
-                  >
-                    {icon}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Servicios */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-3">
-                Servicios
-              </h4>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Transporte', href: '/services' },
-                  { label: 'Alojamiento', href: '/services' },
-                  { label: 'Tours', href: '/services' },
-                  { label: 'Experiencias', href: '/services' },
-                  { label: 'Envíos', href: '/services' },
-                  { label: 'Pagos', href: '/services' },
-                ].map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={l.href}
-                      className="text-gray-400 hover:text-white text-sm transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Academia */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-3">
-                Academia
-              </h4>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Para Conductores', href: '/academy' },
-                  { label: 'Para Anfitriones', href: '/academy' },
-                  { label: 'Para Guías', href: '/academy' },
-                  { label: 'Para Operadores', href: '/academy' },
-                  { label: 'Para Viajeros', href: '/academy' },
-                  { label: 'Todos los cursos', href: '/academy' },
-                ].map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={l.href}
-                      className="text-gray-400 hover:text-white text-sm transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Empresa */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-3">Empresa</h4>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Nosotros', href: '/about' },
-                  { label: 'Blog', href: '/blog' },
-                  { label: 'Noticias', href: '/news' },
-                  { label: 'Carreras', href: '/careers' },
-                  { label: 'Comunidad', href: '/community' },
-                  { label: 'Sostenibilidad', href: '/sustainability' },
-                ].map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={l.href}
-                      className="text-gray-400 hover:text-white text-sm transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Soporte */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-3">Soporte</h4>
-              <ul className="space-y-2">
-                {[
-                  { label: 'Centro de Ayuda', href: '/help' },
-                  { label: 'SOS / Emergencias', href: '/sos' },
-                  { label: 'Contacto', href: '/contact' },
-                  { label: 'Seguridad', href: '/security' },
-                  { label: 'Estado del sistema', href: '/status' },
-                  { label: 'Documentación', href: '/documentation' },
-                ].map((l) => (
-                  <li key={l.label}>
-                    <Link
-                      href={l.href}
-                      className="text-gray-400 hover:text-white text-sm transition-colors"
-                    >
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-800 pt-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-gray-600 text-xs">
-                © 2026 Going · Todos los derechos reservados · Ecuador
-              </p>
-              <div className="flex gap-5">
-                {[
-                  { label: 'Términos', href: '/legal/terms' },
-                  { label: 'Privacidad', href: '/legal/privacy' },
-                  { label: 'Cookies', href: '/legal/cookies' },
-                ].map((l) => (
-                  <Link
-                    key={l.label}
-                    href={l.href}
-                    className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   );
 }
