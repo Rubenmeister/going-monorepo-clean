@@ -33,9 +33,15 @@
     },
     {
       "name": "Mobile Driver App (Web)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:mobile:driver:web"],
-      "port": 8082
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "web",
+        "--prefix",
+        "mobile-driver-app"
+      ],
+      "port": 4201
     },
     {
       "name": "API Gateway",
