@@ -3,9 +3,15 @@
   "configurations": [
     {
       "name": "Frontend Webapp",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:webapp"],
-      "port": 3000
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "dev",
+        "--prefix",
+        "frontend-webapp"
+      ],
+      "port": 3001
     },
     {
       "name": "Admin Dashboard",
@@ -15,9 +21,15 @@
     },
     {
       "name": "Mobile User App (Web)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:mobile:user:web"],
-      "port": 8081
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "web",
+        "--prefix",
+        "mobile-user-app"
+      ],
+      "port": 4200
     },
     {
       "name": "Mobile Driver App (Web)",

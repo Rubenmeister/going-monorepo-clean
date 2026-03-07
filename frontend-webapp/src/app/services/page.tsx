@@ -1,6 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
 
+type Service = {
+  icon: string;
+  name: string;
+  desc: string;
+  features: string[];
+  photo: string;
+  color: string;
+  href: string;
+};
+
 const SERVICES = [
   {
     icon: '🚗',
@@ -15,6 +25,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80&auto=format',
     color: '#ff4c41',
+    href: '/services/transport',
   },
   {
     icon: '🏨',
@@ -29,6 +40,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&auto=format',
     color: '#10B981',
+    href: '/services/accommodation',
   },
   {
     icon: '🗺️',
@@ -43,6 +55,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80&auto=format',
     color: '#3B82F6',
+    href: '/services/tours',
   },
   {
     icon: '🎭',
@@ -57,6 +70,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=80&auto=format',
     color: '#F59E0B',
+    href: '/services/experiences',
   },
   {
     icon: '📦',
@@ -71,6 +85,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80&auto=format',
     color: '#8B5CF6',
+    href: '/services',
   },
   {
     icon: '💳',
@@ -85,6 +100,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&auto=format',
     color: '#EC4899',
+    href: '/services',
   },
 ];
 
@@ -114,7 +130,7 @@ export default function ServicesPage() {
       {/* Services Grid */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES.map((service) => (
+          {SERVICES.map((service: Service) => (
             <div
               key={service.name}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
@@ -161,12 +177,13 @@ export default function ServicesPage() {
                   ))}
                 </ul>
 
-                <button
-                  className="w-full py-2.5 text-white rounded-xl font-semibold text-sm transition-all hover:shadow-md"
+                <Link
+                  href={service.href}
+                  className="block w-full py-2.5 text-white rounded-xl font-semibold text-sm transition-all hover:shadow-md text-center"
                   style={{ backgroundColor: '#ff4c41' }}
                 >
-                  Reservar {service.name}
-                </button>
+                  Ver {service.name}
+                </Link>
               </div>
             </div>
           ))}
