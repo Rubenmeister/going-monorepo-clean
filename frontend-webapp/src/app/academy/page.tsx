@@ -120,7 +120,7 @@ export default function AcademyPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12 px-6">
+      <div className="bg-gradient-to-r from-[#ff4c41] to-[#e63a2f] text-white py-12 px-6">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">📚 Academia Going</h1>
           <p className="text-indigo-100 text-lg">
@@ -171,13 +171,13 @@ export default function AcademyPage() {
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
                     <div
-                      className="bg-indigo-600 h-2 rounded-full"
+                      className="bg-[#ff4c41] h-2 rounded-full"
                       style={{ width: `${course.progress}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>{course.progress}% completado</span>
-                    <button className="text-indigo-600 font-semibold hover:underline">
+                    <button className="text-[#ff4c41] font-semibold hover:underline">
                       Continuar →
                     </button>
                   </div>
@@ -195,8 +195,8 @@ export default function AcademyPage() {
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                  ? 'bg-[#ff4c41] text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-red-300 hover:text-[#ff4c41]'
               }`}
             >
               {cat}
@@ -211,12 +211,12 @@ export default function AcademyPage() {
               key={course.id}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-8 text-center">
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 p-8 text-center">
                 <span className="text-5xl">{course.icon}</span>
               </div>
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-indigo-600 font-semibold uppercase tracking-wide">
+                  <span className="text-xs text-[#ff4c41] font-semibold uppercase tracking-wide">
                     {course.category}
                   </span>
                   <span
@@ -245,16 +245,16 @@ export default function AcademyPage() {
                   <div>
                     <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
                       <div
-                        className="bg-indigo-600 h-1.5 rounded-full"
+                        className="bg-[#ff4c41] h-1.5 rounded-full"
                         style={{ width: `${course.progress}%` }}
                       />
                     </div>
-                    <button className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg text-sm hover:bg-indigo-700 transition-colors">
+                    <button className="w-full py-2 bg-[#ff4c41] text-white font-semibold rounded-lg text-sm hover:bg-[#e63a2f] transition-colors">
                       Continuar ({course.progress}%)
                     </button>
                   </div>
                 ) : (
-                  <button className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg text-sm hover:bg-indigo-700 transition-colors">
+                  <button className="w-full py-2 bg-[#ff4c41] text-white font-semibold rounded-lg text-sm hover:bg-[#e63a2f] transition-colors">
                     Comenzar curso
                   </button>
                 )}
@@ -288,12 +288,12 @@ export default function AcademyPage() {
             ].map((story) => (
               <div key={story.name} className="bg-gray-50 rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-lg">
                     👤
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">{story.name}</p>
-                    <p className="text-xs text-indigo-600">{story.role}</p>
+                    <p className="text-xs text-[#ff4c41]">{story.role}</p>
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm italic">"{story.text}"</p>

@@ -1,107 +1,204 @@
 import React from 'react';
+import Link from 'next/link';
 
-const services = [
+const SERVICES = [
   {
     icon: '🚗',
-    name: 'Ride',
-    desc: 'Door-to-door transportation for daily commutes and trips',
-    features: ['Fast pickup', 'Affordable pricing', 'Real-time tracking'],
+    name: 'Transporte',
+    desc: 'Viaja cómodo y seguro a cualquier destino. Conductores verificados, tarifas transparentes y seguimiento en tiempo real.',
+    features: [
+      'Conductores verificados',
+      'Precios transparentes',
+      'Seguimiento GPS en tiempo real',
+      'Disponible 24/7',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=80&auto=format',
+    color: '#ff4c41',
   },
   {
     icon: '🏨',
-    name: 'Accommodation',
-    desc: 'Find verified hosts and comfortable places to stay',
-    features: ['Verified hosts', 'Flexible booking', 'Best rates'],
+    name: 'Alojamiento',
+    desc: 'Hospedaje verificado en las mejores ubicaciones. Desde hostales económicos hasta hoteles boutique de lujo.',
+    features: [
+      'Anfitriones verificados',
+      'Reserva flexible',
+      'Mejores tarifas garantizadas',
+      'Fotos reales del espacio',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80&auto=format',
+    color: '#10B981',
   },
   {
     icon: '🗺️',
     name: 'Tours',
-    desc: 'Explore destinations with local expert guides',
-    features: ['Local guides', 'Custom itineraries', 'Group tours'],
+    desc: 'Descubre Ecuador con guías locales expertos. Aventura, cultura, naturaleza e historia en cada recorrido.',
+    features: [
+      'Guías locales certificados',
+      'Itinerarios personalizados',
+      'Tours grupales e individuales',
+      'Equipamiento incluido',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80&auto=format',
+    color: '#3B82F6',
   },
   {
     icon: '🎭',
-    name: 'Experiences',
-    desc: 'Book unique activities and memorable experiences',
-    features: ['Verified experiences', 'Expert hosts', 'Reviews'],
+    name: 'Experiencias',
+    desc: 'Gastronomía ecuatoriana, aventura extrema, artesanía local, surf, senderismo. Crea recuerdos únicos.',
+    features: [
+      'Experiencias verificadas',
+      'Anfitriones expertos',
+      'Reseñas reales',
+      'Grupos pequeños',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=600&q=80&auto=format',
+    color: '#F59E0B',
   },
   {
     icon: '📦',
-    name: 'Parcels',
-    desc: 'Fast and reliable courier and parcel delivery',
-    features: ['Same-day delivery', 'Tracking', 'Insurance'],
+    name: 'Envíos',
+    desc: 'Envía tus paquetes de forma rápida y segura a cualquier rincón del país. Seguimiento en tiempo real.',
+    features: [
+      'Entrega el mismo día',
+      'Seguimiento en vivo',
+      'Seguro de paquetes',
+      'Cobertura nacional',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80&auto=format',
+    color: '#8B5CF6',
   },
   {
     icon: '💳',
-    name: 'Payments',
-    desc: 'Safe, secure, and convenient payment solutions',
-    features: ['Multiple methods', 'Instant transfers', 'Protection'],
+    name: 'Pagos Seguros',
+    desc: 'Múltiples métodos de pago aceptados. Todas las transacciones protegidas y facturación electrónica.',
+    features: [
+      'Múltiples métodos de pago',
+      'Transferencias instantáneas',
+      'Protección al comprador',
+      'Facturación electrónica',
+    ],
+    photo:
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&auto=format',
+    color: '#EC4899',
   },
 ];
 
-export const metadata = {
-  title: 'Going Services - Mobility Solutions',
-  description: 'Explore all the services offered by Going Platform.',
-};
-
 export default function ServicesPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-16 md:py-24">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h1>
-          <p className="text-xl text-primary-100">
-            Everything you need for seamless mobility
+      <section
+        className="relative py-20 px-4 text-white text-center overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #ff4c41 0%, #e63a2f 100%)',
+        }}
+      >
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-white opacity-5 -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-white opacity-5 translate-y-1/2 -translate-x-1/3" />
+
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <h1 className="text-5xl font-bold mb-4">Nuestros Servicios</h1>
+          <p className="text-xl text-white/85">
+            Todo lo que necesitas para moverte, alojarte y explorar Ecuador en
+            un solo lugar.
           </p>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="container mx-auto px-4 py-16">
+      <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, i) => (
+          {SERVICES.map((service) => (
             <div
-              key={i}
-              className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+              key={service.name}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group"
             >
-              <div className="text-5xl mb-4">{service.icon}</div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {service.name}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {service.desc}
-              </p>
-              <ul className="space-y-2 mb-6">
-                {service.features.map((feature, j) => (
-                  <li
-                    key={j}
-                    className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2"
-                  >
-                    <span className="text-primary-500">✓</span> {feature}
-                  </li>
-                ))}
-              </ul>
-              <button className="w-full py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors">
-                Learn More
-              </button>
+              {/* Photo */}
+              <div className="relative h-44 overflow-hidden">
+                <img
+                  src={service.photo}
+                  alt={service.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div
+                  className="absolute inset-0 opacity-40"
+                  style={{
+                    background: `linear-gradient(to top, ${service.color}, transparent)`,
+                  }}
+                />
+                <div className="absolute bottom-3 left-4 text-3xl">
+                  {service.icon}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {service.name}
+                </h3>
+                <p className="text-gray-500 text-sm mb-4 leading-relaxed">
+                  {service.desc}
+                </p>
+
+                <ul className="space-y-2 mb-6">
+                  {service.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="text-sm text-gray-600 flex items-center gap-2"
+                    >
+                      <span className="font-bold" style={{ color: '#ff4c41' }}>
+                        ✓
+                      </span>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className="w-full py-2.5 text-white rounded-xl font-semibold text-sm transition-all hover:shadow-md"
+                  style={{ backgroundColor: '#ff4c41' }}
+                >
+                  Reservar {service.name}
+                </button>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="bg-primary-50 dark:bg-gray-800 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Ready to get started?
+      <section className="bg-red-50 border-t border-red-100 py-16 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            ¿Listo para comenzar?
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Download the Going app and access all our services in one place.
+          <p className="text-gray-500 mb-8 text-lg">
+            Descarga la app Going y accede a todos nuestros servicios desde tu
+            teléfono.
           </p>
-          <button className="px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-colors">
-            Download Now
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/auth/register"
+              className="px-8 py-3.5 text-white font-bold rounded-xl transition-all hover:shadow-md text-sm"
+              style={{ backgroundColor: '#ff4c41' }}
+            >
+              Crear cuenta gratis
+            </Link>
+            <Link
+              href="/"
+              className="px-8 py-3.5 border-2 font-bold rounded-xl transition-all text-sm"
+              style={{ borderColor: '#ff4c41', color: '#ff4c41' }}
+            >
+              Volver al inicio
+            </Link>
+          </div>
         </div>
       </section>
     </main>

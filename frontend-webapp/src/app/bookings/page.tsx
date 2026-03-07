@@ -8,7 +8,7 @@ const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-100 text-green-700',
   pending: 'bg-yellow-100 text-yellow-700',
   cancelled: 'bg-red-100 text-red-700',
-  completed: 'bg-blue-100 text-blue-700',
+  completed: 'bg-red-100 text-blue-700',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -115,7 +115,7 @@ export default function BookingsPage() {
               onClick={() => setFilter(val)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === val
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-[#ff4c41] text-white shadow-sm'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -142,7 +142,7 @@ export default function BookingsPage() {
                 key={booking.id}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-start gap-4 hover:shadow-md transition-shadow"
               >
-                <div className="text-3xl w-12 h-12 flex items-center justify-center bg-blue-50 rounded-xl flex-shrink-0">
+                <div className="text-3xl w-12 h-12 flex items-center justify-center bg-red-50 rounded-xl flex-shrink-0">
                   {booking.icon}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -170,12 +170,12 @@ export default function BookingsPage() {
                     <span className="text-xs text-gray-400">
                       🕐 {booking.time}
                     </span>
-                    <span className="text-sm font-bold text-blue-600 ml-auto">
+                    <span className="text-sm font-bold text-[#ff4c41] ml-auto">
                       {booking.amount}
                     </span>
                   </div>
                   <div className="flex gap-2 mt-3">
-                    <button className="text-xs text-blue-600 font-semibold hover:underline">
+                    <button className="text-xs text-[#ff4c41] font-semibold hover:underline">
                       Ver detalles
                     </button>
                     {(booking.status === 'confirmed' ||
@@ -204,7 +204,7 @@ export default function BookingsPage() {
               value: MOCK_BOOKINGS.filter(
                 (b) => b.status === 'confirmed' || b.status === 'pending'
               ).length,
-              color: 'text-blue-600',
+              color: 'text-[#ff4c41]',
             },
             {
               label: 'Completadas',

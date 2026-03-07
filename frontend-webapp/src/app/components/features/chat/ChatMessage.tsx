@@ -19,7 +19,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
           message.isOwn
-            ? 'bg-blue-600 text-white rounded-br-sm'
+            ? 'bg-[#ff4c41] text-white rounded-br-sm'
             : isSystemMessage
             ? 'bg-gray-100 text-gray-500 text-xs text-center mx-auto'
             : 'bg-gray-100 text-gray-800 rounded-bl-sm'
@@ -29,7 +29,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         {!isSystemMessage && (
           <p
             className={`text-xs mt-0.5 ${
-              message.isOwn ? 'text-blue-200' : 'text-gray-400'
+              message.isOwn ? 'text-red-200' : 'text-gray-400'
             }`}
           >
             {message.timestamp.toLocaleTimeString([], {

@@ -33,12 +33,19 @@ export function LanguageSwitcher() {
         <span className="text-lg">{currentLang?.flag}</span>
         <span className="hidden md:inline">{currentLang?.name}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? 'rotate-180' : ''
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
         </svg>
       </button>
 
@@ -50,14 +57,26 @@ export function LanguageSwitcher() {
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
               className={`w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-gray-50 transition-colors ${
-                language === lang.code ? 'bg-blue-50 border-l-4 border-blue-600' : ''
-              } ${lang.code !== languages[languages.length - 1].code ? 'border-b border-gray-200' : ''}`}
+                language === lang.code
+                  ? 'bg-red-50 border-l-4 border-[#ff4c41]'
+                  : ''
+              } ${
+                lang.code !== languages[languages.length - 1].code
+                  ? 'border-b border-gray-200'
+                  : ''
+              }`}
             >
               <span className="text-lg">{lang.flag}</span>
-              <span className={`font-medium ${language === lang.code ? 'text-blue-600' : 'text-gray-700'}`}>
+              <span
+                className={`font-medium ${
+                  language === lang.code ? 'text-[#ff4c41]' : 'text-gray-700'
+                }`}
+              >
                 {lang.name}
               </span>
-              {language === lang.code && <span className="ml-auto text-blue-600">✓</span>}
+              {language === lang.code && (
+                <span className="ml-auto text-[#ff4c41]">✓</span>
+              )}
             </button>
           ))}
         </div>

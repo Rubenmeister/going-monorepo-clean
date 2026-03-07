@@ -40,12 +40,12 @@ const alertStyles = {
     iconColor: 'text-yellow-600',
   },
   info: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
     text: 'text-blue-800',
-    title: 'text-blue-900',
+    title: 'text-gray-900',
     icon: 'ℹ',
-    iconColor: 'text-blue-600',
+    iconColor: 'text-[#ff4c41]',
   },
 };
 

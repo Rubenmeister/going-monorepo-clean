@@ -47,9 +47,17 @@ export function Footer() {
   const socialLinks = [
     { icon: '🐦', name: 'Twitter', url: 'https://twitter.com/goingecuador' },
     { icon: '📘', name: 'Facebook', url: 'https://facebook.com/goingecuador' },
-    { icon: '📷', name: 'Instagram', url: 'https://instagram.com/goingecuador' },
+    {
+      icon: '📷',
+      name: 'Instagram',
+      url: 'https://instagram.com/goingecuador',
+    },
     { icon: '▶️', name: 'YouTube', url: 'https://youtube.com/goingecuador' },
-    { icon: '💼', name: 'LinkedIn', url: 'https://linkedin.com/company/goingecuador' },
+    {
+      icon: '💼',
+      name: 'LinkedIn',
+      url: 'https://linkedin.com/company/goingecuador',
+    },
     { icon: '🎵', name: 'TikTok', url: 'https://tiktok.com/@goingecuador' },
   ];
 
@@ -59,7 +67,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-20">
         {/* Top Section - Services */}
         <div className="mb-12 pb-8 border-b border-gray-800">
-          <h3 className="text-white font-bold text-lg mb-6">Nuestros Servicios</h3>
+          <h3 className="text-white font-bold text-lg mb-6">
+            Nuestros Servicios
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {services.map((service) => (
               <Link
@@ -76,7 +86,9 @@ export function Footer() {
         {/* Subscribe Section */}
         <div className="mb-12 pb-8 border-b border-gray-800">
           <div className="max-w-md">
-            <h3 className="text-white font-bold text-lg mb-3">📧 Suscríbete a Nuestro Newsletter</h3>
+            <h3 className="text-white font-bold text-lg mb-3">
+              📧 Suscríbete a Nuestro Newsletter
+            </h3>
             <p className="text-gray-400 text-sm mb-4">
               Recibe las mejores ofertas, tips de viaje y noticias exclusivas
             </p>
@@ -86,12 +98,12 @@ export function Footer() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-sm"
                 required
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm whitespace-nowrap"
+                className="px-6 py-2 bg-[#ff4c41] text-white rounded-lg hover:bg-[#e63a2f] transition-colors font-semibold text-sm whitespace-nowrap"
               >
                 Suscribirse
               </button>
@@ -176,7 +188,10 @@ export function Footer() {
                 <p className="text-gray-400 text-sm">
                   <strong className="text-white">Teléfono:</strong>
                 </p>
-                <a href="tel:+593123456789" className="text-blue-400 hover:text-blue-300 text-sm">
+                <a
+                  href="tel:+593123456789"
+                  className="text-blue-400 hover:text-blue-300 text-sm"
+                >
                   +593 (1) 234-5678
                 </a>
               </li>
@@ -184,7 +199,10 @@ export function Footer() {
                 <p className="text-gray-400 text-sm">
                   <strong className="text-white">Email:</strong>
                 </p>
-                <a href="mailto:hola@going.com" className="text-blue-400 hover:text-blue-300 text-sm">
+                <a
+                  href="mailto:hola@going.com"
+                  className="text-blue-400 hover:text-blue-300 text-sm"
+                >
                   hola@going.com
                 </a>
               </li>
@@ -194,7 +212,9 @@ export function Footer() {
 
         {/* Download App Section */}
         <div className="mb-12 pb-8 border-b border-gray-800">
-          <h3 className="text-white font-bold text-lg mb-6">📱 Obtén Nuestra App</h3>
+          <h3 className="text-white font-bold text-lg mb-6">
+            📱 Obtén Nuestra App
+          </h3>
           <div className="grid md:grid-cols-3 gap-4">
             {/* Web */}
             <a
@@ -204,7 +224,9 @@ export function Footer() {
               <span className="text-3xl">🌐</span>
               <div>
                 <p className="text-white font-semibold text-sm">Going Web</p>
-                <p className="text-gray-400 text-xs">Acceso desde cualquier navegador</p>
+                <p className="text-gray-400 text-xs">
+                  Acceso desde cualquier navegador
+                </p>
               </div>
             </a>
 
@@ -238,11 +260,16 @@ export function Footer() {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-8">
           {/* Logo & Description */}
           <div className="md:flex-1">
-            <div className="text-3xl font-bold text-blue-400 mb-2">🌍 Going</div>
+            <div className="text-3xl font-bold text-blue-400 mb-2">
+              🌍 Going
+            </div>
             <p className="text-gray-400 text-sm max-w-xs">
-              Conectando viajeros con experiencias inolvidables en Ecuador y el mundo
+              Conectando viajeros con experiencias inolvidables en Ecuador y el
+              mundo
             </p>
-            <p className="text-gray-600 text-xs mt-4">© 2026 Going Ecuador. Todos los derechos reservados.</p>
+            <p className="text-gray-600 text-xs mt-4">
+              © 2026 Going Ecuador. Todos los derechos reservados.
+            </p>
           </div>
 
           {/* Social Links */}
@@ -258,7 +285,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={social.name}
-                  className="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full hover:bg-blue-600 transition-colors text-lg"
+                  className="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full hover:bg-[#ff4c41] transition-colors text-lg"
                 >
                   {social.icon}
                 </a>
@@ -271,17 +298,24 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="bg-gray-950 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
-          <div>
-            Made with ❤️ for travelers around the world
-          </div>
+          <div>Made with ❤️ for travelers around the world</div>
           <div className="flex gap-6">
-            <Link href="/legal/terms" className="hover:text-white transition-colors">
+            <Link
+              href="/legal/terms"
+              className="hover:text-white transition-colors"
+            >
               Términos
             </Link>
-            <Link href="/legal/privacy" className="hover:text-white transition-colors">
+            <Link
+              href="/legal/privacy"
+              className="hover:text-white transition-colors"
+            >
               Privacidad
             </Link>
-            <Link href="/legal/cookies" className="hover:text-white transition-colors">
+            <Link
+              href="/legal/cookies"
+              className="hover:text-white transition-colors"
+            >
               Cookies
             </Link>
             <span>v1.0.0</span>

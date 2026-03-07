@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUIStore, Notification } from '@going-monorepo-clean/frontend-stores';
+import {
+  useUIStore,
+  Notification,
+} from '@going-monorepo-clean/frontend-stores';
 
 /**
  * Global notification toast component
@@ -39,10 +42,7 @@ interface NotificationToastProps {
 /**
  * Individual notification toast
  */
-function NotificationToast({
-  notification,
-  onClose,
-}: NotificationToastProps) {
+function NotificationToast({ notification, onClose }: NotificationToastProps) {
   useEffect(() => {
     if (!notification.duration || notification.duration <= 0) return;
 
@@ -54,7 +54,7 @@ function NotificationToast({
     error: 'bg-red-50 border-red-200',
     warning: 'bg-yellow-50 border-yellow-200',
     success: 'bg-green-50 border-green-200',
-    info: 'bg-blue-50 border-blue-200',
+    info: 'bg-red-50 border-red-200',
   };
 
   const textColors = {

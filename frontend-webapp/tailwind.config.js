@@ -6,30 +6,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary Blue (#5B8EFF)
-        primary: '#5B8EFF',
-        'primary-50': '#F0F5FF',
-        'primary-100': '#E0EBFF',
-        'primary-200': '#C1D7FF',
-        'primary-300': '#A3C3FF',
-        'primary-400': '#7FA8FF',
-        'primary-500': '#5B8EFF',
-        'primary-600': '#4B7AE8',
-        'primary-700': '#3B66D1',
-        'primary-800': '#2B52BA',
-        'primary-900': '#1B3EA3',
+        // Going Brand Colors — Official (from brand guidelines 2024)
+        primary: '#ff4c41',
+        'primary-50': '#fff2f2',
+        'primary-100': '#ffe4e2',
+        'primary-200': '#ffc9c5',
+        'primary-300': '#ffada8',
+        'primary-400': '#ff7f75',
+        'primary-500': '#ff4c41',
+        'primary-600': '#e63a2f',
+        'primary-700': '#cc2820',
+        'primary-800': '#b31811',
+        'primary-900': '#991008',
 
-        // Accent Orange (#FF9A5B)
-        accent: '#FF9A5B',
-        'accent-50': '#FFF5F0',
-        'accent-100': '#FFEBE0',
-        'accent-200': '#FFD7C1',
-        'accent-300': '#FFC3A3',
-        'accent-400': '#FFAE7F',
-        'accent-500': '#FF9A5B',
-        'accent-600': '#E8854B',
-        'accent-700': '#D1703B',
-        'accent-800': '#BA5B2B',
+        // Going Color Aliases
+        'going-red': '#ff4c41',
+        'going-red-dark': '#e63a2f',
+        'going-red-light': '#fff2f2',
+        'going-yellow': '#ffd253',
+        'going-yellow-dark': '#e6ba3a',
+        'going-yellow-light': '#fffbeb',
+
+        // Accent / Brand Black
+        accent: '#000000',
+        'accent-50': '#F9FAFB',
+        'accent-100': '#F3F4F6',
+        'accent-200': '#E5E7EB',
+        'accent-300': '#D1D5DB',
+        'accent-400': '#9CA3AF',
+        'accent-500': '#6B7280',
+        'accent-600': '#4B5563',
+        'accent-700': '#374151',
+        'accent-800': '#1F2937',
 
         // Semantic
         success: '#10B981',
@@ -39,14 +47,16 @@ module.exports = {
       },
 
       fontFamily: {
+        // Brand fonts (Nunito Sans for titles, Roboto for body)
         sans: [
+          'Roboto',
           'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
           'sans-serif',
         ],
-        display: ['Poppins', 'Inter', 'sans-serif'],
+        display: ['Nunito Sans', 'Nunito', 'Inter', 'sans-serif'],
         mono: ['Fira Code', 'Courier New', 'monospace'],
       },
 

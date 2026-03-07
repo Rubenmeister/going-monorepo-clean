@@ -1,35 +1,39 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { rideService } from '../../services/rideService'
+import { useState, useEffect } from 'react';
+import { rideService } from '../../services/rideService';
 
 interface HistoryRide {
-  id: string
-  date: string
-  pickup: string
-  dropoff: string
-  fare: number
-  status: 'completed' | 'cancelled'
-  driver?: { name: string; rating: number }
-  rideType: string
-  distance: number
-  duration: number
+  id: string;
+  date: string;
+  pickup: string;
+  dropoff: string;
+  fare: number;
+  status: 'completed' | 'cancelled';
+  driver?: { name: string; rating: number };
+  rideType: string;
+  distance: number;
+  duration: number;
 }
 
 function RideStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
-  }
+  };
   return (
-    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
+    <span
+      className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+        styles[status] || 'bg-gray-100 text-gray-800'
+      }`}
+    >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
-  )
+  );
 }
 
 function RideHistoryItem({ ride }: { ride: HistoryRide }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div
@@ -50,7 +54,7 @@ function RideHistoryItem({ ride }: { ride: HistoryRide }) {
               })}
             </span>
             <RideStatusBadge status={ride.status} />
-            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full capitalize">
+            <span className="text-xs bg-red-50 text-blue-700 px-2 py-0.5 rounded-full capitalize">
               {ride.rideType}
             </span>
           </div>
@@ -66,7 +70,9 @@ function RideHistoryItem({ ride }: { ride: HistoryRide }) {
           </div>
         </div>
         <div className="text-right ml-4">
-          <p className="text-lg font-bold text-gray-900">${ride.fare.toFixed(2)}</p>
+          <p className="text-lg font-bold text-gray-900">
+            ${ride.fare.toFixed(2)}
+          </p>
           <p className="text-xs text-gray-500">{ride.distance.toFixed(1)} km</p>
         </div>
       </div>
@@ -83,21 +89,27 @@ function RideHistoryItem({ ride }: { ride: HistoryRide }) {
                 <span className="text-gray-500">Driver</span>
                 <p className="font-medium">
                   {ride.driver.name}
-                  <span className="text-yellow-500 ml-1">★ {ride.driver.rating}</span>
+                  <span className="text-yellow-500 ml-1">
+                    ★ {ride.driver.rating}
+                  </span>
                 </p>
               </div>
             )}
           </div>
           <div className="mt-3 flex gap-2">
-            <button className="text-sm text-blue-600 hover:underline">View Receipt</button>
+            <button className="text-sm text-[#ff4c41] hover:underline">
+              View Receipt
+            </button>
             {ride.status === 'completed' && (
-              <button className="text-sm text-blue-600 hover:underline">Book Again</button>
+              <button className="text-sm text-[#ff4c41] hover:underline">
+                Book Again
+              </button>
             )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Mock data for development
@@ -107,7 +119,7 @@ const MOCK_RIDES: HistoryRide[] = [
     date: new Date(Date.now() - 86400000).toISOString(),
     pickup: '350 5th Ave, New York, NY',
     dropoff: 'JFK International Airport',
-    fare: 45.50,
+    fare: 45.5,
     status: 'completed',
     driver: { name: 'Carlos M.', rating: 4.9 },
     rideType: 'premium',
@@ -131,40 +143,43 @@ const MOCK_RIDES: HistoryRide[] = [
     date: new Date(Date.now() - 259200000).toISOString(),
     pickup: 'Times Square, New York, NY',
     dropoff: 'LaGuardia Airport',
-    fare: 32.00,
+    fare: 32.0,
     status: 'cancelled',
     rideType: 'comfort',
     distance: 15.0,
     duration: 35,
   },
-]
+];
 
 export default function RideHistoryList() {
-  const [rides, setRides] = useState<HistoryRide[]>([])
-  const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'completed' | 'cancelled'>('all')
+  const [rides, setRides] = useState<HistoryRide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'completed' | 'cancelled'>(
+    'all'
+  );
 
   useEffect(() => {
     async function loadRides() {
-      setLoading(true)
+      setLoading(true);
       try {
-        const data = await rideService.getRideHistory(page, 10)
-        setRides(data.rides || [])
-        setHasMore(data.hasMore || false)
+        const data = await rideService.getRideHistory(page, 10);
+        setRides(data.rides || []);
+        setHasMore(data.hasMore || false);
       } catch {
         // Use mock data in development
-        setRides(MOCK_RIDES)
-        setHasMore(false)
+        setRides(MOCK_RIDES);
+        setHasMore(false);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    loadRides()
-  }, [page])
+    loadRides();
+  }, [page]);
 
-  const filtered = filter === 'all' ? rides : rides.filter((r) => r.status === filter)
+  const filtered =
+    filter === 'all' ? rides : rides.filter((r) => r.status === filter);
 
   return (
     <div data-testid="ride-history" className="space-y-4">
@@ -176,7 +191,9 @@ export default function RideHistoryList() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                filter === f ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                filter === f
+                  ? 'bg-[#ff4c41] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -187,7 +204,7 @@ export default function RideHistoryList() {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff4c41]" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
@@ -206,11 +223,11 @@ export default function RideHistoryList() {
       {hasMore && !loading && (
         <button
           onClick={() => setPage((p) => p + 1)}
-          className="w-full py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          className="w-full py-2 text-sm text-[#ff4c41] hover:bg-red-50 rounded-lg transition-colors"
         >
           Load more rides
         </button>
       )}
     </div>
-  )
+  );
 }

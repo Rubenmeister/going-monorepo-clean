@@ -202,7 +202,7 @@ function CardDetailsForm({
 function PaymentStatusDisplay({ status }: { status: string }) {
   const statusConfig = {
     processing: {
-      bgColor: 'bg-blue-100',
+      bgColor: 'bg-red-100',
       textColor: 'text-blue-800',
       message: '⏳ Processing payment...',
     },

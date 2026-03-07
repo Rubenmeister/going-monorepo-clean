@@ -82,7 +82,7 @@ export default function SOSPage() {
                 className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-colors ${
                   item.variant === 'red'
                     ? 'bg-red-600 text-white hover:bg-red-700'
-                    : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
+                    : 'border-2 border-[#ff4c41] text-[#ff4c41] hover:bg-red-50'
                 }`}
               >
                 {item.action}
@@ -92,8 +92,8 @@ export default function SOSPage() {
         </div>
 
         {/* Safety Tips */}
-        <div className="bg-blue-50 rounded-2xl p-8 border border-blue-100 mb-8">
-          <h2 className="text-2xl font-bold text-blue-900 mb-6">
+        <div className="bg-red-50 rounded-2xl p-8 border border-red-100 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
             🛡️ Consejos de Seguridad
           </h2>
           <ul className="space-y-3">
@@ -105,7 +105,7 @@ export default function SOSPage() {
               'Espera tu transporte en áreas bien iluminadas y concurridas.',
             ].map((tip) => (
               <li key={tip} className="flex items-start gap-3">
-                <span className="text-blue-600 font-bold mt-0.5">✓</span>
+                <span className="text-[#ff4c41] font-bold mt-0.5">✓</span>
                 <span className="text-gray-700 text-sm">{tip}</span>
               </li>
             ))}
@@ -136,7 +136,7 @@ export default function SOSPage() {
                 key={faq.q}
                 className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm cursor-pointer group"
               >
-                <summary className="font-semibold text-gray-900 hover:text-blue-600 list-none flex justify-between items-center">
+                <summary className="font-semibold text-gray-900 hover:text-[#ff4c41] list-none flex justify-between items-center">
                   {faq.q}
                   <span className="text-gray-400 ml-2">▼</span>
                 </summary>

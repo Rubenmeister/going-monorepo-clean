@@ -90,7 +90,7 @@ function LanguageDropdown({
           onClick={() => onSelectLanguage(lang.code)}
           className={`w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-gray-50 transition-colors ${
             currentLanguage === lang.code
-              ? 'bg-blue-50 border-l-4 border-blue-600'
+              ? 'bg-red-50 border-l-4 border-[#ff4c41]'
               : ''
           } ${
             lang.code !== languages[languages.length - 1].code
@@ -101,13 +101,13 @@ function LanguageDropdown({
           <span className="text-lg">{lang.flag}</span>
           <span
             className={`font-medium ${
-              currentLanguage === lang.code ? 'text-blue-600' : 'text-gray-700'
+              currentLanguage === lang.code ? 'text-[#ff4c41]' : 'text-gray-700'
             }`}
           >
             {lang.name}
           </span>
           {currentLanguage === lang.code && (
-            <span className="ml-auto text-blue-600">✓</span>
+            <span className="ml-auto text-[#ff4c41]">✓</span>
           )}
         </button>
       ))}

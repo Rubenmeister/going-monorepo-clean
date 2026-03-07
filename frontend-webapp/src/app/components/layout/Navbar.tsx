@@ -41,13 +41,13 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
   return (
     <div className="flex items-center gap-2">
       <div
-        className="text-3xl font-bold text-blue-600 cursor-pointer"
+        className="text-3xl font-bold text-[#ff4c41] cursor-pointer"
         onClick={onLogoClick}
       >
         🌍
       </div>
       <h1
-        className="text-xl font-bold text-blue-600 hidden md:block cursor-pointer"
+        className="text-xl font-bold text-[#ff4c41] hidden md:block cursor-pointer"
         onClick={onLogoClick}
       >
         Going
@@ -64,25 +64,25 @@ function NavLinks({ t }: { t: (key: string) => string }) {
     <div className="hidden lg:flex gap-8">
       <a
         href="/"
-        className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm"
+        className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
       >
         {t('nav.inicio')}
       </a>
       <a
         href="/services"
-        className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm"
+        className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
       >
         {t('nav.servicios')}
       </a>
       <a
         href="/account"
-        className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm"
+        className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
       >
         {t('nav.miCuenta')}
       </a>
       <a
         href="/bookings"
-        className="text-gray-700 hover:text-blue-600 transition-colors font-medium text-sm"
+        className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
       >
         {t('nav.misReservas')}
       </a>
@@ -127,7 +127,7 @@ function UserMenu({ user }: { user: any }) {
         <p className="text-sm font-semibold text-gray-900">{user.firstName}</p>
         <p className="text-xs text-gray-500">{user.email}</p>
       </div>
-      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+      <div className="w-10 h-10 bg-[#ff4c41] rounded-full flex items-center justify-center text-white font-bold">
         {user.firstName?.[0]?.toUpperCase()}
       </div>
     </div>
@@ -147,7 +147,7 @@ function LoginButton({
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm"
+      className="px-4 py-2 bg-[#ff4c41] text-white rounded-lg hover:bg-[#e63a2f] transition-colors font-semibold text-sm"
     >
       {label}
     </button>

@@ -56,7 +56,7 @@ export function ChatInterface({
 function ChatButton({ unreadCount }: { unreadCount: number }) {
   return (
     <button
-      className="relative w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+      className="relative w-14 h-14 bg-[#ff4c41] hover:bg-[#e63a2f] text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
       aria-label="Open chat"
     >
       <svg
@@ -86,13 +86,13 @@ function ChatButton({ unreadCount }: { unreadCount: number }) {
  */
 function ChatHeader({ driverName }: { driverName: string }) {
   return (
-    <div className="bg-blue-600 text-white p-4 flex items-center gap-3">
+    <div className="bg-[#ff4c41] text-white p-4 flex items-center gap-3">
       <div className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center text-sm font-bold">
         {driverName.charAt(0)}
       </div>
       <div>
         <p className="font-semibold text-sm">{driverName}</p>
-        <p className="text-xs text-blue-200">Your driver</p>
+        <p className="text-xs text-red-200">Your driver</p>
       </div>
     </div>
   );
@@ -160,7 +160,7 @@ function ChatInputBar({
       />
       <button
         onClick={handleSubmit}
-        className="w-9 h-9 bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors hover:bg-blue-700"
+        className="w-9 h-9 bg-[#ff4c41] text-white rounded-full flex items-center justify-center transition-colors hover:bg-[#e63a2f]"
         aria-label="Send message"
       >
         <svg

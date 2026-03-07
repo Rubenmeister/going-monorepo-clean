@@ -84,11 +84,7 @@ interface ErrorFallbackProps {
   onReset: () => void;
 }
 
-function ErrorFallback({
-  error,
-  errorInfo,
-  onReset,
-}: ErrorFallbackProps) {
+function ErrorFallback({ error, errorInfo, onReset }: ErrorFallbackProps) {
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
@@ -127,7 +123,9 @@ function ErrorFallback({
         {/* Error Details (Development Only) */}
         {isDev && error && (
           <div className="bg-gray-100 rounded-md p-4 space-y-2 max-h-32 overflow-auto">
-            <p className="text-xs font-semibold text-gray-700">Error Details:</p>
+            <p className="text-xs font-semibold text-gray-700">
+              Error Details:
+            </p>
             <p className="text-xs text-gray-600 font-mono">{error.message}</p>
             {errorInfo && (
               <p className="text-xs text-gray-600 font-mono whitespace-pre-wrap">
@@ -141,7 +139,7 @@ function ErrorFallback({
         <div className="space-y-3">
           <button
             onClick={onReset}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+            className="w-full px-4 py-2 bg-[#ff4c41] text-white rounded-md hover:bg-[#e63a2f] transition-colors font-medium"
           >
             Try Again
           </button>

@@ -8,10 +8,18 @@ interface PaymentFormProps {
   onPaymentComplete?: () => void;
 }
 
-export function PaymentForm({ rideId: _rideId, amount = 0, onPaymentComplete }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet' | 'cash'>('card');
+export function PaymentForm({
+  rideId: _rideId,
+  amount = 0,
+  onPaymentComplete,
+}: PaymentFormProps) {
+  const [paymentMethod, setPaymentMethod] = useState<
+    'card' | 'wallet' | 'cash'
+  >('card');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<'pending' | 'processing' | 'completed' | 'failed'>('pending');
+  const [status, setStatus] = useState<
+    'pending' | 'processing' | 'completed' | 'failed'
+  >('pending');
 
   // Use provided amount or fallback
   const fare = amount;
@@ -34,11 +42,17 @@ export function PaymentForm({ rideId: _rideId, amount = 0, onPaymentComplete }: 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6" data-testid="payment-method-selector">
+    <div
+      className="bg-white rounded-lg shadow-md p-6"
+      data-testid="payment-method-selector"
+    >
       <h3 className="text-lg font-bold text-gray-800 mb-4">Payment</h3>
 
       {/* Payment summary */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-4" data-testid="payment-summary">
+      <div
+        className="bg-gray-50 rounded-lg p-4 mb-4"
+        data-testid="payment-summary"
+      >
         <div className="flex justify-between mb-2">
           <span className="text-gray-600">Base fare</span>
           <span className="font-semibold">${(fare * 0.8).toFixed(2)}</span>
@@ -49,7 +63,9 @@ export function PaymentForm({ rideId: _rideId, amount = 0, onPaymentComplete }: 
         </div>
         <div className="border-t pt-2 flex justify-between text-lg">
           <span className="font-bold">Total</span>
-          <span className="font-bold text-going-primary">${fare.toFixed(2)}</span>
+          <span className="font-bold text-going-primary">
+            ${fare.toFixed(2)}
+          </span>
         </div>
       </div>
 
@@ -60,12 +76,17 @@ export function PaymentForm({ rideId: _rideId, amount = 0, onPaymentComplete }: 
         </label>
         <div className="space-y-2">
           {(['card', 'wallet', 'cash'] as const).map((method) => (
-            <label key={method} className="flex items-center gap-3 cursor-pointer">
+            <label
+              key={method}
+              className="flex items-center gap-3 cursor-pointer"
+            >
               <input
                 type="radio"
                 value={method}
                 checked={paymentMethod === method}
-                onChange={(e) => setPaymentMethod(e.target.value as typeof method)}
+                onChange={(e) =>
+                  setPaymentMethod(e.target.value as typeof method)
+                }
                 className="w-4 h-4"
               />
               <span className="flex items-center gap-2">
@@ -107,7 +128,7 @@ export function PaymentForm({ rideId: _rideId, amount = 0, onPaymentComplete }: 
         <div
           className={`mb-4 p-3 rounded-lg text-sm font-medium ${
             status === 'processing'
-              ? 'bg-blue-100 text-blue-800'
+              ? 'bg-red-100 text-blue-800'
               : status === 'completed'
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'

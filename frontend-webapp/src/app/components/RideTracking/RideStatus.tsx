@@ -13,7 +13,7 @@ export function RideStatus() {
     pending: {
       icon: '🔍',
       label: 'Finding driver',
-      color: 'bg-blue-100',
+      color: 'bg-red-100',
       textColor: 'text-blue-800',
     },
     accepted: {

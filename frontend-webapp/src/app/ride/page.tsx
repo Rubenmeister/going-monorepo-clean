@@ -119,7 +119,7 @@ export default function RidePage() {
                     i < currentStepIndex
                       ? 'bg-green-500 text-white'
                       : i === currentStepIndex
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#ff4c41] text-white'
                       : 'bg-gray-200 text-gray-400'
                   }`}
                 >
@@ -128,7 +128,7 @@ export default function RidePage() {
                 <span
                   className={`ml-1 text-xs ${
                     i === currentStepIndex
-                      ? 'text-blue-600 font-medium'
+                      ? 'text-[#ff4c41] font-medium'
                       : 'text-gray-400'
                   }`}
                 >
@@ -166,7 +166,7 @@ export default function RidePage() {
             {activeRide?.status === 'completed' && (
               <button
                 onClick={() => setStep('payment')}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                className="w-full py-3 bg-[#ff4c41] text-white rounded-xl font-medium hover:bg-[#e63a2f] transition-colors"
               >
                 Proceed to Payment
               </button>

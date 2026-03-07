@@ -11,7 +11,7 @@ const mockPurchases = [
     title: 'Vuelo a Quito - Llegada al Paraíso',
     type: 'Transporte',
     date: '2026-02-15',
-    price: 125.50,
+    price: 125.5,
     status: 'completado',
     bookingRef: 'GOING-001-2026',
   },
@@ -20,7 +20,7 @@ const mockPurchases = [
     title: 'Hotel Amazonia Lodge',
     type: 'Alojamiento',
     date: '2026-02-10',
-    price: 450.00,
+    price: 450.0,
     status: 'completado',
     bookingRef: 'GOING-002-2026',
   },
@@ -38,7 +38,7 @@ const mockPurchases = [
     title: 'Transporte Local Cuenca',
     type: 'Transporte',
     date: '2026-01-15',
-    price: 22.50,
+    price: 22.5,
     status: 'completado',
     bookingRef: 'GOING-004-2026',
   },
@@ -47,7 +47,7 @@ const mockPurchases = [
     title: 'Galapagos Cruise Premium',
     type: 'Experiencia',
     date: '2026-01-05',
-    price: 1299.00,
+    price: 1299.0,
     status: 'completado',
     bookingRef: 'GOING-005-2026',
   },
@@ -73,7 +73,7 @@ export default function AccountPage() {
             </p>
             <button
               onClick={() => router.push('/auth/login')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="px-6 py-3 bg-[#ff4c41] text-white rounded-lg hover:bg-[#e63a2f] transition-colors font-semibold"
             >
               Iniciar Sesión
             </button>
@@ -107,7 +107,7 @@ export default function AccountPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 font-semibold transition-all text-sm md:text-base ${
                 activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  ? 'text-[#ff4c41] border-b-2 border-[#ff4c41]'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -126,7 +126,7 @@ export default function AccountPage() {
               </h2>
 
               <div className="flex items-start gap-6 mb-8">
-                <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl">
+                <div className="w-20 h-20 bg-[#ff4c41] rounded-full flex items-center justify-center text-white text-3xl">
                   {auth.user.firstName?.[0]?.toUpperCase()}
                 </div>
                 <div>
@@ -162,7 +162,7 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+              <button className="px-6 py-3 bg-[#ff4c41] text-white rounded-lg hover:bg-[#e63a2f] transition-colors font-semibold">
                 Editar Perfil
               </button>
             </div>
@@ -174,8 +174,10 @@ export default function AccountPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Historial de Compras</h2>
-                <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Historial de Compras
+                </h2>
+                <span className="text-sm bg-red-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
                   {mockPurchases.length} compras
                 </span>
               </div>
@@ -203,11 +205,15 @@ export default function AccountPage() {
                         </div>
                         <div className="flex gap-4 text-sm text-gray-600">
                           <span>Ref: {purchase.bookingRef}</span>
-                          <span>{new Date(purchase.date).toLocaleDateString('es-ES')}</span>
+                          <span>
+                            {new Date(purchase.date).toLocaleDateString(
+                              'es-ES'
+                            )}
+                          </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-[#ff4c41]">
                           ${purchase.price.toFixed(2)}
                         </p>
                         <span
@@ -232,7 +238,9 @@ export default function AccountPage() {
         {activeTab === 'receipts' && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-md p-8 border border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Mis Recibos</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                Mis Recibos
+              </h2>
 
               <div className="grid md:grid-cols-2 gap-4">
                 {mockPurchases.map((purchase) => (
@@ -245,7 +253,9 @@ export default function AccountPage() {
                         <p className="text-sm font-semibold text-gray-600">
                           Ref: {purchase.bookingRef}
                         </p>
-                        <p className="font-bold text-gray-900">{purchase.title}</p>
+                        <p className="font-bold text-gray-900">
+                          {purchase.title}
+                        </p>
                       </div>
                       <span className="text-2xl">📄</span>
                     </div>
@@ -253,11 +263,11 @@ export default function AccountPage() {
                       <p className="text-sm text-gray-600">
                         {new Date(purchase.date).toLocaleDateString('es-ES')}
                       </p>
-                      <p className="text-xl font-bold text-blue-600">
+                      <p className="text-xl font-bold text-[#ff4c41]">
                         ${purchase.price.toFixed(2)}
                       </p>
                     </div>
-                    <button className="w-full px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors font-semibold text-sm flex items-center justify-center gap-2">
+                    <button className="w-full px-4 py-2 bg-red-100 text-[#ff4c41] rounded-lg hover:bg-blue-200 transition-colors font-semibold text-sm flex items-center justify-center gap-2">
                       <span>📥</span>
                       Descargar PDF
                     </button>
@@ -287,7 +297,9 @@ export default function AccountPage() {
                     key={idx}
                     className="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0"
                   >
-                    <span className="text-gray-700 font-medium">{setting.label}</span>
+                    <span className="text-gray-700 font-medium">
+                      {setting.label}
+                    </span>
                     <input
                       type="checkbox"
                       defaultChecked={setting.enabled}
@@ -321,7 +333,8 @@ export default function AccountPage() {
                 ⚠️ Zona de Peligro
               </h2>
               <p className="text-gray-700 mb-4">
-                Estas acciones son irreversibles. Por favor, procede con cuidado.
+                Estas acciones son irreversibles. Por favor, procede con
+                cuidado.
               </p>
               <button className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold">
                 Eliminar Cuenta
