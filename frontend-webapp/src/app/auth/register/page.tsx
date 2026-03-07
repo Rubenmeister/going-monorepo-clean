@@ -28,7 +28,7 @@ export default function RegisterPage() {
     setError('');
     try {
       await domain.auth.register({ ...form, roles: ['user'] });
-      router.push('/');
+      window.location.href = '/';
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al registrarse');
     } finally {

@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('');
     try {
       await domain.auth.login({ email, password });
-      router.push('/');
+      window.location.href = '/';
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Credenciales incorrectas');
     } finally {

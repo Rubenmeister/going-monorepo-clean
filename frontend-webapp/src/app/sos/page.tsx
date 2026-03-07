@@ -1,162 +1,150 @@
+export const dynamic = 'force-dynamic';
+
 export default function SOSPage() {
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
           <div className="text-6xl mb-4">🚨</div>
-          <h1 className="text-4xl font-bold text-going-danger mb-2">
-            Emergency Assistance
+          <h1 className="text-4xl font-bold text-red-600 mb-2">
+            Asistencia de Emergencia
           </h1>
-          <p className="text-gray-600 text-lg">
-            Available 24/7 for all Going users
+          <p className="text-gray-500 text-lg">
+            Disponible 24/7 para todos los usuarios de Going
           </p>
         </div>
 
-        {/* Emergency Contact */}
-        <div className="bg-going-danger text-white rounded-lg shadow-lg p-8 mb-8">
+        {/* Emergency Contact Banner */}
+        <div className="bg-red-600 text-white rounded-2xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">
-            Need Immediate Help?
+            ¿Necesitas ayuda inmediata?
           </h2>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="text-3xl">📞</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center gap-4">
+              <div className="text-4xl">📞</div>
               <div>
-                <p className="text-sm opacity-90">Call our emergency line</p>
-                <p className="text-3xl font-bold">+593 99 8765 4321</p>
+                <p className="text-red-200 text-sm">Línea de emergencia</p>
+                <p className="text-3xl font-bold">+593 99 876 5432</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-3xl">💬</div>
+            <div className="flex items-center gap-4">
+              <div className="text-4xl">💬</div>
               <div>
-                <p className="text-sm opacity-90">WhatsApp emergency support</p>
-                <p className="text-3xl font-bold">+593 99 8765 4321</p>
+                <p className="text-red-200 text-sm">WhatsApp soporte urgente</p>
+                <p className="text-3xl font-bold">+593 99 876 5432</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* SOS Services */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-3">
-              🚗 Transport Emergency
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Experiencing issues with your ride? Our support team is ready to help immediately.
-            </p>
-            <button className="w-full px-4 py-2 bg-going-danger text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-              Request Emergency Support
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-3">
-              🏥 Medical Emergency
-            </h3>
-            <p className="text-gray-600 mb-4">
-              In case of medical emergency, we can connect you with emergency services.
-            </p>
-            <button className="w-full px-4 py-2 bg-going-danger text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-              Call Emergency Services
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-3">
-              📍 Lost Item Report
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Lost something during your trip? We'll help you locate it.
-            </p>
-            <button className="w-full px-4 py-2 border border-going-primary text-going-primary rounded-lg hover:bg-gray-50 transition-colors font-medium">
-              Report Lost Item
-            </button>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-800 mb-3">
-              💳 Payment Issue
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Having trouble with a transaction? We're here to resolve it.
-            </p>
-            <button className="w-full px-4 py-2 border border-going-primary text-going-primary rounded-lg hover:bg-gray-50 transition-colors font-medium">
-              Report Payment Issue
-            </button>
-          </div>
+        {/* SOS Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          {[
+            {
+              icon: '🚗',
+              title: 'Emergencia de Transporte',
+              desc: '¿Problemas con tu viaje? Nuestro equipo está listo para ayudarte de inmediato.',
+              action: 'Solicitar soporte urgente',
+              variant: 'red',
+            },
+            {
+              icon: '🏥',
+              title: 'Emergencia Médica',
+              desc: 'En caso de emergencia médica, te conectamos con los servicios de emergencia locales.',
+              action: 'Llamar emergencias',
+              variant: 'red',
+            },
+            {
+              icon: '📍',
+              title: 'Objeto Perdido',
+              desc: '¿Perdiste algo durante tu viaje? Te ayudamos a localizarlo con el conductor o anfitrión.',
+              action: 'Reportar objeto perdido',
+              variant: 'blue',
+            },
+            {
+              icon: '💳',
+              title: 'Problema de Pago',
+              desc: '¿Inconvenientes con una transacción? Estamos aquí para resolverlo rápidamente.',
+              action: 'Reportar problema de pago',
+              variant: 'blue',
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {item.icon} {item.title}
+              </h3>
+              <p className="text-gray-500 text-sm mb-4">{item.desc}</p>
+              <button
+                className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  item.variant === 'red'
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50'
+                }`}
+              >
+                {item.action}
+              </button>
+            </div>
+          ))}
         </div>
 
         {/* Safety Tips */}
-        <div className="bg-blue-50 rounded-lg p-8 border border-blue-200">
-          <h2 className="text-2xl font-bold text-going-primary mb-6">
-            Safety Tips
+        <div className="bg-blue-50 rounded-2xl p-8 border border-blue-100 mb-8">
+          <h2 className="text-2xl font-bold text-blue-900 mb-6">
+            🛡️ Consejos de Seguridad
           </h2>
           <ul className="space-y-3">
-            <li className="flex items-start">
-              <span className="text-going-primary font-bold mr-3 mt-1">✓</span>
-              <span className="text-gray-700">
-                Always verify the driver's identity before getting in the vehicle
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-going-primary font-bold mr-3 mt-1">✓</span>
-              <span className="text-gray-700">
-                Share your trip details with a trusted contact
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-going-primary font-bold mr-3 mt-1">✓</span>
-              <span className="text-gray-700">
-                Keep your valuables secure and out of sight
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-going-primary font-bold mr-3 mt-1">✓</span>
-              <span className="text-gray-700">
-                Report any safety concerns immediately
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-going-primary font-bold mr-3 mt-1">✓</span>
-              <span className="text-gray-700">
-                Use well-lit, populated areas when waiting for pickup
-              </span>
-            </li>
+            {[
+              'Siempre verifica la identidad del conductor antes de subir al vehículo.',
+              'Comparte los detalles de tu viaje con un contacto de confianza.',
+              'Mantén tus objetos de valor seguros y fuera de la vista.',
+              'Reporta cualquier problema de seguridad de inmediato a Going.',
+              'Espera tu transporte en áreas bien iluminadas y concurridas.',
+            ].map((tip) => (
+              <li key={tip} className="flex items-start gap-3">
+                <span className="text-blue-600 font-bold mt-0.5">✓</span>
+                <span className="text-gray-700 text-sm">{tip}</span>
+              </li>
+            ))}
           </ul>
         </div>
 
         {/* FAQ */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            Frequently Asked Questions
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-5">
+            ❓ Preguntas Frecuentes
           </h2>
-          <div className="space-y-4">
-            <details className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer">
-              <summary className="font-semibold text-gray-800 hover:text-going-primary">
-                What should I do if I feel unsafe during a trip?
-              </summary>
-              <p className="text-gray-600 mt-3">
-                Immediately request the driver to stop in a safe, public location. You can then exit the vehicle and contact our emergency line or local authorities.
-              </p>
-            </details>
-
-            <details className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer">
-              <summary className="font-semibold text-gray-800 hover:text-going-primary">
-                How long does it take to get emergency assistance?
-              </summary>
-              <p className="text-gray-600 mt-3">
-                Our emergency response team is available 24/7 and aims to respond within 5 minutes of your emergency call or message.
-              </p>
-            </details>
-
-            <details className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer">
-              <summary className="font-semibold text-gray-800 hover:text-going-primary">
-                Is there a cost for emergency services?
-              </summary>
-              <p className="text-gray-600 mt-3">
-                Basic emergency assistance is free for all Going users. Additional services may apply depending on the nature of the emergency.
-              </p>
-            </details>
+          <div className="space-y-3">
+            {[
+              {
+                q: '¿Qué hago si me siento inseguro durante un viaje?',
+                a: 'Solicita inmediatamente al conductor que detenga el vehículo en un lugar seguro y público. Luego contacta nuestra línea de emergencia o las autoridades locales.',
+              },
+              {
+                q: '¿Cuánto demora en llegar la asistencia de emergencia?',
+                a: 'Nuestro equipo de respuesta de emergencia está disponible 24/7 y busca responder en menos de 5 minutos tras tu llamada o mensaje.',
+              },
+              {
+                q: '¿Tiene costo el servicio de emergencia?',
+                a: 'La asistencia básica de emergencia es gratuita para todos los usuarios de Going. Servicios adicionales pueden tener costos según la naturaleza de la emergencia.',
+              },
+            ].map((faq) => (
+              <details
+                key={faq.q}
+                className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm cursor-pointer group"
+              >
+                <summary className="font-semibold text-gray-900 hover:text-blue-600 list-none flex justify-between items-center">
+                  {faq.q}
+                  <span className="text-gray-400 ml-2">▼</span>
+                </summary>
+                <p className="text-gray-500 text-sm mt-3 leading-relaxed">
+                  {faq.a}
+                </p>
+              </details>
+            ))}
           </div>
         </div>
       </div>
