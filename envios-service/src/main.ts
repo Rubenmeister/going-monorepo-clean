@@ -1,17 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter({ logger: false })
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const port = process.env.PORT || 3007;
 
@@ -28,7 +22,7 @@ async function bootstrap() {
 
   await app.listen(port);
   Logger.log(
-    `🚀 Envios-Service running on http://localhost:${port}`,
+    `🚀 Envios Service running on http://localhost:${port}`,
     'Bootstrap'
   );
   Logger.log(

@@ -183,6 +183,7 @@
     "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/platform-fastify": "^11.0.0",
+    "@fastify/static": "^8.0.0",
     "@fastify/rate-limit": "^9.0.0",
     "@fastify/helmet": "^11.0.0",
     "fastify": "^5.0.0",
