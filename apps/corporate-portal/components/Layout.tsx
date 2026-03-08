@@ -9,12 +9,12 @@ interface LayoutProps {
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
-  { href: '/bookings', label: 'Bookings', icon: '📋' },
-  { href: '/approvals', label: 'Approvals', icon: '✅' },
-  { href: '/tracking', label: 'Live Tracking', icon: '📍' },
-  { href: '/reports', label: 'Reports', icon: '📊' },
-  { href: '/invoices', label: 'Invoices', icon: '🧾' },
-  { href: '/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/bookings', label: 'Reservas', icon: '📋' },
+  { href: '/approvals', label: 'Aprobaciones', icon: '✅', badge: 3 },
+  { href: '/tracking', label: 'Seguimiento', icon: '📍' },
+  { href: '/reports', label: 'Reportes', icon: '📊' },
+  { href: '/invoices', label: 'Facturas', icon: '🧾' },
+  { href: '/settings', label: 'Configuración', icon: '⚙️' },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -22,8 +22,12 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useRouter();
 
+  const userName =
+    session?.user?.name || session?.user?.email?.split('@')[0] || 'Usuario';
+  const initial = userName.charAt(0).toUpperCase();
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -33,38 +37,66 @@ export default function Layout({ children }: LayoutProps) {
       )}
 
       {/* Sidebar */}
-      <div
+      <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 fixed md:relative w-64 bg-gray-900 text-white h-full z-50 flex flex-col transition-transform duration-200`}
+        } md:translate-x-0 fixed md:relative w-64 h-full z-50 flex flex-col transition-transform duration-200`}
+        style={{ backgroundColor: '#011627' }}
       >
-        <div className="px-5 py-5 border-b border-gray-700 flex items-center gap-3">
-          <span className="text-2xl">✈️</span>
+        {/* Logo */}
+        <div
+          className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
           <div>
-            <h1 className="text-lg font-bold leading-tight">Going Portal</h1>
-            <p className="text-xs text-gray-400">Corporate</p>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xl font-black tracking-tight"
+                style={{ color: '#ff4c41' }}
+              >
+                Going
+              </span>
+              <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+                Empresas
+              </span>
+            </div>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              Portal Corporativo
+            </p>
           </div>
         </div>
 
-        <nav className="flex-1 mt-4 px-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, icon }) => {
+        {/* Nav */}
+        <nav className="flex-1 mt-3 px-3 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map(({ href, label, icon, badge }) => {
             const active = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={
                   active
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
+                    ? { backgroundColor: '#ff4c41', color: '#fff' }
+                    : { color: 'rgba(255,255,255,0.6)' }
+                }
               >
                 <span className="text-base">{icon}</span>
-                {label}
-                {label === 'Approvals' && (
-                  <span className="ml-auto bg-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
-                    3
+                <span className="flex-1">{label}</span>
+                {badge && (
+                  <span
+                    className="text-white text-xs font-bold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: active
+                        ? 'rgba(255,255,255,0.3)'
+                        : '#ff4c41',
+                    }}
+                  >
+                    {badge}
                   </span>
                 )}
               </Link>
@@ -72,32 +104,46 @@ export default function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
-              {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+        {/* User */}
+        <div
+          className="p-3 flex-shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+        >
+          <div className="flex items-center gap-3 px-2 py-2 mb-2">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+              style={{ backgroundColor: '#ff4c41' }}
+            >
+              {initial}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">
-                {session?.user?.email || 'User'}
+              <p className="text-sm font-semibold text-white truncate">
+                {userName}
               </p>
-              <p className="text-xs text-gray-400">Super Admin</p>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                Administrador
+              </p>
             </div>
           </div>
           <button
             onClick={() =>
               signOut({ redirect: true, callbackUrl: '/auth/login' })
             }
-            className="w-full px-4 py-2 text-xs bg-gray-800 text-gray-300 rounded-lg hover:bg-red-700 hover:text-white transition"
+            className="w-full px-4 py-2 text-xs rounded-xl transition-colors text-left flex items-center gap-2"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,255,255,0.5)',
+            }}
           >
-            Sign Out
+            🚪 Cerrar sesión
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
+      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="bg-white shadow-sm shrink-0">
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-200 shrink-0">
           <div className="flex items-center gap-4 px-6 py-4">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -117,10 +163,21 @@ export default function Layout({ children }: LayoutProps) {
                 />
               </svg>
             </button>
-            <h2 className="text-base font-semibold text-gray-700">
-              {NAV_ITEMS.find((n) => n.href === pathname)?.label ||
-                'Corporate Portal'}
-            </h2>
+            <div className="flex items-center gap-2">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: '#ff4c41' }}
+              />
+              <h2 className="text-base font-semibold text-gray-800">
+                {NAV_ITEMS.find((n) => n.href === pathname)?.label ||
+                  'Portal Corporativo'}
+              </h2>
+            </div>
+            <div className="ml-auto">
+              <span className="text-sm text-gray-400 hidden sm:block">
+                {session?.user?.email}
+              </span>
+            </div>
           </div>
         </header>
 

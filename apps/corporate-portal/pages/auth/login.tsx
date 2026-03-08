@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 export default function Login() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -11,142 +11,159 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/dashboard');
-    }
+    if (status === 'authenticated') router.push('/dashboard');
   }, [status, router]);
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     try {
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
-
       if (result?.error) {
-        setError(result.error);
+        setError('Credenciales incorrectas. Verifica tu email y contraseña.');
       } else if (result?.ok) {
         router.push('/dashboard');
       }
-    } catch (err) {
-      setError('Login failed. Please try again.');
+    } catch {
+      setError('Error al iniciar sesión. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSSOLogin = async (provider: string) => {
+  const handleSSO = async (provider: string) => {
     setLoading(true);
     try {
       await signIn(provider, { redirect: true, callbackUrl: '/dashboard' });
-    } catch (err) {
-      setError(`${provider} login failed. Please try again.`);
+    } catch {
+      setError(`Error con ${provider}. Inténtalo de nuevo.`);
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Going Corporate Portal
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your company account
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4"
+      style={{ backgroundColor: '#011627' }}
+    >
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span
+              className="text-3xl font-black tracking-tight"
+              style={{ color: '#ff4c41' }}
+            >
+              Going
+            </span>
+            <span
+              className="text-lg font-semibold uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.5)' }}
+            >
+              Empresas
+            </span>
+          </div>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Portal Corporativo
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleEmailLogin}>
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            Iniciar sesión
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Accede al portal corporativo de tu empresa
+          </p>
+
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-800">{error}</p>
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+              ⚠️ {error}
             </div>
           )}
 
-          <div className="rounded-md shadow-sm -space-y-px">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Correo corporativo
               </label>
               <input
-                id="email"
-                name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@empresa.com"
+                autoFocus
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Contraseña
               </label>
               <input
-                id="password"
-                name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl font-bold text-white transition-opacity disabled:opacity-50 text-sm mt-2"
+              style={{ backgroundColor: '#ff4c41' }}
+            >
+              {loading ? '🔄 Verificando...' : 'Acceder al Portal'}
+            </button>
+          </form>
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+          {/* SSO */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-white text-gray-400">
+                  o accede con SSO
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">
-                Or continue with SSO
-              </span>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {[
+                { id: 'okta', label: 'Okta' },
+                { id: 'azure-ad', label: 'Azure AD' },
+                { id: 'google-workspace', label: 'Google' },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => handleSSO(id)}
+                  disabled={loading}
+                  className="py-2 px-3 border border-gray-200 rounded-xl text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition disabled:opacity-50"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <button
-              onClick={() => handleSSOLogin('okta')}
-              disabled={loading}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100"
-            >
-              Okta
-            </button>
-            <button
-              onClick={() => handleSSOLogin('azure-ad')}
-              disabled={loading}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100"
-            >
-              Azure AD
-            </button>
-            <button
-              onClick={() => handleSSOLogin('google-workspace')}
-              disabled={loading}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100"
-            >
-              Google
-            </button>
           </div>
         </div>
+
+        <p
+          className="text-center text-xs mt-6"
+          style={{ color: 'rgba(255,255,255,0.25)' }}
+        >
+          Going Empresas — Solo personal autorizado
+        </p>
       </div>
     </div>
   );
