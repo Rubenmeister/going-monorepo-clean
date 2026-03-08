@@ -26,7 +26,7 @@ class MoneySchema {
 
 export type ExperienceDocument = ExperienceModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+@Schema({ timestamps: true })
 export class ExperienceModelSchema {
   @Prop({ required: true, unique: true })
   id: string;

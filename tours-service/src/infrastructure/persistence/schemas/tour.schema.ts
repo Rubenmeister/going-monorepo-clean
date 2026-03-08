@@ -29,7 +29,7 @@ class MoneySchema {
 
 export type TourDocument = TourModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+@Schema({ timestamps: true })
 export class TourModelSchema {
   @Prop({ required: true, unique: true })
   id: string;

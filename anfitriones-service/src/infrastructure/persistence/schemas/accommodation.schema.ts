@@ -26,7 +26,7 @@ class MoneySchema {
 
 export type AccommodationDocument = AccommodationModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+@Schema({ timestamps: true })
 export class AccommodationModelSchema {
   @Prop({ required: true, unique: true })
   id: string;
