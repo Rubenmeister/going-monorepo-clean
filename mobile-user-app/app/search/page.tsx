@@ -119,7 +119,9 @@ function SearchContent() {
     (searchParams.get('tab') as Tab) || 'tours'
   );
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any[]>(FALLBACK.tours);
+  const [results, setResults] = useState<any[]>(
+    FALLBACK[activeTab] ?? FALLBACK.tours
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -130,7 +132,7 @@ function SearchContent() {
   }, [isReady, token, router]);
 
   useEffect(() => {
-    setResults(FALLBACK[activeTab]);
+    setResults(FALLBACK[activeTab] ?? FALLBACK.tours);
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -152,11 +154,12 @@ function SearchContent() {
     fetchData();
   }, [activeTab]);
 
+  const safeResults = results ?? FALLBACK.tours;
   const filtered = query
-    ? results.filter((r: any) =>
+    ? safeResults.filter((r: any) =>
         (r.title || r.name || '').toLowerCase().includes(query.toLowerCase())
       )
-    : results;
+    : safeResults;
 
   return (
     <AppShell title="Buscar">
