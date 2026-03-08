@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../store';
+import { GoingLogo } from './GoingLogo';
 
 const NAV = [
   { href: '/home', icon: '🏠', label: 'INICIO' },
@@ -55,12 +56,9 @@ export default function AppShell({
           <span className="block w-5 h-0.5 bg-white rounded" />
         </button>
 
-        <span
-          className="font-black text-xl flex-1"
-          style={{ color: '#ff4c41' }}
-        >
-          Going
-        </span>
+        <div className="flex-1">
+          <GoingLogo size={24} />
+        </div>
 
         {title && (
           <span className="text-sm font-medium text-white/50 hidden sm:block">
@@ -103,9 +101,7 @@ export default function AppShell({
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <span className="font-black text-2xl" style={{ color: '#ff4c41' }}>
-            Going
-          </span>
+          <GoingLogo size={28} />
           <button
             onClick={() => setOpen(false)}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition text-lg"

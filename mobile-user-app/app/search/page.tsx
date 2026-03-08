@@ -111,6 +111,22 @@ const FALLBACK: Record<Tab, any[]> = {
   ],
 };
 
+// Normalize API response to a consistent display shape
+function normalizeItem(item: any, tab: Tab) {
+  const title = item.title || item.name || '';
+  const location = item.location?.city || item.location || '';
+  const rating = item.averageRating ?? item.rating ?? 4.5;
+  let price = item.price;
+  if (typeof price === 'object') price = price?.amount ?? price?.value ?? 0;
+  if (tab === 'accommodation') {
+    price = item.pricePerNight?.amount ?? item.pricePerNight ?? price ?? 0;
+  }
+  const duration =
+    item.durationHours != null ? `${item.durationHours}h` : item.duration ?? '';
+  const type = item.type || item.category || item.accommodationType || '';
+  return { ...item, title, location, rating, price, duration, type };
+}
+
 function SearchContent() {
   const { token, isReady, init } = useAuth();
   const router = useRouter();
@@ -140,13 +156,15 @@ function SearchContent() {
           activeTab === 'accommodation'
             ? '/accommodations/search'
             : `/${activeTab}/search`;
-        const res = await authFetch(`${ep}?limit=10`);
+        const res = await authFetch(ep);
         if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) setResults(data);
+          const raw = await res.json();
+          if (Array.isArray(raw) && raw.length > 0) {
+            setResults(raw.map((item: any) => normalizeItem(item, activeTab)));
+          }
         }
       } catch {
-        /* fallback */
+        /* use fallback */
       } finally {
         setLoading(false);
       }
