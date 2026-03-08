@@ -6,6 +6,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Going Brand
+        'going-primary': '#ff4c41',
+        'going-dark': '#011627',
         // Primary Blue (#5B8EFF) - Unified
         primary: '#5B8EFF',
         'primary-50': '#F0F5FF',

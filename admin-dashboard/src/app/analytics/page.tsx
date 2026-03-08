@@ -3,230 +3,256 @@ export const dynamic = 'force-dynamic';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { Button } from '@going-monorepo-clean/shared-ui';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { AdminLayout, StatCard } from '../components';
+import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
 
-// Chart Component
-function SimpleBarChart({ data, title }: any) {
-  const maxValue = Math.max(...data.map((d: any) => d.value));
+// ── MOCK DATA (replace with real API calls) ───────────────────────────
+const STATS = {
+  totalBookings: 156,
+  totalRevenue: 18450.5,
+  activeUsers: 342,
+  completedBookings: 128,
+  conversionRate: 82.05,
+  averageRating: 4.6,
+};
 
-  return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <div className="space-y-4">
-        {data.map((item: any) => (
-          <div key={item.label}>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-sm font-medium">{item.label}</span>
-              <span className="text-sm font-semibold">{item.value}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full"
-                style={{ width: `${(item.value / maxValue) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const BOOKINGS_BY_SERVICE = [
+  { label: 'Transporte', value: 45, color: '#ff4c41' },
+  { label: 'Alojamiento', value: 38, color: '#0ea5e9' },
+  { label: 'Tours', value: 35, color: '#22C55E' },
+  { label: 'Experiencias', value: 28, color: '#8B5CF6' },
+  { label: 'Envíos', value: 10, color: '#F59E0B' },
+];
 
-function LineChart({ data, title }: any) {
-  return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <div className="text-center text-gray-500">
-        <p>📊 Gráfico de línea (implementar con recharts o similar)</p>
-        <div className="mt-4 space-y-2">
-          {data.map((d: any) => (
-            <div key={d.date} className="text-sm">
-              {d.date}: {d.value} bookings
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+const WEEKLY_TREND = [
+  { day: 'Lun', value: 12 },
+  { day: 'Mar', value: 15 },
+  { day: 'Mié', value: 18 },
+  { day: 'Jue', value: 20 },
+  { day: 'Vie', value: 25 },
+  { day: 'Sáb', value: 22 },
+  { day: 'Dom', value: 19 },
+];
+
+const FINANCIAL_ROWS = [
+  {
+    label: 'Ingresos Totales',
+    value: `$${STATS.totalRevenue.toFixed(2)}`,
+    change: '+8%',
+    up: true,
+  },
+  {
+    label: 'Promedio por Reserva',
+    value: `$${(STATS.totalRevenue / STATS.totalBookings).toFixed(2)}`,
+    change: '+3%',
+    up: true,
+  },
+  {
+    label: 'Ingresos Pendientes',
+    value: `$${(STATS.totalRevenue * 0.15).toFixed(2)}`,
+    change: '±0%',
+    up: null,
+  },
+  {
+    label: 'Ingresos Netos',
+    value: `$${(STATS.totalRevenue * 0.85).toFixed(2)}`,
+    change: '+8%',
+    up: true,
+  },
+];
+// ── END DATA ──────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const { auth } = useMonorepoApp();
   const router = useRouter();
-  const [stats, setStats] = useState({
-    totalBookings: 156,
-    totalRevenue: 18450.5,
-    activeUsers: 342,
-    completedBookings: 128,
-    conversionRate: 82.05,
-    averageRating: 4.6,
-  });
 
-  const [bookingsByService, setBookingsByService] = useState([
-    { label: 'Transport', value: 45 },
-    { label: 'Accommodation', value: 38 },
-    { label: 'Tours', value: 35 },
-    { label: 'Experiences', value: 28 },
-    { label: 'Parcels', value: 10 },
-  ]);
-
-  const [bookingTrend, setBookingTrend] = useState([
-    { date: 'Lun', value: 12 },
-    { date: 'Mar', value: 15 },
-    { date: 'Mié', value: 18 },
-    { date: 'Jue', value: 20 },
-    { date: 'Vie', value: 25 },
-    { date: 'Sáb', value: 22 },
-    { date: 'Dom', value: 19 },
-  ]);
+  const maxBar = Math.max(...WEEKLY_TREND.map((d) => d.value));
+  const maxService = Math.max(...BOOKINGS_BY_SERVICE.map((d) => d.value));
 
   if (auth.isLoading) {
-    return <div className="p-10 text-xl text-center">Cargando...</div>;
+    return <Loading fullHeight size="lg" message="Verificando sesión..." />;
   }
 
   if (!auth.user?.isAdmin?.()) {
     return (
-      <div className="p-10 text-center text-red-600">
-        ACCESO DENEGADO - Se requiere rol de administrador
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <ErrorState
+          title="Acceso Denegado"
+          description="Se requiere rol de administrador para acceder a esta sección"
+          action={<Button onClick={() => router.push('/')}>Volver</Button>}
+        />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100">
-      <div className="flex">
-        <div className="flex-grow p-8">
-          <h1 className="text-3xl font-bold mb-6 text-[#0033A0]">
-            Analytics & Estadísticas
-          </h1>
+    <AdminLayout userName={auth.user.firstName} onLogout={auth.logout}>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">
+          Analítica y Estadísticas
+        </h1>
+        <p className="text-gray-500">
+          Métricas de la plataforma en tiempo real
+        </p>
+      </div>
 
-          {/* KPIs */}
-          <div className="grid grid-cols-6 gap-4 mb-8">
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Total Reservas</h4>
-              <p className="text-2xl font-bold text-[#0033A0]">
-                {stats.totalBookings}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                +12% vs mes anterior
-              </p>
-            </div>
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <StatCard
+          icon="📊"
+          title="Total Reservas"
+          value={STATS.totalBookings}
+          subtitle="+12% vs mes anterior"
+          color="primary"
+        />
+        <StatCard
+          icon="💰"
+          title="Ingresos"
+          value={`$${STATS.totalRevenue.toLocaleString()}`}
+          subtitle="+8% vs mes anterior"
+          color="success"
+        />
+        <StatCard
+          icon="👥"
+          title="Usuarios Activos"
+          value={STATS.activeUsers}
+          subtitle="+15% vs mes anterior"
+          color="info"
+        />
+        <StatCard
+          icon="✅"
+          title="Completadas"
+          value={STATS.completedBookings}
+          subtitle="+5% vs mes anterior"
+          color="success"
+        />
+        <StatCard
+          icon="🎯"
+          title="Conversión"
+          value={`${STATS.conversionRate}%`}
+          subtitle="-2% vs mes anterior"
+          color="warning"
+        />
+        <StatCard
+          icon="⭐"
+          title="Rating Promedio"
+          value={STATS.averageRating}
+          subtitle="+0.2 vs mes anterior"
+          color="success"
+        />
+      </div>
 
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Ingresos</h4>
-              <p className="text-2xl font-bold text-green-600">
-                ${stats.totalRevenue.toFixed(2)}
-              </p>
-              <p className="text-xs text-green-600 mt-1">+8% vs mes anterior</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Usuarios Activos</h4>
-              <p className="text-2xl font-bold text-blue-600">
-                {stats.activeUsers}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                +15% vs mes anterior
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Completadas</h4>
-              <p className="text-2xl font-bold text-purple-600">
-                {stats.completedBookings}
-              </p>
-              <p className="text-xs text-green-600 mt-1">+5% vs mes anterior</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Conversión</h4>
-              <p className="text-2xl font-bold text-orange-600">
-                {stats.conversionRate}%
-              </p>
-              <p className="text-xs text-red-600 mt-1">-2% vs mes anterior</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-4">
-              <h4 className="text-gray-600 text-sm mb-1">Rating Promedio</h4>
-              <p className="text-2xl font-bold text-yellow-600">
-                ⭐ {stats.averageRating}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                +0.2 vs mes anterior
-              </p>
-            </div>
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Bar chart — reservas por servicio */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-base font-bold text-gray-900 mb-5">
+            Reservas por Tipo de Servicio
+          </h3>
+          <div className="space-y-4">
+            {BOOKINGS_BY_SERVICE.map((item) => (
+              <div key={item.label}>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium text-gray-700">
+                    {item.label}
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {item.value}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div
+                    className="h-2.5 rounded-full transition-all"
+                    style={{
+                      width: `${(item.value / maxService) * 100}%`,
+                      backgroundColor: item.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <SimpleBarChart
-                title="Reservas por Tipo de Servicio"
-                data={bookingsByService}
-              />
-            </div>
-
-            <div>
-              <LineChart
-                title="Tendencia de Reservas (Última Semana)"
-                data={bookingTrend}
-              />
-            </div>
+        {/* Bar chart — tendencia semanal */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-base font-bold text-gray-900 mb-5">
+            Tendencia de Reservas — Última Semana
+          </h3>
+          <div className="flex items-end gap-3 h-40">
+            {WEEKLY_TREND.map((d) => (
+              <div
+                key={d.day}
+                className="flex-1 flex flex-col items-center gap-1"
+              >
+                <span className="text-xs font-semibold text-gray-700">
+                  {d.value}
+                </span>
+                <div
+                  className="w-full rounded-t-lg transition-all"
+                  style={{
+                    height: `${(d.value / maxBar) * 120}px`,
+                    backgroundColor: '#ff4c41',
+                    opacity: 0.85,
+                  }}
+                />
+                <span className="text-xs text-gray-400">{d.day}</span>
+              </div>
+            ))}
           </div>
-
-          {/* Detailed Stats */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4">Resumen Financiero</h3>
-            <table className="w-full text-sm">
-              <thead className="border-b">
-                <tr>
-                  <th className="text-left py-2">Métrica</th>
-                  <th className="text-right py-2">Valor</th>
-                  <th className="text-right py-2">Cambio</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-2">Ingresos Totales</td>
-                  <td className="text-right font-semibold">
-                    ${stats.totalRevenue.toFixed(2)}
-                  </td>
-                  <td className="text-right text-green-600">+8%</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Promedio por Reserva</td>
-                  <td className="text-right font-semibold">
-                    ${(stats.totalRevenue / stats.totalBookings).toFixed(2)}
-                  </td>
-                  <td className="text-right text-green-600">+3%</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Ingresos Pendientes</td>
-                  <td className="text-right font-semibold">
-                    ${(stats.totalRevenue * 0.15).toFixed(2)}
-                  </td>
-                  <td className="text-right text-yellow-600">±0%</td>
-                </tr>
-                <tr>
-                  <td className="py-2 font-semibold">Ingresos Netos</td>
-                  <td className="text-right font-semibold text-green-600">
-                    ${(stats.totalRevenue * 0.85).toFixed(2)}
-                  </td>
-                  <td className="text-right text-green-600">+8%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <Button
-            onClick={() => router.push('/')}
-            variant="secondary"
-            className="mt-8"
-          >
-            Volver al Dashboard
-          </Button>
         </div>
       </div>
-    </main>
+
+      {/* Financial Summary */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h3 className="text-base font-bold text-gray-900 mb-4">
+          Resumen Financiero
+        </h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
+              <th className="text-left py-2 text-gray-500 font-semibold">
+                Métrica
+              </th>
+              <th className="text-right py-2 text-gray-500 font-semibold">
+                Valor
+              </th>
+              <th className="text-right py-2 text-gray-500 font-semibold">
+                Cambio
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {FINANCIAL_ROWS.map((row) => (
+              <tr key={row.label} style={{ borderBottom: '1px solid #f9fafb' }}>
+                <td className="py-3 text-gray-700">{row.label}</td>
+                <td className="py-3 text-right font-bold text-gray-900">
+                  {row.value}
+                </td>
+                <td
+                  className="py-3 text-right font-semibold text-sm"
+                  style={{
+                    color:
+                      row.up === true
+                        ? '#22C55E'
+                        : row.up === false
+                        ? '#EF4444'
+                        : '#F59E0B',
+                  }}
+                >
+                  {row.change}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Button variant="ghost" onClick={() => router.push('/')}>
+        ← Volver al Dashboard
+      </Button>
+    </AdminLayout>
   );
 }

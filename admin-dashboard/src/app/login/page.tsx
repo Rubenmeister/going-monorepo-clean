@@ -76,7 +76,8 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+            className="w-full py-3 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+            style={{ backgroundColor: '#ff4c41' }}
           >
             {loading ? '🔄 Verificando...' : 'Acceder al Panel'}
           </button>
