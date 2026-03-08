@@ -120,3 +120,4 @@ AGENTS.md
 *.swp
 *.swo
 *~
+.vercel

@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '../store';
-import { GoingLogo } from './GoingLogo';
 
 const NAV = [
   { href: '/home', icon: '🏠', label: 'INICIO' },
@@ -57,7 +57,13 @@ export default function AppShell({
         </button>
 
         <div className="flex-1">
-          <GoingLogo size={24} />
+          <Image
+            src="/going-logo-white-h.png"
+            alt="Going"
+            height={26}
+            width={90}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         {title && (
@@ -101,7 +107,13 @@ export default function AppShell({
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <GoingLogo size={28} />
+          <Image
+            src="/going-logo-white-h.png"
+            alt="Going"
+            height={30}
+            width={104}
+            style={{ objectFit: 'contain' }}
+          />
           <button
             onClick={() => setOpen(false)}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition text-lg"

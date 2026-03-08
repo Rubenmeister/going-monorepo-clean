@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: going-platform
+  namespace: argocd
+spec:
+  description: Going Superapp GitOps project
+  sourceRepos:
+    - 'https://github.com/Rubenmeister/going-monorepo-clean'
+  destinations:
+    - namespace: going-staging
+      server: https://kubernetes.default.svc
+    - namespace: going-production
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  roles:
+    - name: deploy-bot
+      policies:
+        - p, proj:going-platform:deploy-bot, applications, sync, going-platform/*, allow
+      jwtTokens: []
