@@ -266,7 +266,7 @@ export class AccountLockoutService {
         await this.redisClient.del(attemptsKey);
 
         // Log unlock action
-        await this.redisClient.rpush(
+        await this.redisClient.rPush(
           auditKey,
           JSON.stringify({
             action: 'ACCOUNT_UNLOCKED',
@@ -366,7 +366,7 @@ export class AccountLockoutService {
         );
 
         // Log to audit trail
-        await this.redisClient.rpush(
+        await this.redisClient.rPush(
           auditKey,
           JSON.stringify({
             action: 'ACCOUNT_LOCKED',
