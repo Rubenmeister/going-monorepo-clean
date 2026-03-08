@@ -17,7 +17,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 # Copy workspace config files first (layer cache)
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json .npmrc ./
 
 # Copy the target service sources + shared libs
 # (ARG-based COPY works in Docker BuildKit, which Cloud Build uses)
