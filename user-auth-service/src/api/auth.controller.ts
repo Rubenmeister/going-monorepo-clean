@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
   Inject,
   Req,
-  TooManyRequestsException,
+  HttpException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import {
@@ -132,8 +132,11 @@ export class AuthController {
           `Account is locked until ${lockoutUntil?.toISOString()}`,
           { email: dto.email, locked: true }
         );
-        throw new TooManyRequestsException(
-          `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}`
+        throw new HttpException(
+          {
+            message: `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}`,
+          },
+          429
         );
       }
 
@@ -189,8 +192,11 @@ export class AuthController {
         this.logger.warn(
           `🔐 Account locked after ${failedAttempt.attemptCount} failed attempts: email=${dto.email}`
         );
-        throw new TooManyRequestsException(
-          `Too many failed login attempts. Account locked until ${failedAttempt.lockoutUntil?.toLocaleTimeString()}`
+        throw new HttpException(
+          {
+            message: `Too many failed login attempts. Account locked until ${failedAttempt.lockoutUntil?.toLocaleTimeString()}`,
+          },
+          429
         );
       }
 
