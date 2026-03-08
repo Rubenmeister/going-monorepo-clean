@@ -1,4 +1,8 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Experience,
   IExperienceRepository,
@@ -10,7 +14,7 @@ import { CreateExperienceDto } from '../dto/create-experience.dto';
 export class CreateExperienceUseCase {
   constructor(
     @Inject(IExperienceRepository)
-    private readonly experienceRepo: IExperienceRepository,
+    private readonly experienceRepo: IExperienceRepository
   ) {}
 
   async execute(dto: CreateExperienceDto): Promise<{ id: string }> {
@@ -18,9 +22,12 @@ export class CreateExperienceUseCase {
     if (locationVOResult.isErr()) {
       throw new InternalServerErrorException(locationVOResult.error.message);
     }
-    
+
     const locationVO = locationVOResult.value;
-    const priceVO = new Money(dto.price.amount, dto.price.currency);
+    const priceVO = Money.fromPrimitives({
+      amount: dto.price.amount,
+      currency: dto.price.currency as 'USD',
+    });
 
     const experienceResult = Experience.create({
       hostId: dto.hostId,

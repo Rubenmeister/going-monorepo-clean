@@ -1,4 +1,8 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Accommodation,
   IAccommodationRepository,
@@ -11,12 +15,15 @@ import { CreateAccommodationDto } from '../dto/create-accommodation.dto';
 export class CreateAccommodationUseCase {
   constructor(
     @Inject(IAccommodationRepository)
-    private readonly accommodationRepo: IAccommodationRepository,
+    private readonly accommodationRepo: IAccommodationRepository
   ) {}
 
   async execute(dto: CreateAccommodationDto): Promise<{ id: string }> {
     const locationVO = Location.create(dto.location)._unsafeUnwrap(); // Asumiendo DTO válido
-    const priceVO = new Money(dto.pricePerNight.amount, dto.pricePerNight.currency);
+    const priceVO = Money.fromPrimitives({
+      amount: dto.pricePerNight.amount,
+      currency: dto.pricePerNight.currency as 'USD',
+    });
 
     const accommodationResult = Accommodation.create({
       hostId: dto.hostId,
