@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  Dimensions,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDriverStore } from '@store/useDriverStore';
+import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 
 const QUITO = {
   latitude: -0.1807,
@@ -22,26 +24,47 @@ const QUITO = {
 };
 const BG_LOCATION_TASK = 'going-driver-bg-location';
 
-// Register background location task
-TaskManager.defineTask(BG_LOCATION_TASK, ({ data, error }: any) => {
+// Register background location task (no-op until WebSocket tracking is added)
+TaskManager.defineTask(BG_LOCATION_TASK, ({ data: _data, error }: any) => {
   if (error) return;
-  // Send location update to tracking-service via WebSocket in production
-  // For now we silently track
 });
 
+type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
+
 export function DriverHomeScreen() {
-  const { driver, isOnline, toggleOnline } = useDriverStore();
+  const navigation = useNavigation<Nav>();
+  const { driver, isOnline, pendingTrip, toggleOnline, pollPendingTrips } =
+    useDriverStore();
   const mapRef = useRef<MapView>(null);
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [todayEarnings] = useState(47.5);
-  const [todayTrips] = useState(6);
 
+  // Setup GPS on mount
   useEffect(() => {
     setupLocation();
   }, []);
+
+  // Poll for pending trips every 5s while online
+  useEffect(() => {
+    if (!isOnline) return;
+    pollPendingTrips();
+    const id = setInterval(pollPendingTrips, 5000);
+    return () => clearInterval(id);
+  }, [isOnline, pollPendingTrips]);
+
+  // Navigate to RideRequest when a pending trip arrives
+  useEffect(() => {
+    if (!pendingTrip) return;
+    navigation.navigate('RideRequest', {
+      rideId: pendingTrip.id,
+      passengerId: pendingTrip.userId,
+      origin: pendingTrip.origin.address,
+      destination: pendingTrip.destination.address,
+      amount: pendingTrip.price.amount,
+    });
+  }, [pendingTrip]);
 
   const setupLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -71,7 +94,7 @@ export function DriverHomeScreen() {
         return;
       }
     }
-    await toggleOnline();
+    toggleOnline();
   };
 
   return (
@@ -106,7 +129,7 @@ export function DriverHomeScreen() {
             ]}
           />
           <Text style={styles.statusText}>
-            {isOnline ? 'En línea' : 'Fuera de línea'}
+            {isOnline ? 'En línea — buscando viajes…' : 'Fuera de línea'}
           </Text>
         </View>
         <Switch
@@ -118,21 +141,11 @@ export function DriverHomeScreen() {
         />
       </View>
 
-      {/* Bottom stats panel */}
+      {/* Bottom panel */}
       <View style={styles.panel}>
         <Text style={styles.greeting}>Hola, {driver?.firstName} 👋</Text>
 
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Ionicons name="cash-outline" size={22} color="#10B981" />
-            <Text style={styles.statValue}>${todayEarnings.toFixed(2)}</Text>
-            <Text style={styles.statLabel}>Hoy</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Ionicons name="car-outline" size={22} color="#0033A0" />
-            <Text style={styles.statValue}>{todayTrips}</Text>
-            <Text style={styles.statLabel}>Viajes</Text>
-          </View>
           <View style={styles.statCard}>
             <Ionicons name="star-outline" size={22} color="#FFCD00" />
             <Text style={styles.statValue}>
@@ -140,15 +153,32 @@ export function DriverHomeScreen() {
             </Text>
             <Text style={styles.statLabel}>Rating</Text>
           </View>
+          <View style={styles.statCard}>
+            <Ionicons name="car-outline" size={22} color="#0033A0" />
+            <Text style={styles.statValue}>{isOnline ? '✓' : '—'}</Text>
+            <Text style={styles.statLabel}>Estado</Text>
+          </View>
         </View>
 
-        {!isOnline && (
+        {!isOnline ? (
           <TouchableOpacity
             style={styles.goOnlineBtn}
             onPress={handleToggleOnline}
           >
             <Text style={styles.goOnlineBtnText}>Ponerse en línea</Text>
           </TouchableOpacity>
+        ) : (
+          <View style={styles.waitingBanner}>
+            <Ionicons
+              name="radio-outline"
+              size={18}
+              color="#10B981"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.waitingText}>
+              Esperando solicitudes de viaje…
+            </Text>
+          </View>
         )}
       </View>
     </View>
@@ -189,7 +219,7 @@ const styles = StyleSheet.create({
   },
   statusLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusDot: { width: 10, height: 10, borderRadius: 5 },
-  statusText: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  statusText: { fontSize: 14, fontWeight: '700', color: '#111827' },
   panel: {
     position: 'absolute',
     bottom: 0,
@@ -222,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: 14,
     paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
   },
   statValue: {
     fontSize: 18,
@@ -243,4 +273,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   goOnlineBtnText: { color: '#0033A0', fontSize: 16, fontWeight: '900' },
+  waitingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0FDF4',
+    borderRadius: 12,
+    paddingVertical: 13,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  waitingText: { color: '#065F46', fontSize: 14, fontWeight: '600' },
 });

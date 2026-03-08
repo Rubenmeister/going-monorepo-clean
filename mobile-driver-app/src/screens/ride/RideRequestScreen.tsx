@@ -36,14 +36,16 @@ export function RideRequestScreen() {
     else setIsRejecting(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      await axios.patch(
-        `${
-          process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'
-        }/api/transport/rides/${rideId}/respond`,
-        { accept },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const base =
+        process.env.EXPO_PUBLIC_API_URL ||
+        'https://api-gateway-780842550857.us-central1.run.app';
       if (accept) {
+        // PATCH /transport/:tripId/accept
+        await axios.patch(
+          `${base}/transport/${rideId}/accept`,
+          { driverId: 'me' },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         navigation.replace('ActiveRide', {
           rideId,
           passengerName: passenger,

@@ -1,7 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ||
+  'https://api-gateway-780842550857.us-central1.run.app';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -27,45 +29,75 @@ api.interceptors.response.use(
   }
 );
 
-// Auth
+// ── Auth ─────────────────────────────────────────────────────────────────────
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/api/auth/login', { email, password }),
+    api.post('/auth/login', { email, password }),
+
   register: (data: {
     firstName: string;
     lastName: string;
     email: string;
     password: string;
     phone: string;
-  }) => api.post('/api/auth/register', data),
-  me: () => api.get('/api/auth/me'),
-  logout: () => api.post('/api/auth/logout'),
+  }) => api.post('/auth/register', { ...data, roles: ['user'] }),
+
+  me: () => api.get('/auth/me'),
+  logout: () => Promise.resolve(), // handled locally via store
 };
 
-// Transport / Rides
+// ── Transport ────────────────────────────────────────────────────────────────
 export const transportAPI = {
+  /**
+   * Request a ride. Matches backend RequestTripDto:
+   * { userId, origin: {address,latitude,longitude}, destination: {...}, price: {amount, currency} }
+   */
   requestRide: (data: {
+    userId: string;
     origin: { latitude: number; longitude: number; address: string };
     destination: { latitude: number; longitude: number; address: string };
-    serviceType: 'PRIVATE' | 'SHARED';
-  }) => api.post('/api/transport/rides', data),
-  getRideStatus: (rideId: string) => api.get(`/api/transport/rides/${rideId}`),
-  cancelRide: (rideId: string) => api.delete(`/api/transport/rides/${rideId}`),
-};
-
-// Bookings
-export const bookingsAPI = {
-  getAll: (page = 1, limit = 20) =>
-    api.get('/api/bookings', { params: { page, limit } }),
-  getById: (id: string) => api.get(`/api/bookings/${id}`),
-};
-
-// Search (unified across transport, tours, accommodations)
-export const searchAPI = {
-  search: (query: string, type?: string) =>
-    api.get('/api/search', { params: { q: query, type } }),
-  nearbyDrivers: (lat: number, lng: number) =>
-    api.get('/api/transport/drivers/nearby', {
-      params: { lat, lng, radius: 5000 },
+    price?: { amount: number; currency: 'USD' };
+  }) =>
+    api.post('/transport/request', {
+      userId: data.userId,
+      origin: {
+        address: data.origin.address,
+        latitude: data.origin.latitude,
+        longitude: data.origin.longitude,
+      },
+      destination: {
+        address: data.destination.address,
+        latitude: data.destination.latitude,
+        longitude: data.destination.longitude,
+      },
+      price: data.price ?? { amount: 8.5, currency: 'USD' },
     }),
+
+  /** Get pending trips (drivers nearby / available trips) */
+  getPendingTrips: () => api.get('/transport/pending'),
+
+  /** User trip history */
+  getUserHistory: (userId: string) =>
+    api.get(`/transport/user/${userId}/history`),
+};
+
+// ── Bookings ─────────────────────────────────────────────────────────────────
+export const bookingsAPI = {
+  getByUser: (userId: string) => api.get(`/bookings/user/${userId}`),
+  getById: (id: string) => api.get(`/bookings/${id}`),
+};
+
+// ── Catalog search ────────────────────────────────────────────────────────────
+export const searchAPI = {
+  tours: (params?: { city?: string; category?: string; maxPrice?: number }) =>
+    api.get('/tours/search', { params }),
+
+  accommodations: (params?: {
+    city?: string;
+    country?: string;
+    capacity?: number;
+  }) => api.get('/accommodations/search', { params }),
+
+  experiences: (params?: { city?: string; maxPrice?: number }) =>
+    api.get('/experiences/search', { params }),
 };

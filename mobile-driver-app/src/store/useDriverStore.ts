@@ -2,7 +2,9 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_URL ||
+  'https://api-gateway-780842550857.us-central1.run.app';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -15,6 +17,15 @@ api.interceptors.request.use(async (config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+export interface PendingTrip {
+  id: string;
+  userId: string;
+  origin: { address: string; latitude: number; longitude: number };
+  destination: { address: string; latitude: number; longitude: number };
+  price: { amount: number; currency: string };
+  status: string;
+}
 
 interface Driver {
   id: string;
@@ -31,13 +42,16 @@ interface DriverState {
   driver: Driver | null;
   isOnline: boolean;
   currentRideId: string | null;
+  pendingTrip: PendingTrip | null;
   earnings: { today: number; week: number; total: number };
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loadToken: () => Promise<void>;
-  toggleOnline: () => Promise<void>;
+  toggleOnline: () => void;
+  pollPendingTrips: () => Promise<void>;
+  acceptTrip: (tripId: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -46,6 +60,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   driver: null,
   isOnline: false,
   currentRideId: null,
+  pendingTrip: null,
   earnings: { today: 0, week: 0, total: 0 },
   isLoading: false,
   error: null,
@@ -54,8 +69,8 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     const token = await AsyncStorage.getItem('driver_token');
     if (!token) return;
     try {
-      const { data } = await api.get('/api/auth/me');
-      set({ token, driver: data });
+      const { data } = await api.get('/auth/me');
+      set({ token, driver: data.user ?? data });
     } catch {
       await AsyncStorage.removeItem('driver_token');
     }
@@ -64,13 +79,11 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.post('/api/auth/login', {
-        email,
-        password,
-        role: 'driver',
-      });
-      await AsyncStorage.setItem('driver_token', data.token);
-      set({ token: data.token, driver: data.user, isLoading: false });
+      const { data } = await api.post('/auth/login', { email, password });
+      const token = data.token ?? data.access_token;
+      const driver = data.user ?? data;
+      await AsyncStorage.setItem('driver_token', token);
+      set({ token, driver, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || 'Error al iniciar sesión',
@@ -81,16 +94,43 @@ export const useDriverStore = create<DriverState>((set, get) => ({
 
   logout: async () => {
     await AsyncStorage.removeItem('driver_token');
-    set({ token: null, driver: null, isOnline: false, currentRideId: null });
+    set({
+      token: null,
+      driver: null,
+      isOnline: false,
+      currentRideId: null,
+      pendingTrip: null,
+    });
   },
 
-  toggleOnline: async () => {
+  /** Online/offline toggle — purely local; backend notified best-effort */
+  toggleOnline: () => {
     const newStatus = !get().isOnline;
     set({ isOnline: newStatus });
+    if (!newStatus) set({ pendingTrip: null });
+  },
+
+  /** Poll GET /transport/pending for new trip requests */
+  pollPendingTrips: async () => {
+    if (!get().isOnline) return;
     try {
-      await api.patch('/api/transport/drivers/status', { isOnline: newStatus });
+      const { data } = await api.get('/transport/pending');
+      const trips: PendingTrip[] = Array.isArray(data) ? data : [];
+      set({ pendingTrip: trips.length > 0 ? trips[0] : null });
     } catch {
-      set({ isOnline: !newStatus }); /* revert on error */
+      /* network error — keep last state */
+    }
+  },
+
+  /** PATCH /transport/:tripId/accept */
+  acceptTrip: async (tripId: string) => {
+    const { driver } = get();
+    if (!driver) return;
+    try {
+      await api.patch(`/transport/${tripId}/accept`, { driverId: driver.id });
+      set({ currentRideId: tripId, pendingTrip: null });
+    } catch (e: any) {
+      set({ error: e.response?.data?.message || 'Error al aceptar viaje' });
     }
   },
 
