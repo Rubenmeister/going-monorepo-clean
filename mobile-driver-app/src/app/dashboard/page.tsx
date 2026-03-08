@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useDriver } from '../store';
 import AppShell from '../components/AppShell';
 
-const MOCK_STATS = { trips: 5, earnings: 87.5, rating: 4.8 };
+const MOCK_STATS = { trips: 5, earnings: 87.5, rating: 4.8, hours: 3.2 };
 
 const MOCK_JOB = {
   id: 'job_1',
@@ -35,7 +35,7 @@ export default function DashboardPage() {
         style={{ backgroundColor: '#011627' }}
       >
         <div
-          className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
+          className="w-8 h-8 border-4 rounded-full animate-spin"
           style={{ borderColor: '#ff4c41', borderTopColor: 'transparent' }}
         />
       </div>
@@ -44,88 +44,79 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="p-4">
-        {/* Greeting */}
-        <div className="mb-5">
-          <h1 className="text-xl font-bold text-gray-900">
-            Hola, {driver.firstName}! 🚗
-          </h1>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-yellow-400">⭐</span>
-            <span className="text-sm text-gray-500">
-              {MOCK_STATS.rating} de calificación
-            </span>
-          </div>
+      {/* Hero */}
+      <div
+        className="px-5 py-8 relative overflow-hidden"
+        style={{ backgroundColor: '#011627' }}
+      >
+        {/* decorative circles */}
+        <div
+          className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10"
+          style={{ backgroundColor: '#ff4c41' }}
+        />
+        <div
+          className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full opacity-5"
+          style={{ backgroundColor: '#ff4c41' }}
+        />
+
+        <p className="text-white/50 text-sm mb-1">Bienvenido de vuelta</p>
+        <h1 className="text-2xl font-black text-white mb-1">
+          {driver.firstName} {driver.lastName}
+        </h1>
+        <div className="flex items-center gap-1.5 mb-5">
+          <span className="text-yellow-400 text-sm">⭐</span>
+          <span className="text-sm text-white/60">
+            {MOCK_STATS.rating} · Conductor verificado
+          </span>
         </div>
 
-        {/* Online toggle */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm mb-4">
-          <p className="text-sm font-semibold text-gray-700 mb-3">
-            Estado de servicio
-          </p>
-          <div className="flex items-center justify-between">
-            <div>
-              <p
-                className="font-bold text-lg"
-                style={{ color: isOnline ? '#22c55e' : '#6b7280' }}
-              >
-                {isOnline ? '🟢 En línea' : '⚫ Fuera de línea'}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {isOnline
-                  ? 'Recibiendo solicitudes'
-                  : 'No recibirás solicitudes'}
-              </p>
-            </div>
-            <button
-              onClick={toggleOnline}
-              className="w-14 h-8 rounded-full transition-all duration-300 relative"
-              style={{ backgroundColor: isOnline ? '#22c55e' : '#d1d5db' }}
+        {/* Online toggle row */}
+        <div className="flex items-center justify-between bg-white/10 rounded-2xl px-4 py-3 backdrop-blur-sm">
+          <div>
+            <p className="font-bold text-white text-sm">Estado de servicio</p>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: isOnline ? '#4ade80' : '#9ca3af' }}
             >
-              <span
-                className="absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all duration-300"
-                style={{ left: isOnline ? '30px' : '2px' }}
-              />
-            </button>
+              {isOnline
+                ? '● Recibiendo solicitudes'
+                : '● No recibirás solicitudes'}
+            </p>
           </div>
+          <button
+            onClick={toggleOnline}
+            className="w-14 h-8 rounded-full transition-all duration-300 relative flex-shrink-0"
+            style={{ backgroundColor: isOnline ? '#22c55e' : '#374151' }}
+          >
+            <span
+              className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300"
+              style={{ left: isOnline ? '30px' : '2px' }}
+            />
+          </button>
         </div>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {[
-            {
-              label: 'Viajes hoy',
-              value: MOCK_STATS.trips,
-              icon: '🚗',
-              color: '#ff4c41',
-            },
-            {
-              label: 'Ganado hoy',
-              value: `$${MOCK_STATS.earnings}`,
-              icon: '💰',
-              color: '#22c55e',
-            },
-            {
-              label: 'Calificación',
-              value: MOCK_STATS.rating,
-              icon: '⭐',
-              color: '#f59e0b',
-            },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="bg-white rounded-2xl p-3 shadow-sm text-center"
-            >
-              <span className="text-xl">{s.icon}</span>
-              <p className="font-bold text-lg mt-1" style={{ color: s.color }}>
-                {s.value}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </div>
+      {/* Stats strip */}
+      <div className="grid grid-cols-4 border-b border-gray-100 bg-white">
+        {[
+          { label: 'Viajes', value: MOCK_STATS.trips, icon: '🚗' },
+          { label: 'Ganado', value: `$${MOCK_STATS.earnings}`, icon: '💰' },
+          { label: 'Calific.', value: MOCK_STATS.rating, icon: '⭐' },
+          { label: 'Horas', value: MOCK_STATS.hours, icon: '⏱' },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="flex flex-col items-center py-4 border-r border-gray-100 last:border-0"
+          >
+            <span className="text-xl mb-1">{s.icon}</span>
+            <p className="font-black text-gray-900 text-sm">{s.value}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
 
-        {/* Incoming job or empty */}
+      <div className="px-4 py-4 space-y-4">
+        {/* Incoming job or waiting */}
         {isOnline ? (
           hasJob ? (
             <div
@@ -133,28 +124,42 @@ export default function DashboardPage() {
               style={{ borderColor: '#ff4c41' }}
             >
               <div className="flex items-center justify-between mb-3">
-                <p className="font-bold text-gray-900">Nueva Solicitud 🔔</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🔔</span>
+                  <p className="font-bold text-gray-900">Nueva Solicitud</p>
+                </div>
                 <span
-                  className="text-sm font-bold"
+                  className="font-black text-base"
                   style={{ color: '#22c55e' }}
                 >
                   {MOCK_JOB.fare}
                 </span>
               </div>
-              <div className="space-y-1.5 mb-4">
-                <p className="text-xs text-gray-500">👤 {MOCK_JOB.passenger}</p>
-                <p className="text-xs text-gray-700">📍 {MOCK_JOB.origin}</p>
-                <p className="text-xs text-gray-700">
-                  🏁 {MOCK_JOB.destination}
-                </p>
-                <p className="text-xs text-gray-500">
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-sm mt-0.5">👤</span>
+                  <p className="text-sm font-medium text-gray-700">
+                    {MOCK_JOB.passenger}
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm mt-0.5">📍</span>
+                  <p className="text-sm text-gray-600">{MOCK_JOB.origin}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm mt-0.5">🏁</span>
+                  <p className="text-sm text-gray-600">
+                    {MOCK_JOB.destination}
+                  </p>
+                </div>
+                <p className="text-xs text-gray-400 pl-6">
                   {MOCK_JOB.distance} · ETA {MOCK_JOB.eta}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setHasJob(false)}
-                  className="py-2.5 rounded-xl font-bold text-sm"
+                  className="py-3 rounded-xl font-bold text-sm"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
                 >
                   Rechazar
@@ -164,7 +169,7 @@ export default function DashboardPage() {
                     setHasJob(false);
                     router.push('/trip');
                   }}
-                  className="py-2.5 rounded-xl font-bold text-sm text-white"
+                  className="py-3 rounded-xl font-bold text-sm text-white"
                   style={{ backgroundColor: '#ff4c41' }}
                 >
                   Aceptar
@@ -173,16 +178,16 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
-              <span className="text-4xl mb-3 block">📡</span>
-              <p className="font-semibold text-gray-700 mb-1">
+              <span className="text-5xl mb-3 block">📡</span>
+              <p className="font-bold text-gray-700 mb-1">
                 Esperando solicitudes
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-400 mb-4">
                 Te notificaremos cuando haya un viaje disponible
               </p>
               <button
                 onClick={() => setHasJob(true)}
-                className="mt-4 px-4 py-2 rounded-xl text-xs font-bold text-white"
+                className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
                 style={{ backgroundColor: '#ff4c41' }}
               >
                 Simular solicitud
@@ -191,8 +196,8 @@ export default function DashboardPage() {
           )
         ) : (
           <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
-            <span className="text-4xl mb-3 block">💤</span>
-            <p className="font-semibold text-gray-700 mb-1">
+            <span className="text-5xl mb-3 block">💤</span>
+            <p className="font-bold text-gray-700 mb-1">
               Estás fuera de servicio
             </p>
             <p className="text-sm text-gray-400">
@@ -200,6 +205,25 @@ export default function DashboardPage() {
             </p>
           </div>
         )}
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: '📋', label: 'Ver historial', href: '/trip' },
+            { icon: '💰', label: 'Mis ganancias', href: '/earnings' },
+            { icon: '⭐', label: 'Calificaciones', href: '/ratings' },
+            { icon: '👤', label: 'Mi perfil', href: '/profile' },
+          ].map((a) => (
+            <button
+              key={a.label}
+              onClick={() => router.push(a.href)}
+              className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 hover:shadow-md transition-shadow text-left"
+            >
+              <span className="text-xl">{a.icon}</span>
+              <span className="text-sm font-bold text-gray-700">{a.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </AppShell>
   );
