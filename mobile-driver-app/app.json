@@ -1,4 +1,47 @@
 {
-  "name": "MobileDriverApp",
-  "displayName": "MobileDriverApp"
+  "expo": {
+    "name": "Going - Conductor",
+    "slug": "going-driver-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0033A0"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.going.driverapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para mostrar tu posición a los pasajeros.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Going necesita rastrear tu ubicación en segundo plano mientras estás en línea.",
+        "NSLocationAlwaysUsageDescription": "Going necesita rastrear tu ubicación mientras conduces."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0033A0"
+      },
+      "package": "com.going.driverapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Going necesita tu ubicación en segundo plano para mostrar tu posición a los pasajeros."
+        }
+      ],
+      "expo-notifications"
+    ]
+  }
 }

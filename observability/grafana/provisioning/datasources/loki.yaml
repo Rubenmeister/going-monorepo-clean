@@ -1,0 +1,19 @@
+apiVersion: datasources.grafana.app/v1beta1
+kind: DataSource
+metadata:
+  name: loki
+  namespace: going
+spec:
+  title: Loki – Going Logs
+  pluginID: loki
+  url: http://loki:3100
+  access: proxy
+  isDefault: false
+  jsonData:
+    maxLines: 1000
+    timeout: 60
+    derivedFields:
+      - name: TraceID
+        matcherRegex: '"traceId":"(\w+)"'
+        url: '$${__value.raw}'
+        datasourceUid: tempo

@@ -1,0 +1,65 @@
+# docker-compose.loki.yml
+# Overlay file: replaces ELK stack with Loki + Promtail
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.loki.yml up -d
+version: '3.8'
+
+services:
+  # ── LOKI (replaces Elasticsearch + Logstash) ──────────────
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: going-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/tmp/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3100/ready | grep -q ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - going-network
+    labels:
+      com.docker.compose.project: going
+
+  # ── PROMTAIL (replaces Beats/Filebeat) ────────────────────
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: going-promtail
+    volumes:
+      - ./observability/loki/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      loki:
+        condition: service_healthy
+    networks:
+      - going-network
+    labels:
+      com.docker.compose.project: going
+
+  # ── GRAFANA: add Loki datasource ──────────────────────────
+  grafana:
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+
+  # ── DISABLE ELK STACK ─────────────────────────────────────
+  elasticsearch:
+    profiles:
+      - disabled
+  logstash:
+    profiles:
+      - disabled
+  kibana:
+    profiles:
+      - disabled
+
+volumes:
+  loki-data:
+    driver: local

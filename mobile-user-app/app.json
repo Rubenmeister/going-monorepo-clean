@@ -1,4 +1,53 @@
 {
-  "name": "MobileUserApp",
-  "displayName": "MobileUserApp"
+  "expo": {
+    "name": "Going - Pasajero",
+    "slug": "going-user-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0033A0"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.going.userapp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para encontrar el transporte más cercano.",
+        "NSLocationAlwaysUsageDescription": "Going necesita tu ubicación para rastrear tu viaje.",
+        "NSCameraUsageDescription": "Going necesita tu cámara para subir tu foto de perfil."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0033A0"
+      },
+      "package": "com.going.userapp",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-location",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0033A0"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "going-user-app"
+      }
+    }
+  }
 }

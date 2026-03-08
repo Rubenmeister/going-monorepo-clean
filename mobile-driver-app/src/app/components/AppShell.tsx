@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useDriver } from '../store';
-import { GoingLogo } from './GoingLogo';
+import Image from 'next/image';
 
 const NAV = [
   { href: '/dashboard', icon: '🏠', label: 'DASHBOARD' },
@@ -61,7 +61,13 @@ export default function AppShell({
         {/* Brand */}
         <div className="px-6 pt-8 pb-6 border-b border-white/10">
           <div className="flex items-center gap-2 mb-5">
-            <GoingLogo size={26} />
+            <Image
+              src="/going-logo-white-h.png"
+              alt="Going"
+              height={28}
+              width={96}
+              style={{ objectFit: 'contain' }}
+            />
             <span className="text-xs text-white/40 font-medium tracking-wider ml-1">
               CONDUCTOR
             </span>
@@ -166,7 +172,13 @@ export default function AppShell({
           />
         </button>
 
-        <GoingLogo size={22} />
+        <Image
+          src="/going-logo-white-h.png"
+          alt="Going"
+          height={24}
+          width={82}
+          style={{ objectFit: 'contain' }}
+        />
         {title && <span className="text-sm text-white/50 ml-2">· {title}</span>}
 
         <div className="ml-auto flex items-center gap-1.5">
