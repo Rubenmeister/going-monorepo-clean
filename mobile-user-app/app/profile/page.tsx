@@ -1,7 +1,7 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../store';
+import { useAuth, authFetch } from '../store';
 import AppShell from '../components/AppShell';
 
 const MENU_SECTIONS = [
@@ -32,6 +32,7 @@ const MENU_SECTIONS = [
 export default function ProfilePage() {
   const { user, token, isReady, init, logout } = useAuth();
   const router = useRouter();
+  const [bookingCount, setBookingCount] = useState<number | null>(null);
 
   useEffect(() => {
     init();
@@ -39,6 +40,14 @@ export default function ProfilePage() {
   useEffect(() => {
     if (isReady && !token) router.replace('/login');
   }, [isReady, token, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    authFetch(`/bookings/user/${user.id}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setBookingCount(Array.isArray(d) ? d.length : 0))
+      .catch(() => setBookingCount(0));
+  }, [user]);
 
   if (!user) return null;
 
@@ -82,7 +91,10 @@ export default function ProfilePage() {
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-3 mt-5">
           {[
-            { value: '0', label: 'Reservas' },
+            {
+              value: bookingCount !== null ? String(bookingCount) : '…',
+              label: 'Reservas',
+            },
             { value: '0', label: 'Reseñas' },
             { value: '⭐ –', label: 'Calificación' },
           ].map((s) => (

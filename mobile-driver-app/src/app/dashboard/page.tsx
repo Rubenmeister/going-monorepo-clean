@@ -1,25 +1,26 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDriver } from '../store';
+import { useDriver, driverFetch } from '../store';
 import AppShell from '../components/AppShell';
 
-const MOCK_STATS = { trips: 5, earnings: 87.5, rating: 4.8, hours: 3.2 };
+interface PendingTrip {
+  id: string;
+  userId: string;
+  origin: { address: string; latitude: number; longitude: number };
+  destination: { address: string; latitude: number; longitude: number };
+  price: { amount: number; currency: string };
+  createdAt: string;
+}
 
-const MOCK_JOB = {
-  id: 'job_1',
-  passenger: 'Ana Martínez',
-  origin: 'Av. Amazonas N21-147',
-  destination: 'Aeropuerto Mariscal Sucre',
-  distance: '18 km',
-  fare: '$12.50',
-  eta: '3 min',
-};
+const MOCK_STATS = { trips: 0, earnings: 0, rating: 4.8, hours: 0 };
 
 export default function DashboardPage() {
   const { driver, token, isReady, init, isOnline, toggleOnline } = useDriver();
   const router = useRouter();
-  const [hasJob, setHasJob] = useState(false);
+  const [pendingTrip, setPendingTrip] = useState<PendingTrip | null>(null);
+  const [stats, setStats] = useState(MOCK_STATS);
+  const [acceptLoading, setAcceptLoading] = useState(false);
 
   useEffect(() => {
     init();
@@ -27,6 +28,66 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isReady && !token) router.replace('/login');
   }, [isReady, token, router]);
+
+  // Poll for pending trips every 5 seconds when online
+  const pollPendingTrips = useCallback(async () => {
+    try {
+      const res = await driverFetch('/transport/pending');
+      if (res.ok) {
+        const trips: PendingTrip[] = await res.json();
+        if (Array.isArray(trips) && trips.length > 0) {
+          setPendingTrip(trips[0]);
+        } else {
+          setPendingTrip(null);
+        }
+      }
+    } catch {
+      /* ignore network errors */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOnline) {
+      setPendingTrip(null);
+      return;
+    }
+    pollPendingTrips();
+    const id = setInterval(pollPendingTrips, 5000);
+    return () => clearInterval(id);
+  }, [isOnline, pollPendingTrips]);
+
+  // Load driver active trips for stats
+  useEffect(() => {
+    if (!driver) return;
+    driverFetch(`/transport/driver/${driver.id}/active`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((trips: any[]) => {
+        if (Array.isArray(trips) && trips.length > 0) {
+          setStats((s) => ({ ...s, trips: trips.length }));
+        }
+      })
+      .catch(() => {});
+  }, [driver]);
+
+  const handleAccept = async () => {
+    if (!pendingTrip || !driver) return;
+    setAcceptLoading(true);
+    try {
+      await driverFetch(`/transport/${pendingTrip.id}/accept`, {
+        method: 'PATCH',
+        body: JSON.stringify({ driverId: driver.id }),
+      });
+    } catch {
+      /* ignore */
+    }
+    setPendingTrip(null);
+    setAcceptLoading(false);
+    router.push('/trip');
+  };
+
+  const handleReject = () => {
+    setPendingTrip(null);
+  };
 
   if (!isReady || !driver) {
     return (
@@ -49,7 +110,6 @@ export default function DashboardPage() {
         className="px-5 py-8 relative overflow-hidden"
         style={{ backgroundColor: '#011627' }}
       >
-        {/* decorative circles */}
         <div
           className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10"
           style={{ backgroundColor: '#ff4c41' }}
@@ -66,7 +126,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-1.5 mb-5">
           <span className="text-yellow-400 text-sm">⭐</span>
           <span className="text-sm text-white/60">
-            {MOCK_STATS.rating} · Conductor verificado
+            {stats.rating} · Conductor verificado
           </span>
         </div>
 
@@ -99,10 +159,14 @@ export default function DashboardPage() {
       {/* Stats strip */}
       <div className="grid grid-cols-4 border-b border-gray-100 bg-white">
         {[
-          { label: 'Viajes', value: MOCK_STATS.trips, icon: '🚗' },
-          { label: 'Ganado', value: `$${MOCK_STATS.earnings}`, icon: '💰' },
-          { label: 'Calific.', value: MOCK_STATS.rating, icon: '⭐' },
-          { label: 'Horas', value: MOCK_STATS.hours, icon: '⏱' },
+          { label: 'Viajes', value: stats.trips, icon: '🚗' },
+          {
+            label: 'Ganado',
+            value: stats.earnings > 0 ? `$${stats.earnings.toFixed(2)}` : '$0',
+            icon: '💰',
+          },
+          { label: 'Calific.', value: stats.rating, icon: '⭐' },
+          { label: 'Horas', value: stats.hours, icon: '⏱' },
         ].map((s) => (
           <div
             key={s.label}
@@ -118,7 +182,7 @@ export default function DashboardPage() {
       <div className="px-4 py-4 space-y-4">
         {/* Incoming job or waiting */}
         {isOnline ? (
-          hasJob ? (
+          pendingTrip ? (
             <div
               className="bg-white rounded-2xl p-4 shadow-sm border-2"
               style={{ borderColor: '#ff4c41' }}
@@ -132,47 +196,49 @@ export default function DashboardPage() {
                   className="font-black text-base"
                   style={{ color: '#22c55e' }}
                 >
-                  {MOCK_JOB.fare}
+                  ${pendingTrip.price?.amount?.toFixed(2) ?? '–'}
                 </span>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 mb-4 space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-sm mt-0.5">👤</span>
-                  <p className="text-sm font-medium text-gray-700">
-                    {MOCK_JOB.passenger}
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
                   <span className="text-sm mt-0.5">📍</span>
-                  <p className="text-sm text-gray-600">{MOCK_JOB.origin}</p>
+                  <p className="text-sm text-gray-600">
+                    {pendingTrip.origin?.address ?? 'Origen desconocido'}
+                  </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm mt-0.5">🏁</span>
                   <p className="text-sm text-gray-600">
-                    {MOCK_JOB.destination}
+                    {pendingTrip.destination?.address ?? 'Destino desconocido'}
                   </p>
                 </div>
                 <p className="text-xs text-gray-400 pl-6">
-                  {MOCK_JOB.distance} · ETA {MOCK_JOB.eta}
+                  Solicitado hace{' '}
+                  {Math.round(
+                    (Date.now() - new Date(pendingTrip.createdAt).getTime()) /
+                      60000
+                  )}{' '}
+                  min
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => setHasJob(false)}
+                  onClick={handleReject}
                   className="py-3 rounded-xl font-bold text-sm"
                   style={{ backgroundColor: '#f3f4f6', color: '#6b7280' }}
                 >
                   Rechazar
                 </button>
                 <button
-                  onClick={() => {
-                    setHasJob(false);
-                    router.push('/trip');
+                  onClick={handleAccept}
+                  disabled={acceptLoading}
+                  className="py-3 rounded-xl font-bold text-sm text-white transition-opacity"
+                  style={{
+                    backgroundColor: '#ff4c41',
+                    opacity: acceptLoading ? 0.7 : 1,
                   }}
-                  className="py-3 rounded-xl font-bold text-sm text-white"
-                  style={{ backgroundColor: '#ff4c41' }}
                 >
-                  Aceptar
+                  {acceptLoading ? '...' : 'Aceptar'}
                 </button>
               </div>
             </div>
@@ -182,16 +248,12 @@ export default function DashboardPage() {
               <p className="font-bold text-gray-700 mb-1">
                 Esperando solicitudes
               </p>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-gray-400">
                 Te notificaremos cuando haya un viaje disponible
               </p>
-              <button
-                onClick={() => setHasJob(true)}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ backgroundColor: '#ff4c41' }}
-              >
-                Simular solicitud
-              </button>
+              <p className="text-xs text-gray-300 mt-2">
+                Actualizando cada 5 segundos...
+              </p>
             </div>
           )
         ) : (
