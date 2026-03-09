@@ -40,6 +40,7 @@ export class CreateTourUseCase {
       throw new InternalServerErrorException(tourResult.error.message);
     }
     const tour = tourResult.value;
+    tour.publish();
 
     const saveResult = await this.tourRepo.save(tour);
     if (saveResult.isErr()) {

@@ -34,11 +34,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
       ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
-        }
-      }
+      "config": {}
     },
     "plugins": [
       [
@@ -47,6 +43,8 @@
           "locationAlwaysAndWhenInUsePermission": "Going necesita tu ubicación en segundo plano para mostrar tu posición a los pasajeros."
         }
       ],
+      "expo-system-ui",
+      ["@rnmapbox/maps", {}],
       "expo-notifications"
     ]
   }

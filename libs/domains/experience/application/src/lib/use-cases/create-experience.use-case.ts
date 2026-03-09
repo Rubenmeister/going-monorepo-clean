@@ -42,6 +42,7 @@ export class CreateExperienceUseCase {
       throw new InternalServerErrorException(experienceResult.error.message);
     }
     const experience = experienceResult.value;
+    experience.publish();
 
     const saveResult = await this.experienceRepo.save(experience);
     if (saveResult.isErr()) {

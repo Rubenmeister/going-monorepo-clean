@@ -101,3 +101,16 @@ export const searchAPI = {
   experiences: (params?: { city?: string; maxPrice?: number }) =>
     api.get('/experiences/search', { params }),
 };
+
+// ── Payments ─────────────────────────────────────────────────────────────────
+export const paymentAPI = {
+  createPaymentIntent: (data: {
+    amount: number;
+    currency: string;
+    provider: 'mercadopago' | 'stripe';
+    referenceId?: string;
+  }) => api.post('/payments/intent', data),
+
+  getPaymentStatus: (paymentId: string) =>
+    api.get(`/payments/${paymentId}/status`),
+};

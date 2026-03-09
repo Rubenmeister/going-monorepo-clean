@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import type { FastifyInstance } from 'fastify';
 
 export function initSentry() {
   const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -9,50 +10,50 @@ export function initSentry() {
   }
 
   if (!sentryDsn) {
-    return; // Skip initialization without DSN
+    return;
   }
 
   Sentry.init({
     dsn: sentryDsn,
     environment: process.env.NODE_ENV || 'development',
-    integrations: [
-      // Sentry v10+ API: use httpIntegration() instead of deprecated Sentry.Integrations.Http
-      Sentry.httpIntegration({ tracing: true }),
-    ],
-    // Performance Monitoring
+    integrations: [Sentry.httpIntegration()],
     tracesSampleRate: isDevelopment ? 1.0 : 0.1,
-    // Release tracking
     release: process.env.VERSION || '1.0.0',
-    // Capture breadcrumbs
     maxBreadcrumbs: 100,
-    // Filter sensitive data
     beforeSend: (event) => {
       if (event.request?.url?.includes('/health')) {
-        return null; // Don't send health check errors to Sentry
+        return null;
       }
       return event;
     },
   });
 
   console.log(
-    '[Sentry] Initialized' +
+    '[Sentry] Initialized for Fastify' +
       (sentryDsn
-        ? ` (DSN: ${sentryDsn.split('@')[1]?.split('/')[0] || '***'})`
+        ? ` (env: ${sentryDsn.split('@')[1]?.split('/')[0] || '***'})`
         : ' (development mode)')
   );
 }
 
-export function createSentryErrorHandler() {
-  // Sentry v10+ API: expressErrorHandler() replaces Handlers.errorHandler()
-  const sentryAny = Sentry as any;
-  if (typeof sentryAny.expressErrorHandler === 'function') {
-    return sentryAny.expressErrorHandler();
-  }
-  // Fallback: pass-through error middleware
-  return (err: any, req: any, res: any, next: any) => next(err);
+/**
+ * Register Sentry error capturing as a Fastify plugin hook.
+ * This replaces the old Express errorHandler middleware.
+ */
+export function registerSentryFastify(fastify: FastifyInstance) {
+  if (!process.env.SENTRY_DSN) return;
+
+  fastify.addHook('onError', (_request, _reply, error, done) => {
+    Sentry.captureException(error);
+    done();
+  });
 }
 
-export function createSentryRequestHandler() {
-  // Sentry v10+ handles request tracking automatically via httpIntegration
-  return (req: any, res: any, next: any) => next();
+/**
+ * @deprecated Use registerSentryFastify(fastifyInstance) instead.
+ * Kept for backward compat — returns a no-op for any code still calling this.
+ */
+export function createSentryErrorHandler() {
+  return (_err: unknown, _req: unknown, _res: unknown, next: () => void) =>
+    next?.();
 }

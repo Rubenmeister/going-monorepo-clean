@@ -5,6 +5,7 @@ import {
   IRideMatchRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+import { Redis } from 'ioredis';
 
 export interface DriverInfo {
   driverId: UUID;
@@ -48,98 +49,99 @@ export interface MatchResultDto {
   expiresAt: Date;
 }
 
+/** Redis keys shared with tracking-service */
+const GEO_KEY = 'going:drivers:locations';
+const AVAILABILITY_KEY = 'going:driver_availability';
+const AVERAGE_SPEED_KMH = 40;
+
 @Injectable()
 export class MatchAvailableDriversUseCase {
   private readonly logger = new Logger(MatchAvailableDriversUseCase.name);
 
-  // Mock driver data - In production, this would come from a driver location service
-  private mockDrivers: DriverInfo[] = [
-    {
-      driverId: 'driver_1' as UUID,
-      name: 'John Doe',
-      rating: 4.8,
-      acceptanceRate: 0.95,
-      vehicleType: 'ECONOMY',
-      vehicleNumber: 'ABC123',
-      photoUrl: 'https://example.com/driver1.jpg',
-      distance: 0.5,
-      eta: 2,
-    },
-    {
-      driverId: 'driver_2' as UUID,
-      name: 'Jane Smith',
-      rating: 4.9,
-      acceptanceRate: 0.92,
-      vehicleType: 'ECONOMY',
-      vehicleNumber: 'XYZ789',
-      photoUrl: 'https://example.com/driver2.jpg',
-      distance: 1.2,
-      eta: 5,
-    },
-    {
-      driverId: 'driver_3' as UUID,
-      name: 'Mike Johnson',
-      rating: 4.7,
-      acceptanceRate: 0.88,
-      vehicleType: 'PREMIUM',
-      vehicleNumber: 'LUX456',
-      photoUrl: 'https://example.com/driver3.jpg',
-      distance: 1.5,
-      eta: 6,
-    },
-    {
-      driverId: 'driver_4' as UUID,
-      name: 'Sarah Williams',
-      rating: 4.6,
-      acceptanceRate: 0.91,
-      vehicleType: 'ECONOMY',
-      vehicleNumber: 'ECO321',
-      photoUrl: 'https://example.com/driver4.jpg',
-      distance: 0.8,
-      eta: 3,
-    },
-    {
-      driverId: 'driver_5' as UUID,
-      name: 'Tom Brown',
-      rating: 4.5,
-      acceptanceRate: 0.85,
-      vehicleType: 'SHARED',
-      vehicleNumber: 'SHR654',
-      photoUrl: 'https://example.com/driver5.jpg',
-      distance: 2.0,
-      eta: 8,
-    },
-  ];
-
   constructor(
     @Inject(IRideMatchRepository)
-    private readonly rideMatchRepo: IRideMatchRepository
+    private readonly rideMatchRepo: IRideMatchRepository,
+    @Inject('REDIS_CLIENT')
+    private readonly redis: Redis
   ) {}
 
   async execute(
     dto: MatchAvailableDriversDto
   ): Promise<Result<MatchResultDto, Error>> {
-    const maxRadius = dto.maxRadius || 5; // kilometers
+    const maxRadius = dto.maxRadius || 5;
     const limit = dto.limit || 10;
     const matchingId = `matching_${Date.now()}` as UUID;
 
     this.logger.log(
-      `Starting ride matching for ride ${dto.rideId}, vehicle: ${dto.vehicleType}, radius: ${maxRadius}km`
+      `Matching ride ${dto.rideId} — vehicle: ${dto.vehicleType}, radius: ${maxRadius}km`
     );
 
-    // Step 1: Filter drivers by criteria (in production, use geospatial queries)
-    const filteredDrivers = this.filterDrivers(
-      dto.vehicleType,
+    // Step 1: Query Redis GEO for drivers within radius
+    const nearbyRaw = (await this.redis.georadius(
+      GEO_KEY,
+      dto.pickupLongitude,
+      dto.pickupLatitude,
       maxRadius,
-      limit
-    );
+      'km',
+      'WITHDIST',
+      'ASC',
+      'COUNT',
+      limit * 3 // over-fetch to allow filtering by vehicleType & availability
+    )) as Array<[string, string]>;
 
-    if (filteredDrivers.length === 0) {
-      this.logger.warn(`No available drivers found for ride ${dto.rideId}`);
-      return err(new Error('No available drivers found'));
+    if (!nearbyRaw || nearbyRaw.length === 0) {
+      this.logger.warn(`No drivers found in Redis GEO for ride ${dto.rideId}`);
+      return err(new Error('No available drivers found nearby'));
     }
 
-    // Step 2: Create RideMatch entities for each filtered driver
+    // Step 2: Load availability data and filter
+    const filteredDrivers: DriverInfo[] = [];
+
+    for (const [driverId, distStr] of nearbyRaw) {
+      if (filteredDrivers.length >= limit) break;
+
+      const availability = await this.redis.hgetall(
+        `${AVAILABILITY_KEY}:${driverId}`
+      );
+
+      // Skip drivers that are not online
+      if (!availability || availability.status !== 'online') continue;
+
+      // Filter by vehicle type (skip if mismatch and vehicleType is not ANY)
+      const driverServiceTypes: string[] = JSON.parse(
+        availability.serviceTypes || '["standard"]'
+      );
+      const vehicleMatch =
+        dto.vehicleType === 'ANY' ||
+        driverServiceTypes.includes(dto.vehicleType.toLowerCase());
+      if (!vehicleMatch) continue;
+
+      const distanceKm = parseFloat(distStr);
+      const etaMinutes = Math.ceil((distanceKm / AVERAGE_SPEED_KMH) * 60);
+
+      filteredDrivers.push({
+        driverId: driverId as UUID,
+        name: availability.firstName
+          ? `${availability.firstName} ${availability.lastName || ''}`.trim()
+          : `Conductor ${driverId.slice(-4)}`,
+        rating: parseFloat(availability.rating || '4.5'),
+        acceptanceRate: parseFloat(availability.acceptanceRate || '0.9'),
+        vehicleType: availability.vehicleType || dto.vehicleType,
+        vehicleNumber: availability.vehiclePlate,
+        photoUrl: availability.photoUrl,
+        distance: distanceKm,
+        eta: etaMinutes,
+      });
+    }
+
+    if (filteredDrivers.length === 0) {
+      this.logger.warn(
+        `No online drivers match criteria for ride ${dto.rideId}`
+      );
+      return err(new Error('No available drivers match the criteria'));
+    }
+
+    // Step 3: Create RideMatch entities and persist
     const matches: RideMatch[] = [];
     const ttl = 120; // 2 minutes
 
@@ -167,18 +169,15 @@ export class MatchAvailableDriversUseCase {
         continue;
       }
 
+      const saveResult = await this.rideMatchRepo.save(matchResult.value);
+      if (saveResult.isErr()) {
+        this.logger.error(`Failed to save match: ${saveResult.error.message}`);
+        continue;
+      }
+
       matches.push(matchResult.value);
     }
 
-    // Step 3: Save all matches to repository
-    for (const match of matches) {
-      const saveResult = await this.rideMatchRepo.save(match);
-      if (saveResult.isErr()) {
-        this.logger.error(`Failed to save match: ${saveResult.error.message}`);
-      }
-    }
-
-    // Step 4: Build response
     const result: MatchResultDto = {
       rideId: dto.rideId,
       matchingId,
@@ -199,46 +198,8 @@ export class MatchAvailableDriversUseCase {
     };
 
     this.logger.log(
-      `Found ${matches.length} available drivers for ride ${dto.rideId}`
+      `Matched ${matches.length} real drivers for ride ${dto.rideId}`
     );
     return ok(result);
-  }
-
-  private filterDrivers(
-    vehicleType: string,
-    maxRadius: number,
-    limit: number
-  ): DriverInfo[] {
-    return this.mockDrivers
-      .filter((driver) => {
-        // Filter by vehicle type
-        if (vehicleType !== 'ANY' && driver.vehicleType !== vehicleType) {
-          return false;
-        }
-        // Filter by radius
-        if (driver.distance > maxRadius) {
-          return false;
-        }
-        // Filter by minimum rating (4.0 stars)
-        if (driver.rating < 4.0) {
-          return false;
-        }
-        // Filter by acceptance rate (>85%)
-        if (driver.acceptanceRate < 0.85) {
-          return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        // Sort by: distance (ascending), then rating (descending), then acceptance rate (descending)
-        if (a.distance !== b.distance) {
-          return a.distance - b.distance;
-        }
-        if (a.rating !== b.rating) {
-          return b.rating - a.rating;
-        }
-        return b.acceptanceRate - a.acceptanceRate;
-      })
-      .slice(0, limit);
   }
 }

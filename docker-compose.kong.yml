@@ -1,0 +1,52 @@
+version: '3.8'
+# Kong API Gateway overlay for Going Platform
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.kong.yml up -d
+#
+# Kong runs in DB-less mode (no Postgres needed) using declarative config.
+# It sits in front of the NestJS api-gateway container on port 80/443 publicly.
+
+services:
+  # ── KONG GATEWAY ─────────────────────────────────────────
+  kong:
+    image: kong:3.6-ubuntu
+    container_name: going-kong
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: "off"                          # DB-less mode
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yaml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+      KONG_PROXY_LISTEN: "0.0.0.0:80, 0.0.0.0:443 ssl"
+      KONG_LOG_LEVEL: warn
+      KONG_PLUGINS: "bundled"
+      # Redis for rate-limit state sharing across replicas
+      KONG_NGINX_HTTP_LUA_SHARED_DICT: "kong_rate_limiting_counters 64m"
+    ports:
+      - "80:80"      # Public HTTP
+      - "443:443"    # Public HTTPS (bring your own cert via kong.yaml)
+      - "8001:8001"  # Admin API — restrict to VPN/localhost in production
+    volumes:
+      - ./kong/kong.yaml:/kong/kong.yaml:ro
+    depends_on:
+      api-gateway:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - going_network
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    labels:
+      com.docker.compose.project: going
+
+  # ── REMOVE DIRECT PORT EXPOSURE ON API GATEWAY ───────────
+  # Kong is now the only public entry point.
+  # The NestJS api-gateway only listens internally on the Docker network.
+  api-gateway:
+    ports: []   # Remove public port binding — traffic only via Kong

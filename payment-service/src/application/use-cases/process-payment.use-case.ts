@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { IPaymentRepository } from '../../domain/ports';
 import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
+import { PricingService, ServiceType } from '../pricing.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Process Payment Use Case
- * Processes payment for a completed ride
+ * Processes payment for a completed trip/booking using dynamic pricing
  */
 @Injectable()
 export class ProcessPaymentUseCase {
   constructor(
     private paymentRepository: IPaymentRepository,
-    private stripeGateway: StripeGateway
+    private stripeGateway: StripeGateway,
+    private pricingService: PricingService
   ) {}
 
   async execute(input: {
@@ -19,12 +21,45 @@ export class ProcessPaymentUseCase {
     passengerId: string;
     driverId: string;
     amount: number;
+    serviceType?: ServiceType;
+    distanceKm?: number;
+    durationMinutes?: number;
+    weightKg?: number;
+    quantity?: number;
     paymentMethod: 'card' | 'wallet' | 'cash';
     paymentMethodId?: string;
   }): Promise<any> {
-    // Calculate fees
-    const platformFee = Math.round(input.amount * 0.2 * 100) / 100;
-    const driverAmount = Math.round(input.amount * 0.8 * 100) / 100;
+    // Calculate fees dynamically based on service type
+    let platformFee: number;
+    let driverAmount: number;
+
+    if (input.serviceType && input.serviceType !== 'accommodation') {
+      const fareBreakdown = this.pricingService.calculate(
+        input.serviceType === 'transport' || input.serviceType === 'shared'
+          ? {
+              serviceType: input.serviceType,
+              distanceKm: input.distanceKm ?? 0,
+              durationMinutes: input.durationMinutes ?? 0,
+            }
+          : input.serviceType === 'envio'
+          ? {
+              serviceType: 'envio',
+              distanceKm: input.distanceKm ?? 0,
+              weightKg: input.weightKg ?? 1,
+            }
+          : {
+              serviceType: input.serviceType,
+              baseAmount: input.amount,
+              quantity: input.quantity ?? 1,
+            }
+      );
+      platformFee = fareBreakdown.platformFee;
+      driverAmount = fareBreakdown.providerAmount;
+    } else {
+      // Fallback: standard 20/80 split
+      platformFee = Math.round(input.amount * 0.2 * 100) / 100;
+      driverAmount = Math.round(input.amount * 0.8 * 100) / 100;
+    }
 
     // Create payment record
     const paymentId = uuidv4();

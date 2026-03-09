@@ -4,6 +4,7 @@ import {
   Notification,
   INotificationGateway,
 } from '@going-monorepo-clean/domains-notification-core';
+import { DeviceTokenRepository } from '../persistence/device-token.repository';
 
 /**
  * Firebase Cloud Messaging (FCM) Push Notification Gateway
@@ -15,6 +16,8 @@ export class FirebasePushNotificationGateway
 {
   private readonly logger = new Logger(FirebasePushNotificationGateway.name);
   private messaging: any; // firebase-admin messaging instance
+
+  constructor(private readonly deviceTokenRepo: DeviceTokenRepository) {}
 
   onModuleInit() {
     try {
@@ -150,17 +153,11 @@ export class FirebasePushNotificationGateway
       this.logger.warn(
         `[FCM] ${failedTokens.length} invalid tokens for user ${userId}`
       );
-
-      // TODO: Delete invalid tokens from device_tokens table
-      // await this.deviceTokenRepository.deleteByTokens(failedTokens);
+      await this.deviceTokenRepo.deactivateTokens(failedTokens);
     }
   }
 
   private async getDeviceTokensForUser(userId: string): Promise<string[]> {
-    // In production, query from database
-    // return this.deviceTokenRepository.findByUserId(userId)
-
-    // Mock implementation
-    return [];
+    return this.deviceTokenRepo.findActiveByUserId(userId);
   }
 }

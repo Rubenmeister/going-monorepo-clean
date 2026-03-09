@@ -6,10 +6,15 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+
+type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
 
 interface DaySummary {
   date: string;
@@ -18,6 +23,7 @@ interface DaySummary {
 }
 
 export function EarningsScreen() {
+  const navigation = useNavigation<Nav>();
   const [summary, setSummary] = useState({
     today: 0,
     week: 0,
@@ -83,6 +89,17 @@ export function EarningsScreen() {
         <Text style={styles.heroLabel}>Total acumulado</Text>
         <Text style={styles.heroValue}>${summary.total.toFixed(2)}</Text>
         <Text style={styles.heroSub}>{summary.trips} viajes en total</Text>
+        <TouchableOpacity
+          style={styles.withdrawBtn}
+          onPress={() =>
+            navigation.navigate('Withdraw', {
+              availableBalance: summary.total,
+              currency: 'USD',
+            })
+          }
+        >
+          <Text style={styles.withdrawBtnText}>💸 Retirar ganancias</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.statsGrid}>
@@ -90,18 +107,18 @@ export function EarningsScreen() {
           {
             label: 'Hoy',
             value: `$${summary.today.toFixed(2)}`,
-            icon: 'today-outline',
+            icon: '📅',
             color: '#10B981',
           },
           {
             label: 'Esta semana',
             value: `$${summary.week.toFixed(2)}`,
-            icon: 'calendar-outline',
+            icon: '🚗',
             color: '#0033A0',
           },
         ].map(({ label, value, icon, color }) => (
           <View key={label} style={styles.statCard}>
-            <Ionicons name={icon as any} size={24} color={color} />
+            <Text style={[styles.statIcon, { color }]}>{icon}</Text>
             <Text style={styles.statValue}>{value}</Text>
             <Text style={styles.statLabel}>{label}</Text>
           </View>
@@ -153,6 +170,15 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   heroSub: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  statIcon: { fontSize: 24, marginBottom: 4 },
+  withdrawBtn: {
+    marginTop: 14,
+    backgroundColor: '#FFCD00',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+  },
+  withdrawBtnText: { color: '#0033A0', fontWeight: '800', fontSize: 14 },
   statsGrid: {
     flexDirection: 'row',
     paddingHorizontal: 16,

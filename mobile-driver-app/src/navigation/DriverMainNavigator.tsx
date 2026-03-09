@@ -7,6 +7,7 @@ import { EarningsScreen } from '@screens/earnings/EarningsScreen';
 import { DriverProfileScreen } from '@screens/profile/DriverProfileScreen';
 import { RideRequestScreen } from '@screens/ride/RideRequestScreen';
 import { ActiveRideScreen } from '@screens/ride/ActiveRideScreen';
+import { WithdrawScreen } from '@screens/earnings/WithdrawScreen';
 
 export type DriverMainStackParamList = {
   Tabs: undefined;
@@ -18,6 +19,7 @@ export type DriverMainStackParamList = {
     amount: number;
   };
   ActiveRide: { rideId: string; passengerName: string; destination: string };
+  Withdraw: { availableBalance: number; currency: string };
 };
 
 const Stack = createNativeStackNavigator<DriverMainStackParamList>();
@@ -87,6 +89,11 @@ export function DriverMainNavigator() {
         name="ActiveRide"
         component={ActiveRideScreen}
         options={{ title: 'Viaje Activo' }}
+      />
+      <Stack.Screen
+        name="Withdraw"
+        component={WithdrawScreen}
+        options={{ title: 'Retirar Ganancias', presentation: 'modal' }}
       />
     </Stack.Navigator>
   );
