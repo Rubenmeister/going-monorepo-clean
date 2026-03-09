@@ -94,9 +94,9 @@ packagingOptions {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.going.userapp'
+    namespace 'com.going.driverapp'
     defaultConfig {
-        applicationId 'com.going.userapp'
+        applicationId 'com.going.driverapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
