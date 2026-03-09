@@ -125,3 +125,9 @@ AGENTS.md
 # Gemini/Claude AI agent settings
 .claude/
 .gemini/
+
+# Claude Code local settings (contains tokens)
+.claude/settings.local.json
+
+# Note: gradle.properties uses placeholder MAPBOX_DOWNLOADS_TOKEN=YOUR_MAPBOX_TOKEN_HERE
+# Set real token via local env or CI/CD secrets, not in this file
