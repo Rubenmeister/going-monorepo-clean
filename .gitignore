@@ -121,3 +121,7 @@ AGENTS.md
 *.swo
 *~
 .vercel
+
+# Gemini/Claude AI agent settings
+.claude/
+.gemini/

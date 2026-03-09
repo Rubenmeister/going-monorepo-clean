@@ -9,6 +9,8 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  Inject,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
 import {
@@ -23,6 +25,7 @@ import {
   AcceptRideUseCase,
   CompleteRideUseCase,
 } from '../application/use-cases';
+import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
 
 /**
  * Ride Controller
@@ -34,7 +37,9 @@ export class RideController {
   constructor(
     private readonly requestRideUseCase: RequestRideUseCase,
     private readonly acceptRideUseCase: AcceptRideUseCase,
-    private readonly completeRideUseCase: CompleteRideUseCase
+    private readonly completeRideUseCase: CompleteRideUseCase,
+    @Inject(ITripRepository)
+    private readonly tripRepo: ITripRepository
   ) {}
 
   /**
@@ -63,11 +68,10 @@ export class RideController {
    */
   @Get(':rideId')
   async getRide(@Param('rideId') rideId: string): Promise<any> {
-    // TODO: Fetch from repository
-    return {
-      rideId,
-      message: 'Ride details',
-    };
+    const result = await this.tripRepo.findById(rideId as any);
+    if (result.isErr()) throw new NotFoundException(result.error.message);
+    if (!result.value) throw new NotFoundException(`Ride ${rideId} not found`);
+    return result.value.toPrimitives();
   }
 
   /**
@@ -93,14 +97,17 @@ export class RideController {
   @Put(':rideId/start')
   async startRide(
     @Param('rideId') rideId: string,
-    @Body() dto: StartRideDto
+    @Body() _dto: StartRideDto
   ): Promise<any> {
-    // TODO: Update ride status to 'started'
-    return {
-      rideId,
-      status: 'started',
-      startedAt: new Date(),
-    };
+    const result = await this.tripRepo.findById(rideId as any);
+    if (result.isErr() || !result.value)
+      throw new NotFoundException(`Ride ${rideId} not found`);
+
+    const trip = result.value;
+    trip.start();
+    await this.tripRepo.update(trip);
+
+    return { rideId, status: trip.status, startedAt: new Date() };
   }
 
   /**
@@ -128,8 +135,12 @@ export class RideController {
     @CurrentUser() user: any,
     @Query('limit') limit?: number
   ): Promise<any[]> {
-    // TODO: Fetch from repository
-    return [];
+    const result = await this.tripRepo.findTripsByUser(
+      user.id,
+      limit ? Number(limit) : 20
+    );
+    if (result.isErr()) return [];
+    return result.value.map((t) => t.toPrimitives());
   }
 
   /**
@@ -141,8 +152,11 @@ export class RideController {
     @Param('driverId') driverId: string,
     @Query('limit') limit?: number
   ): Promise<any[]> {
-    // TODO: Fetch from repository
-    return [];
+    const result = await this.tripRepo.findActiveTripsByDriver(driverId as any);
+    if (result.isErr()) return [];
+    return result.value
+      .slice(0, limit ? Number(limit) : 20)
+      .map((t) => t.toPrimitives());
   }
 
   /**
@@ -154,10 +168,17 @@ export class RideController {
     @Param('rideId') rideId: string,
     @Body('reason') reason: string
   ): Promise<any> {
-    // TODO: Update ride status to 'cancelled'
+    const result = await this.tripRepo.findById(rideId as any);
+    if (result.isErr() || !result.value)
+      throw new NotFoundException(`Ride ${rideId} not found`);
+
+    const trip = result.value;
+    trip.cancel(reason || 'user_cancelled');
+    await this.tripRepo.update(trip);
+
     return {
       rideId,
-      status: 'cancelled',
+      status: trip.status,
       reason,
       cancelledAt: new Date(),
     };
