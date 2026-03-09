@@ -1,7 +1,7 @@
 # Parameterized Cloud Build for Going platform microservices
-# Usage:
+# Usage (always quote the --substitutions value to avoid shell parsing issues with & and = in URLs):
 #   gcloud builds submit --config=cloudbuild-microservices.yaml \
-#     --substitutions=_SERVICE_NAME=user-auth-service,_MONGODB_URL=mongodb+srv://... \
+#     --substitutions='_SERVICE_NAME=user-auth-service,_DB_VAR_NAME=USER_DB_URL,_MONGODB_URL=mongodb+srv://...' \
 #     --project=going-5d1ae .
 
 substitutions:
@@ -66,7 +66,7 @@ steps:
       - '--timeout'
       - '60'
       - '--set-env-vars'
-      - 'NODE_ENV=production,JWT_SECRET=${_JWT_SECRET},JWT_EXPIRES_IN=15m,${_DB_VAR_NAME}=${_MONGODB_URL},REDIS_URL=${_REDIS_URL}'
+      - '^|^NODE_ENV=production|JWT_SECRET=${_JWT_SECRET}|JWT_EXPIRES_IN=15m|${_DB_VAR_NAME}=${_MONGODB_URL}|REDIS_URL=${_REDIS_URL}'
 
 images:
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'

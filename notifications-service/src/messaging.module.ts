@@ -28,6 +28,11 @@ import { INotificationGateway } from '@going-monorepo-clean/domains-notification
 // Schemas
 import { MessageSchema } from './infrastructure/schemas/message.schema';
 import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
+import {
+  DeviceToken,
+  DeviceTokenSchema,
+} from './infrastructure/schemas/device-token.schema';
+import { DeviceTokenRepository } from './infrastructure/persistence/device-token.repository';
 
 /**
  * Messaging Module
@@ -38,6 +43,7 @@ import { ConversationSchema } from './infrastructure/schemas/conversation.schema
     MongooseModule.forFeature([
       { name: 'Message', schema: MessageSchema },
       { name: 'Conversation', schema: ConversationSchema },
+      { name: DeviceToken.name, schema: DeviceTokenSchema },
     ]),
   ],
   controllers: [ChatController, NotificationController],
@@ -64,6 +70,9 @@ import { ConversationSchema } from './infrastructure/schemas/conversation.schema
       provide: INotificationGateway,
       useClass: CompositeNotificationGateway,
     },
+
+    // Device token repository (needed by FCM gateway)
+    DeviceTokenRepository,
 
     // Gateway Providers (for Composite Gateway to inject)
     FirebasePushNotificationGateway,

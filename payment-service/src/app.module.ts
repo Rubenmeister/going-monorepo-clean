@@ -9,6 +9,7 @@ import {
   CreatePaymentIntentUseCase,
   HandleStripeEventUseCase,
 } from '@going-monorepo-clean/domains-payment-application';
+import { PricingService } from './application/pricing.service';
 
 @Module({
   imports: [
@@ -23,6 +24,10 @@ import {
     InfrastructureModule,
   ],
   controllers: [PaymentController, WebhookController, HealthController],
-  providers: [CreatePaymentIntentUseCase, HandleStripeEventUseCase],
+  providers: [
+    CreatePaymentIntentUseCase,
+    HandleStripeEventUseCase,
+    PricingService,
+  ],
 })
 export class AppModule {}

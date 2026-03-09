@@ -39,13 +39,24 @@ export class ErrorBoundary extends React.Component<Props, State> {
     // Update state with error info
     this.setState({ errorInfo });
 
-    // Dispatch to UI store for notification
-    const { addNotification } = useUIStore.getState();
-    addNotification({
-      message: 'An unexpected error occurred. Please try refreshing the page.',
-      type: 'error',
-      duration: 10000,
-    });
+    // Skip toast for React hydration errors — these are dev-only noise
+    // caused by browser extensions or SSR/client mismatch, not real user errors.
+    const isHydrationError =
+      error.message?.includes('Hydration') ||
+      error.message?.includes('hydrat') ||
+      error.message?.includes('Text content does not match') ||
+      error.message?.includes('server-rendered HTML');
+
+    if (!isHydrationError) {
+      // Dispatch to UI store for notification
+      const { addNotification } = useUIStore.getState();
+      addNotification({
+        message:
+          'An unexpected error occurred. Please try refreshing the page.',
+        type: 'error',
+        duration: 10000,
+      });
+    }
   }
 
   handleReset = () => {

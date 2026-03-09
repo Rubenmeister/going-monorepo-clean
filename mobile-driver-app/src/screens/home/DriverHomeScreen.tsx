@@ -7,7 +7,7 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,12 +16,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDriverStore } from '@store/useDriverStore';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 
-const QUITO = {
-  latitude: -0.1807,
-  longitude: -78.4678,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
-};
+MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
+
+// Default center: Quito, Ecuador [lng, lat]
+const QUITO_COORD: [number, number] = [-78.4678, -0.1807];
 const BG_LOCATION_TASK = 'going-driver-bg-location';
 
 // Register background location task (no-op until WebSocket tracking is added)
@@ -35,11 +33,8 @@ export function DriverHomeScreen() {
   const navigation = useNavigation<Nav>();
   const { driver, isOnline, pendingTrip, toggleOnline, pollPendingTrips } =
     useDriverStore();
-  const mapRef = useRef<MapView>(null);
-  const [location, setLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const cameraRef = useRef<MapboxGL.Camera>(null);
+  const [location, setLocation] = useState<[number, number] | null>(null);
 
   // Setup GPS on mount
   useEffect(() => {
@@ -72,15 +67,16 @@ export function DriverHomeScreen() {
     const loc = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.High,
     });
-    const coords = {
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    };
+    const coords: [number, number] = [
+      loc.coords.longitude,
+      loc.coords.latitude,
+    ];
     setLocation(coords);
-    mapRef.current?.animateToRegion(
-      { ...coords, latitudeDelta: 0.015, longitudeDelta: 0.015 },
-      800
-    );
+    cameraRef.current?.setCamera({
+      centerCoordinate: coords,
+      zoomLevel: 15,
+      animationDuration: 800,
+    });
   };
 
   const handleToggleOnline = async () => {
@@ -100,24 +96,27 @@ export function DriverHomeScreen() {
   return (
     <View style={styles.container}>
       {/* Map */}
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        initialRegion={QUITO}
-        showsUserLocation
-        showsMyLocationButton={false}
-      >
+      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.DarkV11}>
+        <MapboxGL.Camera
+          ref={cameraRef}
+          zoomLevel={14}
+          centerCoordinate={location ?? QUITO_COORD}
+          animationMode="flyTo"
+        />
+        <MapboxGL.UserLocation
+          visible
+          renderMode={MapboxGL.UserLocationRenderMode.Normal}
+        />
         {location && (
-          <Marker coordinate={location} title="Tu posición">
+          <MapboxGL.PointAnnotation id="driver-location" coordinate={location}>
             <View
               style={[styles.carMarker, isOnline && styles.carMarkerOnline]}
             >
               <Ionicons name="car" size={18} color="#fff" />
             </View>
-          </Marker>
+          </MapboxGL.PointAnnotation>
         )}
-      </MapView>
+      </MapboxGL.MapView>
 
       {/* Online/Offline toggle */}
       <View style={styles.statusBar}>

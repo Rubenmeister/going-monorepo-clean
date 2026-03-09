@@ -3,189 +3,153 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '@store/useAuthStore';
-import { searchAPI, transportAPI } from '@services/api';
+import { useAuthStore } from '../../store/useAuthStore';
+import { api } from '../../services/api';
 
-const { width } = Dimensions.get('window');
+MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
-// Default center: Quito, Ecuador
-const QUITO: Region = {
-  latitude: -0.1807,
-  longitude: -78.4678,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
-};
+const GOING_BLUE = '#0033A0'; // Aligned with driver app brand color
+const GOING_YELLOW = '#FFCD00'; // Aligned with driver app brand color
 
-export function HomeScreen() {
+export default function HomeScreen() {
   const { user } = useAuthStore();
-  const mapRef = useRef<MapView>(null);
-  const [region, setRegion] = useState<Region>(QUITO);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [location, setLocation] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState('');
-  const [isLocating, setIsLocating] = useState(false);
-  const [isRequesting, setIsRequesting] = useState(false);
+  const [selectedService, setSelectedService] = useState<
+    'taxi' | 'delivery' | 'tour'
+  >('taxi');
+  const [loading, setLoading] = useState(false);
+  const cameraRef = useRef<MapboxGL.Camera>(null);
+
+  const services = [
+    { id: 'taxi' as const, label: '🚗 Taxi', color: GOING_BLUE },
+    { id: 'delivery' as const, label: '📦 Envío', color: '#E53935' },
+    { id: 'tour' as const, label: '🏔️ Tour', color: '#43A047' },
+  ];
 
   useEffect(() => {
-    requestLocation();
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso denegado', 'Se necesita acceso a tu ubicación.');
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      setLocation([loc.coords.longitude, loc.coords.latitude]);
+      cameraRef.current?.setCamera({
+        centerCoordinate: [loc.coords.longitude, loc.coords.latitude],
+        zoomLevel: 15,
+        animationDuration: 1000,
+      });
+    })();
   }, []);
 
-  const requestLocation = async () => {
-    setIsLocating(true);
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a tu ubicación para encontrar transporte cercano.'
-      );
-      setIsLocating(false);
-      return;
-    }
-    const loc = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-    });
-    const coords = {
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    };
-    setUserLocation(coords);
-    const newRegion = {
-      ...coords,
-      latitudeDelta: 0.015,
-      longitudeDelta: 0.015,
-    };
-    setRegion(newRegion);
-    mapRef.current?.animateToRegion(newRegion, 800);
-    setIsLocating(false);
-  };
-
-  const handleRequestRide = async () => {
-    if (!userLocation) {
-      Alert.alert('Ubicación requerida', 'Activa tu GPS primero.');
-      return;
-    }
+  const handleRideRequest = async () => {
     if (!destination.trim()) {
-      Alert.alert('Destino requerido', 'Ingresa a dónde quieres ir.');
+      Alert.alert('Error', 'Por favor ingresa tu destino.');
       return;
     }
-    setIsRequesting(true);
+    if (!location) {
+      Alert.alert('Error', 'Esperando tu ubicación…');
+      return;
+    }
+    setLoading(true);
     try {
-      await transportAPI.requestRide({
-        userId: user?.id ?? 'anonymous',
-        origin: { ...userLocation, address: 'Mi ubicación actual' },
-        destination: {
-          latitude: QUITO.latitude - 0.01,
-          longitude: QUITO.longitude + 0.01,
-          address: destination,
-        },
-        price: { amount: 8.5, currency: 'USD' },
+      await api.requestRide({
+        originLat: location[1],
+        originLng: location[0],
+        destinationAddress: destination,
+        serviceType: selectedService,
       });
-      Alert.alert('¡Listo!', 'Tu solicitud fue enviada. Buscando conductor...');
-      setDestination('');
+      Alert.alert('¡Solicitud enviada!', 'Buscando conductor cercano…');
     } catch {
-      // Staging fallback — show success regardless
-      Alert.alert('¡Listo!', 'Tu solicitud fue enviada. Buscando conductor...');
-      setDestination('');
+      Alert.alert('Error', 'No se pudo procesar la solicitud.');
     } finally {
-      setIsRequesting(false);
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Map */}
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        region={region}
-        showsUserLocation
-        showsMyLocationButton={false}
-        onRegionChangeComplete={setRegion}
-      >
-        {userLocation && (
-          <Marker coordinate={userLocation} title="Tu ubicación">
+      {/* ── MAP ── */}
+      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Street}>
+        <MapboxGL.Camera
+          ref={cameraRef}
+          zoomLevel={14}
+          centerCoordinate={location ?? [-78.4678, -0.1807]} // default: Quito, Ecuador
+          animationMode="flyTo"
+        />
+        {location && (
+          <MapboxGL.PointAnnotation id="user-location" coordinate={location}>
             <View style={styles.userMarker}>
-              <Ionicons name="person" size={16} color="#fff" />
+              <View style={styles.userMarkerInner} />
             </View>
-          </Marker>
+          </MapboxGL.PointAnnotation>
         )}
-      </MapView>
+        <MapboxGL.UserLocation
+          visible
+          renderMode={MapboxGL.UserLocationRenderMode.Normal}
+        />
+      </MapboxGL.MapView>
 
-      {/* Header greeting */}
-      <View style={styles.header}>
+      {/* ── BOTTOM CARD ── */}
+      <View style={styles.card}>
         <Text style={styles.greeting}>
-          ¡Hola, {user?.firstName || 'Usuario'}! 👋
+          ¡Hola, {user?.name?.split(' ')[0] ?? 'viajero'}! 👋
         </Text>
-        <Text style={styles.subGreeting}>¿A dónde vamos hoy?</Text>
-      </View>
 
-      {/* Recenter button */}
-      <TouchableOpacity
-        style={styles.recenterBtn}
-        onPress={requestLocation}
-        disabled={isLocating}
-      >
-        {isLocating ? (
-          <ActivityIndicator size="small" color="#0033A0" />
-        ) : (
-          <Ionicons name="locate" size={22} color="#0033A0" />
-        )}
-      </TouchableOpacity>
-
-      {/* Bottom sheet: destination input */}
-      <View style={styles.bottomSheet}>
-        <View style={styles.destinationRow}>
-          <Ionicons
-            name="search"
-            size={20}
-            color="#0033A0"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.destinationInput}
-            placeholder="¿A dónde vas?"
-            placeholderTextColor="#9CA3AF"
-            value={destination}
-            onChangeText={setDestination}
-            returnKeyType="search"
-          />
-        </View>
-
-        {/* Service types */}
+        {/* Service selector */}
         <View style={styles.serviceRow}>
-          {[
-            { icon: 'car', label: 'Privado' },
-            { icon: 'people', label: 'Compartido' },
-            { icon: 'cube', label: 'Envíos' },
-          ].map(({ icon, label }) => (
-            <TouchableOpacity key={label} style={styles.serviceCard}>
-              <Ionicons name={icon as any} size={22} color="#0033A0" />
-              <Text style={styles.serviceLabel}>{label}</Text>
+          {services.map((svc) => (
+            <TouchableOpacity
+              key={svc.id}
+              style={[
+                styles.serviceBtn,
+                selectedService === svc.id && { backgroundColor: svc.color },
+              ]}
+              onPress={() => setSelectedService(svc.id)}
+            >
+              <Text
+                style={[
+                  styles.serviceBtnText,
+                  selectedService === svc.id && { color: '#fff' },
+                ]}
+              >
+                {svc.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
+        {/* Destination input */}
+        <TextInput
+          style={styles.input}
+          placeholder="¿A dónde vas?"
+          placeholderTextColor="#999"
+          value={destination}
+          onChangeText={setDestination}
+          returnKeyType="search"
+        />
+
+        {/* Request button */}
         <TouchableOpacity
-          style={[styles.requestBtn, isRequesting && styles.requestBtnDisabled]}
-          onPress={handleRequestRide}
-          disabled={isRequesting}
+          style={[styles.requestBtn, loading && { opacity: 0.7 }]}
+          onPress={handleRideRequest}
+          disabled={loading}
         >
-          {isRequesting ? (
-            <ActivityIndicator color="#0033A0" />
+          {loading ? (
+            <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.requestBtnText}>Solicitar Viaje</Text>
+            <Text style={styles.requestBtnText}>Solicitar</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -196,97 +160,75 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
-  header: {
-    position: 'absolute',
-    top: 52,
-    left: 16,
-    right: 80,
-    backgroundColor: 'rgba(0,51,160,0.92)',
-    borderRadius: 14,
-    padding: 14,
-  },
-  greeting: { color: '#FFCD00', fontSize: 16, fontWeight: '800' },
-  subGreeting: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 },
-  recenterBtn: {
-    position: 'absolute',
-    top: 52,
-    right: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-  },
   userMarker: {
-    backgroundColor: '#0033A0',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: GOING_BLUE,
     justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFCD00',
+    borderColor: '#fff',
   },
-  bottomSheet: {
+  userMarkerInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+  },
+  card: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 20,
-    paddingBottom: 32,
-    elevation: 16,
+    paddingBottom: 36,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 12,
   },
-  destinationRow: {
-    flexDirection: 'row',
+  greeting: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222',
+    marginBottom: 14,
+  },
+  serviceRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  serviceBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#ddd',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+  },
+  serviceBtnText: { fontSize: 13, fontWeight: '600', color: '#444' },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
     borderRadius: 12,
     paddingHorizontal: 14,
-    marginBottom: 16,
-  },
-  searchIcon: { marginRight: 8 },
-  destinationInput: {
-    flex: 1,
-    paddingVertical: 13,
-    fontSize: 15,
-    color: '#111827',
-  },
-  serviceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-  },
-  serviceCard: {
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
     paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderWidth: 1.5,
-    borderColor: '#DBEAFE',
-  },
-  serviceLabel: {
-    color: '#0033A0',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    fontSize: 15,
+    color: '#222',
+    marginBottom: 14,
+    backgroundColor: '#f9f9f9',
   },
   requestBtn: {
-    backgroundColor: '#FFCD00',
+    backgroundColor: GOING_BLUE,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: GOING_BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  requestBtnDisabled: { opacity: 0.7 },
-  requestBtnText: { color: '#0033A0', fontSize: 17, fontWeight: '900' },
+  requestBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

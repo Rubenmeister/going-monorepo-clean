@@ -7,9 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/going-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0033A0"
+      "backgroundColor": "#FFFFFF"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -33,19 +33,17 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
       ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
-        }
-      }
+      "config": {}
     },
     "plugins": [
       "expo-location",
+      "expo-system-ui",
+      ["@rnmapbox/maps", {}],
       [
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#0033A0"
+          "color": "#F25C45"
         }
       ]
     ],

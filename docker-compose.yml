@@ -52,9 +52,9 @@ services:
       NODE_ENV: production
       MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      PORT: 3003
+      PORT: 3006
     ports:
-      - "3003:3003"
+      - "3006:3006"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -118,9 +118,9 @@ services:
       NODE_ENV: production
       MONGO_URI: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      PORT: 3006
+      PORT: 3010
     ports:
-      - "3006:3006"
+      - "3010:3010"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -189,7 +189,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-}
       USER_AUTH_SERVICE_URL: http://user-auth-service:3001
       BOOKING_SERVICE_URL: http://booking-service:3002
-      TRANSPORT_SERVICE_URL: http://transport-service:3003
+      TRANSPORT_SERVICE_URL: http://transport-service:3006
       PAYMENT_SERVICE_URL: http://payment-service:3004
       NOTIFICATIONS_SERVICE_URL: http://notifications-service:3012
       TRACKING_SERVICE_URL: http://tracking-service:3011

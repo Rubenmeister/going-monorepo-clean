@@ -7,7 +7,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { v4 as uuidv4 } from 'uuid';
-import { initSentry, createSentryErrorHandler } from './sentry.config';
+import { initSentry, registerSentryFastify } from './sentry.config';
 import { AllExceptionsFilter } from '@going-monorepo-clean/shared-infrastructure';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyRateLimit from '@fastify/rate-limit';
@@ -24,7 +24,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
 
   // ── SECURITY HEADERS via @fastify/helmet ──────────────────
-  await app.register(fastifyHelmet, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await app.register(fastifyHelmet as any, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -59,7 +60,8 @@ async function bootstrap() {
   // ── RATE LIMITING via @fastify/rate-limit ─────────────────
   const rateLimitEnabled = process.env.RATE_LIMIT_ENABLED !== 'false';
   if (rateLimitEnabled) {
-    await app.register(fastifyRateLimit, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await app.register(fastifyRateLimit as any, {
       global: false, // we apply per-route via config below
       max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000', 10),
       timeWindow: '1 minute',
@@ -132,8 +134,8 @@ async function bootstrap() {
     }
   );
 
-  // ── SENTRY ERROR HANDLER ──────────────────────────────────
-  app.use(createSentryErrorHandler());
+  // ── SENTRY ERROR HOOK (Fastify native) — reuse instance from audit hooks ─
+  registerSentryFastify(fastifyInstance as any);
 
   // ── GLOBAL PIPES & FILTERS ────────────────────────────────
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

@@ -39,6 +39,7 @@ export class CreateAccommodationUseCase {
       throw new InternalServerErrorException(accommodationResult.error.message);
     }
     const accommodation = accommodationResult.value;
+    accommodation.publish();
 
     const saveResult = await this.accommodationRepo.save(accommodation);
     if (saveResult.isErr()) {
