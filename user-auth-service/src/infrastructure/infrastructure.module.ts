@@ -85,6 +85,7 @@ import { AccountLockoutService } from './services/account-lockout.service';
     ITokenManager,
     TokenManagerService,
     AccountLockoutService,
+    JwtModule,
   ],
 })
 export class InfrastructureModule {}

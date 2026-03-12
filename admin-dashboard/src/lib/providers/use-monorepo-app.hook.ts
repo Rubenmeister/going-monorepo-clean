@@ -59,6 +59,38 @@ export const useMonorepoApp = () => {
           return res;
         },
       },
+      admin: {
+        getStats: async () =>
+          apiFetch('/auth/admin/stats').catch(() => ({
+            total: 0,
+            active: 0,
+            suspended: 0,
+            admins: 0,
+            drivers: 0,
+          })),
+        getUsers: async (params?: {
+          limit?: number;
+          skip?: number;
+          role?: string;
+          status?: string;
+        }) => {
+          const qs = new URLSearchParams();
+          if (params?.limit) qs.set('limit', String(params.limit));
+          if (params?.skip) qs.set('skip', String(params.skip));
+          if (params?.role) qs.set('role', params.role);
+          if (params?.status) qs.set('status', params.status);
+          const query = qs.toString() ? `?${qs}` : '';
+          return apiFetch(`/auth/admin/users${query}`).catch(() => ({
+            users: [],
+            total: 0,
+          }));
+        },
+        updateUserStatus: async (id: string, status: string) =>
+          apiFetch(`/auth/admin/users/${id}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status }),
+          }),
+      },
       bookings: {
         create: async (dto: unknown) =>
           apiFetch('/bookings', { method: 'POST', body: JSON.stringify(dto) }),
