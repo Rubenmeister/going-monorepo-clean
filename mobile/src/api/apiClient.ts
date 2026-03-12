@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://api.goingec.com';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -9,51 +9,89 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_URL,
-      timeout: 10000,
+      timeout: 15000,
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    // Add token to requests
     this.client.interceptors.request.use(async (config) => {
-      const token = await AsyncStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+      const token = await SecureStore.getItemAsync('authToken');
+      if (token) config.headers.Authorization = `Bearer ${token}`;
       return config;
     });
+
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401)
+          SecureStore.deleteItemAsync('authToken');
+        return Promise.reject(error);
+      }
+    );
   }
 
-  // Auth endpoints
+  // Auth
   async login(email: string, password: string) {
     const response = await this.client.post('/auth/login', { email, password });
     return response.data;
   }
 
-  async register(data: any) {
+  async register(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    phone: string;
+    roles: string[];
+  }) {
     const response = await this.client.post('/auth/register', data);
     return response.data;
   }
 
-  // Booking endpoints
+  async getProfile() {
+    const response = await this.client.get('/auth/profile');
+    return response.data;
+  }
+
+  // Bookings
+  async getMyBookings(userId: string) {
+    const response = await this.client.get(`/bookings/user/${userId}`);
+    return response.data;
+  }
+
   async createBooking(data: any) {
     const response = await this.client.post('/bookings', data);
     return response.data;
   }
 
-  async getBookingsByUser(userId: string) {
-    const response = await this.client.get(`/bookings/user/${userId}`);
+  // Search
+  async searchTours(query: string) {
+    const response = await this.client.get(
+      `/tours/search?query=${encodeURIComponent(query)}`
+    );
     return response.data;
   }
 
-  // Search endpoints
-  async searchTours(filters: any) {
-    const params = new URLSearchParams(filters).toString();
-    const response = await this.client.get(`/tours/search?${params}`);
+  async searchExperiences(query: string) {
+    const response = await this.client.get(
+      `/experiences/search?query=${encodeURIComponent(query)}`
+    );
     return response.data;
   }
 
-  async searchExperiences(filters: any) {
-    const params = new URLSearchParams(filters).toString();
-    const response = await this.client.get(`/experiences/search?${params}`);
+  async searchAccommodations(query: string) {
+    const response = await this.client.get(
+      `/accommodations/search?query=${encodeURIComponent(query)}`
+    );
+    return response.data;
+  }
+
+  // Transport
+  async requestTrip(data: {
+    pickupLocation: any;
+    dropoffLocation: any;
+    serviceType: string;
+  }) {
+    const response = await this.client.post('/transport/request', data);
     return response.data;
   }
 
@@ -63,8 +101,18 @@ class ApiClient {
     return response.data;
   }
 
-  async broadcastLocation(data: any) {
+  async broadcastLocation(data: {
+    driverId: string;
+    latitude: number;
+    longitude: number;
+  }) {
     const response = await this.client.post('/tracking/location', data);
+    return response.data;
+  }
+
+  // Notifications
+  async getMyNotifications(userId: string) {
+    const response = await this.client.get(`/notifications/user/${userId}`);
     return response.data;
   }
 }
