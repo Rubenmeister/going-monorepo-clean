@@ -8,8 +8,7 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { ApplicationModule } from '../application/application.module';
 import { LocationTrackingGateway } from '../infrastructure/gateways/location-tracking.gateway';
 import { WebSocketJwtService } from '@going-monorepo-clean/shared-infrastructure';
-import { TrackingController } from '../api/tracking.controller';
-import { GetActiveDriversUseCase } from '@going-monorepo-clean/domains-tracking-application';
+import { ActiveDriversController } from '../api/active-drivers.controller';
 
 @Module({
   imports: [
@@ -38,12 +37,7 @@ import { GetActiveDriversUseCase } from '@going-monorepo-clean/domains-tracking-
     InfrastructureModule,
     ApplicationModule,
   ],
-  controllers: [AppController, TrackingController],
-  providers: [
-    AppService,
-    LocationTrackingGateway,
-    WebSocketJwtService,
-    GetActiveDriversUseCase,
-  ],
+  controllers: [AppController, ActiveDriversController],
+  providers: [AppService, LocationTrackingGateway, WebSocketJwtService],
 })
 export class AppModule {}
