@@ -103,10 +103,12 @@ export const useMonorepoApp = () => {
       },
       transport: {
         requestTrip: async (dto: unknown) =>
-          apiFetch('/transport/trips', {
+          apiFetch('/transport/request', {
             method: 'POST',
             body: JSON.stringify(dto),
           }),
+        getPendingTrips: async () =>
+          apiFetch('/transport/pending').catch(() => []),
         acceptTrip: async (tripId: string, driverId: string) =>
           apiFetch(`/transport/trips/${tripId}/accept`, {
             method: 'POST',
@@ -176,7 +178,7 @@ export const useMonorepoApp = () => {
             body: JSON.stringify(dto),
           }),
         getActiveDrivers: async () =>
-          apiFetch('/tracking/drivers').catch(() => []),
+          apiFetch('/tracking/active-drivers').catch(() => []),
         connectWebSocket: async () => {},
       },
     },
