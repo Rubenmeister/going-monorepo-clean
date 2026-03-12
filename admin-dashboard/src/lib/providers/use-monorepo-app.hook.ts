@@ -40,7 +40,7 @@ export const useMonorepoApp = () => {
             body: JSON.stringify(credentials),
           });
           localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          window.location.reload();
+          window.location.href = '/';
           return data;
         },
         register: async (data: {
