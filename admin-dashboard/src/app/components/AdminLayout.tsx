@@ -13,14 +13,37 @@ interface NavItem {
   label: string;
   href: string;
   icon: string;
+  section?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: '📊' },
-  { label: 'Usuarios', href: '/users', icon: '👥' },
-  { label: 'Reservas', href: '/bookings', icon: '📅' },
-  { label: 'Pagos', href: '/payments', icon: '💳' },
-  { label: 'Analítica', href: '/analytics', icon: '📈' },
+const NAV_SECTIONS = [
+  {
+    title: 'Principal',
+    items: [{ label: 'Dashboard', href: '/', icon: '📊' }],
+  },
+  {
+    title: 'Operaciones en Tiempo Real',
+    items: [
+      { label: 'Conductores', href: '/drivers', icon: '🚗' },
+      { label: 'Reservas', href: '/bookings', icon: '📅' },
+    ],
+  },
+  {
+    title: 'Usuarios & Clientes',
+    items: [
+      { label: 'Clientes App', href: '/clients', icon: '👤' },
+      { label: 'Empresas', href: '/companies', icon: '🏢' },
+      { label: 'Todos los Usuarios', href: '/users', icon: '👥' },
+    ],
+  },
+  {
+    title: 'Finanzas',
+    items: [{ label: 'Pagos', href: '/payments', icon: '💳' }],
+  },
+  {
+    title: 'Análisis',
+    items: [{ label: 'Analítica', href: '/analytics', icon: '📈' }],
+  },
 ];
 
 export function AdminLayout({
@@ -71,30 +94,45 @@ export function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <button
-                key={item.href}
-                onClick={() => router.push(item.href)}
-                title={!sidebarOpen ? item.label : undefined}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                  transition-all text-left text-sm font-medium
-                  ${
-                    isActive
-                      ? 'text-white'
-                      : 'text-white/60 hover:text-white hover:bg-white/8'
-                  }
-                `}
-                style={isActive ? { backgroundColor: '#ff4c41' } : undefined}
-              >
-                <span className="text-base flex-shrink-0">{item.icon}</span>
-                {sidebarOpen && <span>{item.label}</span>}
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-4">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title}>
+              {sidebarOpen && (
+                <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mb-1">
+                  {section.title}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => router.push(item.href)}
+                      title={!sidebarOpen ? item.label : undefined}
+                      className={`
+                        w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
+                        transition-all text-left text-sm font-medium
+                        ${
+                          isActive
+                            ? 'text-white'
+                            : 'text-white/60 hover:text-white hover:bg-white/8'
+                        }
+                      `}
+                      style={
+                        isActive ? { backgroundColor: '#ff4c41' } : undefined
+                      }
+                    >
+                      <span className="text-base flex-shrink-0">
+                        {item.icon}
+                      </span>
+                      {sidebarOpen && <span>{item.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User Section */}

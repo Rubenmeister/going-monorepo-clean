@@ -1,31 +1,99 @@
 'use client';
 export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { Card, CardBody, Button, Alert } from '@going-monorepo-clean/shared-ui';
+import { Card, CardBody, Button } from '@going-monorepo-clean/shared-ui';
 import { useRouter } from 'next/navigation';
 import { AdminLayout, StatCard } from './components';
-import {
-  Loading,
-  EmptyState,
-  ErrorState,
-} from '@going-monorepo-clean/shared-ui';
+import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
+
+interface AdminStats {
+  total: number;
+  active: number;
+  suspended: number;
+  admins: number;
+  drivers: number;
+}
+
+const QUICK_ITEMS = [
+  {
+    title: 'Conductores',
+    description:
+      'Seguimiento GPS en tiempo real de todos los conductores activos',
+    icon: '🚗',
+    href: '/drivers',
+    color: '#ff4c41',
+  },
+  {
+    title: 'Clientes App',
+    description: 'Gestiona usuarios individuales: activar, suspender, filtrar',
+    icon: '👤',
+    href: '/clients',
+    color: '#3b82f6',
+  },
+  {
+    title: 'Empresas',
+    description: 'Clientes corporativos que usan la webapp empresarial Going',
+    icon: '🏢',
+    href: '/companies',
+    color: '#8b5cf6',
+  },
+  {
+    title: 'Reservas',
+    description: 'Administra reservas activas del sistema',
+    icon: '📅',
+    href: '/bookings',
+    color: '#10b981',
+  },
+  {
+    title: 'Pagos',
+    description: 'Revisa transacciones y estado de pagos',
+    icon: '💳',
+    href: '/payments',
+    color: '#f59e0b',
+  },
+  {
+    title: 'Analítica',
+    description: 'Metricas de la plataforma, conversion y tendencias',
+    icon: '📈',
+    href: '/analytics',
+    color: '#06b6d4',
+  },
+];
 
 export default function DashboardPage() {
-  const { auth } = useMonorepoApp();
+  const { auth, domain } = useMonorepoApp();
   const router = useRouter();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [activeDrivers, setActiveDrivers] = useState<number>(0);
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  // 1. Lógica de Redirección y Seguridad
+  useEffect(() => {
+    if (auth.isLoading) return;
+    if (!auth.user) {
+      router.push('/login');
+      return;
+    }
+    if (!auth.user.isAdmin?.()) return;
+
+    Promise.all([domain.admin.getStats(), domain.tracking.getActiveDrivers()])
+      .then(([adminStats, drivers]) => {
+        setStats(adminStats as AdminStats);
+        const driversArr = Array.isArray(drivers)
+          ? drivers
+          : (drivers as any)?.drivers ?? [];
+        setActiveDrivers(driversArr.length);
+      })
+      .catch(() => {})
+      .finally(() => setStatsLoading(false));
+  }, [auth.isLoading, auth.user]);
+
   if (auth.isLoading) {
-    return <Loading fullHeight size="lg" message="Verificando sesión..." />;
+    return <Loading fullHeight size="lg" message="Verificando sesion..." />;
   }
 
-  // Si no está logueado, redirigir a la página de login
-  if (!auth.user) {
-    router.push('/login');
-    return null;
-  }
+  if (!auth.user) return null;
 
-  // 2. Comprobación de Rol (La Seguridad del Dashboard)
   if (!auth.user.isAdmin?.()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -33,10 +101,10 @@ export default function DashboardPage() {
           title="Acceso Denegado"
           description={`Tu rol (${auth.user.roles.join(
             ', '
-          )}) no tiene permiso para acceder al panel de administración.`}
+          )}) no tiene permiso para acceder al panel de administracion.`}
           action={
             <Button variant="danger" onClick={auth.logout} className="mt-4">
-              Cerrar Sesión
+              Cerrar Sesion
             </Button>
           }
         />
@@ -44,76 +112,62 @@ export default function DashboardPage() {
     );
   }
 
-  // 3. Renderizado del Dashboard (Solo si es Admin)
-  const menuItems = [
-    {
-      title: 'Reservas',
-      description: 'Gestiona todas las reservas del sistema',
-      icon: '📊',
-      href: '/bookings',
-      stats: '12 activas',
-    },
-    {
-      title: 'Usuarios',
-      description: 'Administra usuarios y roles',
-      icon: '👥',
-      href: '/users',
-      stats: '234 usuarios',
-    },
-    {
-      title: 'Pagos',
-      description: 'Revisa transacciones de pago',
-      icon: '💳',
-      href: '/payments',
-      stats: '$12,500 hoy',
-    },
-  ];
-
   return (
     <AdminLayout userName={auth.user.firstName} onLogout={auth.logout}>
-      {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">
           Bienvenido, {auth.user.firstName}
         </h1>
-        <p className="text-gray-600">
-          Aquí puedes gestionar todos los aspectos de la plataforma
+        <p className="text-gray-500">
+          Panel de control interno - Going Platform
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard
-          icon="📊"
-          title="Reservas Totales"
-          value="156"
-          subtitle="Este mes"
+          icon="👥"
+          title="Usuarios Totales"
+          value={statsLoading ? '...' : String(stats?.total ?? 0)}
+          subtitle="Registrados"
+          trend={{ direction: 'up', percentage: 8 }}
+          color="primary"
+        />
+        <StatCard
+          icon="✅"
+          title="Usuarios Activos"
+          value={statsLoading ? '...' : String(stats?.active ?? 0)}
+          subtitle="Con cuenta activa"
+          trend={{ direction: 'up', percentage: 5 }}
+          color="success"
+        />
+        <StatCard
+          icon="🚗"
+          title="Conductores"
+          value={statsLoading ? '...' : String(stats?.drivers ?? 0)}
+          subtitle={
+            activeDrivers > 0
+              ? activeDrivers + ' en linea ahora'
+              : 'Registrados'
+          }
           trend={{ direction: 'up', percentage: 12 }}
           color="primary"
         />
         <StatCard
-          icon="👥"
-          title="Usuarios Activos"
-          value="234"
-          subtitle="Registrados"
-          trend={{ direction: 'up', percentage: 8 }}
-          color="success"
-        />
-        <StatCard
-          icon="💰"
-          title="Ingresos"
-          value="$12,500"
-          subtitle="Este mes"
-          trend={{ direction: 'up', percentage: 15 }}
+          icon="🏢"
+          title="Admins"
+          value={statsLoading ? '...' : String(stats?.admins ?? 0)}
+          subtitle="Admins del sistema"
+          trend={{ direction: 'up', percentage: 0 }}
           color="success"
         />
       </div>
 
-      {/* Quick Access */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceso Rápido</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          Control Interno
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {QUICK_ITEMS.map((item) => (
             <Card
               key={item.href}
               hoverable
@@ -123,67 +177,52 @@ export default function DashboardPage() {
             >
               <CardBody>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="text-4xl">{item.icon}</div>
-                  <span className="text-xs font-semibold text-going-primary bg-blue-50 px-2 py-1 rounded">
-                    {item.stats}
-                  </span>
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl"
+                    style={{ backgroundColor: item.color + '20' }}
+                  >
+                    {item.icon}
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-base font-semibold text-gray-900 mb-1">
                   {item.title}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">{item.description}</p>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="w-full"
+                <p className="text-sm text-gray-500 mb-4">{item.description}</p>
+                <button
+                  className="w-full py-2 text-sm font-semibold rounded-lg text-white transition-colors"
+                  style={{ backgroundColor: item.color }}
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push(item.href);
                   }}
                 >
-                  Ir a {item.title}
-                </Button>
+                  Abrir
+                </button>
               </CardBody>
             </Card>
           ))}
         </div>
       </div>
 
-      {/* Activity Card */}
-      <Card shadow="md">
-        <CardBody>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Actividad Reciente
-          </h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium text-gray-900">
-                  Nueva reserva completada
-                </p>
-                <p className="text-sm text-gray-500">Hace 2 horas</p>
-              </div>
-              <span className="text-2xl">✓</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium text-gray-900">
-                  Nuevo usuario registrado
-                </p>
-                <p className="text-sm text-gray-500">Hace 5 horas</p>
-              </div>
-              <span className="text-2xl">👤</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium text-gray-900">Pago procesado</p>
-                <p className="text-sm text-gray-500">Hace 1 día</p>
-              </div>
-              <span className="text-2xl">💳</span>
+      {stats && stats.suspended > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">warning</span>
+            <div>
+              <p className="font-semibold text-orange-800">
+                {stats.suspended} usuario(s) suspendido(s)
+              </p>
+              <p className="text-sm text-orange-600">Revisar en Clientes App</p>
             </div>
           </div>
-        </CardBody>
-      </Card>
+          <button
+            onClick={() => router.push('/clients')}
+            className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-semibold hover:bg-orange-200 transition-colors"
+          >
+            Revisar
+          </button>
+        </div>
+      )}
     </AdminLayout>
   );
 }

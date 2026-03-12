@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
 import { HealthController } from './api/health.controller';
+import { AdminController } from './api/admin.controller';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -24,7 +25,7 @@ import { AccountLockoutService } from './application/account-lockout.service';
     InfrastructureModule,
     AuditModule,
   ],
-  controllers: [AuthController, HealthController],
+  controllers: [AuthController, HealthController, AdminController],
   providers: [RegisterUserUseCase, LoginUserUseCase, AccountLockoutService],
 })
 export class AppModule {}

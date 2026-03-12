@@ -66,6 +66,54 @@ export class MongooseUserRepository implements IUserRepository {
     }
   }
 
+  async findAll(opts?: {
+    limit?: number;
+    skip?: number;
+    role?: string;
+    status?: string;
+  }): Promise<Result<User[], Error>> {
+    try {
+      const filter: Record<string, unknown> = {};
+      if (opts?.role) filter['roles'] = opts.role;
+      if (opts?.status) filter['status'] = opts.status;
+
+      const docs = await this.model
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(opts?.skip ?? 0)
+        .limit(opts?.limit ?? 500)
+        .exec();
+
+      return ok(docs.map((d) => this.toDomain(d)));
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
+  async countAll(opts?: {
+    role?: string;
+    status?: string;
+  }): Promise<Result<number, Error>> {
+    try {
+      const filter: Record<string, unknown> = {};
+      if (opts?.role) filter['roles'] = opts.role;
+      if (opts?.status) filter['status'] = opts.status;
+      const count = await this.model.countDocuments(filter).exec();
+      return ok(count);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
+  async updateStatus(id: UUID, status: string): Promise<Result<void, Error>> {
+    try {
+      await this.model.updateOne({ id }, { $set: { status } }).exec();
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   private toDomain(doc: UserDocument): User {
     return User.fromPrimitives(doc.toObject() as any);
   }
