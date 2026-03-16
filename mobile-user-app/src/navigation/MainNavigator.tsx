@@ -25,6 +25,7 @@ import { SecurityScreen } from '@screens/profile/SecurityScreen';
 import { UserSupportScreen } from '@screens/profile/UserSupportScreen';
 import { TermsScreen } from '@screens/profile/TermsScreen';
 import { SavedAddressesScreen } from '@screens/profile/SavedAddressesScreen';
+import { WalletScreen } from '@screens/profile/WalletScreen';
 
 // ── Type declarations ────────────────────────────────────────────
 export type MainTabParamList = {
@@ -58,6 +59,7 @@ export type MainStackParamList = {
   UserSupport: undefined;
   Terms: undefined;
   SavedAddresses: undefined;
+  Wallet: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -203,6 +205,7 @@ export function MainNavigator() {
         component={SavedAddressesScreen}
         options={{ title: 'Mis direcciones' }}
       />
+      <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Mi billetera' }} />
     </Stack.Navigator>
   );
 }
