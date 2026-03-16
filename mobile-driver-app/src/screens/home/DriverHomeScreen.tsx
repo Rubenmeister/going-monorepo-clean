@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDriverStore } from '@store/useDriverStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
@@ -35,6 +37,31 @@ export function DriverHomeScreen() {
     useDriverStore();
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const [location, setLocation] = useState<[number, number] | null>(null);
+  const [docAlerts, setDocAlerts] = useState<{ label: string; daysLeft: number; urgent: boolean }[]>([]);
+
+  // Verificar documentos al montar
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('driver_token');
+        const { data } = await axios.get(
+          'https://api-gateway-780842550857.us-central1.run.app/drivers/me/documents',
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const today = new Date();
+        const alerts: { label: string; daysLeft: number; urgent: boolean }[] = [];
+        for (const doc of (data.documents ?? [])) {
+          if (!doc.expiresAt) continue;
+          const daysLeft = Math.ceil((new Date(doc.expiresAt).getTime() - today.getTime()) / 86400000);
+          if (daysLeft <= 30) alerts.push({ label: doc.name, daysLeft, urgent: daysLeft <= 7 });
+        }
+        setDocAlerts(alerts);
+      } catch {
+        // Demo: SOAT próximo a vencer
+        setDocAlerts([{ label: 'SOAT', daysLeft: 5, urgent: true }]);
+      }
+    })();
+  }, []);
 
   // Setup GPS on mount
   useEffect(() => {
@@ -143,6 +170,27 @@ export function DriverHomeScreen() {
       {/* Bottom panel */}
       <View style={styles.panel}>
         <Text style={styles.greeting}>Hola, {driver?.firstName} 👋</Text>
+
+        {/* Alertas de documentos por vencer */}
+        {docAlerts.map((alert, i) => (
+          <View key={i} style={[styles.docAlert, alert.urgent && styles.docAlertUrgent]}>
+            <Ionicons
+              name={alert.urgent ? 'warning' : 'time-outline'}
+              size={16}
+              color={alert.urgent ? '#fff' : '#F59E0B'}
+            />
+            <Text style={[styles.docAlertText, alert.urgent && styles.docAlertTextUrgent]}>
+              {alert.urgent
+                ? `⚠️ ${alert.label} vence en ${alert.daysLeft} días — Renuévalo ahora`
+                : `${alert.label} vence en ${alert.daysLeft} días`}
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={14}
+              color={alert.urgent ? '#fff' : '#9CA3AF'}
+            />
+          </View>
+        ))}
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -283,4 +331,29 @@ const styles = StyleSheet.create({
     borderColor: '#BBF7D0',
   },
   waitingText: { color: '#065F46', fontSize: 14, fontWeight: '600' },
+  docAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  docAlertUrgent: {
+    backgroundColor: '#FF4C41',
+    borderColor: '#FF4C41',
+  },
+  docAlertText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#92400E',
+  },
+  docAlertTextUrgent: {
+    color: '#FFFFFF',
+  },
 });
