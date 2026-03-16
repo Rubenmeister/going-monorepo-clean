@@ -9,6 +9,7 @@ import {
   Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SkeletonTripDetail } from '@components/Skeleton';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { bookingsAPI } from '@services/api';
@@ -71,11 +72,7 @@ export function TripDetailScreen() {
   }, [params.bookingId]);
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={GOING_BLUE} />
-      </View>
-    );
+    return <ScrollView><SkeletonTripDetail /></ScrollView>;
   }
 
   if (!trip) return null;

@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { bookingsAPI } from '@services/api';
+import { SkeletonTripCard } from '@components/Skeleton';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
@@ -128,8 +129,10 @@ export function BookingsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0033A0" />
+      <View style={styles.container}>
+        <View style={{ padding: 16, gap: 0 }}>
+          {[1, 2, 3, 4].map(i => <SkeletonTripCard key={i} />)}
+        </View>
       </View>
     );
   }
