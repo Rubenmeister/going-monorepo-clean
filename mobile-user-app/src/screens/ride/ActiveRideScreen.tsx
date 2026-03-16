@@ -16,6 +16,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 import { api } from '../../services/api';
+import { hapticMedium, hapticHeavy, hapticSuccess, hapticWarning } from '../../utils/haptics';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -110,7 +111,13 @@ export function ActiveRideScreen() {
       try {
         const { data } = await api.get(`/transport/${rideId}/status`);
 
-        if (data.status) setStatus(data.status);
+        if (data.status && data.status !== status) {
+          setStatus(data.status);
+          if (data.status === 'driver_assigned') hapticMedium();
+          if (data.status === 'arriving')        hapticMedium();
+          if (data.status === 'in_progress')     hapticSuccess();
+          if (data.status === 'completed')       hapticSuccess();
+        }
         if (data.eta) {
           setEta(data.eta);
           setEtaTotal(prev => prev ?? data.eta); // guardar solo la primera vez
@@ -136,6 +143,14 @@ export function ActiveRideScreen() {
     const timer = setInterval(() => setElapsedTime(prev => prev + 1), 1000);
     return () => clearInterval(timer);
   }, [status]);
+
+  // ── Haptic warning al quedar poco tiempo ────────────────────────────────────
+  useEffect(() => {
+    if (status === 'in_progress' && etaTotal) {
+      const remaining = etaTotal * 60 - elapsedTime;
+      if (remaining === 120 || remaining === 60) hapticWarning();
+    }
+  }, [elapsedTime]);
 
   // ── Animar barra de progreso ETA ──────────────────────────────────────────
   useEffect(() => {

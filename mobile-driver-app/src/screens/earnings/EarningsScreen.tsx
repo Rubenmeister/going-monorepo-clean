@@ -8,6 +8,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import { hapticMedium } from '../../utils/haptics';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -93,7 +94,7 @@ export function EarningsScreen() {
         <TouchableOpacity
           style={styles.withdrawBtn}
           onPress={() =>
-            navigation.navigate('Withdraw', {
+            hapticMedium(); navigation.navigate('Withdraw', {
               availableBalance: summary.total,
               currency: 'USD',
             })

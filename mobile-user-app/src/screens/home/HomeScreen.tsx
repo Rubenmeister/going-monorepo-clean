@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../../store/useAuthStore';
 import { transportAPI } from '../../services/api';
+import { hapticMedium, hapticError, hapticLight } from '../../utils/haptics';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
@@ -286,6 +287,7 @@ export default function HomeScreen() {
 
   const handleRideRequest = async () => {
     if (!destination.trim()) {
+      hapticError();
       Alert.alert('Error', 'Por favor ingresa tu destino.');
       return;
     }
@@ -414,7 +416,7 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={city.id}
                     style={[styles.cityChip, active && styles.cityChipActive]}
-                    onPress={() => setOriginCity(city.id)}
+                    onPress={() => { hapticLight(); setOriginCity(city.id); }}
                   >
                     <Text style={[styles.cityChipText, active && styles.cityChipTextActive]}>
                       {city.label}
@@ -463,7 +465,7 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={mode}
                     style={[styles.modeBtn, active && styles.modeBtnActive]}
-                    onPress={() => setTripMode(mode)}
+                    onPress={() => { hapticLight(); setTripMode(mode); }}
                   >
                     <Ionicons
                       name={mode === 'compartido' ? 'people-outline' : 'person-outline'}
@@ -497,7 +499,7 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={vt.id}
                     style={[styles.vehicleCard, active && styles.vehicleCardActive]}
-                    onPress={() => setSelectedVehicle(vt.id)}
+                    onPress={() => { hapticLight(); setSelectedVehicle(vt.id); }}
                   >
                     <Ionicons
                       name={vt.icon as any}
@@ -578,7 +580,7 @@ export default function HomeScreen() {
         {/* Request button */}
         <TouchableOpacity
           style={[styles.requestBtn, loading && { opacity: 0.7 }]}
-          onPress={handleRideRequest}
+          onPress={() => { hapticMedium(); handleRideRequest(); }}
           disabled={loading}
         >
           {loading ? (
