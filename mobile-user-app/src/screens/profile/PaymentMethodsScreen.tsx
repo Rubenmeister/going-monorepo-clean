@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SkeletonPaymentCard } from '@components/Skeleton';
 import { api } from '@services/api';
 
 const GOING_BLUE = '#0033A0';
@@ -81,8 +82,8 @@ export function PaymentMethodsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={GOING_BLUE} />
+      <View style={{ padding: 16, gap: 0 }}>
+        {[1, 2, 3].map(i => <SkeletonPaymentCard key={i} />)}
       </View>
     );
   }
