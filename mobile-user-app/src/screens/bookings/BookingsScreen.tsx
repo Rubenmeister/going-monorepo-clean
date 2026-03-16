@@ -14,6 +14,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { bookingsAPI } from '@services/api';
 import { SkeletonTripCard } from '@components/Skeleton';
+import { EmptyState, EMPTY_STATES } from '@components/EmptyState';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
@@ -155,13 +156,11 @@ export function BookingsScreen() {
         }
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="calendar-outline" size={60} color="#D1D5DB" />
-            <Text style={styles.emptyTitle}>Sin viajes aún</Text>
-            <Text style={styles.emptyText}>
-              Tus viajes y reservas aparecerán aquí
-            </Text>
-          </View>
+          <EmptyState
+            {...EMPTY_STATES.bookings}
+            ctaLabel="Reservar mi primer viaje"
+            onCta={() => navigation.goBack()}
+          />
         }
       />
     </View>

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SkeletonPaymentCard } from '@components/Skeleton';
+import { EmptyState, EMPTY_STATES } from '@components/EmptyState';
 import { api } from '@services/api';
 
 const GOING_BLUE = '#0033A0';
@@ -94,7 +95,7 @@ export function PaymentMethodsScreen() {
         data={methods}
         keyExtractor={(item) => item.id}
         contentContainerStyle={
-          methods.length === 0 ? styles.center : styles.list
+          methods.length === 0 ? styles.emptyContainer : styles.list
         }
         ListEmptyComponent={
           <View style={styles.empty}>
