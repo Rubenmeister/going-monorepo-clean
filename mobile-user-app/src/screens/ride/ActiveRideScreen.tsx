@@ -75,6 +75,8 @@ export function ActiveRideScreen() {
   const [eta, setEta] = useState<number | null>(null); // minutos
   const [etaTotal, setEtaTotal] = useState<number | null>(null); // eta inicial para calcular progreso
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [routeGeoJSON, setRouteGeoJSON] = useState<GeoJSON.Feature | null>(null);
+  const [routeDistance, setRouteDistance] = useState<number | null>(null); // km
   const cameraRef = useRef<MapboxGL.Camera>(null);
 
   // Animación del pulso para "buscando"
@@ -94,6 +96,11 @@ export function ActiveRideScreen() {
       return () => pulse.stop();
     }
   }, [status]);
+
+  // ── Fetch inicial de la ruta ─────────────────────────────────────────────
+  useEffect(() => {
+    fetchRoute();
+  }, []);
 
   // ── Polling del estado del viaje ──────────────────────────────────────────
   useEffect(() => {
@@ -154,6 +161,42 @@ export function ActiveRideScreen() {
     const m = Math.floor(remaining / 60);
     const s = remaining % 60;
     return m > 0 ? `${m} min ${s}s restantes` : `${s}s restantes`;
+  };
+
+  // ── Obtener polyline de ruta desde Mapbox Directions ────────────────────
+  const fetchRoute = async () => {
+    try {
+      const token = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '';
+      const originStr      = `${origin.longitude},${origin.latitude}`;
+      const destinationStr = `${destination.longitude},${destination.latitude}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${originStr};${destinationStr}?geometries=geojson&overview=full&access_token=${token}`;
+      const res  = await fetch(url);
+      const json = await res.json();
+      const route = json.routes?.[0];
+      if (!route) return;
+      setRouteGeoJSON({
+        type: 'Feature',
+        properties: {},
+        geometry: route.geometry,
+      });
+      setRouteDistance(Math.round((route.distance / 1000) * 10) / 10); // km con 1 decimal
+      // Ajustar cámara para mostrar toda la ruta
+      if (cameraRef.current && route.geometry.coordinates.length > 0) {
+        const coords: [number, number][] = route.geometry.coordinates;
+        const lngs = coords.map(c => c[0]);
+        const lats  = coords.map(c => c[1]);
+        const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+        const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+        cameraRef.current.fitBounds(
+          [maxLng, maxLat],
+          [minLng, minLat],
+          [80, 80, 280, 80], // padding top/right/bottom/left (bottom grande por el panel)
+          1200,
+        );
+      }
+    } catch {
+      // silently fail — mapa sigue funcionando sin polyline
+    }
   };
 
   const handleShareTracking = async () => {
@@ -221,6 +264,34 @@ export function ActiveRideScreen() {
           centerCoordinate={[origin.longitude, origin.latitude]}
           animationMode="flyTo"
         />
+
+        {/* ── Polyline de ruta ── */}
+        {routeGeoJSON && (
+          <MapboxGL.ShapeSource id="routeSource" shape={routeGeoJSON}>
+            {/* Sombra de la ruta */}
+            <MapboxGL.LineLayer
+              id="routeShadow"
+              style={{
+                lineColor: 'rgba(0,0,0,0.12)',
+                lineWidth: 8,
+                lineJoin: 'round',
+                lineCap: 'round',
+                lineTranslate: [0, 2],
+              }}
+            />
+            {/* Línea principal */}
+            <MapboxGL.LineLayer
+              id="routeLine"
+              style={{
+                lineColor: status === 'in_progress' ? GOING_BLUE : '#60A5FA',
+                lineWidth: 5,
+                lineJoin: 'round',
+                lineCap: 'round',
+                lineDasharray: status === 'arriving' ? [2, 1.5] : undefined,
+              }}
+            />
+          </MapboxGL.ShapeSource>
+        )}
 
         {/* Marcador de origen */}
         <MapboxGL.PointAnnotation id="origin" coordinate={[origin.longitude, origin.latitude]}>
@@ -379,6 +450,12 @@ export function ActiveRideScreen() {
 
         {/* Info del viaje */}
         <View style={styles.tripInfo}>
+          {routeDistance && (
+            <View style={styles.tripTag}>
+              <Ionicons name="map-outline" size={12} color={GOING_BLUE} />
+              <Text style={styles.tripTagText}>{routeDistance} km</Text>
+            </View>
+          )}
           <View style={styles.tripTag}>
             <Ionicons name="car-sport-outline" size={12} color={GOING_BLUE} />
             <Text style={styles.tripTagText}>{vehicleType}</Text>
