@@ -44,6 +44,10 @@ export const authAPI = {
 
   me: () => api.get('/auth/me'),
   logout: () => Promise.resolve(), // handled locally via store
+  forgotPassword: (email: string) =>
+    api.post('/auth/forgot-password', { email }),
+  updateProfile: (data: { firstName: string; lastName: string; phone?: string }) =>
+    api.patch('/auth/me', data),
 };
 
 // ── Transport ────────────────────────────────────────────────────────────────
@@ -83,6 +87,7 @@ export const transportAPI = {
 
 // ── Bookings ─────────────────────────────────────────────────────────────────
 export const bookingsAPI = {
+  getAll: () => api.get('/bookings/me'),
   getByUser: (userId: string) => api.get(`/bookings/user/${userId}`),
   getById: (id: string) => api.get(`/bookings/${id}`),
 };

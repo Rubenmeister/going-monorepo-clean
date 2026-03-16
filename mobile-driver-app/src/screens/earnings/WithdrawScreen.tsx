@@ -12,6 +12,12 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_URL ||
+  'https://api-gateway-780842550857.us-central1.run.app';
 
 type WithdrawRouteProp = RouteProp<DriverMainStackParamList, 'Withdraw'>;
 
@@ -79,12 +85,16 @@ export function WithdrawScreen() {
           Alert.alert('Error', 'No se pudo abrir Mercado Pago.');
         }
       } else {
-        // Placeholder for bank transfer API
+        // Real bank transfer via API
+        const token = await AsyncStorage.getItem('driver_token');
+        await axios.post(
+          `${API_BASE}/drivers/me/withdraw`,
+          { amount: parseFloat(amount), method: 'bank_transfer', currency: displayCurrency },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         Alert.alert(
-          'Transferencia solicitada',
-          `Tu retiro de $${parseFloat(amount).toFixed(
-            2
-          )} ${displayCurrency} fue procesado. Llegará en 24h hábiles.`,
+          'Transferencia solicitada ✓',
+          `Tu retiro de $${parseFloat(amount).toFixed(2)} ${displayCurrency} fue enviado. Llegará en 1–2 días hábiles.`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       }

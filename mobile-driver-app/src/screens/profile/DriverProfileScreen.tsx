@@ -8,9 +8,13 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { DriverMainStackParamList } from '../../navigation/DriverMainNavigator';
 import { useDriverStore } from '@store/useDriverStore';
 
 export function DriverProfileScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<DriverMainStackParamList>>();
   const { driver, logout } = useDriverStore();
 
   const handleLogout = () =>
@@ -66,11 +70,11 @@ export function DriverProfileScreen() {
 
       <View style={styles.menu}>
         {[
-          { icon: 'document-text-outline', label: 'Mis documentos' },
-          { icon: 'notifications-outline', label: 'Notificaciones' },
-          { icon: 'help-circle-outline', label: 'Soporte Going' },
-        ].map(({ icon, label }) => (
-          <TouchableOpacity key={label} style={styles.menuItem}>
+          { icon: 'document-text-outline', label: 'Mis documentos', route: 'Documents' as const },
+          { icon: 'star-outline',          label: 'Mis calificaciones', route: 'Ratings' as const },
+          { icon: 'help-circle-outline',   label: 'Soporte Going', route: 'Support' as const },
+        ].map(({ icon, label, route }) => (
+          <TouchableOpacity key={label} style={styles.menuItem} onPress={() => navigation.navigate(route)}>
             <Ionicons
               name={icon as any}
               size={20}
@@ -87,7 +91,7 @@ export function DriverProfileScreen() {
         <Ionicons name="log-out-outline" size={20} color="#DC2626" />
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
-      <Text style={styles.version}>Going Conductor v1.0.0</Text>
+      <Text style={styles.version}>Going Conductor v2.0.0</Text>
     </ScrollView>
   );
 }

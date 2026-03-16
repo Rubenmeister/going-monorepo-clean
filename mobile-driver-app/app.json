@@ -2,13 +2,14 @@
   "expo": {
     "name": "Going - Conductor",
     "slug": "going-driver-app",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0033A0"
+      "backgroundColor": "#ff4c41"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
@@ -23,9 +24,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0033A0"
+        "backgroundColor": "#ff4c41"
       },
       "package": "com.going.driverapp",
+      "versionCode": 2,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -35,6 +37,11 @@
         "VIBRATE"
       ],
       "config": {}
+    },
+    "extra": {
+      "eas": {
+        "projectId": "going-driver-app"
+      }
     },
     "plugins": [
       [

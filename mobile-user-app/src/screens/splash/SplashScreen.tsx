@@ -10,7 +10,7 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-const GOING_RED = '#F05A40'; // coral/rojo del logo
+const GOING_RED = '#ff4c41'; // Going brand red — alineado con webapp
 const BG_COLOR = '#FFFFFF'; // fondo blanco — el logo ya tiene sus colores
 
 interface Props {
@@ -84,7 +84,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
       {/* Tagline debajo del logo */}
       <Animated.Text style={[styles.tagline, { opacity: tagOpacity }]}>
-        Muévete · Envía · Explora
+        Nos movemos contigo
       </Animated.Text>
 
       {/* Puntos de carga al fondo */}

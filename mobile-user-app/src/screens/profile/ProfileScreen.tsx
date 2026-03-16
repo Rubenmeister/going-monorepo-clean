@@ -8,9 +8,15 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '@navigation/MainNavigator';
 import { useAuthStore } from '@store/useAuthStore';
 
+type Nav = NativeStackNavigationProp<MainStackParamList>;
+
 export function ProfileScreen() {
+  const navigation = useNavigation<Nav>();
   const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
@@ -21,23 +27,23 @@ export function ProfileScreen() {
   };
 
   const menuItems = [
-    { icon: 'person-outline', label: 'Editar perfil', onPress: () => {} },
-    { icon: 'card-outline', label: 'Métodos de pago', onPress: () => {} },
+    { icon: 'person-outline', label: 'Editar perfil', onPress: () => navigation.navigate('EditProfile') },
+    { icon: 'card-outline', label: 'Métodos de pago', onPress: () => navigation.navigate('PaymentMethods') },
     {
       icon: 'notifications-outline',
       label: 'Notificaciones',
-      onPress: () => {},
+      onPress: () => navigation.navigate('NotificationSettings'),
     },
-    { icon: 'shield-outline', label: 'Seguridad', onPress: () => {} },
+    { icon: 'shield-outline', label: 'Seguridad', onPress: () => navigation.navigate('Security') },
     {
       icon: 'help-circle-outline',
       label: 'Ayuda y soporte',
-      onPress: () => {},
+      onPress: () => navigation.navigate('UserSupport'),
     },
     {
       icon: 'document-text-outline',
       label: 'Términos y condiciones',
-      onPress: () => {},
+      onPress: () => navigation.navigate('Terms'),
     },
   ];
 
@@ -83,7 +89,7 @@ export function ProfileScreen() {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>Going v1.0.0</Text>
+      <Text style={styles.version}>Going v2.0.0</Text>
     </ScrollView>
   );
 }

@@ -8,6 +8,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -125,7 +126,17 @@ export function EarningsScreen() {
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>Historial reciente</Text>
+      {/* Ver historial completo */}
+      <TouchableOpacity
+        style={styles.historyBtn}
+        onPress={() => navigation.navigate('TripHistory')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.historyBtnText}>Ver historial completo de viajes</Text>
+        <Ionicons name="chevron-forward" size={16} color="#0033A0" />
+      </TouchableOpacity>
+
+      <Text style={styles.sectionTitle}>Resumen reciente</Text>
       {history.length === 0 && (
         <Text style={styles.emptyText}>Sin registros disponibles</Text>
       )}
@@ -209,6 +220,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
+  historyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#DBEAFE',
+  },
+  historyBtnText: { color: '#0033A0', fontSize: 14, fontWeight: '700' },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',

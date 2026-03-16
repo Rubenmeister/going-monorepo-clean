@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,18 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+import { useDriverStore } from '@store/useDriverStore';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const COUNTDOWN_SECONDS = 30;
 
 type Nav = NativeStackNavigationProp<DriverMainStackParamList, 'RideRequest'>;
 type Route = RouteProp<DriverMainStackParamList, 'RideRequest'>;
@@ -21,6 +25,7 @@ type Route = RouteProp<DriverMainStackParamList, 'RideRequest'>;
 export function RideRequestScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
+  const { driver } = useDriverStore();
   const {
     rideId,
     passengerName: passenger,
@@ -30,8 +35,40 @@ export function RideRequestScreen() {
   } = params as any;
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressAnim = useRef(new Animated.Value(1)).current;
+
+  // Start countdown on mount — auto-reject when it hits 0
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: 0,
+      duration: COUNTDOWN_SECONDS * 1000,
+      useNativeDriver: false,
+    }).start();
+
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          navigation.goBack(); // auto-reject
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const clearTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
 
   const respond = async (accept: boolean) => {
+    clearTimer();
     if (accept) setIsAccepting(true);
     else setIsRejecting(true);
     try {
@@ -43,7 +80,7 @@ export function RideRequestScreen() {
         // PATCH /transport/:tripId/accept
         await axios.patch(
           `${base}/transport/${rideId}/accept`,
-          { driverId: 'me' },
+          { driverId: driver?.id ?? '' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         navigation.replace('ActiveRide', {
@@ -64,8 +101,36 @@ export function RideRequestScreen() {
     }
   };
 
+  // Interpolate progress width for the bar
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
+  const isUrgent = countdown <= 10;
+
   return (
     <View style={styles.container}>
+      {/* Countdown bar */}
+      <View style={styles.countdownTrack}>
+        <Animated.View
+          style={[
+            styles.countdownBar,
+            { width: progressWidth, backgroundColor: isUrgent ? '#DC2626' : '#FFCD00' },
+          ]}
+        />
+      </View>
+      <View style={styles.countdownLabel}>
+        <Ionicons
+          name="time-outline"
+          size={14}
+          color={isUrgent ? '#DC2626' : '#6B7280'}
+        />
+        <Text style={[styles.countdownText, isUrgent && { color: '#DC2626' }]}>
+          {countdown}s para responder
+        </Text>
+      </View>
+
       <View style={styles.card}>
         <View style={styles.iconArea}>
           <View style={styles.iconBg}>
@@ -146,6 +211,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     justifyContent: 'center',
     padding: 20,
+    paddingTop: 0,
+  },
+  countdownTrack: {
+    height: 5,
+    backgroundColor: '#E5E7EB',
+    marginBottom: 8,
+    marginHorizontal: -20,
+  },
+  countdownBar: {
+    height: 5,
+  },
+  countdownLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  countdownText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6B7280',
   },
   card: {
     backgroundColor: '#fff',

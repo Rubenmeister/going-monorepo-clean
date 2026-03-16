@@ -9,7 +9,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '@navigation/MainNavigator';
 import { bookingsAPI } from '@services/api';
+
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 interface Booking {
   id: string;
@@ -49,6 +54,7 @@ const STATUS_CONFIG = {
 };
 
 export function BookingsScreen() {
+  const navigation = useNavigation<Nav>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,7 +79,11 @@ export function BookingsScreen() {
   const renderItem = ({ item }: { item: Booking }) => {
     const st = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('TripDetail', { bookingId: item.id })}
+      >
         <View style={styles.cardHeader}>
           <View style={[styles.statusBadge, { backgroundColor: st.bg }]}>
             <Ionicons name={st.icon as any} size={14} color={st.color} />
@@ -108,7 +118,11 @@ export function BookingsScreen() {
         {item.amount != null && (
           <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
         )}
-      </View>
+        <View style={styles.cardFooter}>
+          <Text style={styles.cardFooterText}>Ver detalle</Text>
+          <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -204,4 +218,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 6 },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    gap: 2,
+  },
+  cardFooterText: { fontSize: 12, color: '#9CA3AF' },
 });
