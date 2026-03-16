@@ -22,6 +22,7 @@ import {
   analyticsDriverOffline,
   analyticsScreen,
 } from '../../utils/analytics';
+import { API_BASE_URL } from '../../utils/constants';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -69,7 +70,7 @@ export function DriverHomeScreen() {
       try {
         const token = await AsyncStorage.getItem('driver_token');
         const { data } = await axios.get(
-          'https://api-gateway-780842550857.us-central1.run.app/drivers/me/stats/today',
+          `${API_BASE_URL}/drivers/me/stats/today`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setTodayStats({
@@ -90,7 +91,7 @@ export function DriverHomeScreen() {
       try {
         const token = await AsyncStorage.getItem('driver_token');
         const { data } = await axios.get(
-          'https://api-gateway-780842550857.us-central1.run.app/drivers/me/documents',
+          `${API_BASE_URL}/drivers/me/documents`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const today = new Date();

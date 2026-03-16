@@ -170,6 +170,9 @@ function CardDetailsForm({
         onChange={(e) =>
           onCardDetailsChange({ ...cardDetails, cardNumber: e.target.value })
         }
+        inputMode="numeric"
+        autoComplete="cc-number"
+        maxLength={19}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
       />
       <div className="grid grid-cols-2 gap-3">
@@ -180,15 +183,21 @@ function CardDetailsForm({
           onChange={(e) =>
             onCardDetailsChange({ ...cardDetails, expiryDate: e.target.value })
           }
+          inputMode="numeric"
+          autoComplete="cc-exp"
+          maxLength={5}
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
         />
         <input
-          type="text"
+          type="password"
           placeholder="CVC"
           value={cardDetails.cvv}
           onChange={(e) =>
             onCardDetailsChange({ ...cardDetails, cvv: e.target.value })
           }
+          inputMode="numeric"
+          autoComplete="cc-csc"
+          maxLength={4}
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
         />
       </div>
@@ -202,7 +211,7 @@ function CardDetailsForm({
 function PaymentStatusDisplay({ status }: { status: string }) {
   const statusConfig = {
     processing: {
-      bgColor: 'bg-red-100',
+      bgColor: 'bg-blue-50',
       textColor: 'text-blue-800',
       message: '⏳ Processing payment...',
     },

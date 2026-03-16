@@ -75,7 +75,12 @@ export class RequestRideUseCase {
     });
 
     // Save to database
-    const savedRide = await this.rideRepo.create(ride);
+    let savedRide: typeof ride;
+    try {
+      savedRide = await this.rideRepo.create(ride);
+    } catch (err: any) {
+      throw new Error(`No se pudo crear el viaje: ${err?.message ?? 'error desconocido'}`);
+    }
 
     // Calculate ETA to nearby drivers
     const eta = this.geoService.estimateEta(
