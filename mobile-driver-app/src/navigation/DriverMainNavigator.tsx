@@ -8,6 +8,10 @@ import { DriverProfileScreen } from '@screens/profile/DriverProfileScreen';
 import { RideRequestScreen } from '@screens/ride/RideRequestScreen';
 import { ActiveRideScreen } from '@screens/ride/ActiveRideScreen';
 import { WithdrawScreen } from '@screens/earnings/WithdrawScreen';
+import { TripHistoryScreen } from '@screens/earnings/TripHistoryScreen';
+import { DocumentsScreen } from '@screens/profile/DocumentsScreen';
+import { DriverRatingsScreen } from '@screens/profile/DriverRatingsScreen';
+import { SupportScreen } from '@screens/profile/SupportScreen';
 
 export type DriverMainStackParamList = {
   Tabs: undefined;
@@ -20,6 +24,10 @@ export type DriverMainStackParamList = {
   };
   ActiveRide: { rideId: string; passengerName: string; destination: string };
   Withdraw: { availableBalance: number; currency: string };
+  Documents: undefined;
+  Ratings: undefined;
+  Support: undefined;
+  TripHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<DriverMainStackParamList>();
@@ -94,6 +102,26 @@ export function DriverMainNavigator() {
         name="Withdraw"
         component={WithdrawScreen}
         options={{ title: 'Retirar Ganancias', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="Documents"
+        component={DocumentsScreen}
+        options={{ title: 'Mis Documentos' }}
+      />
+      <Stack.Screen
+        name="Ratings"
+        component={DriverRatingsScreen}
+        options={{ title: 'Mis Calificaciones' }}
+      />
+      <Stack.Screen
+        name="Support"
+        component={SupportScreen}
+        options={{ title: 'Soporte Going' }}
+      />
+      <Stack.Screen
+        name="TripHistory"
+        component={TripHistoryScreen}
+        options={{ title: 'Historial de viajes' }}
       />
     </Stack.Navigator>
   );
