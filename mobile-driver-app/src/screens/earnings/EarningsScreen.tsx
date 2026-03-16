@@ -54,9 +54,13 @@ export function EarningsScreen() {
       // Use demo data if API is unavailable
       setSummary({ today: 47.5, week: 215.3, total: 3420.8, trips: 6 });
       setHistory([
-        { date: '2026-03-07', trips: 8, earnings: 56.4 },
-        { date: '2026-03-06', trips: 7, earnings: 49.8 },
-        { date: '2026-03-05', trips: 5, earnings: 37.2 },
+        { date: '2026-03-09', trips: 6,  earnings: 47.5 },
+        { date: '2026-03-08', trips: 9,  earnings: 63.0 },
+        { date: '2026-03-07', trips: 8,  earnings: 56.4 },
+        { date: '2026-03-06', trips: 7,  earnings: 49.8 },
+        { date: '2026-03-05', trips: 5,  earnings: 37.2 },
+        { date: '2026-03-04', trips: 11, earnings: 78.1 },
+        { date: '2026-03-03', trips: 4,  earnings: 28.6 },
       ]);
     } finally {
       setIsLoading(false);
@@ -102,6 +106,57 @@ export function EarningsScreen() {
         >
           <Text style={styles.withdrawBtnText}>💸 Retirar ganancias</Text>
         </TouchableOpacity>
+      </View>
+
+      {/* ── Gráfico de ganancias 7 días ── */}
+      <View style={styles.chartCard}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>Últimos 7 días</Text>
+          <Text style={styles.chartTotal}>
+            ${history.reduce((s, d) => s + d.earnings, 0).toFixed(2)}
+          </Text>
+        </View>
+        {history.length > 0 && (() => {
+          const maxEarning = Math.max(...history.map(d => d.earnings));
+          const days = [...history].reverse(); // más antiguo a izquierda
+          return (
+            <View style={styles.barsRow}>
+              {days.map((day, i) => {
+                const pct = maxEarning > 0 ? day.earnings / maxEarning : 0;
+                const isToday = i === days.length - 1;
+                const dayLabel = new Date(day.date).toLocaleDateString('es', { weekday: 'short' });
+                return (
+                  <View key={day.date} style={styles.barCol}>
+                    <Text style={styles.barValue}>${day.earnings.toFixed(0)}</Text>
+                    <View style={styles.barTrack}>
+                      <View style={[
+                        styles.barFill,
+                        {
+                          height: `${Math.max(pct * 100, 8)}%`,
+                          backgroundColor: isToday ? '#FFCD00' : '#0033A0',
+                          opacity: isToday ? 1 : 0.5 + pct * 0.5,
+                        },
+                      ]} />
+                    </View>
+                    <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>
+                      {dayLabel}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })()}
+        <View style={styles.chartLegend}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#FFCD00' }]} />
+            <Text style={styles.legendText}>Hoy</Text>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#0033A0' }]} />
+            <Text style={styles.legendText}>Días anteriores</Text>
+          </View>
+        </View>
       </View>
 
       <View style={styles.statsGrid}>
@@ -191,6 +246,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
   },
   withdrawBtnText: { color: '#0033A0', fontWeight: '800', fontSize: 14 },
+  // Chart
+  chartCard: {
+    backgroundColor: '#fff', borderRadius: 20, margin: 16, marginBottom: 8,
+    padding: 18,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07, shadowRadius: 6, elevation: 3,
+  },
+  chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  chartTitle: { fontSize: 14, fontWeight: '700', color: '#374151' },
+  chartTotal: { fontSize: 18, fontWeight: '900', color: '#0033A0' },
+  barsRow: { flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 6, marginBottom: 8 },
+  barCol:  { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
+  barValue: { fontSize: 8, fontWeight: '700', color: '#6B7280', marginBottom: 3 },
+  barTrack: { width: '100%', height: '80%', justifyContent: 'flex-end' },
+  barFill:  { width: '100%', borderRadius: 4, minHeight: 6 },
+  barLabel: { fontSize: 9, color: '#9CA3AF', marginTop: 4, fontWeight: '600' },
+  barLabelToday: { color: '#0033A0', fontWeight: '800' },
+  chartLegend: { flexDirection: 'row', gap: 16, marginTop: 8 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendText: { fontSize: 11, color: '#6B7280', fontWeight: '600' },
+
   statsGrid: {
     flexDirection: 'row',
     paddingHorizontal: 16,
