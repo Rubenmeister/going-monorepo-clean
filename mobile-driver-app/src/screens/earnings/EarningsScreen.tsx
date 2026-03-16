@@ -8,13 +8,15 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import { hapticMedium } from '../../utils/haptics';
+import { hapticMedium, hapticSuccess } from '../../utils/haptics';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+import { exportEarningsPDF } from '../../utils/earningsReport';
+import { analyticsEarningsReportExported } from '../../utils/analytics';
 
 type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
 
@@ -35,6 +37,7 @@ export function EarningsScreen() {
   const [history, setHistory] = useState<DaySummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const load = async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -71,6 +74,44 @@ export function EarningsScreen() {
   useEffect(() => {
     load();
   }, []);
+
+  const handleExportPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    hapticMedium();
+    try {
+      const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const days = history.map(d => {
+        const dt = new Date(d.date);
+        return {
+          label:    DAYS[dt.getDay()],
+          date:     dt.toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }),
+          earnings: d.earnings,
+          trips:    d.trips,
+        };
+      });
+      const oldest = history.length > 0 ? new Date(history[history.length - 1].date) : new Date();
+      const newest = history.length > 0 ? new Date(history[0].date) : new Date();
+      const fmt = (dt: Date) => dt.toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' });
+      const period = `${fmt(oldest)} – ${fmt(newest)}`;
+
+      await exportEarningsPDF({
+        driverName:    'Conductor Going',
+        vehicleType:   'SUV',
+        period,
+        totalEarnings: summary.total,
+        totalTrips:    summary.trips,
+        avgRating:     4.9,
+        days,
+      });
+      hapticSuccess();
+      analyticsEarningsReportExported('pdf');
+    } catch (e) {
+      console.warn('[EarningsScreen] PDF export error', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -158,6 +199,23 @@ export function EarningsScreen() {
           </View>
         </View>
       </View>
+
+      {/* Exportar PDF */}
+      <TouchableOpacity
+        style={[styles.exportBtn, isExporting && styles.exportBtnLoading]}
+        onPress={handleExportPDF}
+        activeOpacity={0.8}
+        disabled={isExporting}
+      >
+        {isExporting ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Ionicons name="document-text-outline" size={18} color="#fff" />
+        )}
+        <Text style={styles.exportBtnText}>
+          {isExporting ? 'Generando PDF…' : 'Exportar reporte PDF'}
+        </Text>
+      </TouchableOpacity>
 
       <View style={styles.statsGrid}>
         {[
@@ -340,4 +398,17 @@ const styles = StyleSheet.create({
   historyTrips: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
   historyEarnings: { fontSize: 17, fontWeight: '900', color: '#059669' },
   emptyText: { textAlign: 'center', color: '#9CA3AF', padding: 20 },
+  exportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#ff4c41',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 13,
+    borderRadius: 14,
+  },
+  exportBtnLoading: { opacity: 0.7 },
+  exportBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
 });
