@@ -24,6 +24,7 @@ import { NotificationSettingsScreen } from '@screens/profile/NotificationSetting
 import { SecurityScreen } from '@screens/profile/SecurityScreen';
 import { UserSupportScreen } from '@screens/profile/UserSupportScreen';
 import { TermsScreen } from '@screens/profile/TermsScreen';
+import { SavedAddressesScreen } from '@screens/profile/SavedAddressesScreen';
 
 // ── Type declarations ────────────────────────────────────────────
 export type MainTabParamList = {
@@ -56,6 +57,7 @@ export type MainStackParamList = {
   Security: undefined;
   UserSupport: undefined;
   Terms: undefined;
+  SavedAddresses: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -195,6 +197,11 @@ export function MainNavigator() {
         name="Terms"
         component={TermsScreen}
         options={{ title: 'Términos y condiciones' }}
+      />
+      <Stack.Screen
+        name="SavedAddresses"
+        component={SavedAddressesScreen}
+        options={{ title: 'Mis direcciones' }}
       />
     </Stack.Navigator>
   );

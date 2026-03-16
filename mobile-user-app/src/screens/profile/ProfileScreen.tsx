@@ -28,6 +28,7 @@ export function ProfileScreen() {
 
   const menuItems = [
     { icon: 'person-outline', label: 'Editar perfil', onPress: () => navigation.navigate('EditProfile') },
+    { icon: 'location-outline', label: 'Mis direcciones', onPress: () => navigation.navigate('SavedAddresses') },
     { icon: 'card-outline', label: 'Métodos de pago', onPress: () => navigation.navigate('PaymentMethods') },
     {
       icon: 'notifications-outline',

@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../../store/useAuthStore';
 import { transportAPI } from '../../services/api';
 import { hapticMedium, hapticError, hapticLight } from '../../utils/haptics';
+import { useSavedAddressesStore } from '../../store/useSavedAddressesStore';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
@@ -198,6 +199,9 @@ type Nav = NativeStackNavigationProp<MainStackParamList>;
 export default function HomeScreen() {
   const navigation = useNavigation<Nav>();
   const { user } = useAuthStore();
+  const { addresses, loaded: addrLoaded, load: loadAddresses } = useSavedAddressesStore();
+
+  useEffect(() => { if (!addrLoaded) loadAddresses(); }, []);
   const [location, setLocation] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState('');
   const [selectedService, setSelectedService] = useState<'transport' | 'delivery' | 'tour'>('transport');
@@ -567,6 +571,29 @@ export default function HomeScreen() {
           </>
         )}
 
+        {/* Accesos rapidos — direcciones guardadas */}
+        {addresses.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>ACCESOS RAPIDOS</Text>
+            <View style={styles.quickRow}>
+              {addresses.slice(0, 3).map(addr => {
+                const iconMap = { home: 'home', work: 'briefcase', favorite: 'heart' } as const;
+                const colorMap: Record<string, string> = { home: '#0033A0', work: '#059669', favorite: '#ff4c41' };
+                return (
+                  <TouchableOpacity
+                    key={addr.id}
+                    style={styles.quickBtn}
+                    onPress={() => { hapticLight(); setDestination(addr.address); }}
+                  >
+                    <Ionicons name={iconMap[addr.type]} size={14} color={colorMap[addr.type]} />
+                    <Text style={styles.quickBtnText} numberOfLines={1}>{addr.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        )}
+
         {/* Destination input */}
         <TextInput
           style={styles.input}
@@ -730,6 +757,15 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   routeBadgeText: { fontSize: 9, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+
+  // Quick address shortcuts
+  quickRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  quickBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 10, paddingVertical: 9, borderRadius: 10,
+    backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB',
+  },
+  quickBtnText: { fontSize: 12, fontWeight: '700', color: '#374151', flex: 1 },
 
   // Input
   input: {
