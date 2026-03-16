@@ -15,6 +15,10 @@ import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
+import { DatafastProvider } from '../infrastructure/payment/datafast.provider';
+import { MockPaymentProvider } from '../infrastructure/payment/mock-payment.provider';
+import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
+import { PaymentController } from '../api/payment.controller';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import {
   RequestRideUseCase,
@@ -57,7 +61,7 @@ import {
     }),
     InfrastructureModule,
   ],
-  controllers: [AppController, TransportController, RideController],
+  controllers: [AppController, TransportController, RideController, PaymentController],
   providers: [
     // Rate limiting global — ThrottlerGuard aplica los límites del módulo a todos los endpoints
     { provide: APP_GUARD, useClass: ThrottlerGuard },
@@ -70,6 +74,10 @@ import {
     CompleteRideUseCase,
     TwilioProxyService,
     AgoraTokenService,
+    // Pasarela de pagos DATAFAST / Mock
+    DatafastProvider,
+    MockPaymentProvider,
+    PaymentGatewayService,
   ],
 })
 export class AppModule {}

@@ -1,241 +1,159 @@
 'use client';
 
 import { useState } from 'react';
-import { usePaymentService } from '@/hooks/features/usePaymentService';
-import type { PaymentMethod } from '@/types';
-import { PAYMENT_METHODS, PLATFORM_FEE_PERCENTAGE } from '@/types';
 import { paymentService } from '@/services/payment';
+import type { PaymentMethod, InitiatePaymentResult } from '@/types';
+import { PAYMENT_METHODS, PLATFORM_FEE_PERCENTAGE } from '@/types';
 
 interface PaymentFormProps {
-  rideId?: string;
-  amount?: number;
-  onPaymentComplete?: () => void;
+  rideId?:            string;
+  amount?:            number;
+  onPaymentComplete?: (result: InitiatePaymentResult) => void;
 }
 
 /**
- * Payment form component for ride payment
+ * PaymentForm — Selección de método y disparo del flujo de pago.
+ *
+ * Para DATAFAST (modo redirect o lightbox):
+ *   - NO se ingresan datos de tarjeta aquí.
+ *   - El botón llama al backend → recibe redirectUrl → redirige a DATAFAST.
+ *   - DATAFAST maneja el formulario de tarjeta en su entorno PCI DSS.
+ *
+ * Para Efectivo:
+ *   - Confirmación local sin gateway.
+ *
+ * Modo lightbox (cuando DATAFAST lo habilite):
+ *   - Backend retorna { mode:'lightbox', token, checkoutJsUrl }.
+ *   - Se carga el JS SDK y se llama PAYMENT_WIDGET.initiate(token).
  */
 export function PaymentForm({
   rideId = '',
   amount = 0,
   onPaymentComplete,
 }: PaymentFormProps) {
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-  });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('datafast');
+  const [loading, setLoading]             = useState(false);
+  const [error,   setError]               = useState<string | null>(null);
 
-  const {
-    paymentMethod,
-    status,
-    loading,
-    error,
-    setPaymentMethod,
-    processPayment,
-  } = usePaymentService(amount);
+  const summary = paymentService.calculatePaymentSummary(amount);
 
-  const paymentSummary = paymentService.calculatePaymentSummary(amount);
+  const handlePay = async () => {
+    if (!rideId) { setError('ID de viaje no disponible'); return; }
+    setError(null);
+    setLoading(true);
 
-  const handlePayment = async () => {
-    await processPayment(rideId, cardDetails);
-    if (status === 'completed') {
-      onPaymentComplete?.();
+    try {
+      if (paymentMethod === 'cash') {
+        onPaymentComplete?.({ mode: 'direct_api', transactionId: `CASH-${Date.now()}`, status: 'approved' });
+        return;
+      }
+
+      const result = await paymentService.initiatePayment({ rideId, amountUsd: amount, description: 'Viaje Going' });
+
+      if (result.mode === 'redirect' && result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
+      }
+
+      if (result.mode === 'lightbox' && result.token && result.checkoutJsUrl) {
+        await loadDatafastSdk(result.checkoutJsUrl);
+        (window as any).PAYMENT_WIDGET?.initiate(result.token);
+        return;
+      }
+
+      if (result.mode === 'direct_api') {
+        onPaymentComplete?.(result);
+        return;
+      }
+
+      throw new Error('Respuesta inesperada del servidor de pagos');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al procesar el pago');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="bg-white rounded-lg shadow-md p-6"
-      data-testid="payment-method-selector"
-    >
-      <h3 className="text-lg font-bold text-gray-800 mb-4">Payment</h3>
+    <div className="bg-white rounded-lg shadow-md p-6" data-testid="payment-form">
+      <h3 className="text-lg font-bold text-gray-800 mb-4">Pago del viaje</h3>
 
-      {/* Payment summary */}
-      <PaymentSummaryDisplay summary={paymentSummary} />
-
-      {/* Payment method selection */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Select payment method
-        </label>
-        <div className="space-y-2">
-          {(
-            Object.entries(PAYMENT_METHODS) as Array<
-              [PaymentMethod, (typeof PAYMENT_METHODS)[PaymentMethod]]
-            >
-          ).map(([method, config]) => (
-            <label
-              key={method}
-              className="flex items-center gap-3 cursor-pointer"
-            >
-              <input
-                type="radio"
-                value={method}
-                checked={paymentMethod === method}
-                onChange={(e) =>
-                  setPaymentMethod(e.target.value as PaymentMethod)
-                }
-                className="w-4 h-4"
-              />
-              <span className="flex items-center gap-2">
-                <span>{config.emoji}</span>
-                <span className="capitalize">{config.label}</span>
-              </span>
-            </label>
-          ))}
+      {/* Resumen */}
+      <div className="bg-gray-50 rounded-lg p-4 mb-4" data-testid="payment-summary">
+        <div className="flex justify-between mb-2">
+          <span className="text-gray-600">Tarifa base</span>
+          <span className="font-semibold">${summary.baseFare.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between mb-4">
+          <span className="text-gray-600">Comisión plataforma ({PLATFORM_FEE_PERCENTAGE}%)</span>
+          <span className="font-semibold">${summary.platformFee.toFixed(2)}</span>
+        </div>
+        <div className="border-t pt-2 flex justify-between text-lg">
+          <span className="font-bold">Total</span>
+          <span className="font-bold text-[#0033A0]">${summary.total.toFixed(2)}</span>
         </div>
       </div>
 
-      {/* Card form for card payment */}
-      {paymentMethod === 'card' && (
-        <CardDetailsForm
-          cardDetails={cardDetails}
-          onCardDetailsChange={setCardDetails}
-        />
+      {/* Selección de método */}
+      <div className="mb-5">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">Método de pago</label>
+        <div className="space-y-2">
+          {(Object.entries(PAYMENT_METHODS) as Array<[PaymentMethod, (typeof PAYMENT_METHODS)[PaymentMethod]]>)
+            .map(([method, cfg]) => (
+              <label
+                key={method}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
+                  paymentMethod === method ? 'border-[#0033A0] bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input type="radio" value={method} checked={paymentMethod === method}
+                  onChange={() => setPaymentMethod(method)} className="w-4 h-4 accent-[#0033A0]" />
+                <span className="text-xl">{cfg.emoji}</span>
+                <div>
+                  <p className="font-semibold text-sm text-gray-900">{cfg.label}</p>
+                  <p className="text-xs text-gray-500">{cfg.description}</p>
+                </div>
+              </label>
+            ))}
+        </div>
+      </div>
+
+      {/* Nota DATAFAST */}
+      {paymentMethod === 'datafast' && (
+        <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
+          <span className="text-blue-500 mt-0.5">🔒</span>
+          <p className="text-xs text-blue-700">
+            Serás redirigido a la página segura de DATAFAST. Going nunca almacena datos de tarjetas.
+          </p>
+        </div>
       )}
 
-      {/* Status display */}
-      {status !== 'pending' && <PaymentStatusDisplay status={status} />}
-
-      {/* Error display */}
+      {/* Error */}
       {error && (
-        <div className="mb-4 p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800">
+        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Pay button */}
-      <button
-        onClick={handlePayment}
-        disabled={loading || status === 'completed'}
-        className="w-full bg-going-primary text-white py-2 rounded-lg font-semibold hover:bg-going-dark disabled:bg-gray-400 transition"
-        data-testid="pay-button"
-      >
-        {loading ? 'Processing...' : `Pay $${paymentSummary.total.toFixed(2)}`}
+      {/* Botón */}
+      <button onClick={handlePay} disabled={loading}
+        className="w-full py-3 rounded-xl font-bold text-white bg-[#0033A0] hover:bg-[#002680] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        data-testid="pay-button">
+        {loading
+          ? '⏳ Procesando...'
+          : paymentMethod === 'cash'
+          ? '✅ Confirmar pago en efectivo'
+          : `💳 Pagar $${summary.total.toFixed(2)} con DATAFAST`}
       </button>
     </div>
   );
 }
 
-/**
- * Payment summary display component
- */
-function PaymentSummaryDisplay({
-  summary,
-}: {
-  summary: ReturnType<typeof paymentService.calculatePaymentSummary>;
-}) {
-  return (
-    <div
-      className="bg-gray-50 rounded-lg p-4 mb-4"
-      data-testid="payment-summary"
-    >
-      <div className="flex justify-between mb-2">
-        <span className="text-gray-600">Base fare</span>
-        <span className="font-semibold">${summary.baseFare.toFixed(2)}</span>
-      </div>
-      <div className="flex justify-between mb-4">
-        <span className="text-gray-600">
-          Platform fee ({PLATFORM_FEE_PERCENTAGE}%)
-        </span>
-        <span className="font-semibold">${summary.platformFee.toFixed(2)}</span>
-      </div>
-      <div className="border-t pt-2 flex justify-between text-lg">
-        <span className="font-bold">Total</span>
-        <span className="font-bold text-going-primary">
-          ${summary.total.toFixed(2)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Card details input form
- */
-function CardDetailsForm({
-  cardDetails,
-  onCardDetailsChange,
-}: {
-  cardDetails: { cardNumber: string; expiryDate: string; cvv: string };
-  onCardDetailsChange: (details: typeof cardDetails) => void;
-}) {
-  return (
-    <div className="mb-4 space-y-3" data-testid="payment-form">
-      <input
-        type="text"
-        placeholder="Card number"
-        value={cardDetails.cardNumber}
-        onChange={(e) =>
-          onCardDetailsChange({ ...cardDetails, cardNumber: e.target.value })
-        }
-        inputMode="numeric"
-        autoComplete="cc-number"
-        maxLength={19}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-      />
-      <div className="grid grid-cols-2 gap-3">
-        <input
-          type="text"
-          placeholder="MM/YY"
-          value={cardDetails.expiryDate}
-          onChange={(e) =>
-            onCardDetailsChange({ ...cardDetails, expiryDate: e.target.value })
-          }
-          inputMode="numeric"
-          autoComplete="cc-exp"
-          maxLength={5}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-        />
-        <input
-          type="password"
-          placeholder="CVC"
-          value={cardDetails.cvv}
-          onChange={(e) =>
-            onCardDetailsChange({ ...cardDetails, cvv: e.target.value })
-          }
-          inputMode="numeric"
-          autoComplete="cc-csc"
-          maxLength={4}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-        />
-      </div>
-    </div>
-  );
-}
-
-/**
- * Payment status display
- */
-function PaymentStatusDisplay({ status }: { status: string }) {
-  const statusConfig = {
-    processing: {
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-800',
-      message: '⏳ Processing payment...',
-    },
-    completed: {
-      bgColor: 'bg-green-100',
-      textColor: 'text-green-800',
-      message: '✅ Payment completed!',
-    },
-    failed: {
-      bgColor: 'bg-red-100',
-      textColor: 'text-red-800',
-      message: '❌ Payment failed',
-    },
-  };
-
-  const config = statusConfig[status as keyof typeof statusConfig];
-  if (!config) return null;
-
-  return (
-    <div
-      className={`mb-4 p-3 rounded-lg text-sm font-medium ${config.bgColor} ${config.textColor}`}
-      data-testid="payment-status"
-    >
-      {config.message}
-    </div>
-  );
+function loadDatafastSdk(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = url; s.onload = () => resolve(); s.onerror = () => reject(new Error('SDK DATAFAST no disponible'));
+    document.head.appendChild(s);
+  });
 }
