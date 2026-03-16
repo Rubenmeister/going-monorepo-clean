@@ -1,13 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { hapticMedium } from '../../utils/haptics';
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
 import type { CallSession } from '../../utils/agoraCall';
@@ -53,19 +51,23 @@ export function ActiveRideScreen() {
   };
 
   useEffect(() => {
+    let mounted = true;
     const sub = Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
         timeInterval: 5000,
         distanceInterval: 10,
       },
-      (loc) =>
+      (loc) => {
+        if (!mounted) return;
         setDriverLoc({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
-        })
+        });
+      }
     );
     return () => {
+      mounted = false;
       sub.then((s) => s.remove());
     };
   }, []);
@@ -81,6 +83,7 @@ export function ActiveRideScreen() {
   };
 
   return (
+    <Fragment>
     <View style={styles.container}>
       <MapView
         ref={mapRef}
@@ -165,6 +168,7 @@ export function ActiveRideScreen() {
         onCallEnd={() => setCallSession(null)}
       />
     )}
+    </Fragment>
   );
 }
 

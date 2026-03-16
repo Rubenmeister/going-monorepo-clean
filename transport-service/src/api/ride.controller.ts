@@ -90,7 +90,7 @@ export class RideController {
   ): Promise<any> {
     return this.acceptRideUseCase.execute({
       rideId,
-      driverId: dto.driverId || user.id,
+      driverId: user.id, // Always use authenticated user's ID — never trust client-provided driverId
     });
   }
 

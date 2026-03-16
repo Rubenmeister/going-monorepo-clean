@@ -35,6 +35,8 @@ export class TwilioProxyService {
 
   // Cache en memoria: rideId → sesión proxy activa
   private sessions = new Map<string, ProxySession>();
+  // In-flight promises: evita que dos peticiones concurrentes creen dos sesiones Twilio
+  private pending  = new Map<string, Promise<ProxySession | null>>();
 
   constructor(private readonly config: ConfigService) {
     this.accountSid   = config.get('TWILIO_ACCOUNT_SID', '');
@@ -65,15 +67,33 @@ export class TwilioProxyService {
     userPhone: string;    // ej: +593987654321
     driverPhone: string;  // ej: +593912345678
   }): Promise<ProxySession | null> {
-    // Si ya existe sesión para este viaje, retornarla
+    // Si ya existe sesión válida, retornarla de inmediato
     const existing = this.sessions.get(params.rideId);
     if (existing && existing.expiresAt > new Date()) return existing;
+
+    // Si ya hay una petición en vuelo para este ride, reutilizarla (evita race condition)
+    const inFlight = this.pending.get(params.rideId);
+    if (inFlight) return inFlight;
 
     if (!this.enabled || !this.client) {
       this.logger.warn(`[ride:${params.rideId}] Twilio no disponible — usando números reales como fallback`);
       return null;
     }
 
+    const promise = this._doCreateSession(params);
+    this.pending.set(params.rideId, promise);
+    try {
+      return await promise;
+    } finally {
+      this.pending.delete(params.rideId);
+    }
+  }
+
+  private async _doCreateSession(params: {
+    rideId: string;
+    userPhone: string;
+    driverPhone: string;
+  }): Promise<ProxySession | null> {
     try {
       const ttl = 4 * 60 * 60; // 4 horas en segundos
       const session = await this.client
