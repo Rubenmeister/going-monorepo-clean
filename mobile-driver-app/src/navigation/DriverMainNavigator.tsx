@@ -12,6 +12,7 @@ import { TripHistoryScreen } from '@screens/earnings/TripHistoryScreen';
 import { DocumentsScreen } from '@screens/profile/DocumentsScreen';
 import { DriverRatingsScreen } from '@screens/profile/DriverRatingsScreen';
 import { SupportScreen } from '@screens/profile/SupportScreen';
+import { AcademiaScreen } from '@screens/academia/AcademiaScreen';
 
 export type DriverMainStackParamList = {
   Tabs: undefined;
@@ -28,6 +29,7 @@ export type DriverMainStackParamList = {
   Ratings: undefined;
   Support: undefined;
   TripHistory: undefined;
+  Academia: undefined;
 };
 
 const Stack = createNativeStackNavigator<DriverMainStackParamList>();
@@ -39,9 +41,10 @@ function DriverTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
-            Panel: focused ? 'car' : 'car-outline',
-            Earnings: focused ? 'cash' : 'cash-outline',
-            Profile: focused ? 'person' : 'person-outline',
+            Panel:    focused ? 'car'              : 'car-outline',
+            Earnings: focused ? 'cash'             : 'cash-outline',
+            Academia: focused ? 'school'           : 'school-outline',
+            Profile:  focused ? 'person'           : 'person-outline',
           };
           return (
             <Ionicons name={icons[route.name]} size={size} color={color} />
@@ -65,6 +68,11 @@ function DriverTabs() {
         name="Earnings"
         component={EarningsScreen}
         options={{ title: 'Ganancias' }}
+      />
+      <Tab.Screen
+        name="Academia"
+        component={AcademiaScreen}
+        options={{ title: 'Academia' }}
       />
       <Tab.Screen
         name="Profile"
@@ -122,6 +130,11 @@ export function DriverMainNavigator() {
         name="TripHistory"
         component={TripHistoryScreen}
         options={{ title: 'Historial de viajes' }}
+      />
+      <Stack.Screen
+        name="Academia"
+        component={AcademiaScreen}
+        options={{ title: 'Academia Going', headerShown: false }}
       />
     </Stack.Navigator>
   );
