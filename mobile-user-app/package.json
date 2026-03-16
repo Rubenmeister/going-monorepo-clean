@@ -38,7 +38,8 @@
     "axios": "^1.6.0",
     "react-native-vector-icons": "^10.0.0",
     "@expo/vector-icons": "^14.0.0",
-    "expo-haptics": "~14.0.1"
+    "expo-haptics": "~14.0.1",
+    "expo-local-authentication": "~15.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
