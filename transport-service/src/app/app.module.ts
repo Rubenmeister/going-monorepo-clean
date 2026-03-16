@@ -12,6 +12,7 @@ import {
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
+import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import {
   RequestRideUseCase,
@@ -59,6 +60,7 @@ import {
     AcceptRideUseCase,
     CompleteRideUseCase,
     TwilioProxyService,
+    AgoraTokenService,
   ],
 })
 export class AppModule {}

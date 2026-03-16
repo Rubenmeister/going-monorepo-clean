@@ -27,6 +27,7 @@ import {
 } from '../application/use-cases';
 import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
+import { AgoraTokenService } from '../infrastructure/agora-token.service';
 
 /**
  * Ride Controller
@@ -42,6 +43,7 @@ export class RideController {
     @Inject(ITripRepository)
     private readonly tripRepo: ITripRepository,
     private readonly twilioProxy: TwilioProxyService,
+    private readonly agoraToken: AgoraTokenService,
   ) {}
 
   /**
@@ -159,6 +161,20 @@ export class RideController {
     return result.value
       .slice(0, limit ? Number(limit) : 20)
       .map((t) => t.toPrimitives());
+  }
+
+  /**
+   * GET /api/rides/:rideId/call-token
+   * Genera token Agora RTC para llamada in-app conductor↔pasajero.
+   * Si Agora no está configurado, retorna enabled:false → la app usa Twilio fallback.
+   */
+  @Get(':rideId/call-token')
+  async getCallToken(
+    @Param('rideId') rideId: string,
+    @CurrentUser() currentUser: any,
+  ) {
+    const uid = currentUser?.id ? parseInt(currentUser.id.replace(/\D/g, '').slice(0, 8), 10) || 0 : 0;
+    return this.agoraToken.generateToken(rideId, uid, 'publisher');
   }
 
   /**

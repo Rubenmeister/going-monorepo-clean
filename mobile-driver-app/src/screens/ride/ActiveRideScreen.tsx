@@ -9,6 +9,9 @@ import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { hapticMedium } from '../../utils/haptics';
+import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
+import type { CallSession } from '../../utils/agoraCall';
+import { InCallOverlay } from '../../components/InCallOverlay';
 
 type Route = RouteProp<DriverMainStackParamList, 'ActiveRide'>;
 
@@ -23,35 +26,29 @@ export function ActiveRideScreen() {
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [step, setStep] = useState(0);
+  const [step, setStep]             = useState(0);
+  const [callSession, setCallSession] = useState<CallSession | null>(null);
+  const [callLoading, setCallLoading] = useState(false);
 
   const handleCallPassenger = async () => {
+    if (callLoading) return;
     hapticMedium();
-    const API = process.env.EXPO_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
+    setCallLoading(true);
     try {
-      const token = await AsyncStorage.getItem('driver_token');
-      const { data } = await axios.get(`${API}/rides/${rideId}/proxy-number`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const numberToCall: string = data.proxyNumber;
-      if (!numberToCall) {
-        Alert.alert('Sin número', 'No hay número disponible para llamar al pasajero.');
+      const session = await resolveCallSession(rideId);
+      if (!session) {
+        Alert.alert('Sin conexión', 'No se pudo establecer la llamada. Intenta de nuevo.');
         return;
       }
-      if (!data.masked) {
-        Alert.alert(
-          'Llamada directa',
-          'La llamada enmascarada no está disponible. ¿Deseas llamar directamente al pasajero?',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Llamar', onPress: () => Linking.openURL(`tel:${numberToCall}`) },
-          ],
-        );
-        return;
+      if (session.type === 'agora') {
+        setCallSession(session);
+      } else {
+        startPSTNCall(session.proxyNumber!);
       }
-      Linking.openURL(`tel:${numberToCall}`);
     } catch {
       Alert.alert('Error', 'No se pudo obtener el número del pasajero.');
+    } finally {
+      setCallLoading(false);
     }
   };
 
@@ -131,8 +128,12 @@ export function ActiveRideScreen() {
               → {destination}
             </Text>
           </View>
-          <TouchableOpacity style={styles.callBtn} onPress={handleCallPassenger}>
-            <Ionicons name="call-outline" size={20} color="#0033A0" />
+          <TouchableOpacity
+            style={[styles.callBtn, callLoading && { opacity: 0.5 }]}
+            onPress={handleCallPassenger}
+            disabled={callLoading}
+          >
+            <Ionicons name={callLoading ? 'hourglass-outline' : 'call-outline'} size={20} color="#0033A0" />
           </TouchableOpacity>
         </View>
 
@@ -156,6 +157,14 @@ export function ActiveRideScreen() {
         </TouchableOpacity>
       </View>
     </View>
+
+    {callSession?.type === 'agora' && (
+      <InCallOverlay
+        session={callSession}
+        otherPersonName={passengerName || 'Pasajero'}
+        onCallEnd={() => setCallSession(null)}
+      />
+    )}
   );
 }
 

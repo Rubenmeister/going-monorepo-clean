@@ -18,6 +18,9 @@ import type { MainStackParamList } from '../../navigation/MainNavigator';
 import { api } from '../../services/api';
 import { hapticMedium, hapticHeavy, hapticSuccess, hapticWarning } from '../../utils/haptics';
 import { analyticsShareTracking, analyticsRideCompleted, analyticsScreen } from '../../utils/analytics';
+import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
+import type { CallSession } from '../../utils/agoraCall';
+import { InCallOverlay } from '../../components/InCallOverlay';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -79,6 +82,8 @@ export function ActiveRideScreen() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [routeGeoJSON, setRouteGeoJSON] = useState<GeoJSON.Feature | null>(null);
   const [routeDistance, setRouteDistance] = useState<number | null>(null); // km
+  const [callSession, setCallSession]     = useState<CallSession | null>(null);
+  const [callLoading, setCallLoading]     = useState(false);
   const cameraRef = useRef<MapboxGL.Camera>(null);
 
   // Animación del pulso para "buscando"
@@ -239,31 +244,24 @@ export function ActiveRideScreen() {
   const statusConfig = STATUS_CONFIG[status];
 
   const handleCallDriver = async () => {
+    if (callLoading) return;
     hapticMedium();
+    setCallLoading(true);
     try {
-      // Obtener número proxy (enmascarado) del backend
-      const { data } = await api.get(`/rides/${rideId}/proxy-number`);
-      const numberToCall: string = data.proxyNumber;
-      if (!numberToCall) {
-        Alert.alert('Sin número', 'No hay número disponible para llamar al conductor.');
+      const session = await resolveCallSession(rideId);
+      if (!session) {
+        Alert.alert('Sin conexión', 'No se pudo establecer la llamada. Intenta de nuevo.');
         return;
       }
-      if (!data.masked) {
-        // Sin Twilio configurado → advertencia y llamada directa
-        Alert.alert(
-          'Llamada directa',
-          'La llamada enmascarada no está disponible. ¿Deseas llamar directamente al conductor?',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Llamar', onPress: () => Linking.openURL(`tel:${numberToCall}`) },
-          ],
-        );
-        return;
+      if (session.type === 'agora') {
+        setCallSession(session); // abre InCallOverlay
+      } else {
+        startPSTNCall(session.proxyNumber!);
       }
-      Linking.openURL(`tel:${numberToCall}`);
     } catch {
-      // Fallback: número real si la API falla
       if (driver?.phone) Linking.openURL(`tel:${driver.phone}`);
+    } finally {
+      setCallLoading(false);
     }
   };
 
@@ -476,8 +474,12 @@ export function ActiveRideScreen() {
             >
               <Ionicons name="chatbubble-ellipses" size={20} color={GOING_BLUE} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.callBtn} onPress={handleCallDriver}>
-              <Ionicons name="call" size={20} color={GOING_BLUE} />
+            <TouchableOpacity
+              style={[styles.callBtn, callLoading && { opacity: 0.5 }]}
+              onPress={handleCallDriver}
+              disabled={callLoading}
+            >
+              <Ionicons name={callLoading ? 'hourglass-outline' : 'call'} size={20} color={GOING_BLUE} />
             </TouchableOpacity>
           </View>
         )}
@@ -532,6 +534,15 @@ export function ActiveRideScreen() {
         )}
       </View>
     </View>
+
+    {/* Overlay de llamada Agora (se muestra sobre todo) */}
+    {callSession?.type === 'agora' && (
+      <InCallOverlay
+        session={callSession}
+        otherPersonName={driver ? `${driver.firstName ?? ''} ${driver.lastName ?? ''}`.trim() || 'Conductor' : 'Conductor'}
+        onCallEnd={() => setCallSession(null)}
+      />
+    )}
   );
 }
 
