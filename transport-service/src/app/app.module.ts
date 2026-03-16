@@ -11,6 +11,7 @@ import {
 } from '@going-monorepo-clean/domains-transport-application';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
+import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import {
   RequestRideUseCase,
@@ -57,6 +58,7 @@ import {
     RequestRideUseCase,
     AcceptRideUseCase,
     CompleteRideUseCase,
+    TwilioProxyService,
   ],
 })
 export class AppModule {}

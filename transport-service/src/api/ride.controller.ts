@@ -26,6 +26,7 @@ import {
   CompleteRideUseCase,
 } from '../application/use-cases';
 import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
+import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 
 /**
  * Ride Controller
@@ -39,7 +40,8 @@ export class RideController {
     private readonly acceptRideUseCase: AcceptRideUseCase,
     private readonly completeRideUseCase: CompleteRideUseCase,
     @Inject(ITripRepository)
-    private readonly tripRepo: ITripRepository
+    private readonly tripRepo: ITripRepository,
+    private readonly twilioProxy: TwilioProxyService,
   ) {}
 
   /**
@@ -157,6 +159,48 @@ export class RideController {
     return result.value
       .slice(0, limit ? Number(limit) : 20)
       .map((t) => t.toPrimitives());
+  }
+
+  /**
+   * GET /api/rides/:rideId/proxy-number
+   * Retorna el número proxy enmascarado para la llamada conductor ↔ pasajero.
+   * - Si Twilio está configurado: crea/retorna la sesión proxy
+   * - Si no está configurado: retorna el número real del conductor (fallback)
+   * El campo `caller` indica quién llama: 'user' | 'driver'
+   */
+  @Get(':rideId/proxy-number')
+  async getProxyNumber(
+    @Param('rideId') rideId: string,
+    @CurrentUser() currentUser: any,
+  ): Promise<{ proxyNumber: string; masked: boolean }> {
+    const result = await this.tripRepo.findById(rideId as any);
+    if (result.isErr() || !result.value)
+      throw new NotFoundException(`Ride ${rideId} not found`);
+
+    const trip = result.value as any;
+
+    // Intentar obtener/crear sesión proxy
+    let session = this.twilioProxy.getSession(rideId);
+    if (!session && trip.driver?.phone && trip.user?.phone) {
+      session = await this.twilioProxy.createSession({
+        rideId,
+        userPhone:   trip.user.phone,
+        driverPhone: trip.driver.phone,
+      });
+    }
+
+    if (session) {
+      // Retornar el número proxy correcto según quién llama
+      const isDriver = currentUser?.role === 'driver';
+      return {
+        proxyNumber: isDriver ? session.userProxyNumber : session.driverProxyNumber,
+        masked: true,
+      };
+    }
+
+    // Fallback: número real del conductor (sin masking)
+    const fallbackNumber = trip.driver?.phone ?? '';
+    return { proxyNumber: fallbackNumber, masked: false };
   }
 
   /**

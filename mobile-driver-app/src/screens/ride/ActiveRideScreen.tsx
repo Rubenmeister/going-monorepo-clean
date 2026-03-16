@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { hapticMedium } from '../../utils/haptics';
 
 type Route = RouteProp<DriverMainStackParamList, 'ActiveRide'>;
 
@@ -14,13 +17,43 @@ const STEPS = ['Camino al pasajero', 'Pasajero a bordo', 'Viaje completado'];
 export function ActiveRideScreen() {
   const navigation = useNavigation();
   const { params } = useRoute<Route>();
-  const { passengerName, destination } = params;
+  const { rideId, passengerName, destination } = params;
   const mapRef = useRef<MapView>(null);
   const [driverLoc, setDriverLoc] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [step, setStep] = useState(0);
+
+  const handleCallPassenger = async () => {
+    hapticMedium();
+    const API = process.env.EXPO_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
+    try {
+      const token = await AsyncStorage.getItem('driver_token');
+      const { data } = await axios.get(`${API}/rides/${rideId}/proxy-number`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const numberToCall: string = data.proxyNumber;
+      if (!numberToCall) {
+        Alert.alert('Sin número', 'No hay número disponible para llamar al pasajero.');
+        return;
+      }
+      if (!data.masked) {
+        Alert.alert(
+          'Llamada directa',
+          'La llamada enmascarada no está disponible. ¿Deseas llamar directamente al pasajero?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Llamar', onPress: () => Linking.openURL(`tel:${numberToCall}`) },
+          ],
+        );
+        return;
+      }
+      Linking.openURL(`tel:${numberToCall}`);
+    } catch {
+      Alert.alert('Error', 'No se pudo obtener el número del pasajero.');
+    }
+  };
 
   useEffect(() => {
     const sub = Location.watchPositionAsync(
@@ -98,7 +131,7 @@ export function ActiveRideScreen() {
               → {destination}
             </Text>
           </View>
-          <TouchableOpacity style={styles.callBtn}>
+          <TouchableOpacity style={styles.callBtn} onPress={handleCallPassenger}>
             <Ionicons name="call-outline" size={20} color="#0033A0" />
           </TouchableOpacity>
         </View>
