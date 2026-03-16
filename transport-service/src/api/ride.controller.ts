@@ -11,6 +11,7 @@ import {
   Query,
   Inject,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
 import {
@@ -28,6 +29,13 @@ import {
 import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
+
+/** Shape del JWT payload inyectado por @CurrentUser() */
+interface AuthUser {
+  id: string;
+  email: string;
+  role: 'user' | 'driver' | 'admin';
+}
 
 /**
  * Ride Controller
@@ -53,7 +61,7 @@ export class RideController {
   @Post('request')
   @HttpCode(HttpStatus.CREATED)
   async requestRide(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Body() dto: RequestRideDto
   ): Promise<RideResponseDto> {
     return this.requestRideUseCase.execute({
@@ -72,7 +80,7 @@ export class RideController {
    */
   @Get(':rideId')
   async getRide(@Param('rideId') rideId: string): Promise<any> {
-    const result = await this.tripRepo.findById(rideId as any);
+    const result = await this.tripRepo.findById(rideId);
     if (result.isErr()) throw new NotFoundException(result.error.message);
     if (!result.value) throw new NotFoundException(`Ride ${rideId} not found`);
     return result.value.toPrimitives();
@@ -84,7 +92,7 @@ export class RideController {
    */
   @Put(':rideId/accept')
   async acceptRide(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Param('rideId') rideId: string,
     @Body() dto: AcceptRideDto
   ): Promise<any> {
@@ -103,7 +111,7 @@ export class RideController {
     @Param('rideId') rideId: string,
     @Body() _dto: StartRideDto
   ): Promise<any> {
-    const result = await this.tripRepo.findById(rideId as any);
+    const result = await this.tripRepo.findById(rideId);
     if (result.isErr() || !result.value)
       throw new NotFoundException(`Ride ${rideId} not found`);
 
@@ -136,14 +144,15 @@ export class RideController {
    */
   @Get('history/user')
   async getUserRideHistory(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Query('limit') limit?: number
   ): Promise<any[]> {
     const result = await this.tripRepo.findTripsByUser(
       user.id,
       limit ? Number(limit) : 20
     );
-    if (result.isErr()) return [];
+    if (result.isErr())
+      throw new InternalServerErrorException('No se pudo obtener el historial de viajes');
     return result.value.map((t) => t.toPrimitives());
   }
 
@@ -156,8 +165,9 @@ export class RideController {
     @Param('driverId') driverId: string,
     @Query('limit') limit?: number
   ): Promise<any[]> {
-    const result = await this.tripRepo.findActiveTripsByDriver(driverId as any);
-    if (result.isErr()) return [];
+    const result = await this.tripRepo.findActiveTripsByDriver(driverId);
+    if (result.isErr())
+      throw new InternalServerErrorException('No se pudo obtener el historial del conductor');
     return result.value
       .slice(0, limit ? Number(limit) : 20)
       .map((t) => t.toPrimitives());
@@ -171,7 +181,7 @@ export class RideController {
   @Get(':rideId/call-token')
   async getCallToken(
     @Param('rideId') rideId: string,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: AuthUser,
   ) {
     const uid = currentUser?.id ? parseInt(currentUser.id.replace(/\D/g, '').slice(0, 8), 10) || 0 : 0;
     return this.agoraToken.generateToken(rideId, uid, 'publisher');
@@ -187,13 +197,14 @@ export class RideController {
   @Get(':rideId/proxy-number')
   async getProxyNumber(
     @Param('rideId') rideId: string,
-    @CurrentUser() currentUser: any,
+    @CurrentUser() currentUser: AuthUser,
   ): Promise<{ proxyNumber: string; masked: boolean }> {
-    const result = await this.tripRepo.findById(rideId as any);
+    const result = await this.tripRepo.findById(rideId);
     if (result.isErr() || !result.value)
       throw new NotFoundException(`Ride ${rideId} not found`);
 
-    const trip = result.value as any;
+    // toPrimitives() expone driver/user con su phone; usamos spread para no bloquear con tipos estrictos
+    const trip = result.value.toPrimitives() as Record<string, any>;
 
     // Intentar obtener/crear sesión proxy
     let session = this.twilioProxy.getSession(rideId);
@@ -228,7 +239,7 @@ export class RideController {
     @Param('rideId') rideId: string,
     @Body('reason') reason: string
   ): Promise<any> {
-    const result = await this.tripRepo.findById(rideId as any);
+    const result = await this.tripRepo.findById(rideId);
     if (result.isErr() || !result.value)
       throw new NotFoundException(`Ride ${rideId} not found`);
 
