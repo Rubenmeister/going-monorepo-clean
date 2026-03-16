@@ -40,7 +40,7 @@ export const useMonorepoApp = () => {
             body: JSON.stringify(credentials),
           });
           localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          window.location.href = '/';
+          // No redirigir aquí — la página de login maneja el ?from= redirect
           return data;
         },
         register: async (data: {
