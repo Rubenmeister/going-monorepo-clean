@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { AdminLayout } from '../components';
@@ -16,7 +16,7 @@ export interface ActiveDriver {
 }
 
 // Dynamically import the Leaflet map (browser-only)
-const DriversMap = dynamic(() => import('../components/DriversMap'), {
+const DriversMap = dynamicImport(() => import('../components/DriversMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl">
