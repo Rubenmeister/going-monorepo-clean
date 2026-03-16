@@ -14,6 +14,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import {
   RequestRideDto,
   RideResponseDto,
@@ -177,7 +178,10 @@ export class RideController {
    * GET /api/rides/:rideId/call-token
    * Genera token Agora RTC para llamada in-app conductor↔pasajero.
    * Si Agora no está configurado, retorna enabled:false → la app usa Twilio fallback.
+   *
+   * Rate limit: 10 req/min por IP
    */
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Get(':rideId/call-token')
   async getCallToken(
     @Param('rideId') rideId: string,
@@ -193,7 +197,10 @@ export class RideController {
    * - Si Twilio está configurado: crea/retorna la sesión proxy
    * - Si no está configurado: retorna el número real del conductor (fallback)
    * El campo `caller` indica quién llama: 'user' | 'driver'
+   *
+   * Rate limit: 5 req/min por IP — cada llamada puede crear una sesión Twilio de pago
    */
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @Get(':rideId/proxy-number')
   async getProxyNumber(
     @Param('rideId') rideId: string,

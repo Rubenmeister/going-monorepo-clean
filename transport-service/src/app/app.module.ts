@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
@@ -26,6 +28,11 @@ import {
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    ThrottlerModule.forRoot([{
+      name:  'default',
+      ttl:   60_000, // ventana de 1 minuto
+      limit: 60,     // 60 req/min por defecto para todos los endpoints
+    }]),
     MongooseModule.forRoot(
       process.env.TRANSPORT_DB_URL ||
         process.env.MONGO_URL ||
@@ -52,6 +59,8 @@ import {
   ],
   controllers: [AppController, TransportController, RideController],
   providers: [
+    // Rate limiting global — ThrottlerGuard aplica los límites del módulo a todos los endpoints
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     AppService,
     RequestTripUseCase,
     AcceptTripUseCase,
