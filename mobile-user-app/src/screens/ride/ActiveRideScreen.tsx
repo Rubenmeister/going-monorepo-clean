@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 import { api } from '../../services/api';
 import { hapticMedium, hapticHeavy, hapticSuccess, hapticWarning } from '../../utils/haptics';
+import { analyticsShareTracking, analyticsRideCompleted, analyticsScreen } from '../../utils/analytics';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -85,6 +86,8 @@ export function ActiveRideScreen() {
   // Animación de la barra de progreso ETA
   const etaProgressAnim = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => { analyticsScreen('ActiveRideScreen'); }, []);
+
   useEffect(() => {
     if (status === 'searching') {
       const pulse = Animated.loop(
@@ -116,7 +119,10 @@ export function ActiveRideScreen() {
           if (data.status === 'driver_assigned') hapticMedium();
           if (data.status === 'arriving')        hapticMedium();
           if (data.status === 'in_progress')     hapticSuccess();
-          if (data.status === 'completed')       hapticSuccess();
+          if (data.status === 'completed') {
+            hapticSuccess();
+            analyticsRideCompleted({ ride_id: rideId, duration_minutes: elapsedTime, price });
+          }
         }
         if (data.eta) {
           setEta(data.eta);
@@ -216,6 +222,7 @@ export function ActiveRideScreen() {
 
   const handleShareTracking = async () => {
     const trackingUrl = `https://goingapp.ec/track/${rideId}`;
+    analyticsShareTracking(rideId);
     try {
       await Share.share({
         title: 'Mi viaje en Going',

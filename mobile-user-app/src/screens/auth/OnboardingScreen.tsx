@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Dimensions, Animated, FlatList, StatusBar,
@@ -8,6 +8,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { AuthStackParamList } from '../../navigation/AuthNavigator';
+import {
+  analyticsOnboardingStart,
+  analyticsOnboardingFinish,
+  analyticsOnboardingSkip,
+} from '../../utils/analytics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -73,6 +78,9 @@ export function OnboardingScreen() {
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
+  // Analytics: track onboarding start
+  useEffect(() => { analyticsOnboardingStart(); }, []);
+
   // Animaciones de entrada por slide
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -96,11 +104,13 @@ export function OnboardingScreen() {
   };
 
   const handleSkip = async () => {
+    analyticsOnboardingSkip(currentIndex);
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
     navigation.replace('Login');
   };
 
   const handleGetStarted = async () => {
+    analyticsOnboardingFinish();
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
     navigation.replace('Register');
   };

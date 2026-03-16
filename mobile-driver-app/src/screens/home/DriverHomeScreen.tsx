@@ -17,6 +17,11 @@ import { useDriverStore } from '@store/useDriverStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
+import {
+  analyticsDriverOnline,
+  analyticsDriverOffline,
+  analyticsScreen,
+} from '../../utils/analytics';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -38,6 +43,9 @@ export function DriverHomeScreen() {
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const [location, setLocation] = useState<[number, number] | null>(null);
   const [docAlerts, setDocAlerts] = useState<{ label: string; daysLeft: number; urgent: boolean }[]>([]);
+  const onlineStartRef = useRef<number | null>(null);
+
+  useEffect(() => { analyticsScreen('DriverHomeScreen'); }, []);
 
   // Verificar documentos al montar
   useEffect(() => {
@@ -116,6 +124,16 @@ export function DriverHomeScreen() {
         );
         return;
       }
+    }
+    if (!isOnline) {
+      onlineStartRef.current = Date.now();
+      analyticsDriverOnline();
+    } else {
+      const mins = onlineStartRef.current
+        ? Math.round((Date.now() - onlineStartRef.current) / 60000)
+        : 0;
+      analyticsDriverOffline(mins);
+      onlineStartRef.current = null;
     }
     toggleOnline();
   };

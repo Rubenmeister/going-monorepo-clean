@@ -22,6 +22,7 @@ import {
 } from '../../utils/biometrics';
 import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
+import { analyticsLogin } from '../../utils/analytics';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -53,7 +54,10 @@ export function LoginScreen() {
         setBiometricEnabled(true);
         // Intentar login biometrico automatico al abrir
         const success = await authenticateWithBiometrics('Ingresa a Going');
-        if (success) hapticSuccess();
+        if (success) {
+          hapticSuccess();
+          analyticsLogin('biometric');
+        }
       }
     })();
   }, []);
@@ -70,6 +74,7 @@ export function LoginScreen() {
       return;
     }
     await login(email.trim().toLowerCase(), password);
+    analyticsLogin('email');
   };
 
   return (
