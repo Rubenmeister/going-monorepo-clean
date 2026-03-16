@@ -3,3 +3,4 @@
  */
 
 export { RatingForm } from './RatingForm';
+export { ReviewsList } from './ReviewsList';
