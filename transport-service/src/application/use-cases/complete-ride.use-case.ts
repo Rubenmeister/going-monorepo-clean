@@ -29,9 +29,13 @@ export class CompleteRideUseCase {
       throw new Error(`Can only complete rides in started status`);
     }
 
-    // Calculate final fare
-    const durationMinutes = durationSeconds / 60;
-    const finalFare = ride.fare.estimatedTotal * 1.0; // Simplified
+    // Null-guard: fare must exist before accessing estimatedTotal
+    if (!ride.fare) {
+      throw new Error(`Ride ${rideId} has no fare — cannot complete`);
+    }
+
+    // Calculate final fare (simplified: use estimated total as final)
+    const finalFare = ride.fare.estimatedTotal ?? 0;
 
     // Update ride
     const updated = await this.rideRepo.update(rideId, {

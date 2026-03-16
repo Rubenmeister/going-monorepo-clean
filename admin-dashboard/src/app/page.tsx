@@ -67,6 +67,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [activeDrivers, setActiveDrivers] = useState<number>(0);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (auth.isLoading) return;
@@ -81,10 +82,14 @@ export default function DashboardPage() {
         setStats(adminStats as AdminStats);
         const driversArr = Array.isArray(drivers)
           ? drivers
-          : (drivers as any)?.drivers ?? [];
+          : (drivers as { drivers?: unknown[] } | null)?.drivers ?? [];
         setActiveDrivers(driversArr.length);
       })
-      .catch(() => {})
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : 'Error al cargar estadísticas';
+        console.error('[Dashboard] Error cargando stats:', msg);
+        setStatsError(msg);
+      })
       .finally(() => setStatsLoading(false));
   }, [auth.isLoading, auth.user]);
 
@@ -114,6 +119,12 @@ export default function DashboardPage() {
 
   return (
     <AdminLayout userName={auth.user.firstName} onLogout={auth.logout}>
+      {statsError && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 flex items-center gap-2">
+          <span>⚠️</span>
+          <span>No se pudieron cargar las estadísticas: {statsError}</span>
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">
           Bienvenido, {auth.user.firstName}

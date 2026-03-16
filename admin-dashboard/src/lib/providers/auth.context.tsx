@@ -38,14 +38,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = localStorage.getItem(AUTH_TOKEN_KEY);
       if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const roles = payload.roles || ['admin'];
-        setUser({
-          id: payload.sub || payload.userId,
-          firstName: payload.firstName || 'Admin',
-          roles,
-          isAdmin: () => roles.includes('admin'),
-        });
+        const parts = token.split('.');
+        if (parts.length !== 3) throw new Error('Token malformado');
+
+        const payload = JSON.parse(atob(parts[1]));
+
+        // Verificar expiración: exp es Unix timestamp en segundos
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+        } else {
+          const roles: string[] = Array.isArray(payload.roles) ? payload.roles : ['admin'];
+          setUser({
+            id: payload.sub || payload.userId,
+            firstName: payload.firstName || 'Admin',
+            roles,
+            isAdmin: () => roles.includes('admin'),
+          });
+        }
       }
     } catch {
       localStorage.removeItem(AUTH_TOKEN_KEY);
