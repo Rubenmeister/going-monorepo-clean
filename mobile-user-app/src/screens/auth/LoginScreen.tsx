@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { hapticError, hapticSuccess, hapticMedium } from '../../utils/haptics';
 import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
 
