@@ -7,7 +7,7 @@ import { useRideStore } from '../stores/rideStore';
 
 const RideRequestForm = dynamic(
   () =>
-    import('../components/RideRequest/RideRequestForm').then((m) => ({
+    import('../components/features/ride/RideRequestForm').then((m) => ({
       default: m.RideRequestForm,
     })),
   {
@@ -20,7 +20,7 @@ const RideRequestForm = dynamic(
 
 const TrackingMap = dynamic(
   () =>
-    import('../components/RideTracking/TrackingMap').then((m) => ({
+    import('../components/features/tracking/TrackingMap').then((m) => ({
       default: m.TrackingMap,
     })),
   {
@@ -33,7 +33,7 @@ const TrackingMap = dynamic(
 
 const RideStatus = dynamic(
   () =>
-    import('../components/RideTracking/RideStatus').then((m) => ({
+    import('../components/features/tracking/RideStatus').then((m) => ({
       default: m.RideStatus,
     })),
   { ssr: false }
@@ -41,22 +41,22 @@ const RideStatus = dynamic(
 
 const PaymentForm = dynamic(
   () =>
-    import('../components/Payment/PaymentForm').then((m) => ({
-      default: m.PaymentForm || m.default,
+    import('../components/features/payment/PaymentForm').then((m) => ({
+      default: m.PaymentForm,
     })),
   { ssr: false }
 );
 
 const RatingForm = dynamic(
   () =>
-    import('../components/Rating/RatingForm').then((m) => ({
-      default: m.RatingForm || m.default,
+    import('../components/features/rating/RatingForm').then((m) => ({
+      default: m.RatingForm,
     })),
   { ssr: false }
 );
 
 const ChatInterface = dynamic(
-  () => import('../components/Chat/ChatInterface'),
+  () => import('../components/features/chat/ChatInterface'),
   { ssr: false }
 );
 

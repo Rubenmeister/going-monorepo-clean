@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 import { paymentService } from '@/services/payment';
-import type { PaymentMethod, PaymentRequest, PaymentStatus } from '@/types';
+import type { PaymentMethod, PaymentStatus, InitiatePaymentResult } from '@/types';
 
 export interface UsePaymentServiceReturn {
   amount: number;
@@ -12,11 +12,12 @@ export interface UsePaymentServiceReturn {
   status: PaymentStatus;
   loading: boolean;
   error: string | null;
+  result: InitiatePaymentResult | null;
   setPaymentMethod: (method: PaymentMethod) => void;
   processPayment: (
     rideId: string,
-    cardDetails?: { cardNumber: string; expiryDate: string; cvv: string }
-  ) => Promise<void>;
+    description?: string
+  ) => Promise<InitiatePaymentResult | null>;
   reset: () => void;
 }
 
@@ -26,34 +27,18 @@ export interface UsePaymentServiceReturn {
 export function usePaymentService(
   initialAmount: number = 0
 ): UsePaymentServiceReturn {
-  const [amount, setAmount] = useState(initialAmount);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
-  const [status, setStatus] = useState<PaymentStatus>('pending');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [amount]                    = useState(initialAmount);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('datafast');
+  const [status, setStatus]         = useState<PaymentStatus>('pending');
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+  const [result, setResult]         = useState<InitiatePaymentResult | null>(null);
 
   const processPayment = useCallback(
-    async (
-      rideId: string,
-      cardDetails?: { cardNumber: string; expiryDate: string; cvv: string }
-    ) => {
-      // Validate inputs
+    async (rideId: string, description?: string): Promise<InitiatePaymentResult | null> => {
       if (!amount || amount <= 0) {
         setError('Invalid amount');
-        return;
-      }
-
-      // Validate card details if using card payment
-      if (paymentMethod === 'card' && cardDetails) {
-        const isValid = paymentService.validateCardDetails(
-          cardDetails.cardNumber,
-          cardDetails.expiryDate,
-          cardDetails.cvv
-        );
-        if (!isValid) {
-          setError('Invalid card details');
-          return;
-        }
+        return null;
       }
 
       setLoading(true);
@@ -61,31 +46,32 @@ export function usePaymentService(
       setStatus('processing');
 
       try {
-        const request: PaymentRequest = {
+        const response = await paymentService.initiatePayment({
           rideId,
-          amount,
-          method: paymentMethod,
-          cardDetails,
-        };
-
-        const response = await paymentService.processPayment(request);
-        setStatus(response.status);
+          amountUsd: amount,
+          description,
+        });
+        setResult(response);
+        setStatus(response.status ?? 'pending');
+        return response;
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Payment processing failed';
         setError(message);
-        setStatus('failed');
+        setStatus('error');
+        return null;
       } finally {
         setLoading(false);
       }
     },
-    [amount, paymentMethod]
+    [amount]
   );
 
   const reset = useCallback(() => {
     setStatus('pending');
     setError(null);
-    setPaymentMethod('card');
+    setResult(null);
+    setPaymentMethod('datafast');
   }, []);
 
   return {
@@ -94,6 +80,7 @@ export function usePaymentService(
     status,
     loading,
     error,
+    result,
     setPaymentMethod,
     processPayment,
     reset,

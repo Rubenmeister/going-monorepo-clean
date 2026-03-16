@@ -34,10 +34,10 @@ export { NOTIFICATION_DEFAULTS } from './notification.types';
 export type {
   PaymentMethod,
   PaymentStatus,
-  CardDetails,
-  PaymentRequest,
-  PaymentResponse,
+  PaymentMethodConfig,
   PaymentSummary,
+  InitiatePaymentResult,
+  PaymentStatusResult,
 } from './payment.types';
 export { PAYMENT_METHODS, PLATFORM_FEE_PERCENTAGE } from './payment.types';
 export type {
