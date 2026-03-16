@@ -238,8 +238,33 @@ export function ActiveRideScreen() {
   const currentStepIndex = STEPS.findIndex(s => s.key === status);
   const statusConfig = STATUS_CONFIG[status];
 
-  const handleCallDriver = () => {
-    if (driver?.phone) Linking.openURL(`tel:${driver.phone}`);
+  const handleCallDriver = async () => {
+    hapticMedium();
+    try {
+      // Obtener número proxy (enmascarado) del backend
+      const { data } = await api.get(`/rides/${rideId}/proxy-number`);
+      const numberToCall: string = data.proxyNumber;
+      if (!numberToCall) {
+        Alert.alert('Sin número', 'No hay número disponible para llamar al conductor.');
+        return;
+      }
+      if (!data.masked) {
+        // Sin Twilio configurado → advertencia y llamada directa
+        Alert.alert(
+          'Llamada directa',
+          'La llamada enmascarada no está disponible. ¿Deseas llamar directamente al conductor?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Llamar', onPress: () => Linking.openURL(`tel:${numberToCall}`) },
+          ],
+        );
+        return;
+      }
+      Linking.openURL(`tel:${numberToCall}`);
+    } catch {
+      // Fallback: número real si la API falla
+      if (driver?.phone) Linking.openURL(`tel:${driver.phone}`);
+    }
   };
 
   const handleCancel = () => {
