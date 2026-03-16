@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -300,6 +300,7 @@ export function ActiveRideScreen() {
   };
 
   return (
+    <Fragment>
     <View style={styles.container}>
       {/* ── MAPA ── */}
       <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Street}>
@@ -543,6 +544,7 @@ export function ActiveRideScreen() {
         onCallEnd={() => setCallSession(null)}
       />
     )}
+    </Fragment>
   );
 }
 

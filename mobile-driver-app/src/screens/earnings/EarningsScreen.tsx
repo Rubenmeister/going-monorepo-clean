@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -74,6 +74,14 @@ export function EarningsScreen() {
   useEffect(() => {
     load();
   }, []);
+
+  // Memoized chart data — recalculates only when history changes
+  const chartDays = useMemo(() => {
+    if (history.length === 0) return null;
+    const days = [...history].reverse();
+    const maxEarning = Math.max(...days.map(d => d.earnings), 1);
+    return { days, maxEarning };
+  }, [history]);
 
   const handleExportPDF = async () => {
     if (isExporting) return;
@@ -157,37 +165,33 @@ export function EarningsScreen() {
             ${history.reduce((s, d) => s + d.earnings, 0).toFixed(2)}
           </Text>
         </View>
-        {history.length > 0 && (() => {
-          const maxEarning = Math.max(...history.map(d => d.earnings));
-          const days = [...history].reverse(); // más antiguo a izquierda
-          return (
-            <View style={styles.barsRow}>
-              {days.map((day, i) => {
-                const pct = maxEarning > 0 ? day.earnings / maxEarning : 0;
-                const isToday = i === days.length - 1;
-                const dayLabel = new Date(day.date).toLocaleDateString('es', { weekday: 'short' });
-                return (
-                  <View key={day.date} style={styles.barCol}>
-                    <Text style={styles.barValue}>${day.earnings.toFixed(0)}</Text>
-                    <View style={styles.barTrack}>
-                      <View style={[
-                        styles.barFill,
-                        {
-                          height: `${Math.max(pct * 100, 8)}%`,
-                          backgroundColor: isToday ? '#FFCD00' : '#0033A0',
-                          opacity: isToday ? 1 : 0.5 + pct * 0.5,
-                        },
-                      ]} />
-                    </View>
-                    <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>
-                      {dayLabel}
-                    </Text>
+        {chartDays && (
+          <View style={styles.barsRow}>
+            {chartDays.days.map((day, i) => {
+              const pct = day.earnings / chartDays.maxEarning;
+              const isToday = i === chartDays.days.length - 1;
+              const dayLabel = new Date(day.date).toLocaleDateString('es', { weekday: 'short' });
+              return (
+                <View key={day.date} style={styles.barCol}>
+                  <Text style={styles.barValue}>${day.earnings.toFixed(0)}</Text>
+                  <View style={styles.barTrack}>
+                    <View style={[
+                      styles.barFill,
+                      {
+                        height: `${Math.max(pct * 100, 8)}%`,
+                        backgroundColor: isToday ? '#FFCD00' : '#0033A0',
+                        opacity: isToday ? 1 : 0.5 + pct * 0.5,
+                      },
+                    ]} />
                   </View>
-                );
-              })}
-            </View>
-          );
-        })()}
+                  <Text style={[styles.barLabel, isToday && styles.barLabelToday]}>
+                    {dayLabel}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
         <View style={styles.chartLegend}>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: '#FFCD00' }]} />

@@ -7,14 +7,21 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
 const GOING_RED = '#ff4c41';
-const GOING_YELLOW = '#FFCD00';
+// GOING_YELLOW removed — unused
 const BLACK = '#1a1a1a';
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
   'https://api-gateway-780842550857.us-central1.run.app';
 
-export function ForgotPasswordScreen({ navigation }: any) {
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { AuthStackParamList } from '@navigation/AuthNavigator';
+
+type Nav = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
+
+export function ForgotPasswordScreen() {
+  const navigation = useNavigation<Nav>();
   const [email, setEmail]     = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent]       = useState(false);
@@ -35,8 +42,13 @@ export function ForgotPasswordScreen({ navigation }: any) {
         email: email.trim().toLowerCase(),
       });
       setSent(true);
-    } catch {
-      setSent(true);
+    } catch (err: any) {
+      // 5xx / red → error real; 4xx → mismo mensaje por privacidad (no revelar si email existe)
+      if (err?.response?.status >= 500) {
+        Alert.alert('Error de conexión', 'No pudimos procesar tu solicitud. Intenta de nuevo.');
+      } else {
+        setSent(true);
+      }
     } finally {
       setLoading(false);
     }

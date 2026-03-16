@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { paymentAPI } from '../../services/api';
 
-const GOING_RED = '#F25C45';
+const GOING_RED = '#ff4c41'; // Going brand red
 const GOING_BLUE = '#0033A0';
 
 interface PaymentScreenProps {

@@ -42,7 +42,7 @@ export function DriverProfileScreen() {
       <View style={styles.hero}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
-            {driver ? `${driver.firstName[0]}${driver.lastName[0]}` : 'DR'}
+            {driver ? `${driver.firstName?.[0] ?? ''}${driver.lastName?.[0] ?? ''}` : 'DR'}
           </Text>
         </View>
         <Text style={styles.name}>
