@@ -23,7 +23,14 @@ export default function AdminLoginPage() {
       const from = searchParams.get('from') ?? '/';
       router.push(from);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Credenciales incorrectas');
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.toLowerCase().includes('fetch') || msg.includes('network') || msg === '') {
+        setError('No se pudo conectar al servidor. Verifica tu conexión o contacta a soporte.');
+      } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('credencial') || msg.toLowerCase().includes('invalid')) {
+        setError('Email o contraseña incorrectos.');
+      } else {
+        setError(msg || 'Error al iniciar sesión. Intenta de nuevo.');
+      }
     } finally {
       setLoading(false);
     }
@@ -85,9 +92,20 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Going Admin Dashboard — Solo personal autorizado
-        </p>
+        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-400">
+            ¿Olvidaste tu contraseña?{' '}
+            <a
+              href="mailto:soporte@goingec.com?subject=Recuperación de acceso admin"
+              className="text-indigo-500 hover:text-indigo-700 font-medium underline"
+            >
+              Contacta a soporte
+            </a>
+          </p>
+          <p className="text-xs text-gray-300 mt-3">
+            Going Admin Dashboard — Solo personal autorizado
+          </p>
+        </div>
       </div>
     </div>
   );
