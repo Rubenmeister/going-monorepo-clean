@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { paymentService } from '@/services/payment';
 
@@ -16,7 +16,7 @@ type ResultState = 'loading' | 'approved' | 'rejected' | 'cancelled' | 'error';
  *
  * La página consulta el estado real al backend para evitar manipulación del query string.
  */
-export default function PaymentResultPage() {
+function PaymentResultInner() {
   const params    = useSearchParams();
   const router    = useRouter();
   const [state, setState] = useState<ResultState>('loading');
@@ -120,5 +120,13 @@ export default function PaymentResultPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PaymentResultPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50" />}>
+      <PaymentResultInner />
+    </Suspense>
   );
 }

@@ -1,12 +1,13 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
-export default function LoginPage() {
+function LoginForm() {
   const { domain }   = useMonorepoApp();
   const searchParams = useSearchParams();
   const [email, setEmail]       = useState('');
@@ -243,5 +244,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
