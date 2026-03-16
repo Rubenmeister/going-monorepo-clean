@@ -15,6 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { hapticError, hapticSuccess, hapticMedium } from '../../utils/haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  isBiometricAvailable, getBiometricType,
+  authenticateWithBiometrics, BIOMETRIC_STORAGE_KEY,
+} from '../../utils/biometrics';
 import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
 
@@ -34,7 +39,24 @@ export function LoginScreen() {
   const { login, isLoading, error, clearError } = useAuthStore();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd]   = useState(false);
+  const [showPwd, setShowPwd]         = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricType, setBiometricType]       = useState<'faceid' | 'fingerprint' | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const available = await isBiometricAvailable();
+      const enabled   = await AsyncStorage.getItem(BIOMETRIC_STORAGE_KEY);
+      const type      = await getBiometricType();
+      setBiometricType(type);
+      if (available && enabled === 'true') {
+        setBiometricEnabled(true);
+        // Intentar login biometrico automatico al abrir
+        const success = await authenticateWithBiometrics('Ingresa a Going');
+        if (success) hapticSuccess();
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (error) {
@@ -127,6 +149,27 @@ export function LoginScreen() {
           >
             <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
+
+          {biometricEnabled && biometricType && (
+            <TouchableOpacity
+              style={styles.biometricBtn}
+              onPress={async () => {
+                hapticMedium();
+                const success = await authenticateWithBiometrics('Ingresa a Going');
+                if (success) hapticSuccess();
+                else hapticError();
+              }}
+            >
+              <Ionicons
+                name={biometricType === 'faceid' ? 'scan-circle-outline' : 'finger-print-outline'}
+                size={28}
+                color="#0033A0"
+              />
+              <Text style={styles.biometricText}>
+                {biometricType === 'faceid' ? 'Entrar con Face ID' : 'Entrar con huella'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={[styles.btn, isLoading && { opacity: 0.7 }]}
@@ -247,6 +290,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  biometricBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    paddingVertical: 14, borderRadius: 14, marginBottom: 12,
+    borderWidth: 1.5, borderColor: '#0033A0', backgroundColor: 'rgba(0,51,160,0.06)',
+  },
+  biometricText: { fontSize: 15, fontWeight: '700', color: '#0033A0' },
   registerRow: { alignItems: 'center', marginTop: 16 },
   registerText: { color: '#6B7280', fontSize: 14 },
   registerBold: { color: GOING_RED, fontWeight: '700' },

@@ -12,12 +12,42 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Switch } from 'react-native';
 import { api } from '@services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  isBiometricAvailable, getBiometricType,
+  authenticateWithBiometrics, BIOMETRIC_STORAGE_KEY,
+} from '@utils/biometrics';
 
 const GOING_BLUE = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
 
 export function SecurityScreen() {
+  const [biometricEnabled, setBiometricEnabled]     = useState(false);
+  const [biometricType, setBiometricType]           = useState<'faceid' | 'fingerprint' | null>(null);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+  React.useEffect(() => {
+    (async () => {
+      const available = await isBiometricAvailable();
+      const type      = await getBiometricType();
+      const enabled   = await AsyncStorage.getItem(BIOMETRIC_STORAGE_KEY);
+      setBiometricAvailable(available);
+      setBiometricType(type);
+      setBiometricEnabled(enabled === 'true');
+    })();
+  }, []);
+
+  const toggleBiometric = async (value: boolean) => {
+    if (value) {
+      const ok = await authenticateWithBiometrics('Confirma tu identidad');
+      if (!ok) return;
+    }
+    await AsyncStorage.setItem(BIOMETRIC_STORAGE_KEY, value ? 'true' : 'false');
+    setBiometricEnabled(value);
+  };
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -70,6 +100,31 @@ export function SecurityScreen() {
             Usa una contraseña fuerte con letras, números y símbolos
           </Text>
         </View>
+
+        {/* Biometría */}
+        {biometricAvailable && (
+          <View style={styles.biometricCard}>
+            <View style={styles.biometricLeft}>
+              <Ionicons
+                name={biometricType === 'faceid' ? 'scan-circle-outline' : 'finger-print-outline'}
+                size={28}
+                color={GOING_BLUE}
+              />
+              <View>
+                <Text style={styles.biometricTitle}>
+                  {biometricType === 'faceid' ? 'Face ID' : 'Huella dactilar'}
+                </Text>
+                <Text style={styles.biometricSub}>Ingresa sin contraseña</Text>
+              </View>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={toggleBiometric}
+              trackColor={{ false: '#E5E7EB', true: `${GOING_BLUE}60` }}
+              thumbColor={biometricEnabled ? GOING_BLUE : '#9CA3AF'}
+            />
+          </View>
+        )}
 
         {/* Password form */}
         <View style={styles.form}>
@@ -198,6 +253,15 @@ function getStrength(pwd: string): number {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
+  biometricCard: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
+  },
+  biometricLeft:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  biometricTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  biometricSub:   { fontSize: 12, color: '#6B7280', marginTop: 1 },
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
