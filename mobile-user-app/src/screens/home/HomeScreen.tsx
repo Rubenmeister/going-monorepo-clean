@@ -19,6 +19,12 @@ import { transportAPI } from '../../services/api';
 import { hapticMedium, hapticError, hapticLight } from '../../utils/haptics';
 import { useSavedAddressesStore } from '../../store/useSavedAddressesStore';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
+import {
+  analyticsRideRequest,
+  analyticsFeaturedRouteSelected,
+  analyticsSavedAddressUsed,
+  analyticsScreen,
+} from '../../utils/analytics';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -220,6 +226,9 @@ export default function HomeScreen() {
     c => c.onlyIn === undefined || c.onlyIn === tripMode
   );
 
+  // Analytics: track screen view on mount
+  useEffect(() => { analyticsScreen('HomeScreen'); }, []);
+
   // Si el vehículo seleccionado no está disponible en el nuevo modo, resetear a SUV
   useEffect(() => {
     const isAvailable = availableVehicles.some(v => v.id === selectedVehicle);
@@ -334,6 +343,14 @@ export default function HomeScreen() {
         price: { amount: finalPrice, currency: 'USD' },
       });
 
+      // Analytics
+      analyticsRideRequest({
+        origin_city: originCity,
+        destination_city: destination.substring(0, 40),
+        vehicle_type: selectedVehicle,
+        estimated_price: finalPrice,
+      });
+
       // Navegar a la pantalla de tracking en tiempo real
       navigation.navigate('ActiveRide', {
         rideId: data?.id ?? data?.rideId ?? 'pending',
@@ -445,7 +462,10 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={route.id}
                   style={styles.routeCard}
-                  onPress={() => setDestination(route.label.split(' → ').pop() ?? '')}
+                  onPress={() => {
+                    analyticsFeaturedRouteSelected(route.label);
+                    setDestination(route.label.split(' → ').pop() ?? '');
+                  }}
                 >
                   <View style={[styles.routeIconBg, { backgroundColor: `${route.color}18` }]}>
                     <Text style={styles.routeIcon}>{route.icon}</Text>
@@ -583,7 +603,7 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     key={addr.id}
                     style={styles.quickBtn}
-                    onPress={() => { hapticLight(); setDestination(addr.address); }}
+                    onPress={() => { hapticLight(); analyticsSavedAddressUsed(addr.type); setDestination(addr.address); }}
                   >
                     <Ionicons name={iconMap[addr.type]} size={14} color={colorMap[addr.type]} />
                     <Text style={styles.quickBtnText} numberOfLines={1}>{addr.label}</Text>
