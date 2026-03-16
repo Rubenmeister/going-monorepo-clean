@@ -56,7 +56,10 @@ const RatingForm = dynamic(
 );
 
 const ChatInterface = dynamic(
-  () => import('../components/features/chat/ChatInterface'),
+  () =>
+    import('../components/features/chat/ChatInterface').then((m) => ({
+      default: m.ChatInterface,
+    })),
   { ssr: false }
 );
 
