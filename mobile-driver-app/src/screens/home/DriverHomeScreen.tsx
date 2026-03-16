@@ -45,7 +45,44 @@ export function DriverHomeScreen() {
   const [docAlerts, setDocAlerts] = useState<{ label: string; daysLeft: number; urgent: boolean }[]>([]);
   const onlineStartRef = useRef<number | null>(null);
 
+  // Métricas del día
+  const [todayStats, setTodayStats] = useState({
+    trips: 0,
+    earnings: 0,
+    acceptanceRate: 0,
+    avgRating: 5.0,
+  });
+
+  // Zonas calientes (demo — en producción vendría de la API)
+  const HOT_ZONES: { name: string; intensity: 'alta' | 'media'; coord: [number, number] }[] = [
+    { name: 'El Quicentro', intensity: 'alta',  coord: [-78.4833, -0.1862] },
+    { name: 'La Mariscal',  intensity: 'alta',  coord: [-78.4900, -0.2100] },
+    { name: 'Aeropuerto',   intensity: 'media', coord: [-78.3583, -0.1290] },
+    { name: 'Cumbayá',      intensity: 'media', coord: [-78.4369, -0.2000] },
+  ];
+
   useEffect(() => { analyticsScreen('DriverHomeScreen'); }, []);
+
+  // Cargar métricas del día
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('driver_token');
+        const { data } = await axios.get(
+          'https://api-gateway-780842550857.us-central1.run.app/drivers/me/stats/today',
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setTodayStats({
+          trips:          data.trips          ?? 0,
+          earnings:       data.earnings        ?? 0,
+          acceptanceRate: data.acceptanceRate  ?? 0,
+          avgRating:      data.avgRating        ?? 5.0,
+        });
+      } catch {
+        // API no disponible aún — mantener defaults
+      }
+    })();
+  }, []);
 
   // Verificar documentos al montar
   useEffect(() => {
@@ -161,6 +198,18 @@ export function DriverHomeScreen() {
             </View>
           </MapboxGL.PointAnnotation>
         )}
+        {/* Marcadores de zonas calientes en el mapa */}
+        {isOnline && HOT_ZONES.map((zone) => (
+          <MapboxGL.PointAnnotation
+            key={`zone-${zone.name}`}
+            id={`zone-${zone.name}`}
+            coordinate={zone.coord}
+          >
+            <View style={[styles.zoneMarker, zone.intensity === 'alta' && styles.zoneMarkerHot]}>
+              <Text style={styles.zoneMarkerEmoji}>🔥</Text>
+            </View>
+          </MapboxGL.PointAnnotation>
+        ))}
       </MapboxGL.MapView>
 
       {/* Online/Offline toggle */}
@@ -210,20 +259,50 @@ export function DriverHomeScreen() {
           </View>
         ))}
 
+        {/* Métricas del día — 4 tarjetas */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Ionicons name="star-outline" size={22} color="#FFCD00" />
-            <Text style={styles.statValue}>
-              {driver?.rating?.toFixed(1) || '5.0'}
+            <Ionicons name="car-outline" size={20} color="#0033A0" />
+            <Text style={styles.statValue}>{todayStats.trips}</Text>
+            <Text style={styles.statLabel}>Viajes hoy</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="cash-outline" size={20} color="#059669" />
+            <Text style={[styles.statValue, { color: '#059669' }]}>
+              ${todayStats.earnings.toFixed(0)}
             </Text>
+            <Text style={styles.statLabel}>Ganado hoy</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="star-outline" size={20} color="#FFCD00" />
+            <Text style={styles.statValue}>{todayStats.avgRating.toFixed(1)}</Text>
             <Text style={styles.statLabel}>Rating</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="car-outline" size={22} color="#0033A0" />
-            <Text style={styles.statValue}>{isOnline ? '✓' : '—'}</Text>
-            <Text style={styles.statLabel}>Estado</Text>
+            <Ionicons name="checkmark-circle-outline" size={20} color="#6366F1" />
+            <Text style={styles.statValue}>{todayStats.acceptanceRate}%</Text>
+            <Text style={styles.statLabel}>Aceptación</Text>
           </View>
         </View>
+
+        {/* Zonas calientes */}
+        {isOnline && (
+          <>
+            <Text style={styles.zonesLabel}>🔥 Zonas con alta demanda ahora</Text>
+            <View style={styles.zonesRow}>
+              {HOT_ZONES.map((zone) => (
+                <View
+                  key={zone.name}
+                  style={[styles.zoneChip, zone.intensity === 'alta' && styles.zoneChipHot]}
+                >
+                  <Text style={[styles.zoneChipText, zone.intensity === 'alta' && styles.zoneChipTextHot]}>
+                    {zone.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {!isOnline ? (
           <TouchableOpacity
@@ -373,5 +452,54 @@ const styles = StyleSheet.create({
   },
   docAlertTextUrgent: {
     color: '#FFFFFF',
+  },
+  // Zonas calientes — chips en panel
+  zonesLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  zonesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 14,
+  },
+  zoneChip: {
+    backgroundColor: '#FEF3C7',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  zoneChipHot: {
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FECACA',
+  },
+  zoneChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#92400E',
+  },
+  zoneChipTextHot: {
+    color: '#991B1B',
+  },
+  // Marcadores de zonas calientes en el mapa
+  zoneMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(253,211,36,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zoneMarkerHot: {
+    backgroundColor: 'rgba(255,76,65,0.85)',
+  },
+  zoneMarkerEmoji: {
+    fontSize: 16,
   },
 });
