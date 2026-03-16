@@ -24,7 +24,17 @@ export interface AuthState {
 }
 
 const AUTH_TOKEN_KEY = 'authToken';
+const SESSION_COOKIE = 'going_webapp_session';
 const AuthContext = createContext<AuthState | null>(null);
+
+function setSessionCookie(value: boolean) {
+  if (typeof document === 'undefined') return;
+  if (value) {
+    document.cookie = `${SESSION_COOKIE}=1; path=/; SameSite=Strict`;
+  } else {
+    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Strict`;
+  }
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -40,20 +50,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           ? localStorage.getItem(AUTH_TOKEN_KEY)
           : null;
       if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const roles: string[] = payload.roles || [];
-        setUser({
-          id: payload.sub || payload.userId || '',
-          firstName: payload.firstName || payload.name || 'User',
-          lastName: payload.lastName,
-          email: payload.email,
-          roles,
-          isAdmin: () => roles.includes('admin'),
-        });
+        const parts = token.split('.');
+        if (parts.length !== 3) throw new Error('Token malformado');
+        const payload = JSON.parse(atob(parts[1]));
+
+        // Verificar expiración
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+          setSessionCookie(false);
+        } else {
+          const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+          setSessionCookie(true);
+          setUser({
+            id: payload.sub || payload.userId || '',
+            firstName: payload.firstName || payload.name || 'User',
+            lastName: payload.lastName,
+            email: payload.email,
+            roles,
+            isAdmin: () => roles.includes('admin'),
+          });
+        }
       }
     } catch {
       if (typeof window !== 'undefined')
         localStorage.removeItem(AUTH_TOKEN_KEY);
+      setSessionCookie(false);
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = useCallback(() => {
     if (typeof window !== 'undefined') localStorage.removeItem(AUTH_TOKEN_KEY);
+    setSessionCookie(false);
     setUser(null);
   }, []);
 

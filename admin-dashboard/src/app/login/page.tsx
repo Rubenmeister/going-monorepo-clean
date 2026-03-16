@@ -2,16 +2,17 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  const { domain } = useMonorepoApp();
-  const [email, setEmail] = useState('');
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const { domain }   = useMonorepoApp();
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,8 @@ export default function AdminLoginPage() {
     setError('');
     try {
       await domain.auth.login({ email, password });
-      router.push('/');
+      const from = searchParams.get('from') ?? '/';
+      router.push(from);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Credenciales incorrectas');
     } finally {

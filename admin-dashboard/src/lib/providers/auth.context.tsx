@@ -24,8 +24,18 @@ export interface AuthState {
   logout: () => void;
 }
 
-const AUTH_TOKEN_KEY = 'authToken';
+const AUTH_TOKEN_KEY   = 'authToken';
+const SESSION_COOKIE   = 'going_admin_session';
 const AuthContext = createContext<AuthState | null>(null);
+
+/** Escribe/borra la cookie que el middleware lee para proteger rutas. */
+function setSessionCookie(value: boolean) {
+  if (value) {
+    document.cookie = `${SESSION_COOKIE}=1; path=/; SameSite=Strict`;
+  } else {
+    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Strict`;
+  }
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -48,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           localStorage.removeItem(AUTH_TOKEN_KEY);
         } else {
           const roles: string[] = Array.isArray(payload.roles) ? payload.roles : ['admin'];
+          setSessionCookie(true);
           setUser({
             id: payload.sub || payload.userId,
             firstName: payload.firstName || 'Admin',
@@ -65,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
+    setSessionCookie(false);
     setUser(null);
     setError(null);
   }, []);
