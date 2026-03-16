@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { EmptyState, EMPTY_STATES } from '@components/EmptyState';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
