@@ -40,7 +40,6 @@ export const useMonorepoApp = () => {
             body: JSON.stringify(credentials),
           });
           localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          // No redirigir aquí — la página de login maneja el ?from= redirect
           return data;
         },
         register: async (data: {
@@ -94,12 +93,14 @@ export const useMonorepoApp = () => {
       bookings: {
         create: async (dto: unknown) =>
           apiFetch('/bookings', { method: 'POST', body: JSON.stringify(dto) }),
+        // Admin uses user/:userId (admin has access to all users)
         findByUser: async (userId: string) =>
-          apiFetch(`/bookings?userId=${userId}`).catch(() => []),
+          apiFetch(`/bookings/user/${userId}`).catch(() => []),
+        // Backend uses PATCH (not POST) for state transitions
         confirm: async (bookingId: string) =>
-          apiFetch(`/bookings/${bookingId}/confirm`, { method: 'POST' }),
+          apiFetch(`/bookings/${bookingId}/confirm`, { method: 'PATCH' }),
         cancel: async (bookingId: string) =>
-          apiFetch(`/bookings/${bookingId}/cancel`, { method: 'POST' }),
+          apiFetch(`/bookings/${bookingId}/cancel`, { method: 'PATCH' }),
       },
       transport: {
         requestTrip: async (dto: unknown) =>
@@ -109,15 +110,17 @@ export const useMonorepoApp = () => {
           }),
         getPendingTrips: async () =>
           apiFetch('/transport/pending').catch(() => []),
+        // Backend: PATCH /transport/:tripId/accept
         acceptTrip: async (tripId: string, driverId: string) =>
-          apiFetch(`/transport/trips/${tripId}/accept`, {
-            method: 'POST',
+          apiFetch(`/transport/${tripId}/accept`, {
+            method: 'PATCH',
             body: JSON.stringify({ driverId }),
           }),
       },
       payment: {
+        // Backend endpoint is /payments/process
         requestIntent: async (dto: unknown) =>
-          apiFetch('/payments/intent', {
+          apiFetch('/payments/process', {
             method: 'POST',
             body: JSON.stringify(dto),
           }),
@@ -125,8 +128,9 @@ export const useMonorepoApp = () => {
       parcel: {
         create: async (dto: unknown) =>
           apiFetch('/parcels', { method: 'POST', body: JSON.stringify(dto) }),
+        // Admin uses user/:userId (admin has access to all users)
         findByUser: async (userId: string) =>
-          apiFetch(`/parcels?userId=${userId}`).catch(() => []),
+          apiFetch(`/parcels/user/${userId}`).catch(() => []),
       },
       accommodation: {
         create: async (dto: unknown) =>
@@ -134,9 +138,10 @@ export const useMonorepoApp = () => {
             method: 'POST',
             body: JSON.stringify(dto),
           }),
+        // Backend: GET /accommodations/search?...
         search: async (query: unknown) =>
           apiFetch(
-            `/accommodations?${new URLSearchParams(
+            `/accommodations/search?${new URLSearchParams(
               query as Record<string, string>
             )}`
           ).catch(() => []),
@@ -144,9 +149,10 @@ export const useMonorepoApp = () => {
       tour: {
         create: async (dto: unknown) =>
           apiFetch('/tours', { method: 'POST', body: JSON.stringify(dto) }),
+        // Backend: GET /tours/search?...
         search: async (query: unknown) =>
           apiFetch(
-            `/tours?${new URLSearchParams(query as Record<string, string>)}`
+            `/tours/search?${new URLSearchParams(query as Record<string, string>)}`
           ).catch(() => []),
       },
       experience: {
@@ -155,21 +161,24 @@ export const useMonorepoApp = () => {
             method: 'POST',
             body: JSON.stringify(dto),
           }),
+        // Backend: GET /experiences/search?...
         search: async (query: unknown) =>
           apiFetch(
-            `/experiences?${new URLSearchParams(
+            `/experiences/search?${new URLSearchParams(
               query as Record<string, string>
             )}`
           ).catch(() => []),
       },
       notifications: {
+        // Backend: POST /notifications/send
         send: async (dto: unknown) =>
-          apiFetch('/notifications', {
+          apiFetch('/notifications/send', {
             method: 'POST',
             body: JSON.stringify(dto),
           }),
+        // Backend: GET /notifications/user/:userId
         getByUser: async (userId: string) =>
-          apiFetch(`/notifications?userId=${userId}`).catch(() => []),
+          apiFetch(`/notifications/user/${userId}`).catch(() => []),
       },
       tracking: {
         broadcastDriverLocation: async (dto: unknown) =>
