@@ -1,0 +1,47 @@
+steps:
+  # Build notifications-service Docker image using the generic service Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'SERVICE_NAME=notifications-service'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/notifications-service:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/notifications-service:latest'
+      - '-f'
+      - 'Dockerfile.cloudrun-service'
+      - '.'
+    timeout: '1800s'
+
+  # Push image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/notifications-service:$BUILD_ID']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/notifications-service:latest']
+
+  # Deploy to Cloud Run (preserves existing env vars / secrets)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'notifications-service'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/notifications-service:$BUILD_ID'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/notifications-service:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/notifications-service:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+
+timeout: '1800s'
