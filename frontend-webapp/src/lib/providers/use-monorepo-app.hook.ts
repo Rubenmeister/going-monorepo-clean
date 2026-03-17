@@ -58,47 +58,54 @@ export const useMonorepoApp = () => {
       bookings: {
         create: async (dto: Record<string, unknown>) =>
           apiFetch('/bookings', { method: 'POST', body: JSON.stringify(dto) }),
-        findByUser: async (userId: string) =>
-          apiFetch(`/bookings?userId=${userId}`).catch(() => []),
+        // JWT-based: userId extracted from token by the service
+        findByUser: async (_userId: string) =>
+          apiFetch('/bookings/my').catch(() => []),
+        // Backend uses PATCH (not POST) for state transitions
         confirm: async (id: string) =>
-          apiFetch(`/bookings/${id}/confirm`, { method: 'POST' }),
+          apiFetch(`/bookings/${id}/confirm`, { method: 'PATCH' }),
         cancel: async (id: string) =>
-          apiFetch(`/bookings/${id}/cancel`, { method: 'POST' }),
+          apiFetch(`/bookings/${id}/cancel`, { method: 'PATCH' }),
       },
       transport: {
-        search: async (params: Record<string, unknown>) =>
-          apiFetch(
-            '/transport/routes?' +
-              new URLSearchParams(params as Record<string, string>)
-          ).catch(() => []),
+        // Backend exposes /transport/pending for listing, no /routes endpoint
+        search: async (_params: Record<string, unknown>) =>
+          apiFetch('/transport/pending').catch(() => []),
       },
       payments: {
+        // Backend endpoint is /payments/process
         create: async (dto: Record<string, unknown>) =>
-          apiFetch('/payments', { method: 'POST', body: JSON.stringify(dto) }),
+          apiFetch('/payments/process', { method: 'POST', body: JSON.stringify(dto) }),
       },
       parcels: {
         create: async (dto: Record<string, unknown>) =>
           apiFetch('/parcels', { method: 'POST', body: JSON.stringify(dto) }),
-        findByUser: async (userId: string) =>
-          apiFetch(`/parcels?userId=${userId}`).catch(() => []),
+        // JWT-based: userId extracted from token by the service
+        findByUser: async (_userId: string) =>
+          apiFetch('/parcels/my').catch(() => []),
       },
       accommodations: {
-        findAll: async () => apiFetch('/accommodations').catch(() => []),
+        // Backend has /accommodations/search (no bare /accommodations GET)
+        findAll: async () => apiFetch('/accommodations/search').catch(() => []),
         findById: async (id: string) => apiFetch(`/accommodations/${id}`),
       },
       tours: {
-        findAll: async () => apiFetch('/tours').catch(() => []),
+        // Backend has /tours/search (no bare /tours GET)
+        findAll: async () => apiFetch('/tours/search').catch(() => []),
         findById: async (id: string) => apiFetch(`/tours/${id}`),
       },
       experiences: {
-        findAll: async () => apiFetch('/experiences').catch(() => []),
+        // Backend has /experiences/search (no bare /experiences GET)
+        findAll: async () => apiFetch('/experiences/search').catch(() => []),
         findById: async (id: string) => apiFetch(`/experiences/${id}`),
       },
       notifications: {
+        // Backend: GET /notifications/user/:userId
         findByUser: async (userId: string) =>
-          apiFetch(`/notifications?userId=${userId}`).catch(() => []),
+          apiFetch(`/notifications/user/${userId}`).catch(() => []),
+        // Backend: PATCH /notifications/:id/read
         markRead: async (id: string) =>
-          apiFetch(`/notifications/${id}/read`, { method: 'POST' }),
+          apiFetch(`/notifications/${id}/read`, { method: 'PATCH' }),
       },
       tracking: {
         getStatus: async (bookingId: string) =>
