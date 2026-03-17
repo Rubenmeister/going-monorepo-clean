@@ -14,16 +14,15 @@ import { TwilioSmsGateway } from './gateways/sms-notification.gateway';
 import { FirebasePushNotificationGateway } from './gateways/push-notification.gateway';
 import { CompositeNotificationGateway } from './gateways/composite-notification.gateway';
 import { DeviceTokenRepository } from './persistence/device-token.repository';
-import {
-  DeviceToken,
-  DeviceTokenSchema,
-} from './persistence/schemas/device-token.schema';
+import { DeviceTokenSchema } from './persistence/schemas/device-token.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: NotificationModelSchema.name, schema: NotificationSchema },
-      { name: DeviceToken.name, schema: DeviceTokenSchema },
+      // Use hardcoded string 'DeviceToken' because webpack infers DeviceToken.name
+      // from the const assignment (not the class name DeviceTokenModelSchema)
+      { name: 'DeviceToken', schema: DeviceTokenSchema },
     ]),
   ],
   providers: [
