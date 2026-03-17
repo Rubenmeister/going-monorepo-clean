@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { RideMatchingModule } from './matching.module';
 import { TransportController } from './api/transport.controller';
@@ -16,6 +18,7 @@ import {
 } from './application/use-cases';
 import { TwilioProxyService } from './infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from './infrastructure/agora-token.service';
+import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -26,6 +29,15 @@ import { AgoraTokenService } from './infrastructure/agora-token.service';
         conn.on('error', (e) => console.warn('MongoDB:', e.message));
         return conn;
       },
+    }),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get('JWT_SECRET', 'default-secret'),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     InfrastructureModule,
     RideMatchingModule,
@@ -42,6 +54,7 @@ import { AgoraTokenService } from './infrastructure/agora-token.service';
     // Communication services
     TwilioProxyService,
     AgoraTokenService,
+    JwtStrategy,
   ],
 })
 export class AppModule {}
