@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from './process-payment.use-case';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,8 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class CompleteRideUseCase {
   constructor(
-    private paymentRepository: IPaymentRepository,
-    private payoutRepository: IPayoutRepository,
+    @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
+    @Inject(IPayoutRepository) private payoutRepository: IPayoutRepository,
     private processPaymentUseCase: ProcessPaymentUseCase
   ) {}
 

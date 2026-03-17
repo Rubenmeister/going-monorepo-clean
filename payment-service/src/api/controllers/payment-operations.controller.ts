@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, HttpStatus, Inject } from '@nestjs/common';
 import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from '../../application/use-cases/complete-ride.use-case';
@@ -8,14 +8,14 @@ import { CreatePayoutUseCase } from '../../application/use-cases/create-payout.u
  * Payment Operations Controller
  * Handles payment and payout operations
  */
-@Controller('api/payments')
+@Controller('payments')
 export class PaymentOperationsController {
   constructor(
     private processPaymentUseCase: ProcessPaymentUseCase,
     private completeRideUseCase: CompleteRideUseCase,
     private createPayoutUseCase: CreatePayoutUseCase,
-    private paymentRepository: IPaymentRepository,
-    private payoutRepository: IPayoutRepository
+    @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
+    @Inject(IPayoutRepository) private payoutRepository: IPayoutRepository
   ) {}
 
   @Post('process')

@@ -1,6 +1,7 @@
 /**
- * Payment Repository Interface
+ * Payment Repository — Symbol token (for NestJS DI) + interface (for typing)
  */
+export const IPaymentRepository = Symbol('IPaymentRepository');
 export interface IPaymentRepository {
   create(payment: any): Promise<any>;
   findById(id: string): Promise<any>;
@@ -20,8 +21,9 @@ export interface IPaymentRepository {
 }
 
 /**
- * Payout Repository Interface
+ * Payout Repository — Symbol token (for NestJS DI) + interface (for typing)
  */
+export const IPayoutRepository = Symbol('IPayoutRepository');
 export interface IPayoutRepository {
   create(payout: any): Promise<any>;
   findById(id: string): Promise<any>;

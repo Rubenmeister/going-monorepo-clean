@@ -50,6 +50,70 @@ export class StripeGateway implements IPaymentGateway {
     }
   }
 
+  /**
+   * Charge a saved payment method (card) immediately.
+   * Used by ProcessPaymentUseCase for card payments.
+   */
+  async processPayment(input: {
+    amount: number; // in cents
+    currency: string;
+    customerId: string;
+    paymentMethodId: string;
+    description?: string;
+    metadata?: Record<string, string>;
+  }): Promise<{ success: boolean; transactionId?: string; error?: string }> {
+    if (!this.stripe) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    try {
+      const intent = await this.stripe.paymentIntents.create({
+        amount: input.amount,
+        currency: input.currency.toLowerCase(),
+        payment_method: input.paymentMethodId,
+        confirm: true,
+        description: input.description,
+        metadata: input.metadata,
+        automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+      });
+
+      if (intent.status === 'succeeded') {
+        return { success: true, transactionId: intent.id };
+      }
+      return { success: false, error: `Payment status: ${intent.status}` };
+    } catch (error: any) {
+      this.logger.error(`Stripe processPayment error: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Transfer funds to a driver's connected Stripe account / bank.
+   * Used by CreatePayoutUseCase.
+   */
+  async createPayout(input: {
+    amount: number; // in cents
+    currency: string;
+    bankAccountId: string;
+    description?: string;
+    metadata?: Record<string, string>;
+  }): Promise<{ success: boolean; payoutId?: string; error?: string }> {
+    if (!this.stripe) {
+      return { success: false, error: 'Stripe not configured' };
+    }
+    try {
+      const payout = await this.stripe.payouts.create({
+        amount: input.amount,
+        currency: input.currency.toLowerCase(),
+        description: input.description,
+        metadata: input.metadata,
+      });
+      return { success: true, payoutId: payout.id };
+    } catch (error: any) {
+      this.logger.error(`Stripe createPayout error: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
   async constructWebhookEvent(
     payload: Buffer,
     signature: string
