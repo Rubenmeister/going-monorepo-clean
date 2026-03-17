@@ -30,14 +30,7 @@ jobs:
         with:
           main-branch-name: main
 
-      # 3. Configurar Nx Cloud (Caché remoto distribuido)
-      - name: Setup Nx Cloud
-        env:
-          NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
-        run: |
-          npx nx-cloud start-ci-run
-
-      # 4. Configurar Node.js
+      # 3. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,7 +66,3 @@ jobs:
       - name: Run affected build (Construir proyectos afectados)
         run: npx nx affected -t build --base=origin/main --head=HEAD --parallel
 
-      # 8. Finalizar sesión de Nx Cloud
-      - name: Stop Nx Cloud CI Run
-        if: always()
-        run: npx nx-cloud stop-ci-run
