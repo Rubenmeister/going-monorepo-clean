@@ -13,11 +13,17 @@ import { SendGridEmailGateway } from './gateways/email-notification.gateway';
 import { TwilioSmsGateway } from './gateways/sms-notification.gateway';
 import { FirebasePushNotificationGateway } from './gateways/push-notification.gateway';
 import { CompositeNotificationGateway } from './gateways/composite-notification.gateway';
+import { DeviceTokenRepository } from './persistence/device-token.repository';
+import {
+  DeviceToken,
+  DeviceTokenSchema,
+} from './persistence/schemas/device-token.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: NotificationModelSchema.name, schema: NotificationSchema },
+      { name: DeviceToken.name, schema: DeviceTokenSchema },
     ]),
   ],
   providers: [
@@ -25,6 +31,8 @@ import { CompositeNotificationGateway } from './gateways/composite-notification.
       provide: INotificationRepository,
       useClass: MongooseNotificationRepository,
     },
+    // Device token repository (required by FirebasePushNotificationGateway)
+    DeviceTokenRepository,
     // Channel-specific gateways
     SendGridEmailGateway,
     TwilioSmsGateway,
