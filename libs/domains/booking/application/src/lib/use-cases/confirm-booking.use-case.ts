@@ -31,8 +31,8 @@ export class ConfirmBookingUseCase {
       throw new BadRequestException(confirmResult.error.message);
     }
 
-    // Save the updated booking
-    const saveResult = await this.bookingRepo.save(booking);
+    // Persist the status change
+    const saveResult = await this.bookingRepo.update(booking);
 
     if (saveResult.isErr()) {
       throw new InternalServerErrorException(saveResult.error.message);
