@@ -66,3 +66,6 @@ DeviceTokenSchema.index({ token: 1 }, { unique: true });
 DeviceTokenSchema.index({ status: 1 });
 DeviceTokenSchema.index({ createdAt: 1 });
 DeviceTokenSchema.index({ lastUsedAt: 1 });
+
+// Alias for backward compatibility with @InjectModel(DeviceToken.name)
+export const DeviceToken = DeviceTokenModelSchema;
