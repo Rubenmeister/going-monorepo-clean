@@ -1,4 +1,15 @@
-import { Controller, Post, Get, Param, Body, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  HttpStatus,
+  UseGuards,
+  Inject,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { createParamDecorator, ExecutionContext, Injectable } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
@@ -6,9 +17,18 @@ import {
 import { SubmitRatingUseCase } from '../../application/use-cases/submit-rating.use-case';
 import { v4 as uuidv4 } from 'uuid';
 
+@Injectable()
+class JwtAuthGuard extends AuthGuard('jwt') {}
+
+const CurrentUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user ?? null;
+  },
+);
+
 export class SubmitRatingDTO {
   tripId: string;
-  raterId: string;
   rateeId: string;
   stars: number;
   review?: string;
@@ -20,21 +40,28 @@ export class SubmitRatingDTO {
  * Rating API Controller
  * Handles rating creation and retrieval
  */
-@Controller('api/ratings')
+@Controller('ratings')
 export class RatingController {
   constructor(
     private submitRatingUseCase: SubmitRatingUseCase,
+    @Inject(IRatingRepository)
     private ratingRepository: IRatingRepository,
-    private driverProfileRepository: IDriverProfileRepository
+    @Inject(IDriverProfileRepository)
+    private driverProfileRepository: IDriverProfileRepository,
   ) {}
 
+  /** POST /ratings/submit — JWT required, raterId from token */
+  @UseGuards(JwtAuthGuard)
   @Post('submit')
-  async submitRating(@Body() dto: SubmitRatingDTO) {
+  async submitRating(
+    @Body() dto: SubmitRatingDTO,
+    @CurrentUser() user: { id: string },
+  ) {
     const ratingId = uuidv4();
     const rating = await this.submitRatingUseCase.execute({
       id: ratingId,
       tripId: dto.tripId,
-      raterId: dto.raterId,
+      raterId: user.id,        // always from JWT, never from body
       rateeId: dto.rateeId,
       stars: dto.stars,
       review: dto.review,
@@ -54,17 +81,10 @@ export class RatingController {
     const rating = await this.ratingRepository.findById(id);
 
     if (!rating) {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Rating not found',
-        data: null,
-      };
+      return { statusCode: HttpStatus.NOT_FOUND, message: 'Rating not found', data: null };
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: rating,
-    };
+    return { statusCode: HttpStatus.OK, data: rating };
   }
 
   @Get('trip/:tripId')
@@ -72,17 +92,10 @@ export class RatingController {
     const rating = await this.ratingRepository.findByTrip(tripId);
 
     if (!rating) {
-      return {
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'No rating found for this trip',
-        data: null,
-      };
+      return { statusCode: HttpStatus.NOT_FOUND, message: 'No rating found for this trip', data: null };
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: rating,
-    };
+    return { statusCode: HttpStatus.OK, data: rating };
   }
 
   @Get('driver/:driverId/stats')
@@ -113,45 +126,26 @@ export class RatingController {
 
     const filteredRatings = ratings
       .filter((r) => r.review)
-      .map((r) => ({
-        stars: r.stars,
-        review: r.review,
-        createdAt: r.createdAt,
-      }));
+      .map((r) => ({ stars: r.stars, review: r.review, createdAt: r.createdAt }));
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: filteredRatings,
-    };
+    return { statusCode: HttpStatus.OK, data: filteredRatings };
   }
 
   @Get('user/:userId/ratings-given')
   async getUserRatingsGiven(@Param('userId') userId: string) {
     const ratings = await this.ratingRepository.findByRater(userId, 20);
-
-    return {
-      statusCode: HttpStatus.OK,
-      data: ratings,
-    };
+    return { statusCode: HttpStatus.OK, data: ratings };
   }
 
   @Get('top-drivers')
   async getTopRatedDrivers() {
     const drivers = await this.driverProfileRepository.findTopRatedDrivers(10);
-
-    return {
-      statusCode: HttpStatus.OK,
-      data: drivers,
-    };
+    return { statusCode: HttpStatus.OK, data: drivers };
   }
 
   @Get('super-drivers')
   async getSuperDrivers() {
     const drivers = await this.driverProfileRepository.findSuperDrivers();
-
-    return {
-      statusCode: HttpStatus.OK,
-      data: drivers,
-    };
+    return { statusCode: HttpStatus.OK, data: drivers };
   }
 }

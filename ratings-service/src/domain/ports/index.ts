@@ -1,6 +1,7 @@
 /**
- * Rating Repository Interface
+ * Rating Repository — DI Token + Interface
  */
+export const IRatingRepository = Symbol('IRatingRepository');
 export interface IRatingRepository {
   create(rating: any): Promise<any>;
   findById(id: string): Promise<any>;
@@ -14,9 +15,12 @@ export interface IRatingRepository {
 }
 
 /**
- * Driver Profile Repository Interface
+ * Driver Profile Repository — DI Token + Interface
  */
+export const IDriverProfileRepository = Symbol('IDriverProfileRepository');
 export interface IDriverProfileRepository {
   findByDriver(driverId: string): Promise<any>;
   updateAggregateStats(driverId: string, stats: any): Promise<any>;
+  findTopRatedDrivers(limit?: number): Promise<any[]>;
+  findSuperDrivers(): Promise<any[]>;
 }
