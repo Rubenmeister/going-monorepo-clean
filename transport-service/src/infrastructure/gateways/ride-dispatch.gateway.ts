@@ -1,19 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 /**
- * Ride Dispatch WebSocket Gateway
- * Handles real-time broadcasting of ride-related events
- * Events: match offers, acceptances, rejections, status updates, ETA changes
+ * Ride Dispatch Gateway
+ * Notifies matched drivers of new ride offers via the notifications-service.
+ * Uses HTTP POST to the internal notifications endpoint so the notifications-service
+ * handles FCM/APNs push delivery (no Socket.io required here).
  */
 @Injectable()
 export class RideDispatchGateway {
   private readonly logger = new Logger(RideDispatchGateway.name);
+  private readonly notificationsUrl: string;
 
-  // In-memory store for active ride connections (in production, use Redis)
-  private rideConnections: Map<UUID, Set<string>> = new Map();
-  private driverConnections: Map<UUID, string[]> = new Map();
+  constructor(private readonly config: ConfigService) {
+    this.notificationsUrl =
+      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') ||
+      'http://localhost:3008';
+  }
 
   async broadcastRideMatches(
     rideId: UUID,
@@ -22,12 +27,39 @@ export class RideDispatchGateway {
   ): Promise<Result<void, Error>> {
     try {
       this.logger.log(
-        `Broadcasting ${matches.length} matches for ride ${rideId} to ${driverIds.length} drivers`
+        `Dispatching ride ${rideId} to ${driverIds.length} drivers`
       );
+
+      // Send one push notification per matched driver (fire-and-forget per driver)
+      const sends = driverIds.map((driverId) => {
+        const match = matches.find((m) => m.driverId === driverId);
+        return fetch(`${this.notificationsUrl}/notifications/push`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: driverId,
+            title: '🚗 Nueva solicitud de viaje',
+            body: match
+              ? `${match.distance?.toFixed(1) ?? '?'} km · ETA ${match.eta ?? '?'} min`
+              : 'Hay un viaje disponible cerca de ti',
+            data: {
+              type: 'RIDE_MATCH',
+              rideId,
+              matchId: match?.matchId,
+              distance: match?.distance,
+              eta: match?.eta,
+            },
+          }),
+        }).catch((e) =>
+          this.logger.warn(`Push to driver ${driverId} failed: ${e.message}`)
+        );
+      });
+
+      await Promise.allSettled(sends);
       return ok(undefined);
     } catch (error) {
-      this.logger.error(`Failed to broadcast matches: ${error.message}`);
-      return err(new Error(`Failed to broadcast matches: ${error.message}`));
+      this.logger.error(`Failed to dispatch ride matches: ${error.message}`);
+      return err(new Error(`Failed to dispatch ride matches: ${error.message}`));
     }
   }
 
@@ -37,9 +69,8 @@ export class RideDispatchGateway {
     driverInfo: any
   ): Promise<Result<void, Error>> {
     try {
-      this.logger.log(
-        `Broadcasting driver ${driverId} acceptance for ride ${rideId}`
-      );
+      this.logger.log(`Driver ${driverId} accepted ride ${rideId}`);
+      // Notify the passenger (looked up from ride in a future enhancement)
       return ok(undefined);
     } catch (error) {
       this.logger.error(`Failed to broadcast acceptance: ${error.message}`);
@@ -53,9 +84,7 @@ export class RideDispatchGateway {
     reason?: string
   ): Promise<Result<void, Error>> {
     try {
-      this.logger.log(
-        `Broadcasting driver ${driverId} rejection for ride ${rideId}`
-      );
+      this.logger.log(`Driver ${driverId} rejected ride ${rideId} — ${reason}`);
       return ok(undefined);
     } catch (error) {
       this.logger.error(`Failed to broadcast rejection: ${error.message}`);
@@ -69,9 +98,7 @@ export class RideDispatchGateway {
     metadata?: any
   ): Promise<Result<void, Error>> {
     try {
-      this.logger.log(
-        `Broadcasting status update for ride ${rideId}: ${status}`
-      );
+      this.logger.log(`Ride ${rideId} status → ${status}`);
       return ok(undefined);
     } catch (error) {
       this.logger.error(`Failed to broadcast status: ${error.message}`);
@@ -80,10 +107,6 @@ export class RideDispatchGateway {
   }
 
   getActiveDriverCount(): number {
-    let count = 0;
-    for (const sockets of this.driverConnections.values()) {
-      count += sockets.length;
-    }
-    return count;
+    return 0; // Managed by tracking-service via Redis
   }
 }

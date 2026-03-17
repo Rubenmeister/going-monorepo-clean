@@ -30,6 +30,8 @@ import {
 import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
+import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
+import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
 interface AuthUser {
@@ -53,6 +55,8 @@ export class RideController {
     private readonly tripRepo: ITripRepository,
     private readonly twilioProxy: TwilioProxyService,
     private readonly agoraToken: AgoraTokenService,
+    private readonly matchDriversUseCase: MatchAvailableDriversUseCase,
+    private readonly dispatchGateway: RideDispatchGateway,
   ) {}
 
   /**
@@ -65,7 +69,7 @@ export class RideController {
     @CurrentUser() user: AuthUser,
     @Body() dto: RequestRideDto
   ): Promise<RideResponseDto> {
-    return this.requestRideUseCase.execute({
+    const ride = await this.requestRideUseCase.execute({
       userId: user.id,
       pickupLatitude: dto.pickupLatitude,
       pickupLongitude: dto.pickupLongitude,
@@ -73,6 +77,32 @@ export class RideController {
       dropoffLongitude: dto.dropoffLongitude,
       serviceType: dto.serviceType,
     });
+
+    // Fire-and-forget: match drivers and dispatch notifications asynchronously
+    // Does not block the passenger's response
+    this.matchDriversUseCase
+      .execute({
+        rideId: ride.rideId,
+        pickupLatitude: dto.pickupLatitude,
+        pickupLongitude: dto.pickupLongitude,
+        dropoffLatitude: dto.dropoffLatitude,
+        dropoffLongitude: dto.dropoffLongitude,
+        vehicleType: dto.serviceType || 'ANY',
+        maxRadius: 10,
+      })
+      .then((result) => {
+        if (result.isOk()) {
+          const driverIds = result.value.matches.map((m) => m.driverId);
+          this.dispatchGateway.broadcastRideMatches(
+            ride.rideId,
+            result.value.matches,
+            driverIds
+          );
+        }
+      })
+      .catch(() => { /* matching errors are non-fatal */ });
+
+    return ride;
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   GeolocationService,
   Distance,
   IRideRepository,
+  DistanceCalculatorService,
 } from '../../domain/ports';
 
 /**
@@ -19,7 +20,8 @@ export class RequestRideUseCase {
     @Inject('IRideRepository')
     private readonly rideRepo: IRideRepository,
     @Inject('GeolocationService')
-    private readonly geoService: GeolocationService
+    private readonly geoService: GeolocationService,
+    private readonly distanceCalculator: DistanceCalculatorService,
   ) {}
 
   async execute(input: {
@@ -50,10 +52,10 @@ export class RequestRideUseCase {
       timestamp: new Date(),
     });
 
-    // Estimate fare
-    // For demo: 10km default distance
-    const estimatedDistance = 10;
-    const estimatedDuration = 15;
+    // Estimate fare using real Haversine distance between pickup and dropoff
+    const distResult = this.distanceCalculator.calculateDistance(pickupCoords, dropoffCoords);
+    const estimatedDistance = Math.max(distResult.kilometers, 0.5); // min 0.5 km
+    const estimatedDuration = Math.ceil((estimatedDistance / 40) * 60); // avg 40 km/h → minutes
     const surge = this.calculateSurge();
 
     const fare = Fare.calculate(
