@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { ExperienceController } from './api/experience.controller';
+import { HealthController } from './api/health.controller';
 import {
   CreateExperienceUseCase,
   GetExperienceByIdUseCase,
@@ -33,7 +34,7 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
     }),
     InfrastructureModule,
   ],
-  controllers: [ExperienceController],
+  controllers: [ExperienceController, HealthController],
   providers: [
     CreateExperienceUseCase,
     GetExperienceByIdUseCase,
