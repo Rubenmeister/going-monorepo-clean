@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { ParcelController } from './api/parcel.controller';
+import { HealthController } from './api/health.controller';
 import {
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
@@ -34,7 +35,7 @@ import { ParcelDispatchGateway } from './infrastructure/gateways/parcel-dispatch
     }),
     InfrastructureModule,
   ],
-  controllers: [ParcelController],
+  controllers: [ParcelController, HealthController],
   providers: [
     CreateParcelUseCase,
     FindParcelsByUserUseCase,
