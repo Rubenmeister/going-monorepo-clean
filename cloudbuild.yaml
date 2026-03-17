@@ -1,5 +1,5 @@
 steps:
-  # Step 1: Build Docker image con Dockerfile.cloudrun
+  # Step 1: Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -12,54 +12,67 @@ steps:
       - '.'
     timeout: '1800s'
 
-  # Step 2: Push imagen a Container Registry
+  # Step 2: Push versioned tag
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID'
+    args: ['push', 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID']
 
+  # Step 3: Push latest tag
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/api-gateway:latest'
+    args: ['push', 'gcr.io/$PROJECT_ID/api-gateway:latest']
 
-  # Step 3: Deploy a Cloud Run
-  # IMPORTANTE: JWT_SECRET y otras credenciales sensibles deben estar
-  # configuradas en GCP Secret Manager y referenciadas aquí con --set-secrets,
-  # NO como variables de entorno en texto plano.
-  # Instrucciones:
-  #   1. Crea el secreto: gcloud secrets create JWT_SECRET --replication-policy=automatic
-  #   2. Agrega el valor: echo -n "tu-secreto-seguro" | gcloud secrets versions add JWT_SECRET --data-file=-
-  #   3. Otorga acceso: gcloud secrets add-iam-policy-binding JWT_SECRET \
-  #        --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
-  #        --role="roles/secretmanager.secretAccessor"
+  # Step 4: Discover Cloud Run service URLs dynamically, then deploy.
+  # This avoids hardcoding URLs. Services not yet deployed resolve to ""
+  # — the proxy module silently skips routes with empty targets.
+  # NOTE: Inside 'bash -c' use $$ to escape dollar sign (Cloud Build substitution).
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - 'deploy'
-      - 'api-gateway'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID'
-      - '--region'
-      - 'us-central1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--port'
-      - '3000'
-      - '--memory'
-      - '1Gi'
-      - '--cpu'
-      - '1'
-      - '--min-instances'
-      - '1'
-      - '--max-instances'
-      - '10'
-      - '--set-env-vars'
-      - 'NODE_ENV=production,JWT_EXPIRES_IN=15m,USER_AUTH_SERVICE_URL=http://localhost:3009,TRANSPORT_SERVICE_URL=http://localhost:3006,PAYMENT_SERVICE_URL=http://localhost:3001,TOURS_SERVICE_URL=http://localhost:3005,ANFITRIONES_SERVICE_URL=http://localhost:3003,EXPERIENCIAS_SERVICE_URL=http://localhost:3004,ENVIOS_SERVICE_URL=http://localhost:3007,NOTIFICATIONS_SERVICE_URL=http://localhost:3008,TRACKING_SERVICE_URL=http://localhost:3002,BOOKING_SERVICE_URL=http://localhost:3010'
-      - '--set-secrets'
-      - 'JWT_SECRET=JWT_SECRET:latest'
+      - '-c'
+      - |
+        REGION=us-central1
+        get_url() {
+          gcloud run services describe "$$1" \
+            --region $$REGION --platform managed \
+            --format 'value(status.url)' 2>/dev/null || echo ""
+        }
+
+        USER_AUTH_URL=$$(get_url user-auth-service)
+        TRANSPORT_URL=$$(get_url transport-service)
+        PAYMENT_URL=$$(get_url payment-service)
+        TOURS_URL=$$(get_url tours-service)
+        ANFITRIONES_URL=$$(get_url anfitriones-service)
+        EXPERIENCIAS_URL=$$(get_url experiencias-service)
+        ENVIOS_URL=$$(get_url envios-service)
+        NOTIFICATIONS_URL=$$(get_url notifications-service)
+        TRACKING_URL=$$(get_url tracking-service)
+        BOOKING_URL=$$(get_url booking-service)
+
+        echo "=== Discovered service URLs ==="
+        echo "  user-auth-service    : $${USER_AUTH_URL:-NOT DEPLOYED}"
+        echo "  transport-service    : $${TRANSPORT_URL:-NOT DEPLOYED}"
+        echo "  payment-service      : $${PAYMENT_URL:-NOT DEPLOYED}"
+        echo "  tours-service        : $${TOURS_URL:-NOT DEPLOYED}"
+        echo "  anfitriones-service  : $${ANFITRIONES_URL:-NOT DEPLOYED}"
+        echo "  experiencias-service : $${EXPERIENCIAS_URL:-NOT DEPLOYED}"
+        echo "  envios-service       : $${ENVIOS_URL:-NOT DEPLOYED}"
+        echo "  notifications-service: $${NOTIFICATIONS_URL:-NOT DEPLOYED}"
+        echo "  tracking-service     : $${TRACKING_URL:-NOT DEPLOYED}"
+        echo "  booking-service      : $${BOOKING_URL:-NOT DEPLOYED}"
+        echo "================================"
+
+        gcloud run deploy api-gateway \
+          --image "gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID" \
+          --region "$$REGION" \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --memory 1Gi \
+          --cpu 1 \
+          --min-instances 1 \
+          --max-instances 10 \
+          --timeout 60 \
+          --set-env-vars "^|^NODE_ENV=production|JWT_EXPIRES_IN=15m|CORS_ORIGINS=https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com|USER_AUTH_SERVICE_URL=$${USER_AUTH_URL}|TRANSPORT_SERVICE_URL=$${TRANSPORT_URL}|PAYMENT_SERVICE_URL=$${PAYMENT_URL}|TOURS_SERVICE_URL=$${TOURS_URL}|ANFITRIONES_SERVICE_URL=$${ANFITRIONES_URL}|EXPERIENCIAS_SERVICE_URL=$${EXPERIENCIAS_URL}|ENVIOS_SERVICE_URL=$${ENVIOS_URL}|NOTIFICATIONS_SERVICE_URL=$${NOTIFICATIONS_URL}|TRACKING_SERVICE_URL=$${TRACKING_URL}|BOOKING_SERVICE_URL=$${BOOKING_URL}" \
+          --set-secrets 'JWT_SECRET=JWT_SECRET:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID'
