@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { IPaymentRepository } from '../../domain/ports';
 import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { PricingService, ServiceType } from '../pricing.service';
@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class ProcessPaymentUseCase {
   constructor(
-    private paymentRepository: IPaymentRepository,
+    @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
     private stripeGateway: StripeGateway,
     private pricingService: PricingService
   ) {}
