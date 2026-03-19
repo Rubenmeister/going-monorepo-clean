@@ -40,6 +40,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
-    response.status(status).json(errorResponse);
+    // Compatible with both Express (.json) and Fastify (.send)
+    if (typeof response.json === 'function') {
+      response.status(status).json(errorResponse);
+    } else {
+      response.status(status).send(errorResponse);
+    }
   }
 }
