@@ -3,10 +3,103 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+
+type Role = 'user' | 'driver' | 'host' | 'guide' | 'operator';
+
+const ROLES: {
+  value: Role;
+  emoji: string;
+  title: string;
+  sub: string;
+  color: string;
+  bg: string;
+  redirect: string;
+}[] = [
+  {
+    value: 'user',
+    emoji: '🧳',
+    title: 'Soy Pasajero',
+    sub: 'Quiero viajar',
+    color: '#ff4c41',
+    bg: 'bg-red-50 border-[#ff4c41] text-[#ff4c41]',
+    redirect: '/',
+  },
+  {
+    value: 'driver',
+    emoji: '🚗',
+    title: 'Soy Conductor',
+    sub: 'Transporte privado/compartido',
+    color: '#16a34a',
+    bg: 'bg-green-50 border-[#16a34a] text-[#16a34a]',
+    redirect: '/conductores/registro',
+  },
+  {
+    value: 'host',
+    emoji: '🏡',
+    title: 'Soy Anfitrión',
+    sub: 'Alojamiento y experiencias',
+    color: '#7c3aed',
+    bg: 'bg-purple-50 border-[#7c3aed] text-[#7c3aed]',
+    redirect: '/anfitriones/registro',
+  },
+  {
+    value: 'guide',
+    emoji: '🏺',
+    title: 'Soy Guía Local',
+    sub: 'Tours y cultura',
+    color: '#0891b2',
+    bg: 'bg-cyan-50 border-[#0891b2] text-[#0891b2]',
+    redirect: '/guias/registro',
+  },
+  {
+    value: 'operator',
+    emoji: '🧗',
+    title: 'Soy Operador',
+    sub: 'Aventura y naturaleza',
+    color: '#d97706',
+    bg: 'bg-amber-50 border-[#d97706] text-[#d97706]',
+    redirect: '/operadores/registro',
+  },
+];
+
+const ROLE_BENEFITS: Record<Role, { icon: string; text: string }[]> = {
+  user: [
+    { icon: '✓', text: 'Reserva transporte al instante' },
+    { icon: '✓', text: 'Alojamiento verificado y seguro' },
+    { icon: '✓', text: 'Tours con guías locales expertos' },
+    { icon: '✓', text: 'Envíos express en todo Ecuador' },
+  ],
+  driver: [
+    { icon: '💰', text: 'Gana hasta $2,800/mes' },
+    { icon: '⏰', text: 'Horario completamente flexible' },
+    { icon: '📱', text: 'App intuitiva y soporte 24/7' },
+    { icon: '🛡️', text: 'Seguro de accidentes incluido' },
+  ],
+  host: [
+    { icon: '🏠', text: 'Publica tu espacio en minutos' },
+    { icon: '📅', text: 'Gestiona reservas fácilmente' },
+    { icon: '💳', text: 'Pagos seguros y puntuales' },
+    { icon: '⭐', text: 'Reseñas verificadas y visibilidad' },
+  ],
+  guide: [
+    { icon: '🗺️', text: 'Diseña tus propios tours' },
+    { icon: '🌍', text: 'Conecta con viajeros del mundo' },
+    { icon: '💰', text: 'Fija tus propias tarifas' },
+    { icon: '📚', text: 'Academia Going gratuita' },
+  ],
+  operator: [
+    { icon: '🎒', text: 'Ofrece aventuras y expediciones' },
+    { icon: '📋', text: 'Gestión de grupos y reservas' },
+    { icon: '🤝', text: 'Alianzas con hoteles y guías' },
+    { icon: '📈', text: 'Panel de analytics y ganancias' },
+  ],
+};
 
 export default function RegisterPage() {
   const { domain } = useMonorepoApp();
+  const [selectedRole, setSelectedRole] = useState<Role>('user');
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -17,6 +110,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const activeRole = ROLES.find(r => r.value === selectedRole)!;
+  const benefits = ROLE_BENEFITS[selectedRole];
+  const isProvider = selectedRole !== 'user';
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -26,27 +123,48 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
     try {
-      await domain.auth.register({ ...form, roles: ['user'] });
-      window.location.href = '/';
+      await domain.auth.register({ ...form, roles: [selectedRole] });
+      window.location.href = activeRole.redirect;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error al registrarse');
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+        setError('No se pudo conectar con el servidor. Verifica tu conexión o intenta más tarde.');
+      } else if (msg.includes('already') || msg.includes('exists') || msg.includes('409')) {
+        setError('Ya existe una cuenta con ese correo. ¿Quieres iniciar sesión?');
+      } else if (msg.includes('400') || msg.includes('invalid')) {
+        setError('Revisa que todos los campos estén correctamente llenados.');
+      } else {
+        setError(msg || 'Error al crear la cuenta. Intenta nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleRegister = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google?role=${selectedRole}`;
+  };
+
+  const handleFacebookRegister = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/facebook?role=${selectedRole}`;
+  };
+
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — Going Red brand */}
+      {/* Left panel */}
       <div
         className="hidden lg:flex flex-col justify-between w-5/12 p-12 relative overflow-hidden"
-        style={{ backgroundColor: '#ff4c41' }}
+        style={{ transition: 'background-color 0.3s' }}
       >
-        {/* Background decorative circles */}
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 bg-white -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-10 bg-white translate-y-1/2 -translate-x-1/3" />
+        {/* Foto pasajeras aeropuerto */}
+        <div className="absolute inset-0 bg-cover"
+          style={{ backgroundImage: "url('/images/MUJERES%20LLEGANDO%20AL%20AERO%20DE%20QUITO.jpg')", backgroundPosition: 'center top' }} />
+        {/* Overlay oscuro base para legibilidad */}
+        <div className="absolute inset-0 bg-black/40" />
+        {/* Tinte suave con color del rol */}
+        <div className="absolute inset-0 opacity-25 transition-colors duration-300"
+          style={{ backgroundColor: activeRole.color }} />
 
-        {/* Logo */}
         <div className="relative z-10">
           <Image
             src="/going-logo-white-h.png"
@@ -58,25 +176,26 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* Center content */}
         <div className="relative z-10 text-white">
-          <h2 className="text-4xl font-bold mb-4 leading-tight">
-            Únete a la comunidad Going
+          <div className="text-5xl mb-4">{activeRole.emoji}</div>
+          <h2 className="text-3xl font-bold mb-3 leading-tight">
+            {selectedRole === 'user' ? 'Únete a la comunidad Going' :
+             selectedRole === 'driver' ? 'Conviértete en conductor Going' :
+             selectedRole === 'host' ? 'Comparte tu espacio con el mundo' :
+             selectedRole === 'guide' ? 'Muestra lo mejor de Ecuador' :
+             'Opera aventuras increíbles'}
           </h2>
-          <p className="text-white/80 text-lg mb-10">
-            Regístrate gratis y empieza a explorar todos nuestros servicios.
+          <p className="text-white/80 text-base mb-10">
+            {selectedRole === 'user' ? 'Regístrate gratis y explora todos nuestros servicios.' :
+             selectedRole === 'driver' ? 'Maneja tus tiempos, multiplica tus ingresos.' :
+             selectedRole === 'host' ? 'Convierte tu propiedad en una fuente de ingresos.' :
+             selectedRole === 'guide' ? 'Comparte tu conocimiento y genera ingresos.' :
+             'Lleva a viajeros a los rincones más increíbles del país.'}
           </p>
-
-          {/* Benefits */}
           <div className="space-y-4">
-            {[
-              { icon: '✓', text: 'Reserva transporte al instante' },
-              { icon: '✓', text: 'Alojamiento verificado y seguro' },
-              { icon: '✓', text: 'Tours con guías locales expertos' },
-              { icon: '✓', text: 'Envíos express en todo Ecuador' },
-            ].map((item) => (
+            {benefits.map(item => (
               <div key={item.text} className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-base flex-shrink-0">
                   {item.icon}
                 </div>
                 <span className="text-white/90 text-sm">{item.text}</span>
@@ -85,153 +204,176 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Bottom tagline */}
         <div className="relative z-10 text-white/50 text-xs">
           © 2026 Going · Ecuador
         </div>
       </div>
 
-      {/* Right panel — Register form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white overflow-y-auto">
-        <div className="w-full max-w-md py-4">
+      {/* Right panel */}
+      <div className="flex-1 flex items-start justify-center p-6 bg-white overflow-y-auto">
+        <div className="w-full max-w-md py-8">
           {/* Mobile logo */}
-          <div className="lg:hidden mb-8 flex justify-center">
-            <Image
-              src="/going-logo-h.png"
-              alt="Going"
-              width={160}
-              height={50}
-              priority
-            />
+          <div className="lg:hidden mb-6 flex justify-center">
+            <Image src="/going-logo-h.png" alt="Going" width={160} height={50} priority />
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Crear tu cuenta
-          </h1>
-          <p className="text-gray-500 mb-8">Es gratis y solo toma un minuto</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Crear tu cuenta</h1>
+          <p className="text-gray-500 text-sm mb-5">Es gratis y solo toma un minuto</p>
+
+          {/* Role selector — responsive grid */}
+          <div className="mb-5">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">¿Qué rol describes mejor?</p>
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {ROLES.slice(0, 3).map(role => (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setSelectedRole(role.value)}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center ${
+                    selectedRole === role.value ? role.bg : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'
+                  }`}>
+                  <span className="text-xl">{role.emoji}</span>
+                  <span className="text-xs font-bold leading-tight">{role.title.replace('Soy ', '')}</span>
+                  {selectedRole === role.value && (
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
+                      style={{ backgroundColor: role.color }}>✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {ROLES.slice(3).map(role => (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setSelectedRole(role.value)}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all text-center ${
+                    selectedRole === role.value ? role.bg : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'
+                  }`}>
+                  <span className="text-xl">{role.emoji}</span>
+                  <span className="text-xs font-bold leading-tight">{role.title.replace('Soy ', '')}</span>
+                  {selectedRole === role.value && (
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-white text-xs"
+                      style={{ backgroundColor: role.color }}>✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
-              <span>⚠️</span>
-              <span>{error}</span>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
+              <span>⚠️</span><span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          {/* Social login */}
+          <div className="space-y-2.5 mb-5">
+            <button
+              type="button"
+              onClick={handleGoogleRegister}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-sm hover:shadow-md active:scale-[0.98] text-sm">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                <path d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z" fill="#4285F4"/>
+                <path d="M24.48 48.0016C30.9529 48.0016 36.4116 45.8764 40.3888 42.2078L32.6549 36.2111C30.5031 37.675 27.7252 38.5039 24.4888 38.5039C18.2275 38.5039 12.9187 34.2798 11.0139 28.6006H3.03296V34.7825C7.10718 42.8868 15.4056 48.0016 24.48 48.0016Z" fill="#34A853"/>
+                <path d="M11.0051 28.6006C9.99973 25.6199 9.99973 22.3922 11.0051 19.4115V13.2296H3.03298C-0.371021 20.0112 -0.371021 28.0009 3.03298 34.7825L11.0051 28.6006Z" fill="#FBBC04"/>
+                <path d="M24.48 9.49932C27.9016 9.44641 31.2086 10.7339 33.6866 13.0973L40.5387 6.24523C36.2 2.17101 30.4414 -0.068932 24.48 0.00161733C15.4055 0.00161733 7.10718 5.11644 3.03296 13.2296L11.005 19.4115C12.901 13.7235 18.2187 9.49932 24.48 9.49932Z" fill="#EA4335"/>
+              </svg>
+              Registrarse con Google
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFacebookRegister}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl font-medium text-white transition-all shadow-sm hover:shadow-md active:scale-[0.98] text-sm"
+              style={{ backgroundColor: '#1877F2' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Registrarse con Facebook
+            </button>
+          </div>
+
+          <div className="relative mb-5">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-white text-gray-400">o regístrate con email</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nombre
-                </label>
-                <input
-                  name="firstName"
-                  type="text"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  placeholder="Juan"
-                  required
-                  className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-                />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Nombre</label>
+                <input name="firstName" type="text" value={form.firstName} onChange={handleChange}
+                  placeholder="Juan" required
+                  className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Apellido
-                </label>
-                <input
-                  name="lastName"
-                  type="text"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  placeholder="Pérez"
-                  required
-                  className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-                />
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Apellido</label>
+                <input name="lastName" type="text" value={form.lastName} onChange={handleChange}
+                  placeholder="Pérez" required
+                  className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Correo electrónico
-              </label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="tu@email.com"
-                required
-                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-              />
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Correo electrónico</label>
+              <input name="email" type="email" value={form.email} onChange={handleChange}
+                placeholder="tu@email.com" required
+                className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Teléfono
-              </label>
-              <input
-                name="phone"
-                type="tel"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+593 99 000 0000"
-                required
-                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-              />
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Teléfono</label>
+              <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+                placeholder="+593 99 000 0000" required
+                className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Contraseña
-              </label>
-              <input
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="Mínimo 8 caracteres"
-                required
-                minLength={8}
-                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-              />
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Contraseña</label>
+              <input name="password" type="password" value={form.password} onChange={handleChange}
+                placeholder="Mínimo 8 caracteres" required minLength={8}
+                className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
+
+            {isProvider && (
+              <div className="p-3 rounded-xl text-xs flex items-start gap-2"
+                style={{ backgroundColor: `${activeRole.color}15`, border: `1px solid ${activeRole.color}40`, color: activeRole.color }}>
+                <span className="mt-0.5">📋</span>
+                <span>
+                  Después del registro completarás tu perfil de <strong>{activeRole.title.replace('Soy ', '')}</strong>:
+                  documentos, foto y verificación. El proceso toma 1–2 días hábiles.
+                </span>
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-[0.98]"
-              style={{ backgroundColor: '#ff4c41' }}
-            >
+              className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-[0.98] text-sm"
+              style={{ backgroundColor: activeRole.color }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Creando cuenta...
                 </span>
-              ) : (
-                'Crear Cuenta Gratis'
-              )}
+              ) : `Crear Cuenta como ${activeRole.title.replace('Soy ', '')} →`}
             </button>
 
             <p className="text-xs text-gray-400 text-center">
               Al registrarte aceptas nuestros{' '}
-              <span className="text-[#ff4c41] cursor-pointer hover:underline">
-                Términos de servicio
-              </span>{' '}
+              <Link href="/legal/terms" className="text-[#ff4c41] hover:underline">Términos</Link>{' '}
               y{' '}
-              <span className="text-[#ff4c41] cursor-pointer hover:underline">
-                Política de privacidad
-              </span>
+              <Link href="/legal/privacy" className="text-[#ff4c41] hover:underline">Política de privacidad</Link>
             </p>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+          <div className="mt-5 pt-5 border-t border-gray-100 text-center">
             <p className="text-gray-500 text-sm">
               ¿Ya tienes cuenta?{' '}
-              <a
-                href="/auth/login"
-                className="text-[#ff4c41] font-semibold hover:underline"
-              >
-                Inicia sesión
-              </a>
+              <a href="/auth/login" className="text-[#ff4c41] font-semibold hover:underline">Inicia sesión</a>
             </p>
           </div>
         </div>

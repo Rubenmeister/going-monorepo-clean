@@ -41,21 +41,6 @@ function FadeIn({ children, delay = 0, direction = 'up', className = '' }: {
   );
 }
 
-/* ── Comparison row ────────────────────────────────────────── */
-function CompRow({ bad, good }: { bad: string; good: string }) {
-  return (
-    <div className="grid grid-cols-2 gap-2">
-      <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm" style={{ background: '#fff1f0', color: '#c73b31' }}>
-        <span className="font-bold flex-shrink-0">✗</span>
-        <span>{bad}</span>
-      </div>
-      <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm" style={{ background: '#f0fdf4', color: '#166534' }}>
-        <span className="font-bold flex-shrink-0">✓</span>
-        <span>{good}</span>
-      </div>
-    </div>
-  );
-}
 
 /* ── Service card ──────────────────────────────────────────── */
 function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; title: string; desc: string; price?: string; highlight?: boolean }) {
@@ -147,7 +132,7 @@ export default function PasajerosPage() {
           <Link href="/pasajeros" className="text-sm font-semibold text-white">Para Viajeros</Link>
           <Link href="/conductores" className="text-sm text-white opacity-80 hover:opacity-100 transition-opacity">Para Conductores</Link>
           <Link href="/services" className="text-sm text-white opacity-80 hover:opacity-100 transition-opacity">Servicios</Link>
-          <Link href="/register" className="text-sm px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41' }}>
+          <Link href="/auth/register" className="text-sm px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41' }}>
             Crear cuenta
           </Link>
         </div>
@@ -160,64 +145,86 @@ export default function PasajerosPage() {
           <Link href="/pasajeros" className="text-white" onClick={() => setMobileOpen(false)}>Para Viajeros</Link>
           <Link href="/conductores" className="text-white opacity-80" onClick={() => setMobileOpen(false)}>Para Conductores</Link>
           <Link href="/services" className="text-white opacity-80" onClick={() => setMobileOpen(false)}>Servicios</Link>
-          <Link href="/register" className="px-6 py-3 rounded-full font-bold" style={{ background: '#fff', color: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Crear cuenta gratis</Link>
+          <Link href="/auth/register" className="px-6 py-3 rounded-full font-bold" style={{ background: '#fff', color: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Crear cuenta gratis</Link>
         </div>
       )}
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="pt-32 pb-20 px-6" style={{ background: 'linear-gradient(135deg, #ff4c41 0%, #c73b31 100%)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <FadeIn delay={0}>
-            <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}>
-              🚌 Para Viajeros
-            </span>
-          </FadeIn>
-          <FadeIn delay={100}>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
-              Viaja por Ecuador<br />
-              <span style={{ color: '#ffe8e6' }}>sin complicaciones</span>
-            </h1>
-          </FadeIn>
-          <FadeIn delay={200}>
-            <p className="text-lg md:text-xl mb-10 leading-relaxed max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.88)' }}>
-              Reserva transporte en segundos, paga seguro y sigue tu viaje en tiempo real. Adiós a los grupos de WhatsApp.
-            </p>
-          </FadeIn>
-          <FadeIn delay={300}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register" className="px-8 py-4 rounded-2xl font-bold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
-                Crear cuenta gratis
-              </Link>
-              <Link href="/services" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-red-600" style={{ border: '2px solid rgba(255,255,255,0.5)' }}>
-                Ver rutas disponibles
-              </Link>
-            </div>
-          </FadeIn>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
+          {/* Texto */}
+          <div className="flex-1 text-center md:text-left">
+            <FadeIn delay={0}>
+              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}>
+                🚌 Para Viajeros
+              </span>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+                Viaja por Ecuador<br />
+                <span style={{ color: '#ffe8e6' }}>sin complicaciones</span>
+              </h1>
+            </FadeIn>
+            <FadeIn delay={200}>
+              <p className="text-lg md:text-xl mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>
+                Reserva transporte en segundos, paga seguro y sigue tu viaje en tiempo real. Simple, rápido y sin complicaciones.
+              </p>
+            </FadeIn>
+            <FadeIn delay={300}>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+                  Crear cuenta gratis
+                </Link>
+                <Link href="/services" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-red-600" style={{ border: '2px solid rgba(255,255,255,0.5)' }}>
+                  Ver rutas disponibles
+                </Link>
+              </div>
+            </FadeIn>
+          </div>
+          {/* Foto Quilotoa */}
+          <div className="flex-1 w-full md:max-w-md">
+            <FadeIn delay={200} direction="right">
+              <img
+                src="/images/Quilotoa.png"
+                alt="Laguna Quilotoa - Ecuador"
+                className="w-full rounded-3xl shadow-2xl object-cover"
+                style={{ maxHeight: '420px' }}
+              />
+            </FadeIn>
+          </div>
         </div>
       </section>
 
-      {/* ── COMPARISON ───────────────────────────────────────── */}
+      {/* ── VENTAJAS ─────────────────────────────────────────── */}
       <section className="py-20 px-6 bg-white">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Por qué Going es mejor que coordinar por WhatsApp</h2>
-              <p className="text-gray-500">Cero incertidumbre. Viajes garantizados.</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Viajar con Going es diferente</h2>
+              <p className="text-gray-500 max-w-xl mx-auto">Diseñamos cada detalle para que tu viaje sea simple, seguro y predecible de principio a fin.</p>
             </div>
           </FadeIn>
-          <FadeIn delay={60}>
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="rounded-xl px-4 py-2 text-center font-bold text-sm" style={{ background: '#fee2e2', color: '#991b1b' }}>WhatsApp ❌</div>
-              <div className="rounded-xl px-4 py-2 text-center font-bold text-sm" style={{ background: '#dcfce7', color: '#14532d' }}>Going ✓</div>
-            </div>
-          </FadeIn>
-          <div className="flex flex-col gap-2">
-            <FadeIn delay={80}><CompRow bad="Esperas respuesta horas" good="Confirmación instantánea" /></FadeIn>
-            <FadeIn delay={120}><CompRow bad="Pagas en efectivo sin recibo" good="Pago seguro con factura" /></FadeIn>
-            <FadeIn delay={160}><CompRow bad="No sabes dónde está el conductor" good="GPS en tiempo real" /></FadeIn>
-            <FadeIn delay={200}><CompRow bad="Sin historial de viajes" good="Historial completo en la app" /></FadeIn>
-            <FadeIn delay={240}><CompRow bad="Sin reseñas ni garantías" good="Conductores verificados con rating" /></FadeIn>
-            <FadeIn delay={280}><CompRow bad="Sin seguro en caso de accidente" good="Seguro incluido en cada viaje" /></FadeIn>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { icon: '⚡', title: 'Confirmación instantánea', desc: 'Reserva tu viaje en segundos. Sin esperar respuesta ni incertidumbre de si hay cupo.' },
+              { icon: '💳', title: 'Pago seguro con comprobante', desc: 'Paga con tarjeta, transferencia o efectivo. Siempre con factura y registro de la transacción.' },
+              { icon: '📍', title: 'Seguimiento GPS en tiempo real', desc: 'Sigue la ubicación de tu conductor en el mapa. Sabes exactamente cuándo llega.' },
+              { icon: '📋', title: 'Historial de todos tus viajes', desc: 'Consulta cualquier viaje pasado: fecha, ruta, costo y conductor. Todo en un solo lugar.' },
+              { icon: '⭐', title: 'Conductores verificados y calificados', desc: 'Todos los conductores pasan por verificación de identidad, licencia y antecedentes.' },
+              { icon: '🛡️', title: 'Seguro incluido en cada viaje', desc: 'Cada trayecto cuenta con cobertura de seguro. Viaja con la tranquilidad que mereces.' },
+            ].map((item, i) => (
+              <FadeIn key={item.title} delay={i * 60}>
+                <div className="flex items-start gap-4 rounded-2xl p-5" style={{ background: '#f9fafb', border: '1px solid #f0f0f0' }}>
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: '#fff1f0' }}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900 mb-1">{item.title}</div>
+                    <div className="text-sm text-gray-500 leading-relaxed">{item.desc}</div>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
           </div>
         </div>
       </section>
@@ -360,7 +367,7 @@ export default function PasajerosPage() {
             <p className="text-white mb-10 text-lg" style={{ opacity: 0.88 }}>
               Crea tu cuenta gratis en segundos. Sin tarjeta requerida.
             </p>
-            <Link href="/register" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+            <Link href="/auth/register" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
               Registrarme gratis →
             </Link>
           </FadeIn>

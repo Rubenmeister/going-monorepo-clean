@@ -91,16 +91,28 @@ export default function QuienesSomosPage() {
           <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full bg-white/5 -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-white/5 translate-x-1/3 translate-y-1/3" />
         </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-5 py-2 text-white/90 text-sm font-medium mb-8">
-            🇪🇨 La primera SuperApp de turismo colaborativo de Latinoamérica
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-10">
+          {/* Texto */}
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur rounded-full px-5 py-2 text-white/90 text-sm font-medium mb-8">
+              🇪🇨 La primera SuperApp de turismo colaborativo de Latinoamérica
+            </div>
+            <h1 className="font-black text-white mb-6 leading-tight" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)' }}>
+              Somos Going
+            </h1>
+            <p className="text-white/80 text-xl leading-relaxed">
+              Transformamos la experiencia de viaje en Ecuador conectando viajeros, conductoras y conductores, anfitriones y proveedores locales en una sola plataforma integral, sostenible e inclusiva.
+            </p>
           </div>
-          <h1 className="font-black text-white mb-6 leading-tight" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)' }}>
-            Somos Going
-          </h1>
-          <p className="text-white/80 text-xl leading-relaxed max-w-3xl mx-auto">
-            Transformamos la experiencia de viaje en Ecuador conectando viajeros, conductoras y conductores, anfitriones y proveedores locales en una sola plataforma integral, sostenible e inclusiva.
-          </p>
+          {/* Foto pasajeros */}
+          <div className="flex-1 w-full md:max-w-md">
+            <img
+              src="/images/pasajeros.JPG"
+              alt="Pasajeros Going en Ecuador"
+              className="w-full rounded-3xl shadow-2xl object-cover"
+              style={{ maxHeight: '420px' }}
+            />
+          </div>
         </div>
       </section>
 
