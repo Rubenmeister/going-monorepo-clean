@@ -39,6 +39,12 @@ export class UserModelSchema {
 
   @Prop({ index: true })
   verificationToken?: string;
+
+  @Prop({ index: true })
+  companyId?: string;
+
+  @Prop()
+  companyName?: string;
 }
 
 export type UserDocument = UserModelSchema & Document;

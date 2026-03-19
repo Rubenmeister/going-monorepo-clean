@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist/customer-support-service"
+  },
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

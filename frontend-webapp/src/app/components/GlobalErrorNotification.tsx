@@ -54,7 +54,7 @@ function NotificationToast({ notification, onClose }: NotificationToastProps) {
     error: 'bg-red-50 border-red-200',
     warning: 'bg-yellow-50 border-yellow-200',
     success: 'bg-green-50 border-green-200',
-    info: 'bg-red-50 border-red-200',
+    info: 'bg-blue-50 border-blue-200',
   };
 
   const textColors = {

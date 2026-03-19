@@ -41,11 +41,27 @@ function PaymentResultInner() {
           case 'approved': setState('approved'); break;
           case 'rejected': setState('rejected'); break;
           case 'error':    setState('error');    break;
-          default:
-            // pending/processing → el webhook aún no llegó, reintentar en 3s
-            setTimeout(() => paymentService.getPaymentStatus(txn).then(r => {
-              setState(r.status === 'approved' ? 'approved' : r.status === 'rejected' ? 'rejected' : 'error');
-            }).catch(() => setState('error')), 3000);
+          default: {
+            // pending/processing → el webhook aún no llegó, reintentar con backoff (máx 5 intentos)
+            let attempts = 0;
+            const MAX_ATTEMPTS = 5;
+            const poll = () => {
+              if (attempts >= MAX_ATTEMPTS) { setState('error'); return; }
+              attempts++;
+              const delay = 3000 * attempts; // 3s, 6s, 9s, 12s, 15s
+              setTimeout(() => {
+                paymentService.getPaymentStatus(txn)
+                  .then(r => {
+                    if (r.status === 'approved') setState('approved');
+                    else if (r.status === 'rejected') setState('rejected');
+                    else if (r.status === 'pending' || r.status === 'processing') poll();
+                    else setState('error');
+                  })
+                  .catch(() => setState('error'));
+              }, delay);
+            };
+            poll();
+          }
         }
       })
       .catch(() => setState('error'));

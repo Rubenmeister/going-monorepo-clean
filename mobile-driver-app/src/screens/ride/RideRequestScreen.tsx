@@ -76,7 +76,7 @@ export function RideRequestScreen() {
       const token = await AsyncStorage.getItem('driver_token');
       const base =
         process.env.EXPO_PUBLIC_API_URL ||
-        'https://api-gateway-780842550857.us-central1.run.app';
+        'https://api.goingec.com';
       if (accept) {
         // PATCH /transport/:tripId/accept
         await axios.patch(

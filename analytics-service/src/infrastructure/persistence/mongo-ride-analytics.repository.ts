@@ -13,7 +13,7 @@ import { IRideAnalyticsRepository } from '../../../domain/ports';
 @Injectable()
 export class MongoRideAnalyticsRepository implements IRideAnalyticsRepository {
   constructor(
-    @InjectModel('RideAnalytics')
+    @InjectModel(RideAnalytics.name)
     private analyticsModel: Model<RideAnalyticsDocument>
   ) {}
 

@@ -110,6 +110,9 @@ export class ProxyModule implements NestModule {
       ),
       tracking: this.configService.get<string>('TRACKING_SERVICE_URL', ''),
       bookings: this.configService.get<string>('BOOKING_SERVICE_URL', ''),
+      invoices: this.configService.get<string>('BILLING_SERVICE_URL', ''),
+      analytics: this.configService.get<string>('ANALYTICS_SERVICE_URL', ''),
+      support: this.configService.get<string>('CUSTOMER_SUPPORT_SERVICE_URL', ''),
     };
 
     this.logger.log(`Proxy ready → auth: ${svc.auth}`);
@@ -139,5 +142,8 @@ export class ProxyModule implements NestModule {
     guard('notifications', svc.notifications);
     guard('tracking', svc.tracking);
     guard('bookings', svc.bookings);
+    guard('invoices', svc.invoices);
+    guard('analytics', svc.analytics);
+    guard('support', svc.support);
   }
 }

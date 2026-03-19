@@ -20,7 +20,9 @@ function generateRequestId(): string {
 export function createAxiosInstance(): AxiosInstance {
   const instance = axios.create({
     baseURL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api',
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      'http://localhost:3000/api',
     timeout: 15000, // 15 seconds
     headers: {
       'Content-Type': 'application/json',

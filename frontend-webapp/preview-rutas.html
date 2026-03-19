@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview - Primeras Rutas Going</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; }
+
+  .section { background: #0f172a; overflow: hidden; }
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  /* Grid principal */
+  .grid-split { display: grid; grid-template-columns: 1fr 1fr; min-height: 520px; }
+
+  /* Imagen izquierda */
+  .img-side { position: relative; overflow: hidden; min-height: 400px; }
+  .img-side .bg {
+    position: absolute; inset: 0;
+    background: url('public/images/Primeras rutas.png') center/cover no-repeat;
+  }
+  .img-side .gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, transparent 60%, #0f172a 100%);
+  }
+
+  /* Info derecha */
+  .info-side { display: flex; flex-direction: column; justify-content: center; padding: 3rem; }
+  .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: #ff4c41; margin-bottom: 0.75rem; }
+  .title { color: white; font-weight: 900; font-size: clamp(1.8rem, 3.5vw, 2.8rem); line-height: 1.15; margin-bottom: 1rem; }
+  .desc { color: #d1d5db; font-size: 1rem; line-height: 1.7; max-width: 28rem; margin-bottom: 1.5rem; }
+  .desc .bold { color: white; font-weight: 700; }
+  .desc .accent { color: #ff4c41; font-weight: 700; }
+
+  /* Lista de rutas */
+  .routes { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+  .route-item { display: flex; align-items: center; gap: 0.75rem; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .route-name { color: white; font-weight: 600; font-size: 0.9rem; }
+  .vice { color: #6b7280; font-size: 0.75rem; margin-left: auto; }
+
+  /* Badges */
+  .badges { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 2rem; }
+  .badge {
+    padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.75rem;
+    font-weight: 700; color: white; background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Botón */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: white; font-weight: 900; padding: 0.9rem 1.75rem;
+    border-radius: 0.75rem; background: #ff4c41; border: none;
+    font-size: 1rem; cursor: pointer; text-decoration: none; width: fit-content;
+  }
+  .btn:hover { opacity: 0.9; }
+
+  /* Tarjetas */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0 1.5rem 3rem; }
+  .card {
+    background: #1e293b; border-radius: 1rem; padding: 1.25rem;
+    border: 1px solid rgba(255,255,255,0.1); transition: border-color 0.3s;
+  }
+  .card:hover { border-color: rgba(255,255,255,0.2); }
+  .card-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .card-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .card-route { color: white; font-weight: 900; font-size: 0.85rem; }
+  .card-detail { color: #9ca3af; font-size: 0.75rem; line-height: 1.6; margin-bottom: 1rem; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .card-time { color: #9ca3af; font-size: 0.75rem; }
+  .card-price { font-weight: 900; font-size: 0.85rem; }
+
+  @media (max-width: 768px) {
+    .grid-split { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .info-side { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<section class="section">
+  <div class="container">
+    <!-- Layout: imagen izquierda + info derecha -->
+    <div class="grid-split">
+      <!-- Imagen Primeras Rutas -->
+      <div class="img-side">
+        <div class="bg"></div>
+        <div class="gradient"></div>
+      </div>
+
+      <!-- Info de rutas -->
+      <div class="info-side">
+        <span class="label">Primeras rutas</span>
+        <h2 class="title">Nuestras rutas<br>hacia Quito y el Aeropuerto</h2>
+        <p class="desc">
+          Viajes compartidos en <span class="bold">SUV</span>, máximo <span class="bold">3 pasajeros</span> por vehículo. Salidas <span class="accent">cada hora</span>, ida y vuelta.
+        </p>
+
+        <!-- Lista de rutas -->
+        <div class="routes">
+          <div class="route-item">
+            <div class="dot" style="background:#fb923c"></div>
+            <span class="route-name">Santo Domingo — Quito — Aeropuerto</span>
+            <span class="vice">y viceversa</span>
+          </div>
+          <div class="route-item">
+            <div class="dot" style="background:#60a5fa"></div>
+            <span class="route-name">Ambato — Latacunga — Quito — Aeropuerto</span>
+            <span class="vice">y viceversa</span>
+          </div>
+          <div class="route-item">
+            <div class="dot" style="background:#4ade80"></div>
+            <span class="route-name">Ibarra — Quito — Aeropuerto</span>
+            <span class="vice">y viceversa</span>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="badges">
+          <span class="badge">🕐 Salidas cada hora</span>
+          <span class="badge">🚙 SUV · 3 pasajeros</span>
+          <span class="badge">🔄 Ida y vuelta</span>
+        </div>
+
+        <a href="#" class="btn">Reservar viaje compartido →</a>
+      </div>
+    </div>
+
+    <!-- 3 tarjetas de ruta -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-dot" style="background:#fb923c"></div>
+          <span class="card-route">Santo Domingo — Quito — Aeropuerto</span>
+        </div>
+        <p class="card-detail">Acceso desde la Costa. Vía Calacalí o vía Alóag al centro de Quito y aeropuerto.</p>
+        <div class="card-footer">
+          <span class="card-time">⏱ ~2 h 45 min</span>
+          <span class="card-price" style="color:#fb923c">Desde $14</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-dot" style="background:#60a5fa"></div>
+          <span class="card-route">Ambato — Latacunga — Quito — Aeropuerto</span>
+        </div>
+        <p class="card-detail">Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.</p>
+        <div class="card-footer">
+          <span class="card-time">⏱ ~2 h 30 min</span>
+          <span class="card-price" style="color:#60a5fa">Desde $12</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-dot" style="background:#4ade80"></div>
+          <span class="card-route">Ibarra — Quito — Aeropuerto</span>
+        </div>
+        <p class="card-detail">Ruta norte de la Sierra. Directa a Quito y al aeropuerto Mariscal Sucre.</p>
+        <div class="card-footer">
+          <span class="card-time">⏱ ~2 h 15 min</span>
+          <span class="card-price" style="color:#4ade80">Desde $10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

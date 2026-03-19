@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 const api = axios.create({
   baseURL: API_BASE,

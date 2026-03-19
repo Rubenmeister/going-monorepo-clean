@@ -85,7 +85,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&q=80&auto=format',
     color: '#8B5CF6',
-    href: '/services',
+    href: '/envios',
   },
   {
     icon: '💳',
@@ -100,7 +100,7 @@ const SERVICES = [
     photo:
       'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80&auto=format',
     color: '#EC4899',
-    href: '/services',
+    href: '/payment',
   },
 ];
 

@@ -42,7 +42,7 @@ async function hasGoodConnection(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2500);
     await fetch(
-      'https://api-gateway-780842550857.us-central1.run.app/health',
+      'https://api.goingec.com/health',
       { method: 'HEAD', signal: controller.signal },
     );
     clearTimeout(timeout);

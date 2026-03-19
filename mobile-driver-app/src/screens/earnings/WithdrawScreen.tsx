@@ -17,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 type WithdrawRouteProp = RouteProp<DriverMainStackParamList, 'Withdraw'>;
 
