@@ -200,6 +200,80 @@ export default function ConductoresPage() {
         </div>
       </section>
 
+      {/* ── POR QUÉ UNIRTE ───────────────────────────────────── */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn>
+            <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ border: '1px solid #f0f0f0' }}>
+              {/* Foto aeropuerto */}
+              <div className="md:w-2/5 flex-shrink-0">
+                <img
+                  src="/images/SUV de lujo.png"
+                  alt="Conductor Going en el Aeropuerto Internacional Mariscal Sucre"
+                  className="w-full h-full object-cover"
+                  style={{ minHeight: '320px' }}
+                />
+              </div>
+              {/* Contenido */}
+              <div className="flex-1 p-8 md:p-10" style={{ background: '#1a1a1a' }}>
+                <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#ff4c41' }}>
+                  Comunidad Going
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6 leading-snug">
+                  ¿Por qué te conviene unirte a la comunidad Going?
+                </h2>
+                <ul className="space-y-3">
+                  {[
+                    { icon: '💰', text: 'Ganas el 80% de cada viaje, sin descuentos sorpresa.' },
+                    { icon: '🕐', text: 'Horarios 100% flexibles — tú decides cuándo trabajar.' },
+                    { icon: '⚡', text: 'Pagos garantizados en menos de 24 horas.' },
+                    { icon: '📍', text: 'Rutas inteligentes que optimizan tu tiempo y ganancias.' },
+                    { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
+                    { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
+                    { icon: '🎓', text: 'Academia Going gratuita para mejorar tu servicio.' },
+                    { icon: '🤝', text: 'Red de apoyo activa con más de 12,000 conductoras y conductores.' },
+                  ].map((item) => (
+                    <li key={item.text} className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
+                      <span className="text-gray-300 text-sm leading-relaxed">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8">
+                  <Link
+                    href="/register?rol=driver"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm hover:opacity-90 transition-all"
+                    style={{ background: '#ff4c41' }}
+                  >
+                    Quiero ser conductor Going →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── PHOTO STRIP ──────────────────────────────────────── */}
+      <section className="py-10 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FadeIn delay={0} direction="up">
+              <img src="/images/43.png" alt="Trabaja cuando quieres, el tiempo que quieres"
+                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+            </FadeIn>
+            <FadeIn delay={100} direction="up">
+              <img src="/images/41.png" alt="Sé parte de nuestro equipo"
+                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+            </FadeIn>
+            <FadeIn delay={200} direction="up">
+              <img src="/images/42.png" alt="Sé tu propio jefe"
+                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* ── EARNINGS CALCULATOR ──────────────────────────────── */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
@@ -318,6 +392,57 @@ export default function ConductoresPage() {
         </div>
       </section>
 
+      {/* ── ACADEMIA GOING ───────────────────────────────────── */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn>
+            <div className="rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+              <div className="flex flex-col md:flex-row items-center gap-8 p-10">
+                <div className="flex-1 text-white">
+                  <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
+                    style={{ backgroundColor: '#ff4c4122', color: '#ff6b60' }}>
+                    📚 Academia Going — 100% Gratuita
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-extrabold mb-3">
+                    Capacítate. Gana insignias.<br />Gana más dinero.
+                  </h2>
+                  <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                    La Academia Going tiene cursos especiales para conductores: seguridad vial en Ecuador,
+                    inglés turístico básico (en formato podcast para escuchar mientras manejas), mecánica
+                    preventiva y el arte de recibir pasajeros. Completa la Ruta del Volante y consigue
+                    el badge <strong style={{ color: '#ff6b60' }}>Aliado Oro</strong> para aparecer primero en los resultados.
+                  </p>
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    {['👋 Primera Impresión', '🛡️ Seguridad Vial', '🔧 Mecánica', '🗣️ Inglés (Podcast)', '🚑 Primeros Auxilios'].map(c => (
+                      <span key={c} className="text-xs px-3 py-1.5 rounded-full border border-gray-600 text-gray-300">{c}</span>
+                    ))}
+                  </div>
+                  <Link href="/academy"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: '#ff4c41', color: '#fff' }}>
+                    Ir a la Academia Going →
+                  </Link>
+                </div>
+                <div className="flex-shrink-0 grid grid-cols-3 gap-3">
+                  {[
+                    { icon: '🥉', label: 'Aliado Bronce', desc: 'Tronco Común' },
+                    { icon: '🥈', label: 'Aliado Plata', desc: '+3 cursos' },
+                    { icon: '🥇', label: 'Aliado Oro', desc: 'Ruta completa' },
+                  ].map(lvl => (
+                    <div key={lvl.label} className="rounded-2xl p-4 text-center text-white"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                      <div className="text-3xl mb-1">{lvl.icon}</div>
+                      <div className="text-xs font-bold">{lvl.label}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{lvl.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* ── FINAL CTA ────────────────────────────────────────── */}
       <section className="py-24 px-6" style={{ background: '#ff4c41' }}>
         <div className="max-w-2xl mx-auto text-center">
@@ -347,6 +472,7 @@ export default function ConductoresPage() {
           <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacidad</Link>
           <Link href="/contact" className="hover:text-white transition-colors">Contacto</Link>
           <Link href="/pasajeros" className="hover:text-white transition-colors">Para Pasajeros</Link>
+          <Link href="/academy" className="hover:text-white transition-colors" style={{ color: '#ff6b60' }}>📚 Academia</Link>
         </div>
       </footer>
     </div>
