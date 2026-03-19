@@ -163,40 +163,54 @@ export default function ConductoresPage() {
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="pt-32 pb-20 px-6" style={{ background: '#1a1a1a' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <FadeIn delay={0}>
-            <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,76,65,0.18)', color: '#ff4c41', border: '1px solid rgba(255,76,65,0.3)' }}>
-              🚗 Para Conductoras y Conductores
-            </span>
-          </FadeIn>
-          <FadeIn delay={100}>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
-              Maneja tus tiempos,<br />
-              <span style={{ color: '#ff4c41' }}>multiplica tus ingresos</span>
-            </h1>
-          </FadeIn>
-          <FadeIn delay={200}>
-            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-              Únete a más de 12,000 conductoras y conductores Going en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
-            </p>
-          </FadeIn>
-          <FadeIn delay={300}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
-              <Link href="/register?rol=driver" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.4)' }}>
-                Registrarme como conductora/conductor
-              </Link>
-              <a href="#requisitos" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-gray-900" style={{ border: '2px solid rgba(255,255,255,0.3)' }}>
-                Ver requisitos
-              </a>
-            </div>
-          </FadeIn>
-          <FadeIn delay={400}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-              <StatCard value="+40%" label="ingresos promedio" />
-              <StatCard value="12,000+" label="conductoras/conductores activos" />
-              <StatCard value="24h" label="pago garantizado" />
-            </div>
-          </FadeIn>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
+          {/* Texto */}
+          <div className="flex-1 text-center md:text-left">
+            <FadeIn delay={0}>
+              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,76,65,0.18)', color: '#ff4c41', border: '1px solid rgba(255,76,65,0.3)' }}>
+                🚗 Para Conductoras y Conductores
+              </span>
+            </FadeIn>
+            <FadeIn delay={100}>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+                Maneja tus tiempos,<br />
+                <span style={{ color: '#ff4c41' }}>multiplica tus ingresos</span>
+              </h1>
+            </FadeIn>
+            <FadeIn delay={200}>
+              <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 leading-relaxed">
+                Únete a más de 12,000 conductoras y conductores Going en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
+              </p>
+            </FadeIn>
+            <FadeIn delay={300}>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-10">
+                <Link href="/register?rol=driver" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.4)' }}>
+                  Registrarme como conductora/conductor
+                </Link>
+                <a href="#requisitos" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-gray-900" style={{ border: '2px solid rgba(255,255,255,0.3)' }}>
+                  Ver requisitos
+                </a>
+              </div>
+            </FadeIn>
+            <FadeIn delay={400}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCard value="+40%" label="ingresos promedio" />
+                <StatCard value="12,000+" label="conductoras/conductores activos" />
+                <StatCard value="24h" label="pago garantizado" />
+              </div>
+            </FadeIn>
+          </div>
+          {/* Imagen */}
+          <div className="flex-1 w-full md:max-w-md">
+            <FadeIn delay={200} direction="right">
+              <img
+                src="/images/SUV de lujo.png"
+                alt="SUV de lujo Going"
+                className="w-full rounded-3xl shadow-2xl object-cover"
+                style={{ maxHeight: '440px' }}
+              />
+            </FadeIn>
+          </div>
         </div>
       </section>
 
