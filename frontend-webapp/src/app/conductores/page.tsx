@@ -312,8 +312,33 @@ export default function ConductoresPage() {
         </div>
       </section>
 
+      {/* ── RUTAS DISPONIBLES ────────────────────────────────── */}
+      <section className="py-20 px-6" style={{ background: '#f9fafb' }}>
+        <div className="max-w-6xl mx-auto">
+          <FadeIn>
+            <div className="text-center mb-10">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,76,65,0.1)', color: '#ff4c41' }}>
+                🗺️ Cobertura Going
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>Nuevas rutas disponibles</h2>
+              <p className="text-gray-500 max-w-xl mx-auto">Más zonas, más viajes, más ingresos. Going expande su red de rutas para que siempre tengas demanda cerca.</p>
+            </div>
+          </FadeIn>
+          <FadeIn delay={100} direction="up">
+            <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+              <img
+                src="/images/nuevas rutas.png"
+                alt="Nuevas rutas Going — cobertura y expansión de zonas"
+                className="w-full object-contain"
+                style={{ maxHeight: '520px', background: '#fff' }}
+              />
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* ── REQUIREMENTS ─────────────────────────────────────── */}
-      <section id="requisitos" className="py-20 px-6" style={{ background: '#f9fafb' }}>
+      <section id="requisitos" className="py-20 px-6" style={{ background: '#ffffff' }}>
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
