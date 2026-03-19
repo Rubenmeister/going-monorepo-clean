@@ -43,7 +43,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_UUID"
+        "projectId": "429b7296-34cd-43bb-a927-1e85d4c00eae"
       }
     },
     "plugins": [

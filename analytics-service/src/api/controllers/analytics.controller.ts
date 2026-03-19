@@ -1,8 +1,6 @@
 import { Controller, Get, Param, Query, HttpStatus } from '@nestjs/common';
-import {
-  IRideAnalyticsRepository,
-  IDriverAnalyticsRepository,
-} from '../../domain/ports';
+import { MongoRideAnalyticsRepository } from '../../infrastructure/persistence/mongo-ride-analytics.repository';
+import { MongoDriverAnalyticsRepository } from '../../infrastructure/persistence/mongo-driver-analytics.repository';
 
 /**
  * Analytics API Controller
@@ -11,8 +9,8 @@ import {
 @Controller('api/analytics')
 export class AnalyticsController {
   constructor(
-    private rideAnalyticsRepository: IRideAnalyticsRepository,
-    private driverAnalyticsRepository: IDriverAnalyticsRepository
+    private rideAnalyticsRepository: MongoRideAnalyticsRepository,
+    private driverAnalyticsRepository: MongoDriverAnalyticsRepository
   ) {}
 
   @Get('rides/daily/:date')

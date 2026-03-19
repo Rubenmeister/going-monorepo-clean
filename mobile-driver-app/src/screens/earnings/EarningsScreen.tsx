@@ -45,7 +45,7 @@ export function EarningsScreen() {
       const token = await AsyncStorage.getItem('driver_token');
       const { data } = await axios.get(
         `${
-          process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'
+          process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com'
         }/api/payment/driver/earnings`,
         { headers: { Authorization: `Bearer ${token}` } }
       );

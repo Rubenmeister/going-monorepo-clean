@@ -2,8 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useRideStore } from '../stores/rideStore';
+import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 const RideRequestForm = dynamic(
   () =>
@@ -111,7 +112,17 @@ const STEPS = [
 
 function RidePageInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { auth } = useMonorepoApp();
   const { activeRide, clearRide } = useRideStore();
+
+  // Auth guard — redirige a login si no hay sesión
+  useEffect(() => {
+    if (auth !== undefined && !auth.user) {
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.replace(`/auth/login?returnUrl=${returnUrl}`);
+    }
+  }, [auth, router]);
 
   const initialType = searchParams.get('type') as RideCategory | null;
   const [step, setStep] = useState<Step>(initialType ? 'request' : 'type');
@@ -121,6 +132,7 @@ function RidePageInner() {
   const [rideCategory, setRideCategory] = useState<RideCategory>(
     initialType || 'economy'
   );
+  const [passengers, setPassengers] = useState(1);
   const [paymentAmount, setPaymentAmount] = useState(0);
 
   useEffect(() => {
@@ -216,148 +228,106 @@ function RidePageInner() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        {/* ── Paso 1: Selección de tipo ── */}
+        {/* ── Paso 1: Tipo de viaje ── */}
         {step === 'type' && (
           <div className="space-y-4">
-            {/* Mode toggle */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-1 flex shadow-sm">
-              <button
-                onClick={() => setMode('privado')}
-                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
-                  mode === 'privado'
-                    ? 'bg-[#ff4c41] text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                🚗 Viaje Privado
-              </button>
-              <button
-                onClick={() => setMode('compartido')}
-                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${
-                  mode === 'compartido'
-                    ? 'bg-[#ff4c41] text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                👥 Compartido
-              </button>
-            </div>
 
-            {mode === 'privado' ? (
-              <>
-                <p className="text-center text-gray-500 text-sm">
-                  El vehículo es exclusivo para ti. Elige tu categoría:
-                </p>
-                <div className="space-y-3">
-                  {(['economy', 'comfort', 'premium'] as RideCategory[]).map(
-                    (cat) => {
-                      const t = RIDE_TYPES[cat];
-                      return (
-                        <button
-                          key={cat}
-                          onClick={() => handleSelectType(cat)}
-                          className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md hover:border-gray-200 transition-all text-left group"
-                        >
-                          <div
-                            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                            style={{ backgroundColor: `${t.color}15` }}
-                          >
-                            {t.icon}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="font-bold text-gray-900">
-                                {t.label}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-500">{t.desc}</p>
-                          </div>
-                          <div className="text-right">
-                            <div
-                              className="font-bold text-sm"
-                              style={{ color: t.color }}
-                            >
-                              {t.price}
-                            </div>
-                            <div className="text-xs text-gray-400 mt-0.5">
-                              Seleccionar →
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    }
-                  )}
+            {/* 1a. Privado vs Compartido */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 pt-5 pb-3">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">¿Cómo quieres viajar?</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { key: 'privado' as TransportMode, icon: '🚗', label: 'Viaje Privado', desc: 'El vehículo es solo para ti y tu grupo' },
+                    { key: 'compartido' as TransportMode, icon: '👥', label: 'Compartido', desc: 'Comparte ruta y costo con otros pasajeros' },
+                  ].map(opt => (
+                    <button key={opt.key} onClick={() => setMode(opt.key)}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all ${
+                        mode === opt.key ? 'border-[#ff4c41] bg-[#fff2f2]' : 'border-gray-100 hover:border-gray-200'
+                      }`}>
+                      <div className="text-2xl mb-2">{opt.icon}</div>
+                      <div className="font-bold text-gray-900 text-sm">{opt.label}</div>
+                      <div className="text-xs text-gray-400 mt-0.5 leading-tight">{opt.desc}</div>
+                    </button>
+                  ))}
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                  <div className="text-center mb-6">
-                    <div className="text-4xl mb-3">👥</div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      Viaje Compartido
-                    </h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">
-                      Viaja con otros pasajeros que van en la misma dirección.
-                      Ahorra hasta un <strong>60%</strong> comparado con el
-                      viaje privado.
-                    </p>
-                  </div>
+              </div>
 
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    {[
-                      { icon: '💰', label: 'Hasta 60% más barato' },
-                      { icon: '🌱', label: 'Más sostenible' },
-                      { icon: '⏱️', label: 'Rutas optimizadas' },
-                    ].map((b) => (
-                      <div
-                        key={b.label}
-                        className="rounded-xl p-3 text-center"
-                        style={{ backgroundColor: '#fff2f2' }}
-                      >
-                        <div className="text-xl mb-1">{b.icon}</div>
-                        <div className="text-xs text-gray-600 font-medium leading-tight">
-                          {b.label}
+              {/* 1b. Número de pasajeros */}
+              <div className="px-5 py-4 border-t border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">¿Cuántas personas viajan?</p>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setPassengers(p => Math.max(1, p - 1))}
+                    className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 transition-all text-lg flex items-center justify-center">−</button>
+                  <div className="flex-1 text-center">
+                    <span className="text-3xl font-black" style={{ color: '#ff4c41' }}>{passengers}</span>
+                    <span className="text-gray-400 text-sm ml-1">{passengers === 1 ? 'pasajero' : 'pasajeros'}</span>
+                  </div>
+                  <button onClick={() => setPassengers(p => Math.min(mode === 'compartido' ? 3 : 40, p + 1))}
+                    className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 transition-all text-lg flex items-center justify-center">+</button>
+                </div>
+                {mode === 'compartido' && (
+                  <p className="text-xs text-gray-400 text-center mt-2">Máx. 3 pasajeros en viaje compartido</p>
+                )}
+              </div>
+
+              {/* 1c. Tipo de vehículo */}
+              <div className="px-5 pb-5 border-t border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 mt-4">Tipo de vehículo</p>
+                {mode === 'privado' ? (
+                  <div className="space-y-2">
+                    {([
+                      { cat: 'economy' as RideCategory, icon: '🚗', label: 'Automóvil', seats: '1–4', price: 'desde $2.50', desc: 'Económico y confiable' },
+                      { cat: 'comfort' as RideCategory, icon: '🚙', label: 'SUV / SUV XL', seats: '1–6', price: 'desde $3.25', desc: 'Más espacio y comodidad' },
+                      { cat: 'premium' as RideCategory, icon: '🚌', label: 'VAN / Minibús / Bus', seats: '1–40', price: 'desde $6.00', desc: 'Para grupos grandes' },
+                    ]).map(v => (
+                      <button key={v.cat} onClick={() => handleSelectType(v.cat)}
+                        className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left ${
+                          rideCategory === v.cat ? 'border-[#ff4c41] bg-[#fff2f2]' : 'border-gray-100 hover:border-gray-200'
+                        }`}>
+                        <span className="text-2xl">{v.icon}</span>
+                        <div className="flex-1">
+                          <div className="font-bold text-gray-900 text-sm">{v.label}</div>
+                          <div className="text-xs text-gray-400">{v.desc} · {v.seats} pax</div>
                         </div>
-                      </div>
+                        <div className="text-sm font-bold" style={{ color: '#ff4c41' }}>{v.price}</div>
+                      </button>
                     ))}
                   </div>
-
-                  <div
-                    className="rounded-xl p-4 mb-5 flex justify-between items-center"
-                    style={{ backgroundColor: '#fff2f2' }}
-                  >
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">
-                        Precio por asiento
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: '#ff4c41' }}
-                      >
-                        desde $1.50
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">
-                        Espera estimada
-                      </div>
-                      <div className="text-xl font-bold text-gray-700">
-                        5–15 min
-                      </div>
+                ) : (
+                  <div className="space-y-2">
+                    {([
+                      { cat: 'shared' as RideCategory, icon: '🚙', label: 'Confort', seats: '1–3', price: 'desde $1.50', desc: 'SUV / SUV XL compartido' },
+                    ]).map(v => (
+                      <button key={v.cat} onClick={() => handleSelectType(v.cat)}
+                        className="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-[#ff4c41] bg-[#fff2f2] text-left">
+                        <span className="text-2xl">{v.icon}</span>
+                        <div className="flex-1">
+                          <div className="font-bold text-gray-900 text-sm">{v.label}</div>
+                          <div className="text-xs text-gray-400">{v.desc} · máx. {v.seats} pax</div>
+                        </div>
+                        <div className="text-sm font-bold" style={{ color: '#ff4c41' }}>{v.price}</div>
+                      </button>
+                    ))}
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {[{ icon: '💰', label: 'Hasta 60% más barato' }, { icon: '🌱', label: 'Más sostenible' }, { icon: '⏱️', label: 'Rutas optimizadas' }].map(b => (
+                        <div key={b.label} className="rounded-xl p-2.5 text-center bg-gray-50">
+                          <div className="text-lg mb-0.5">{b.icon}</div>
+                          <div className="text-xs text-gray-500 leading-tight">{b.label}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
 
-                  <button
-                    onClick={() => handleSelectType('shared')}
-                    className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition-all hover:shadow-md hover:opacity-90"
-                    style={{ backgroundColor: '#ff4c41' }}
-                  >
-                    Buscar viaje compartido
-                  </button>
-                </div>
-              </>
-            )}
+            {/* CTA continuar */}
+            <button onClick={() => handleSelectType(mode === 'compartido' ? 'shared' : rideCategory)}
+              className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all hover:opacity-90 shadow-lg"
+              style={{ backgroundColor: '#ff4c41' }}>
+              Continuar → Elegir ruta →
+            </button>
           </div>
         )}
 

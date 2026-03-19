@@ -10,7 +10,7 @@ export const GOING_YELLOW = '#FFCD00';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL
-  ?? 'https://api-gateway-780842550857.us-central1.run.app';
+  ?? 'https://api.goingec.com';
 
 // ─── Polling Intervals (ms) ───────────────────────────────────────────────────
 export const RIDE_STATUS_POLL_MS         = 5_000;

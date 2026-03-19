@@ -1,0 +1,23 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { WhatsAppController } from './api/whatsapp.controller';
+import { ChatController } from './api/chat.controller';
+import { HealthController } from './api/health.controller';
+import { AgentService } from './agent/agent.service';
+import { ConversationService } from './agent/conversation.service';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+  ],
+  controllers: [
+    WhatsAppController,
+    ChatController,
+    HealthController,
+  ],
+  providers: [
+    AgentService,
+    ConversationService,
+  ],
+})
+export class AppModule {}

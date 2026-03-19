@@ -1,6 +1,8 @@
 'use client';
 import { useAuth } from './auth.context';
 
+// Llamadas de auth van por proxy Next.js (mismo origen → sin CORS)
+// Resto de llamadas van directo al backend con token
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const AUTH_TOKEN_KEY = 'authToken';
 
@@ -9,6 +11,21 @@ function getToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
+// Proxy interno de Next.js — no tiene CORS
+async function authFetch(path: string, body: Record<string, unknown>) {
+  const res = await fetch(`/api/auth${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { message?: string }).message || `HTTP ${res.status}`);
+  }
+  return data;
+}
+
+// Llamadas autenticadas al backend
 async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getToken();
   const res = await fetch(`${API_URL}${path}`, {
@@ -35,10 +52,7 @@ export const useMonorepoApp = () => {
     domain: {
       auth: {
         login: async (creds: { email: string; password: string }) => {
-          const d = await apiFetch('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(creds),
-          });
+          const d = await authFetch('/login', creds);
           if (d.token && typeof window !== 'undefined') {
             localStorage.setItem(AUTH_TOKEN_KEY, d.token);
             window.location.reload();
@@ -46,10 +60,7 @@ export const useMonorepoApp = () => {
           return d;
         },
         register: async (data: Record<string, unknown>) => {
-          const r = await apiFetch('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(data),
-          });
+          const r = await authFetch('/register', data);
           if (r.token && typeof window !== 'undefined')
             localStorage.setItem(AUTH_TOKEN_KEY, r.token);
           return r;

@@ -17,7 +17,7 @@ const GOING_BLUE = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 interface TripRecord {
   id: string;

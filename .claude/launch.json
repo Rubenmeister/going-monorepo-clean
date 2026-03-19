@@ -9,7 +9,7 @@
         "run",
         "dev",
         "--prefix",
-        "frontend-webapp"
+        "C:/Users/USER1/going-monorepo-clean/frontend-webapp"
       ],
       "port": 3001
     },
