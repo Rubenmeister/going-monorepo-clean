@@ -327,7 +327,7 @@ export default function ConductoresPage() {
           <FadeIn delay={100} direction="up">
             <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
               <img
-                src="/images/nuevas rutas.png"
+                src="/images/nuevas%20rutas.png"
                 alt="Nuevas rutas Going — cobertura y expansión de zonas"
                 className="w-full object-contain"
                 style={{ maxHeight: '520px', background: '#fff' }}
