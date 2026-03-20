@@ -3,6 +3,8 @@
 export {
   RegisterUserUseCase,
   LoginUserUseCase,
+  OAuthLoginUseCase,
+  OAuthLoginDto,
   RegisterUserDto,
   LoginUserDto,
 } from '@going-monorepo-clean/domains-user-core';

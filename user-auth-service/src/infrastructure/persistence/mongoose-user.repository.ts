@@ -66,6 +66,15 @@ export class MongooseUserRepository implements IUserRepository {
     }
   }
 
+  async findByOAuthId(provider: string, oauthId: string): Promise<Result<User | null, Error>> {
+    try {
+      const doc = await this.model.findOne({ oauthProvider: provider, oauthId }).exec();
+      return ok(doc ? this.toDomain(doc) : null);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   async findAll(opts?: {
     limit?: number;
     skip?: number;

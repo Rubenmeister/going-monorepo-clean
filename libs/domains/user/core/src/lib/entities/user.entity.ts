@@ -5,11 +5,12 @@ import { Role, RoleType } from '../value-objects/role.vo';
 import { IPasswordHasher } from '../ports/ipassword-hasher';
 
 export type UserStatus = 'pending_verification' | 'active' | 'suspended';
+export type OAuthProvider = 'google' | 'facebook';
 
 export interface UserProps {
   id: UUID;
   email: string;
-  passwordHash: string;
+  passwordHash?: string;      // Opcional: usuarios OAuth no tienen password
   firstName: string;
   lastName: string;
   phone?: string;
@@ -17,12 +18,15 @@ export interface UserProps {
   status: UserStatus;
   createdAt: Date;
   verificationToken?: string;
+  oauthProvider?: OAuthProvider;
+  oauthId?: string;
+  profilePicture?: string;
 }
 
 export class User {
   readonly id: UUID;
   readonly email: string;
-  readonly passwordHash: string;
+  readonly passwordHash?: string;
   readonly firstName: string;
   readonly lastName: string;
   readonly phone?: string;
@@ -30,6 +34,9 @@ export class User {
   readonly status: UserStatus;
   readonly createdAt: Date;
   readonly verificationToken?: string;
+  readonly oauthProvider?: OAuthProvider;
+  readonly oauthId?: string;
+  readonly profilePicture?: string;
 
   private constructor(props: UserProps) {
     this.id = props.id;
@@ -42,6 +49,9 @@ export class User {
     this.status = props.status;
     this.createdAt = props.createdAt;
     this.verificationToken = props.verificationToken;
+    this.oauthProvider = props.oauthProvider;
+    this.oauthId = props.oauthId;
+    this.profilePicture = props.profilePicture;
   }
 
   public static create(props: {
@@ -67,6 +77,38 @@ export class User {
     return ok(user);
   }
 
+  public static createOAuth(props: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    oauthProvider: OAuthProvider;
+    oauthId: string;
+    profilePicture?: string;
+    roles?: Role[];
+  }): Result<User, Error> {
+    if (props.firstName.length < 2) {
+      return err(new Error('First name is too short'));
+    }
+
+    const user = new User({
+      id: uuidv4(),
+      email: props.email,
+      passwordHash: undefined,
+      firstName: props.firstName,
+      lastName: props.lastName,
+      phone: undefined,
+      roles: props.roles ?? [Role.fromPrimitives('user')],
+      status: 'active',
+      createdAt: new Date(),
+      verificationToken: undefined,
+      oauthProvider: props.oauthProvider,
+      oauthId: props.oauthId,
+      profilePicture: props.profilePicture,
+    });
+
+    return ok(user);
+  }
+
   public toPrimitives(): any {
     return {
       id: this.id,
@@ -79,6 +121,9 @@ export class User {
       status: this.status,
       createdAt: this.createdAt,
       verificationToken: this.verificationToken,
+      oauthProvider: this.oauthProvider,
+      oauthId: this.oauthId,
+      profilePicture: this.profilePicture,
     };
   }
 

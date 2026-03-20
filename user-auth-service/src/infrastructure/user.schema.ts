@@ -12,8 +12,8 @@ export class UserModelSchema {
   @Prop({ required: true, unique: true, index: true })
   email: string;
 
-  @Prop({ required: true })
-  passwordHash: string;
+  @Prop()
+  passwordHash?: string;
 
   @Prop({ required: true })
   firstName: string;
@@ -45,6 +45,15 @@ export class UserModelSchema {
 
   @Prop()
   companyName?: string;
+
+  @Prop({ enum: ['google', 'facebook'] })
+  oauthProvider?: string;
+
+  @Prop({ index: true })
+  oauthId?: string;
+
+  @Prop()
+  profilePicture?: string;
 }
 
 export type UserDocument = UserModelSchema & Document;
