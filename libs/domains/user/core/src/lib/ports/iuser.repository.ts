@@ -10,6 +10,7 @@ export interface IUserRepository {
   findById(id: UUID): Promise<Result<User | null, Error>>;
   findByEmail(email: string): Promise<Result<User | null, Error>>;
   findByVerificationToken(token: string): Promise<Result<User | null, Error>>;
+  findByOAuthId(provider: string, oauthId: string): Promise<Result<User | null, Error>>;
   findAll(opts?: {
     limit?: number;
     skip?: number;

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import {
@@ -19,9 +20,12 @@ import { RedisRefreshTokenRepository } from './persistence/redis-refresh-token.r
 import { RedisTokenBlacklistRepository } from './persistence/redis-token-blacklist.repository';
 import { TokenManagerService } from './services/token-manager.service';
 import { AccountLockoutService } from './services/account-lockout.service';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 
 @Module({
   imports: [
+    PassportModule,
     MongooseModule.forFeature([
       { name: UserModelSchema.name, schema: UserSchema },
     ]),
@@ -75,6 +79,9 @@ import { AccountLockoutService } from './services/account-lockout.service';
     // Security Services
     TokenManagerService,
     AccountLockoutService,
+    // OAuth Strategies
+    GoogleStrategy,
+    FacebookStrategy,
   ],
   exports: [
     IUserRepository,

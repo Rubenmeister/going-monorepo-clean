@@ -5,6 +5,7 @@ export * from './lib/dto/login-user.dto';
 // Exporta los Casos de Uso (y sus DTOs de respuesta)
 export * from './lib/use-cases/register-user.use-case';
 export * from './lib/use-cases/login-user.use-case';
+export * from './lib/use-cases/oauth-login.use-case';
 
 // Exporta Puertos (Interfaces) - Token Management
 export * from './lib/ports/itoken.service';

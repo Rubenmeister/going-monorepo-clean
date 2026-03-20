@@ -10,14 +10,18 @@ import {
   UnauthorizedException,
   Inject,
   Req,
+  Res,
   HttpException,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { Request, Response } from 'express';
 import {
   RegisterUserDto,
   RegisterUserUseCase,
   LoginUserDto,
   LoginUserUseCase,
+  OAuthLoginUseCase,
+  OAuthLoginDto,
 } from '@going-monorepo-clean/domains-user-application';
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
 import { UUID } from '@going-monorepo-clean/shared-domain';
@@ -33,6 +37,10 @@ import { AccountLockoutService } from '../application/account-lockout.service';
  * - POST /auth/refresh - Refresh access token
  * - POST /auth/logout - Logout and revoke tokens
  * - GET /auth/me - Get current user info (protected)
+ * - GET /auth/google - Initiate Google OAuth
+ * - GET /auth/google/callback - Google OAuth callback
+ * - GET /auth/facebook - Initiate Facebook OAuth
+ * - GET /auth/facebook/callback - Facebook OAuth callback
  */
 @Controller('auth')
 export class AuthController {
@@ -44,7 +52,8 @@ export class AuthController {
     @Inject(ITokenManager)
     private tokenManager: ITokenManager,
     private readonly auditLogService: AuditLogService,
-    private readonly accountLockoutService: AccountLockoutService
+    private readonly accountLockoutService: AccountLockoutService,
+    private readonly oauthLoginUseCase: OAuthLoginUseCase,
   ) {}
 
   /**
@@ -471,5 +480,41 @@ export class AuthController {
       roles,
       authenticated: !!userId,
     };
+  }
+
+  // ─── Google OAuth ───────────────────────────────────────────────────────────
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin(): void {
+    // Passport redirige al usuario a Google automáticamente
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: any, @Res() res: Response): Promise<void> {
+    const result = await this.oauthLoginUseCase.execute(req.user as OAuthLoginDto);
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    res.redirect(
+      `${frontendUrl}/auth/callback?token=${result.token}&isNewUser=${result.isNewUser}`
+    );
+  }
+
+  // ─── Facebook OAuth ─────────────────────────────────────────────────────────
+
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  facebookLogin(): void {
+    // Passport redirige al usuario a Facebook automáticamente
+  }
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookCallback(@Req() req: any, @Res() res: Response): Promise<void> {
+    const result = await this.oauthLoginUseCase.execute(req.user as OAuthLoginDto);
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    res.redirect(
+      `${frontendUrl}/auth/callback?token=${result.token}&isNewUser=${result.isNewUser}`
+    );
   }
 }
