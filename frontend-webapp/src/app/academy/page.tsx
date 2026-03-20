@@ -266,44 +266,56 @@ export default function AcademyPage() {
       <div className="relative text-white py-16 px-6 overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #ff4c4130 100%)' }}>
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5 bg-white -translate-y-1/2 translate-x-1/3" />
-        <div className="max-w-5xl mx-auto relative z-10">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
-            style={{ backgroundColor: '#ff4c4122', color: '#ff6b60' }}>
-            📚 Academia Going
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            Capacítate. Crece. Gana más.
-          </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mb-6">
-            La plataforma de aprendizaje de Going. Para conductores, anfitriones, guías, operadores y viajeros.
-            Cursos gratuitos en formato microlearning: texto, podcast, video y quizzes.
-          </p>
-          <div className="flex flex-wrap gap-3 mb-8">
-            {[
-              { icon: '🚗', label: 'Conductores' },
-              { icon: '🏡', label: 'Anfitriones' },
-              { icon: '🏺', label: 'Guías Locales' },
-              { icon: '🧗', label: 'Operadores' },
-              { icon: '🌍', label: 'Viajeros' },
-            ].map(tag => (
-              <span key={tag.label}
-                className="text-sm px-3 py-1.5 rounded-full border border-gray-600 text-gray-300">
-                {tag.icon} {tag.label}
-              </span>
-            ))}
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-10">
+          {/* Texto */}
+          <div className="flex-1 text-center md:text-left">
+            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
+              style={{ backgroundColor: '#ff4c4122', color: '#ff6b60' }}>
+              📚 Academia Going
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              Capacítate. Crece. Gana más.
+            </h1>
+            <p className="text-gray-300 text-lg max-w-2xl mb-6">
+              La plataforma de aprendizaje de Going. Para conductores, anfitriones, guías, operadores y viajeros.
+              Cursos gratuitos en formato microlearning: texto, podcast, video y quizzes.
+            </p>
+            <div className="flex flex-wrap gap-3 mb-8 justify-center md:justify-start">
+              {[
+                { icon: '🚗', label: 'Conductores' },
+                { icon: '🏡', label: 'Anfitriones' },
+                { icon: '🏺', label: 'Guías Locales' },
+                { icon: '🧗', label: 'Operadores' },
+                { icon: '🌍', label: 'Viajeros' },
+              ].map(tag => (
+                <span key={tag.label}
+                  className="text-sm px-3 py-1.5 rounded-full border border-gray-600 text-gray-300">
+                  {tag.icon} {tag.label}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-8 justify-center md:justify-start">
+              {[
+                { value: `${totalCourses}`, label: 'Cursos disponibles' },
+                { value: `${Math.round(totalStudents / 1000)}K+`, label: 'Estudiantes activos' },
+                { value: 'Gratis', label: 'Siempre gratuito' },
+                { value: '3–35 min', label: 'Por lección' },
+              ].map(stat => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>{stat.value}</div>
+                  <div className="text-gray-400 text-sm mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-8">
-            {[
-              { value: `${totalCourses}`, label: 'Cursos disponibles' },
-              { value: `${Math.round(totalStudents / 1000)}K+`, label: 'Estudiantes activos' },
-              { value: 'Gratis', label: 'Siempre gratuito' },
-              { value: '3–35 min', label: 'Por lección' },
-            ].map(stat => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl font-bold" style={{ color: '#ff6b60' }}>{stat.value}</div>
-                <div className="text-gray-400 text-sm mt-1">{stat.label}</div>
-              </div>
-            ))}
+          {/* Imagen */}
+          <div className="flex-1 w-full md:max-w-md">
+            <img
+              src="/images/Academia%20Going.jpg"
+              alt="Academia Going — formación para conductores y anfitriones"
+              className="w-full rounded-3xl shadow-2xl object-cover"
+              style={{ maxHeight: '440px' }}
+            />
           </div>
         </div>
       </div>
