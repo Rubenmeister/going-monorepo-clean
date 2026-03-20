@@ -8,20 +8,20 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
       }
     }
   },

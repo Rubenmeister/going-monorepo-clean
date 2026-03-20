@@ -2,6 +2,7 @@
   "expo": {
     "name": "Going - Conductor",
     "slug": "going-driver-app",
+    "scheme": "goingdriver",
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,21 +30,23 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.driverapp",
-      "versionCode": 2,
+      "versionCode": 18,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "googleServicesFile": "./google-services.json",
       "config": {}
     },
     "extra": {
       "eas": {
-        "projectId": "429b7296-34cd-43bb-a927-1e85d4c00eae"
+        "projectId": "9b75df0a-5470-45f1-86e8-e4463bcd1f63"
       }
     },
     "plugins": [

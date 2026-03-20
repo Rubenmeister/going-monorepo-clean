@@ -146,12 +146,13 @@ export function EarningsScreen() {
         <Text style={styles.heroSub}>{summary.trips} viajes en total</Text>
         <TouchableOpacity
           style={styles.withdrawBtn}
-          onPress={() =>
-            hapticMedium(); navigation.navigate('Withdraw', {
+          onPress={() => {
+            hapticMedium();
+            navigation.navigate('Withdraw', {
               availableBalance: summary.total,
               currency: 'USD',
-            })
-          }
+            });
+          }}
         >
           <Text style={styles.withdrawBtnText}>💸 Retirar ganancias</Text>
         </TouchableOpacity>
