@@ -17,9 +17,14 @@ import { AccountLockoutService } from './application/account-lockout.service';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.USER_DB_URL, {
-      lazyConnection: true,
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
       connectionFactory: (conn) => {
-        conn.on('error', (e) => console.warn('MongoDB:', e.message));
+        conn.on('connected', () => console.log('MongoDB connected'));
+        conn.on('error', (e) => console.error('MongoDB error:', e.message));
+        conn.on('disconnected', () => console.warn('MongoDB disconnected'));
         return conn;
       },
     }),
