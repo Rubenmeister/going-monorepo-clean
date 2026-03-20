@@ -12,7 +12,7 @@ const BLACK = '#1a1a1a';
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';

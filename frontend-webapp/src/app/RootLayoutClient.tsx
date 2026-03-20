@@ -2,7 +2,7 @@
 
 import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
 import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
+import { Footer } from './components/layout/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorNotification } from './components/GlobalErrorNotification';
 import { LanguageProvider } from './contexts/LanguageContext';

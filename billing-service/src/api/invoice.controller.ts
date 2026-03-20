@@ -32,10 +32,10 @@ import {
   InvoiceListResponseDto,
   InvoiceStatsResponseDto,
 } from './dtos/invoice-response.dto';
-import { CorporateJwtAuthGuard } from '../../shared/guards/corporate-jwt.guard';
-import { CorporateRbacGuard } from '../../shared/guards/corporate-rbac.guard';
+import { CorporateJwtAuthGuard } from '../shared/guards/corporate-jwt.guard';
+import { CorporateRbacGuard } from '../shared/guards/corporate-rbac.guard';
 
-@Controller('api/invoices')
+@Controller('invoices')
 @UseGuards(CorporateJwtAuthGuard)
 export class InvoiceController {
   constructor(

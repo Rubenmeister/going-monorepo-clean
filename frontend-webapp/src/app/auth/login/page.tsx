@@ -24,7 +24,16 @@ function LoginForm() {
       const from = searchParams.get('from') ?? '/';
       window.location.href = from;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Credenciales incorrectas');
+      const msg = err instanceof Error ? err.message : '';
+      if (!msg || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('connect')) {
+        setError('No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.');
+      } else if (msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('401')) {
+        setError('Correo o contraseña incorrectos. Verifica tus datos e intenta de nuevo.');
+      } else if (msg.toLowerCase().includes('not found') || msg.toLowerCase().includes('404')) {
+        setError('No encontramos una cuenta con ese correo. ¿Quieres registrarte?');
+      } else {
+        setError('No se pudo iniciar sesión. Intenta de nuevo en unos momentos.');
+      }
     } finally {
       setLoading(false);
     }
@@ -40,14 +49,17 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — Going Red brand */}
+      {/* Left panel — photo background */}
       <div
         className="hidden lg:flex flex-col justify-between w-5/12 p-12 relative overflow-hidden"
-        style={{ backgroundColor: '#ff4c41' }}
+        style={{
+          backgroundImage: 'url(/images/MUJERES%20LLEGANDO%20AL%20AERO%20DE%20QUITO.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+        }}
       >
-        {/* Background decorative circles */}
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 bg-white -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-10 bg-white translate-y-1/2 -translate-x-1/3" />
+        {/* Dark overlay for text legibility */}
+        <div className="absolute inset-0 bg-black/60" />
 
         {/* Logo */}
         <div className="relative z-10">

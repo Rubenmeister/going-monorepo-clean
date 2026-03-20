@@ -21,11 +21,18 @@ const RIDE_TYPE_MULTIPLIERS: Record<RideType, number> = {
  * Calculate distance between two coordinates in kilometers
  */
 export function calculateDistance(pickup: Location, dropoff: Location): number {
-  const dLat = dropoff.lat - pickup.lat;
-  const dLon = dropoff.lon - pickup.lon;
-  const distanceDegrees = Math.sqrt(dLat * dLat + dLon * dLon);
-  // Rough conversion to km (1 degree ≈ 111 km)
-  return distanceDegrees * 111;
+  // Haversine formula — accurate for all distances on Earth
+  const R = 6371; // Earth radius in km
+  const dLat = ((dropoff.lat - pickup.lat) * Math.PI) / 180;
+  const dLon = ((dropoff.lon - pickup.lon) * Math.PI) / 180;
+  const lat1 = (pickup.lat * Math.PI) / 180;
+  const lat2 = (dropoff.lat * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 /**

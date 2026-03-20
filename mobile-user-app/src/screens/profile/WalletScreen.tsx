@@ -11,7 +11,7 @@ import { hapticMedium, hapticSuccess, hapticError, hapticLight } from '@utils/ha
 const GOING_RED    = '#ff4c41';
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const API_BASE     = 'https://api-gateway-780842550857.us-central1.run.app';
+const API_BASE     = 'https://api.goingec.com';
 
 interface Transaction {
   id: string;

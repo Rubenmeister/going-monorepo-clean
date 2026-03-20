@@ -65,7 +65,7 @@ steps:
       - '5'
       - '--timeout'
       - '60'
-      - '--set-env-vars'
+      - '--update-env-vars'
       - '^|^NODE_ENV=production|JWT_SECRET=${_JWT_SECRET}|JWT_EXPIRES_IN=15m|${_DB_VAR_NAME}=${_MONGODB_URL}|REDIS_URL=${_REDIS_URL}'
 
 images:

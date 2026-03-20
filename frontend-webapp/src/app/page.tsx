@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { ReviewsList } from './components/features/rating';
@@ -32,7 +32,7 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
 /* ── Data ───────────────────────────────────────────────────── */
 const SLIDES = [
   { region: 'Sierra', subtitle: 'Andes · Volcanes · Cultura', img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg', color: '#6366f1' },
-  { region: 'Costa', subtitle: 'Mar · Playas · Atardeceres', img: '/images/costa.png', color: '#0ea5e9' },
+  { region: 'Costa', subtitle: 'Mar · Playas · Atardeceres', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=85&auto=format&fit=crop', color: '#0ea5e9' },
   { region: 'Amazonía', subtitle: 'Selva · Biodiversidad · Aventura', img: '/images/Orellana Pañacocha Laguna.jpg', color: '#16a34a' },
   { region: 'Galápagos', subtitle: 'Islas únicas en el mundo', img: '/images/galàpagos.png', color: '#f59e0b' },
 ];
@@ -121,26 +121,6 @@ function LocationInput({ value, onChange, placeholder }: { value: string; onChan
 export default function HomePage() {
   const { auth } = useMonorepoApp();
 
-  // Splash
-  const [showSplash, setShowSplash] = useState(false);
-  const [splashFading, setSplashFading] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !sessionStorage.getItem('going_splash_shown')) {
-      setShowSplash(true);
-      sessionStorage.setItem('going_splash_shown', '1');
-      const timer = setTimeout(() => {
-        setSplashFading(true);
-        setTimeout(() => setShowSplash(false), 600);
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const dismissSplash = useCallback(() => {
-    setSplashFading(true);
-    setTimeout(() => setShowSplash(false), 600);
-  }, []);
 
   // Carousel
   const [slide, setSlide] = useState(0);
@@ -158,7 +138,7 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams({ from: origin, to: dest, ...(date && { date }), ...(time && { time }) });
-    window.location.href = `/services/transport?${params}`;
+    window.location.href = `/ride?${params}`;
   };
 
   // Destinos
@@ -166,52 +146,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ── Splash ────────────────────────────────────────── */}
-      {showSplash && (
-        <div
-          onClick={dismissSplash}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center cursor-pointer"
-          style={{
-            backgroundColor: '#0a0a0a',
-            opacity: splashFading ? 0 : 1,
-            transition: 'opacity 0.6s ease',
-            animation: 'splashExpand 0.75s cubic-bezier(0.34, 1.3, 0.64, 1) forwards',
-          }}
-        >
-          {/* Icon logo + wordmark close together */}
-          <div className="flex flex-col items-center" style={{ animation: 'contentFadeIn 0.5s ease 0.4s both' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/going-logo.png" alt="Going" style={{ height: 160, width: 'auto' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            {/* Wordmark — tight to the logo */}
-            <div className="text-white font-black tracking-tight" style={{ fontSize: '3.5rem', letterSpacing: '0.08em', marginTop: '-22px' }}>GOING</div>
-          </div>
-          {/* Tagline */}
-          <p className="text-white text-lg font-light tracking-widest uppercase mt-5" style={{ opacity: 0.7, animation: 'contentFadeIn 0.5s ease 0.7s both' }}>
-            Nos movemos contigo
-          </p>
-          {/* Pulsing dots */}
-          <div className="mt-10 flex gap-1.5" style={{ animation: 'contentFadeIn 0.5s ease 0.9s both' }}>
-            {[0,1,2].map(i => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full bg-white" style={{ opacity: 0.4, animation: `pulse 1.2s ${i * 0.2}s infinite` }} />
-            ))}
-          </div>
-          <style>{`
-            @keyframes splashExpand {
-              0%   { transform: scale(0.05); border-radius: 50%; opacity: 0; }
-              40%  { opacity: 1; border-radius: 30%; }
-              100% { transform: scale(1); border-radius: 0%; opacity: 1; }
-            }
-            @keyframes contentFadeIn {
-              from { opacity: 0; transform: translateY(12px); }
-              to   { opacity: 1; transform: none; }
-            }
-            @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-          `}</style>
-        </div>
-      )}
-
       {/* ── Hero Carousel ─────────────────────────────────── */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: '100vh' }}>
+      <section className="relative w-full overflow-hidden" style={{ minHeight: '100vh', backgroundColor: '#111' }}>
         {SLIDES.map((s, i) => (
           <div
             key={s.region}
@@ -238,13 +174,13 @@ export default function HomePage() {
             {SLIDES[slide].region}
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
-          <Link
-            href="/pasajeros"
+          <button
+            onClick={() => document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-2xl transition-all hover:scale-105 hover:opacity-90"
             style={{ backgroundColor: '#ff4c41' }}
           >
             Reservar viaje →
-          </Link>
+          </button>
 
           {/* Slide dots */}
           <div className="absolute bottom-10 flex gap-3">
@@ -262,7 +198,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Search Card ───────────────────────────────────── */}
-      <section className="relative z-20 max-w-4xl mx-auto px-4" style={{ marginTop: -64 }}>
+      <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4" style={{ marginTop: -64 }}>
         <FadeIn>
           <div className="bg-white rounded-3xl shadow-2xl p-8">
             <h2 className="text-gray-900 font-black text-2xl mb-6 text-center">¿A dónde viajas hoy?</h2>
@@ -295,39 +231,29 @@ export default function HomePage() {
 
       {/* ── Primeras Rutas Going ──────────────────────────── */}
       <section className="overflow-hidden" style={{ background: '#0f172a' }}>
-        <div className="max-w-7xl mx-auto">
-          {/* Layout: imagen izquierda + info derecha */}
-          <div className="grid lg:grid-cols-2" style={{ minHeight: 520 }}>
-            {/* Imagen Primeras Rutas (izquierda) */}
-            <FadeIn dir="left" className="relative overflow-hidden" style={{ minHeight: 400 } as React.CSSProperties}>
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/images/Primeras rutas.png')" }} />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 60%, #0f172a 100%)' }} />
-            </FadeIn>
+        <div className="max-w-7xl mx-auto px-6 py-16">
 
-            {/* Info de rutas (derecha) */}
-            <FadeIn dir="right" className="flex flex-col justify-center p-8 lg:p-12">
+          {/* Mapa visible completo */}
+          <FadeIn dir="up" className="mb-12">
+            <img
+              src="/images/Mapa RUTAS A QUITO.png"
+              alt="Rutas a Quito y el Aeropuerto Mariscal Sucre"
+              className="w-full rounded-2xl shadow-2xl"
+              style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+            />
+          </FadeIn>
+
+          {/* Info de rutas (debajo del mapa) */}
+          <FadeIn dir="up" className="flex flex-col lg:flex-row lg:items-start gap-10">
+            {/* Columna izquierda: título + descripción + botón */}
+            <div className="lg:w-1/3">
               <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: '#ff4c41' }}>Primeras rutas</span>
-              <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.8rem)' }}>
-                Nuestras rutas<br />hacia Quito y el Aeropuerto
+              <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.4rem)' }}>
+                Rutas a Quito<br />y el aeropuerto de Quito
               </h2>
-              <p className="text-gray-300 text-base leading-relaxed max-w-md mb-6">
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
                 Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo. Salidas <span className="font-bold" style={{ color: '#ff4c41' }}>cada hora</span>, ida y vuelta.
               </p>
-
-              {/* Lista de rutas */}
-              <div className="space-y-4 mb-8">
-                {[
-                  { color: '#fb923c', route: 'Santo Domingo — Quito — Aeropuerto', icon: '🟠' },
-                  { color: '#60a5fa', route: 'Ambato — Latacunga — Quito — Aeropuerto', icon: '🔵' },
-                  { color: '#4ade80', route: 'Ibarra — Quito — Aeropuerto', icon: '🟢' },
-                ].map((r) => (
-                  <div key={r.route} className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
-                    <span className="text-white font-semibold text-sm">{r.route}</span>
-                    <span className="text-gray-500 text-xs ml-auto">y viceversa</span>
-                  </div>
-                ))}
-              </div>
 
               {/* Badges informativos */}
               <div className="flex flex-wrap gap-3 mb-8">
@@ -342,14 +268,29 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <Link href="/pasajeros" className="inline-flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-xl hover:opacity-90 transition-all w-fit" style={{ backgroundColor: '#ff4c41' }}>
+              <Link href="/ride?type=shared" className="inline-flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-xl hover:opacity-90 transition-all w-fit" style={{ backgroundColor: '#ff4c41' }}>
                 Reservar viaje compartido →
               </Link>
-            </FadeIn>
-          </div>
+            </div>
+
+            {/* Columna derecha: lista de rutas */}
+            <div className="lg:flex-1 space-y-3">
+              {[
+                { color: '#fb923c', route: 'Santo Domingo — Quito — Aeropuerto', time: '~2 h 45 min' },
+                { color: '#60a5fa', route: 'Ambato — Latacunga — Quito — Aeropuerto', time: '~2 h 30 min' },
+                { color: '#4ade80', route: 'Ibarra — Quito — Aeropuerto', time: '~2 h 15 min' },
+              ].map((r) => (
+                <div key={r.route} className="flex items-center gap-4 rounded-xl px-5 py-4" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
+                  <span className="text-white font-semibold text-sm flex-1">{r.route}</span>
+                  <span className="text-gray-400 text-xs whitespace-nowrap">{r.time}</span>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
 
           {/* 3 tarjetas de ruta */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
             {[
               {
                 color: '#fb923c',
@@ -430,7 +371,7 @@ export default function HomePage() {
                     <span className="text-4xl font-black ml-2" style={{ color: '#ff4c41' }}>$5</span>
                     <span className="text-sm text-gray-400 ml-1">/ persona</span>
                   </div>
-                  <Link href="/pasajeros" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
+                  <Link href="/ride?type=shared" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
                     Reservar viaje compartido →
                   </Link>
                 </div>
@@ -473,7 +414,7 @@ export default function HomePage() {
                     <span className="text-4xl font-black ml-2 text-gray-900">$25</span>
                     <span className="text-sm text-gray-400 ml-1">/ servicio</span>
                   </div>
-                  <Link href="/pasajeros?tipo=privado" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 bg-slate-800 hover:bg-slate-700">
+                  <Link href="/ride?type=premium" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 bg-slate-800 hover:bg-slate-700">
                     Contratar transporte privado →
                   </Link>
                 </div>
@@ -516,7 +457,7 @@ export default function HomePage() {
                     <span className="text-4xl font-black ml-2 text-gray-900">$3</span>
                     <span className="text-sm text-gray-400 ml-1">/ envío</span>
                   </div>
-                  <Link href="/envios" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a8a' }}>
+                  <Link href="/envios/cotizar" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a8a' }}>
                     Enviar un paquete →
                   </Link>
                 </div>
@@ -610,25 +551,13 @@ export default function HomePage() {
             <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Usuarios reales</span>
             <h2 className="text-gray-900 font-black text-4xl mt-2">Lo que dicen nuestros viajeros</h2>
           </FadeIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((t, i) => (
-              <FadeIn key={t.name} delay={i * 0.12}>
-                <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100">
-                  <div className="flex gap-1 mb-4">
-                    {Array(t.rating).fill(0).map((_, j) => <span key={j} className="text-yellow-400">★</span>)}
-                  </div>
-                  <p className="text-gray-700 text-sm leading-relaxed mb-6 italic">&ldquo;{t.text}&rdquo;</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{t.avatar}</span>
-                    <div>
-                      <div className="font-bold text-gray-900 text-sm">{t.name}</div>
-                      <div className="text-gray-500 text-xs">{t.city}</div>
-                    </div>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+          <FadeIn delay={0.1}>
+            <img
+              src="/images/Testimonio de  pasajeros .png"
+              alt="Testimonios de pasajeros Going"
+              className="w-full rounded-3xl shadow-lg"
+            />
+          </FadeIn>
         </div>
       </section>
 

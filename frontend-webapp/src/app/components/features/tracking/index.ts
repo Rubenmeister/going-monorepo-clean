@@ -4,3 +4,4 @@
 
 export { RideStatus } from './RideStatus';
 export { TrackingMap } from './TrackingMap';
+export { ShareTracking } from './ShareTracking';

@@ -398,6 +398,62 @@ export class AuthController {
   }
 
   /**
+   * Corporate Login
+   * POST /auth/corporate/login
+   * For enterprise clients — validates user has 'corporate' role and returns companyId
+   */
+  @Post('corporate/login')
+  @HttpCode(200)
+  async corporateLogin(@Body() dto: LoginUserDto, @Req() req: Request): Promise<any> {
+    const startTime = Date.now();
+    const ip = this.extractIp(req);
+
+    try {
+      const tempUserId = `email:${dto.email}`;
+      const isLocked = await this.accountLockoutService.isAccountLocked(tempUserId);
+      if (isLocked) {
+        const lockoutUntil = await this.accountLockoutService.getLockoutExpiration(tempUserId);
+        throw new HttpException(
+          { message: `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}` },
+          429
+        );
+      }
+
+      const result = await this.loginUserUseCase.execute(dto);
+
+      // Validate corporate role
+      const roles: string[] = result?.user?.roles ?? [];
+      if (!roles.includes('corporate') && !roles.includes('admin')) {
+        throw new UnauthorizedException('Access restricted to corporate accounts');
+      }
+
+      await this.accountLockoutService.recordSuccessfulLogin(tempUserId);
+
+      this.auditLogService.recordSuccess(
+        result.user.id, 'user-auth-service', ip, 'CORPORATE_LOGIN',
+        'auth', result.user.id, Date.now() - startTime, undefined,
+        { email: dto.email, companyId: result.user.companyId }
+      );
+
+      return {
+        ...result,
+        companyId: (result.user as any).companyId ?? null,
+        companyName: (result.user as any).companyName ?? null,
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException || error instanceof HttpException) throw error;
+      const tempUserId = `email:${dto.email}`;
+      await this.accountLockoutService.recordFailedAttempt(tempUserId, dto.email, ip);
+      this.auditLogService.recordFailure(
+        'anonymous', 'user-auth-service', ip, 'CORPORATE_LOGIN',
+        'auth', dto.email, Date.now() - startTime,
+        error instanceof Error ? error.message : String(error)
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Get Current User Info
    * GET /auth/me
    * Requires valid JWT token

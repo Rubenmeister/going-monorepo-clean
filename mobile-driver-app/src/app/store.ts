@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 export interface Driver {
   id: string;
