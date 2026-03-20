@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { ReviewsList } from './components/features/rating';
-import { SplashScreen } from './components/SplashScreen';
 
 /* ── useInView ──────────────────────────────────────────────── */
 function useInView(threshold = 0.12) {
