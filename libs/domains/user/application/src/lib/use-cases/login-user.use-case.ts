@@ -8,7 +8,6 @@ import {
 import { LoginUserDto } from '../dto/login-user.dto';
 import { AccountLockoutService } from '../../../infrastructure/services/account-lockout.service';
 
-// DTO de respuesta
 export type LoginResponseDto = {
   token: string;
   refreshToken: string;
@@ -21,23 +20,6 @@ export type LoginResponseDto = {
   };
 };
 
-/**
- * Login User Use Case
- * Authenticates user with email/password and returns token pair
- *
- * Integrates:
- * - Account lockout (track failed attempts)
- * - Token creation (access + refresh tokens)
- * - Role-based permissions
- *
- * Flow:
- * 1. Check if account is locked (5 failed attempts)
- * 2. Find user by email
- * 3. Verify password
- * 4. Create token pair (access + refresh)
- * 5. Reset failed attempts on success
- * 6. Record failed attempt on error
- */
 @Injectable()
 export class LoginUserUseCase {
   private readonly logger = new Logger(LoginUserUseCase.name);
@@ -59,18 +41,14 @@ export class LoginUserUseCase {
       // 1. Check if account is locked (failed attempts)
       const isLockedResult = await this.accountLockout.isAccountLocked(dto.email as any);
       if (isLockedResult.isErr()) {
-        this.logger.error(`Error checking account lock: ${isLockedResult.error.message}`);
-        throw new InternalServerErrorException('Authentication service error');
-      }
-
-      if (isLockedResult.value) {
+        // Lockout service unavailable (e.g. Redis down) — log and continue
+        this.logger.warn(`Lockout service unavailable — proceeding without lockout check: ${isLockedResult.error.message}`);
+      } else if (isLockedResult.value) {
         const ttlResult = await this.accountLockout.getRemainingLockoutTime(dto.email as any);
         const ttl = ttlResult.isOk() ? ttlResult.value : 900;
-
         this.logger.warn(
           `Login attempt for locked account: ${dto.email}. Locked for ${ttl} more seconds.`,
         );
-
         throw new TooManyRequestsException(
           `Account is locked. Try again in ${Math.ceil(ttl / 60)} minutes.`,
         );
@@ -84,7 +62,6 @@ export class LoginUserUseCase {
 
       const user = userResult.value;
       if (!user) {
-        // Record failed attempt for non-existent user
         await this.recordFailedAttempt(dto.email);
         this.logger.warn(`Login attempt for non-existent user: ${dto.email}`);
         throw new UnauthorizedException('Invalid credentials');
@@ -99,7 +76,6 @@ export class LoginUserUseCase {
       // 4. Verify password
       const isPasswordValid = await user.checkPassword(dto.password, this.passwordHasher);
       if (!isPasswordValid) {
-        // Record failed attempt
         await this.recordFailedAttempt(user.id);
         this.logger.warn(`Invalid password attempt for user: ${user.id}`);
         throw new UnauthorizedException('Invalid credentials');
@@ -109,12 +85,10 @@ export class LoginUserUseCase {
       const resetResult = await this.accountLockout.resetFailedAttempts(user.id);
       if (resetResult.isErr()) {
         this.logger.warn(`Failed to reset attempts counter: ${resetResult.error.message}`);
-        // Don't fail login on this error
       }
 
-      // 6. Create token pair (access + refresh)
+      // 6. Create token pair
       const roles = user.roles.map(r => r.toPrimitives());
-
       const tokenPairResult = await this.tokenManager.createTokenPair(
         user.id,
         user.email,
@@ -122,19 +96,13 @@ export class LoginUserUseCase {
       );
 
       if (tokenPairResult.isErr()) {
-        this.logger.error(
-          `Failed to create token pair: ${tokenPairResult.error.message}`,
-        );
+        this.logger.error(`Failed to create token pair: ${tokenPairResult.error.message}`);
         throw new InternalServerErrorException('Failed to create authentication tokens');
       }
 
       const tokenPair = tokenPairResult.value;
+      this.logger.log(`User logged in successfully: ${user.id} (${user.email})`);
 
-      this.logger.log(
-        `User logged in successfully: ${user.id} (${user.email})`,
-      );
-
-      // 7. Return token pair + user info
       return {
         token: tokenPair.accessToken,
         refreshToken: tokenPair.refreshToken,
@@ -152,7 +120,6 @@ export class LoginUserUseCase {
           error instanceof InternalServerErrorException) {
         throw error;
       }
-
       this.logger.error(
         `Unexpected error during login: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -160,30 +127,17 @@ export class LoginUserUseCase {
     }
   }
 
-  /**
-   * Record a failed login attempt
-   * May lock account if threshold is exceeded
-   */
   private async recordFailedAttempt(userId: string): Promise<void> {
     const result = await this.accountLockout.recordFailedAttempt(userId as any);
-
     if (result.isErr()) {
-      this.logger.warn(
-        `Failed to record attempt: ${result.error.message}`,
-      );
+      this.logger.warn(`Failed to record attempt: ${result.error.message}`);
       return;
     }
-
     const { attempts, isLocked } = result.value;
-
     if (isLocked) {
-      this.logger.warn(
-        `Account locked after ${attempts} failed attempts: ${userId}`,
-      );
+      this.logger.warn(`Account locked after ${attempts} failed attempts: ${userId}`);
     } else {
-      this.logger.debug(
-        `Failed attempt recorded: ${attempts}/5 for user ${userId}`,
-      );
+      this.logger.debug(`Failed attempt recorded: ${attempts}/5 for user ${userId}`);
     }
   }
 }
