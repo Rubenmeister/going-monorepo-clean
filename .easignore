@@ -1,15 +1,96 @@
+# ── node_modules everywhere ──────────────────────────────────────────────────
 node_modules/
+**/node_modules/
+
+# ── Git / CI ──────────────────────────────────────────────────────────────────
 .git/
-.expo/
+.github/
+.circleci/
+
+# ── Build artifacts ───────────────────────────────────────────────────────────
 dist/
-*.log
-coverage/
-# Build outputs
-apps/*/dist/
-apps/*/.next/
-# Other mobile apps (only need mobile-driver-app)
-mobile-user-app/node_modules/
-mobile-user-app/.expo/
-# Large service folders not needed for mobile build
+**/dist/
+**/build/
+**/.next/
+**/.expo/
+**/coverage/
+tmp/
+
+# ── Backend NestJS services (not needed for mobile build) ─────────────────────
+api-gateway/
+user-auth-service/
+user-auth-service-e2e/
+transport-service/
+transport-service-e2e/
+payment-service/
+payment-service-e2e/
+booking-service/
+booking-service-e2e/
+analytics-service/
+anfitriones-service/
+anfitriones-service-e2e/
+billing-service/
 customer-support-service/
+envios-service/
+envios-service-e2e/
+experiencias-service/
+experiencias-service-e2e/
+notifications-service/
+notifications-service-e2e/
+notification-service/
+tracking-service/
+tracking-service-e2e/
+tours-service/
+tours-service-e2e/
+ratings-service/
+security-service/
+social-service/
+supply-chain-service/
+voice-service/
+iot-service/
+ml-service/
+
+# ── Other apps (not needed for mobile-driver-app) ────────────────────────────
+frontend-webapp/
+frontend-webapp-e2e/
+mobile-user-app/
+admin-dashboard/
+admin-dashboard-e2e/
+api-gateway-e2e/
+corporate-portal/
+apps/
+frontend/
+mobile-app/
+
+# ── Shared libs (mobile-driver-app is self-contained) ────────────────────────
+libs/
+
+# ── Infrastructure / DevOps ───────────────────────────────────────────────────
+k8s/
+argocd/
+kong/
+observability/
+docker-compose*.yml
+Dockerfile*
+cloud-sql-proxy/
+config/
+cors-env.yaml
+migrations/
 scripts/
+shared-infrastructure/
+
+# ── Docs / Reports ────────────────────────────────────────────────────────────
+*.md
+docs/
+api-docs/
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+cypress/
+cypress.config.*
+__tests__/
+
+# ── Logs / misc ───────────────────────────────────────────────────────────────
+*.log
+*.tgz
+*.lock
+cloudbuild*.yaml
