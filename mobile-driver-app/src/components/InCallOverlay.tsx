@@ -16,8 +16,8 @@ import {
   Animated, StatusBar, Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { hapticMedium, hapticHeavy } from '../../utils/haptics';
-import type { CallSession, CallStatus } from '../../utils/agoraCall';
+import { hapticMedium, hapticHeavy } from '../utils/haptics';
+import type { CallSession, CallStatus } from '../utils/agoraCall';
 
 // ─── Agora dynamic require ────────────────────────────────────────────────────
 
