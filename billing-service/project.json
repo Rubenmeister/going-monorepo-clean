@@ -1,0 +1,29 @@
+{
+  "name": "billing-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "billing-service/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack-cli build",
+        "args": ["--node-env=production"],
+        "cwd": "billing-service"
+      },
+      "configurations": {
+        "development": {
+          "args": ["--node-env=development"]
+        }
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "ts-node -r tsconfig-paths/register src/main.ts",
+        "cwd": "billing-service"
+      }
+    }
+  }
+}

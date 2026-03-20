@@ -1,0 +1,20 @@
+{
+  "name": "customer-support-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "customer-support-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/customer-support-service",
+        "main": "customer-support-service/src/main.ts",
+        "tsConfig": "customer-support-service/tsconfig.app.json",
+        "webpackConfig": "customer-support-service/webpack.config.js"
+      }
+    }
+  }
+}

@@ -139,7 +139,7 @@ export class TokenManager {
 
     for (let attempt = 0; attempt < this.MAX_RETRY_ATTEMPTS; attempt++) {
       try {
-        const response = await fetch('http://localhost:3000/api/auth/refresh', {
+        const response = await fetch('/api/auth/refresh', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

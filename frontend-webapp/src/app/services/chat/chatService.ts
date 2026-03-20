@@ -57,22 +57,59 @@ class ChatService {
 
   /**
    * Get chat history for a ride
-   * TODO: Implement API call to fetch history
    */
   async getChatHistory(rideId: string): Promise<ChatMessage[]> {
-    // Placeholder for API call
-    // const response = await apiClient.get(`/chats/${rideId}`);
-    // return response.data;
-    return [];
+    const API_BASE = typeof window !== 'undefined'
+      ? (process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api')
+      : 'https://api.goingec.com/api';
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    try {
+      const res = await fetch(`${API_BASE}/chat/rides/${rideId}/messages`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!res.ok) return [];
+
+      const data = await res.json();
+      return (data.messages || []).map((m: any) => ({
+        id: m.id || String(Date.now()),
+        senderId: m.senderId,
+        senderName: m.senderName,
+        text: m.text || m.content,
+        timestamp: new Date(m.timestamp || m.createdAt),
+        isOwn: m.isOwn ?? false,
+      }));
+    } catch {
+      return [];
+    }
   }
 
   /**
    * Mark messages as read
-   * TODO: Implement API call
    */
   async markAsRead(rideId: string): Promise<void> {
-    // Placeholder for API call
-    // await apiClient.post(`/chats/${rideId}/read`);
+    const API_BASE = typeof window !== 'undefined'
+      ? (process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api')
+      : 'https://api.goingec.com/api';
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    try {
+      await fetch(`${API_BASE}/chat/rides/${rideId}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      });
+    } catch {
+      // Non-fatal error
+    }
   }
 }
 

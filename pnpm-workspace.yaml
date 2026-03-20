@@ -17,6 +17,9 @@ packages:
   - 'transport-service'
   - 'notifications-service'
   - 'tracking-service'
+  - 'billing-service'
+  - 'analytics-service'
+  - 'customer-support-service'
 
   # Libraries
   - 'libs/**'

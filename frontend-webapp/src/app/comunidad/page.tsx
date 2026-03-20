@@ -177,6 +177,19 @@ export default function ComunidadPage() {
         </div>
       </section>
 
+      {/* Foto grupo senderismo Alpes Suizos */}
+      <section className="py-0 px-6">
+        <div className="max-w-6xl mx-auto -mt-10 relative z-10">
+          <img
+            src="/images/Gemini_Generated_Image_4n0nss4n0nss4n0n.png"
+            alt="Going - Grupo de Senderismo Alpes Suizos 2024"
+            className="w-full rounded-3xl shadow-2xl object-cover"
+            style={{ maxHeight: '460px' }}
+          />
+          <div className="mt-4 text-center text-sm text-gray-400 italic">Going – Grupo de Senderismo · Alpes Suizos 2024</div>
+        </div>
+      </section>
+
       {/* What is community */}
       <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">

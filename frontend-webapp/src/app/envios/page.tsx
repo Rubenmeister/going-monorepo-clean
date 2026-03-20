@@ -14,8 +14,8 @@ export default function EnviosPage() {
             Envía sobres, documentos o paquetes a cualquier ciudad del Ecuador. Cotiza en segundos, rastrea en tiempo real, entrega garantizada.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/register" className="bg-white text-gray-900 font-black px-8 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105">
-              Enviar un paquete →
+            <Link href="/envios/cotizar" className="bg-white text-gray-900 font-black px-8 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105">
+              Cotizar ahora →
             </Link>
             <Link href="/auth/login" className="border-2 border-white text-white font-bold px-8 py-4 rounded-2xl text-lg hover:bg-white/10 transition-all">
               Ya tengo cuenta
@@ -100,8 +100,8 @@ export default function EnviosPage() {
         <div className="max-w-2xl mx-auto">
           <h2 className="text-white font-black text-4xl mb-4">¿Listo para enviar?</h2>
           <p className="text-blue-200 text-lg mb-8">Regístrate gratis y cotiza tu primer envío en segundos.</p>
-          <Link href="/auth/register" className="inline-flex items-center gap-2 bg-white text-gray-900 font-black px-10 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105">
-            Registrarme y enviar →
+          <Link href="/envios/cotizar" className="inline-flex items-center gap-2 bg-white text-gray-900 font-black px-10 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105">
+            Cotizar ahora →
           </Link>
         </div>
       </section>

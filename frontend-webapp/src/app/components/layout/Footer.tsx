@@ -44,12 +44,21 @@ export function Footer() {
     { name: 'Tours', href: '/services/tours' },
     { name: 'Experiencias', href: '/services/experiences' },
     { name: 'Envíos', href: '/envios' },
+    { name: 'Cotizar envío', href: '/envios/cotizar', badge: 'Nuevo' },
+  ];
+
+  const proveedores = [
+    { name: '🚗 Conductores', href: '/conductores' },
+    { name: '🏡 Anfitriones', href: '/anfitriones' },
+    { name: '🏺 Guías Locales', href: '/guias' },
+    { name: '🧗 Operadores', href: '/operadores' },
+    { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
   ];
 
   const empresa = [
     { name: 'Quiénes Somos', href: '/quienes-somos' },
     { name: 'Comunidad Going', href: '/comunidad' },
-    { name: 'Academia Going', href: '/academy' },
+    { name: 'Academia Going', href: '/academy', badge: 'Gratis' },
     { name: 'Blog', href: '/blog' },
     { name: 'Noticias', href: '/news' },
     { name: 'Carreras', href: '/careers' },
@@ -88,23 +97,34 @@ export function Footer() {
 
   return (
     <footer className="bg-gray-950 text-gray-300">
-      {/* Conductor CTA bar */}
+      {/* Provider CTA bar */}
       <div className="border-b border-gray-800" style={{ background: 'linear-gradient(90deg, #1a0a0a, #3d1010)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🚗</span>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-white font-bold text-sm">¿Eres conductora o conductor? Gana más con Going</div>
-              <div className="text-gray-400 text-xs">Regístrate gratis · Sin exclusividad · Horario flexible</div>
+              <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
+              <div className="flex flex-wrap gap-4">
+                {[
+                  { icon: '🚗', label: 'Conductor', href: '/conductores' },
+                  { icon: '🏡', label: 'Anfitrión', href: '/anfitriones' },
+                  { icon: '🏺', label: 'Guía', href: '/guias' },
+                  { icon: '🧗', label: 'Operador', href: '/operadores' },
+                ].map(item => (
+                  <Link key={item.href} href={item.href}
+                    className="flex items-center gap-1.5 text-gray-300 hover:text-white text-xs font-medium transition-colors">
+                    <span>{item.icon}</span>{item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
+            <Link
+              href="/auth/register"
+              className="flex-shrink-0 text-sm font-bold text-white px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
+              style={{ backgroundColor: '#ff4c41' }}
+            >
+              Registrarme gratis →
+            </Link>
           </div>
-          <Link
-            href="/conductores"
-            className="flex-shrink-0 text-sm font-bold text-white px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
-            style={{ backgroundColor: '#ff4c41' }}
-          >
-            Registrarme como conductora/conductor →
-          </Link>
         </div>
       </div>
 
@@ -170,9 +190,10 @@ export function Footer() {
           </div>
         </div>
 
-        {/* 5-Column Footer Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-12">
+        {/* 6-Column Footer Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-12">
           <FooterSection title="Servicios" links={services} />
+          <FooterSection title="Proveedores" icon="🤝" links={proveedores} />
           <FooterSection title="Empresa" links={empresa} />
           <FooterSection title="Comunidad Local" icon="🏘️" links={localCommunity} />
           <FooterSection title="Legal" links={legal} />

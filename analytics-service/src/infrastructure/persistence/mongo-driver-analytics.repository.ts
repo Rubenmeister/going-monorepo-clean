@@ -15,7 +15,7 @@ export class MongoDriverAnalyticsRepository
   implements IDriverAnalyticsRepository
 {
   constructor(
-    @InjectModel('DriverAnalytics')
+    @InjectModel(DriverAnalytics.name)
     private analyticsModel: Model<DriverAnalyticsDocument>
   ) {}
 
