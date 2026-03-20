@@ -1,0 +1,15 @@
+node_modules/
+.git/
+.expo/
+dist/
+*.log
+coverage/
+# Build outputs
+apps/*/dist/
+apps/*/.next/
+# Other mobile apps (only need mobile-driver-app)
+mobile-user-app/node_modules/
+mobile-user-app/.expo/
+# Large service folders not needed for mobile build
+customer-support-service/
+scripts/
