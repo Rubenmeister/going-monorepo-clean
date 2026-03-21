@@ -33,6 +33,6 @@ export class RegisterUserDto {
 
   @IsNotEmpty()
   @IsArray()
-  @IsIn(['admin', 'host', 'driver', 'user'], { each: true })
+  @IsIn(['admin', 'user', 'driver', 'host', 'guide', 'operator', 'corporate'], { each: true })
   roles: RoleType[];
 }

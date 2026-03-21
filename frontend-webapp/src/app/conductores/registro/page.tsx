@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 type DocKey = 'cedula' | 'licencia' | 'matricula' | 'soat' | 'foto_vehiculo' | 'foto_conductor';
 

@@ -2,13 +2,22 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useSearchParams } from 'next/navigation';
+import { authClient } from '@going-monorepo-clean/frontend-providers';
+
+const AUTH_TOKEN_KEY  = 'authToken';
+const SESSION_COOKIE  = 'going_admin_session';
+
+function setSessionCookie(value: boolean) {
+  if (value) {
+    document.cookie = `${SESSION_COOKIE}=1; path=/; SameSite=Strict`;
+  } else {
+    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Strict`;
+  }
+}
 
 function LoginForm() {
-  const router       = useRouter();
   const searchParams = useSearchParams();
-  const { domain }   = useMonorepoApp();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
@@ -19,12 +28,28 @@ function LoginForm() {
     setLoading(true);
     setError('');
     try {
-      await domain.auth.login({ email, password });
+      const response = await authClient.login({ email, password });
+
+      // Verificar rol admin antes de permitir acceso
+      const parts = response.token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+        if (!roles.includes('admin')) {
+          throw new Error('FORBIDDEN');
+        }
+      }
+
+      // Token válido y rol admin confirmado
+      localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+      setSessionCookie(true);
       const from = searchParams.get('from') ?? '/';
-      router.push(from);
+      window.location.href = from;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
-      if (msg.toLowerCase().includes('fetch') || msg.includes('network') || msg === '') {
+      if (msg === 'FORBIDDEN') {
+        setError('No tienes permisos de administrador para acceder a este panel.');
+      } else if (msg.toLowerCase().includes('fetch') || msg.includes('network') || msg === '') {
         setError('No se pudo conectar al servidor. Verifica tu conexión o contacta a soporte.');
       } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('credencial') || msg.toLowerCase().includes('invalid')) {
         setError('Email o contraseña incorrectos.');

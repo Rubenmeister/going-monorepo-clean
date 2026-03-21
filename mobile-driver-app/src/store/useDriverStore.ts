@@ -67,23 +67,12 @@ export const useDriverStore = create<DriverState>((set, get) => ({
 
   loadToken: async () => {
     const token = await AsyncStorage.getItem('driver_token');
-    if (!token) return;
-    try {
-      const { data } = await api.get('/auth/me');
-      // /auth/me devuelve { userId, email, roles, authenticated }
-      // normalizamos a la interface Driver que usa "id"
-      const raw = data.user ?? data;
-      const driver: Driver = {
-        id: raw.userId ?? raw.id,
-        firstName: raw.firstName ?? '',
-        lastName: raw.lastName ?? '',
-        email: raw.email,
-        vehiclePlate: raw.vehiclePlate,
-        rating: raw.rating,
-        isOnline: raw.isOnline,
-      };
-      set({ token, driver });
-    } catch {
+    const raw   = await AsyncStorage.getItem('driver_user');
+    if (token && raw) {
+      // Restaurar conductor completo desde storage
+      set({ token, driver: JSON.parse(raw) });
+    } else if (token) {
+      // Sin datos de usuario guardados: limpiar sesión
       await AsyncStorage.removeItem('driver_token');
     }
   },
@@ -93,8 +82,26 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     try {
       const { data } = await api.post('/auth/login', { email, password });
       const token = data.token ?? data.access_token;
-      const driver = data.user ?? data;
+      const driverData = data.user ?? data;
+
+      // Solo permitir acceso a conductores con rol 'driver'
+      const roles: string[] = Array.isArray(driverData.roles) ? driverData.roles : [];
+      if (!roles.includes('driver')) {
+        set({ error: 'Esta cuenta no tiene acceso a la app de conductores.', isLoading: false });
+        return;
+      }
+
+      const driver: Driver = {
+        id: driverData.id ?? driverData.userId,
+        firstName: driverData.firstName ?? '',
+        lastName: driverData.lastName ?? '',
+        email: driverData.email,
+        vehiclePlate: driverData.vehiclePlate,
+        rating: driverData.rating,
+        isOnline: driverData.isOnline,
+      };
       await AsyncStorage.setItem('driver_token', token);
+      await AsyncStorage.setItem('driver_user', JSON.stringify(driver));
       set({ token, driver, isLoading: false });
     } catch (e: any) {
       set({
@@ -105,7 +112,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('driver_token');
+    await AsyncStorage.multiRemove(['driver_token', 'driver_user']);
     set({
       token: null,
       driver: null,

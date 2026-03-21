@@ -36,15 +36,17 @@ export const authOptions: NextAuthOptions = {
               password: credentials.password,
             }
           );
-          const user = response.data;
-          if (user && user.id) {
+          // El backend retorna: { token, refreshToken, expiresIn, user: { id, email, firstName, lastName, roles }, companyId }
+          const body = response.data;
+          const userData = body.user;
+          if (userData && userData.id) {
             return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              companyId: user.companyId,
-              accessToken: user.accessToken,
+              id: userData.id,
+              email: userData.email,
+              name: [userData.firstName, userData.lastName].filter(Boolean).join(' '),
+              role: Array.isArray(userData.roles) ? userData.roles[0] : 'corporate',
+              companyId: body.companyId ?? null,
+              accessToken: body.token,
             };
           }
           return null;

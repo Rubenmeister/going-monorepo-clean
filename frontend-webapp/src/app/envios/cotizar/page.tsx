@@ -195,6 +195,16 @@ export default function QuotePage() {
           </Link>
           <h1 className="text-3xl font-black text-gray-900 mb-2">Cotizar envío</h1>
           <p className="text-gray-600">Completa los detalles de tu paquete</p>
+          {/* Aviso para usuarios sin cuenta */}
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-sm">
+            <span className="text-amber-500 mt-0.5">📦</span>
+            <p className="text-amber-800">
+              Para enviar o recibir paquetes necesitas una cuenta de <strong>Usuario</strong>.{' '}
+              <Link href="/auth/register" className="font-bold underline hover:text-amber-900">Regístrate gratis</Link>
+              {' '}o{' '}
+              <Link href="/auth/login" className="font-bold underline hover:text-amber-900">inicia sesión</Link>.
+            </p>
+          </div>
         </div>
 
         {/* Progress Bar */}
