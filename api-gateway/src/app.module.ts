@@ -15,6 +15,7 @@ import {
   SentryInterceptor,
 } from '@going-monorepo-clean/shared-infrastructure';
 import { HealthController } from './app/health.controller';
+import { AuthProxyController } from './app/auth-proxy.controller';
 
 /**
  * API Gateway App Module
@@ -39,7 +40,7 @@ import { HealthController } from './app/health.controller';
     ProxyModule,
     TrackingModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, AuthProxyController],
   providers: [
     // Sentry error tracking
     {
