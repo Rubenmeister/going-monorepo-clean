@@ -21,18 +21,6 @@ buildscript {
     }
 }
 
-// react-native-maps ships pre-generated RNMaps*ManagerInterface.java files that use
-// ViewManagerWithGeneratedInterface, which was removed in RN 0.76.
-// With newArchEnabled=true, RN codegen regenerates these files correctly.
-// We must exclude the stale pre-generated ones so codegen's output takes precedence.
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android') && project.name == 'react-native-maps') {
-            project.android.sourceSets.main.java.exclude 'com/facebook/react/viewmanagers/**'
-        }
-    }
-}
-
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
