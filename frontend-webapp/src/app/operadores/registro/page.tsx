@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 const OPERATOR_TYPES = [
   { value: 'trekking', label: 'Trekking / Senderismo', icon: '🥾', desc: 'Volcanes, páramos, senderos' },

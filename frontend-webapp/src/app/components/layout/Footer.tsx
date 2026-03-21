@@ -50,7 +50,7 @@ export function Footer() {
   const proveedores = [
     { name: '🚗 Conductores', href: '/conductores' },
     { name: '🏡 Anfitriones', href: '/anfitriones' },
-    { name: '🏺 Guías Locales', href: '/guias' },
+    { name: '🏺 Promotores Locales', href: '/promotores-locales' },
     { name: '🧗 Operadores', href: '/operadores' },
     { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
   ];
@@ -107,7 +107,7 @@ export function Footer() {
                 {[
                   { icon: '🚗', label: 'Conductor', href: '/conductores' },
                   { icon: '🏡', label: 'Anfitrión', href: '/anfitriones' },
-                  { icon: '🏺', label: 'Guía', href: '/guias' },
+                  { icon: '🏺', label: 'Promotor Local', href: '/promotores-locales' },
                   { icon: '🧗', label: 'Operador', href: '/operadores' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}

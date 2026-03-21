@@ -57,7 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (payload.exp && payload.exp * 1000 < Date.now()) {
           localStorage.removeItem(AUTH_TOKEN_KEY);
         } else {
-          const roles: string[] = Array.isArray(payload.roles) ? payload.roles : ['admin'];
+          const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+
+          // Solo permitir acceso a usuarios con rol admin
+          if (!roles.includes('admin')) {
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+            throw new Error('Forbidden: admin role required');
+          }
+
           setSessionCookie(true);
           setUser({
             id: payload.sub || payload.userId,

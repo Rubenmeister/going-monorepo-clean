@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 const BENEFITS = [
   { icon: '🗺️', title: 'Diseña tus propios tours', desc: 'Crea experiencias únicas con tu itinerario, precio, idioma y cupo máximo.' },
-  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going te conecta con turistas de 40+ países que buscan guías locales auténticos.' },
+  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going te conecta con turistas de 40+ países que buscan promotores locales auténticos.' },
   { icon: '💰', title: 'Fija tus tarifas', desc: 'Tú decides cuánto cobras. Sin comisiones ocultas — Going cobra solo el 15% al cierre.' },
   { icon: '🧳', title: 'Gestión de grupos', desc: 'La app maneja reservas, pagos y comunicación con el grupo antes y durante el tour.' },
   { icon: '📚', title: 'Academia Going gratuita', desc: 'Cursos de storytelling, manejo de grupos, seguridad exterior e inglés turístico.' },
@@ -22,7 +22,7 @@ const TOUR_TYPES = [
 ];
 
 const LEVELS = [
-  { icon: '🌱', title: 'Guía Local Comunitario', req: 'Sin licencia requerida', desc: 'Puedes operar tours en tu comunidad o barrio sin licencia. Ideal para empezar.' },
+  { icon: '🌱', title: 'Promotor Local Comunitario', req: 'Sin licencia requerida', desc: 'Puedes operar tours en tu comunidad o barrio sin licencia. Ideal para empezar.' },
   { icon: '📋', title: 'Guía Nacional', req: 'Licencia MINTUR', desc: 'Opera tours en cualquier parte del Ecuador. Mayor visibilidad en la plataforma.' },
   { icon: '🌐', title: 'Guía Internacional', req: 'Licencia MINTUR + idioma certificado', desc: 'Atiende grupos internacionales. Las tarifas más altas de la plataforma.' },
 ];
@@ -43,7 +43,7 @@ export default function GuiasPage() {
         <div className="max-w-5xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
             style={{ backgroundColor: '#0891b233', color: '#67e8f9' }}>
-            🏺 Guías Locales Going
+            🏺 Promotores Locales Going
           </span>
           <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
             Ecuador te pertenece.<br />
@@ -169,7 +169,7 @@ export default function GuiasPage() {
               style={{ backgroundColor: '#0891b2' }}>
               Registrarme como guía →
             </Link>
-            <Link href="/guias/registro"
+            <Link href="/promotores-locales/registro"
               className="px-8 py-4 rounded-2xl font-bold text-cyan-200 border border-cyan-700 hover:bg-cyan-900 transition-colors text-base">
               Ya tengo cuenta — activar perfil
             </Link>

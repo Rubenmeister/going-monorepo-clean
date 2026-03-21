@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 const PROPERTY_TYPES = [
   { value: 'casa', label: 'Casa completa', icon: '🏠', desc: 'Toda la propiedad para el huésped' },

@@ -1,6 +1,6 @@
 import { Result, ok, err } from 'neverthrow';
 
-export type RoleType = 'admin' | 'user' | 'driver' | 'host';
+export type RoleType = 'admin' | 'user' | 'driver' | 'host' | 'guide' | 'operator' | 'corporate';
 
 export class Role {
   readonly value: RoleType;
@@ -11,7 +11,7 @@ export class Role {
 
   public static create(value: string): Result<Role, Error> {
     const role = value.toLowerCase() as RoleType;
-    if (!['admin', 'user', 'driver', 'host'].includes(role)) {
+    if (!['admin', 'user', 'driver', 'host', 'guide', 'operator', 'corporate'].includes(role)) {
       return err(new Error('Invalid role'));
     }
     return ok(new Role(role));
