@@ -1,4 +1,4 @@
-import { RoleGuard } from '@/app/components/common/RoleGuard';
+import { RoleGuard } from '@/components/common/RoleGuard';
 
 export default function AnfitrioneLayout({ children }: { children: React.ReactNode }) {
   return (

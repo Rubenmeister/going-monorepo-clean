@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/providers/auth.context';
+import { useAuth } from '@going-monorepo-clean/frontend-providers';
 
 interface RoleGuardProps {
   allowedRoles: string[];
