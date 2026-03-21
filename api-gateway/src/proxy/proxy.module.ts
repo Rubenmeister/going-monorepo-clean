@@ -5,6 +5,7 @@ import {
   Logger,
   Injectable,
   NestMiddleware,
+  RequestMethod,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as https from 'https';
@@ -26,13 +27,16 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
   const transport = isHttps ? https : http;
 
   return (req: any, res: any, next: () => void) => {
-    // Strip prefix from path: /auth/register → /auth/register (kept as-is for auth)
-    // because user-auth-service already serves /auth/*
-    // NestJS strips the route prefix from req.url when mounting middleware via forRoutes().
-    // e.g. forRoutes('auth') + incoming /auth/register → req.url = /register
-    // We must prepend the prefix back so the upstream service gets /auth/register.
-    const rawPath = req.url || '/';
-    const proxiedPath = `/${stripPrefix}${rawPath === '/' ? '' : rawPath}`;
+    // In Fastify+middie, middie may strip the route prefix from req.url (e.g. auth/* strips
+    // /auth/login → req.url = '/login' or even '/').
+    // req.raw.url (Node.js IncomingMessage) is never modified by middie and always has the
+    // full original path (e.g. /auth/login).  Fall back to req.url for Express mode.
+    const originalUrl: string = req.raw?.url || req.url || '/';
+    const rawPath = originalUrl.split('?')[0] || '/';
+    const queryString = originalUrl.includes('?') ? originalUrl.slice(originalUrl.indexOf('?')) : '';
+    const proxiedPath = rawPath.startsWith(`/${stripPrefix}`)
+      ? rawPath + queryString            // full path already present (Fastify or Express without stripping)
+      : `/${stripPrefix}${rawPath === '/' ? '' : rawPath}${queryString}`; // Express: prefix stripped
     logger.debug(`→ ${req.method} ${proxiedPath} to ${targetBase}`);
 
     // NestJS body-parser already consumed the request stream before middleware runs.
@@ -119,7 +123,9 @@ export class ProxyModule implements NestModule {
 
     // --- PUBLIC: /auth/* → user-auth-service (no JWT required) ---
     if (svc.auth) {
-      consumer.apply(makeForwardMiddleware(svc.auth, 'auth')).forRoutes('auth');
+      consumer
+        .apply(makeForwardMiddleware(svc.auth, 'auth'))
+        .forRoutes({ path: 'auth', method: RequestMethod.ALL }, { path: 'auth/*', method: RequestMethod.ALL });
     }
 
     // --- PROTECTED: JWT guard + forward ---
@@ -130,7 +136,10 @@ export class ProxyModule implements NestModule {
           passport.authenticate('jwt', { session: false }),
           makeForwardMiddleware(target, prefix)
         )
-        .forRoutes(prefix);
+        .forRoutes(
+          { path: prefix, method: RequestMethod.ALL },
+          { path: `${prefix}/*`, method: RequestMethod.ALL }
+        );
     };
 
     guard('transport', svc.transport);
@@ -144,6 +153,15 @@ export class ProxyModule implements NestModule {
     guard('bookings', svc.bookings);
     guard('invoices', svc.invoices);
     guard('analytics', svc.analytics);
-    guard('support', svc.support);
+
+    // --- PUBLIC: /support/* → customer-support-service (WhatsApp webhook + web chat, no JWT) ---
+    if (svc.support) {
+      consumer
+        .apply(makeForwardMiddleware(svc.support, 'support'))
+        .forRoutes(
+          { path: 'support', method: RequestMethod.ALL },
+          { path: 'support/*', method: RequestMethod.ALL }
+        );
+    }
   }
 }
