@@ -21,11 +21,10 @@ buildscript {
     }
 }
 
-apply plugin: "com.facebook.react.rootproject"
-
 // react-native-maps 1.14+ ships pre-generated ViewManager interface files that reference
 // ViewManagerWithGeneratedInterface, which was removed in React Native 0.76 (old arch).
-// Excluding these files avoids the "cannot find symbol" Java compilation error.
+// Must register afterEvaluate BEFORE applying rootproject plugin so the hook fires
+// when the plugin evaluates subprojects (not after they are already evaluated).
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android') && project.name == 'react-native-maps') {
@@ -33,6 +32,8 @@ subprojects {
         }
     }
 }
+
+apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
     repositories {
