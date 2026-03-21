@@ -21,22 +21,6 @@ buildscript {
     }
 }
 
-// react-native-maps 1.14+ ships pre-generated ViewManager interface files that reference
-// ViewManagerWithGeneratedInterface, which was removed in React Native 0.76 (old arch).
-// Must register afterEvaluate BEFORE applying rootproject plugin so the hook fires
-// when the plugin evaluates subprojects (not after they are already evaluated).
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android') && project.name == 'react-native-maps') {
-            // Exclude generated new-arch files incompatible with RN 0.76 old-arch:
-            // 1. viewmanagers/ uses ViewManagerWithGeneratedInterface (removed in RN 0.76)
-            // 2. fabric/ imports from viewmanagers/ so must also be excluded
-            project.android.sourceSets.main.java.exclude 'com/facebook/react/viewmanagers/**'
-            project.android.sourceSets.main.java.exclude 'com/rnmaps/fabric/**'
-        }
-    }
-}
-
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
