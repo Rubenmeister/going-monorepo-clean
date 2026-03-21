@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -120,78 +120,45 @@ function FeaturePill({ icon, text }: { icon: string; text: string }) {
 
 /* ── Main page ─────────────────────────────────────────────── */
 export default function PasajerosPage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen font-sans antialiased" style={{ color: '#1a1a1a' }}>
 
-      {/* ── Nav ─────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(255,76,65,0.97)', backdropFilter: 'blur(12px)' }}>
-        <Link href="/" className="font-extrabold text-xl tracking-tight text-white">Going</Link>
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pasajeros" className="text-sm font-semibold text-white">Para Viajeros</Link>
-          <Link href="/conductores" className="text-sm text-white opacity-80 hover:opacity-100 transition-opacity">Para Conductores</Link>
-          <Link href="/services" className="text-sm text-white opacity-80 hover:opacity-100 transition-opacity">Servicios</Link>
-          <Link href="/auth/register" className="text-sm px-4 py-2 rounded-full font-semibold transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41' }}>
-            Crear cuenta
-          </Link>
-        </div>
-        <button className="md:hidden text-white text-lg" onClick={() => setMobileOpen(v => !v)}>
-          {mobileOpen ? '✕' : '☰'}
-        </button>
-      </nav>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 text-lg font-semibold" style={{ background: '#ff4c41' }}>
-          <Link href="/pasajeros" className="text-white" onClick={() => setMobileOpen(false)}>Para Viajeros</Link>
-          <Link href="/conductores" className="text-white opacity-80" onClick={() => setMobileOpen(false)}>Para Conductores</Link>
-          <Link href="/services" className="text-white opacity-80" onClick={() => setMobileOpen(false)}>Servicios</Link>
-          <Link href="/auth/register" className="px-6 py-3 rounded-full font-bold" style={{ background: '#fff', color: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Crear cuenta gratis</Link>
-        </div>
-      )}
-
-      {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="pt-32 pb-20 px-6" style={{ background: 'linear-gradient(135deg, #ff4c41 0%, #c73b31 100%)' }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
-          {/* Texto */}
-          <div className="flex-1 text-center md:text-left">
-            <FadeIn delay={0}>
-              <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}>
-                🚌 Para Viajeros
-              </span>
-            </FadeIn>
-            <FadeIn delay={100}>
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-6">
-                Viaja por Ecuador<br />
-                <span style={{ color: '#ffe8e6' }}>sin complicaciones</span>
-              </h1>
-            </FadeIn>
-            <FadeIn delay={200}>
-              <p className="text-lg md:text-xl mb-10 leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                Reserva transporte en segundos, paga seguro y sigue tu viaje en tiempo real. Simple, rápido y sin complicaciones.
-              </p>
-            </FadeIn>
-            <FadeIn delay={300}>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
-                  Crear cuenta gratis
-                </Link>
-                <Link href="/services" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-red-600" style={{ border: '2px solid rgba(255,255,255,0.5)' }}>
-                  Ver rutas disponibles
-                </Link>
-              </div>
-            </FadeIn>
+      {/* ── HERO DESTINOS ────────────────────────────────────── */}
+      <section className="pt-12 pb-16 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="text-center mb-10">
+            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Explora Ecuador</span>
+            <h1 className="text-gray-900 font-black text-5xl mt-2">Destinos</h1>
+            <p className="text-gray-500 text-lg mt-4 max-w-2xl mx-auto">
+              Desde los Andes hasta las Islas Galápagos — viaja a cualquier rincón del país con Going.
+            </p>
+          </FadeIn>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            {[
+              { region: 'Sierra',    subtitle: 'Andes · Volcanes · Cultura',  img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg', color: '#6366f1' },
+              { region: 'Costa',     subtitle: 'Mar · Playas · Atardeceres',  img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=85&auto=format&fit=crop', color: '#0ea5e9' },
+              { region: 'Amazonía',  subtitle: 'Selva · Biodiversidad · Aventura', img: '/images/Orellana Pañacocha Laguna.jpg', color: '#16a34a' },
+              { region: 'Galápagos', subtitle: 'Islas únicas en el mundo',    img: '/images/galàpagos.png', color: '#f59e0b' },
+            ].map((d, i) => (
+              <FadeIn key={d.region} delay={i * 80}>
+                <div className="relative rounded-3xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer" style={{ aspectRatio: '3/4' }}>
+                  <img src={d.img} alt={d.region} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.72) 40%, transparent 100%)' }} />
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <div className="w-2.5 h-2.5 rounded-full mb-2" style={{ backgroundColor: d.color }} />
+                    <h3 className="text-white font-black text-xl">{d.region}</h3>
+                    <p className="text-gray-300 text-xs mt-1">{d.subtitle}</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
           </div>
-          {/* Foto Quilotoa */}
-          <div className="flex-1 w-full md:max-w-md">
-            <FadeIn delay={200} direction="right">
-              <img
-                src="/images/Quilotoa.png"
-                alt="Laguna Quilotoa - Ecuador"
-                className="w-full rounded-3xl shadow-2xl object-cover"
-                style={{ maxHeight: '420px' }}
-              />
-            </FadeIn>
-          </div>
+          <FadeIn className="flex justify-center gap-4">
+            <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
+              Buscar viaje →
+            </Link>
+          </FadeIn>
         </div>
       </section>
 
