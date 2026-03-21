@@ -70,7 +70,19 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     if (!token) return;
     try {
       const { data } = await api.get('/auth/me');
-      set({ token, driver: data.user ?? data });
+      // /auth/me devuelve { userId, email, roles, authenticated }
+      // normalizamos a la interface Driver que usa "id"
+      const raw = data.user ?? data;
+      const driver: Driver = {
+        id: raw.userId ?? raw.id,
+        firstName: raw.firstName ?? '',
+        lastName: raw.lastName ?? '',
+        email: raw.email,
+        vehiclePlate: raw.vehiclePlate,
+        rating: raw.rating,
+        isOnline: raw.isOnline,
+      };
+      set({ token, driver });
     } catch {
       await AsyncStorage.removeItem('driver_token');
     }
