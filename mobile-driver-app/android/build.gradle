@@ -28,7 +28,11 @@ buildscript {
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android') && project.name == 'react-native-maps') {
+            // Exclude generated new-arch files incompatible with RN 0.76 old-arch:
+            // 1. viewmanagers/ uses ViewManagerWithGeneratedInterface (removed in RN 0.76)
+            // 2. fabric/ imports from viewmanagers/ so must also be excluded
             project.android.sourceSets.main.java.exclude 'com/facebook/react/viewmanagers/**'
+            project.android.sourceSets.main.java.exclude 'com/rnmaps/fabric/**'
         }
     }
 }
