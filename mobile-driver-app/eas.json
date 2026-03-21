@@ -20,6 +20,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "prebuildCommand": "npx expo prebuild --clean",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
       }
