@@ -69,19 +69,32 @@ export class AuthController {
     const startTime = Date.now();
     const ip = this.extractIp(req);
     try {
-      const result = await this.registerUserUseCase.execute(dto);
+      // 1. Crear el usuario
+      const registerResult = await this.registerUserUseCase.execute(dto);
+      const userId = (registerResult as any)?.user?.id ?? (registerResult as any)?.id ?? 'unknown';
+
+      // 2. Auto-login: generar token para que la app pueda usarlo inmediatamente
+      let loginResult: any = null;
+      try {
+        loginResult = await this.loginUserUseCase.execute({ email: dto.email, password: dto.password });
+      } catch (loginError) {
+        this.logger.warn(`Auto-login after register failed: ${loginError instanceof Error ? loginError.message : loginError}`);
+      }
+
       this.auditLogService.recordSuccess(
-        result?.user?.id ?? 'unknown',
+        userId,
         'user-auth-service',
         ip,
         'REGISTER',
         'users',
-        result?.user?.id ?? 'unknown',
+        userId,
         Date.now() - startTime,
         undefined,
         { email: dto.email }
       );
-      return result;
+
+      // Devolver resultado del login (con token) si fue exitoso, o solo el id si falló
+      return loginResult ? { ...loginResult, userId } : { id: userId };
     } catch (error) {
       this.auditLogService.recordFailure(
         'anonymous',
