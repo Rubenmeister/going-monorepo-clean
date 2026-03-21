@@ -174,13 +174,13 @@ export default function HomePage() {
             {SLIDES[slide].region}
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
-          <button
-            onClick={() => document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+          <Link
+            href="/auth/register"
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-2xl transition-all hover:scale-105 hover:opacity-90"
             style={{ backgroundColor: '#ff4c41' }}
           >
-            Reservar viaje →
-          </button>
+            Buscar viaje →
+          </Link>
 
           {/* Slide dots */}
           <div className="absolute bottom-10 flex gap-3">
@@ -546,18 +546,56 @@ export default function HomePage() {
 
       {/* ── Testimonios ──────────────────────────────────────── */}
       <section className="py-24 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <FadeIn className="text-center mb-14">
             <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Usuarios reales</span>
             <h2 className="text-gray-900 font-black text-4xl mt-2">Lo que dicen nuestros viajeros</h2>
           </FadeIn>
-          <FadeIn delay={0.1}>
-            <img
-              src="/images/Testimonio de  pasajeros .png"
-              alt="Testimonios de pasajeros Going"
-              className="w-full rounded-3xl shadow-lg"
-            />
-          </FadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                name: 'María G.',
+                city: 'Quito',
+                photo: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=80&auto=format&fit=crop&face',
+                quote: '¡Excelente servicio! Puntual y cómodo. Me sentí muy segura durante todo el viaje.',
+              },
+              {
+                name: 'Carlos R.',
+                city: 'Guayaquil',
+                photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&auto=format&fit=crop&face',
+                quote: 'El conductor fue muy profesional y el vehículo impecable. ¡Totalmente recomendado!',
+              },
+              {
+                name: 'Andrea P.',
+                city: 'Cuenca',
+                photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80&auto=format&fit=crop&face',
+                quote: 'Gran experiencia con GOING. Viaje rápido y sin complicaciones. Volvería a usar la app sin dudarlo.',
+              },
+            ].map((t, i) => (
+              <FadeIn key={t.name} delay={i * 0.12}>
+                <div className="relative rounded-3xl overflow-hidden shadow-xl" style={{ aspectRatio: '3/4' }}>
+                  {/* Photo background */}
+                  <img
+                    src={t.photo}
+                    alt={t.name}
+                    className="absolute inset-0 w-full h-full object-cover object-top"
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82) 45%, rgba(0,0,0,0.08) 100%)' }} />
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-7">
+                    <p className="text-white font-black text-xl italic mb-1">{t.name} <span className="font-normal not-italic text-gray-300">de {t.city}</span></p>
+                    <div className="flex gap-0.5 mb-3">
+                      {[...Array(5)].map((_, j) => (
+                        <svg key={j} className="w-5 h-5" viewBox="0 0 20 20" fill="#FACC15"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                      ))}
+                    </div>
+                    <p className="text-white text-sm leading-relaxed">"{t.quote}"</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
         </div>
       </section>
 
