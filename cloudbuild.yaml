@@ -60,12 +60,6 @@ steps:
         echo "  booking-service      : $${BOOKING_URL:-NOT DEPLOYED}"
         echo "================================"
 
-        # Remove JWT_SECRET secret binding first (can't mix secret-type and string-type in same deploy)
-        gcloud run services update api-gateway \
-          --region "$$REGION" \
-          --platform managed \
-          --remove-secrets=JWT_SECRET 2>/dev/null || true
-
         gcloud run deploy api-gateway \
           --image "gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID" \
           --region "$$REGION" \
@@ -77,7 +71,8 @@ steps:
           --min-instances 1 \
           --max-instances 10 \
           --timeout 60 \
-          --set-env-vars "^|^NODE_ENV=production|JWT_SECRET=${_JWT_SECRET}|JWT_EXPIRES_IN=15m|CORS_ORIGINS=https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com|USER_AUTH_SERVICE_URL=$${USER_AUTH_URL}|TRANSPORT_SERVICE_URL=$${TRANSPORT_URL}|PAYMENT_SERVICE_URL=$${PAYMENT_URL}|TOURS_SERVICE_URL=$${TOURS_URL}|ANFITRIONES_SERVICE_URL=$${ANFITRIONES_URL}|EXPERIENCIAS_SERVICE_URL=$${EXPERIENCIAS_URL}|ENVIOS_SERVICE_URL=$${ENVIOS_URL}|NOTIFICATIONS_SERVICE_URL=$${NOTIFICATIONS_URL}|TRACKING_SERVICE_URL=$${TRACKING_URL}|BOOKING_SERVICE_URL=$${BOOKING_URL}"
+          --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest \
+          --set-env-vars "^|^NODE_ENV=production|JWT_EXPIRES_IN=15m|CORS_ORIGINS=https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com|USER_AUTH_SERVICE_URL=$${USER_AUTH_URL}|TRANSPORT_SERVICE_URL=$${TRANSPORT_URL}|PAYMENT_SERVICE_URL=$${PAYMENT_URL}|TOURS_SERVICE_URL=$${TOURS_URL}|ANFITRIONES_SERVICE_URL=$${ANFITRIONES_URL}|EXPERIENCIAS_SERVICE_URL=$${EXPERIENCIAS_URL}|ENVIOS_SERVICE_URL=$${ENVIOS_URL}|NOTIFICATIONS_SERVICE_URL=$${NOTIFICATIONS_URL}|TRACKING_SERVICE_URL=$${TRACKING_URL}|BOOKING_SERVICE_URL=$${BOOKING_URL}"
 
 images:
   - 'gcr.io/$PROJECT_ID/api-gateway:$BUILD_ID'
