@@ -80,6 +80,9 @@ export class AccountLockoutService {
 
       this.redisClient.connect().then(() => {
         this.logger.log('✅ Redis connected for account lockout service');
+      }).catch((err) => {
+        this.logger.warn('Redis unavailable, account lockout runs without persistence:', err.message);
+        this.redisClient = null;
       });
     } catch (error) {
       this.logger.warn(
