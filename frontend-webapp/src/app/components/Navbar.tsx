@@ -8,8 +8,7 @@ import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 const NAV_LINKS = [
   { label: 'INICIO', href: '/' },
-  { label: 'DESTINOS', href: '/#destinos' },
-  { label: 'VIAJES', href: '/pasajeros' },
+  { label: 'DESTINOS', href: '/pasajeros' },
   { label: 'CONDUCTORES', href: '/conductores' },
   { label: 'COMUNIDAD GOING', href: '/comunidad' },
   { label: 'ACADEMIA GOING', href: '/academy' },
@@ -243,15 +242,7 @@ export function Navbar() {
                   </div>
                 )}
               </div>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="hidden md:block px-5 py-2 rounded-lg font-bold text-sm text-white transition-colors hover:opacity-90 shadow-sm"
-                style={{ backgroundColor: '#ff4c41' }}
-              >
-                Iniciar Sesión
-              </Link>
-            )}
+            ) : null}
 
             {/* Mobile hamburger — inside navbar, never covers logo */}
             <button
@@ -339,18 +330,7 @@ export function Navbar() {
                 <span>🚪</span> Cerrar Sesión
               </button>
             </div>
-          ) : (
-            <div className="px-4 pb-4">
-              <Link
-                href="/auth/login"
-                onClick={() => setMobileOpen(false)}
-                className="block text-center py-3 rounded-xl font-bold text-sm text-white"
-                style={{ backgroundColor: '#ff4c41' }}
-              >
-                Iniciar Sesión
-              </Link>
-            </div>
-          )}
+          ) : null}
 
           {/* Social icons on mobile */}
           <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap gap-4">
