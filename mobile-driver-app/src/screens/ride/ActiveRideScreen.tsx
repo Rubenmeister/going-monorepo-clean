@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -19,7 +19,7 @@ export function ActiveRideScreen() {
   const navigation = useNavigation();
   const { params } = useRoute<Route>();
   const { rideId, passengerName, destination } = params;
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<MapboxGL.MapView>(null);
   const [driverLoc, setDriverLoc] = useState<{
     latitude: number;
     longitude: number;
@@ -85,19 +85,14 @@ export function ActiveRideScreen() {
   return (
     <Fragment>
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        showsUserLocation
-        showsMyLocationButton={false}
-        initialRegion={{
-          latitude: -0.1807,
-          longitude: -78.4678,
-          latitudeDelta: 0.04,
-          longitudeDelta: 0.04,
-        }}
-      />
+      <MapboxGL.MapView ref={mapRef} style={styles.map}>
+        <MapboxGL.Camera
+          zoomLevel={12}
+          centerCoordinate={[-78.4678, -0.1807]}
+          animationMode="none"
+        />
+        <MapboxGL.UserLocation visible={true} />
+      </MapboxGL.MapView>
 
       <View style={styles.infoPanel}>
         {/* Step progress */}
