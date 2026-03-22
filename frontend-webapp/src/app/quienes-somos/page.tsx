@@ -74,6 +74,25 @@ const DIFFERENTIATORS = [
   },
 ];
 
+function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; title: string; desc: string; price?: string; highlight?: boolean }) {
+  return (
+    <div
+      className="rounded-3xl p-7 transition-all duration-300 hover:-translate-y-1"
+      style={{
+        background: highlight ? '#ff4c41' : '#fff',
+        color: highlight ? '#fff' : '#1a1a1a',
+        boxShadow: highlight ? '0 8px 40px rgba(255,76,65,0.32)' : '0 2px 16px rgba(0,0,0,0.07)',
+        border: highlight ? 'none' : '1px solid #f0f0f0',
+      }}
+    >
+      <div className="text-3xl mb-4">{icon}</div>
+      <div className="font-extrabold text-lg mb-2">{title}</div>
+      <div className="text-sm leading-relaxed mb-3" style={{ color: highlight ? 'rgba(255,255,255,0.85)' : '#666' }}>{desc}</div>
+      {price && <div className="text-sm font-bold" style={{ color: highlight ? 'rgba(255,255,255,0.9)' : '#ff4c41' }}>{price}</div>}
+    </div>
+  );
+}
+
 const MILESTONES = [
   { year: '2023', title: 'La idea nace', desc: 'Fundadores hartos del caos de coordinar transporte por WhatsApp. Comenzamos a construir la solución que Ecuador necesitaba.' },
   { year: '2024', title: 'Primer piloto', desc: 'Lanzamos en Quito con conductoras y conductores verificados. Primer mes: miles de viajes completados.' },
@@ -276,6 +295,28 @@ export default function QuienesSomosPage() {
                 </FadeIn>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Servicios */}
+      <section className="py-20 px-6" style={{ background: '#f9fafb' }}>
+        <div className="max-w-5xl mx-auto">
+          <FadeIn>
+            <div className="text-center mb-12">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going</h2>
+              <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
+            </div>
+          </FadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+            <FadeIn delay={0}><ServiceCard icon="🚗" title="Viajes Compartidos" desc="La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo." price="Desde $3 por trayecto" highlight /></FadeIn>
+            <FadeIn delay={80}><ServiceCard icon="🚙" title="Transporte Privado" desc="El vehículo es tuyo. Por trayecto o por días. Ideal para grupos y familias." price="Precio fijo desde el inicio" /></FadeIn>
+            <FadeIn delay={160}><ServiceCard icon="📦" title="Envíos Express" desc="Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido." price="Recolección en 30 minutos" /></FadeIn>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FadeIn delay={240}><ServiceCard icon="🏨" title="Alojamiento" desc="Hospedaje verificado en toda la ruta. Desde casas locales a hoteles." /></FadeIn>
+            <FadeIn delay={300}><ServiceCard icon="🗺️" title="Tours" desc="Guías locales expertos. Descubre Ecuador con quien la conoce de verdad." /></FadeIn>
           </div>
         </div>
       </section>
