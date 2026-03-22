@@ -1,9 +1,4 @@
-import { RoleGuard } from '@/components/common/RoleGuard';
-
+// Conductores is a public marketing page — no role guard needed
 export default function ConductoresLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allowedRoles={['driver']} redirectTo="/?acceso=solo-conductores">
-      {children}
-    </RoleGuard>
-  );
+  return <>{children}</>;
 }
