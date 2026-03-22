@@ -118,44 +118,101 @@ function FeaturePill({ icon, text }: { icon: string; text: string }) {
   );
 }
 
+const REGIONS = {
+  Sierra: {
+    color: '#6366f1',
+    destinations: [
+      { name: 'Quito',      desc: 'Capital histórica',         img: '/images/calle venezuela quito.jpg' },
+      { name: 'Baños',      desc: 'Aventura & termas',          img: '/images/baños 7.jpg' },
+      { name: 'Riobamba',   desc: 'Puerta del Chimborazo',      img: '/images/chimborazo desde riobamba.jpg' },
+      { name: 'Cotacachi',  desc: 'Lago Cuicocha & artesanías', img: '/images/cuicocha.jpg' },
+    ],
+  },
+  Costa: {
+    color: '#0ea5e9',
+    destinations: [
+      { name: 'Guayaquil',  desc: 'Puerto principal',           img: '/images/GUAYAQUIL DE NOCHE.jpg' },
+      { name: 'Manta',      desc: 'Cruceros del Pacífico',       img: '/images/CRUCEROS MANTA.jpg' },
+      { name: 'Salinas',    desc: 'Balneario ecuatoriano',       img: '/images/Salinas.png' },
+      { name: 'Montañita',  desc: 'Surf & bohemia',              img: '/images/Montañita.png' },
+    ],
+  },
+  Amazonía: {
+    color: '#16a34a',
+    destinations: [
+      { name: 'Tena',       desc: 'Cascadas & rafting',          img: '/images/AR PN AMAZONÍA19 TENA CASCADAS SAN RAFAEL_0502.JPG' },
+      { name: 'Cuyabeno',   desc: 'Reserva natural única',       img: '/images/Copia de AR PN AMAZONÍA18 CUYABENO CANOA foto0026.jpg' },
+      { name: 'Orellana',   desc: 'Ríos & biodiversidad',        img: '/images/Orellana Pañacocha Laguna.jpg' },
+      { name: 'Zamora',     desc: 'Fauna & mariposas',           img: '/images/AR PN AMAZONIA ZAMORA FAUNA mariposas 0283.JPG' },
+    ],
+  },
+  Galápagos: {
+    color: '#f59e0b',
+    destinations: [
+      { name: 'Santa Cruz',     desc: 'Centro de las Islas',   img: '/images/GALÁPAGOS PAISAJE  .JPG' },
+      { name: 'San Cristóbal',  desc: 'La isla capital',        img: '/images/AR PN GALÁPAGOS Baquerizo Moreno San Cristóbal2.jpg' },
+      { name: 'Isabela',        desc: 'Volcanes & tortugas',    img: '/images/BUCEO GALÁPAGOS 001.jpg' },
+      { name: 'Buceo',          desc: 'Vida marina única',      img: '/images/GALAPAGOS FAUNA BUCEO 038.jpg' },
+    ],
+  },
+};
+
 /* ── Main page ─────────────────────────────────────────────── */
 export default function PasajerosPage() {
+  const [activeRegion, setActiveRegion] = useState<keyof typeof REGIONS>('Sierra');
 
   return (
     <div className="min-h-screen font-sans antialiased" style={{ color: '#1a1a1a' }}>
 
-      {/* ── HERO DESTINOS ────────────────────────────────────── */}
-      <section className="pt-12 pb-16 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn className="text-center mb-10">
-            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Explora Ecuador</span>
-            <h1 className="text-gray-900 font-black text-5xl mt-2">Destinos</h1>
-            <p className="text-gray-500 text-lg mt-4 max-w-2xl mx-auto">
-              Desde los Andes hasta las Islas Galápagos — viaja a cualquier rincón del país con Going.
-            </p>
+      {/* ── 4 MUNDOS ─────────────────────────────────────────── */}
+      <section className="pt-12 pb-20 px-4 bg-gray-950">
+        <div className="max-w-7xl mx-auto">
+          <FadeIn className="text-center mb-12">
+            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>4 mundos</span>
+            <h1 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going</h1>
+            <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going te lleva a todas.</p>
           </FadeIn>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            {[
-              { region: 'Sierra',    subtitle: 'Andes · Volcanes · Cultura',  img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg', color: '#6366f1' },
-              { region: 'Costa',     subtitle: 'Mar · Playas · Atardeceres',  img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=85&auto=format&fit=crop', color: '#0ea5e9' },
-              { region: 'Amazonía',  subtitle: 'Selva · Biodiversidad · Aventura', img: '/images/Orellana Pañacocha Laguna.jpg', color: '#16a34a' },
-              { region: 'Galápagos', subtitle: 'Islas únicas en el mundo',    img: '/images/galàpagos.png', color: '#f59e0b' },
-            ].map((d, i) => (
-              <FadeIn key={d.region} delay={i * 80}>
-                <div className="relative rounded-3xl overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer" style={{ aspectRatio: '3/4' }}>
-                  <img src={d.img} alt={d.region} className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.72) 40%, transparent 100%)' }} />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <div className="w-2.5 h-2.5 rounded-full mb-2" style={{ backgroundColor: d.color }} />
-                    <h3 className="text-white font-black text-xl">{d.region}</h3>
-                    <p className="text-gray-300 text-xs mt-1">{d.subtitle}</p>
+
+          {/* Region tabs */}
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            {(Object.keys(REGIONS) as (keyof typeof REGIONS)[]).map(r => (
+              <button
+                key={r}
+                onClick={() => setActiveRegion(r)}
+                className="px-6 py-2.5 rounded-full font-bold text-sm transition-all"
+                style={{
+                  backgroundColor: activeRegion === r ? REGIONS[r].color : 'transparent',
+                  color: activeRegion === r ? '#fff' : '#9ca3af',
+                  border: `2px solid ${activeRegion === r ? REGIONS[r].color : '#374151'}`,
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {/* Destination cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+            {REGIONS[activeRegion].destinations.map((d, i) => (
+              <FadeIn key={d.name} delay={i * 0.08}>
+                <div className="group relative rounded-2xl overflow-hidden cursor-pointer" style={{ height: 220 }}>
+                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                    style={{ backgroundImage: `url('${d.img}')` }} />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                  <div className="absolute bottom-0 p-4">
+                    <h4 className="text-white font-black text-lg">{d.name}</h4>
+                    <p className="text-gray-300 text-xs">{d.desc}</p>
+                  </div>
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
+                    <span className="text-white text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: REGIONS[activeRegion].color }}>Ver viajes</span>
                   </div>
                 </div>
               </FadeIn>
             ))}
           </div>
-          <FadeIn className="flex justify-center gap-4">
-            <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
+
+          <FadeIn className="flex justify-center">
+            <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90 hover:scale-105" style={{ backgroundColor: '#ff4c41' }}>
               Buscar viaje →
             </Link>
           </FadeIn>
