@@ -44,7 +44,6 @@ export function Footer() {
     { name: 'Tours', href: '/services/tours' },
     { name: 'Experiencias', href: '/services/experiences' },
     { name: 'Envíos', href: '/envios' },
-    { name: 'Cotizar envío', href: '/envios/cotizar', badge: 'Nuevo' },
   ];
 
   const proveedores = [
@@ -61,7 +60,6 @@ export function Footer() {
     { name: 'Academia Going', href: '/academy', badge: 'Gratis' },
     { name: 'Blog', href: '/blog' },
     { name: 'Noticias', href: '/news' },
-    { name: 'Carreras', href: '/careers' },
   ];
 
   const localCommunity = [
