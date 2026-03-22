@@ -132,37 +132,12 @@ function Testimonial({ quote, name, city }: { quote: string; name: string; city:
 
 /* ── Main page ─────────────────────────────────────────────── */
 export default function ConductoresPage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen font-sans antialiased" style={{ color: '#1a1a1a' }}>
 
-      {/* ── Nav ─────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(26,26,26,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <Link href="/" className="font-extrabold text-xl tracking-tight" style={{ color: '#ff4c41' }}>Going</Link>
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pasajeros" className="text-sm text-gray-300 hover:text-white transition-colors">Para Pasajeros</Link>
-          <Link href="/conductores" className="text-sm font-semibold" style={{ color: '#ff4c41' }}>Para Conductoras y Conductores</Link>
-          <Link href="/services" className="text-sm text-gray-300 hover:text-white transition-colors">Servicios</Link>
-          <Link href="/register?rol=driver" className="text-sm px-4 py-2 rounded-full font-semibold text-white transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41' }}>
-            Registrarme
-          </Link>
-        </div>
-        <button className="md:hidden text-white" onClick={() => setMobileOpen(v => !v)}>
-          {mobileOpen ? '✕' : '☰'}
-        </button>
-      </nav>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 text-lg font-semibold" style={{ background: '#1a1a1a' }}>
-          <Link href="/pasajeros" className="text-gray-300" onClick={() => setMobileOpen(false)}>Para Pasajeros</Link>
-          <Link href="/conductores" style={{ color: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Para Conductoras y Conductores</Link>
-          <Link href="/services" className="text-gray-300" onClick={() => setMobileOpen(false)}>Servicios</Link>
-          <Link href="/register?rol=driver" className="px-6 py-3 rounded-full text-white" style={{ background: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Registrarme</Link>
-        </div>
-      )}
-
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="pt-32 pb-20 px-6" style={{ background: '#1a1a1a' }}>
+      <section className="pt-12 pb-20 px-6" style={{ background: '#1a1a1a' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
           {/* Texto */}
           <div className="flex-1 text-center md:text-left">

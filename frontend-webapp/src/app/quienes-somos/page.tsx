@@ -105,7 +105,7 @@ export default function QuienesSomosPage() {
     <div className="bg-white min-h-screen">
 
       {/* Hero */}
-      <section className="pt-32 pb-24 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1010 50%, #ff4c41 100%)' }}>
+      <section className="pt-12 pb-24 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1010 50%, #ff4c41 100%)' }}>
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full bg-white/5 -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-white/5 translate-x-1/3 translate-y-1/3" />
