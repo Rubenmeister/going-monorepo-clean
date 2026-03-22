@@ -94,10 +94,12 @@ function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; ti
 }
 
 const MILESTONES = [
-  { year: '2023', title: 'La idea nace', desc: 'Fundadores hartos del caos de coordinar transporte por WhatsApp. Comenzamos a construir la solución que Ecuador necesitaba.' },
-  { year: '2024', title: 'Primer piloto', desc: 'Lanzamos en Quito con conductoras y conductores verificados. Primer mes: miles de viajes completados.' },
-  { year: '2025', title: 'Expansión nacional', desc: 'Llegamos a 20 ciudades. Lanzamos Alojamiento, Tours, Experiencias y Envíos. La SuperApp toma forma.' },
-  { year: '2026', title: 'La primera SuperApp', desc: 'Más de 1 millón de personas usuarias. Going: la primera SuperApp de turismo colaborativo de Latinoamérica.' },
+  { year: '2023', title: 'La idea nace', desc: 'Los fundadores se plantean modernizar el flujo coordinador de transporte y demás servicios turísticos mediante el uso de WhatsApp.' },
+  { year: '2024', title: 'Primer piloto', desc: 'Lanzamos en Quito el primer plan piloto y la primera app web.' },
+  { year: '2025', title: 'La primera SuperApp de turismo colaborativo', desc: 'Creamos la primera Superapp de turismo colaborativo de Latinoamérica: Going.' },
+  { year: '2026', title: 'La primera SuperApp al aire', desc: 'Lanzamos las primeras rutas cercanas a Quito y su aeropuerto para el transporte de pasajeros en modalidad compartida y privada, además del servicio de envíos puerta a puerta. En el segundo semestre se abren todas las rutas hacia Quito y su aeropuerto, las rutas de Guayaquil y Cuenca para cubrir todo el territorio nacional, y el servicio de tours para operadores turísticos y experiencias locales para anfitriones en cada localidad.' },
+  { year: '2027', title: 'Alojamiento nacional y transporte eléctrico', desc: 'Se despliega el servicio de alojamiento con anfitriones a nivel nacional. Empieza el giro al transporte eléctrico. Se inicia la planificación del uso de drones aéreos en las operaciones de transfers y desplazamientos turísticos.' },
+  { year: '2028', title: 'Drones y transporte autónomo', desc: 'Se inicia la implementación de los servicios de dron aéreo y transporte terrestre autónomo para todo el país.' },
 ];
 
 export default function QuienesSomosPage() {
@@ -245,27 +247,39 @@ export default function QuienesSomosPage() {
       <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-4xl mx-auto">
           <FadeIn className="text-center mb-14">
-            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Nuestra historia</span>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Nuestra historia y futuro</span>
             <h2 className="text-4xl font-black text-gray-900">De idea a revolución</h2>
           </FadeIn>
 
           <div className="relative pl-10">
             <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-200" />
             <div className="space-y-10">
-              {MILESTONES.map((m, i) => (
-                <FadeIn key={m.year} delay={i * 100} direction="left">
-                  <div className="relative flex items-start gap-6">
-                    <div className="absolute -left-10 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black z-10" style={{ backgroundColor: '#ff4c41' }}>
-                      {m.year.slice(2)}
+              {MILESTONES.map((m, i) => {
+                const isFuture = parseInt(m.year) > 2026;
+                return (
+                  <FadeIn key={m.year} delay={i * 100} direction="left">
+                    <div className="relative flex items-start gap-6">
+                      <div className="absolute -left-10 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black z-10"
+                        style={{ backgroundColor: isFuture ? '#6b7280' : '#ff4c41' }}>
+                        {m.year.slice(2)}
+                      </div>
+                      <div className="flex-1 rounded-2xl p-6 border hover:shadow-sm transition-all"
+                        style={{
+                          background: isFuture ? '#f9fafb' : '#fff',
+                          borderColor: isFuture ? '#e5e7eb' : '#f0f0f0',
+                          opacity: isFuture ? 0.85 : 1,
+                        }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold" style={{ color: isFuture ? '#6b7280' : '#ff4c41' }}>{m.year}</span>
+                          {isFuture && <span className="text-xs font-semibold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">Próximamente</span>}
+                        </div>
+                        <h3 className="text-lg font-black text-gray-900 mb-2">{m.title}</h3>
+                        <p className="text-gray-500 text-sm leading-relaxed">{m.desc}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-sm transition-all">
-                      <div className="text-xs font-bold mb-1" style={{ color: '#ff4c41' }}>{m.year}</div>
-                      <h3 className="text-lg font-black text-gray-900 mb-2">{m.title}</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed">{m.desc}</p>
-                    </div>
-                  </div>
-                </FadeIn>
-              ))}
+                  </FadeIn>
+                );
+              })}
             </div>
           </div>
         </div>
