@@ -53,44 +53,51 @@ export class AccountLockoutService {
    * Falls back to in-memory tracking if Redis is unavailable
    */
   private initializeRedis(): void {
+    const redisUrl = this.configService.get<string>('REDIS_URL');
+    const redisHost = this.configService.get<string>('REDIS_HOST');
+
+    // Skip Redis entirely if not explicitly configured
+    if (!redisUrl && !redisHost) {
+      this.logger.warn(
+        'Redis not configured (no REDIS_URL or REDIS_HOST). ' +
+        'Account lockout running in degraded mode (no persistence).'
+      );
+      return;
+    }
+
     try {
-      const redisUrl = this.configService.get('REDIS_URL');
-      const redisHost = this.configService.get('REDIS_HOST', 'localhost');
       const redisPort = this.configService.get('REDIS_PORT', 6379);
 
-      // Create Redis client (redis v4 API)
+      // Stop retrying after 3 attempts to avoid blocking startup
+      const reconnectStrategy = (retries: number) => {
+        if (retries >= 3) {
+          this.logger.warn('Redis unreachable after 3 attempts, disabling lockout persistence.');
+          return new Error('Redis unavailable');
+        }
+        return Math.min(retries * 200, 1000);
+      };
+
       if (redisUrl) {
-        this.redisClient = createClient({
-          url: redisUrl,
-          socket: {
-            reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
-          },
-        });
+        this.redisClient = createClient({ url: redisUrl, socket: { reconnectStrategy } });
       } else {
         this.redisClient = createClient({
-          socket: {
-            host: redisHost,
-            port: Number(redisPort),
-            reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
-          },
+          socket: { host: redisHost, port: Number(redisPort), reconnectStrategy },
         });
       }
 
       this.redisClient.on('error', (err) => {
-        this.logger.error('Redis connection error:', err);
+        this.logger.warn('Redis error (lockout degraded):', err.message);
       });
 
       this.redisClient.connect().then(() => {
         this.logger.log('✅ Redis connected for account lockout service');
       }).catch((err) => {
-        this.logger.warn('Redis unavailable, account lockout runs without persistence:', err.message);
+        this.logger.warn('Redis connect failed, disabling lockout persistence:', err.message);
         this.redisClient = null;
       });
     } catch (error) {
-      this.logger.warn(
-        'Redis initialization failed, using in-memory lockout tracking:',
-        error
-      );
+      this.logger.warn('Redis initialization failed, using degraded mode:', error);
+      this.redisClient = null;
     }
   }
 
