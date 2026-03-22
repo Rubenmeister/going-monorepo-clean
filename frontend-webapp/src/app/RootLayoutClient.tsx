@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorNotification } from './components/GlobalErrorNotification';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ClientOnly } from './ClientOnly';
+import SupportChat from './components/ui/SupportChat';
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,9 @@ export function RootLayoutClient({ children }: { children: React.ReactNode }) {
           <main className="min-h-screen">{children}</main>
           <ClientOnly>
             <Footer />
+          </ClientOnly>
+          <ClientOnly>
+            <SupportChat />
           </ClientOnly>
         </AuthProvider>
       </LanguageProvider>

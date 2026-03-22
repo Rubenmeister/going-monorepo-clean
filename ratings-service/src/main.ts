@@ -12,7 +12,7 @@ async function bootstrap() {
   );
 
   const port = process.env.PORT || 3009;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`Ratings service is listening on port ${port}`);
 }
 

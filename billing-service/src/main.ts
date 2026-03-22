@@ -20,7 +20,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   Logger.log(`🚀 Billing Service running on http://localhost:${port}`, 'Bootstrap');
   Logger.log(`📄 API docs at http://localhost:${port}/docs`, 'Bootstrap');
 }
