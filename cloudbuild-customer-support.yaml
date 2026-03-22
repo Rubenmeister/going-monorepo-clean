@@ -48,6 +48,9 @@ steps:
       - '5'
       - '--timeout'
       - '60'
+      - '--update-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY-prod:latest'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
 
 images:
   - 'gcr.io/$PROJECT_ID/customer-support-service:$BUILD_ID'
