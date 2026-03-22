@@ -40,9 +40,6 @@ function FadeIn({ children, delay = 0, direction = 'up', className = '' }: {
   );
 }
 
-
-}
-
 const REGIONS = {
   Sierra: {
     color: '#6366f1',
@@ -140,6 +137,67 @@ export default function PasajerosPage() {
             <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90 hover:scale-105" style={{ backgroundColor: '#ff4c41' }}>
               Buscar viaje →
             </Link>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── SERVICIOS ────────────────────────────────────────── */}
+      <section className="py-14 px-4 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14">
+            {/* Viajes Compartidos */}
+            <div className="rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-5" style={{ backgroundColor: '#fff0ef' }}>🚗</div>
+              <h3 className="text-gray-900 font-black text-xl mb-2">Viajes Compartidos</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-5">La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo.</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-sm text-gray-400">Desde</span>
+                <span className="text-3xl font-black" style={{ color: '#ff4c41' }}>$10</span>
+                <span className="text-sm text-gray-400">por trayecto</span>
+              </div>
+            </div>
+            {/* Envíos Express */}
+            <div className="rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-5" style={{ backgroundColor: '#f0f9ff' }}>📦</div>
+              <h3 className="text-gray-900 font-black text-xl mb-2">Envíos Express</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-5">Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido. Recolección y entrega en menos de 24 horas de puerta a puerta.</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-sm text-gray-400">Desde</span>
+                <span className="text-3xl font-black text-gray-900">$10</span>
+                <span className="text-sm text-gray-400">puerta a puerta</span>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Precios */}
+          <FadeIn>
+            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+              <div className="px-8 py-5 border-b border-gray-100" style={{ background: '#f8fafc' }}>
+                <h3 className="text-gray-900 font-black text-lg">Precios transparentes. Sin sorpresas.</h3>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {[
+                  { route: 'Latacunga ↔ Quito',       shared: '$12', private: '$50' },
+                  { route: 'Ambato ↔ Quito',           shared: '$15', private: '$60' },
+                  { route: 'Riobamba ↔ Quito',         shared: '$20', private: '$80' },
+                  { route: 'Quito ↔ Aeropuerto Quito', shared: '$10', private: '$25' },
+                ].map((r) => (
+                  <div key={r.route} className="flex items-center justify-between px-8 py-4">
+                    <span className="text-gray-700 font-semibold text-sm">{r.route}</span>
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400 mb-0.5">Compartido</div>
+                        <span className="font-black text-sm" style={{ color: '#ff4c41' }}>desde {r.shared}</span>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gray-400 mb-0.5">Privado</div>
+                        <span className="font-black text-sm text-gray-700">desde {r.private}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </FadeIn>
         </div>
       </section>
