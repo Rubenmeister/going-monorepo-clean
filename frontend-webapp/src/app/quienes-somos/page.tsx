@@ -321,6 +321,45 @@ export default function QuienesSomosPage() {
         </div>
       </section>
 
+      {/* Conductores — por qué unirte */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <FadeIn>
+            <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ border: '1px solid #f0f0f0' }}>
+              <div className="md:w-2/5 flex-shrink-0">
+                <img src="/images/SUV de lujo.png" alt="Conductor Going" className="w-full h-full object-cover" style={{ minHeight: '320px' }} />
+              </div>
+              <div className="flex-1 p-8 md:p-10" style={{ background: '#1a1a1a' }}>
+                <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#ff4c41' }}>Para conductoras y conductores</span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6 leading-snug">¿Por qué te conviene unirte a la comunidad Going?</h2>
+                <ul className="space-y-3">
+                  {[
+                    { icon: '💰', text: 'Ganas el 80% de cada viaje, sin descuentos sorpresa.' },
+                    { icon: '🕐', text: 'Horarios 100% flexibles — tú decides cuándo trabajar.' },
+                    { icon: '⚡', text: 'Pagos garantizados en menos de 24 horas.' },
+                    { icon: '📍', text: 'Rutas inteligentes que optimizan tu tiempo y ganancias.' },
+                    { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
+                    { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
+                    { icon: '🎓', text: 'Academia Going gratuita para mejorar tu servicio.' },
+                    { icon: '🤝', text: 'Red de apoyo activa con más de 12,000 conductoras y conductores.' },
+                  ].map((item) => (
+                    <li key={item.text} className="flex items-start gap-3">
+                      <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
+                      <span className="text-gray-300 text-sm leading-relaxed">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8">
+                  <Link href="/conductores" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm hover:opacity-90 transition-all" style={{ background: '#ff4c41' }}>
+                    Quiero ser conductor Going →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 px-6" style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d1010 50%, #ff4c41 100%)' }}>
         <div className="max-w-3xl mx-auto text-center">
