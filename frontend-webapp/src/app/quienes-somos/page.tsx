@@ -219,56 +219,6 @@ export default function QuienesSomosPage() {
         </div>
       </section>
 
-      {/* Propuesta de Valor */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn className="text-center mb-14">
-            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Por qué Going</span>
-            <h2 className="text-4xl font-black text-gray-900 mb-3">Propuesta de Valor</h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              Going es una plataforma completa para atender la demanda de viajes y experiencias en Ecuador.
-            </p>
-          </FadeIn>
-
-          {/* Integralidad highlight */}
-          <FadeIn delay={100}>
-            <div className="rounded-3xl p-10 mb-12 text-white" style={{ background: 'linear-gradient(135deg, #1e3a8a, #0f172a)' }}>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div>
-                  <div className="text-3xl mb-3">🚗</div>
-                  <h4 className="font-black text-lg mb-2">Traslados</h4>
-                  <p className="text-blue-200 text-sm leading-relaxed">De ciudad a ciudad y hacia los aeropuertos de Quito y Guayaquil, en vehículos modernos con conductoras y conductores experimentados.</p>
-                </div>
-                <div>
-                  <div className="text-3xl mb-3">🏡</div>
-                  <h4 className="font-black text-lg mb-2">Alojamiento</h4>
-                  <p className="text-blue-200 text-sm leading-relaxed">Conexión con anfitrionas y anfitriones locales para ofrecer opciones de alojamiento personalizadas y verificadas.</p>
-                </div>
-                <div>
-                  <div className="text-3xl mb-3">🧭</div>
-                  <h4 className="font-black text-lg mb-2">Tours y Actividades</h4>
-                  <p className="text-blue-200 text-sm leading-relaxed">Colaboración con operadores y anfitriones locales para brindar experiencias únicas a los viajeros en todo el país.</p>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {DIFFERENTIATORS.map((d, i) => (
-              <FadeIn key={d.title} delay={i * 70}>
-                <div className="flex gap-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all h-full">
-                  <span className="text-3xl flex-shrink-0 mt-0.5">{d.icon}</span>
-                  <div>
-                    <h4 className="font-black text-gray-900 text-base mb-2">{d.title}</h4>
-                    <p className="text-gray-500 text-sm leading-relaxed">{d.desc}</p>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Servicios */}
       <section className="py-20 px-6" style={{ background: '#f9fafb' }}>
         <div className="max-w-5xl mx-auto">
@@ -318,45 +268,6 @@ export default function QuienesSomosPage() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Conductores — por qué unirte */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <FadeIn>
-            <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ border: '1px solid #f0f0f0' }}>
-              <div className="md:w-2/5 flex-shrink-0">
-                <img src="/images/SUV de lujo.png" alt="Conductor Going" className="w-full h-full object-cover" style={{ minHeight: '320px' }} />
-              </div>
-              <div className="flex-1 p-8 md:p-10" style={{ background: '#1a1a1a' }}>
-                <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#ff4c41' }}>Para conductoras y conductores</span>
-                <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6 leading-snug">¿Por qué te conviene unirte a la comunidad Going?</h2>
-                <ul className="space-y-3">
-                  {[
-                    { icon: '💰', text: 'Ganas el 80% de cada viaje, sin descuentos sorpresa.' },
-                    { icon: '🕐', text: 'Horarios 100% flexibles — tú decides cuándo trabajar.' },
-                    { icon: '⚡', text: 'Pagos garantizados en menos de 24 horas.' },
-                    { icon: '📍', text: 'Rutas inteligentes que optimizan tu tiempo y ganancias.' },
-                    { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
-                    { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
-                    { icon: '🎓', text: 'Academia Going gratuita para mejorar tu servicio.' },
-                    { icon: '🤝', text: 'Red de apoyo activa con más de 12,000 conductoras y conductores.' },
-                  ].map((item) => (
-                    <li key={item.text} className="flex items-start gap-3">
-                      <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
-                      <span className="text-gray-300 text-sm leading-relaxed">{item.text}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8">
-                  <Link href="/conductores" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm hover:opacity-90 transition-all" style={{ background: '#ff4c41' }}>
-                    Quiero ser conductor Going →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
         </div>
       </section>
 
