@@ -277,14 +277,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ── Row 2: Social Media Icons ─────────────────────────── */}
-      <div className="hidden md:block bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-end items-center gap-4">
-          {SOCIAL_LINKS.map((s) => (
-            <SocialIcon key={s.name} {...s} />
-          ))}
-        </div>
-      </div>
 
       {/* ── Mobile Menu ─────────────────────────────────────────── */}
       {mobileOpen && (
@@ -332,12 +324,6 @@ export function Navbar() {
             </div>
           ) : null}
 
-          {/* Social icons on mobile */}
-          <div className="px-4 py-3 border-t border-gray-100 flex flex-wrap gap-4">
-            {SOCIAL_LINKS.map((s) => (
-              <SocialIcon key={s.name} {...s} />
-            ))}
-          </div>
         </div>
       )}
     </header>
