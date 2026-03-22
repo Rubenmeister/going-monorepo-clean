@@ -27,11 +27,9 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
   const transport = isHttps ? https : http;
 
   return (req: any, res: any, next: () => void) => {
-    // In Fastify+middie, middie may strip the route prefix from req.url (e.g. auth/* strips
-    // /auth/login → req.url = '/login' or even '/').
-    // req.raw.url (Node.js IncomingMessage) is never modified by middie and always has the
-    // full original path (e.g. /auth/login).  Fall back to req.url for Express mode.
-    const originalUrl: string = req.raw?.url || req.url || '/';
+    // originalUrl is stored by the Fastify onRequest hook (main.ts) before middie strips it.
+    // req.raw.url works for Express. req.url is the fallback (may be prefix-stripped by middie).
+    const originalUrl: string = req.originalUrl || req.raw?.url || req.url || '/';
     const rawPath = originalUrl.split('?')[0] || '/';
     const queryString = originalUrl.includes('?') ? originalUrl.slice(originalUrl.indexOf('?')) : '';
     const proxiedPath = rawPath.startsWith(`/${stripPrefix}`)
@@ -125,7 +123,7 @@ export class ProxyModule implements NestModule {
     if (svc.auth) {
       consumer
         .apply(makeForwardMiddleware(svc.auth, 'auth'))
-        .forRoutes({ path: 'auth', method: RequestMethod.ALL }, { path: 'auth/*', method: RequestMethod.ALL });
+        .forRoutes({ path: 'auth/*path', method: RequestMethod.ALL });
     }
 
     // --- PROTECTED: JWT guard + forward ---
@@ -136,10 +134,7 @@ export class ProxyModule implements NestModule {
           passport.authenticate('jwt', { session: false }),
           makeForwardMiddleware(target, prefix)
         )
-        .forRoutes(
-          { path: prefix, method: RequestMethod.ALL },
-          { path: `${prefix}/*`, method: RequestMethod.ALL }
-        );
+        .forRoutes({ path: `${prefix}/*path`, method: RequestMethod.ALL });
     };
 
     guard('transport', svc.transport);
@@ -158,10 +153,7 @@ export class ProxyModule implements NestModule {
     if (svc.support) {
       consumer
         .apply(makeForwardMiddleware(svc.support, 'support'))
-        .forRoutes(
-          { path: 'support', method: RequestMethod.ALL },
-          { path: 'support/*', method: RequestMethod.ALL }
-        );
+        .forRoutes({ path: 'support/*path', method: RequestMethod.ALL });
     }
   }
 }
