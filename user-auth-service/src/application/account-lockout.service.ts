@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as redis from 'redis';
+import { createClient } from 'redis';
+
+type RedisClient = ReturnType<typeof createClient>;
 
 /**
  * Account Lockout Service
@@ -22,7 +24,7 @@ import * as redis from 'redis';
 @Injectable()
 export class AccountLockoutService {
   private readonly logger = new Logger(AccountLockoutService.name);
-  private redisClient: redis.RedisClient | null = null;
+  private redisClient: RedisClient | null = null;
   private maxAttempts: number;
   private lockoutDurationMinutes: number;
   private lockoutMultiplier: number;
@@ -56,19 +58,19 @@ export class AccountLockoutService {
       const redisHost = this.configService.get('REDIS_HOST', 'localhost');
       const redisPort = this.configService.get('REDIS_PORT', 6379);
 
-      // Create Redis client
+      // Create Redis client (redis v4 API)
       if (redisUrl) {
-        this.redisClient = redis.createClient({
+        this.redisClient = createClient({
           url: redisUrl,
           socket: {
             reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
           },
         });
       } else {
-        this.redisClient = redis.createClient({
-          host: redisHost,
-          port: redisPort,
+        this.redisClient = createClient({
           socket: {
+            host: redisHost,
+            port: Number(redisPort),
             reconnectStrategy: (retries: number) => Math.min(retries * 50, 500),
           },
         });
