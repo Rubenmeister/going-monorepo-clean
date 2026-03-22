@@ -295,8 +295,8 @@ export default function HomePage() {
               {
                 color: '#fb923c',
                 route: 'Santo Domingo — Quito — Aeropuerto',
-                detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro de Quito y aeropuerto.',
-                time: '~2 h 45 min', price: 'Desde $14',
+                detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro norte de Quito y aeropuerto.',
+                time: '~2 h 45 min', price: 'Desde $15',
               },
               {
                 color: '#60a5fa',
@@ -307,8 +307,8 @@ export default function HomePage() {
               {
                 color: '#4ade80',
                 route: 'Ibarra — Quito — Aeropuerto',
-                detail: 'Ruta norte de la Sierra. Directa a Quito y al aeropuerto Mariscal Sucre.',
-                time: '~2 h 15 min', price: 'Desde $10',
+                detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
+                time: '~2 h 15 min', price: 'Desde $13',
               },
             ].map((r) => (
               <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>
@@ -368,7 +368,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-6">
                   <div>
                     <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2" style={{ color: '#ff4c41' }}>$5</span>
+                    <span className="text-4xl font-black ml-2" style={{ color: '#ff4c41' }}>$10</span>
                     <span className="text-sm text-gray-400 ml-1">/ persona</span>
                   </div>
                   <Link href="/ride?type=shared" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
@@ -454,8 +454,8 @@ export default function HomePage() {
                 <div className="flex items-center gap-6">
                   <div>
                     <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2 text-gray-900">$3</span>
-                    <span className="text-sm text-gray-400 ml-1">/ envío</span>
+                    <span className="text-4xl font-black ml-2 text-gray-900">$10</span>
+                    <span className="text-sm text-gray-400 ml-1">puerta a puerta</span>
                   </div>
                   <Link href="/envios/cotizar" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a8a' }}>
                     Enviar un paquete →
