@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+const BACKEND =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'https://api-gateway-780842550857.us-central1.run.app';
 
 export async function POST(req: NextRequest) {
   try {
