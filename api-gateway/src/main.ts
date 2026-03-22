@@ -102,6 +102,16 @@ async function bootstrap() {
       done();
     }
   );
+  // Copy parsed body to raw IncomingMessage so proxy middleware can read req.body
+  fastifyInstance.addHook(
+    'preHandler',
+    (request: any, _reply: unknown, done: () => void) => {
+      if (request.body !== undefined) {
+        request.raw.body = request.body;
+      }
+      done();
+    }
+  );
   fastifyInstance.addHook(
     'onResponse',
     (
