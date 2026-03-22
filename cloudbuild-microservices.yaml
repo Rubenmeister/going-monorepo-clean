@@ -6,10 +6,6 @@
 
 substitutions:
   _SERVICE_NAME: user-auth-service
-  _DB_VAR_NAME: 'USER_DB_URL'
-  _MONGODB_URL: 'mongodb://placeholder:27017/going'
-  _JWT_SECRET: 'placeholder-update-in-cloud-run-console'
-  _REDIS_URL: 'redis://localhost:6379'
 
 steps:
   # Step 0: Build Docker image
@@ -66,7 +62,7 @@ steps:
       - '--timeout'
       - '60'
       - '--update-env-vars'
-      - '^|^NODE_ENV=production|JWT_SECRET=${_JWT_SECRET}|JWT_EXPIRES_IN=15m|${_DB_VAR_NAME}=${_MONGODB_URL}|REDIS_URL=${_REDIS_URL}'
+      - 'NODE_ENV=production'
 
 images:
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
