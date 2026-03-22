@@ -1,25 +1,32 @@
-import { All, Controller } from '@nestjs/common';
+import { All, Controller, Get, Post } from '@nestjs/common';
 
 /**
  * AuthProxyController
  *
- * Este controlador existe SOLO para que Fastify registre las rutas /auth y /auth/*.
- * En NestJS+Fastify, el middleware del MiddlewareConsumer solo se ejecuta si existe
- * una ruta registrada en el router. Sin este controlador, Fastify retorna 404 antes
- * de llegar al middleware de proxy.
- *
- * Los métodos NUNCA se ejecutan en la práctica: el middleware proxy de ProxyModule
- * envía la respuesta y no llama a next(), por lo que el controlador no llega a correr.
+ * Registra explícitamente cada ruta /auth/* para que Fastify 5 + NestJS 11
+ * ejecute el middleware proxy ANTES de llegar a estos handlers.
+ * Los métodos NUNCA se ejecutan: el middleware proxy intercepta y responde.
  */
 @Controller('auth')
 export class AuthProxyController {
-  @All()
-  handleAuth() {
-    // Nunca se ejecuta - el proxy middleware maneja la respuesta
-  }
+  // POST routes
+  @Post('register') register() {}
+  @Post('login') login() {}
+  @Post('logout') logout() {}
+  @Post('refresh') refresh() {}
+  @Post('google/callback') googleCallback() {}
+  @Post('facebook/callback') facebookCallback() {}
+  @Post('corporate/login') corporateLogin() {}
+  @Post('unlock/:userId') unlock() {}
+  @Post('admin/unlock/:userId') adminUnlock() {}
 
-  @All('*')
-  handleAuthWildcard() {
-    // Nunca se ejecuta - el proxy middleware maneja la respuesta
-  }
+  // GET routes
+  @Get('me') me() {}
+  @Get('google') google() {}
+  @Get('facebook') facebook() {}
+  @Get('lockout/:userId') lockoutStats() {}
+  @Get('health') health() {}
+
+  // Fallback for any other /auth sub-route (NestJS 11 + Fastify 5 compatible)
+  @All() root() {}
 }
