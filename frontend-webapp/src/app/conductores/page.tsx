@@ -132,34 +132,9 @@ function Testimonial({ quote, name, city }: { quote: string; name: string; city:
 
 /* ── Main page ─────────────────────────────────────────────── */
 export default function ConductoresPage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen font-sans antialiased" style={{ color: '#1a1a1a' }}>
-
-      {/* ── Nav ─────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="#beneficios" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Beneficios</Link>
-            <Link href="#ganancias" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Ganancias</Link>
-            <Link href="#requisitos" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Requisitos</Link>
-            <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Registrarme</Link>
-          </div>
-          <button className="md:hidden text-gray-700" onClick={() => setMobileOpen(v => !v)}>
-            {mobileOpen ? '✕' : '☰'}
-          </button>
-        </div>
-      </nav>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 text-lg font-semibold bg-white">
-          <Link href="#beneficios" className="text-gray-700" onClick={() => setMobileOpen(false)}>Beneficios</Link>
-          <Link href="#ganancias" className="text-gray-700" onClick={() => setMobileOpen(false)}>Ganancias</Link>
-          <Link href="#requisitos" className="text-gray-700" onClick={() => setMobileOpen(false)}>Requisitos</Link>
-          <Link href="/auth/register" className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Registrarme</Link>
-        </div>
-      )}
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="pt-32 pb-20 px-6" style={{ background: '#1a1a1a' }}>
