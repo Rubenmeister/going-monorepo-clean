@@ -325,7 +325,7 @@ export default function ConductoresPage() {
             <FadeIn delay={0}><ReqCard icon="📄" title="Cédula de Identidad" desc="Copia a color vigente" /></FadeIn>
             <FadeIn delay={80}><ReqCard icon="🚗" title="Licencia de Conducir" desc="Tipo B o profesional. Mínimo 2 años de experiencia." /></FadeIn>
             <FadeIn delay={160}><ReqCard icon="📋" title="Matrícula del Vehículo" desc="Modelo 2015 o posterior. SUV tiene prioridad." /></FadeIn>
-            <FadeIn delay={240}><ReqCard icon="🛡️" title="SOAT vigente" desc="Seguro obligatorio al día." /></FadeIn>
+            <FadeIn delay={240}><ReqCard icon="📋" title="Permiso ANT y SOAT" desc="Permiso de la ANT y seguro obligatorio al día." /></FadeIn>
           </div>
           <FadeIn delay={320}>
             <div className="rounded-2xl p-6 flex items-start gap-3" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
