@@ -97,6 +97,8 @@ async function bootstrap() {
       done: () => void
     ) => {
       request.id = uuidv4();
+      // Store original URL on raw IncomingMessage before middie strips it in middleware
+      (request as any).raw.originalUrl = (request as any).url;
       done();
     }
   );
