@@ -269,6 +269,28 @@ export default function QuienesSomosPage() {
         </div>
       </section>
 
+      {/* Servicios */}
+      <section className="py-20 px-6" style={{ background: '#f9fafb' }}>
+        <div className="max-w-5xl mx-auto">
+          <FadeIn>
+            <div className="text-center mb-12">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going</h2>
+              <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
+            </div>
+          </FadeIn>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+            <FadeIn delay={0}><ServiceCard icon="🚗" title="Viajes Compartidos" desc="La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo." price="Desde $3 por trayecto" highlight /></FadeIn>
+            <FadeIn delay={80}><ServiceCard icon="🚙" title="Transporte Privado" desc="El vehículo es tuyo. Por trayecto o por días. Ideal para grupos y familias." price="Precio fijo desde el inicio" /></FadeIn>
+            <FadeIn delay={160}><ServiceCard icon="📦" title="Envíos Express" desc="Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido." price="Recolección en 30 minutos" /></FadeIn>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <FadeIn delay={240}><ServiceCard icon="🏨" title="Alojamiento" desc="Hospedaje verificado en toda la ruta. Desde casas locales a hoteles." /></FadeIn>
+            <FadeIn delay={300}><ServiceCard icon="🗺️" title="Tours" desc="Guías locales expertos. Descubre Ecuador con quien la conoce de verdad." /></FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* Historia / Timeline */}
       <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-4xl mx-auto">
@@ -295,28 +317,6 @@ export default function QuienesSomosPage() {
                 </FadeIn>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Servicios */}
-      <section className="py-20 px-6" style={{ background: '#f9fafb' }}>
-        <div className="max-w-5xl mx-auto">
-          <FadeIn>
-            <div className="text-center mb-12">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going</h2>
-              <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
-            </div>
-          </FadeIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-            <FadeIn delay={0}><ServiceCard icon="🚗" title="Viajes Compartidos" desc="La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo." price="Desde $3 por trayecto" highlight /></FadeIn>
-            <FadeIn delay={80}><ServiceCard icon="🚙" title="Transporte Privado" desc="El vehículo es tuyo. Por trayecto o por días. Ideal para grupos y familias." price="Precio fijo desde el inicio" /></FadeIn>
-            <FadeIn delay={160}><ServiceCard icon="📦" title="Envíos Express" desc="Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido." price="Recolección en 30 minutos" /></FadeIn>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FadeIn delay={240}><ServiceCard icon="🏨" title="Alojamiento" desc="Hospedaje verificado en toda la ruta. Desde casas locales a hoteles." /></FadeIn>
-            <FadeIn delay={300}><ServiceCard icon="🗺️" title="Tours" desc="Guías locales expertos. Descubre Ecuador con quien la conoce de verdad." /></FadeIn>
           </div>
         </div>
       </section>
