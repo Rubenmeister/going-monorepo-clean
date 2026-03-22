@@ -125,8 +125,21 @@ const COMMUNITY_EVENTS = [
 export default function ComunidadPage() {
   return (
     <div className="bg-white min-h-screen">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/">
+            <Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" />
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Iniciar sesión</Link>
+            <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Unirse gratis</Link>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero */}
-      <section className="pt-12 pb-20 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%)' }}>
+      <section className="pt-32 pb-20 px-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%)' }}>
         <div className="absolute inset-0 opacity-10">
           {[
             { w:3,h:4,t:8,l:10 },{ w:6,h:3,t:22,l:35 },{ w:2,h:5,t:45,l:60 },{ w:5,h:2,t:70,l:20 },
