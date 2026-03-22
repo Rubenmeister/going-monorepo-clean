@@ -138,26 +138,26 @@ export default function ConductoresPage() {
     <div className="min-h-screen font-sans antialiased" style={{ color: '#1a1a1a' }}>
 
       {/* ── Nav ─────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4" style={{ background: 'rgba(26,26,26,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <Link href="/" className="font-extrabold text-xl tracking-tight" style={{ color: '#ff4c41' }}>Going</Link>
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/pasajeros" className="text-sm text-gray-300 hover:text-white transition-colors">Para Pasajeros</Link>
-          <Link href="/conductores" className="text-sm font-semibold" style={{ color: '#ff4c41' }}>Para Conductoras y Conductores</Link>
-          <Link href="/services" className="text-sm text-gray-300 hover:text-white transition-colors">Servicios</Link>
-          <Link href="/register?rol=driver" className="text-sm px-4 py-2 rounded-full font-semibold text-white transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41' }}>
-            Registrarme
-          </Link>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="#beneficios" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Beneficios</Link>
+            <Link href="#ganancias" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Ganancias</Link>
+            <Link href="#requisitos" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Requisitos</Link>
+            <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Registrarme</Link>
+          </div>
+          <button className="md:hidden text-gray-700" onClick={() => setMobileOpen(v => !v)}>
+            {mobileOpen ? '✕' : '☰'}
+          </button>
         </div>
-        <button className="md:hidden text-white" onClick={() => setMobileOpen(v => !v)}>
-          {mobileOpen ? '✕' : '☰'}
-        </button>
       </nav>
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 text-lg font-semibold" style={{ background: '#1a1a1a' }}>
-          <Link href="/pasajeros" className="text-gray-300" onClick={() => setMobileOpen(false)}>Para Pasajeros</Link>
-          <Link href="/conductores" style={{ color: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Para Conductoras y Conductores</Link>
-          <Link href="/services" className="text-gray-300" onClick={() => setMobileOpen(false)}>Servicios</Link>
-          <Link href="/register?rol=driver" className="px-6 py-3 rounded-full text-white" style={{ background: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Registrarme</Link>
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center gap-6 text-lg font-semibold bg-white">
+          <Link href="#beneficios" className="text-gray-700" onClick={() => setMobileOpen(false)}>Beneficios</Link>
+          <Link href="#ganancias" className="text-gray-700" onClick={() => setMobileOpen(false)}>Ganancias</Link>
+          <Link href="#requisitos" className="text-gray-700" onClick={() => setMobileOpen(false)}>Requisitos</Link>
+          <Link href="/auth/register" className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: '#ff4c41' }} onClick={() => setMobileOpen(false)}>Registrarme</Link>
         </div>
       )}
 
