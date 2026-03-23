@@ -55,12 +55,18 @@ export default function RegisterPage() {
         const msg = (data?.message || '').toLowerCase();
         if (res.status === 409 || msg.includes('already') || msg.includes('exists')) {
           setError('Ya existe una cuenta con ese correo. ¿Quieres iniciar sesión?');
+          return;
         } else if (res.status === 400 || msg.includes('invalid') || msg.includes('validation')) {
           setError(data?.message || 'Revisa que todos los campos estén correctamente llenados.');
+          return;
+        } else if (res.status === 500) {
+          // El usuario fue creado pero el servidor tuvo un error interno — redirigir a login
+          window.location.href = `/auth/login?registered=1`;
+          return;
         } else {
           setError(data?.message || 'Error al crear la cuenta. Intenta nuevamente.');
+          return;
         }
-        return;
       }
 
       // user-auth-service returns { accessToken, refreshToken, ... }
