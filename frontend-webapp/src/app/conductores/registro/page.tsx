@@ -108,7 +108,7 @@ export default function DriverRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const token = typeof window !== 'undefined' ? (localStorage.getItem('authToken') || localStorage.getItem('auth_token')) : null;
       const formData = new FormData();
       Object.entries(vehicle).forEach(([k, v]) => formData.append(k, v));
       REQUIRED_DOCS.forEach(d => {
