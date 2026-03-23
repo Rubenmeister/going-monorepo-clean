@@ -10,7 +10,7 @@ import { ITokenService } from '../ports/itoken.service';
 import { LoginUserDto } from '../dto/login-user.dto';
 
 export type LoginResponseDto = {
-  token: string;
+  accessToken: string;
   user: {
     id: string;
     email: string;
@@ -53,14 +53,14 @@ export class LoginUserUseCase {
     }
 
     const roles = user.roles.map((r) => r.toPrimitives());
-    const token = this.tokenService.generateAuthToken(
+    const accessToken = this.tokenService.generateAuthToken(
       user.id,
       user.email,
       roles
     );
 
     return {
-      token,
+      accessToken,
       user: {
         id: user.id,
         email: user.email,
