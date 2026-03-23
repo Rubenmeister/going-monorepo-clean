@@ -44,6 +44,10 @@ export class LoginUserUseCase {
       throw new UnauthorizedException('Account is not active');
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const isPasswordValid = await user.checkPassword(
       dto.password,
       this.passwordHasher
