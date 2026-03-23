@@ -73,6 +73,7 @@ export function Footer() {
   const legal = [
     { name: 'Términos de Servicio', href: '/legal/terms' },
     { name: 'Privacidad', href: '/legal/privacy' },
+    { name: 'Política de Envíos', href: '/legal/shipping' },
     { name: 'Cookies', href: '/legal/cookies' },
     { name: 'Contacto Legal', href: '/legal/contact' },
   ];
