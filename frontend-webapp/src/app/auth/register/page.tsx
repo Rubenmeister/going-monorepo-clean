@@ -1,9 +1,10 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -25,8 +26,12 @@ const BENEFITS: Record<Role, { icon: string; text: string }[]> = {
   operator: [{ icon:'🎒', text:'Ofrece aventuras y expediciones' }, { icon:'📋', text:'Gestión de grupos y reservas' }, { icon:'🤝', text:'Alianzas con hoteles y guías' }, { icon:'📈', text:'Analytics y ganancias' }],
 };
 
-export default function RegisterPage() {
-  const [selectedRole, setSelectedRole] = useState<Role>('user');
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const VALID_ROLES: Role[] = ['user', 'driver', 'host', 'guide', 'operator'];
+  const paramRole = searchParams.get('rol') as Role | null;
+  const initialRole: Role = paramRole && VALID_ROLES.includes(paramRole) ? paramRole : 'user';
+  const [selectedRole, setSelectedRole] = useState<Role>(initialRole);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -249,5 +254,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <RegisterForm />
+    </Suspense>
   );
 }
