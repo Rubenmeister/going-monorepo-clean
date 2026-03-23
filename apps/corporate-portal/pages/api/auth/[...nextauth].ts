@@ -5,7 +5,9 @@ import AzureADProvider from 'next-auth/providers/azure-ad';
 import axios from 'axios';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  process.env.AUTH_SERVICE_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  'https://user-auth-service-780842550857.us-central1.run.app';
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -36,7 +38,7 @@ export const authOptions: NextAuthOptions = {
               password: credentials.password,
             }
           );
-          // El backend retorna: { token, refreshToken, expiresIn, user: { id, email, firstName, lastName, roles }, companyId }
+          // El backend retorna: { accessToken, refreshToken, expiresIn, user: { id, email, firstName, lastName, roles }, companyId }
           const body = response.data;
           const userData = body.user;
           if (userData && userData.id) {
@@ -46,7 +48,7 @@ export const authOptions: NextAuthOptions = {
               name: [userData.firstName, userData.lastName].filter(Boolean).join(' '),
               role: Array.isArray(userData.roles) ? userData.roles[0] : 'corporate',
               companyId: body.companyId ?? null,
-              accessToken: body.token,
+              accessToken: body.accessToken || body.token,
             };
           }
           return null;
