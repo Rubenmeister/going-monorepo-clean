@@ -81,17 +81,21 @@ export class AuthController {
         this.logger.warn(`Auto-login after register failed: ${loginError instanceof Error ? loginError.message : loginError}`);
       }
 
-      this.auditLogService.recordSuccess(
-        userId,
-        'user-auth-service',
-        ip,
-        'REGISTER',
-        'users',
-        userId,
-        Date.now() - startTime,
-        undefined,
-        { email: dto.email }
-      );
+      try {
+        this.auditLogService.recordSuccess(
+          userId,
+          'user-auth-service',
+          ip,
+          'REGISTER',
+          'users',
+          userId,
+          Date.now() - startTime,
+          undefined,
+          { email: dto.email }
+        );
+      } catch (auditError) {
+        this.logger.warn(`Audit log failed (non-critical): ${auditError instanceof Error ? auditError.message : auditError}`);
+      }
 
       // Devolver resultado del login (con token) si fue exitoso, o solo el id si falló
       return loginResult ? { ...loginResult, userId } : { id: userId };
