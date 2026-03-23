@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { TokenManager } from '@going-monorepo-clean/frontend-providers';
 import { Suspense } from 'react';
 
 function CallbackHandler() {
@@ -15,7 +14,7 @@ function CallbackHandler() {
     const isNewUser = searchParams.get('isNewUser') === 'true';
 
     if (token) {
-      TokenManager.setToken(token);
+      localStorage.setItem('authToken', token);
       // Redirect new users to complete their profile, existing users to home
       router.replace(isNewUser ? '/auth/register?step=profile' : '/');
     } else {
