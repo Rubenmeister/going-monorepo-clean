@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { label: 'COMUNIDAD GOING', href: '/comunidad' },
   { label: 'ACADEMIA GOING', href: '/academy' },
   { label: 'QUIÉNES SOMOS', href: '/quienes-somos' },
-  { label: 'EMPRESAS', href: 'https://empresas.goingec.com' },
+  { label: 'EMPRESAS', href: '/empresas/auth/login' },
 ];
 
 // Real brand SVG icon paths (Simple Icons standard, viewBox 0 0 24 24)
