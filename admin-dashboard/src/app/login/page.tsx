@@ -3,10 +3,13 @@ export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { authClient } from '@going-monorepo-clean/frontend-providers';
 
-const AUTH_TOKEN_KEY  = 'authToken';
-const SESSION_COOKIE  = 'going_admin_session';
+const AUTH_SERVICE =
+  process.env.AUTH_SERVICE_URL ||
+  'https://user-auth-service-780842550857.us-central1.run.app';
+
+const AUTH_TOKEN_KEY = 'authToken';
+const SESSION_COOKIE = 'going_admin_session';
 
 function setSessionCookie(value: boolean) {
   if (value) {
@@ -27,35 +30,55 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    try {
-      const response = await authClient.login({ email, password });
 
-      // Verificar rol admin antes de permitir acceso
-      const parts = response.token.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(atob(parts[1]));
-        const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
-        if (!roles.includes('admin')) {
-          throw new Error('FORBIDDEN');
+    try {
+      const res = await fetch(`${AUTH_SERVICE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const msg = (data?.message || '').toLowerCase();
+        if (res.status === 401 || msg.includes('invalid') || msg.includes('credentials') || msg.includes('password')) {
+          setError('Email o contraseña incorrectos.');
+        } else {
+          setError(data?.message || 'Error al iniciar sesión. Intenta de nuevo.');
         }
+        return;
       }
 
-      // Token válido y rol admin confirmado
-      localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+      const token = data.accessToken || data.token;
+      if (!token) {
+        setError('No se recibió token del servidor. Contacta a soporte.');
+        return;
+      }
+
+      // Verificar rol admin en el JWT
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+        if (!roles.includes('admin') && !roles.includes('staff')) {
+          setError('No tienes permisos de administrador para acceder a este panel.');
+          return;
+        }
+      } catch {
+        setError('Token inválido. Contacta a soporte.');
+        return;
+      }
+
+      // Token válido con rol admin confirmado
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
       setSessionCookie(true);
+
       const from = searchParams.get('from') ?? '/';
       window.location.href = from;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg === 'FORBIDDEN') {
-        setError('No tienes permisos de administrador para acceder a este panel.');
-      } else if (msg.toLowerCase().includes('fetch') || msg.includes('network') || msg === '') {
-        setError('No se pudo conectar al servidor. Verifica tu conexión o contacta a soporte.');
-      } else if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('credencial') || msg.toLowerCase().includes('invalid')) {
-        setError('Email o contraseña incorrectos.');
-      } else {
-        setError(msg || 'Error al iniciar sesión. Intenta de nuevo.');
-      }
+
+    } catch {
+      setError('No se pudo conectar al servidor. Verifica tu conexión.');
     } finally {
       setLoading(false);
     }
@@ -67,9 +90,7 @@ function LoginForm() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🛡️</div>
           <h1 className="text-3xl font-bold text-gray-900">Panel Admin</h1>
-          <p className="text-gray-500 mt-1">
-            Acceso exclusivo para administradores
-          </p>
+          <p className="text-gray-500 mt-1">Acceso exclusivo para administradores</p>
         </div>
 
         {error && (
@@ -80,36 +101,24 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Email de administrador
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Email de administrador</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@going.com"
-              required
-              autoFocus
+              type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="admin@going.com" required autoFocus
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-gray-50"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Contraseña
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Contraseña</label>
             <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
+              type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••" required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-gray-50"
             />
           </div>
 
           <button
-            type="submit"
-            disabled={loading}
+            type="submit" disabled={loading}
             className="w-full py-3 text-white font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg"
             style={{ backgroundColor: '#ff4c41' }}
           >
@@ -120,16 +129,12 @@ function LoginForm() {
         <div className="mt-6 pt-5 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-400">
             ¿Olvidaste tu contraseña?{' '}
-            <a
-              href="mailto:soporte@goingec.com?subject=Recuperación de acceso admin"
-              className="text-indigo-500 hover:text-indigo-700 font-medium underline"
-            >
+            <a href="mailto:soporte@goingec.com?subject=Recuperación de acceso admin"
+              className="text-indigo-500 hover:text-indigo-700 font-medium underline">
               Contacta a soporte
             </a>
           </p>
-          <p className="text-xs text-gray-300 mt-3">
-            Going Admin Dashboard — Solo personal autorizado
-          </p>
+          <p className="text-xs text-gray-300 mt-3">Going Admin Dashboard — Solo personal autorizado</p>
         </div>
       </div>
     </div>
