@@ -209,7 +209,7 @@ export default function ShippingPolicyPage() {
 
           {/* 11 */}
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">11. Cancelaciones y Reembolsos</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">11. Cancelaciones y Reembolsos de Envíos</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>El remitente puede cancelar el envío <strong>sin cargo</strong> hasta que el conductor haya aceptado la solicitud.</li>
               <li>Si el conductor ya aceptó y se dirige al punto de recogida, la cancelación generará un cargo de <strong>$5 USD</strong>.</li>
@@ -234,10 +234,8 @@ export default function ShippingPolicyPage() {
               <p>Las reclamaciones pueden presentarse a través de:</p>
               <p className="mt-2">
                 📧 <a href="mailto:soporte@goingec.com" className="text-[#0033A0] font-semibold hover:underline">soporte@goingec.com</a>
-                {' '}— responderemos en un plazo máximo de 24 horas hábiles.
-              </p>
-              <p className="mt-1">
-                💬 WhatsApp disponible en la aplicación Going.
+                {' '}— responderá en un plazo máximo de 24 horas hábiles, o a través del{' '}
+                💬 <strong>WhatsApp de la aplicación Going</strong>.
               </p>
             </div>
           </section>
