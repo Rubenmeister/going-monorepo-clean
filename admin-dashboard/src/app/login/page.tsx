@@ -38,10 +38,12 @@ function LoginForm() {
 
       if (!res.ok) {
         const msg = (data?.message || '').toLowerCase();
-        if (res.status === 401 || msg.includes('invalid') || msg.includes('credentials') || msg.includes('password') || msg.includes('incorrect')) {
-          setError('Email o contraseña incorrectos. Si olvidaste tu clave, usa "Recuperar contraseña" abajo.');
-        } else if (msg.includes('exist') || msg.includes('duplicate') || msg.includes('already')) {
-          setError('Error inesperado del servidor. Intenta de nuevo o recupera tu contraseña.');
+        if (res.status === 401 || msg.includes('invalid') || msg.includes('credentials') || msg.includes('password') || msg.includes('incorrect') || msg.includes('unauthorized')) {
+          setError('Email o contraseña incorrectos. Usa "Recuperar contraseña" si olvidaste tu clave.');
+        } else if (res.status === 404 || msg.includes('not found') || msg.includes('no encontrado')) {
+          setError('No existe una cuenta con ese email. ¿Quieres crear una cuenta de administrador?');
+        } else if (res.status === 503 || msg.includes('connect') || msg.includes('servidor')) {
+          setError('No se pudo conectar con el servidor. Intenta de nuevo en unos segundos.');
         } else {
           setError(data?.message || 'Error al iniciar sesión. Intenta de nuevo.');
         }
@@ -50,15 +52,16 @@ function LoginForm() {
 
       const token = data.accessToken || data.token;
       if (!token) {
-        setError('No se recibió token del servidor. Contacta a soporte.');
+        setError('No se recibió token del servidor. Escríbenos a soporte@goingec.com');
         return;
       }
 
-      // Verificar que el JWT sea válido
+      // Verificar que el JWT sea válido (base64url → base64 estándar)
       try {
-        JSON.parse(atob(token.split('.')[1]));
+        const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        JSON.parse(atob(b64));
       } catch {
-        setError('Token inválido. Contacta a soporte.');
+        setError('Token inválido recibido. Escríbenos a soporte@goingec.com');
         return;
       }
 
