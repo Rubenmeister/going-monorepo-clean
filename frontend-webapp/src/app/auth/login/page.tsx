@@ -67,7 +67,8 @@ function LoginForm() {
       } else if (roles.includes('operator')) {
         window.location.href = '/operadores/panel';
       } else {
-        window.location.href = '/';
+        // pasajero → dashboard personalizado
+        window.location.href = '/dashboard/pasajero';
       }
 
     } catch {
