@@ -52,10 +52,21 @@ export default function CrearAdminPage() {
       if (!res.ok) {
         const msg = (data?.message || '').toLowerCase();
         if (msg.includes('exist') || msg.includes('duplicate') || msg.includes('already')) {
-          setError('Ya existe una cuenta con ese email.');
+          setError('Ya existe una cuenta con ese email. Ve al login e inicia sesión, o usa "Recuperar contraseña" si no recuerdas tu clave.');
         } else {
           setError(data?.message || 'Error al crear la cuenta. Intenta de nuevo.');
         }
+        return;
+      }
+
+      // Si el servidor devuelve token, hacer auto-login directo
+      const token = data.accessToken || data.token;
+      if (token) {
+        try { JSON.parse(atob(token.split('.')[1])); } catch { /* ignore */ }
+        localStorage.setItem('authToken', token);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        document.cookie = 'going_admin_session=1; path=/; SameSite=Strict';
+        window.location.href = '/';
         return;
       }
 

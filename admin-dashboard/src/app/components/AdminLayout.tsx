@@ -47,6 +47,10 @@ const NAV_SECTIONS = [
     title: 'Análisis',
     items: [{ label: 'Analítica', href: '/analytics', icon: '📈' }],
   },
+  {
+    title: 'Cuenta',
+    items: [{ label: 'Configuración', href: '/settings', icon: '⚙️' }],
+  },
 ];
 
 export function AdminLayout({
