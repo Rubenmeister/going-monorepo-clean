@@ -48,11 +48,11 @@ export function Footer() {
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores',        href: '/auth/login?from=/conductores/panel' },
+    { name: '🚗 Conductores',        href: '/auth/login' },
     { name: '🏡 Anfitriones',        href: '/auth/login?from=/anfitriones/panel' },
     { name: '🏺 Promotores Locales', href: '/auth/login?from=/promotores-locales/panel' },
     { name: '🧗 Operadores',         href: '/auth/login?from=/operadores/panel' },
-    { name: 'Registrarme',           href: '/auth/register', badge: 'Gratis' },
+    { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
   ];
 
   const empresa = [
@@ -66,11 +66,10 @@ export function Footer() {
   ];
 
   const localCommunity = [
-    { name: 'Impacto en tu Ciudad',       href: '/comunidad-local/impacto' },
-    { name: 'Economía Colaborativa',      href: '/comunidad-local/economia-colaborativa' },
-    { name: 'Eventos Comunitarios',       href: '/comunidad-local/eventos' },
-    { name: 'Sostenibilidad 🌿',          href: '/comunidad-local/sostenibilidad' },
-    { name: 'Festividades Locales 🎊',    href: '/comunidad-local/festividades' },
+    { name: 'Impacto y Sostenibilidad',            href: '/comunidad-local/impacto' },
+    { name: 'Economía Colaborativa',               href: '/comunidad-local/economia-colaborativa' },
+    { name: 'Eventos GOING',                       href: '/comunidad-local/eventos' },
+    { name: 'Calendario de Festividades Locales',  href: '/comunidad-local/festividades' },
   ];
 
   const legal = [

@@ -3,6 +3,10 @@ import type {
   IPaymentGateway,
   InitiatePaymentInput,
   InitiatePaymentResult,
+  AuthorizeInput,
+  AuthorizeResult,
+  CaptureInput,
+  CaptureResult,
   PaymentStatusResult,
   WebhookResult,
 } from './payment-gateway.interface';
@@ -78,6 +82,25 @@ export class MockPaymentProvider implements IPaymentGateway {
       status: status as any,
       gatewayRef: `MOCK-WH-${Date.now()}`,
       raw: body,
+    };
+  }
+
+  async authorize(input: AuthorizeInput): Promise<AuthorizeResult> {
+    this.logger.log(`[MOCK] Pre-autorización ${input.transactionId} por $${input.amountUsd}`);
+    const gatewayRef = `MOCK-PA-${Date.now()}`;
+    this.store.set(input.transactionId, { status: 'authorized', gatewayRef });
+    return { transactionId: input.transactionId, gatewayRef, status: 'authorized' };
+  }
+
+  async capture(input: CaptureInput): Promise<CaptureResult> {
+    this.logger.log(`[MOCK] Capture ${input.transactionId} por $${input.amountUsd}`);
+    const entry = this.store.get(input.transactionId);
+    if (entry) { entry.status = 'approved'; entry.paidAt = new Date(); }
+    return {
+      transactionId: input.transactionId,
+      gatewayRef:    input.gatewayRef,
+      status:        'approved',
+      chargedAmount: input.amountUsd,
     };
   }
 

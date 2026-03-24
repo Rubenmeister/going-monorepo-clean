@@ -3,13 +3,15 @@ import { IRideRepository } from '../../domain/ports';
 
 /**
  * Complete Ride Use Case
- * Finalize a ride and calculate final fare
+ * Finaliza el viaje y calcula la tarifa REAL según distancia/duración reales.
+ *
+ * Fórmula: baseFare + (distanceKm × perKmRate) + (durationMin × perMinRate) × surgeMultiplier
  */
 @Injectable()
 export class CompleteRideUseCase {
   constructor(
     @Inject('IRideRepository')
-    private readonly rideRepo: IRideRepository
+    private readonly rideRepo: IRideRepository,
   ) {}
 
   async execute(input: {
@@ -19,40 +21,47 @@ export class CompleteRideUseCase {
   }): Promise<any> {
     const { rideId, distanceKm, durationSeconds } = input;
 
-    // Get ride
     const ride = await this.rideRepo.findById(rideId);
-    if (!ride) {
-      throw new Error(`Ride ${rideId} not found`);
-    }
+    if (!ride) throw new Error(`Ride ${rideId} not found`);
 
-    if (ride.status !== 'started') {
-      throw new Error(`Can only complete rides in started status`);
-    }
+    if (ride.status !== 'started')
+      throw new Error(`Can only complete rides in started status (current: ${ride.status})`);
 
-    // Null-guard: fare must exist before accessing estimatedTotal
-    if (!ride.fare) {
+    if (!ride.fare)
       throw new Error(`Ride ${rideId} has no fare — cannot complete`);
-    }
 
-    // Calculate final fare (simplified: use estimated total as final)
-    const finalFare = ride.fare.estimatedTotal ?? 0;
+    // Calcular tarifa real usando los parámetros originales del viaje
+    const durationMinutes = durationSeconds / 60;
+    const baseFare        = ride.fare.baseFare        ?? 2.5;
+    const perKmRate       = ride.fare.perKmFare        ?? 0.5;
+    const perMinRate      = ride.fare.perMinuteFare    ?? 0.1;
+    const surge           = ride.fare.surgeMultiplier  ?? 1.0;
 
-    // Update ride
+    const realFare = parseFloat(
+      ((baseFare + distanceKm * perKmRate + durationMinutes * perMinRate) * surge).toFixed(2)
+    );
+
+    // Mínimo $2.00
+    const finalFare = Math.max(realFare, 2.0);
+
     const updated = await this.rideRepo.update(rideId, {
-      status: 'completed',
-      completedAt: new Date(),
+      status:          'completed',
+      completedAt:     new Date(),
       durationSeconds,
       distanceKm,
       finalFare,
     });
 
     return {
-      rideId: updated.id,
-      status: updated.status,
+      rideId:          updated.id,
+      status:          updated.status,
       durationSeconds: updated.durationSeconds,
-      distanceKm: updated.distanceKm,
-      finalFare: updated.finalFare,
-      completedAt: updated.completedAt,
+      distanceKm:      updated.distanceKm,
+      finalFare:       updated.finalFare,
+      completedAt:     updated.completedAt,
+      // paymentRef disponible para que el controller haga el capture
+      paymentRef:      updated.paymentRef,
+      paymentTxnId:    updated.paymentTxnId,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Redis } from 'ioredis';
@@ -12,6 +12,7 @@ import { RideModelSchema, RideSchema } from './persistence/schemas/ride.schema';
 import { RideMatchSchema } from './schemas/ride-match.schema';
 import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
 
+@Global()
 @Module({
   imports: [
     ConfigModule,
@@ -61,6 +62,7 @@ import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
     ITripRepository,
     'IRideRepository',
     IRideMatchRepository,
+    DistanceCalculatorService,
     'GeolocationService',
     'REDIS_CLIENT',
   ],

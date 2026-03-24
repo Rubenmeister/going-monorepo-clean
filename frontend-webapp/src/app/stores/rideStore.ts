@@ -28,6 +28,9 @@ export interface Ride {
     vehicle: string;
     licensePlate: string;
   };
+  passengers?: number;
+  vehicleType?: string;
+  serviceTier?: string;
 }
 
 interface RideStore {

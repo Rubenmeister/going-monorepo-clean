@@ -5,29 +5,44 @@
 import { useCallback } from 'react';
 import { useRideStore } from '@/stores/rideStore';
 import { rideService } from '@/services/ride';
-import type { Ride, Location, RideType } from '@/types';
+import type { Ride, Location, VehicleType, ServiceTier } from '@/types';
+
+/** Decode user ID from JWT stored in localStorage */
+function getUserIdFromToken(): string {
+  try {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('authToken') || localStorage.getItem('auth_token')
+        : null;
+    if (!token) return 'guest';
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || payload.id || payload.userId || 'guest';
+  } catch {
+    return 'guest';
+  }
+}
 
 export interface UseRideServiceReturn {
-  // State
-  activeRide: Ride | null;
-  rideHistory: Ride[];
-  pickupLocation: Location | null;
-  dropoffLocation: Location | null;
-  estimatedFare: number | null;
-  loading: boolean;
-  error: string | null;
+  activeRide:       Ride | null;
+  rideHistory:      Ride[];
+  pickupLocation:   Location | null;
+  dropoffLocation:  Location | null;
+  estimatedFare:    number | null;
+  loading:          boolean;
+  error:            string | null;
 
-  // Actions
-  setPickupLocation: (location: Location) => void;
+  setPickupLocation:  (location: Location) => void;
   setDropoffLocation: (location: Location) => void;
-  createRide: (rideType: RideType) => Promise<void>;
-  cancelRide: () => Promise<void>;
+  createRide:         (
+    rideType?:    VehicleType,
+    serviceTier?: ServiceTier,
+    passengers?:  number,
+    scheduledAt?: string
+  ) => Promise<void>;
+  cancelRide:   () => Promise<void>;
   clearLocations: () => void;
 }
 
-/**
- * Hook for managing ride operations
- */
 export function useRideService(): UseRideServiceReturn {
   const {
     activeRide,
@@ -39,16 +54,21 @@ export function useRideService(): UseRideServiceReturn {
     error,
     setPickupLocation,
     setDropoffLocation,
-    createRide: storeCreateRide,
+    createRide:  storeCreateRide,
     setLoading,
     setError,
     clearRide,
   } = useRideStore();
 
   const createRide = useCallback(
-    async (rideType: RideType) => {
+    async (
+      rideType: VehicleType = 'suv',
+      serviceTier: ServiceTier = 'confort',
+      passengers = 1,
+      scheduledAt?: string,
+    ) => {
       if (!pickupLocation || !dropoffLocation) {
-        setError('Please select both pickup and dropoff locations');
+        setError('Selecciona origen y destino');
         return;
       }
 
@@ -56,18 +76,19 @@ export function useRideService(): UseRideServiceReturn {
       setError(null);
 
       try {
+        const passengerId = getUserIdFromToken();
         const ride = await rideService.createRide({
-          pickup: pickupLocation,
-          dropoff: dropoffLocation,
+          pickup:     pickupLocation,
+          dropoff:    dropoffLocation,
           rideType,
-          passengerId: 'passenger-001', // TODO: Get from auth store
+          serviceTier,
+          passengers,
+          passengerId,
+          scheduledAt,
         });
-
         storeCreateRide(ride);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Failed to create ride';
-        setError(message);
+        setError(err instanceof Error ? err.message : 'No se pudo crear el viaje');
       } finally {
         setLoading(false);
       }
@@ -76,21 +97,14 @@ export function useRideService(): UseRideServiceReturn {
   );
 
   const cancelRide = useCallback(async () => {
-    if (!activeRide) {
-      setError('No active ride to cancel');
-      return;
-    }
-
+    if (!activeRide) { setError('No hay viaje activo'); return; }
     setLoading(true);
     setError(null);
-
     try {
       await rideService.cancelRide(activeRide.tripId);
       clearRide();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to cancel ride';
-      setError(message);
+      setError(err instanceof Error ? err.message : 'No se pudo cancelar el viaje');
     } finally {
       setLoading(false);
     }

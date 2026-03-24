@@ -58,7 +58,13 @@ export class RideResponseDto {
  * Accept Ride DTO
  */
 export class AcceptRideDto {
-  driverId: string;
+  driverId?: string;
+  @IsOptional() @IsString() driverName?:   string;
+  @IsOptional() @IsString() vehicleModel?: string;
+  @IsOptional() @IsString() vehiclePlate?: string;
+  @IsOptional() @IsNumber()  driverRating?: number;
+  @IsOptional() @IsString() driverPhoto?:  string;
+  @IsOptional() @IsNumber()  etaMinutes?:   number;
 }
 
 /**
