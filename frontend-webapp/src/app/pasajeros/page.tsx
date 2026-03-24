@@ -134,7 +134,7 @@ export default function PasajerosPage() {
           </div>
 
           <FadeIn className="flex justify-center">
-            <Link href="/auth/register" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90 hover:scale-105" style={{ backgroundColor: '#ff4c41' }}>
+            <Link href="/auth/login?from=/ride" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all hover:opacity-90 hover:scale-105" style={{ backgroundColor: '#ff4c41' }}>
               Buscar viaje →
             </Link>
           </FadeIn>
@@ -210,7 +210,7 @@ export default function PasajerosPage() {
             <p className="text-white mb-8 text-lg" style={{ opacity: 0.88 }}>
               Crea tu cuenta gratis y reserva tu primer viaje en segundos.
             </p>
-            <Link href="/auth/register" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+            <Link href="/auth/login?from=/ride" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#fff', color: '#ff4c41', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
               Buscar viaje →
             </Link>
           </FadeIn>
