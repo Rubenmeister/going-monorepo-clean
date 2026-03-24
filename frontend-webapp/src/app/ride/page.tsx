@@ -35,14 +35,6 @@ const ChatInterface = dynamic(
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type Step = 'request' | 'tracking' | 'payment' | 'accounting' | 'rating';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'request',    label: 'Viaje'    },
-  { key: 'tracking',   label: 'En ruta'  },
-  { key: 'payment',    label: 'Pago'     },
-  { key: 'accounting', label: 'Cuenta'   },
-  { key: 'rating',     label: 'Valorar'  },
-];
-
 /* ─── Page ──────────────────────────────────────────────────────────── */
 function RidePageInner() {
   const router             = useRouter();
@@ -80,57 +72,32 @@ function RidePageInner() {
   const handleAccountingDone  = () => setStep('rating');
   const handleRatingComplete  = () => { clearRide(); setStep('request'); };
 
-  const stepOrder    = STEPS.map(s => s.key);
-  const currentIndex = stepOrder.indexOf(step);
-
   return (
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Header ── */}
       <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.back()}
-                className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
-              >
-                ←
-              </button>
-              <h1 className="text-xl font-bold text-gray-900">
-                {step === 'request'    ? 'Pedir viaje'      :
-                 step === 'tracking'   ? 'Tu viaje'         :
-                 step === 'payment'    ? 'Pago'             :
-                 step === 'accounting' ? 'Resumen del viaje':
-                                        'Califica tu viaje' }
-              </h1>
-            </div>
-            {step !== 'request' && step !== 'tracking' && (
-              <button onClick={() => setStep('request')} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                ← Nuevo viaje
-              </button>
-            )}
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+            >
+              ←
+            </button>
+            <h1 className="text-xl font-bold text-gray-900">
+              {step === 'request'    ? 'Solicitar viaje'   :
+               step === 'tracking'   ? 'Tu viaje'          :
+               step === 'payment'    ? 'Pago'              :
+               step === 'accounting' ? 'Resumen del viaje' :
+                                       'Califica tu viaje'  }
+            </h1>
           </div>
-
-          {/* Progress stepper */}
-          <div className="flex items-center gap-1">
-            {STEPS.map((s, i) => (
-              <div key={s.key} className="flex items-center">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  i < currentIndex  ? 'bg-green-500 text-white' :
-                  i === currentIndex ? 'bg-[#0033A0] text-white' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  {i < currentIndex ? '✓' : i + 1}
-                </div>
-                <span className={`ml-1 text-xs hidden sm:inline ${i === currentIndex ? 'text-[#0033A0] font-medium' : 'text-gray-400'}`}>
-                  {s.label}
-                </span>
-                {i < STEPS.length - 1 && (
-                  <div className={`mx-1.5 h-0.5 w-4 ${i < currentIndex ? 'bg-green-400' : 'bg-gray-200'}`} />
-                )}
-              </div>
-            ))}
-          </div>
+          {step !== 'request' && step !== 'tracking' && (
+            <button onClick={() => setStep('request')} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              ← Nuevo viaje
+            </button>
+          )}
         </div>
       </div>
 

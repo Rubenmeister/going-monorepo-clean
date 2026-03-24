@@ -14,11 +14,11 @@ export function Footer() {
 
   const services = [
     { name: 'Going',              href: '/' },
-    { name: 'Transporte',         href: '/pasajeros' },
+    { name: 'Transporte',         href: '/services/transport' },
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Alojamiento',        href: '/services/accommodation' },
     { name: 'Experiencias',       href: '/services/experiences' },
-    { name: 'Envíos',             href: '/envios' },
+    { name: 'Envíos',             href: '/services/envios' },
     { name: 'Academia Going',     href: '/academy' },
     { name: 'Blog',               href: '/blog' },
     { name: 'Noticias',           href: '/news' },
