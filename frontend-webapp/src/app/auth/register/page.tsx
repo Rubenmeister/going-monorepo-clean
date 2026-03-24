@@ -11,7 +11,7 @@ const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550
 type Role = 'user' | 'driver' | 'host' | 'guide' | 'operator';
 
 const ROLES = [
-  { value: 'user'     as Role, emoji: '🧳', title: 'Usuario',            sub: 'Viajo, envío o recibo paquetes',         color: '#ff4c41', redirect: '/' },
+  { value: 'user'     as Role, emoji: '🧳', title: 'Usuario',            sub: 'Viajo, envío o recibo paquetes',         color: '#ff4c41', redirect: '/dashboard/pasajero' },
   { value: 'driver'   as Role, emoji: '🚗', title: 'Conductor',          sub: 'Transporte privado/compartido',          color: '#16a34a', redirect: '/conductores/registro' },
   { value: 'host'     as Role, emoji: '🏡', title: 'Anfitrión',          sub: 'Ofrezco alojamiento',                    color: '#7c3aed', redirect: '/anfitriones/registro' },
   { value: 'guide'    as Role, emoji: '🏺', title: 'Promotor Local',     sub: 'Experiencias locales auténticas',        color: '#0891b2', redirect: '/promotores-locales/registro' },
@@ -79,6 +79,9 @@ function RegisterForm() {
       if (token) {
         localStorage.setItem('authToken', token);
         if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        // Set session cookie so middleware allows protected routes (/ride, /payment, etc.)
+        const maxAge = 60 * 60 * 24 * 7; // 7 días
+        document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
       }
 
       window.location.href = active.redirect;
