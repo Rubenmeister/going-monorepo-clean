@@ -67,9 +67,9 @@ function LoginForm() {
       } else if (roles.includes('driver')) {
         window.location.href = '/services/conductores';
       } else if (roles.includes('host')) {
-        window.location.href = '/anfitriones/panel';
+        window.location.href = '/services/anfitriones';
       } else if (roles.includes('operator')) {
-        window.location.href = '/operadores/panel';
+        window.location.href = '/services/operadores';
       } else {
         // pasajero → panel principal
         window.location.href = '/dashboard/pasajero';
