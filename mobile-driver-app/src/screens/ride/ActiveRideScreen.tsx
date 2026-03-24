@@ -10,6 +10,12 @@ import { hapticMedium } from '../../utils/haptics';
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
 import type { CallSession } from '../../utils/agoraCall';
 import { InCallOverlay } from '../../components/InCallOverlay';
+import { io, Socket } from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const TRANSPORT_WS =
+  process.env.EXPO_PUBLIC_TRANSPORT_WS_URL ||
+  'https://transport-service-780842550857.us-central1.run.app';
 
 type Route = RouteProp<DriverMainStackParamList, 'ActiveRide'>;
 
@@ -19,7 +25,8 @@ export function ActiveRideScreen() {
   const navigation = useNavigation();
   const { params } = useRoute<Route>();
   const { rideId, passengerName, destination } = params;
-  const mapRef = useRef<MapboxGL.MapView>(null);
+  const mapRef    = useRef<MapboxGL.MapView>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [driverLoc, setDriverLoc] = useState<{
     latitude: number;
     longitude: number;
@@ -50,6 +57,29 @@ export function ActiveRideScreen() {
     }
   };
 
+  // ─── WebSocket: conectar al transport-service y unirse a la sala del viaje ─
+  useEffect(() => {
+    let socketInstance: Socket | null = null;
+
+    AsyncStorage.getItem('driver_token').then((token) => {
+      socketInstance = io(`${TRANSPORT_WS}/rides`, {
+        transports: ['websocket', 'polling'],
+        auth: token ? { token } : undefined,
+      });
+      socketRef.current = socketInstance;
+
+      socketInstance.on('connect', () => {
+        socketInstance?.emit('join:ride', { rideId });
+      });
+    });
+
+    return () => {
+      socketInstance?.disconnect();
+      socketRef.current = null;
+    };
+  }, [rideId]);
+
+  // ─── GPS: observar posición y emitir al servidor cada 5 s / 10 m ──────────
   useEffect(() => {
     let mounted = true;
     const sub = Location.watchPositionAsync(
@@ -60,9 +90,16 @@ export function ActiveRideScreen() {
       },
       (loc) => {
         if (!mounted) return;
-        setDriverLoc({
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
+        const { latitude, longitude, heading, speed } = loc.coords;
+        setDriverLoc({ latitude, longitude });
+
+        // Emitir posición al pasajero vía WebSocket
+        socketRef.current?.emit('driver:location', {
+          rideId,
+          lat: latitude,
+          lng: longitude,
+          heading: heading ?? undefined,
+          speed:   speed   ?? undefined,
         });
       }
     );
@@ -73,9 +110,18 @@ export function ActiveRideScreen() {
   }, []);
 
   const advance = () => {
+    const nextStep = step + 1;
     if (step < STEPS.length - 1) {
-      setStep((s) => s + 1);
+      setStep(nextStep);
+      // step 0→1: conductor llegó al pasajero
+      if (step === 0) socketRef.current?.emit('driver:arrived', { rideId });
+      // step 1→2: viaje iniciado (pasajero a bordo)
+      if (step === 1) socketRef.current?.emit('driver:started', { rideId });
     } else {
+      // Último paso: viaje completado
+      const distKm   = 5;  // TODO: calcular desde polyline real
+      const durSecs  = 900;
+      socketRef.current?.emit('driver:completed', { rideId, distanceKm: distKm, durationSeconds: durSecs });
       Alert.alert('Viaje completado', '¡Excelente trabajo!', [
         { text: 'Ver resumen', onPress: () => navigation.goBack() },
       ]);
