@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 const AUTH_TOKEN_KEY = 'authToken';
@@ -84,8 +85,10 @@ function LoginForm() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🛡️</div>
-          <h1 className="text-3xl font-bold text-gray-900">Panel Admin</h1>
+          <div className="flex justify-center mb-4">
+            <Image src="/going-logo-h.png" alt="Going" width={160} height={52} className="h-12 w-auto object-contain" priority />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Panel Admin</h1>
           <p className="text-gray-500 mt-1">Acceso exclusivo para administradores</p>
         </div>
 
