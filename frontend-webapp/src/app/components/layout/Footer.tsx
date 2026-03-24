@@ -39,50 +39,55 @@ export function Footer() {
   };
 
   const services = [
-    { name: 'Transporte', href: '/pasajeros' },
-    { name: 'Alojamiento', href: '/services/accommodation' },
-    { name: 'Tours', href: '/services/tours' },
-    { name: 'Experiencias', href: '/services/experiences' },
-    { name: 'Envíos', href: '/envios' },
+    { name: 'Transporte',         href: '/pasajeros' },
+    { name: 'Alojamiento',        href: '/services/accommodation' },
+    { name: 'Tours',              href: '/services/tours' },
+    { name: 'Experiencias',       href: '/services/experiences' },
+    { name: 'Envíos',             href: '/envios' },
+    { name: 'Para Empresas',      href: '/empresas' },
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores', href: '/conductores' },
-    { name: '🏡 Anfitriones', href: '/anfitriones' },
+    { name: '🚗 Conductores',      href: '/conductores' },
+    { name: '🏡 Anfitriones',      href: '/anfitriones' },
     { name: '🏺 Promotores Locales', href: '/promotores-locales' },
-    { name: '🧗 Operadores', href: '/operadores' },
-    { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
+    { name: '🧗 Operadores',       href: '/operadores' },
+    { name: 'Registrarme',         href: '/auth/register', badge: 'Gratis' },
   ];
 
   const empresa = [
-    { name: 'Quiénes Somos', href: '/quienes-somos' },
-    { name: 'Comunidad Going', href: '/comunidad' },
-    { name: 'Academia Going', href: '/academy', badge: 'Gratis' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Noticias', href: '/news' },
+    { name: 'Quiénes Somos',      href: '/quienes-somos' },
+    { name: 'Comunidad Going',    href: '/comunidad' },
+    { name: 'Academia Going',     href: '/academy', badge: 'Gratis' },
+    { name: 'Blog',               href: '/blog' },
+    { name: 'Noticias',           href: '/news' },
+    { name: 'Carreras',           href: '/careers' },
+    { name: 'Sostenibilidad',     href: '/sustainability' },
   ];
 
   const localCommunity = [
-    { name: 'Impacto en tu Ciudad', href: '/comunidad-local/impacto' },
-    { name: 'Economía Colaborativa', href: '/comunidad-local/economia-colaborativa' },
-    { name: 'Eventos Comunitarios', href: '/comunidad-local/eventos' },
-    { name: 'Sostenibilidad 🌿', href: '/comunidad-local/sostenibilidad' },
-    { name: 'Festividades Locales 🎊', href: '/comunidad-local/festividades' },
+    { name: 'Impacto en tu Ciudad',       href: '/comunidad-local/impacto' },
+    { name: 'Economía Colaborativa',      href: '/comunidad-local/economia-colaborativa' },
+    { name: 'Eventos Comunitarios',       href: '/comunidad-local/eventos' },
+    { name: 'Sostenibilidad 🌿',          href: '/comunidad-local/sostenibilidad' },
+    { name: 'Festividades Locales 🎊',    href: '/comunidad-local/festividades' },
   ];
 
   const legal = [
     { name: 'Términos de Servicio', href: '/legal/terms' },
-    { name: 'Privacidad', href: '/legal/privacy' },
-    { name: 'Política de Envíos', href: '/legal/shipping' },
-    { name: 'Cookies', href: '/legal/cookies' },
-    { name: 'Contacto Legal', href: '/legal/contact' },
+    { name: 'Privacidad',           href: '/legal/privacy' },
+    { name: 'Política de Envíos',   href: '/legal/shipping' },
+    { name: 'Cookies',              href: '/legal/cookies' },
+    { name: 'Contacto Legal',       href: '/legal/contact' },
   ];
 
   const support = [
-    { name: 'Centro de Ayuda', href: '/help' },
-    { name: 'Contacto', href: '/contact' },
-    { name: 'Estado del Servicio', href: '/status' },
-    { name: 'Seguridad', href: '/security' },
+    { name: 'Centro de Ayuda',      href: '/help' },
+    { name: 'Contacto',             href: '/contact' },
+    { name: 'Estado del Servicio',  href: '/status' },
+    { name: 'Seguridad',            href: '/security' },
+    { name: 'Documentación',        href: '/documentation' },
+    { name: 'SOS Emergencias',      href: '/sos' },
   ];
 
   const socialLinks = [
@@ -107,10 +112,11 @@ export function Footer() {
               <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { icon: '🚗', label: 'Conductor', href: '/conductores' },
-                  { icon: '🏡', label: 'Anfitrión', href: '/anfitriones' },
-                  { icon: '🏺', label: 'Promotor Local', href: '/promotores-locales' },
-                  { icon: '🧗', label: 'Operador', href: '/operadores' },
+                  { icon: '🚗', label: 'Conductor',       href: '/conductores' },
+                  { icon: '🏡', label: 'Anfitrión',       href: '/anfitriones' },
+                  { icon: '🏺', label: 'Promotor Local',  href: '/promotores-locales' },
+                  { icon: '🧗', label: 'Operador',        href: '/operadores' },
+                  { icon: '🏢', label: 'Empresas',        href: '/empresas' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}
                     className="flex items-center gap-1.5 text-gray-300 hover:text-white text-xs font-medium transition-colors">
@@ -161,14 +167,24 @@ export function Footer() {
           <div className="flex-shrink-0">
             <p className="text-white font-bold text-sm mb-3 uppercase tracking-wider">Descarga la App</p>
             <div className="flex gap-3">
-              <a href="#" className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl px-4 py-2.5 transition-all">
+              <a
+                href="https://apps.apple.com/app/going-ecuador/id6743619765"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl px-4 py-2.5 transition-all"
+              >
                 <span className="text-xl">🍎</span>
                 <div>
                   <div className="text-xs text-gray-400">App Store</div>
                   <div className="text-white text-sm font-bold">iPhone</div>
                 </div>
               </a>
-              <a href="#" className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl px-4 py-2.5 transition-all">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.goingappecuador"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl px-4 py-2.5 transition-all"
+              >
                 <span className="text-xl">🤖</span>
                 <div>
                   <div className="text-xs text-gray-400">Google Play</div>

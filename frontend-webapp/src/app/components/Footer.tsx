@@ -13,21 +13,23 @@ export function Footer() {
   };
 
   const services = [
-    { name: 'Going', href: '/' },
-    { name: 'Transporte', href: '/services/transport' },
-    { name: 'Tours', href: '/services/tours' },
-    { name: 'Alojamiento', href: '/services/accommodation' },
-    { name: 'Experiencias', href: '/services/experiences' },
-    { name: 'Academia Going', href: '/academy' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Noticias', href: '/news' },
+    { name: 'Going',              href: '/' },
+    { name: 'Transporte',         href: '/pasajeros' },
+    { name: 'Tours',              href: '/services/tours' },
+    { name: 'Alojamiento',        href: '/services/accommodation' },
+    { name: 'Experiencias',       href: '/services/experiences' },
+    { name: 'Envíos',             href: '/envios' },
+    { name: 'Academia Going',     href: '/academy' },
+    { name: 'Blog',               href: '/blog' },
+    { name: 'Noticias',           href: '/news' },
   ];
 
   const company = [
-    { name: 'Quiénes Somos', href: '/about' },
-    { name: 'Comunidad Going', href: '/community' },
-    { name: 'Carreras', href: '/careers' },
-    { name: 'Sostenibilidad', href: '/sustainability' },
+    { name: 'Quiénes Somos',  href: '/quienes-somos' },
+    { name: 'Comunidad Going', href: '/comunidad' },
+    { name: 'Carreras',        href: '/careers' },
+    { name: 'Sostenibilidad',  href: '/sustainability' },
+    { name: 'Empresas',        href: '/empresas' },
   ];
 
   const legal = [
@@ -38,10 +40,12 @@ export function Footer() {
   ];
 
   const support = [
-    { name: 'Centro de Ayuda', href: '/help' },
-    { name: 'Contacto', href: '/contact' },
+    { name: 'Centro de Ayuda',     href: '/help' },
+    { name: 'Contacto',            href: '/contact' },
     { name: 'Estado del Servicio', href: '/status' },
-    { name: 'Seguridad', href: '/security' },
+    { name: 'Seguridad',           href: '/security' },
+    { name: 'Documentación',       href: '/documentation' },
+    { name: 'SOS Emergencias',     href: '/sos' },
   ];
 
   const socialLinks = [
@@ -232,7 +236,8 @@ export function Footer() {
 
             {/* Android */}
             <a
-              href="https://play.google.com/store/apps/details?id=com.going"
+              href="https://play.google.com/store/apps/details?id=com.goingappecuador"
+              target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-3 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all"
             >
               <span className="text-3xl">🤖</span>
@@ -244,7 +249,8 @@ export function Footer() {
 
             {/* Apple */}
             <a
-              href="https://apps.apple.com/app/going"
+              href="https://apps.apple.com/app/going-ecuador/id6743619765"
+              target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-3 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all"
             >
               <span className="text-3xl">🍎</span>
