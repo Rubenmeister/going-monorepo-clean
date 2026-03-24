@@ -62,10 +62,10 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
  * Provider dropdown items
  */
 const PROVIDER_ITEMS = [
-  { icon: '🏡', label: 'Anfitriones', desc: 'Publica tu espacio', href: '/anfitriones', color: '#7c3aed' },
-  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos', href: '/promotores-locales', color: '#0891b2' },
-  { icon: '🧗', label: 'Operadores', desc: 'Aventuras y actividades', href: '/operadores', color: '#d97706' },
-  { icon: '🚗', label: 'Conductores', desc: 'Gana manejando', href: '/auth/login?from=/services/conductores', color: '#16a34a' },
+  { icon: '🏡', label: 'Anfitriones',       desc: 'Publica tu espacio',      href: '/auth/login?from=/services/anfitriones',        color: '#7c3aed' },
+  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/auth/login?from=/services/promotores-locales', color: '#0891b2' },
+  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/auth/login?from=/services/operadores',          color: '#d97706' },
+  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/auth/login?from=/services/conductores',        color: '#16a34a' },
 ];
 
 /**
