@@ -7,13 +7,13 @@ import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 const NAV_LINKS = [
-  { label: 'INICIO', href: '/' },
-  { label: 'DESTINOS', href: '/pasajeros' },
-  { label: 'CONDUCTORES', href: '/conductores' },
+  { label: 'INICIO',          href: '/' },
+  { label: 'TRANSPORTE',      href: '/services/transport' },
+  { label: 'CONDUCTORES',     href: '/conductores' },
   { label: 'COMUNIDAD GOING', href: '/comunidad' },
-  { label: 'ACADEMIA GOING', href: '/academy' },
-  { label: 'QUIÉNES SOMOS', href: '/quienes-somos' },
-  { label: 'EMPRESAS', href: '/empresas/auth/login' },
+  { label: 'ACADEMIA GOING',  href: '/academy' },
+  { label: 'QUIÉNES SOMOS',  href: '/quienes-somos' },
+  { label: 'EMPRESAS',        href: '/empresas/auth/login' },
 ];
 
 // Real brand SVG icon paths (Simple Icons standard, viewBox 0 0 24 24)
