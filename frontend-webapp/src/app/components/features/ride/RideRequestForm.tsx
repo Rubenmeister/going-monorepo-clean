@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRideService } from '@/hooks/features/useRideService';
 import { LocationSelector } from './LocationSelector';
+import { MapboxMap } from '@/components/features/tracking/TrackingMap';
 import type { VehicleType, ServiceTier } from '@/types';
 import { VEHICLE_TYPES, recommendVehicleForPax, availableVehiclesForPax } from '@/types';
 import {
@@ -221,6 +222,20 @@ function RideRequestFormInner() {
 
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════
+          MAPA DE RUTA — aparece cuando hay origen Y destino con coords reales
+          ══════════════════════════════════════════ */}
+      {hasRoute && pickupLocation.lat !== 0 && dropoffLocation!.lat !== 0 && (
+        <div className="rounded-3xl overflow-hidden shadow-md border border-gray-100">
+          <MapboxMap
+            pickup={{ lat: pickupLocation.lat, lon: pickupLocation.lon, label: pickupLocation.address }}
+            dropoff={{ lat: dropoffLocation!.lat, lon: dropoffLocation!.lon, label: dropoffLocation!.address }}
+            distance={Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10}
+            duration={calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)}
+          />
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════
           Indicador: faltan origen/destino
