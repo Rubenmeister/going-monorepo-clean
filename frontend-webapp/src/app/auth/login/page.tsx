@@ -65,7 +65,7 @@ function LoginForm() {
       } else if (roles.includes('admin') || roles.includes('staff')) {
         window.location.href = '/dashboard';
       } else if (roles.includes('driver')) {
-        window.location.href = '/conductores/panel';
+        window.location.href = '/services/conductores';
       } else if (roles.includes('host')) {
         window.location.href = '/anfitriones/panel';
       } else if (roles.includes('operator')) {
