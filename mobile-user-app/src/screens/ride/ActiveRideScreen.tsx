@@ -13,6 +13,12 @@ import {
 import MapboxGL from '@rnmapbox/maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { io, Socket } from 'socket.io-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const TRANSPORT_WS =
+  process.env.EXPO_PUBLIC_TRANSPORT_WS_URL ||
+  'https://transport-service-780842550857.us-central1.run.app';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 import { api } from '../../services/api';
@@ -84,7 +90,8 @@ export function ActiveRideScreen() {
   const [routeDistance, setRouteDistance] = useState<number | null>(null); // km
   const [callSession, setCallSession]     = useState<CallSession | null>(null);
   const [callLoading, setCallLoading]     = useState(false);
-  const cameraRef = useRef<MapboxGL.Camera>(null);
+  const cameraRef  = useRef<MapboxGL.Camera>(null);
+  const socketRef  = useRef<Socket | null>(null);
 
   // Animación del pulso para "buscando"
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -111,42 +118,77 @@ export function ActiveRideScreen() {
     fetchRoute();
   }, []);
 
-  // ── Polling del estado del viaje ──────────────────────────────────────────
+  // ── WebSocket: tiempo real desde transport-service ───────────────────────
   useEffect(() => {
-    if (status === 'completed') return;
+    let socket: Socket | null = null;
 
-    const interval = setInterval(async () => {
-      try {
-        const { data } = await api.get(`/transport/${rideId}/status`);
+    AsyncStorage.getItem('auth_token').then((token) => {
+      socket = io(`${TRANSPORT_WS}/rides`, {
+        transports: ['websocket', 'polling'],
+        auth: token ? { token } : undefined,
+      });
+      socketRef.current = socket;
 
-        if (data.status && data.status !== status) {
-          setStatus(data.status);
-          if (data.status === 'driver_assigned') hapticMedium();
-          if (data.status === 'arriving')        hapticMedium();
-          if (data.status === 'in_progress')     hapticSuccess();
-          if (data.status === 'completed') {
-            hapticSuccess();
-            analyticsRideCompleted({ ride_id: rideId, duration_minutes: elapsedTime, price });
-          }
+      socket.on('connect', () => {
+        socket?.emit('join:ride', { rideId });
+      });
+
+      // Posición del conductor en tiempo real
+      socket.on('ride:driver_location', (data: { lat: number; lng: number; heading?: number; etaText?: string }) => {
+        setDriverLocation([data.lng, data.lat]);
+      });
+
+      // ETA actualizada
+      socket.on('ride:eta_update', (data: { etaText: string; etaSeconds?: number }) => {
+        if (data.etaSeconds) {
+          const mins = Math.round(data.etaSeconds / 60);
+          setEta(mins);
+          setEtaTotal(prev => prev ?? mins);
         }
-        if (data.eta) {
-          setEta(data.eta);
-          setEtaTotal(prev => prev ?? data.eta); // guardar solo la primera vez
-        }
+      });
 
+      // Conductor aceptó el viaje
+      socket.on('ride:driver_accepted', (data: { driver?: { name: string; vehicle: string; plate: string; rating: number; photoUrl?: string }; message?: string }) => {
+        hapticMedium();
+        setStatus('driver_assigned');
         if (data.driver) {
-          setDriver(data.driver);
-          if (data.driver.location) {
-            setDriverLocation([data.driver.location.longitude, data.driver.location.latitude]);
-          }
+          setDriver(prev => prev ?? {
+            id: '',
+            firstName: data.driver!.name?.split(' ')[0] ?? '',
+            lastName:  data.driver!.name?.split(' ').slice(1).join(' ') ?? '',
+            phone:     '',
+            vehiclePlate:  data.driver!.plate,
+            vehicleModel:  data.driver!.vehicle,
+            rating:        data.driver!.rating ?? 5,
+          });
         }
-      } catch {
-        // silently retry
-      }
-    }, 5000);
+      });
 
-    return () => clearInterval(interval);
-  }, [rideId, status]);
+      // Conductor llegó al punto de recogida
+      socket.on('ride:driver_arrived', () => {
+        hapticMedium();
+        setStatus('arriving');
+      });
+
+      // Viaje iniciado
+      socket.on('ride:started', () => {
+        hapticSuccess();
+        setStatus('in_progress');
+      });
+
+      // Viaje completado
+      socket.on('ride:completed', () => {
+        hapticSuccess();
+        setStatus('completed');
+        analyticsRideCompleted({ ride_id: rideId, duration_minutes: elapsedTime, price });
+      });
+    });
+
+    return () => {
+      socket?.disconnect();
+      socketRef.current = null;
+    };
+  }, [rideId]);
 
   // ── Timer del viaje en curso ──────────────────────────────────────────────
   useEffect(() => {
