@@ -53,6 +53,10 @@ function LoginForm() {
       localStorage.setItem('authToken', token);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
 
+      // Set session cookie so middleware allows access to protected routes (/ride, /payment, etc.)
+      const maxAge = 60 * 60 * 24 * 7; // 7 días
+      document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
+
       // Redirect based on role
       const roles: string[] = data.user?.roles || data.roles || [];
       const from = searchParams.get('from');
@@ -67,7 +71,7 @@ function LoginForm() {
       } else if (roles.includes('operator')) {
         window.location.href = '/operadores/panel';
       } else {
-        // pasajero → dashboard personalizado
+        // pasajero → panel principal
         window.location.href = '/dashboard/pasajero';
       }
 

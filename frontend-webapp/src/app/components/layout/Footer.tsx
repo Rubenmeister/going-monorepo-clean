@@ -39,20 +39,20 @@ export function Footer() {
   };
 
   const services = [
-    { name: 'Transporte',         href: '/pasajeros' },
+    { name: 'Transporte',         href: '/services/transport' },
     { name: 'Alojamiento',        href: '/services/accommodation' },
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Experiencias',       href: '/services/experiences' },
-    { name: 'Envíos',             href: '/envios' },
+    { name: 'Envíos',             href: '/services/envios' },
     { name: 'Para Empresas',      href: '/empresas' },
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores',      href: '/conductores' },
-    { name: '🏡 Anfitriones',      href: '/anfitriones' },
-    { name: '🏺 Promotores Locales', href: '/promotores-locales' },
-    { name: '🧗 Operadores',       href: '/operadores' },
-    { name: 'Registrarme',         href: '/auth/register', badge: 'Gratis' },
+    { name: '🚗 Conductores',        href: '/auth/login?from=/conductores/panel' },
+    { name: '🏡 Anfitriones',        href: '/auth/login?from=/anfitriones/panel' },
+    { name: '🏺 Promotores Locales', href: '/auth/login?from=/promotores-locales/panel' },
+    { name: '🧗 Operadores',         href: '/auth/login?from=/operadores/panel' },
+    { name: 'Registrarme',           href: '/auth/register', badge: 'Gratis' },
   ];
 
   const empresa = [
@@ -112,10 +112,10 @@ export function Footer() {
               <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { icon: '🚗', label: 'Conductor',       href: '/conductores' },
-                  { icon: '🏡', label: 'Anfitrión',       href: '/anfitriones' },
-                  { icon: '🏺', label: 'Promotor Local',  href: '/promotores-locales' },
-                  { icon: '🧗', label: 'Operador',        href: '/operadores' },
+                  { icon: '🚗', label: 'Conductor',       href: '/auth/login?from=/conductores/panel' },
+                  { icon: '🏡', label: 'Anfitrión',       href: '/auth/login?from=/anfitriones/panel' },
+                  { icon: '🏺', label: 'Promotor Local',  href: '/auth/login?from=/promotores-locales/panel' },
+                  { icon: '🧗', label: 'Operador',        href: '/auth/login?from=/operadores/panel' },
                   { icon: '🏢', label: 'Empresas',        href: '/empresas' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}
