@@ -137,8 +137,13 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams({ from: origin, to: dest, ...(date && { date }), ...(time && { time }) });
-    window.location.href = `/ride?${params}`;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const params = new URLSearchParams({ ...(origin && { from: origin }), ...(dest && { to: dest }), ...(date && { date }), ...(time && { time }) });
+    if (!token) {
+      window.location.href = `/auth/login?from=/ride${params.toString() ? '?' + params.toString() : ''}`;
+      return;
+    }
+    window.location.href = `/ride${params.toString() ? '?' + params.toString() : ''}`;
   };
 
   // Destinos
@@ -175,7 +180,7 @@ export default function HomePage() {
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
           <Link
-            href="/auth/register"
+            href="/auth/login?from=/ride"
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-2xl transition-all hover:scale-105 hover:opacity-90"
             style={{ backgroundColor: '#ff4c41' }}
           >
