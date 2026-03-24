@@ -48,10 +48,10 @@ export function Footer() {
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores',        href: '/auth/login?from=/conductores/panel' },
-    { name: '🏡 Anfitriones',        href: '/auth/login?from=/anfitriones/panel' },
-    { name: '🏺 Promotores Locales', href: '/auth/login?from=/promotores-locales/panel' },
-    { name: '🧗 Operadores',         href: '/auth/login?from=/operadores/panel' },
+    { name: '🚗 Conductores',        href: '/auth/login?from=/services/conductores' },
+    { name: '🏡 Anfitriones',        href: '/auth/login?from=/services/anfitriones' },
+    { name: '🏺 Promotores Locales', href: '/auth/login?from=/services/promotores-locales' },
+    { name: '🧗 Operadores',         href: '/auth/login?from=/services/operadores' },
     { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
   ];
 
@@ -111,10 +111,10 @@ export function Footer() {
               <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { icon: '🚗', label: 'Conductor',       href: '/auth/login?from=/conductores/panel' },
-                  { icon: '🏡', label: 'Anfitrión',       href: '/auth/login?from=/anfitriones/panel' },
-                  { icon: '🏺', label: 'Promotor Local',  href: '/auth/login?from=/promotores-locales/panel' },
-                  { icon: '🧗', label: 'Operador',        href: '/auth/login?from=/operadores/panel' },
+                  { icon: '🚗', label: 'Conductor',       href: '/auth/login?from=/services/conductores' },
+                  { icon: '🏡', label: 'Anfitrión',       href: '/auth/login?from=/services/anfitriones' },
+                  { icon: '🏺', label: 'Promotor Local',  href: '/auth/login?from=/services/promotores-locales' },
+                  { icon: '🧗', label: 'Operador',        href: '/auth/login?from=/services/operadores' },
                   { icon: '🏢', label: 'Empresas',        href: '/empresas' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}

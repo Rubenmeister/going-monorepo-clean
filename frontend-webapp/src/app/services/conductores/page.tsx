@@ -47,7 +47,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 const SIDEBAR_NAV = [
-  { icon: '🏠', label: 'Inicio',         href: '/conductores/panel', active: true },
+  { icon: '🏠', label: 'Inicio',         href: '/services/conductores', active: true },
   { icon: '🗺️', label: 'Viajes activos', href: '/conductores/viajes' },
   { icon: '🕐', label: 'Historial',      href: '/conductores/historial' },
   { icon: '💰', label: 'Mis ganancias',  href: '/conductores/ganancias' },
@@ -70,7 +70,7 @@ export default function DriverDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/conductores/panel'; return; }
+    if (!token) { window.location.href = '/auth/login?from=/services/conductores'; return; }
     const decoded = parseJwt(token);
     if (!decoded) { window.location.href = '/auth/login'; return; }
     setDriver(decoded);
