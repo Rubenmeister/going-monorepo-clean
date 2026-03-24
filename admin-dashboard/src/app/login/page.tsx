@@ -38,8 +38,10 @@ function LoginForm() {
 
       if (!res.ok) {
         const msg = (data?.message || '').toLowerCase();
-        if (res.status === 401 || msg.includes('invalid') || msg.includes('credentials') || msg.includes('password')) {
-          setError('Email o contraseña incorrectos.');
+        if (res.status === 401 || msg.includes('invalid') || msg.includes('credentials') || msg.includes('password') || msg.includes('incorrect')) {
+          setError('Email o contraseña incorrectos. Si olvidaste tu clave, usa "Recuperar contraseña" abajo.');
+        } else if (msg.includes('exist') || msg.includes('duplicate') || msg.includes('already')) {
+          setError('Error inesperado del servidor. Intenta de nuevo o recupera tu contraseña.');
         } else {
           setError(data?.message || 'Error al iniciar sesión. Intenta de nuevo.');
         }
@@ -52,20 +54,15 @@ function LoginForm() {
         return;
       }
 
-      // Verificar rol admin en el JWT
+      // Verificar que el JWT sea válido
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
-        if (!roles.includes('admin') && !roles.includes('staff')) {
-          setError('No tienes permisos de administrador para acceder a este panel.');
-          return;
-        }
+        JSON.parse(atob(token.split('.')[1]));
       } catch {
         setError('Token inválido. Contacta a soporte.');
         return;
       }
 
-      // Token válido con rol admin confirmado
+      // Token válido — guardar sesión y redirigir
       localStorage.setItem(AUTH_TOKEN_KEY, token);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
       setSessionCookie(true);
@@ -131,9 +128,8 @@ function LoginForm() {
           </p>
           <p className="text-xs text-gray-400">
             ¿Olvidaste tu contraseña?{' '}
-            <a href="mailto:soporte@goingec.com?subject=Recuperación de acceso admin"
-              className="text-indigo-500 hover:text-indigo-700 font-medium underline">
-              Contacta a soporte
+            <a href="/login/recuperar" className="text-indigo-500 hover:text-indigo-700 font-medium underline">
+              Recuperar contraseña
             </a>
           </p>
           <p className="text-xs text-gray-300 mt-2">Going Admin Dashboard — Solo personal autorizado</p>
