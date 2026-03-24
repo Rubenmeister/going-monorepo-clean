@@ -48,7 +48,7 @@ export function Footer() {
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores',        href: '/auth/login' },
+    { name: '🚗 Conductores',        href: '/auth/login?from=/conductores/panel' },
     { name: '🏡 Anfitriones',        href: '/auth/login?from=/anfitriones/panel' },
     { name: '🏺 Promotores Locales', href: '/auth/login?from=/promotores-locales/panel' },
     { name: '🧗 Operadores',         href: '/auth/login?from=/operadores/panel' },

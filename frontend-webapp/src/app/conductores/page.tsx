@@ -158,13 +158,18 @@ export default function ConductoresPage() {
               </p>
             </FadeIn>
             <FadeIn delay={300}>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-10">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-4">
                 <Link href="/register?rol=driver" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.4)' }}>
                   Registrarme como conductora/conductor
                 </Link>
                 <a href="#requisitos" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-gray-900" style={{ border: '2px solid rgba(255,255,255,0.3)' }}>
                   Ver requisitos
                 </a>
+              </div>
+              <div className="mb-10">
+                <Link href="/auth/login?from=/conductores/panel" className="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-2">
+                  ¿Ya eres conductora/conductor? → Ingresar al panel
+                </Link>
               </div>
             </FadeIn>
             <FadeIn delay={400}>
