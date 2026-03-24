@@ -167,7 +167,7 @@ export default function ConductoresPage() {
                 </a>
               </div>
               <div className="mb-10">
-                <Link href="/auth/login?from=/conductores/panel" className="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-2">
+                <Link href="/auth/login?from=/services/conductores" className="text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-2">
                   ¿Ya eres conductora/conductor? → Ingresar al panel
                 </Link>
               </div>

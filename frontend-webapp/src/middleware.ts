@@ -18,10 +18,10 @@ const PROTECTED_PREFIXES = [
   '/ride',
   '/payment',
   '/dashboard',
-  '/conductores/panel',
-  '/anfitriones/panel',
-  '/promotores-locales/panel',
-  '/operadores/panel',
+  '/services/conductores',
+  '/services/anfitriones',
+  '/services/promotores-locales',
+  '/services/operadores',
 ];
 
 export function middleware(req: NextRequest) {
