@@ -138,7 +138,7 @@ function NavLinks({ t }: { t: (key: string) => string }) {
             ))}
             <div className="border-t border-gray-100 mt-1 pt-1 px-4 pb-2">
               <Link
-                href="/auth/register"
+                href="/auth/registro-proveedor"
                 onClick={() => setProviderOpen(false)}
                 className="block w-full text-center py-2 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: '#ff4c41' }}
