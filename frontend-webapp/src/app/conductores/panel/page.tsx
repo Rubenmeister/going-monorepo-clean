@@ -1,13 +1,12 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const API_URL  = process.env.NEXT_PUBLIC_API_URL       || 'https://api-gateway-780842550857.us-central1.run.app';
-const TRANSPORT = process.env.NEXT_PUBLIC_TRANSPORT_URL || 'https://transport-service-780842550857.us-central1.run.app';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
-interface DriverUser {
+interface DriverInfo {
   id: string;
   firstName: string;
   lastName?: string;
@@ -15,389 +14,278 @@ interface DriverUser {
   roles: string[];
 }
 
-interface RideRequest {
-  rideId: string;
-  passengerId: string;
-  passengerName?: string;
-  origin: { address: string; latitude: number; longitude: number };
-  destination: { address: string; latitude: number; longitude: number };
-  estimatedFare: number;
-  distanceKm?: number;
-  createdAt?: string;
-}
-
-interface HistoryRide {
+interface Trip {
   _id: string;
   status: string;
   origin?: { address: string };
   destination?: { address: string };
   fare?: number;
   createdAt?: string;
+  passengerName?: string;
 }
 
-function parseJwt(token: string): DriverUser | null {
+function parseJwt(token: string): DriverInfo | null {
   try {
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     const p = JSON.parse(atob(base64));
-    return { id: p.sub || p.userId || '', firstName: p.firstName || 'Conductor', lastName: p.lastName, email: p.email, roles: Array.isArray(p.roles) ? p.roles : [] };
+    return {
+      id: p.sub || p.userId || '',
+      firstName: p.firstName || p.name || 'Conductor',
+      lastName: p.lastName,
+      email: p.email,
+      roles: Array.isArray(p.roles) ? p.roles : [],
+    };
   } catch { return null; }
 }
 
-type Tab = 'home' | 'requests' | 'history' | 'wallet';
+const STATUS_LABEL: Record<string, { label: string; color: string }> = {
+  pending:     { label: 'Esperando pasajero', color: '#f59e0b' },
+  accepted:    { label: 'Pasajero asignado',  color: '#0033A0' },
+  in_progress: { label: 'En curso',           color: '#16a34a' },
+  completed:   { label: 'Completado',         color: '#6b7280' },
+  cancelled:   { label: 'Cancelado',          color: '#ef4444' },
+};
 
-export default function DriverPanelPage() {
-  const [user, setUser]       = useState<DriverUser | null>(null);
-  const [tab, setTab]         = useState<Tab>('home');
-  const [online, setOnline]   = useState(false);
-  const [requests, setRequests] = useState<RideRequest[]>([]);
-  const [history, setHistory]   = useState<HistoryRide[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [todayEarnings, setTodayEarnings]   = useState(0);
-  const [todayTrips, setTodayTrips]         = useState(0);
-  const [accepting, setAccepting]           = useState<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const SIDEBAR_NAV = [
+  { icon: '🏠', label: 'Inicio',         href: '/conductores/panel', active: true },
+  { icon: '🗺️', label: 'Viajes activos', href: '/conductores/viajes' },
+  { icon: '🕐', label: 'Historial',      href: '/conductores/historial' },
+  { icon: '💰', label: 'Mis ganancias',  href: '/conductores/ganancias' },
+  { icon: '⭐', label: 'Calificaciones', href: '/conductores/calificaciones' },
+  { icon: '📚', label: 'Academia',       href: '/academy' },
+  { icon: '⚙️', label: 'Mi cuenta',      href: '/account' },
+];
+
+export default function DriverDashboard() {
+  const [driver, setDriver]           = useState<DriverInfo | null>(null);
+  const [trips, setTrips]             = useState<Trip[]>([]);
+  const [loadingTrips, setLoadingTrips] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isOnline, setIsOnline]       = useState(false);
+
+  // KPI state (mock until real API)
+  const [earnings] = useState({ today: 48.5, week: 284.0, month: 1126.0 });
+  const [rating]   = useState(4.87);
+  const [tripsCount] = useState({ today: 4, week: 23, total: 312 });
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) { window.location.href = '/auth/login?from=/conductores/panel'; return; }
     const decoded = parseJwt(token);
-    if (!decoded || !decoded.roles.includes('driver')) {
-      window.location.href = '/auth/login?from=/conductores/panel'; return;
-    }
-    setUser(decoded);
+    if (!decoded) { window.location.href = '/auth/login'; return; }
+    setDriver(decoded);
+
+    // Load recent trips
+    fetch(`${API_URL}/rides/driver/history?limit=5`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : { rides: [] })
+      .then(d => setTrips(Array.isArray(d.rides) ? d.rides : []))
+      .catch(() => setTrips([]))
+      .finally(() => setLoadingTrips(false));
   }, []);
 
-  // Polling de solicitudes de viaje cuando está online
-  useEffect(() => {
-    if (!user || !online) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-      setRequests([]);
-      return;
-    }
-    const fetchRequests = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const res = await fetch(`${TRANSPORT}/transport/pending`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const list: RideRequest[] = (Array.isArray(data) ? data : data.rides ?? []).map((r: any) => ({
-          rideId:         r._id || r.rideId,
-          passengerId:    r.userId || r.passengerId,
-          passengerName:  r.passengerName,
-          origin:         r.origin,
-          destination:    r.destination,
-          estimatedFare:  r.estimatedFare ?? r.price?.amount ?? 8.5,
-          distanceKm:     r.distanceKm,
-          createdAt:      r.createdAt,
-        }));
-        setRequests(list);
-      } catch {/* silencioso */}
-    };
-    fetchRequests();
-    pollRef.current = setInterval(fetchRequests, 8000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [user, online]);
-
-  const loadHistory = async () => {
-    if (!user) return;
-    setLoadingHistory(true);
-    try {
-      const token = localStorage.getItem('authToken');
-      const res = await fetch(`${TRANSPORT}/transport/driver/${user.id}/history`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = res.ok ? await res.json() : [];
-      const list: HistoryRide[] = Array.isArray(data) ? data : [];
-      setHistory(list);
-      const today = new Date().toDateString();
-      const todayRides = list.filter(r =>
-        r.status === 'completed' && r.createdAt && new Date(r.createdAt).toDateString() === today
-      );
-      setTodayTrips(todayRides.length);
-      setTodayEarnings(todayRides.reduce((sum, r) => sum + (r.fare ?? 0), 0));
-    } catch {
-      setHistory([]);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  useEffect(() => {
-    if (tab === 'history' && history.length === 0) loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
-
-  useEffect(() => {
-    if (user) loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const acceptRide = async (ride: RideRequest) => {
-    setAccepting(ride.rideId);
-    try {
-      const token = localStorage.getItem('authToken');
-      const res = await fetch(`${TRANSPORT}/transport/${ride.rideId}/accept`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          driverId:   user?.id,
-          driverName: `${user?.firstName} ${user?.lastName ?? ''}`.trim(),
-          etaMinutes: 5,
-        }),
-      });
-      if (res.ok) {
-        setRequests(prev => prev.filter(r => r.rideId !== ride.rideId));
-        window.location.href = `/conductores/viaje/${ride.rideId}`;
-      }
-    } catch {/* */} finally {
-      setAccepting(null);
-    }
-  };
-
-  const logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('refreshToken');
+    document.cookie = 'going_webapp_session=; path=/; max-age=0';
     window.location.href = '/';
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#0033A0] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (!driver) return null;
 
-  const initials = `${user.firstName[0]}${user.lastName?.[0] ?? ''}`.toUpperCase();
+  const initials = `${driver.firstName[0]}${driver.lastName?.[0] ?? ''}`.toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex">
 
-      {/* ── Header ── */}
-      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0033A0 100%)' }} className="text-white px-6 pt-8 pb-20">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
+      {/* ── Sidebar ─────────────────────────────────── */}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#011627] flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex`}>
+        {/* Logo */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+          <Link href="/" className="text-2xl font-black" style={{ color: '#ff4c41' }}>Going</Link>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+
+        {/* Driver profile */}
+        <div className="px-6 py-5 border-b border-white/10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
               {initials}
             </div>
             <div>
-              <p className="text-white/60 text-xs">Panel de conductor</p>
-              <h1 className="text-xl font-bold">{user.firstName} {user.lastName ?? ''}</h1>
+              <p className="text-white text-sm font-bold">{driver.firstName} {driver.lastName}</p>
+              <p className="text-gray-400 text-xs truncate">{driver.email}</p>
             </div>
           </div>
-          <button onClick={logout} className="text-xs text-white/60 hover:text-white border border-white/20 px-3 py-1.5 rounded-lg transition-colors">
-            Salir
-          </button>
-        </div>
-
-        {/* Toggle online / offline */}
-        <div className="max-w-2xl mx-auto mt-6">
+          {/* Online toggle */}
           <button
-            onClick={() => setOnline(v => !v)}
-            className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all shadow-lg ${
-              online
-                ? 'bg-[#FFCD00] text-[#0033A0] shadow-yellow-400/30'
-                : 'bg-white/10 text-white/70 border border-white/20'
-            }`}
+            onClick={() => setIsOnline(v => !v)}
+            className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold transition-all ${isOnline ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
           >
-            <span className={`w-3 h-3 rounded-full ${online ? 'bg-[#0033A0] animate-pulse' : 'bg-white/30'}`} />
-            {online ? 'En línea · Recibiendo viajes' : 'Offline · Toca para activarte'}
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-white animate-pulse' : 'bg-gray-500'}`} />
+            {isOnline ? 'En línea' : 'Conectarme'}
           </button>
         </div>
-      </div>
 
-      {/* ── Stats del día ── */}
-      <div className="max-w-2xl mx-auto w-full px-6 -mt-8">
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: '💰', value: `$${todayEarnings.toFixed(2)}`, label: 'Hoy' },
-            { icon: '🚗', value: String(todayTrips),             label: 'Viajes hoy' },
-            { icon: '⭐', value: '—',                            label: 'Calificación' },
-          ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-center">
-              <p className="text-xl mb-1">{s.icon}</p>
-              <p className="text-xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-            </div>
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          {SIDEBAR_NAV.map(item => (
+            <Link key={item.href} href={item.href}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${item.active ? 'bg-white/15 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
+              <span className="text-base">{item.icon}</span>
+              {item.label}
+            </Link>
           ))}
+        </nav>
+
+        <div className="px-6 pb-6">
+          <button onClick={handleLogout} className="w-full text-xs text-gray-500 hover:text-red-400 transition-colors py-2">
+            Cerrar sesión
+          </button>
         </div>
-      </div>
+      </aside>
 
-      {/* ── Tabs ── */}
-      <div className="max-w-2xl mx-auto w-full px-6 mt-4">
-        <div className="flex gap-1 bg-white rounded-2xl border border-gray-100 p-1 shadow-sm">
-          {([
-            { key: 'home',     icon: '🏠', label: 'Inicio' },
-            { key: 'requests', icon: '📋', label: requests.length > 0 ? `Viajes (${requests.length})` : 'Viajes' },
-            { key: 'history',  icon: '🕐', label: 'Historial' },
-            { key: 'wallet',   icon: '💳', label: 'Wallet' },
-          ] as { key: Tab; icon: string; label: string }[]).map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                tab === t.key
-                  ? 'bg-[#0033A0] text-white shadow-md'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <span className="text-base">{t.icon}</span>
-              <span>{t.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Overlay mobile */}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* ── Contenido por tab ── */}
-      <div className="max-w-2xl mx-auto w-full px-6 mt-4 flex-1 pb-10">
+      {/* ── Main content ─────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0">
 
-        {/* HOME */}
-        {tab === 'home' && (
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Acceso rápido</p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { icon: '📂', label: 'Mis documentos', href: '/conductores/registro' },
-                { icon: '📚', label: 'Academia Going',  href: '/academy' },
-                { icon: '💬', label: 'Soporte',          href: '/contact' },
-                { icon: '⚙️', label: 'Mi cuenta',        href: '/account' },
-              ].map(item => (
-                <Link key={item.label} href={item.href}
-                  className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-[#0033A0] hover:shadow-md transition-all flex items-center gap-3">
-                  <span className="text-2xl">{item.icon}</span>
-                  <span className="text-sm font-semibold text-gray-800">{item.label}</span>
-                </Link>
-              ))}
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-600 text-xl mr-3">☰</button>
+          <div>
+            <h1 className="font-black text-gray-900 text-base">Panel del conductor</h1>
+            <p className="text-xs text-gray-400">Bienvenido, {driver.firstName}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-bold px-2 py-1 rounded-full ${isOnline ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+              {isOnline ? '🟢 En línea' : '⚫ Fuera de línea'}
+            </span>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+              {initials}
             </div>
-            {!online && (
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <p className="text-[#0033A0] font-semibold text-sm">Actívate para recibir viajes</p>
-                <p className="text-blue-600 text-xs mt-1">Toca el botón de arriba para ponerte en línea.</p>
-              </div>
-            )}
           </div>
-        )}
+        </header>
 
-        {/* SOLICITUDES */}
-        {tab === 'requests' && (
-          <div className="space-y-3">
-            {!online ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-4xl mb-3">📴</p>
-                <p className="text-gray-600 font-semibold">Estás offline</p>
-                <p className="text-gray-400 text-sm mt-1">Actívate para ver solicitudes de viaje</p>
-                <button onClick={() => setOnline(true)} className="mt-4 bg-[#0033A0] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors">
-                  Activarme ahora
-                </button>
-              </div>
-            ) : requests.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-4xl mb-3">🔍</p>
-                <p className="text-gray-600 font-semibold">Buscando viajes…</p>
-                <p className="text-gray-400 text-sm mt-1">Las solicitudes aparecerán aquí</p>
-                <div className="mt-4 flex justify-center">
-                  <div className="w-6 h-6 border-2 border-[#0033A0] border-t-transparent rounded-full animate-spin" />
-                </div>
-              </div>
-            ) : (
-              requests.map(ride => (
-                <div key={ride.rideId} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="bg-[#FFCD00] px-4 py-2.5 flex items-center justify-between">
-                    <span className="text-[#0033A0] font-black text-2xl">${ride.estimatedFare.toFixed(2)}</span>
-                    {ride.distanceKm && (
-                      <span className="text-[#0033A0]/70 text-sm font-semibold">{ride.distanceKm.toFixed(1)} km</span>
-                    )}
-                  </div>
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-start gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-                      <p className="text-sm text-gray-700">{ride.origin.address}</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0" />
-                      <p className="text-sm text-gray-700">{ride.destination.address}</p>
-                    </div>
-                  </div>
-                  <div className="px-4 pb-4">
-                    <button
-                      onClick={() => acceptRide(ride)}
-                      disabled={accepting === ride.rideId}
-                      className="w-full py-3 bg-[#0033A0] text-white rounded-xl font-bold text-sm hover:bg-blue-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                    >
-                      {accepting === ride.rideId ? (
-                        <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Aceptando…</>
-                      ) : 'Aceptar viaje →'}
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
 
-        {/* HISTORIAL */}
-        {tab === 'history' && (
-          <div className="space-y-2">
-            {loadingHistory ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-[#0033A0] border-t-transparent rounded-full animate-spin" />
+          {/* Online CTA */}
+          {!isOnline && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 mb-6 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-green-900 text-sm">¿Listo para conducir?</p>
+                <p className="text-green-700 text-xs mt-0.5">Conéctate para empezar a recibir solicitudes de viaje</p>
               </div>
-            ) : history.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-                <p className="text-4xl mb-2">📋</p>
-                <p className="text-gray-500 text-sm">Aún no tienes viajes completados.</p>
-              </div>
-            ) : (
-              history.map(ride => {
-                const date = ride.createdAt ? new Date(ride.createdAt).toLocaleDateString('es-EC', { day: 'numeric', month: 'short' }) : '';
-                const done = ride.status === 'completed';
-                return (
-                  <div key={ride._id} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-xl flex-shrink-0">🚗</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{ride.destination?.address ?? 'Destino'}</p>
-                      <p className="text-xs text-gray-400 truncate">{ride.origin?.address ?? ''} · {date}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-bold text-gray-900">{ride.fare ? `$${ride.fare.toFixed(2)}` : '—'}</p>
-                      <span className={`text-xs font-medium ${done ? 'text-green-600' : 'text-gray-400'}`}>
-                        {done ? 'Completado' : ride.status}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        )}
-
-        {/* WALLET */}
-        {tab === 'wallet' && (
-          <div className="space-y-4">
-            <div className="rounded-3xl p-6 text-white" style={{ background: 'linear-gradient(135deg, #0033A0 0%, #001f6b 100%)' }}>
-              <p className="text-white/60 text-sm">Saldo disponible</p>
-              <p className="text-4xl font-black mt-1">$0.00</p>
-              <p className="text-white/50 text-xs mt-3">Ganancias acumuladas del período actual</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button className="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-md transition-all flex flex-col items-center gap-2">
-                <span className="text-2xl">📤</span>
-                <span className="text-sm font-semibold text-gray-700">Transferir</span>
-              </button>
-              <button className="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-md transition-all flex flex-col items-center gap-2">
-                <span className="text-2xl">📊</span>
-                <span className="text-sm font-semibold text-gray-700">Reporte</span>
+              <button onClick={() => setIsOnline(true)}
+                className="px-5 py-2.5 text-white font-bold rounded-xl text-sm transition-all hover:opacity-90"
+                style={{ backgroundColor: '#16a34a' }}>
+                Conectarme →
               </button>
             </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-              <p className="text-[#0033A0] font-semibold text-sm">💡 Próximamente</p>
-              <p className="text-blue-600 text-xs mt-1">Retiros a cuenta bancaria y reportes detallados estarán disponibles pronto.</p>
-            </div>
-          </div>
-        )}
+          )}
 
+          {/* KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {[
+              { label: 'Ganancias hoy',   value: `$${earnings.today.toFixed(2)}`,  color: '#16a34a', icon: '💰' },
+              { label: 'Esta semana',     value: `$${earnings.week.toFixed(2)}`,   color: '#0033A0', icon: '📅' },
+              { label: 'Este mes',        value: `$${earnings.month.toFixed(2)}`,  color: '#7c3aed', icon: '📊' },
+              { label: 'Calificación',    value: `⭐ ${rating}`,                   color: '#f59e0b', icon: '⭐' },
+            ].map(k => (
+              <div key={k.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <p className="text-xs text-gray-500">{k.label}</p>
+                <p className="text-xl font-black mt-1" style={{ color: k.color }}>{k.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {[
+              { label: 'Viajes hoy',   value: tripsCount.today },
+              { label: 'Esta semana',  value: tripsCount.week },
+              { label: 'Total viajes', value: tripsCount.total },
+            ].map(s => (
+              <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+                <p className="text-2xl font-black text-gray-900">{s.value}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent trips */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <h2 className="font-bold text-gray-900 text-sm">Últimos viajes</h2>
+              <Link href="/conductores/historial" className="text-xs font-semibold" style={{ color: '#ff4c41' }}>
+                Ver todos →
+              </Link>
+            </div>
+
+            {loadingTrips ? (
+              <div className="p-8 text-center text-gray-400 text-sm">Cargando...</div>
+            ) : trips.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-3xl mb-2">🚗</p>
+                <p className="text-gray-400 text-sm">Aún no tienes viajes registrados.</p>
+                <p className="text-gray-300 text-xs mt-1">Conéctate para empezar a recibir solicitudes.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {trips.map(trip => {
+                  const st = STATUS_LABEL[trip.status] ?? { label: trip.status, color: '#6b7280' };
+                  return (
+                    <div key={trip._id} className="px-5 py-4 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-50 text-xl">
+                        🚗
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {trip.origin?.address ?? 'Origen'} → {trip.destination?.address ?? 'Destino'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {trip.passengerName ?? 'Pasajero'} · {trip.createdAt ? new Date(trip.createdAt).toLocaleDateString('es-EC') : ''}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: `${st.color}20`, color: st.color }}>
+                          {st.label}
+                        </span>
+                        {trip.fare !== undefined && (
+                          <p className="text-sm font-black text-gray-900 mt-1">${trip.fare.toFixed(2)}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Quick actions */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: '🗺️', label: 'Viajes activos',  href: '/conductores/viajes',        bg: '#0033A0' },
+              { icon: '💰', label: 'Mis ganancias',   href: '/conductores/ganancias',     bg: '#16a34a' },
+              { icon: '⭐', label: 'Calificaciones',  href: '/conductores/calificaciones',bg: '#f59e0b' },
+              { icon: '📚', label: 'Academia Going',  href: '/academy',                   bg: '#7c3aed' },
+            ].map(a => (
+              <Link key={a.href} href={a.href}
+                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-3"
+                  style={{ backgroundColor: `${a.bg}15` }}>
+                  {a.icon}
+                </div>
+                <p className="text-sm font-semibold text-gray-900">{a.label}</p>
+              </Link>
+            ))}
+          </div>
+
+        </div>
       </div>
     </div>
   );

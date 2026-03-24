@@ -12,7 +12,17 @@ import { NextRequest, NextResponse } from 'next/server';
  * Las rutas de marketing, auth y páginas públicas pasan sin comprobación.
  */
 
-const PROTECTED_PREFIXES = ['/account', '/bookings', '/ride', '/payment'];
+const PROTECTED_PREFIXES = [
+  '/account',
+  '/bookings',
+  '/ride',
+  '/payment',
+  '/dashboard',
+  '/conductores/panel',
+  '/anfitriones/panel',
+  '/promotores-locales/panel',
+  '/operadores/panel',
+];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
