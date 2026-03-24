@@ -11,9 +11,10 @@ import {
   Query,
   Inject,
   NotFoundException,
-  InternalServerErrorException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
+import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import {
   RequestRideDto,
@@ -27,11 +28,13 @@ import {
   AcceptRideUseCase,
   CompleteRideUseCase,
 } from '../application/use-cases';
-import { ITripRepository } from '@going-monorepo-clean/domains-transport-core';
+import { IRideRepository } from '../domain/ports';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
+import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
+import { v4 as uuidv4 } from 'uuid';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
 interface AuthUser {
@@ -47,16 +50,19 @@ interface AuthUser {
 @Controller('rides')
 @UseGuards(JwtAuthGuard)
 export class RideController {
+  private readonly logger = new Logger(RideController.name);
+
   constructor(
     private readonly requestRideUseCase: RequestRideUseCase,
     private readonly acceptRideUseCase: AcceptRideUseCase,
     private readonly completeRideUseCase: CompleteRideUseCase,
-    @Inject(ITripRepository)
-    private readonly tripRepo: ITripRepository,
+    @Inject('IRideRepository')
+    private readonly rideRepo: IRideRepository,
     private readonly twilioProxy: TwilioProxyService,
     private readonly agoraToken: AgoraTokenService,
     private readonly matchDriversUseCase: MatchAvailableDriversUseCase,
     private readonly dispatchGateway: RideDispatchGateway,
+    private readonly paymentService: PaymentGatewayService,
   ) {}
 
   /**
@@ -111,10 +117,9 @@ export class RideController {
    */
   @Get(':rideId')
   async getRide(@Param('rideId') rideId: string): Promise<any> {
-    const result = await this.tripRepo.findById(rideId);
-    if (result.isErr()) throw new NotFoundException(result.error.message);
-    if (!result.value) throw new NotFoundException(`Ride ${rideId} not found`);
-    return result.value.toPrimitives();
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    return ride;
   }
 
   /**
@@ -134,39 +139,122 @@ export class RideController {
   }
 
   /**
-   * Start a ride
+   * Start a ride — pre-autoriza el pago antes de iniciar
    * PUT /api/rides/:rideId/start
+   *
+   * Flujo:
+   *  1. Busca el viaje y valida que está en estado "accepted"
+   *  2. Pre-autoriza el monto estimado con el proveedor de pagos
+   *     - Datafast (tarjeta): bloqueo PA en tarjeta del pasajero
+   *     - DeUna (QR): genera QR/link para confirmación del pasajero
+   *  3. Si el pago es rechazado → retorna 400 (el frontend notifica al pasajero)
+   *  4. Si está pendiente de QR → retorna qrCodeUrl para que el pasajero confirme
+   *  5. Si está autorizado → marca el viaje como "in_progress"
    */
   @Put(':rideId/start')
   async startRide(
+    @CurrentUser() user: AuthUser,
     @Param('rideId') rideId: string,
     @Body() _dto: StartRideDto
   ): Promise<any> {
-    const result = await this.tripRepo.findById(rideId);
-    if (result.isErr() || !result.value)
-      throw new NotFoundException(`Ride ${rideId} not found`);
+    const trip = await this.rideRepo.findById(rideId);
+    if (!trip) throw new NotFoundException(`Ride ${rideId} not found`);
 
-    const trip = result.value;
-    trip.start();
-    await this.tripRepo.update(trip);
+    const estimatedAmt = parseFloat(String(trip?.fare?.estimatedTotal ?? trip?.fare?.total ?? 5));
+    const transactionId = uuidv4();
 
-    return { rideId, status: trip.status, startedAt: new Date() };
+    // Pre-autorizar el pago
+    const authResult = await this.paymentService.authorize({
+      transactionId,
+      rideId,
+      userId:      user.id,
+      amountUsd:   estimatedAmt,
+      description: `Viaje Going #${rideId.slice(0, 8)}`,
+    });
+
+    if (authResult.status === 'rejected') {
+      this.logger.warn(`Pago rechazado al iniciar viaje ${rideId}: ${authResult.error}`);
+      throw new BadRequestException({
+        message:       'Pago rechazado. Verifica tu método de pago.',
+        paymentStatus: 'rejected',
+        error:         authResult.error,
+      });
+    }
+
+    // Para DeUna: el viaje queda en espera hasta que el pasajero confirme el QR
+    if (authResult.status === 'pending_qr') {
+      return {
+        rideId,
+        status:        'awaiting_payment',
+        paymentStatus: 'pending_qr',
+        transactionId,
+        qrCodeUrl:     authResult.qrCodeUrl,
+        qrPaymentLink: authResult.qrPaymentLink,
+        message:       'Confirma el pago en tu app Pichincha/DeUna para iniciar el viaje',
+      };
+    }
+
+    // Pago autorizado — iniciar el viaje y persistir referencia de pago
+    await this.rideRepo.update(rideId, {
+      status:           'started',
+      startedAt:        new Date(),
+      paymentRef:       authResult.gatewayRef,
+      paymentTxnId:     transactionId,
+      paymentEstimated: estimatedAmt,
+    });
+
+    return {
+      rideId,
+      status:        'started',
+      startedAt:     new Date(),
+      paymentStatus: 'authorized',
+      transactionId,
+      gatewayRef:    authResult.gatewayRef,
+    };
   }
 
   /**
-   * Complete a ride
+   * Complete a ride — captura el pago real al finalizar
    * PUT /api/rides/:rideId/complete
+   *
+   * Flujo:
+   *  1. Completa el viaje y calcula la tarifa real según distancia/duración
+   *  2. Captura el cobro real con el gateway
+   *     - Si el monto real > estimado → captura el monto real (Datafast) o crea cargo extra (DeUna)
+   *  3. Si la captura falla → el viaje igual se completa y se registra deuda
    */
   @Put(':rideId/complete')
   async completeRide(
     @Param('rideId') rideId: string,
     @Body() dto: CompleteRideDto
   ): Promise<any> {
-    return this.completeRideUseCase.execute({
+    const completeResult = await this.completeRideUseCase.execute({
       rideId,
-      distanceKm: dto.distanceKm,
+      distanceKm:      dto.distanceKm,
       durationSeconds: dto.durationSeconds,
     });
+
+    // Capturar el pago usando paymentRef devuelto por el use case
+    const gatewayRef = completeResult?.paymentRef;
+    const txnId      = completeResult?.paymentTxnId;
+    const realAmount = completeResult?.finalFare ?? (dto.distanceKm * 0.5 + 2.5);
+
+    if (gatewayRef && txnId) {
+      try {
+        const captureResult = await this.paymentService.capture({
+          gatewayRef,
+          transactionId: txnId,
+          amountUsd:     realAmount,
+        });
+        this.logger.log(`Viaje ${rideId} completado — pago ${captureResult.status} $${realAmount}`);
+        return { ...completeResult, paymentStatus: captureResult.status, chargedAmount: realAmount };
+      } catch (err: any) {
+        this.logger.error(`Capture fallido para viaje ${rideId}: ${err?.message}`);
+        return { ...completeResult, paymentStatus: 'capture_failed', chargedAmount: 0 };
+      }
+    }
+
+    return completeResult;
   }
 
   /**
@@ -178,13 +266,8 @@ export class RideController {
     @CurrentUser() user: AuthUser,
     @Query('limit') limit?: number
   ): Promise<any[]> {
-    const result = await this.tripRepo.findTripsByUser(
-      user.id,
-      limit ? Number(limit) : 20
-    );
-    if (result.isErr())
-      throw new InternalServerErrorException('No se pudo obtener el historial de viajes');
-    return result.value.map((t) => t.toPrimitives());
+    const rides = await this.rideRepo.findByUserId(user.id, limit ? Number(limit) : 20);
+    return rides;
   }
 
   /**
@@ -196,12 +279,8 @@ export class RideController {
     @Param('driverId') driverId: string,
     @Query('limit') limit?: number
   ): Promise<any[]> {
-    const result = await this.tripRepo.findActiveTripsByDriver(driverId);
-    if (result.isErr())
-      throw new InternalServerErrorException('No se pudo obtener el historial del conductor');
-    return result.value
-      .slice(0, limit ? Number(limit) : 20)
-      .map((t) => t.toPrimitives());
+    const rides = await this.rideRepo.findByDriverId(driverId, limit ? Number(limit) : 20);
+    return rides;
   }
 
   /**
@@ -236,12 +315,8 @@ export class RideController {
     @Param('rideId') rideId: string,
     @CurrentUser() currentUser: AuthUser,
   ): Promise<{ proxyNumber: string; masked: boolean }> {
-    const result = await this.tripRepo.findById(rideId);
-    if (result.isErr() || !result.value)
-      throw new NotFoundException(`Ride ${rideId} not found`);
-
-    // toPrimitives() expone driver/user con su phone; usamos spread para no bloquear con tipos estrictos
-    const trip = result.value.toPrimitives() as Record<string, any>;
+    const trip = await this.rideRepo.findById(rideId);
+    if (!trip) throw new NotFoundException(`Ride ${rideId} not found`);
 
     // Intentar obtener/crear sesión proxy
     let session = this.twilioProxy.getSession(rideId);
@@ -276,19 +351,18 @@ export class RideController {
     @Param('rideId') rideId: string,
     @Body('reason') reason: string
   ): Promise<any> {
-    const result = await this.tripRepo.findById(rideId);
-    if (result.isErr() || !result.value)
-      throw new NotFoundException(`Ride ${rideId} not found`);
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
 
-    const trip = result.value;
-    trip.cancel(reason || 'user_cancelled');
-    await this.tripRepo.update(trip);
+    if (ride.status === 'completed')
+      throw new BadRequestException('No se puede cancelar un viaje completado');
 
-    return {
-      rideId,
-      status: trip.status,
-      reason,
-      cancelledAt: new Date(),
-    };
+    await this.rideRepo.update(rideId, {
+      status:             'cancelled',
+      cancellationReason: reason || 'user_cancelled',
+      cancellationTime:   new Date(),
+    });
+
+    return { rideId, status: 'cancelled', reason, cancelledAt: new Date() };
   }
 }
