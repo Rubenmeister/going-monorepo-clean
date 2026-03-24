@@ -4,10 +4,6 @@ export const dynamic = 'force-dynamic';
 import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-const AUTH_SERVICE =
-  process.env.AUTH_SERVICE_URL ||
-  'https://user-auth-service-780842550857.us-central1.run.app';
-
 const AUTH_TOKEN_KEY = 'authToken';
 const SESSION_COOKIE = 'going_admin_session';
 
@@ -32,7 +28,7 @@ function LoginForm() {
     setError('');
 
     try {
-      const res = await fetch(`${AUTH_SERVICE}/auth/login`, {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -126,7 +122,13 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+        <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">
+          <p className="text-xs text-gray-400">
+            ¿Primera vez?{' '}
+            <a href="/login/crear-admin" className="text-indigo-500 hover:text-indigo-700 font-medium underline">
+              Crear cuenta de administrador
+            </a>
+          </p>
           <p className="text-xs text-gray-400">
             ¿Olvidaste tu contraseña?{' '}
             <a href="mailto:soporte@goingec.com?subject=Recuperación de acceso admin"
@@ -134,7 +136,7 @@ function LoginForm() {
               Contacta a soporte
             </a>
           </p>
-          <p className="text-xs text-gray-300 mt-3">Going Admin Dashboard — Solo personal autorizado</p>
+          <p className="text-xs text-gray-300 mt-2">Going Admin Dashboard — Solo personal autorizado</p>
         </div>
       </div>
     </div>
