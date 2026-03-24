@@ -15,8 +15,17 @@ export type {
   DriverInfo,
   RideStatus,
   RideType,
+  VehicleType,
+  ServiceTier,
+  VehicleConfig,
 } from './ride.types';
-export { RIDE_TYPES, RIDE_STATUS_LABELS } from './ride.types';
+export {
+  RIDE_TYPES,
+  VEHICLE_TYPES,
+  RIDE_STATUS_LABELS,
+  recommendVehicleForPax,
+  availableVehiclesForPax,
+} from './ride.types';
 export type {
   ChatMessage,
   ChatInterfaceProps,

@@ -57,6 +57,15 @@ const cities = [
   { name: 'Ambato', viajes: '7,000/mes', co2: '530 ton', conductores: '1,300', rating: '4.7' },
 ];
 
+const sostenibilidadCards = [
+  { icon: '🌱', title: 'Flota hacia vehículos limpios', desc: 'Going incentiva activamente a los conductores a migrar a vehículos híbridos y eléctricos con tarifas preferenciales y bonificaciones.' },
+  { icon: '♻️', title: 'Operación sin papel', desc: 'Contratos, recibos y comunicaciones son 100% digitales. Cero papel en toda la cadena operativa de Going.' },
+  { icon: '🌍', title: 'Neutralidad de carbono 2030', desc: 'Going está comprometido a compensar el 100% de las emisiones generadas por su operación antes del año 2030.' },
+  { icon: '💧', title: 'Oficinas sostenibles', desc: 'Nuestras instalaciones operan con energía renovable certificada y programas de gestión de residuos.' },
+  { icon: '🤝', title: 'Proveedores responsables', desc: 'Exigimos estándares ambientales y sociales a todos nuestros socios y proveedores tecnológicos.' },
+  { icon: '📊', title: 'Reporte de impacto anual', desc: 'Publicamos anualmente nuestro reporte de sostenibilidad con métricas verificadas por terceros.' },
+];
+
 export default function ImpactoPage() {
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -79,12 +88,12 @@ export default function ImpactoPage() {
         </div>
         <div className="max-w-7xl mx-auto px-6 py-24 text-center relative z-10">
           <FadeIn>
-            <span className="inline-block text-emerald-200 text-sm font-semibold tracking-widest uppercase mb-4">Impacto Real</span>
+            <span className="inline-block text-emerald-200 text-sm font-semibold tracking-widest uppercase mb-4">Impacto y Sostenibilidad</span>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-              Going transforma la<br />movilidad de tu ciudad
+              Going transforma la<br />movilidad y cuida el planeta
             </h1>
             <p className="text-xl text-emerald-100 max-w-2xl mx-auto mb-10">
-              Menos autos individuales, más viajes compartidos, más calidad de vida
+              Menos autos individuales, más viajes compartidos, operación sostenible y carbono neutral al 2030
             </p>
             <Link href="/auth/register" className="inline-block text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-lg hover:scale-105 transition-transform" style={{ backgroundColor: '#ff4c41' }}>
               Ver mi impacto
@@ -205,6 +214,36 @@ export default function ImpactoPage() {
                   <span className="text-center font-bold text-amber-500">{city.rating} ⭐</span>
                 </div>
               ))}
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* Sostenibilidad */}
+      <section className="py-20 bg-white" id="sostenibilidad">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <div className="text-center mb-14">
+              <span className="inline-block text-emerald-600 text-sm font-semibold tracking-widest uppercase mb-3">Sostenibilidad</span>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Construyendo un Ecuador más verde</h2>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">Cada decisión en Going está guiada por nuestro compromiso con el medio ambiente y las generaciones futuras</p>
+            </div>
+          </FadeIn>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sostenibilidadCards.map((card, i) => (
+              <FadeIn key={card.title} delay={i * 80}>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-6 hover:shadow-md transition-shadow">
+                  <div className="text-4xl mb-4">{card.icon}</div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{card.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{card.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+          <FadeIn delay={200}>
+            <div className="mt-12 rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)' }}>
+              <p className="text-2xl font-black text-green-900 mb-2">Meta: Neutralidad de carbono 2030</p>
+              <p className="text-green-700 text-base max-w-xl mx-auto">Going compensa las emisiones de CO₂ generadas por su operación a través de programas certificados de reforestación en Ecuador</p>
             </div>
           </FadeIn>
         </div>

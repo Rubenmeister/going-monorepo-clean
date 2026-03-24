@@ -3,7 +3,7 @@
  */
 
 export { rideService } from './rideService';
-export type { CreateRideRequest, RideServiceResponse } from './rideService';
+export type { CreateRideRequest } from './rideService';
 export {
   calculateDistance,
   calculateEstimatedDuration,

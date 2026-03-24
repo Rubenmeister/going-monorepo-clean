@@ -8,7 +8,7 @@ import { PAYMENT_METHODS, PLATFORM_FEE_PERCENTAGE } from '@/types';
 interface PaymentFormProps {
   rideId?:            string;
   amount?:            number;
-  onPaymentComplete?: (result: InitiatePaymentResult) => void;
+  onPaymentComplete?: (method?: string) => void;
 }
 
 /**
@@ -44,7 +44,13 @@ export function PaymentForm({
 
     try {
       if (paymentMethod === 'cash') {
-        onPaymentComplete?.({ mode: 'direct_api', transactionId: `CASH-${Date.now()}`, status: 'approved' });
+        onPaymentComplete?.('cash');
+        return;
+      }
+
+      // Si no hay rideId real, aprobar localmente (modo demo)
+      if (!rideId || rideId.startsWith('trip-')) {
+        onPaymentComplete?.(paymentMethod === 'datafast' ? 'card' : paymentMethod);
         return;
       }
 
@@ -62,7 +68,7 @@ export function PaymentForm({
       }
 
       if (result.mode === 'direct_api') {
-        onPaymentComplete?.(result);
+        onPaymentComplete?.(paymentMethod === 'datafast' ? 'card' : paymentMethod);
         return;
       }
 

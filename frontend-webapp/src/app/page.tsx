@@ -414,7 +414,7 @@ export default function HomePage() {
                     <span className="text-4xl font-black ml-2 text-gray-900">$25</span>
                     <span className="text-sm text-gray-400 ml-1">/ servicio</span>
                   </div>
-                  <Link href="/ride?type=premium" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 bg-slate-800 hover:bg-slate-700">
+                  <Link href="/ride?type=van" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 bg-slate-800 hover:bg-slate-700">
                     Contratar transporte privado →
                   </Link>
                 </div>

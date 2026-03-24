@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,16 +11,22 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import {
   RequestTripUseCase,
   AcceptTripUseCase,
+  MatchAvailableDriversUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
+import { HealthController } from '../api/health.controller';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
+import { DistanceCalculatorService } from '../domain/ports';
+import { JwtStrategy } from '../infrastructure/auth/jwt.strategy';
+import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
+import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
 import { DatafastProvider } from '../infrastructure/payment/datafast.provider';
+import { DeUnaProvider } from '../infrastructure/payment/deuna.provider';
 import { MockPaymentProvider } from '../infrastructure/payment/mock-payment.provider';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
 import { PaymentController } from '../api/payment.controller';
-import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import {
   RequestRideUseCase,
   AcceptRideUseCase,
@@ -51,6 +58,7 @@ import {
         },
       }
     ),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -61,23 +69,26 @@ import {
     }),
     InfrastructureModule,
   ],
-  controllers: [AppController, TransportController, RideController, PaymentController],
+  controllers: [AppController, TransportController, RideController, HealthController, PaymentController],
   providers: [
-    // Rate limiting global — ThrottlerGuard aplica los límites del módulo a todos los endpoints
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     AppService,
+    JwtStrategy,
     RequestTripUseCase,
     AcceptTripUseCase,
     MatchAvailableDriversUseCase,
+    RideDispatchGateway,
+    RideEventsGateway,
     RequestRideUseCase,
     AcceptRideUseCase,
     CompleteRideUseCase,
     TwilioProxyService,
     AgoraTokenService,
-    // Pasarela de pagos DATAFAST / Mock
     DatafastProvider,
+    DeUnaProvider,
     MockPaymentProvider,
     PaymentGatewayService,
+    DistanceCalculatorService,
   ],
 })
 export class AppModule {}

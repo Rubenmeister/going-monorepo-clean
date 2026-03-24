@@ -211,6 +211,9 @@ export class MongoRideRepository implements IRideRepository {
       completedAt: doc.completedAt,
       durationSeconds: doc.durationSeconds,
       distanceKm: doc.distanceKm,
+      paymentRef: doc.paymentRef,
+      paymentTxnId: doc.paymentTxnId,
+      paymentEstimated: doc.paymentEstimated,
     };
   }
 }

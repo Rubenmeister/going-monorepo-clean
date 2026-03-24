@@ -107,6 +107,15 @@ export class Ride {
   @Prop()
   cancellationTime?: Date;
 
+  @Prop()
+  paymentRef?: string;
+
+  @Prop()
+  paymentTxnId?: string;
+
+  @Prop()
+  paymentEstimated?: number;
+
   @Prop({ type: Date, default: () => new Date(Date.now() + 86400000) }) // 24h TTL
   expiresAt: Date;
 }

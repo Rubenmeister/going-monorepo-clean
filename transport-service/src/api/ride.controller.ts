@@ -33,6 +33,7 @@ import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
+import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -62,6 +63,7 @@ export class RideController {
     private readonly agoraToken: AgoraTokenService,
     private readonly matchDriversUseCase: MatchAvailableDriversUseCase,
     private readonly dispatchGateway: RideDispatchGateway,
+    private readonly eventsGateway: RideEventsGateway,
     private readonly paymentService: PaymentGatewayService,
   ) {}
 
@@ -132,10 +134,22 @@ export class RideController {
     @Param('rideId') rideId: string,
     @Body() dto: AcceptRideDto
   ): Promise<any> {
-    return this.acceptRideUseCase.execute({
+    const result = await this.acceptRideUseCase.execute({
       rideId,
-      driverId: user.id, // Always use authenticated user's ID — never trust client-provided driverId
+      driverId: user.id,
     });
+
+    // Notificar al pasajero en tiempo real via WebSocket
+    this.eventsGateway.notifyDriverAccepted(rideId, {
+      name:    dto.driverName    ?? user.id,
+      vehicle: dto.vehicleModel  ?? 'Vehículo',
+      plate:   dto.vehiclePlate  ?? '',
+      rating:  dto.driverRating  ?? 5.0,
+      photoUrl: dto.driverPhoto,
+      eta:     dto.etaMinutes,
+    });
+
+    return result;
   }
 
   /**
