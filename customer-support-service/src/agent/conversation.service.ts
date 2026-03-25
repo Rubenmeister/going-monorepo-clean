@@ -9,6 +9,8 @@ export interface Message {
   timestamp: Date;
 }
 
+export type AgentGender = 'male' | 'female';
+
 export interface Conversation {
   id: string;
   channel: 'whatsapp' | 'web';
@@ -16,6 +18,7 @@ export interface Conversation {
   state: ConversationState;
   priority: Priority;
   messages: Message[];
+  agentGender: AgentGender;
   handoffReason?: string;
   operatorId?: string;
   createdAt: Date;
@@ -43,9 +46,14 @@ const EMERGENCY_KEYWORDS = [
 export class ConversationService {
   // In-memory store — replace with Redis for production
   private conversations = new Map<string, Conversation>();
+  private conversationCount = 0; // used to alternate gender
 
   getOrCreate(userId: string, channel: 'whatsapp' | 'web' = 'whatsapp'): Conversation {
     if (!this.conversations.has(userId)) {
+      // Alternate gender with each new conversation
+      const agentGender: AgentGender = this.conversationCount % 2 === 0 ? 'male' : 'female';
+      this.conversationCount++;
+
       const conv: Conversation = {
         id: `${channel}-${userId}-${Date.now()}`,
         channel,
@@ -53,6 +61,7 @@ export class ConversationService {
         state: 'AI_ACTIVE',
         priority: 'NORMAL',
         messages: [],
+        agentGender,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
