@@ -31,6 +31,7 @@ function RegisterForm() {
   const VALID_ROLES: Role[] = ['user', 'driver', 'host', 'guide', 'operator'];
   const paramRole = searchParams.get('rol') as Role | null;
   const initialRole: Role = paramRole && VALID_ROLES.includes(paramRole) ? paramRole : 'user';
+  const fromParam = searchParams.get('from') || '';
   const [selectedRole, setSelectedRole] = useState<Role>(initialRole);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,8 @@ function RegisterForm() {
         document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
       }
 
-      window.location.href = active.redirect;
+      // Si vino desde una ruta protegida (ej: /ride), redirigir ahí
+      window.location.href = (fromParam && selectedRole === 'user') ? fromParam : active.redirect;
 
     } catch {
       setError('No se pudo conectar con el servidor. Verifica tu conexión.');
