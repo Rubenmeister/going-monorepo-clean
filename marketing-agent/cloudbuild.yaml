@@ -1,0 +1,55 @@
+steps:
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/marketing-agent:latest
+      - .
+
+  # Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/marketing-agent:latest
+
+  # Deploy as Cloud Run Job
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - run
+      - jobs
+      - deploy
+      - marketing-agent
+      - --image=gcr.io/$PROJECT_ID/marketing-agent:latest
+      - --region=us-central1
+      - --cpu=1
+      - --memory=512Mi
+      - --task-timeout=300
+      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,META_ACCESS_TOKEN=META_ACCESS_TOKEN:latest,META_PAGE_ID=META_PAGE_ID:latest,META_IG_USER_ID=META_IG_USER_ID:latest,TWITTER_API_KEY=TWITTER_API_KEY:latest,TWITTER_API_SECRET=TWITTER_API_SECRET:latest,TWITTER_ACCESS_TOKEN=TWITTER_ACCESS_TOKEN:latest,TWITTER_ACCESS_SECRET=TWITTER_ACCESS_SECRET:latest,TIKTOK_ACCESS_TOKEN=TIKTOK_ACCESS_TOKEN:latest,SENDGRID_API_KEY=SENDGRID_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,TELEGRAM_CHANNEL_ID=TELEGRAM_CHANNEL_ID:latest
+      - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+  # Create/update Cloud Scheduler – runs every day at 8am and 9am Mon (Ecuador time UTC-5)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud scheduler jobs describe marketing-agent-daily \
+          --location=us-central1 --project=$PROJECT_ID 2>/dev/null && \
+        gcloud scheduler jobs update http marketing-agent-daily \
+          --location=us-central1 \
+          --schedule="0 13 * * *" \
+          --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/marketing-agent:run" \
+          --message-body='{}' \
+          --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \
+          --project=$PROJECT_ID || \
+        gcloud scheduler jobs create http marketing-agent-daily \
+          --location=us-central1 \
+          --schedule="0 13 * * *" \
+          --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/marketing-agent:run" \
+          --message-body='{}' \
+          --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \
+          --project=$PROJECT_ID
+
+options:
+  logging: CLOUD_LOGGING_ONLY

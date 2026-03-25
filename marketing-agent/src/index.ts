@@ -1,0 +1,23 @@
+import { runMarketingMonitor } from './monitors/metrics.monitor';
+
+// ============================================================
+// Going – Marketing Agent Entry Point
+// Runs as Cloud Run Job (triggered by Cloud Scheduler)
+// ============================================================
+
+async function main(): Promise<void> {
+  console.log('🚀 Going Marketing Agent starting...');
+  console.log(`Time: ${new Date().toISOString()}`);
+
+  try {
+    await runMarketingMonitor();
+    console.log('✅ Marketing Agent completed successfully');
+  } catch (error) {
+    console.error('❌ Marketing Agent failed:', error);
+    process.exit(1);
+  }
+
+  process.exit(0);
+}
+
+main();

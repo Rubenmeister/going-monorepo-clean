@@ -1,0 +1,20 @@
+{
+  "name": "going-marketing-agent",
+  "version": "1.0.0",
+  "description": "Going Marketing Agent – content generation, auto-publishing, metrics",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "start:compiled": "node dist/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@google-cloud/firestore": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
