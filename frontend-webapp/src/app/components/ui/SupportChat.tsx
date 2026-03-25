@@ -20,10 +20,12 @@ function getSessionId(): string {
   return id;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_SUPPORT_SERVICE_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  '';
+// Si hay URL directa al servicio → /chat/message
+// Si solo hay API Gateway → /support/chat/message (el gateway hace proxy)
+const SUPPORT_DIRECT = process.env.NEXT_PUBLIC_SUPPORT_SERVICE_URL || '';
+const CHAT_ENDPOINT = SUPPORT_DIRECT
+  ? `${SUPPORT_DIRECT}/chat/message`
+  : `${process.env.NEXT_PUBLIC_API_URL || ''}/support/chat/message`;
 
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
@@ -46,7 +48,7 @@ export default function SupportChat() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/support/chat/message`, {
+      const res = await fetch(CHAT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: getSessionId(), message: text }),
