@@ -38,7 +38,7 @@ export class AgentService {
     // Detect context (language + canton mentioned)
     const lang = detectLanguage(userMessage);
     const canton = detectCanton(userMessage);
-    const systemPrompt = getSystemPrompt(lang, canton);
+    const systemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
 
     // Build messages for Claude
     const messages = conv.messages.slice(-10).map(m => ({
