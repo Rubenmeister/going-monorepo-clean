@@ -97,9 +97,9 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
       case 'list_directory':
         return fs.listDir(input.path, input.depth || 1).join('\n');
       case 'get_cloud_run_logs':
-        return cloudrun.getServiceLogs(input.service);
+        return await cloudrun.getServiceLogs(input.service);
       case 'get_failed_builds':
-        return cloudrun.getFailedBuilds();
+        return await cloudrun.getFailedBuilds();
       case 'get_git_log':
         return git.getRecentLog(input.lines || 10);
       case 'commit_fix': {
@@ -220,19 +220,20 @@ Reporta todo lo que encuentres.`,
   }
 }
 
-// ── Arranque ───────────────────────────────────────────────────────────────
+// ── Arranque — Cloud Run Job: un ciclo y salida limpia ────────────────────
 async function main() {
-  console.log('🚀 Going Agent iniciando...');
+  console.log('🚀 Going Agent — Cloud Run Job');
   console.log(`📁 Repo: ${config.repoPath}`);
-  console.log(`⏱  Intervalo: ${config.intervalMs / 60000} minutos\n`);
+  console.log(`🕐 ${new Date().toISOString()}\n`);
 
-  // Primer ciclo inmediato
-  await runAgentCycle().catch(console.error);
-
-  // Loop continuo
-  setInterval(() => {
-    runAgentCycle().catch(console.error);
-  }, config.intervalMs);
+  try {
+    await runAgentCycle();
+    console.log('\n✅ Ciclo completado. Saliendo.');
+    process.exit(0);
+  } catch (err) {
+    console.error('\n❌ Error en el ciclo:', err);
+    process.exit(1);
+  }
 }
 
-main().catch(console.error);
+main();

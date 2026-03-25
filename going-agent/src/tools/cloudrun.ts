@@ -1,38 +1,61 @@
-import { execSync } from 'child_process';
+import { Logging } from '@google-cloud/logging';
+import { CloudBuildClient } from '@google-cloud/cloudbuild';
 import { config } from '../config';
+
+const logging = new Logging({ projectId: config.gcpProject });
+const cloudbuild = new CloudBuildClient();
 
 export class CloudRunTool {
 
-  private run(cmd: string): string {
+  /** Obtiene los últimos errores de un servicio en Cloud Run via GCP Logging API */
+  async getServiceLogs(serviceName: string, limit = 50): Promise<string> {
     try {
-      return execSync(cmd, { encoding: 'utf8', timeout: 30000 });
+      const [entries] = await logging.getEntries({
+        filter: [
+          `resource.type="cloud_run_revision"`,
+          `resource.labels.service_name="${serviceName}"`,
+          `severity>=ERROR`,
+        ].join(' AND '),
+        pageSize: limit,
+        orderBy: 'timestamp desc',
+      });
+
+      if (!entries.length) return `✅ Sin errores recientes en ${serviceName}`;
+
+      return entries.map(e => {
+        const payload = e.data as any;
+        const msg = typeof payload === 'string'
+          ? payload
+          : payload?.message || payload?.textPayload || JSON.stringify(payload).slice(0, 200);
+        return `[${e.metadata.timestamp}] ${msg}`;
+      }).join('\n');
+
     } catch (e: any) {
-      return e.stdout || e.message || 'error';
+      return `❌ Error leyendo logs de ${serviceName}: ${e.message}`;
     }
   }
 
-  listServices(): string {
-    return this.run(
-      `gcloud run services list --project=${config.gcpProject} --region=${config.gcpRegion} --format=json`
-    );
-  }
+  /** Lista los builds fallidos recientes via GCP Cloud Build API */
+  async getFailedBuilds(): Promise<string> {
+    try {
+      const [builds] = await cloudbuild.listBuilds({
+        projectId: config.gcpProject,
+        filter: 'status="FAILURE"',
+        pageSize: 5,
+      });
 
-  getServiceLogs(serviceName: string, lines = 50): string {
-    return this.run(
-      `gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${serviceName} AND severity>=ERROR" ` +
-      `--project=${config.gcpProject} --limit=${lines} --format="value(textPayload,jsonPayload.message)" --order=desc`
-    );
-  }
+      if (!builds.length) return '✅ Sin builds fallidos recientes';
 
-  getFailedBuilds(): string {
-    return this.run(
-      `gcloud builds list --project=${config.gcpProject} --filter="status=FAILURE" --limit=5 --format=json`
-    );
-  }
+      return builds.map(b => {
+        const failedSteps = (b.steps || [])
+          .filter((s: any) => s.status === 'FAILURE')
+          .map((s: any) => `  - step "${s.name}"`)
+          .join('\n');
+        return `Build ${b.id} FAILED\n${failedSteps || '  (sin steps fallidos detallados)'}`;
+      }).join('\n\n');
 
-  getServiceStatus(serviceName: string): string {
-    return this.run(
-      `gcloud run services describe ${serviceName} --project=${config.gcpProject} --region=${config.gcpRegion} --format=json`
-    );
+    } catch (e: any) {
+      return `❌ Error leyendo builds: ${e.message}`;
+    }
   }
 }
