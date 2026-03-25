@@ -1,0 +1,19 @@
+{
+  "name": "going-financial-agent",
+  "version": "1.0.0",
+  "description": "Going Financial Agent – revenue reports, driver payouts, payment monitoring, Datil invoicing",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@google-cloud/firestore": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.0"
+  }
+}
