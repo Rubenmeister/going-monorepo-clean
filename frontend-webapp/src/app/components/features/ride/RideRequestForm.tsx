@@ -1,43 +1,43 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRideService } from '@/hooks/features/useRideService';
 import { LocationSelector } from './LocationSelector';
 import { MapboxMap } from '@/components/features/tracking/TrackingMap';
 import type { VehicleType, ServiceTier } from '@/types';
-import { VEHICLE_TYPES, recommendVehicleForPax, availableVehiclesForPax } from '@/types';
+import { VEHICLE_TYPES } from '@/types';
 import {
   calculateFare,
   calculateDistance,
   calculateEstimatedDuration,
 } from '@/services/ride/fareCalculator';
-import Image from 'next/image';
 
 type TransportMode = 'privado' | 'compartido';
+type SimpleVehicle = 'suv' | 'van' | 'bus';
 
-interface SavedAddress {
-  label: string;
-  icon: string;
-  address: string;
-  lat: number;
-  lon: number;
-}
+const SIMPLE_VEHICLES: Record<SimpleVehicle, {
+  label: string; emoji: string; desc: string;
+  maxPax: number; vehicleForPax: (pax: number) => VehicleType;
+}> = {
+  suv: {
+    label: 'SUV', emoji: '🚗', desc: 'Hasta 5 personas', maxPax: 5,
+    vehicleForPax: (pax) => pax <= 4 ? 'suv' : 'suv_xl',
+  },
+  van: {
+    label: 'VAN', emoji: '🚐', desc: 'Hasta 14 personas', maxPax: 14,
+    vehicleForPax: (pax) => pax <= 7 ? 'van' : 'van_xl',
+  },
+  bus: {
+    label: 'BUS', emoji: '🚌', desc: '15 o más personas', maxPax: 100,
+    vehicleForPax: (pax) => pax <= 25 ? 'minibus' : 'bus',
+  },
+};
 
-function getSavedAddresses(): SavedAddress[] {
-  try { return JSON.parse(localStorage.getItem('going_saved_addresses') || '[]'); } catch { return []; }
-}
-function getRecentAddresses(): SavedAddress[] {
-  try { return JSON.parse(localStorage.getItem('going_recent_addresses') || '[]'); } catch { return []; }
-}
-function saveRecentAddress(loc: { address: string; lat: number; lon: number }) {
-  try {
-    const recent = getRecentAddresses();
-    const entry: SavedAddress = { label: loc.address.split(',')[0], icon: '🕐', address: loc.address, lat: loc.lat, lon: loc.lon };
-    localStorage.setItem('going_recent_addresses', JSON.stringify(
-      [entry, ...recent.filter(r => r.address !== loc.address)].slice(0, 5)
-    ));
-  } catch {/* */}
+function suggestSimpleVehicle(pax: number): SimpleVehicle {
+  if (pax <= 5) return 'suv';
+  if (pax <= 14) return 'van';
+  return 'bus';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -54,22 +54,26 @@ function RideRequestFormInner() {
     createRide,
   } = useRideService();
 
-  const [mode, setMode]               = useState<TransportMode>('privado');
-  const [passengers, setPassengers]   = useState(1);
-  const [vehicleType, setVehicleType] = useState<VehicleType>('suv');
-  const [tier, setTier]               = useState<ServiceTier>('confort');
-  const [isScheduled, setIsScheduled] = useState(false);
+  const [mode, setMode]                   = useState<TransportMode>('privado');
+  const [passengers, setPassengers]       = useState(1);
+  const [simpleVehicle, setSimpleVehicle] = useState<SimpleVehicle>('suv');
+  const [tier, setTier]                   = useState<ServiceTier>('confort');
+  const [isScheduled, setIsScheduled]     = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [localFare, setLocalFare]     = useState<number | null>(null);
-  const [shareCopied, setShareCopied] = useState(false);
+  const [showSchedule, setShowSchedule]   = useState(false);
+  const [localFare, setLocalFare]         = useState<number | null>(null);
 
-  const [savedAddresses]    = useState<SavedAddress[]>(() => getSavedAddresses());
-  const [recentAddresses, setRecentAddresses] = useState<SavedAddress[]>(() => getRecentAddresses());
+  // Auto-suggest vehicle based on pax count
+  useEffect(() => {
+    setSimpleVehicle(suggestSimpleVehicle(passengers));
+  }, [passengers]);
 
-  useEffect(() => { setVehicleType(recommendVehicleForPax(passengers)); }, [passengers]);
+  // Derived: actual VehicleType from simplified choice + pax count
+  const vehicleType: VehicleType = SIMPLE_VEHICLES[simpleVehicle].vehicleForPax(passengers);
+  const vehicleConfig = VEHICLE_TYPES[vehicleType];
 
-  // Pre-fill desde URL
+  // Pre-fill from URL params
   useEffect(() => {
     const from = searchParams.get('from');
     const to   = searchParams.get('to');
@@ -77,31 +81,31 @@ function RideRequestFormInner() {
     const time = searchParams.get('time');
     if (from && !pickupLocation)  setPickupLocation({ address: from, lat: 0, lon: 0 });
     if (to   && !dropoffLocation) setDropoffLocation({ address: to,  lat: 0, lon: 0 });
-    if (date) { setScheduledDate(date); setIsScheduled(true); }
-    if (time) { setScheduledTime(time); setIsScheduled(true); }
+    if (date) { setScheduledDate(date); setIsScheduled(true); setShowSchedule(true); }
+    if (time) { setScheduledTime(time); setIsScheduled(true); setShowSchedule(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calcular tarifa
+  // Calculate fare whenever route or vehicle changes
   useEffect(() => {
-    if (pickupLocation && dropoffLocation && pickupLocation.lat !== 0 && dropoffLocation.lat !== 0 && pickupLocation.lat !== dropoffLocation.lat) {
-      const base = calculateFare(pickupLocation, dropoffLocation, vehicleType);
-      const m    = tier === 'premium' ? VEHICLE_TYPES[vehicleType].multiplierPremium : VEHICLE_TYPES[vehicleType].multiplierConfort;
-      const cm   = VEHICLE_TYPES[vehicleType].multiplierConfort;
-      setLocalFare(Math.round((base / cm) * m * 100) / 100);
+    if (
+      pickupLocation && dropoffLocation &&
+      pickupLocation.lat !== 0 && dropoffLocation.lat !== 0 &&
+      pickupLocation.lat !== dropoffLocation.lat
+    ) {
+      try {
+        const base = calculateFare(pickupLocation, dropoffLocation, vehicleType);
+        const m  = tier === 'premium' ? vehicleConfig.multiplierPremium : vehicleConfig.multiplierConfort;
+        const cm = vehicleConfig.multiplierConfort;
+        const fare = Math.round((base / cm) * m * 100) / 100;
+        setLocalFare(isNaN(fare) || !isFinite(fare) ? null : fare);
+      } catch {
+        setLocalFare(null);
+      }
     } else {
       setLocalFare(null);
     }
-  }, [pickupLocation, dropoffLocation, vehicleType, tier]);
-
-  const handlePickup = (loc: Parameters<typeof setPickupLocation>[0]) => {
-    setPickupLocation(loc);
-    if (loc?.lat !== 0) { saveRecentAddress(loc as any); setRecentAddresses(getRecentAddresses()); }
-  };
-  const handleDropoff = (loc: Parameters<typeof setDropoffLocation>[0]) => {
-    setDropoffLocation(loc);
-    if (loc?.lat !== 0) { saveRecentAddress(loc as any); setRecentAddresses(getRecentAddresses()); }
-  };
+  }, [pickupLocation, dropoffLocation, vehicleType, tier, vehicleConfig]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,39 +113,11 @@ function RideRequestFormInner() {
     await createRide(vehicleType, tier, passengers, isScheduled ? `${scheduledDate}T${scheduledTime}` : undefined);
   };
 
-  // Compartir viaje
-  const handleShare = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (pickupLocation)  params.set('from', pickupLocation.address);
-    if (dropoffLocation) params.set('to',   dropoffLocation.address);
-    if (scheduledDate)   params.set('date', scheduledDate);
-    if (scheduledTime)   params.set('time', scheduledTime);
-    const shareUrl = `${window.location.origin}/ride?${params.toString()}`;
-    const shareText = `Te comparto mi viaje en Going:\n📍 ${pickupLocation?.address?.split(',')[0]} → ${dropoffLocation?.address?.split(',')[0]}${scheduledDate ? `\n📅 ${scheduledDate}${scheduledTime ? ` · ${scheduledTime}` : ''}` : ''}`;
-
-    if (navigator.share) {
-      try { await navigator.share({ title: 'Mi viaje en Going', text: shareText, url: shareUrl }); return; } catch {/* cancelled */}
-    }
-    // Fallback: copiar al portapapeles
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2500);
-    } catch {/* */}
-  }, [pickupLocation, dropoffLocation, scheduledDate, scheduledTime]);
-
-  const today             = new Date().toISOString().split('T')[0];
-  const maxPax            = mode === 'compartido' ? 4 : 100;
-  const availableVehicles = availableVehiclesForPax(passengers);
-  const recommended       = recommendVehicleForPax(passengers);
-  const currentVehicle    = VEHICLE_TYPES[vehicleType];
-  const currentImage      = tier === 'premium' ? currentVehicle.imagePremium : currentVehicle.imageConfort;
-  const hasRoute          = !!(pickupLocation && dropoffLocation);
-
-  const quickAddresses: SavedAddress[] = [
-    ...savedAddresses,
-    ...recentAddresses.filter(r => !savedAddresses.find(s => s.address === r.address)),
-  ].slice(0, 5);
+  const today         = new Date().toISOString().split('T')[0];
+  const maxPax        = mode === 'compartido' ? 4 : SIMPLE_VEHICLES[simpleVehicle].maxPax;
+  const hasRoute      = !!(pickupLocation && dropoffLocation);
+  const hasValidRoute = hasRoute && pickupLocation!.lat !== 0 && dropoffLocation!.lat !== 0;
+  const canConfirm    = hasValidRoute && localFare !== null && !loading && (!isScheduled || (scheduledDate && scheduledTime));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -151,85 +127,172 @@ function RideRequestFormInner() {
       )}
 
       {/* ══════════════════════════════════════════
-          TARJETA PRINCIPAL — ¿A dónde deseas viajar?
+          TARJETA PRINCIPAL — todo en un lugar
           ══════════════════════════════════════════ */}
       <div className="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden">
         <div className="h-1.5 w-full" style={{ background: 'linear-gradient(90deg, #0033A0, #ff4c41)' }} />
-        <div className="p-6 space-y-5">
+        <div className="p-5 space-y-5">
 
-          <div>
-            <h2 className="text-2xl font-black text-gray-900">¿A dónde deseas viajar hoy?</h2>
-            <p className="text-sm text-gray-400 mt-0.5">Ingresa tu origen y destino</p>
-          </div>
+          <h2 className="text-xl font-black text-gray-900">¿A dónde deseas viajar?</h2>
 
-          {/* Grid: ORIGEN | DESTINO | FECHA | HORA */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">📍 Origen</label>
+          {/* Origen + Destino */}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">📍 Origen</label>
               <LocationSelector
                 type="pickup"
                 value={pickupLocation || undefined}
-                onChange={handlePickup}
+                onChange={setPickupLocation}
                 placeholder="Ciudad de origen"
               />
             </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">🏁 Destino</label>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">🏁 Destino</label>
               <LocationSelector
                 type="dropoff"
                 value={dropoffLocation || undefined}
-                onChange={handleDropoff}
+                onChange={setDropoffLocation}
                 placeholder="Ciudad de destino"
               />
             </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">📅 Fecha</label>
-              <input
-                type="date" min={today} value={scheduledDate}
-                onChange={e => { setScheduledDate(e.target.value); setIsScheduled(!!e.target.value); }}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest">🕐 Hora</label>
-              <input
-                type="time" value={scheduledTime}
-                onChange={e => { setScheduledTime(e.target.value); if (e.target.value) setIsScheduled(true); }}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white"
-              />
-            </div>
-
           </div>
 
-          {/* Accesos rápidos */}
-          {quickAddresses.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {quickAddresses.map((qa, i) => (
-                <button key={i} type="button"
-                  onClick={() => handleDropoff({ address: qa.address, lat: qa.lat, lon: qa.lon })}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 transition-colors"
+          <div className="border-t border-gray-100" />
+
+          {/* Tipo de viaje + Personas */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Toggle privado / compartido */}
+            <div className="flex rounded-2xl border border-gray-200 overflow-hidden flex-shrink-0">
+              {([
+                { key: 'privado'    as TransportMode, icon: '🔒', label: 'Privado' },
+                { key: 'compartido' as TransportMode, icon: '👥', label: 'Compartido' },
+              ]).map(opt => (
+                <button key={opt.key} type="button"
+                  onClick={() => {
+                    setMode(opt.key);
+                    if (opt.key === 'compartido') setPassengers(p => Math.min(p, 4));
+                  }}
+                  className={`px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-1.5 ${
+                    mode === opt.key
+                      ? 'bg-[#0033A0] text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
                 >
-                  <span>{qa.icon}</span>
-                  <span className="max-w-[100px] truncate">{qa.label}</span>
+                  <span>{opt.icon}</span>{opt.label}
                 </button>
               ))}
             </div>
-          )}
+
+            {/* Contador de personas */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button type="button"
+                onClick={() => setPassengers(p => Math.max(1, p - 1))}
+                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
+                −
+              </button>
+              <span className="text-lg font-black text-[#0033A0] min-w-[2rem] text-center">{passengers}</span>
+              <button type="button"
+                onClick={() => setPassengers(p => Math.min(maxPax, p + 1))}
+                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
+                +
+              </button>
+              <span className="text-sm text-gray-500">{passengers === 1 ? 'persona' : 'personas'}</span>
+            </div>
+          </div>
+
+          {/* Tipo de vehículo: SUV / VAN / BUS */}
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Vehículo</p>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(SIMPLE_VEHICLES) as SimpleVehicle[]).map(sv => {
+                const v = SIMPLE_VEHICLES[sv];
+                const isSelected = simpleVehicle === sv;
+                const fits = passengers <= v.maxPax;
+                return (
+                  <button key={sv} type="button"
+                    onClick={() => fits && setSimpleVehicle(sv)}
+                    className={`p-3 rounded-2xl border-2 text-center transition-all ${
+                      isSelected
+                        ? 'border-[#0033A0] bg-blue-50'
+                        : !fits
+                          ? 'border-gray-100 opacity-40 cursor-not-allowed'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{v.emoji}</div>
+                    <div className={`text-xs font-black ${isSelected ? 'text-[#0033A0]' : 'text-gray-700'}`}>{v.label}</div>
+                    <div className="text-xs text-gray-400 leading-tight mt-0.5">{v.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Categoría: Confort / Premium */}
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Categoría</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(['confort', 'premium'] as ServiceTier[]).map(t => {
+                const isSelected = tier === t;
+                return (
+                  <button key={t} type="button" onClick={() => setTier(t)}
+                    className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                      isSelected
+                        ? t === 'premium' ? 'border-yellow-400 bg-yellow-50' : 'border-[#0033A0] bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span>{t === 'premium' ? '⭐' : '✓'}</span>
+                      <span className={`text-sm font-black ${t === 'premium' ? 'text-yellow-700' : 'text-[#0033A0]'}`}>
+                        {t === 'premium' ? 'Premium' : 'Confort'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {t === 'premium' ? vehicleConfig.priceFromPremium : vehicleConfig.priceFromConfort}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Programar (colapsable) */}
+          <div>
+            <button type="button"
+              onClick={() => setShowSchedule(!showSchedule)}
+              className="text-xs text-[#0033A0] font-semibold flex items-center gap-1 hover:underline"
+            >
+              📅 {showSchedule ? 'Ocultar fecha/hora' : 'Programar para más tarde'} {showSchedule ? '▲' : '▼'}
+            </button>
+            {showSchedule && (
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
+                  <input type="date" min={today} value={scheduledDate}
+                    onChange={e => { setScheduledDate(e.target.value); setIsScheduled(!!e.target.value); }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
+                  <input type="time" value={scheduledTime}
+                    onChange={e => { setScheduledTime(e.target.value); if (e.target.value) setIsScheduled(true); }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800" />
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
 
       {/* ══════════════════════════════════════════
-          MAPA DE RUTA — aparece cuando hay origen Y destino con coords reales
+          MAPA — solo cuando hay coordenadas válidas
           ══════════════════════════════════════════ */}
-      {hasRoute && pickupLocation.lat !== 0 && dropoffLocation!.lat !== 0 && (
+      {hasValidRoute && (
         <div className="rounded-3xl overflow-hidden shadow-md border border-gray-100">
           <MapboxMap
-            pickup={{ lat: pickupLocation.lat, lon: pickupLocation.lon, label: pickupLocation.address }}
+            pickup={{ lat: pickupLocation!.lat, lon: pickupLocation!.lon, label: pickupLocation!.address }}
             dropoff={{ lat: dropoffLocation!.lat, lon: dropoffLocation!.lon, label: dropoffLocation!.address }}
             distance={Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10}
             duration={calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)}
@@ -237,189 +300,72 @@ function RideRequestFormInner() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════
-          Indicador: faltan origen/destino
-          ══════════════════════════════════════════ */}
-      {!hasRoute && (
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 flex items-center gap-3 text-sm text-blue-700">
-          <span className="text-xl">👆</span>
-          <span>Ingresa origen y destino para ver las opciones del viaje y el precio.</span>
+      {/* Aviso: seleccionar desde la lista */}
+      {hasRoute && !hasValidRoute && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm text-amber-700 flex items-center gap-2">
+          <span>⚠️</span>
+          <span>Selecciona las ciudades desde la lista para calcular la tarifa.</span>
         </div>
       )}
 
       {/* ══════════════════════════════════════════
-          Todo lo siguiente solo si hay ruta
+          TARIFA
           ══════════════════════════════════════════ */}
-      {hasRoute && (
-        <>
-          {/* Compartir viaje */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-800">Comparte tu viaje</p>
-              <p className="text-xs text-gray-400 truncate mt-0.5">
-                {pickupLocation?.address?.split(',')[0]} → {dropoffLocation?.address?.split(',')[0]}
-                {scheduledDate ? ` · ${scheduledDate}` : ''}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleShare}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex-shrink-0 ${
-                shareCopied
-                  ? 'bg-green-500 text-white'
-                  : 'bg-[#0033A0] text-white hover:bg-[#002280] active:scale-95'
-              }`}
-            >
-              {shareCopied ? '✓ Copiado' : '↗ Compartir'}
-            </button>
-          </div>
-
-          {/* ── TIPO DE VIAJE ── */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Tipo de viaje</p>
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { key: 'privado'    as TransportMode, icon: '🔒', label: 'Privado',    desc: 'Solo para tu grupo' },
-                { key: 'compartido' as TransportMode, icon: '👥', label: 'Compartido', desc: 'Divide el costo' },
-              ] as const).map(opt => (
-                <button key={opt.key} type="button"
-                  onClick={() => { setMode(opt.key); if (opt.key === 'compartido') setPassengers(p => Math.min(p, 4)); }}
-                  className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                    mode === opt.key ? 'border-[#0033A0] bg-blue-50' : 'border-gray-100 hover:border-gray-200'
-                  }`}
-                >
-                  <div className="text-2xl mb-1.5">{opt.icon}</div>
-                  <div className="font-bold text-gray-900 text-sm">{opt.label}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{opt.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ── NÚMERO DE PERSONAS ── */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-5 py-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Número de personas</p>
-            <div className="flex items-center gap-4">
-              <button type="button" onClick={() => setPassengers(p => Math.max(1, p - 1))}
-                className="w-12 h-12 rounded-2xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-2xl flex items-center justify-center transition-all active:scale-95">
-                −
-              </button>
-              <div className="flex-1 text-center">
-                <span className="text-5xl font-black" style={{ color: '#0033A0' }}>{passengers}</span>
-                <span className="text-gray-400 text-sm ml-2">{passengers === 1 ? 'persona' : 'personas'}</span>
-              </div>
-              <button type="button" onClick={() => setPassengers(p => Math.min(maxPax, p + 1))}
-                className="w-12 h-12 rounded-2xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-2xl flex items-center justify-center transition-all active:scale-95">
-                +
-              </button>
-            </div>
-            {mode === 'compartido' && (
-              <p className="text-xs text-gray-400 text-center mt-2">Máx. 4 personas en viaje compartido</p>
-            )}
-          </div>
-
-          {/* ── TIPO DE VEHÍCULO + CATEGORÍA ── */}
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="relative h-40 w-full bg-gray-200">
-              <Image src={currentImage} alt={`${currentVehicle.label} ${tier}`} fill className="object-cover" sizes="(max-width: 672px) 100vw, 672px" unoptimized />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-3 left-4 text-white">
-                <p className="text-base font-black">{currentVehicle.label}</p>
-                <p className="text-xs opacity-80">{currentVehicle.desc}</p>
-              </div>
-              <div className={`absolute top-3 right-3 text-xs px-2.5 py-1 rounded-full font-bold ${tier === 'premium' ? 'bg-yellow-400 text-yellow-900' : 'bg-white text-gray-800'}`}>
-                {tier === 'premium' ? '⭐ PREMIUM' : '✓ CONFORT'}
-              </div>
-            </div>
-
-            <div className="p-5 space-y-5">
+      {hasValidRoute && (
+        localFare !== null ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Tipo de vehículo</p>
-                <div className="flex flex-wrap gap-2">
-                  {availableVehicles.map(type => {
-                    const v = VEHICLE_TYPES[type];
-                    const isSelected    = vehicleType === type;
-                    const isRecommended = type === recommended;
-                    return (
-                      <button key={type} type="button" onClick={() => setVehicleType(type)}
-                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
-                          isSelected ? 'border-[#0033A0] bg-[#0033A0] text-white' : 'border-gray-200 text-gray-700 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        {v.label}
-                        {isRecommended && !isSelected && (
-                          <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">rec.</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="text-sm font-bold text-gray-700">
+                  {vehicleConfig.label} · {tier === 'premium' ? '⭐ Premium' : '✓ Confort'}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10} km ·
+                  ~{calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)} min estimados
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {mode === 'compartido' ? `👥 Compartido · ${passengers} personas` : '🔒 Privado'}
+                </p>
               </div>
-
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Categoría</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {(['confort', 'premium'] as ServiceTier[]).map(t => {
-                    const isSelected = tier === t;
-                    const price    = t === 'premium' ? currentVehicle.priceFromPremium : currentVehicle.priceFromConfort;
-                    const features = t === 'premium' ? currentVehicle.featuresPremium  : currentVehicle.featuresConfort;
-                    return (
-                      <button key={t} type="button" onClick={() => setTier(t)}
-                        className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                          isSelected
-                            ? t === 'premium' ? 'border-yellow-400 bg-yellow-50' : 'border-[#0033A0] bg-blue-50'
-                            : 'border-gray-100 hover:border-gray-200 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <span className="text-base">{t === 'premium' ? '⭐' : '✓'}</span>
-                          <span className="font-black text-sm uppercase tracking-wide" style={{ color: t === 'premium' ? '#B45309' : '#0033A0' }}>{t}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 leading-relaxed mb-2">{features.join(' · ')}</p>
-                        <p className="text-sm font-bold" style={{ color: t === 'premium' ? '#B45309' : '#0033A0' }}>{price}</p>
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="text-right">
+                <p className="text-3xl font-black text-[#0033A0]">${localFare.toFixed(2)}</p>
+                <p className="text-xs text-gray-400">tarifa estimada</p>
               </div>
             </div>
           </div>
-
-          {/* ── RESUMEN DE TARIFA ── */}
-          {pickupLocation.lat !== 0 && dropoffLocation!.lat !== 0 && (
-            localFare ? (
-              <FareCard
-                fare={localFare} pickup={pickupLocation} dropoff={dropoffLocation!}
-                vehicleType={vehicleType} tier={tier} mode={mode} passengers={passengers}
-                scheduled={isScheduled ? `${scheduledDate} ${scheduledTime}` : undefined}
-              />
-            ) : (
-              <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0033A0] rounded-full animate-spin" />
-                <span className="text-sm text-gray-500">Calculando tarifa…</span>
-              </div>
-            )
-          )}
-
-          {/* ── BOTÓN CONFIRMAR ── */}
-          <button
-            type="submit"
-            disabled={!localFare || loading || (isScheduled && (!scheduledDate || !scheduledTime))}
-            className="w-full py-4 rounded-2xl font-black text-white text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
-            style={{ background: !localFare ? '#9ca3af' : 'linear-gradient(135deg, #0033A0, #ff4c41)' }}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                Confirmando viaje…
-              </span>
-            ) : isScheduled
-              ? `📅 Reservar · ${scheduledDate} ${scheduledTime}`
-              : `Confirmar viaje · $${localFare?.toFixed(2) ?? '—'}`
-            }
-          </button>
-        </>
+        ) : (
+          <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-center gap-2">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0033A0] rounded-full animate-spin" />
+            <span className="text-sm text-gray-500">Calculando tarifa…</span>
+          </div>
+        )
       )}
+
+      {/* ══════════════════════════════════════════
+          BOTÓN CONFIRMAR
+          ══════════════════════════════════════════ */}
+      <button
+        type="submit"
+        disabled={!canConfirm}
+        className="w-full py-4 rounded-2xl font-black text-white text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
+        style={{ background: !canConfirm ? '#9ca3af' : 'linear-gradient(135deg, #0033A0, #ff4c41)' }}
+      >
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            Confirmando viaje…
+          </span>
+        ) : !hasRoute
+          ? 'Ingresa origen y destino'
+          : !hasValidRoute
+            ? 'Selecciona desde la lista'
+            : !localFare
+              ? 'Calculando tarifa…'
+              : isScheduled
+                ? `📅 Reservar · ${scheduledDate} ${scheduledTime}`
+                : `Confirmar viaje · $${localFare.toFixed(2)}`
+        }
+      </button>
 
     </form>
   );
@@ -430,52 +376,5 @@ export function RideRequestForm() {
     <Suspense fallback={<div className="animate-pulse bg-gray-100 rounded-3xl h-96" />}>
       <RideRequestFormInner />
     </Suspense>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// FareCard
-// ─────────────────────────────────────────────────────────────
-interface FareCardProps {
-  fare: number; pickup: { lat: number; lon: number }; dropoff: { lat: number; lon: number };
-  vehicleType: VehicleType; tier: ServiceTier; mode: TransportMode; passengers: number; scheduled?: string;
-}
-
-function FareCard({ fare, pickup, dropoff, vehicleType, tier, mode, passengers, scheduled }: FareCardProps) {
-  const distance    = Math.round(calculateDistance(pickup as any, dropoff as any) * 10) / 10;
-  const duration    = calculateEstimatedDuration(pickup as any, dropoff as any);
-  const vehicle     = VEHICLE_TYPES[vehicleType];
-  const isPremium   = tier === 'premium';
-  const accentColor = isPremium ? '#B45309' : '#0033A0';
-  const bg          = isPremium ? '#FFFBEB' : '#EFF6FF';
-  const borderColor = isPremium ? '#FDE68A' : '#BFDBFE';
-
-  return (
-    <div className="rounded-2xl p-4 border" style={{ background: bg, borderColor }}>
-      <div className="flex items-center justify-between mb-3 pb-3 border-b" style={{ borderColor }}>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-gray-900 text-sm">{vehicle.label}</span>
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: borderColor, color: accentColor }}>
-            {isPremium ? '⭐ Premium' : '✓ Confort'}
-          </span>
-          <span className="text-xs text-gray-400">
-            {mode === 'compartido' ? `👥 ${passengers}p compartido` : `🔒 privado`}
-          </span>
-        </div>
-        {scheduled && (
-          <span className="text-xs px-2.5 py-1 rounded-full font-bold text-white bg-[#0033A0]">📅 Programado</span>
-        )}
-      </div>
-      <div className="flex justify-between items-end">
-        <div className="space-y-1 text-xs text-gray-500">
-          <p>📍 {distance} km</p>
-          <p>⏱️ ~{duration} min estimados</p>
-        </div>
-        <div className="text-right">
-          <p className="text-3xl font-black" style={{ color: accentColor }}>${fare.toFixed(2)}</p>
-          <p className="text-xs text-gray-400">tarifa estimada</p>
-        </div>
-      </div>
-    </div>
   );
 }

@@ -189,7 +189,10 @@ function LoginForm() {
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <p className="text-gray-500 text-sm">
               ¿No tienes cuenta?{' '}
-              <Link href="/auth/register" className="text-[#ff4c41] font-semibold hover:underline">Regístrate gratis</Link>
+              <Link
+                href={`/auth/register${searchParams.get('from') ? `?from=${encodeURIComponent(searchParams.get('from')!)}` : ''}`}
+                className="text-[#ff4c41] font-semibold hover:underline"
+              >Regístrate gratis</Link>
             </p>
           </div>
 
