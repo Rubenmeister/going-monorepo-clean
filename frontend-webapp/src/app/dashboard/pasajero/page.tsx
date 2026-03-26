@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -56,7 +57,7 @@ const NAV_SERVICES = [
 ];
 
 const SIDEBAR_NAV = [
-  { icon: '🏠', label: 'Inicio',     href: '/dashboard/pasajero', active: true },
+  { icon: '🏠', label: 'Inicio',     href: '/dashboard/pasajero' },
   { icon: '🚗', label: 'Pedir viaje',href: '/ride' },
   { icon: '🕐', label: 'Historial',  href: '/ride/historial' },
   { icon: '💳', label: 'Wallet',     href: '/payment/wallet' },
@@ -66,6 +67,7 @@ const SIDEBAR_NAV = [
 ];
 
 export default function PassengerDashboard() {
+  const pathname                  = usePathname();
   const [user, setUser]           = useState<UserInfo | null>(null);
   const [rides, setRides]         = useState<Ride[]>([]);
   const [loadingRides, setLoadingRides] = useState(true);
@@ -227,7 +229,7 @@ export default function PassengerDashboard() {
               <Link key={item.href} href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-colors ${
-                  item.active
+                  pathname === item.href
                     ? 'bg-blue-50 text-[#0033A0] font-bold'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}>
