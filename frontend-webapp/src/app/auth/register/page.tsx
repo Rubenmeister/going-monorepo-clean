@@ -43,16 +43,26 @@ function RegisterForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Leer del DOM para capturar autofill del browser
+    const fd = new FormData(e.currentTarget);
+    const merged = {
+      firstName: (fd.get('firstName') as string) || form.firstName,
+      lastName:  (fd.get('lastName')  as string) || form.lastName,
+      email:     (fd.get('email')     as string) || form.email,
+      phone:     (fd.get('phone')     as string) || form.phone,
+      password:  (fd.get('password')  as string) || form.password,
+    };
 
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, roles: [selectedRole] }),
+        body: JSON.stringify({ ...merged, roles: [selectedRole] }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -199,28 +209,28 @@ function RegisterForm() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Nombre</label>
-                <input name="firstName" type="text" value={form.firstName} onChange={handleChange} placeholder="Juan" required
+                <input name="firstName" type="text" value={form.firstName} onChange={handleChange} placeholder="Juan" autoComplete="given-name" required
                   className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">Apellido</label>
-                <input name="lastName" type="text" value={form.lastName} onChange={handleChange} placeholder="Pérez" required
+                <input name="lastName" type="text" value={form.lastName} onChange={handleChange} placeholder="Pérez" autoComplete="family-name" required
                   className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">Correo electrónico</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="tu@email.com" required
+              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="tu@email.com" autoComplete="email" required
                 className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">Teléfono</label>
-              <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="+593 99 000 0000" required
+              <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="+593 99 000 0000" autoComplete="tel" required
                 className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">Contraseña</label>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Mínimo 8 caracteres" required minLength={8}
+              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Mínimo 8 caracteres" autoComplete="new-password" required minLength={8}
                 className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
             </div>
 

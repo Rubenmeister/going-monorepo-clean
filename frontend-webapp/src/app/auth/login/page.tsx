@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -15,16 +15,36 @@ function LoginForm() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Si el usuario ya está autenticado, redirigir directamente
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const from  = searchParams.get('from');
+    if (token) {
+      window.location.replace(from || '/dashboard/pasajero');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Lee del DOM directamente para capturar autofill del browser
+    const formData = new FormData(e.currentTarget);
+    const emailVal    = (formData.get('email')    as string) || email;
+    const passwordVal = (formData.get('password') as string) || password;
+
+    if (!emailVal || !passwordVal) {
+      setError('Ingresa tu correo y contraseña.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: emailVal, password: passwordVal }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -156,8 +176,8 @@ function LoginForm() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Correo electrónico</label>
               <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="tu@email.com" required
+                name="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="tu@email.com" autoComplete="email" required
                 className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
               />
             </div>
@@ -167,8 +187,8 @@ function LoginForm() {
                 <Link href="/auth/forgot-password" className="text-xs text-[#ff4c41] hover:underline font-medium">¿Olvidaste tu contraseña?</Link>
               </div>
               <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" required
+                name="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" autoComplete="current-password" required
                 className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
               />
             </div>
