@@ -44,7 +44,7 @@ function RidePageInner() {
   /* Auth guard */
   useEffect(() => {
     if (auth !== undefined && !auth.user) {
-      router.replace(`/auth/login?returnUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      router.replace(`/auth/login?from=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     }
   }, [auth, router]);
 
