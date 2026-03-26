@@ -3,11 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar package.json y eliminar la dependencia local no usada
+# Copiar package.json, eliminar dependencia local no usada y el lock file conflictivo
 COPY package.json ./
 RUN node -e "const p=require('./package.json'); delete p.dependencies['@dataconnect/generated']; require('fs').writeFileSync('./package.json', JSON.stringify(p, null, 2));"
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copiar fuentes y tsconfig
 COPY tsconfig.json ./
@@ -23,7 +23,7 @@ WORKDIR /app
 
 COPY package.json ./
 RUN node -e "const p=require('./package.json'); delete p.dependencies['@dataconnect/generated']; require('fs').writeFileSync('./package.json', JSON.stringify(p, null, 2));"
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 
