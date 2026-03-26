@@ -43,10 +43,10 @@ function RidePageInner() {
 
   /* Auth guard */
   useEffect(() => {
-    if (auth !== undefined && !auth.user) {
+    if (!auth.isLoading && !auth.user) {
       router.replace(`/auth/login?from=${encodeURIComponent(window.location.pathname + window.location.search)}`);
     }
-  }, [auth, router]);
+  }, [auth.isLoading, auth.user, router]);
 
   const [step, setStep]               = useState<Step>('request');
   const [paymentAmount, setPaymentAmount] = useState(0);
@@ -71,6 +71,13 @@ function RidePageInner() {
   const handlePaymentComplete = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
   const handleAccountingDone  = () => setStep('rating');
   const handleRatingComplete  = () => { clearRide(); setStep('request'); };
+
+  /* Mientras verifica auth, no renderizar nada */
+  if (auth.isLoading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-pulse text-gray-400">Cargando...</div>
+    </div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
