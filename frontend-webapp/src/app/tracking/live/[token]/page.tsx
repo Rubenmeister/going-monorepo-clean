@@ -3,14 +3,14 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 
 const TRANSPORT_WS =
   process.env.NEXT_PUBLIC_TRANSPORT_WS_URL ||
   'https://transport-service-780842550857.us-central1.run.app';
 
 // Mapa cargado dinámicamente (no SSR)
-const LiveMap = dynamic(() => import('./LiveMap'), { ssr: false });
+const LiveMap = dynamicImport(() => import('./LiveMap'), { ssr: false });
 
 interface DriverPos {
   lat: number;

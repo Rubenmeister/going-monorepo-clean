@@ -223,7 +223,11 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
         </button>
       )}
       {showShare && activeRide && (
-        <ShareTracking rideId={rideId} />
+        <ShareTracking
+          rideId={rideId}
+          origin={activeRide?.pickup?.address ?? ''}
+          destination={activeRide?.dropoff?.address ?? ''}
+        />
       )}
 
       {/* ══ BOTÓN CANCELAR (solo si pending) ══ */}
