@@ -52,7 +52,7 @@ export function useRatingService(): UseRatingServiceReturn {
     async (rideId: string, driverId: string) => {
       // Validate
       if (overallRating === 0) {
-        setError('Please select an overall rating');
+        setError('Selecciona una calificación antes de enviar');
         return;
       }
 
@@ -74,11 +74,11 @@ export function useRatingService(): UseRatingServiceReturn {
         if (response.success) {
           setSubmitted(true);
         } else {
-          setError(response.message || 'Failed to submit rating');
+          setError(response.message || 'No se pudo enviar la calificación');
         }
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : 'Failed to submit rating';
+          err instanceof Error ? err.message : 'No se pudo enviar la calificación';
         setError(message);
       } finally {
         setLoading(false);
