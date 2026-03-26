@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { VehicleType, ServiceTier } from '@/types';
 
 export interface Location {
   address: string;
@@ -29,8 +30,8 @@ export interface Ride {
     licensePlate: string;
   };
   passengers?: number;
-  vehicleType?: string;
-  serviceTier?: string;
+  vehicleType?: VehicleType;
+  serviceTier?: ServiceTier;
 }
 
 interface RideStore {
