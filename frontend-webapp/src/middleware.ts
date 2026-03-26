@@ -38,7 +38,12 @@ export function middleware(req: NextRequest) {
   if (!session || session !== '1') {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = '/auth/login';
-    loginUrl.searchParams.set('from', pathname);
+    // Preservar la URL completa incluyendo query params para redirigir después del login
+    const fullFrom = req.nextUrl.search
+      ? `${pathname}${req.nextUrl.search}`
+      : pathname;
+    loginUrl.search = '';
+    loginUrl.searchParams.set('from', fullFrom);
     return NextResponse.redirect(loginUrl);
   }
 
