@@ -17,7 +17,7 @@ const PRIVATE_VEHICLES = [
     luggage: '3 maletas',
     color: '#3B82F6',
     badge: null,
-    photo: '/images/SUV de lujo.png',
+    photo: '/images/SUV EN LA CIUDAD NOCHE.png',
   },
   {
     id: 'suvxl',
@@ -29,7 +29,7 @@ const PRIVATE_VEHICLES = [
     luggage: '5 maletas',
     color: '#8B5CF6',
     badge: null,
-    photo: '/images/SUV EN LA CIUDAD NOCHE.png',
+    photo: '/images/SUV de lujo.png',
   },
   {
     id: 'van',
