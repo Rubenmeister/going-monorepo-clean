@@ -30,6 +30,26 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
+
+        // ── Bypass de emergencia (sin backend) ───────────────────────────
+        const bypassEmail = process.env.EMPRESAS_BYPASS_EMAIL;
+        const bypassPass  = process.env.EMPRESAS_BYPASS_PASSWORD;
+        if (
+          bypassEmail && bypassPass &&
+          credentials.email === bypassEmail &&
+          credentials.password === bypassPass
+        ) {
+          return {
+            id: 'bypass-corp',
+            email: bypassEmail,
+            name: 'Administrador Empresas',
+            role: 'corporate_admin',
+            companyId: 'going-corp',
+            accessToken: 'bypass-token',
+          };
+        }
+        // ── Fin bypass ───────────────────────────────────────────────────
+
         try {
           const response = await axios.post(
             `${API_BASE_URL}/auth/corporate/login`,
