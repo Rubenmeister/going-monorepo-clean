@@ -441,6 +441,61 @@ export default function ToursPage() {
           </div>
         </div>
       </section>
+
+      {/* ── SECCIÓN OPERADORES ── */}
+      <section className="py-0 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row-reverse" style={{ background: '#0f172a' }}>
+            <div className="md:w-2/5 flex-shrink-0">
+              <img
+                src="/images/ANDES COTOPAXI QUILOTOA TURISTAS232.JPG"
+                alt="Operador turístico Going Ecuador"
+                className="w-full h-full object-cover"
+                style={{ minHeight: '360px', maxHeight: '500px' }}
+              />
+            </div>
+            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3 px-3 py-1.5 rounded-full w-fit"
+                style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>
+                🧗 ¿Eres operador turístico?
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                Lleva tus tours a<br />
+                <span style={{ color: '#f87171' }}>miles de viajeros</span>
+              </h2>
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                Publica tus tours en Going y accede a viajeros nacionales e internacionales buscando aventura en Ecuador.
+                Panel de gestión profesional, pagos automáticos y soporte dedicado.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { icon: '🌍', text: 'Visibilidad nacional e internacional' },
+                  { icon: '📊', text: 'Panel de gestión profesional' },
+                  { icon: '💳', text: 'Pagos automáticos y seguros' },
+                  { icon: '🤝', text: 'Soporte dedicado a operadores' },
+                ].map(r => (
+                  <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span>{r.icon}</span><span>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/auth/register?rol=operador"
+                  className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#dc2626' }}>
+                  Publicar mis tours →
+                </Link>
+                <Link href="/auth/login?from=/services/operadores"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
+                  Ya soy operador → Mi panel
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="py-10" />
     </main>
   );
 }

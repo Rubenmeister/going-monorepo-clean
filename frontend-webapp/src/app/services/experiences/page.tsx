@@ -396,6 +396,61 @@ export default function ExperiencesPage() {
           </div>
         </div>
       </section>
+
+      {/* ── SECCIÓN PROMOTORES LOCALES ── */}
+      <section className="py-0 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#1a1a2e' }}>
+            <div className="md:w-2/5 flex-shrink-0">
+              <img
+                src="/images/BALLET JACCHIGUA.jpg"
+                alt="Promotor local Going Ecuador"
+                className="w-full h-full object-cover"
+                style={{ minHeight: '360px', maxHeight: '500px' }}
+              />
+            </div>
+            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3 px-3 py-1.5 rounded-full w-fit"
+                style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }}>
+                🏺 ¿Ofreces experiencias locales?
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                Comparte tu cultura.<br />
+                <span style={{ color: '#fbbf24' }}>Genera ingresos.</span>
+              </h2>
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                ¿Eres guía, artesano, chef o tienes algo único que mostrar de tu comunidad?
+                Únete como Promotor Local Going y lleva tu oferta a viajeros de todo el mundo.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { icon: '🌎', text: 'Viajeros nacionales e internacionales' },
+                  { icon: '💰', text: 'Tú fijas el precio de tu experiencia' },
+                  { icon: '📱', text: 'Gestión simple desde la app' },
+                  { icon: '🛡️', text: 'Pagos seguros y a tiempo' },
+                ].map(r => (
+                  <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span>{r.icon}</span><span>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/auth/register?rol=promotor"
+                  className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#d97706' }}>
+                  Registrarme como promotor →
+                </Link>
+                <Link href="/auth/login?from=/services/promotores-locales"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
+                  Ya soy promotor → Mi panel
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="py-10" />
     </main>
   );
 }
