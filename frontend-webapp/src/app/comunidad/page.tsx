@@ -217,7 +217,6 @@ export default function ComunidadPage() {
                     <div>
                       <div className="text-4xl mb-2">{role.emoji}</div>
                       <h3 className="text-2xl font-black text-gray-900">{role.role}</h3>
-                      <div className="text-sm font-bold mt-1" style={{ color: role.color }}>{role.count} en la red</div>
                     </div>
                   </div>
 

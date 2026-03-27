@@ -37,7 +37,20 @@ const SLIDES = [
   { region: 'Galápagos', subtitle: 'Islas únicas en el mundo', img: '/images/galàpagos.png', color: '#f59e0b' },
 ];
 
-const EC_CITIES = ['Quito','Guayaquil','Cuenca','Ambato','Riobamba','Loja','Manta','Portoviejo','Ibarra','Esmeraldas','Machala','Santo Domingo','Latacunga','Tulcán','Babahoyo','Lago Agrio','Tena','Puyo','Macas','Zamora','Guaranda'];
+const EC_CITIES = [
+  // Rutas Going (aeropuerto + principales)
+  'Aeropuerto Quito (Tababela)',
+  'Quito',
+  // Ruta Sierra Centro
+  'Ambato','Baños','Latacunga','Salcedo','Píllaro','Cevallos','Tisaleo','Mocha',
+  // Ruta Norte
+  'Ibarra','Otavalo','Atuntaqui','Peguche',
+  // Ruta Costa (SD)
+  'El Carmen','La Concordia','Santo Domingo',
+  // Otras ciudades Ecuador
+  'Guayaquil','Cuenca','Riobamba','Loja','Manta','Portoviejo','Esmeraldas',
+  'Machala','Tulcán','Babahoyo','Lago Agrio','Tena','Puyo','Macas','Zamora','Guaranda',
+];
 
 const REGIONS = {
   Sierra: {
@@ -307,13 +320,13 @@ export default function HomePage() {
                 color: '#60a5fa',
                 route: 'Ambato — Latacunga — Quito — Aeropuerto',
                 detail: 'Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.',
-                time: '~2 h 30 min', price: 'Desde $12',
+                time: '~2 h 30 min', price: 'Desde $9',
               },
               {
                 color: '#4ade80',
                 route: 'Ibarra — Quito — Aeropuerto',
                 detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
-                time: '~2 h 15 min', price: 'Desde $13',
+                time: '~2 h 15 min', price: 'Desde $11',
               },
             ].map((r) => (
               <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>

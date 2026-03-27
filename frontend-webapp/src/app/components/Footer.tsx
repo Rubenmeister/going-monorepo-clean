@@ -14,7 +14,7 @@ export function Footer() {
 
   const services = [
     { name: 'Going',              href: '/' },
-    { name: 'Transporte',         href: '/services/transport' },
+    { name: 'Servicios',           href: '/services' },
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Alojamiento',        href: '/services/accommodation' },
     { name: 'Experiencias',       href: '/services/experiences' },
