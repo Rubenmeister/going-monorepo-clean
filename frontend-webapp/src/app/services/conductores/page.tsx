@@ -48,10 +48,11 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 
 const SIDEBAR_NAV = [
   { icon: '🏠', label: 'Inicio',         href: '/services/conductores', active: true },
-  { icon: '🗺️', label: 'Viajes activos', href: '/conductores/viajes' },
-  { icon: '🕐', label: 'Historial',      href: '/conductores/historial' },
-  { icon: '💰', label: 'Mis ganancias',  href: '/conductores/ganancias' },
-  { icon: '⭐', label: 'Calificaciones', href: '/conductores/calificaciones' },
+  { icon: '🗺️', label: 'Viajes activos', href: '/services/conductores/viajes' },
+  { icon: '🕐', label: 'Historial',      href: '/services/conductores/historial' },
+  { icon: '💰', label: 'Mis ganancias',  href: '/services/conductores/ganancias' },
+  { icon: '⭐', label: 'Calificaciones', href: '/services/conductores/calificaciones' },
+  { icon: '📋', label: 'Mis documentos', href: '/services/conductores/documentos' },
   { icon: '📚', label: 'Academia',       href: '/academy' },
   { icon: '⚙️', label: 'Mi cuenta',      href: '/account' },
 ];
@@ -188,32 +189,32 @@ export default function DriverDashboard() {
             </div>
           )}
 
-          {/* KPIs */}
+          {/* KPIs enlazados */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {[
-              { label: 'Ganancias hoy',   value: `$${earnings.today.toFixed(2)}`,  color: '#16a34a', icon: '💰' },
-              { label: 'Esta semana',     value: `$${earnings.week.toFixed(2)}`,   color: '#0033A0', icon: '📅' },
-              { label: 'Este mes',        value: `$${earnings.month.toFixed(2)}`,  color: '#7c3aed', icon: '📊' },
-              { label: 'Calificación',    value: `⭐ ${rating}`,                   color: '#f59e0b', icon: '⭐' },
+              { label: 'Ganancias hoy',   value: `$${earnings.today.toFixed(2)}`,  color: '#16a34a', href: '/services/conductores/ganancias' },
+              { label: 'Esta semana',     value: `$${earnings.week.toFixed(2)}`,   color: '#0033A0', href: '/services/conductores/ganancias' },
+              { label: 'Este mes',        value: `$${earnings.month.toFixed(2)}`,  color: '#7c3aed', href: '/services/conductores/ganancias' },
+              { label: 'Calificación',    value: `⭐ ${rating}`,                   color: '#f59e0b', href: '/services/conductores/calificaciones' },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+              <Link key={k.label} href={k.href} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
                 <p className="text-xs text-gray-500">{k.label}</p>
                 <p className="text-xl font-black mt-1" style={{ color: k.color }}>{k.value}</p>
-              </div>
+              </Link>
             ))}
           </div>
 
-          {/* Stats row */}
+          {/* Stats row enlazados */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             {[
-              { label: 'Viajes hoy',   value: tripsCount.today },
-              { label: 'Esta semana',  value: tripsCount.week },
-              { label: 'Total viajes', value: tripsCount.total },
+              { label: 'Viajes hoy',   value: tripsCount.today,  href: '/services/conductores/historial' },
+              { label: 'Esta semana',  value: tripsCount.week,   href: '/services/conductores/historial' },
+              { label: 'Total viajes', value: tripsCount.total,  href: '/services/conductores/historial' },
             ].map(s => (
-              <div key={s.label} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+              <Link key={s.label} href={s.href} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center hover:shadow-md transition-shadow cursor-pointer">
                 <p className="text-2xl font-black text-gray-900">{s.value}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-              </div>
+              </Link>
             ))}
           </div>
 
@@ -266,13 +267,39 @@ export default function DriverDashboard() {
             )}
           </div>
 
+          {/* Documentos y requisitos */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <h2 className="font-bold text-gray-900 text-sm">📋 Mis documentos</h2>
+              <Link href="/services/conductores/documentos" className="text-xs font-semibold" style={{ color: '#ff4c41' }}>Gestionar →</Link>
+            </div>
+            <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { icon: '📄', label: 'Cédula de Identidad',                    note: 'Requerido' },
+                { icon: '🚗', label: 'Licencia tipo B o profesional',           note: 'Requerido' },
+                { icon: '📋', label: 'Matrícula (vehículo 2015+)',              note: 'Requerido' },
+                { icon: '🛡️', label: 'Seguro de vehículo vigente',              note: 'Requerido' },
+                { icon: '🏛️', label: 'Permiso ANT transporte turístico',        note: 'VAN · Minibús · Bus' },
+              ].map(d => (
+                <div key={d.label} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <span className="text-xl">{d.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{d.label}</p>
+                    <p className="text-xs text-gray-400">{d.note}</p>
+                  </div>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100 flex-shrink-0">Pendiente</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Quick actions */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: '🗺️', label: 'Viajes activos',  href: '/conductores/viajes',        bg: '#0033A0' },
-              { icon: '💰', label: 'Mis ganancias',   href: '/conductores/ganancias',     bg: '#16a34a' },
-              { icon: '⭐', label: 'Calificaciones',  href: '/conductores/calificaciones',bg: '#f59e0b' },
-              { icon: '📚', label: 'Academia Going',  href: '/academy',                   bg: '#7c3aed' },
+              { icon: '🗺️', label: 'Viajes activos',  href: '/services/conductores/viajes',        bg: '#0033A0' },
+              { icon: '💰', label: 'Mis ganancias',   href: '/services/conductores/ganancias',     bg: '#16a34a' },
+              { icon: '⭐', label: 'Calificaciones',  href: '/services/conductores/calificaciones',bg: '#f59e0b' },
+              { icon: '📚', label: 'Academia Going',  href: '/academy',                             bg: '#7c3aed' },
             ].map(a => (
               <Link key={a.href} href={a.href}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition-shadow">
