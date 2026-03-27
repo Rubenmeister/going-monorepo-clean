@@ -170,12 +170,7 @@ const EXPERIENCES_FALLBACK = [
 
 const TAGS = ['TODOS', 'AVENTURA', 'CULTURAL', 'NATURALEZA', 'GASTRONOMÍA'];
 
-const STATS = [
-  { number: '95+', label: 'Experiencias únicas' },
-  { number: '4.9 ★', label: 'Calificación promedio' },
-  { number: '8K+', label: 'Participantes este año' },
-  { number: '100%', label: 'Anfitriones verificados' },
-];
+const STATS: { number: string; label: string }[] = [];
 // ── END CONTENT ───────────────────────────────────────────────────────
 
 export default function ExperiencesPage() {
@@ -245,7 +240,7 @@ export default function ExperiencesPage() {
           ¿Qué quieres vivir hoy?
         </h2>
         <p className="text-gray-500 text-center mb-10">
-          Más de 95 experiencias únicas para todos los gustos y presupuestos
+          Experiencias únicas para todos los gustos
         </p>
 
         {/* Tag filter */}
@@ -298,12 +293,6 @@ export default function ExperiencesPage() {
                   style={{ backgroundColor: exp.color }}
                 >
                   {exp.tag}
-                </div>
-                <div
-                  className="absolute top-2 right-2 bg-white/90 text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ color: exp.color }}
-                >
-                  {exp.price}
                 </div>
               </div>
 

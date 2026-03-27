@@ -41,7 +41,7 @@ const PRIVATE_VEHICLES = [
     luggage: '6 maletas',
     color: '#F59E0B',
     badge: null,
-    photo: '/images/Puerta a puerta entre ciudades.png',
+    photo: '/images/MUJERES LLEGANDO AL AERO DE QUITO.jpg',
   },
   {
     id: 'vanxl',
@@ -53,7 +53,7 @@ const PRIVATE_VEHICLES = [
     luggage: '8 maletas',
     color: '#EF4444',
     badge: null,
-    photo: '/images/viaje compartido .png',
+    photo: '/images/VAN XL.png',
   },
   {
     id: 'minibus',
@@ -65,7 +65,7 @@ const PRIVATE_VEHICLES = [
     luggage: 'Bodega incluida',
     color: '#0891B2',
     badge: null,
-    photo: '/images/43.png',
+    photo: '/images/viaje compartido .png',
   },
   {
     id: 'bus',
@@ -77,7 +77,7 @@ const PRIVATE_VEHICLES = [
     luggage: 'Bodega incluida',
     color: '#DC2626',
     badge: 'Corporativo',
-    photo: '/images/42.png',
+    photo: '/images/Puerta a puerta entre ciudades.png',
   },
 ];
 
@@ -425,23 +425,21 @@ export default function TransportPage() {
                 <span style={{ color: '#ff4c41' }}>multiplica tus ingresos</span>
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Únete a la flota Going. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
-                Ganas el <strong className="text-white">80% de cada viaje</strong>, con pagos garantizados en 24 horas.
+                Únete a la flota Going. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar, con pagos garantizados y directos a tu cuenta.
               </p>
 
-              {/* Ganancias estimadas */}
+              {/* Modalidades */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
-                  { plan: 'Part-time', hours: '20 h/sem', range: '$480–$650' },
-                  { plan: 'Full-time', hours: '40 h/sem', range: '$900–$1,200', highlight: true },
-                  { plan: 'Full-time+', hours: '40 h/sem', range: '$1,400–$1,800' },
+                  { plan: 'Part-time', hours: '20 h/sem', icon: '🕐' },
+                  { plan: 'Full-time', hours: '40 h/sem', icon: '🚀', highlight: true },
+                  { plan: 'Full-time+', hours: '40 h/sem', icon: '💼' },
                 ].map(e => (
                   <div key={e.plan} className="rounded-2xl p-4 text-center"
-                    style={{ background: e.highlight ? '#ff4c41' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div className="text-xs font-bold text-white/70 uppercase mb-1">{e.plan}</div>
-                    <div className="text-xs text-white/50 mb-2">{e.hours}</div>
-                    <div className="text-lg font-extrabold text-white">{e.range}</div>
-                    <div className="text-xs text-white/60 mt-0.5">por mes est.</div>
+                    style={{ background: (e as any).highlight ? '#ff4c41' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="text-2xl mb-1">{e.icon}</div>
+                    <div className="text-xs font-bold text-white uppercase mb-1">{e.plan}</div>
+                    <div className="text-xs text-white/60">{e.hours}</div>
                   </div>
                 ))}
               </div>

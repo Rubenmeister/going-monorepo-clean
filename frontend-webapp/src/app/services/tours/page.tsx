@@ -155,12 +155,7 @@ const TOURS_FALLBACK = [
   },
 ];
 
-const STATS = [
-  { number: '180+', label: 'Tours disponibles' },
-  { number: '320+', label: 'Guías certificados' },
-  { number: '4.9 ★', label: 'Calificación promedio' },
-  { number: '15K+', label: 'Viajeros este año' },
-];
+const STATS: { number: string; label: string }[] = [];
 
 const WHY_GOING = [
   {
@@ -275,12 +270,6 @@ export default function ToursPage() {
                   </div>
                   <div className="text-white/80 text-sm">{tour.tagline}</div>
                 </div>
-                <div
-                  className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full"
-                  style={{ color: tour.color }}
-                >
-                  {tour.from}
-                </div>
               </div>
               <div className="p-6">
                 <p className="text-gray-500 text-sm mb-4 leading-relaxed">
@@ -350,12 +339,6 @@ export default function ToursPage() {
                   <div className="absolute bottom-3 left-3 text-2xl">
                     {tour.icon}
                   </div>
-                  <div
-                    className="absolute top-2 right-2 bg-white/90 text-xs font-bold px-2 py-0.5 rounded-full"
-                    style={{ color: tour.color }}
-                  >
-                    {tour.from}
-                  </div>
                 </div>
                 <div className="p-5">
                   <h3 className="font-bold text-gray-900 mb-0.5">
@@ -421,8 +404,7 @@ export default function ToursPage() {
             ¿Cuál será tu próxima aventura?
           </h2>
           <p className="text-white/70 mb-8 text-lg">
-            Más de 180 tours en los cuatro mundos de Ecuador. Reserva hoy y vive
-            mañana.
+            Tours en los cuatro mundos de Ecuador. Reserva hoy y vive mañana.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
