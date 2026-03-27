@@ -170,7 +170,7 @@ export default function ComunidadPage() {
             className="w-full rounded-3xl shadow-2xl object-cover"
             style={{ maxHeight: '460px' }}
           />
-          <div className="mt-4 text-center text-sm text-gray-400 italic">Going – Grupo de Senderismo · Alpes Suizos 2024</div>
+          <div className="mt-4 text-center text-sm text-gray-400 italic">Going – Comunidad Ecuador</div>
         </div>
       </section>
 
