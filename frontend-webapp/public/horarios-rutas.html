@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Going — Horarios de Salida</title>
+  <title>Going — Horarios y Tarifas</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -97,12 +97,66 @@
     .note-box ul { padding-left: 1.2rem; margin-top: 0.4rem; }
 
     footer { text-align: center; margin-top: 2.5rem; font-size: 0.78rem; color: #94a3b8; }
+
+    /* ── Pricing tables ── */
+    .pricing-section {
+      max-width: 1100px;
+      margin: 2.5rem auto 0;
+    }
+    .pricing-section h2 {
+      font-size: 1.2rem; font-weight: 700; color: #0f172a;
+      margin-bottom: 1rem; padding-left: 4px;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .price-card {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
+      overflow: hidden;
+    }
+    .price-card-header {
+      padding: 0.9rem 1.2rem; font-size: 0.85rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .r1-bg { background: #eff6ff; color: #1d4ed8; border-bottom: 2px solid #bfdbfe; }
+    .r2-bg { background: #f0fdf4; color: #15803d; border-bottom: 2px solid #bbf7d0; }
+    .r3-bg { background: #fdf4ff; color: #7e22ce; border-bottom: 2px solid #e9d5ff; }
+    .price-table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    .price-table th {
+      padding: 0.45rem 0.9rem; text-align: right;
+      font-size: 0.7rem; font-weight: 600; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 1px solid #f1f5f9; background: #fafafa;
+    }
+    .price-table th:first-child { text-align: left; }
+    .price-table td {
+      padding: 0.5rem 0.9rem; border-bottom: 1px solid #f8fafc;
+      vertical-align: middle;
+    }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table tr:hover td { background: #f8fafc; }
+    .price-table td:not(:first-child) { text-align: right; font-weight: 600; }
+    .tramo { color: #475569; font-size: 0.8rem; }
+    .arrow { color: #94a3b8; margin: 0 3px; font-size: 0.75rem; }
+    .c-price { color: #0891b2; }
+    .p-price { color: #1d4ed8; }
+    .pp-price { color: #7e22ce; }
+    .surcharge-row td { background: #fff7ed !important; font-size: 0.75rem; color: #9a3412; }
+    .same-tag {
+      display: inline-block; background: #f0fdf4; color: #15803d;
+      border: 1px solid #bbf7d0; border-radius: 4px;
+      padding: 0 5px; font-size: 0.7rem; font-weight: 600;
+      margin-left: 4px; vertical-align: middle;
+    }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🚐 Going — Horarios de Salida</h1>
+  <h1>🚐 Going — Horarios y Tarifas</h1>
   <p>Servicio compartido puerta a puerta · Ecuador</p>
   <div class="badge">✓ 10 vehículos por ruta · Lunes a Domingo</div>
 </div>
@@ -317,6 +371,111 @@
   </div>
 
 </div><!-- /routes-grid -->
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- TABLA DE PRECIOS POR RUTA                                      -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<div class="pricing-section">
+  <h2>💰 Tarifas por tramo</h2>
+  <div class="pricing-grid">
+
+    <!-- ── Ruta 1 ── -->
+    <div class="price-card">
+      <div class="price-card-header r1-bg">① Baños — Ambato — Latacunga — Quito — Aeropuerto</div>
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>Tramo</th>
+            <th class="c-price">Compartido</th>
+            <th class="p-price">Confort</th>
+            <th class="pp-price">Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="tramo">Baños <span class="arrow">→</span> Ambato</td>             <td class="c-price">$5</td>  <td class="p-price">$20</td> <td class="pp-price">$30</td></tr>
+          <tr><td class="tramo">Baños <span class="arrow">→</span> Quito CN</td>            <td class="c-price">$17</td> <td class="p-price">$70</td> <td class="pp-price">$80</td></tr>
+          <tr><td class="tramo">Baños <span class="arrow">→</span> Aeropuerto</td>          <td class="c-price">$18</td> <td class="p-price">$70</td> <td class="pp-price">$80</td></tr>
+          <tr><td class="tramo">Ambato <span class="arrow">→</span> Latacunga</td>          <td class="c-price">$5</td>  <td class="p-price">$20</td> <td class="pp-price">$30</td></tr>
+          <tr><td class="tramo">Ambato <span class="arrow">→</span> Quito CN</td>           <td class="c-price">$15</td> <td class="p-price">$60</td> <td class="pp-price">$70</td></tr>
+          <tr><td class="tramo">Ambato <span class="arrow">→</span> Aeropuerto</td>         <td class="c-price">$18</td> <td class="p-price">$70</td> <td class="pp-price">$80</td></tr>
+          <tr><td class="tramo">Latacunga <span class="arrow">→</span> Quito CN</td>        <td class="c-price">$13</td> <td class="p-price">$50</td> <td class="pp-price">$60</td></tr>
+          <tr><td class="tramo">Latacunga <span class="arrow">→</span> Aeropuerto</td>      <td class="c-price">$15</td> <td class="p-price">$60</td> <td class="pp-price">$70</td></tr>
+          <tr><td class="tramo">Quito CN <span class="arrow">→</span> Aeropuerto</td>       <td class="c-price">$10</td> <td class="p-price">$25</td> <td class="pp-price">$30</td></tr>
+          <tr class="surcharge-row">
+            <td colspan="4">⚠ Salidas desde Aeropuerto: +$5 en todas las tarifas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Ruta 2 ── -->
+    <div class="price-card">
+      <div class="price-card-header r2-bg">② El Carmen — La Concordia — Sto. Domingo — Quito — Aeropuerto</div>
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>Tramo</th>
+            <th class="c-price">Compartido</th>
+            <th class="p-price">Confort</th>
+            <th class="pp-price">Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="tramo">El Carmen <span class="arrow">→</span> La Concordia</td>      <td class="c-price">$7</td>  <td class="p-price">$30</td> <td class="pp-price">$40</td></tr>
+          <tr><td class="tramo">El Carmen <span class="arrow">→</span> Sto. Domingo</td>       <td class="c-price">$8</td>  <td class="p-price">$30</td> <td class="pp-price">$40</td></tr>
+          <tr><td class="tramo">El Carmen <span class="arrow">→</span> Quito CN</td>           <td class="c-price">$20</td> <td class="p-price">$80</td> <td class="pp-price">$90</td></tr>
+          <tr><td class="tramo">El Carmen <span class="arrow">→</span> Aeropuerto</td>         <td class="c-price">$22</td> <td class="p-price">$90</td> <td class="pp-price">$100</td></tr>
+          <tr><td class="tramo">La Concordia <span class="arrow">→</span> Sto. Domingo</td>   <td class="c-price">$8</td>  <td class="p-price">$30</td> <td class="pp-price">$40</td></tr>
+          <tr><td class="tramo">La Concordia <span class="arrow">→</span> Quito CN</td>       <td class="c-price">$17</td> <td class="p-price">$70</td> <td class="pp-price">$80</td></tr>
+          <tr><td class="tramo">La Concordia <span class="arrow">→</span> Aeropuerto</td>     <td class="c-price">$20</td> <td class="p-price">$80</td> <td class="pp-price">$90</td></tr>
+          <tr><td class="tramo">Sto. Domingo <span class="arrow">→</span> Quito CN</td>       <td class="c-price">$14</td> <td class="p-price">$60</td> <td class="pp-price">$70</td></tr>
+          <tr><td class="tramo">Sto. Domingo <span class="arrow">→</span> Aeropuerto</td>     <td class="c-price">$17</td> <td class="p-price">$70</td> <td class="pp-price">$80</td></tr>
+          <tr><td class="tramo">Quito CN <span class="arrow">→</span> Aeropuerto</td>         <td class="c-price">$10</td> <td class="p-price">$25</td> <td class="pp-price">$30</td></tr>
+          <tr class="surcharge-row">
+            <td colspan="4">⚠ Salidas desde Aeropuerto: +$5 en todas las tarifas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Ruta 3 ── -->
+    <div class="price-card">
+      <div class="price-card-header r3-bg">③ Ibarra — Atuntaqui — Otavalo / Peguche — Quito — Aeropuerto</div>
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>Tramo</th>
+            <th class="c-price">Compartido</th>
+            <th class="p-price">Confort</th>
+            <th class="pp-price">Premium</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tramo">
+              Ibarra / Atuntaqui / Otavalo / Peguche <span class="arrow">→</span> Quito CN
+              <span class="same-tag">= precio</span>
+            </td>
+            <td class="c-price">$11</td> <td class="p-price">$40</td> <td class="pp-price">$50</td>
+          </tr>
+          <tr>
+            <td class="tramo">
+              Ibarra / Atuntaqui / Otavalo / Peguche <span class="arrow">→</span> Aeropuerto
+              <span class="same-tag">= precio</span>
+            </td>
+            <td class="c-price">$14</td> <td class="p-price">$60</td> <td class="pp-price">$70</td>
+          </tr>
+          <tr><td class="tramo">Ibarra <span class="arrow">→</span> Atuntaqui / Otavalo / Peguche</td> <td class="c-price">$5</td>  <td class="p-price">$20</td> <td class="pp-price">$30</td></tr>
+          <tr><td class="tramo">Quito CN <span class="arrow">→</span> Aeropuerto</td>                  <td class="c-price">$10</td> <td class="p-price">$25</td> <td class="pp-price">$30</td></tr>
+          <tr class="surcharge-row">
+            <td colspan="4">⚠ Salidas desde Aeropuerto: +$5 en todas las tarifas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div><!-- /pricing-section -->
 
 <div class="note-box">
   <strong>💡 Tarifas y recargos</strong>
