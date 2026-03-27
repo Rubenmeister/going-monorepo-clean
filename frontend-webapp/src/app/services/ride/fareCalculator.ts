@@ -159,12 +159,6 @@ const CITY_PAIR_PRICES: Record<string, number> = {
 
   // ── Ruta Santo Domingo: ciudades intermedias ──────────────────
   'el carmen|la concordia':                  7,
-  'chone|el carmen':                         9,
-  'chone|santo domingo':                     14,
-  'chone|quito centro norte':                24,
-  'flavio alfaro|el carmen':                 5,
-  'flavio alfaro|santo domingo':             18,
-  'flavio alfaro|quito centro norte':        27,
   'la concordia|santo domingo':              8,
   'la concordia|quito centro norte':         17,
   'aeropuerto quito tababela|la concordia':  20,
