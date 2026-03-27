@@ -166,11 +166,7 @@ function RightActions({
   onLoginClick: () => void;
 }) {
   const handleBuscarViaje = () => {
-    if (auth.user) {
-      window.location.href = '/ride';
-    } else {
-      window.location.href = '/auth/login?from=/ride';
-    }
+    window.location.href = '/ride';
   };
 
   return (
