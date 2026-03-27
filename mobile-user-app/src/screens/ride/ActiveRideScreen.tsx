@@ -268,7 +268,7 @@ export function ActiveRideScreen() {
   };
 
   const handleShareTracking = async () => {
-    const trackingUrl = `https://goingec.com/track/${rideId}`;
+    const trackingUrl = `https://app.goingec.com/track/${rideId}`;
     analyticsShareTracking(rideId);
     try {
       await Share.share({

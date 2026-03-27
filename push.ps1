@@ -20,6 +20,7 @@ git add frontend-webapp/src/ `
         admin-dashboard/src/ `
         mobile-user-app/src/ `
         mobile-driver-app/src/ `
+        apps/corporate-portal/ `
         push.ps1 `
         2>&1
 
