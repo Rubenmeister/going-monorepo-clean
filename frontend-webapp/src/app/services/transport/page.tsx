@@ -104,14 +104,6 @@ const SHARED_CATEGORIES = [
   },
 ];
 
-const COMPARISON = [
-  { feature: 'Vehículo exclusivo', private: '✓', shared: '✗', company: '✓' },
-  { feature: 'Conductores elite', private: '—', shared: '—', company: '✓' },
-  { feature: 'Capacidad', private: '1–40 pax', shared: '1–4 pax', company: '1–40 pax' },
-  { feature: 'Reserva anticipada', private: '✓', shared: '✗', company: '✓' },
-  { feature: 'Tiempo de espera', private: '2–8 min', shared: '5–15 min', company: 'Hasta 60 min' },
-  { feature: 'Ideal para', private: 'Uso personal', shared: 'Ahorro en rutas fijas', company: 'Negocios y eventos' },
-];
 
 type Tab = 'privado' | 'compartido' | 'empresa';
 
@@ -312,34 +304,100 @@ export default function TransportPage() {
         </section>
       )}
 
-      {/* ── Comparativa ── */}
-      <section className="max-w-4xl mx-auto px-4 pb-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Privado vs. Compartido vs. Empresa</h2>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="grid grid-cols-4 bg-gray-50 text-xs font-bold uppercase tracking-wide text-gray-500 p-4 border-b border-gray-100">
-            <div>Característica</div>
-            <div className="text-center">🚗 Privado</div>
-            <div className="text-center" style={{ color: '#ff4c41' }}>👥 Compartido</div>
-            <div className="text-center text-yellow-600">💼 Empresa</div>
-          </div>
-          {COMPARISON.map((row, i) => (
-            <div key={row.feature}
-              className={`grid grid-cols-4 p-4 text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-              <div className="font-medium text-gray-700">{row.feature}</div>
-              <div className="text-center text-gray-600">{row.private}</div>
-              <div className="text-center font-semibold" style={{ color: '#ff4c41' }}>{row.shared}</div>
-              <div className="text-center font-semibold text-yellow-700">{row.company}</div>
-            </div>
-          ))}
+      {/* ── Ventajas por modalidad ── */}
+      <section className="max-w-6xl mx-auto px-4 pb-16">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">¿Cuál es la mejor opción para ti?</h2>
+          <p className="text-gray-500">Tres modalidades de transporte para cada situación y cada viajero.</p>
         </div>
-        <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <Link href="/ride" className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:shadow-md transition-all"
-            style={{ backgroundColor: '#ff4c41' }}>Reservar viaje privado</Link>
-          <Link href="/ride?type=shared" className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border-2 hover:shadow-md transition-all"
-            style={{ borderColor: '#ff4c41', color: '#ff4c41' }}>Buscar viaje compartido</Link>
-          <a href="mailto:empresas@goingec.com" className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border-2 hover:shadow-md transition-all text-yellow-700 border-yellow-400">
-            Cuenta corporativa
-          </a>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Compartido */}
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-lg transition-all">
+            <div className="h-2 bg-[#ff4c41]" />
+            <div className="p-7 flex-1 flex flex-col">
+              <div className="text-4xl mb-4">👥</div>
+              <h3 className="text-xl font-black text-gray-900 mb-1">Viaje Compartido</h3>
+              <p className="text-sm text-[#ff4c41] font-semibold mb-4">La forma más inteligente de viajar</p>
+              <ul className="space-y-3 flex-1 mb-6">
+                {[
+                  'Comparte el vehículo y el costo del trayecto',
+                  'Ideal para rutas intercantonales frecuentes',
+                  'Siempre acompañado — nunca viajas solo',
+                  'Horarios flexibles con salidas frecuentes',
+                  'Conductor verificado y calificado',
+                  'Ideal para estudiantes, trabajadores y mochileros',
+                ].map(v => (
+                  <li key={v} className="flex items-start gap-2 text-sm text-gray-600">
+                    <span className="text-[#ff4c41] font-bold mt-0.5">✓</span>{v}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/ride?type=shared"
+                className="w-full py-3 rounded-xl text-white font-bold text-sm text-center hover:opacity-90 transition-all"
+                style={{ backgroundColor: '#ff4c41' }}>
+                Buscar viaje compartido →
+              </Link>
+            </div>
+          </div>
+
+          {/* Privado */}
+          <div className="bg-gray-900 rounded-3xl overflow-hidden flex flex-col hover:shadow-xl transition-all" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
+            <div className="h-2 bg-[#3B82F6]" />
+            <div className="p-7 flex-1 flex flex-col">
+              <div className="text-4xl mb-4">🚗</div>
+              <h3 className="text-xl font-black text-white mb-1">Transporte Privado</h3>
+              <p className="text-sm text-blue-400 font-semibold mb-4">El vehículo es solo para tu grupo</p>
+              <ul className="space-y-3 flex-1 mb-6">
+                {[
+                  'Vehículo exclusivo — sin otros pasajeros',
+                  'Elige el tamaño: SUV, VAN, Minibús o Bus',
+                  'Perfecto para familias, grupos y viajes de larga distancia',
+                  'Reserva anticipada con conductor asignado',
+                  'Puntualidad garantizada y puerta a puerta',
+                  'Amplia disponibilidad de equipaje',
+                ].map(v => (
+                  <li key={v} className="flex items-start gap-2 text-sm text-gray-300">
+                    <span className="text-blue-400 font-bold mt-0.5">✓</span>{v}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/ride"
+                className="w-full py-3 rounded-xl text-gray-900 font-bold text-sm text-center bg-white hover:opacity-90 transition-all">
+                Reservar transporte privado →
+              </Link>
+            </div>
+          </div>
+
+          {/* Empresas */}
+          <div className="bg-white rounded-3xl border border-yellow-200 shadow-sm overflow-hidden flex flex-col hover:shadow-lg transition-all">
+            <div className="h-2 bg-yellow-400" />
+            <div className="p-7 flex-1 flex flex-col">
+              <div className="text-4xl mb-4">💼</div>
+              <h3 className="text-xl font-black text-gray-900 mb-1">Transporte para Empresas</h3>
+              <p className="text-sm text-yellow-600 font-semibold mb-4">El estándar más alto de Going</p>
+              <ul className="space-y-3 flex-1 mb-6">
+                {[
+                  'Conductores elite — top 10% de la flota Going',
+                  'Protocolo empresarial, bilingüismo y discreción',
+                  'Hasta 60 min de espera sin cargo adicional',
+                  'Facturación centralizada con informe mensual',
+                  'Dashboard de control de gastos y aprobaciones',
+                  'Coordinador Going dedicado a tu cuenta',
+                ].map(v => (
+                  <li key={v} className="flex items-start gap-2 text-sm text-gray-600">
+                    <span className="text-yellow-500 font-bold mt-0.5">✓</span>{v}
+                  </li>
+                ))}
+              </ul>
+              <a href="mailto:empresas@goingec.com"
+                className="w-full py-3 rounded-xl font-bold text-sm text-center text-white hover:opacity-90 transition-all block"
+                style={{ backgroundColor: '#d97706' }}>
+                Contactar equipo corporativo →
+              </a>
+            </div>
+          </div>
+
         </div>
       </section>
 
