@@ -57,6 +57,7 @@ const DEFAULT_LOCATIONS: Location[] = [
   { address: 'Portoviejo',      lat: -1.0545, lon: -80.4544, city: 'Portoviejo' },
   { address: 'Esmeraldas',      lat:  0.9592, lon: -79.6533, city: 'Esmeraldas' },
   { address: 'Santo Domingo',   lat: -0.2528, lon: -79.1720, city: 'Santo Domingo' },
+  { address: 'El Carmen',       lat: -0.2621, lon: -79.4592, city: 'El Carmen' },
   { address: 'Salinas',         lat: -2.2167, lon: -80.9667, city: 'Salinas' },
   { address: 'Montañita',       lat: -1.8200, lon: -80.7500, city: 'Montañita' },
   { address: 'Tena',            lat: -0.9917, lon: -77.8150, city: 'Tena' },
