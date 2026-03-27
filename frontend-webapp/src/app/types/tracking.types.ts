@@ -38,9 +38,15 @@ export const STATUS_CONFIGS: Record<RideStatus, StatusConfig> = {
   },
   cancelled: {
     icon: '❌',
-    label: 'Cancelled',
+    label: 'Cancelado',
     color: 'bg-red-100',
     textColor: 'text-red-800',
+  },
+  no_driver: {
+    icon: '😔',
+    label: 'Sin conductor disponible',
+    color: 'bg-amber-100',
+    textColor: 'text-amber-800',
   },
 };
 

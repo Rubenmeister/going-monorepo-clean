@@ -18,7 +18,7 @@ export interface Ride {
   finalFare?: number;
   distance: number;
   duration: number;
-  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'no_driver';
   createdAt: Date;
   completedAt?: Date;
   driverLocation?: Location;
