@@ -108,7 +108,7 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
           await git.createAgentBranch();
         }
         const commit = await git.commitAndPush(input.message, input.files);
-        memory.recordFix(input.message, commit);
+        await memory.recordFix(input.message, commit);
         return `✅ Commit: ${commit}`;
       }
       default:
@@ -146,7 +146,8 @@ async function runAgentCycle(): Promise<void> {
   console.log(`\n🤖 Going Agent — ${new Date().toLocaleString()}`);
   console.log(`📊 ${memory.summary()}\n`);
 
-  memory.recordRun();
+  await memory.load();
+  await memory.recordRun();
 
   const systemPrompt = `Eres el agente autónomo de código de Going, una plataforma de transporte y turismo en Ecuador.
 

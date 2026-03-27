@@ -42,7 +42,7 @@ const PROMO_HASHTAGS = ['#Oferta', '#Descuento', '#ViajaMás'];
 
 // ─── Templates by topic ──────────────────────────────────────
 
-export const TEMPLATES: Record<ContentTopic, Record<Platform | 'default', Partial<PromptTemplate>>> = {
+export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default', Partial<PromptTemplate>>>> = {
 
   route_highlight: {
     default: {

@@ -4,30 +4,33 @@ import Link from 'next/link';
 const newsPosts = [
   {
     id: 1,
-    title: 'Going Expands Operations to South America',
-    date: '2026-02-18',
-    category: 'Expansion',
-    excerpt: 'Launching in 15 new cities across Brazil, Argentina, and Chile.',
+    title: 'Going se prepara para transformar la movilidad en Ecuador',
+    date: '2026-03-01',
+    category: 'Empresa',
+    excerpt:
+      'Estamos próximos a lanzar oficialmente nuestra plataforma en Ecuador, conectando pasajeros y conductores de manera segura y eficiente.',
   },
   {
     id: 2,
-    title: 'New AI Safety Features Launch',
+    title: 'Going: tecnología de seguridad en tiempo real para cada viaje',
     date: '2026-02-15',
-    category: 'Product',
-    excerpt: 'Introducing advanced safety detection and real-time monitoring.',
+    category: 'Producto',
+    excerpt:
+      'Nuestra plataforma incorpora monitoreo en tiempo real y verificación de conductores para garantizar la seguridad de todos los viajes.',
   },
   {
     id: 3,
-    title: 'Platform Reaches 1 Million Drivers',
-    date: '2026-02-10',
-    category: 'Milestone',
-    excerpt: 'A celebration of our fastest-growing milestone achievement.',
+    title: '¿Qué hace diferente a Going del resto?',
+    date: '2026-02-01',
+    category: 'Comunidad',
+    excerpt:
+      'Going nace con un enfoque local: entendemos las rutas, la cultura y las necesidades de movilidad del Ecuador.',
   },
 ];
 
 export const metadata = {
-  title: 'Going News & Updates',
-  description: 'Stay updated with the latest news from Going Platform.',
+  title: 'Noticias Going — Novedades y Anuncios',
+  description: 'Mantente al día con las últimas noticias y anuncios de Going Ecuador.',
 };
 
 export default function NewsPage() {
@@ -36,14 +39,14 @@ export default function NewsPage() {
       {/* Hero */}
       <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Latest News</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Noticias Going</h1>
           <p className="text-xl text-primary-100">
-            Stay updated with Company announcements and milestones
+            Novedades, anuncios y actualizaciones de nuestra plataforma
           </p>
         </div>
       </section>
 
-      {/* News Feed */}
+      {/* Feed de noticias */}
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto space-y-6">
           {newsPosts.map((post) => (
@@ -56,7 +59,11 @@ export default function NewsPage() {
                   {post.category}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(post.date).toLocaleDateString()}
+                  {new Date(post.date).toLocaleDateString('es-EC', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -65,12 +72,7 @@ export default function NewsPage() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 {post.excerpt}
               </p>
-              <Link
-                href="#"
-                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 font-semibold"
-              >
-                Read full story →
-              </Link>
+              <span className="text-primary-400 text-sm italic">Próximamente más detalles</span>
             </article>
           ))}
         </div>

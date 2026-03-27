@@ -30,9 +30,9 @@ function FadeIn({ children, delay = 0, direction = 'up' }: { children: React.Rea
 
 const upcomingEvents = [
   {
-    date: '25 Mar 2026',
-    day: '25',
-    month: 'MAR',
+    date: '10 Abr 2026',
+    day: '10',
+    month: 'ABR',
     title: 'Encuentro de Conductores Quito',
     location: 'Hotel Dann Carlton, Quito',
     type: 'Presencial',

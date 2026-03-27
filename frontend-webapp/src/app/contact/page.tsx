@@ -8,7 +8,7 @@ const CONTACT_INFO = [
     icon: '📍',
     title: 'Dirección',
     lines: [
-      'Av. República del El Salvador N35-88',
+      'Av. República de El Salvador N35-88',
       'Torre Atiria, Piso 10',
       'Quito, Ecuador',
     ],
@@ -48,13 +48,13 @@ const TOPICS = [
 const SOCIAL_LINKS = [
   {
     name: 'Facebook',
-    href: 'https://facebook.com/goingec',
+    href: 'https://facebook.com/goingappecuador',
     color: '#1877F2',
     icon: '📘',
   },
   {
     name: 'Instagram',
-    href: 'https://instagram.com/goingec',
+    href: 'https://www.instagram.com/goingappecuador/',
     color: '#E4405F',
     icon: '📸',
   },
@@ -66,7 +66,7 @@ const SOCIAL_LINKS = [
   },
   {
     name: 'TikTok',
-    href: 'https://tiktok.com/@goingec',
+    href: 'https://www.tiktok.com/@goingappecuador',
     color: '#010101',
     icon: '🎵',
   },

@@ -180,17 +180,18 @@ export async function compareWeeklyPerformance(): Promise<{
   const day     = now.getDay();
   const diff    = day === 0 ? 6 : day - 1;
 
-  // Esta semana
+  // Esta semana (lunes al día actual)
   const thisFrom = new Date(now.getTime() - diff * 86400000);
-  thisFrom.setHours(0,0,0,0);
+  thisFrom.setHours(0, 0, 0, 0);
+  const thisTo = new Date(now);
 
-  // Semana anterior
+  // Semana anterior (lunes anterior → domingo)
   const prevFrom = new Date(thisFrom.getTime() - 7 * 86400000);
-  const prevTo   = new Date(thisFrom.getTime() - 1);
+  const prevTo   = new Date(thisFrom.getTime() - 1); // domingo justo antes del lunes actual
 
   const [currentWeek, previousWeek] = await Promise.all([
-    generateWeeklyReport(),
-    generateWeeklyReport(), // En producción: pasar prevFrom/prevTo
+    generateWeeklyReport(thisFrom, thisTo),
+    generateWeeklyReport(prevFrom, prevTo),
   ]);
 
   const revenueChange = previousWeek.totalRevenue > 0

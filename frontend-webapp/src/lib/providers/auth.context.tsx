@@ -30,9 +30,11 @@ const AuthContext = createContext<AuthState | null>(null);
 function setSessionCookie(value: boolean) {
   if (typeof document === 'undefined') return;
   if (value) {
-    document.cookie = `${SESSION_COOKIE}=1; path=/; SameSite=Strict`;
+    // 30 días — persiste aunque el browser se cierre
+    const maxAge = 60 * 60 * 24 * 30;
+    document.cookie = `${SESSION_COOKIE}=1; path=/; max-age=${maxAge}; SameSite=Lax`;
   } else {
-    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Strict`;
+    document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
   }
 }
 

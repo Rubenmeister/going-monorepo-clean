@@ -25,12 +25,20 @@ export async function generateDailyReport(date?: Date): Promise<RevenueReport> {
   return buildReport('daily', from, to, rides, failedRides);
 }
 
-export async function generateWeeklyReport(): Promise<RevenueReport> {
-  const now  = new Date();
-  const day  = now.getDay(); // 0=sun
-  const diff = day === 0 ? 6 : day - 1; // Monday-based
-  const from = startOfDay(new Date(now.getTime() - diff * 86400 * 1000));
-  const to   = endOfDay(now);
+export async function generateWeeklyReport(fromDate?: Date, toDate?: Date): Promise<RevenueReport> {
+  let from: Date;
+  let to: Date;
+
+  if (fromDate && toDate) {
+    from = startOfDay(fromDate);
+    to   = endOfDay(toDate);
+  } else {
+    const now  = new Date();
+    const day  = now.getDay(); // 0=sun
+    const diff = day === 0 ? 6 : day - 1; // Monday-based
+    from = startOfDay(new Date(now.getTime() - diff * 86400 * 1000));
+    to   = endOfDay(now);
+  }
 
   const [rides, failedRides] = await Promise.all([
     getCompletedRides(from, to),

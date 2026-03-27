@@ -144,9 +144,11 @@ export function ReviewsList() {
               {avgRating.toFixed(1)}
             </span>
           </div>
-          <p className="text-gray-500">
-            +{reviews.length > 100 ? reviews.length : '500'} valoraciones verificadas
-          </p>
+          {reviews.length > 0 && (
+            <p className="text-gray-500">
+              {reviews.length} valoraciones verificadas
+            </p>
+          )}
         </div>
 
         {/* Reviews grid */}

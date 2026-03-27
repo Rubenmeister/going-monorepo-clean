@@ -178,20 +178,6 @@ export default function QuienesSomosPage() {
                   </p>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { value: '1M+', label: 'Personas usuarias', color: '#ff4c41' },
-                    { value: '50+', label: 'Ciudades conectadas', color: '#1e3a8a' },
-                    { value: '5K+', label: 'Conductoras y conductores', color: '#16a34a' },
-                    { value: '4.9★', label: 'Calificación promedio', color: '#f59e0b' },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-gray-50 rounded-2xl p-5 text-center border border-gray-100">
-                      <div className="text-3xl font-black mb-1" style={{ color: stat.color }}>{stat.value}</div>
-                      <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </FadeIn>
           </div>

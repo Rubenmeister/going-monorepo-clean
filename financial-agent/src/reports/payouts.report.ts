@@ -10,32 +10,30 @@ import {
 // Comisión Going: 20% | Conductor: 80%
 // ============================================================
 
-// Obtener todos los conductores activos del día
-async function getActiveDriverIds(from: Date, to: Date): Promise<string[]> {
-  const rides = await getCompletedRides(from, to);
-  return [...new Set(rides.map(r => r.driverId))];
-}
-
 // Generar liquidaciones diarias para todos los conductores
 export async function generateDailyPayouts(date?: Date): Promise<DriverPayout[]> {
   const d    = date || new Date();
   const from = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
   const to   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
 
-  const driverIds = await getActiveDriverIds(from, to);
-  if (driverIds.length === 0) {
-    console.log('[payouts] No active drivers today');
+  // Una sola consulta para todos los viajes del día
+  const allRides = await getCompletedRides(from, to);
+  if (allRides.length === 0) {
+    console.log('[payouts] No completed rides today');
     return [];
+  }
+
+  // Agrupar por conductor
+  const ridesByDriver = new Map<string, typeof allRides>();
+  for (const ride of allRides) {
+    const existing = ridesByDriver.get(ride.driverId) || [];
+    existing.push(ride);
+    ridesByDriver.set(ride.driverId, existing);
   }
 
   const payouts: DriverPayout[] = [];
 
-  for (const driverId of driverIds) {
-    const rides = await getCompletedRides(from, to);
-    const driverRides = rides.filter(r => r.driverId === driverId);
-
-    if (driverRides.length === 0) continue;
-
+  for (const [driverId, driverRides] of ridesByDriver) {
     // Nombre del conductor (en producción vendría de Firestore drivers collection)
     const driverName = `Conductor ${driverId.slice(-4)}`;
 
@@ -65,14 +63,21 @@ export async function generateWeeklyPayouts(): Promise<DriverPayout[]> {
   const to = new Date();
   to.setHours(23, 59, 59, 999);
 
-  const driverIds = await getActiveDriverIds(from, to);
+  // Una sola consulta para todos los viajes de la semana
+  const allRides = await getCompletedRides(from, to);
+  if (allRides.length === 0) return [];
+
+  // Agrupar por conductor
+  const ridesByDriver = new Map<string, typeof allRides>();
+  for (const ride of allRides) {
+    const existing = ridesByDriver.get(ride.driverId) || [];
+    existing.push(ride);
+    ridesByDriver.set(ride.driverId, existing);
+  }
+
   const payouts: DriverPayout[] = [];
 
-  for (const driverId of driverIds) {
-    const rides = await getCompletedRides(from, to);
-    const driverRides = rides.filter(r => r.driverId === driverId);
-    if (driverRides.length === 0) continue;
-
+  for (const [driverId, driverRides] of ridesByDriver) {
     const driverName = `Conductor ${driverId.slice(-4)}`;
     const payout = await createDriverPayout(driverId, driverName, driverRides, 'weekly', from, to);
     payouts.push(payout);

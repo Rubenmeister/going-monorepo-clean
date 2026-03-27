@@ -14,7 +14,7 @@ export default function TermsPage() {
             <p>
               Los presentes Términos y Condiciones (en adelante, &quot;Términos&quot;) regulan el acceso, uso y
               contratación de los servicios ofrecidos por <strong>Going Ecuador S.A.S.</strong>
-              (en adelante, &quot;Going&quot;) a través de la plataforma digital <strong>app.goingec.com</strong>
+              (en adelante, &quot;Going&quot;) a través de la plataforma digital <strong>app.goingec.com</strong>{' '}
               y la aplicación móvil Going, domiciliada en Av. República de El Salvador N35-88,
               Torre Atiria Piso 10, Quito, Ecuador.
             </p>

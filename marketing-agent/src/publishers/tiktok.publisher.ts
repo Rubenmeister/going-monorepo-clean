@@ -50,9 +50,13 @@ export async function publishToTikTok(
 
   console.log(`[tiktok] Video publish initiated: ${publishId}`);
 
+  // TikTok Content Posting API does not return a direct post URL.
+  // The video URL becomes available once processing completes (async).
+  // Linking to the account profile in the meantime.
   return {
     platform: 'tiktok',
     postId: publishId,
+    url: 'https://www.tiktok.com/@goingappecuador',
     publishedAt: new Date(),
     content,
   };

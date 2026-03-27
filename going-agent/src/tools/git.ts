@@ -1,6 +1,8 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { config } from '../config';
 
+const PUSH_MAX_RETRIES = 3;
+
 export class GitTool {
   private git: SimpleGit;
 
@@ -22,8 +24,10 @@ export class GitTool {
     return log.all.map(c => `${c.hash.slice(0, 8)} ${c.date} ${c.message}`).join('\n');
   }
 
+  // FIX: trim() el resultado para eliminar el newline final que devuelve git
   async getCurrentBranch(): Promise<string> {
-    return this.git.revparse(['--abbrev-ref', 'HEAD']);
+    const branch = await this.git.revparse(['--abbrev-ref', 'HEAD']);
+    return branch.trim();
   }
 
   async createAgentBranch(): Promise<void> {
@@ -51,7 +55,22 @@ export class GitTool {
 
     await this.git.add(files);
     const commit = await this.git.commit(`[agent] ${message}`);
-    await this.git.push('origin', config.agentBranch, ['--set-upstream']);
-    return commit.commit;
+
+    // FIX: retry en push con backoff exponencial (fallos de red son transitorios)
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= PUSH_MAX_RETRIES; attempt++) {
+      try {
+        await this.git.push('origin', config.agentBranch, ['--set-upstream']);
+        return commit.commit;
+      } catch (err: any) {
+        lastError = err;
+        if (attempt < PUSH_MAX_RETRIES) {
+          const waitMs = attempt * 5000; // 5s, 10s
+          console.warn(`[Git] Push falló (intento ${attempt}/${PUSH_MAX_RETRIES}), reintentando en ${waitMs / 1000}s...`);
+          await new Promise(r => setTimeout(r, waitMs));
+        }
+      }
+    }
+    throw new Error(`Push falló después de ${PUSH_MAX_RETRIES} intentos: ${lastError?.message}`);
   }
 }

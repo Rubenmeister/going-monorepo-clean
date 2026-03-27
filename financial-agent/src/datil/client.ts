@@ -33,10 +33,25 @@ async function datilRequest<T>(opts: DatilRequestOptions): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// ─── Validación temprana de env vars críticas ─────────────────
+const GOING_RUC = process.env.GOING_RUC;
+if (!GOING_RUC) {
+  throw new Error('[datil] GOING_RUC es requerido — el RUC no puede estar vacío (las facturas serían rechazadas por el SRI)');
+}
+
+const DATIL_ENV_RAW = process.env.DATIL_ENV;
+if (!DATIL_ENV_RAW) {
+  throw new Error('[datil] DATIL_ENV es requerido — usar "1" para pruebas o "2" para producción');
+}
+const DATIL_AMBIENTE = parseInt(DATIL_ENV_RAW, 10);
+if (DATIL_AMBIENTE !== 1 && DATIL_AMBIENTE !== 2) {
+  throw new Error(`[datil] DATIL_ENV debe ser "1" (pruebas) o "2" (producción), recibido: "${DATIL_ENV_RAW}"`);
+}
+
 // ─── Emisor (Going Ecuador) ───────────────────────────────────
 // Estos datos vienen del perfil configurado en Datil
 const EMISOR = {
-  ruc: process.env.GOING_RUC || '',          // RUC de Going Ecuador
+  ruc: GOING_RUC,                            // RUC de Going Ecuador
   razon_social: 'GOING ECUADOR',
   nombre_comercial: 'Going',
   direccion: process.env.GOING_ADDRESS || 'Quito, Ecuador',
@@ -77,7 +92,7 @@ export async function createInvoice(input: InvoiceInput): Promise<DatilInvoiceRe
   const dateStr = date.toISOString().slice(0, 10);
 
   const payload = {
-    ambiente: parseInt(process.env.DATIL_ENV || '1'), // 1=pruebas, 2=producción
+    ambiente: DATIL_AMBIENTE, // 1=pruebas, 2=producción (validado en startup)
     tipo_emision: 1,
     secuencia: -1, // Datil auto-asigna
     fecha_inicio_periodo_fiscal: dateStr,

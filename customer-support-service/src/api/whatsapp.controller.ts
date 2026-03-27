@@ -1,5 +1,4 @@
 import { Controller, Post, Get, Body, Query, Res, Logger, HttpCode } from '@nestjs/common';
-import { Response } from 'express';
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
 import { ConfigService } from '@nestjs/config';
@@ -18,7 +17,8 @@ export class WhatsAppController {
    * Twilio WhatsApp webhook verification (GET)
    */
   @Get('webhook')
-  verifyWebhook(@Query() query: any, @Res() res: Response) {
+  verifyWebhook(@Query() query: any, @Res() // eslint-disable-next-line @typescript-eslint/no-explicit-any
+res: any) {
     // Twilio doesn't require GET verification like Meta
     // But we keep this for health checks
     return res.status(200).send('GOING WhatsApp webhook active');
@@ -30,7 +30,8 @@ export class WhatsAppController {
    */
   @Post('webhook')
   @HttpCode(200)
-  async handleMessage(@Body() body: any, @Res() res: Response) {
+  async handleMessage(@Body() body: any, @Res() // eslint-disable-next-line @typescript-eslint/no-explicit-any
+res: any) {
     const from: string = body.From || '';     // e.g. whatsapp:+593999...
     const messageText: string = body.Body || '';
     const userId = from.replace('whatsapp:', '').trim();

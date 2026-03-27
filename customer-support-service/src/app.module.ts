@@ -5,6 +5,7 @@ import { ChatController } from './api/chat.controller';
 import { HealthController } from './api/health.controller';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
+import { BookingService } from './booking/booking.service';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ConversationService } from './agent/conversation.service';
   providers: [
     AgentService,
     ConversationService,
+    BookingService,
   ],
 })
 export class AppModule {}

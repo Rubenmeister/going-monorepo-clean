@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { config } from '../config';
 
+const IGNORED_DIRS = ['node_modules', '.next', 'dist', '.git'];
+
 export class FilesystemTool {
 
   isBlacklisted(filePath: string): boolean {
@@ -25,16 +27,24 @@ export class FilesystemTool {
     fs.writeFileSync(full, content, 'utf8');
   }
 
-  listDir(dirPath: string, depth = 1): string[] {
+  // FIX: indentación correcta en recursión — usar prefix en lugar de re-indentar strings ya procesados
+  listDir(dirPath: string, depth = 1, prefix = ''): string[] {
     const full = path.join(config.repoPath, dirPath);
+    if (!fs.existsSync(full)) return [`❌ Directorio no encontrado: ${dirPath}`];
+
     const entries = fs.readdirSync(full, { withFileTypes: true });
     const result: string[] = [];
+
     for (const e of entries) {
-      if (['node_modules', '.next', 'dist', '.git'].includes(e.name)) continue;
-      result.push(e.isDirectory() ? `${e.name}/` : e.name);
+      if (IGNORED_DIRS.includes(e.name)) continue;
+
+      const label = e.isDirectory() ? `${e.name}/` : e.name;
+      result.push(`${prefix}${label}`);
+
       if (e.isDirectory() && depth > 1) {
-        const sub = this.listDir(path.join(dirPath, e.name), depth - 1);
-        result.push(...sub.map(s => `  ${s}`));
+        const subPath = path.join(dirPath, e.name);
+        const subEntries = this.listDir(subPath, depth - 1, `${prefix}  `);
+        result.push(...subEntries);
       }
     }
     return result;
@@ -45,7 +55,7 @@ export class FilesystemTool {
     const results: string[] = [];
     const walk = (dir: string) => {
       for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (['node_modules', '.next', 'dist', '.git'].includes(e.name)) continue;
+        if (IGNORED_DIRS.includes(e.name)) continue;
         const p = path.join(dir, e.name);
         if (e.isDirectory()) walk(p);
         else if (pattern.test(e.name)) results.push(p.replace(config.repoPath, ''));
