@@ -45,9 +45,6 @@ const DEFAULT_LOCATIONS: Location[] = [
 
   // ── Ruta Santo Domingo / El Carmen ────────────────────────────
   { address: 'La Concordia',   lat: -0.0058, lon: -79.3933, city: 'La Concordia' },
-  { address: 'Chone',          lat: -0.6875, lon: -80.0958, city: 'Chone' },
-  { address: 'Flavio Alfaro',  lat: -0.4775, lon: -79.8164, city: 'Flavio Alfaro' },
-  { address: 'La Unión (Esmeraldas)', lat:  0.7167, lon: -79.1833, city: 'La Unión' },
 
   // ── Ruta Ambato: ciudades intermedias ─────────────────────────
   { address: 'Salcedo',        lat: -1.0578, lon: -78.5922, city: 'Salcedo' },
