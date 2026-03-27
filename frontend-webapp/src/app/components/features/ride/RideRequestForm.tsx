@@ -11,6 +11,7 @@ import {
   calculateFare,
   calculateDistance,
   calculateEstimatedDuration,
+  getFareBreakdown,
 } from '@/services/ride/fareCalculator';
 
 type TransportMode = 'privado' | 'compartido';
@@ -63,6 +64,7 @@ function RideRequestFormInner() {
   const [scheduledTime, setScheduledTime] = useState('');
   const [showSchedule, setShowSchedule]   = useState(false);
   const [localFare, setLocalFare]         = useState<number | null>(null);
+  const [fareFixed, setFareFixed]         = useState(false);
 
   // Auto-suggest vehicle based on pax count
   useEffect(() => {
@@ -94,16 +96,17 @@ function RideRequestFormInner() {
       pickupLocation.lat !== dropoffLocation.lat
     ) {
       try {
-        const base = calculateFare(pickupLocation, dropoffLocation, vehicleType);
-        const m  = tier === 'premium' ? vehicleConfig.multiplierPremium : vehicleConfig.multiplierConfort;
-        const cm = vehicleConfig.multiplierConfort;
-        const fare = Math.round((base / cm) * m * 100) / 100;
+        const breakdown = getFareBreakdown(pickupLocation, dropoffLocation, vehicleType, tier);
+        const fare = breakdown.totalFare;
         setLocalFare(isNaN(fare) || !isFinite(fare) ? null : fare);
+        setFareFixed(breakdown.isPriceFixed);
       } catch {
         setLocalFare(null);
+        setFareFixed(false);
       }
     } else {
       setLocalFare(null);
+      setFareFixed(false);
     }
   }, [pickupLocation, dropoffLocation, vehicleType, tier, vehicleConfig]);
 
@@ -313,23 +316,28 @@ function RideRequestFormInner() {
           ══════════════════════════════════════════ */}
       {hasValidRoute && (
         localFare !== null ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+          <div className={`border rounded-2xl p-4 ${fareFixed ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-bold text-gray-700">
-                  {vehicleConfig.label} · {tier === 'premium' ? '⭐ Premium' : '✓ Confort'}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-bold text-gray-700">
+                    {vehicleConfig.label} · {tier === 'premium' ? '⭐ Premium' : '✓ Confort'}
+                  </p>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${fareFixed ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'}`}>
+                    {fareFixed ? '✓ Tarifa fija' : '~ Estimado'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">
                   {Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10} km ·
-                  ~{calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)} min estimados
+                  ~{calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)} min de viaje
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {mode === 'compartido' ? `👥 Compartido · ${passengers} personas` : '🔒 Privado'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-black text-[#0033A0]">${localFare.toFixed(2)}</p>
-                <p className="text-xs text-gray-400">tarifa estimada</p>
+                <p className="text-3xl font-black text-[#0033A0]">${localFare.toFixed(0)}</p>
+                <p className="text-xs text-gray-400">{fareFixed ? 'precio fijo' : 'aprox.'}</p>
               </div>
             </div>
           </div>
@@ -363,7 +371,7 @@ function RideRequestFormInner() {
               ? 'Calculando tarifa…'
               : isScheduled
                 ? `📅 Reservar · ${scheduledDate} ${scheduledTime}`
-                : `Confirmar viaje · $${localFare.toFixed(2)}`
+                : `Confirmar viaje · $${localFare.toFixed(0)}`
         }
       </button>
 
