@@ -26,10 +26,11 @@ export interface WebSocketChatMessage {
 }
 
 export const QUICK_REPLIES = [
-  "I'm here",
-  'On my way',
-  'Almost there',
-  'Please wait',
+  '👋 Ya llegué',
+  '🚗 En camino',
+  '⏳ Dame 5 minutos',
+  '📍 ¿Dónde estás?',
+  '✅ Aquí te espero',
 ] as const;
 
 export type QuickReply = (typeof QUICK_REPLIES)[number];
