@@ -91,6 +91,19 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
     if (activeRide?.status === 'completed') onCompleted();
   }, [activeRide?.status, onCompleted]);
 
+  /* ── Failsafe: si el backend no emite ride:no_driver_found,
+        el frontend detecta 130s sin conductor y notifica al pasajero ── */
+  useEffect(() => {
+    if (activeRide?.status !== 'pending') return;
+    const timer = setTimeout(() => {
+      // Solo actuar si sigue en pending (el WebSocket no lo resolvió antes)
+      if (useRideStore.getState().activeRide?.status === 'pending') {
+        useRideStore.getState().updateRideStatus(activeRide.tripId, 'no_driver' as never);
+      }
+    }, 130_000); // 130s = TTL Redis (120s) + 10s de margen
+    return () => clearTimeout(timer);
+  }, [activeRide?.tripId, activeRide?.status]);
+
   /* ── Agregar parada extra ── */
   const handleAddStop = () => {
     if (!stopAddress.trim() || !activeRide) return;
@@ -131,6 +144,38 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
 
   if (!activeRide) return null;
   const status = activeRide.status;
+
+  /* ── Estado: sin conductor disponible ── */
+  if (status === 'no_driver') {
+    return (
+      <div className="flex flex-col items-center justify-center gap-5 py-10 px-6 text-center">
+        <div className="text-6xl">😔</div>
+        <div>
+          <p className="text-xl font-bold text-gray-800">Sin conductor disponible</p>
+          <p className="text-sm text-gray-500 mt-1">
+            No encontramos un conductor en tu zona en este momento.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={() => {
+              useRideStore.getState().clearRide();
+            }}
+            className="w-full py-3 rounded-2xl text-white font-bold text-base transition-all hover:opacity-90"
+            style={{ backgroundColor: '#ff4c41' }}
+          >
+            🔄 Intentar de nuevo
+          </button>
+          <button
+            onClick={onCancelled}
+            className="w-full py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold text-sm"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

@@ -14,7 +14,8 @@ export type RideStatus =
   | 'accepted'
   | 'in_progress'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'no_driver';
 
 export interface DriverInfo {
   name: string;
@@ -190,4 +191,5 @@ export const RIDE_STATUS_LABELS: Record<RideStatus, string> = {
   in_progress: 'Viaje en curso',
   completed:   'Completado',
   cancelled:   'Cancelado',
+  no_driver:   'Sin conductor disponible',
 };

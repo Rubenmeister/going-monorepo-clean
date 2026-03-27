@@ -107,8 +107,21 @@ class WebSocketService {
       case 'ride:cancelled': {
         useNotificationStore.getState().addNotification({
           type: 'warning',
-          title: 'Ride Cancelled',
-          message: 'Your ride has been cancelled.',
+          title: 'Viaje cancelado',
+          message: 'Tu viaje ha sido cancelado.',
+        })
+        break
+      }
+      // Emitido por el backend cuando el TTL de 120s expira sin conductor
+      case 'ride:no_driver_found': {
+        const data = payload as { tripId?: string }
+        if (data?.tripId) {
+          useRideStore.getState().updateRideStatus(data.tripId, 'no_driver' as never)
+        }
+        useNotificationStore.getState().addNotification({
+          type: 'error',
+          title: 'Sin conductor disponible',
+          message: 'No encontramos conductor en tu zona. Por favor intenta de nuevo.',
         })
         break
       }
