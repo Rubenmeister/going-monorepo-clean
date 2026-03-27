@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 const NAV_SERVICES = [
-  { label: 'Transporte', href: '/ride' },
+  { label: 'Servicios', href: '/services' },
   { label: 'Alojamiento', href: '/services/accommodation' },
   { label: 'Tours', href: '/services/tours' },
   { label: 'Experiencias', href: '/services/experiences' },
