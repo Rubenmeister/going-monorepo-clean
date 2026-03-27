@@ -4,10 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
  * Middleware de protección de rutas para frontend-webapp.
  *
  * Rutas protegidas (requieren sesión activa):
- *   /account  — perfil y configuración del usuario empresa
- *   /bookings — reservas de la empresa
- *   /ride     — solicitud de viaje
+ *   /account  — perfil y configuración del usuario
+ *   /bookings — reservas del usuario
  *   /payment  — flujo de pago y resultado
+ *   /dashboard — panel de usuario/proveedor
+ *
+ * /ride es PÚBLICA — el usuario puede buscar y ver opciones sin login.
+ * El login se solicita solo al confirmar/pagar el viaje.
  *
  * Las rutas de marketing, auth y páginas públicas pasan sin comprobación.
  */
@@ -15,7 +18,6 @@ import { NextRequest, NextResponse } from 'next/server';
 const PROTECTED_PREFIXES = [
   '/account',
   '/bookings',
-  '/ride',
   '/payment',
   '/dashboard',
   '/services/conductores',
