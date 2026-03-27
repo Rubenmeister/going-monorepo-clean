@@ -8,20 +8,6 @@ import Link from 'next/link';
    ───────────────────────────────────────────── */
 const PRIVATE_VEHICLES = [
   {
-    id: 'auto',
-    icon: '🚗',
-    label: 'Automóvil',
-    tagline: 'Económico y confiable',
-    desc: 'Sedanes y hatchbacks para traslados urbanos cotidianos. La opción más accesible.',
-    seats: '1–4 pasajeros',
-    luggage: '2 maletas',
-    baseFare: '2.50',
-    perKm: '0.50',
-    color: '#10B981',
-    bg: '#f0fdf4',
-    badge: 'Más popular',
-  },
-  {
     id: 'suv',
     icon: '🚙',
     label: 'SUV',
@@ -29,11 +15,9 @@ const PRIVATE_VEHICLES = [
     desc: 'SUV medianas para mayor comodidad. Ideal para grupos pequeños o equipaje extra.',
     seats: '1–4 pasajeros',
     luggage: '3 maletas',
-    baseFare: '3.25',
-    perKm: '0.65',
     color: '#3B82F6',
-    bg: '#eff6ff',
     badge: null,
+    photo: '/images/SUV de lujo.png',
   },
   {
     id: 'suvxl',
@@ -43,11 +27,9 @@ const PRIVATE_VEHICLES = [
     desc: 'SUV de mayor tamaño para familias o grupos con bastante equipaje.',
     seats: '1–6 pasajeros',
     luggage: '5 maletas',
-    baseFare: '4.00',
-    perKm: '0.75',
     color: '#8B5CF6',
-    bg: '#f5f3ff',
     badge: null,
+    photo: '/images/SUV EN LA CIUDAD NOCHE.png',
   },
   {
     id: 'van',
@@ -57,11 +39,9 @@ const PRIVATE_VEHICLES = [
     desc: 'Furgoneta para grupos medianos, viajes intercantonales o traslados de equipos.',
     seats: '1–9 pasajeros',
     luggage: '6 maletas',
-    baseFare: '6.00',
-    perKm: '1.00',
     color: '#F59E0B',
-    bg: '#fffbeb',
     badge: null,
+    photo: '/images/Puerta a puerta entre ciudades.png',
   },
   {
     id: 'vanxl',
@@ -71,11 +51,9 @@ const PRIVATE_VEHICLES = [
     desc: 'Furgoneta ampliada para grupos más grandes o con mucho equipaje.',
     seats: '1–12 pasajeros',
     luggage: '8 maletas',
-    baseFare: '8.00',
-    perKm: '1.20',
     color: '#EF4444',
-    bg: '#fef2f2',
     badge: null,
+    photo: '/images/viaje compartido .png',
   },
   {
     id: 'minibus',
@@ -85,11 +63,9 @@ const PRIVATE_VEHICLES = [
     desc: 'Para excursiones, visitas empresariales o eventos con grupos numerosos.',
     seats: '1–20 pasajeros',
     luggage: 'Bodega incluida',
-    baseFare: '15.00',
-    perKm: '2.00',
     color: '#0891B2',
-    bg: '#ecfeff',
     badge: null,
+    photo: '/images/43.png',
   },
   {
     id: 'bus',
@@ -99,11 +75,9 @@ const PRIVATE_VEHICLES = [
     desc: 'Para grandes grupos, tours intercantonales o necesidades corporativas.',
     seats: '1–40 pasajeros',
     luggage: 'Bodega incluida',
-    baseFare: '30.00',
-    perKm: '3.00',
     color: '#DC2626',
-    bg: '#fef2f2',
     badge: 'Corporativo',
+    photo: '/images/42.png',
   },
 ];
 
@@ -114,7 +88,6 @@ const SHARED_CATEGORIES = [
     label: 'Confort',
     desc: 'SUV y SUVXL. Viaja cómodo con otros pasajeros en la misma ruta.',
     vehicles: 'SUV / SUV XL',
-    priceFrom: '1.50',
     color: '#3B82F6',
     bg: '#eff6ff',
     badge: 'Más usado',
@@ -125,17 +98,15 @@ const SHARED_CATEGORIES = [
     label: 'Premium',
     desc: 'SUV XL y VAN en rutas de alta demanda. Más espacio, mejor experiencia.',
     vehicles: 'SUV XL / VAN / VAN XL',
-    priceFrom: '1.80',
     color: '#F59E0B',
     bg: '#fffbeb',
-    badge: '+20% precio',
+    badge: 'Mayor confort',
   },
 ];
 
 const COMPARISON = [
   { feature: 'Vehículo exclusivo', private: '✓', shared: '✗', company: '✓' },
   { feature: 'Conductores elite', private: '—', shared: '—', company: '✓' },
-  { feature: 'Precio por km', private: '$0.50–3.00', shared: 'Desde $0.20', company: 'Premium +30%' },
   { feature: 'Capacidad', private: '1–40 pax', shared: '1–4 pax', company: '1–40 pax' },
   { feature: 'Reserva anticipada', private: '✓', shared: '✗', company: '✓' },
   { feature: 'Tiempo de espera', private: '2–8 min', shared: '5–15 min', company: 'Hasta 60 min' },
@@ -152,7 +123,7 @@ export default function TransportPage() {
 
       {/* ── Hero ── */}
       <section className="relative py-20 px-4 text-white overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #ff4c41 0%, #e63a2f 100%)' }}>
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white opacity-5 -translate-y-1/2 translate-x-1/3" />
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full bg-white/15">
@@ -162,7 +133,7 @@ export default function TransportPage() {
             Transporte para cada<br />necesidad y grupo
           </h1>
           <p className="text-white/85 text-xl max-w-2xl mb-8">
-            Desde un automóvil para ti solo hasta un bus para 40 personas.
+            Desde una SUV para ti solo hasta un bus para 40 personas.
             Privado exclusivo, compartido económico, o corporativo de élite.
           </p>
           <div className="inline-flex bg-white/15 rounded-2xl p-1 gap-1 flex-wrap">
@@ -171,7 +142,7 @@ export default function TransportPage() {
               return (
                 <button key={t} onClick={() => setTab(t)}
                   className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                    tab === t ? 'bg-white text-[#ff4c41] shadow-sm' : 'text-white/80 hover:text-white'
+                    tab === t ? 'bg-white text-gray-900 shadow-sm' : 'text-white/80 hover:text-white'
                   }`}>
                   {labels[i]}
                 </button>
@@ -195,34 +166,25 @@ export default function TransportPage() {
             {PRIVATE_VEHICLES.map(v => (
               <div key={v.id}
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col">
-                <div className="h-1.5" style={{ backgroundColor: v.color }} />
+                {/* Foto del vehículo */}
+                <div className="relative h-44 overflow-hidden">
+                  <img src={v.photo} alt={v.label}
+                    className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  {v.badge && (
+                    <span className="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full bg-white shadow-sm"
+                      style={{ color: v.color }}>
+                      {v.badge}
+                    </span>
+                  )}
+                </div>
                 <div className="p-5 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl">{v.icon}</span>
-                    {v.badge && (
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full"
-                        style={{ backgroundColor: `${v.color}18`, color: v.color }}>
-                        {v.badge}
-                      </span>
-                    )}
-                  </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-0.5">{v.label}</h3>
                   <p className="text-sm font-medium mb-2" style={{ color: v.color }}>{v.tagline}</p>
                   <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-4">{v.desc}</p>
                   <div className="flex gap-3 text-xs text-gray-500 mb-4">
                     <span className="bg-gray-50 px-2.5 py-1 rounded-full">👥 {v.seats}</span>
                     <span className="bg-gray-50 px-2.5 py-1 rounded-full">🧳 {v.luggage}</span>
-                  </div>
-                  <div className="rounded-xl p-3 mb-4 flex justify-between items-center"
-                    style={{ backgroundColor: v.bg }}>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-0.5">Tarifa base</div>
-                      <div className="text-xl font-bold" style={{ color: v.color }}>${v.baseFare}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500 mb-0.5">Por km</div>
-                      <div className="text-xl font-bold" style={{ color: v.color }}>${v.perKm}</div>
-                    </div>
                   </div>
                   <Link href={`/ride?type=${v.id}`}
                     className="w-full py-2.5 rounded-xl text-white font-bold text-sm text-center transition-all hover:opacity-90"
@@ -232,17 +194,6 @@ export default function TransportPage() {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex gap-4 items-start">
-            <span className="text-2xl">⚡</span>
-            <div>
-              <h4 className="font-bold text-orange-800 mb-1">Precio dinámico</h4>
-              <p className="text-orange-700 text-sm leading-relaxed">
-                Las tarifas varían según demanda, hora del día, ciudad y zona de recogida.
-                En horas pico puede aplicar un multiplicador de hasta <strong>1.5×</strong>.
-              </p>
-            </div>
           </div>
         </section>
       )}
@@ -275,14 +226,9 @@ export default function TransportPage() {
                   <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 mb-5">
                     🚗 Vehículos: <strong>{cat.vehicles}</strong>
                   </div>
-                  <div className="rounded-xl p-4 flex justify-between items-center mb-5"
+                  <div className="rounded-xl p-4 flex items-center mb-5"
                     style={{ backgroundColor: cat.bg }}>
                     <div>
-                      <div className="text-xs text-gray-500 mb-0.5">Desde</div>
-                      <div className="text-2xl font-bold" style={{ color: cat.color }}>${cat.priceFrom}</div>
-                      <div className="text-xs text-gray-400">por asiento</div>
-                    </div>
-                    <div className="text-right">
                       <div className="text-xs text-gray-500 mb-0.5">Espera estimada</div>
                       <div className="text-xl font-bold text-gray-700">5–15 min</div>
                     </div>
@@ -354,24 +300,6 @@ export default function TransportPage() {
             ))}
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Precios corporativos</h3>
-            <p className="text-gray-500 text-sm mb-6">Calculados sobre tarifa Premium <strong>+30%</strong>. Variables según ruta y demanda.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { vehicle: 'SUV', base: '$4.23', perKm: '$0.85' },
-                { vehicle: 'SUV XL', base: '$5.20', perKm: '$0.98' },
-                { vehicle: 'VAN', base: '$7.80', perKm: '$1.30' },
-                { vehicle: 'VAN XL / Bus', base: 'Cotizar', perKm: 'Por ruta' },
-              ].map(p => (
-                <div key={p.vehicle} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                  <div className="font-bold text-gray-900 mb-1">{p.vehicle}</div>
-                  <div className="text-xl font-bold text-yellow-700">{p.base}</div>
-                  <div className="text-xs text-gray-500">{p.perKm} /km</div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           <div className="text-center">
             <a href="mailto:empresas@goingec.com"
