@@ -90,8 +90,8 @@ function NavLinks({ t }: { t: (key: string) => string }) {
       <a href="/" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
         {t('nav.inicio')}
       </a>
-      <a href="/services/transport" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
-        Transporte
+      <a href="/services" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+        Servicios
       </a>
       <a href="/quienes-somos" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
         Quiénes somos
