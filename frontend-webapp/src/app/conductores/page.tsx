@@ -252,18 +252,28 @@ export default function ConductoresPage() {
       <section className="py-10 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <FadeIn delay={0} direction="up">
-              <img src="/images/43.png" alt="Trabaja cuando quieres, el tiempo que quieres"
-                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
-            </FadeIn>
-            <FadeIn delay={100} direction="up">
-              <img src="/images/41.png" alt="Sé parte de nuestro equipo"
-                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
-            </FadeIn>
-            <FadeIn delay={200} direction="up">
-              <img src="/images/42.png" alt="Sé tu propio jefe"
-                className="w-full rounded-2xl shadow-md object-cover aspect-square" />
-            </FadeIn>
+            {[
+              { src: '/images/43.png', title: 'Trabaja cuando quieras', sub: 'El tiempo que quieras' },
+              { src: '/images/41.png', title: 'Sé parte de nuestro equipo', sub: 'Una red que te respalda' },
+              { src: '/images/42.png', title: 'Sé tu propio jefe', sub: 'Tú decides cuándo y cómo' },
+            ].map((item, i) => (
+              <FadeIn key={item.src} delay={i * 100} direction="up">
+                <div className="relative rounded-2xl overflow-hidden shadow-md aspect-square group">
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 55%, transparent 100%)' }} />
+                  {/* Text */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <p className="text-white font-black text-xl leading-tight drop-shadow-lg">{item.title}</p>
+                    <p className="text-white/80 text-sm font-medium mt-1 drop-shadow">{item.sub}</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
           </div>
         </div>
       </section>
