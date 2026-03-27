@@ -2,12 +2,24 @@
  * Fare calculation — precios fijos por par de ciudades (puerta a puerta)
  *
  * Modelo de precios:
- *  · Los valores de la tabla son precio COMPARTIDO (3 pasajeros, SUV).
- *  · Privado Confort  = compartido × 4
- *  · Privado Premium  = ceil(Privado Confort × 1.10)
+ *  · Los valores de CITY_PAIR_PRICES son precio COMPARTIDO (3 pasajeros, SUV).
+ *  · Privado Confort  = round(compartido × 4 / 10) × 10
+ *  · Privado Premium  = Privado Confort + $10
  *
- * Quito se divide en 3 zonas: Centro Norte · Sur · Valles (Cumbayá/Tumbaco · Los Chillos)
- * y se incluyen ciudades intermedias en las rutas principales.
+ * Recargo de origen (+$5):
+ *  Se suma a cualquier tarifa cuando el punto de RECOGIDA es:
+ *    Quito Sur · Valles (Cumbayá/Tumbaco · Los Chillos) · Aeropuerto Tababela
+ *
+ * Rutas con precio completo predefinido (no siguen la fórmula ×4):
+ *  · Quito Centro Norte ↔ Aeropuerto Tababela
+ *      compartido $10 · privado $25 · premium $30
+ *    (el recargo de origen se aplica adicionalmente si corresponde)
+ *
+ * Quito se divide en 3 zonas:
+ *   "quito centro norte"  (Iñaquito, La Carolina, González Suárez, norte)
+ *   "quito sur"           (Quitumbe, Chillogallo, Guamaní)
+ *   "cumbaya  tumbaco valle" / "los chillos  sangolqui" (valles orientales)
+ *   "aeropuerto quito tababela"
  */
 
 import type { Location, VehicleType } from '@/types';
@@ -50,17 +62,35 @@ function pairKey(a: string, b: string): string {
   return na <= nb ? `${na}|${nb}` : `${nb}|${na}`;
 }
 
+// ── Recargo de origen (+$5) ───────────────────────────────────
+// Se aplica cuando el punto de RECOGIDA pertenece a estas zonas.
+const SURCHARGE_ORIGIN_CITIES = new Set([
+  'quito sur',
+  'cumbaya  tumbaco valle',
+  'los chillos  sangolqui',
+  'aeropuerto quito tababela',
+]);
+
+function getOriginSurcharge(pickup: Location): number {
+  if (!pickup.address) return 0;
+  return SURCHARGE_ORIGIN_CITIES.has(normalizeCity(pickup.address)) ? 5 : 0;
+}
+
+// ── Rutas con precio COMPLETO predefinido (compartido / privado / premium) ──
+// Estas rutas no siguen la fórmula ×4; se usan los valores exactos.
+// El recargo de origen se aplica adicionalmente si el pickup lo requiere.
+interface FullPriceEntry { compartido: number; privado: number; premium: number; }
+const FULL_PRICE_ROUTES: Record<string, FullPriceEntry> = {
+  // Quito Centro Norte ↔ Aeropuerto Tababela
+  'aeropuerto quito tababela|quito centro norte': { compartido: 10, privado: 25, premium: 30 },
+};
+
 // ── Tabla de precios COMPARTIDO — SUV, un sentido, USD ────────
 //
 // Precio compartido ≈ 3 pasajeros.
-// Privado Confort = este valor × 4.
-// Privado Premium = ceil(Privado Confort × 1.10).
+// Privado Confort = round(este valor × 4 / 10) × 10
+// Privado Premium = Privado Confort + $10
 //
-// Quito tiene 3 zonas:
-//   "quito centro norte"  (Iñaquito, La Carolina, González Suárez, norte)
-//   "quito sur"           (Quitumbe, Chillogallo, Guamaní)
-//   "cumbaya  tumbaco valle" / "los chillos  sangolqui" (valles orientales)
-//   "aeropuerto quito tababela"
 const CITY_PAIR_PRICES: Record<string, number> = {
 
   // ── Rutas hacia Quito Centro Norte ───────────────────────────
@@ -98,6 +128,11 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'quito centro norte|zaruma':               64,
   'loja|quito centro norte':                 69,
 
+  // El Carmen → Quito / Aeropuerto (Ruta 2)
+  'el carmen|quito centro norte':            20,
+  'el carmen|santo domingo':                 8,
+  'el carmen|quito sur':                     18,
+
   // ── Rutas hacia Quito Sur ────────────────────────────────────
   'quito sur|latacunga':                     10,
   'ambato|quito sur':                        13,
@@ -127,6 +162,7 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'cuenca|los chillos  sangolqui':           46,
 
   // ── Aeropuerto Quito (Tababela) ──────────────────────────────
+  // (Quito Centro Norte ↔ Aeropuerto está en FULL_PRICE_ROUTES con precios especiales)
   'aeropuerto quito tababela|latacunga':     15,
   'aeropuerto quito tababela|ambato':        18,
   'aeropuerto quito tababela|banos':         18,
@@ -140,6 +176,10 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'aeropuerto quito tababela|cuenca':        47,
   'aeropuerto quito tababela|guayaquil':     52,
   'aeropuerto quito tababela|santo domingo': 17,
+  'aeropuerto quito tababela|el carmen':     22,
+  'aeropuerto quito tababela|quito sur':     12,
+  'aeropuerto quito tababela|cumbaya  tumbaco valle': 8,
+  'aeropuerto quito tababela|los chillos  sangolqui': 15,
 
   // ── Desde / hacia Guayaquil ──────────────────────────────────
   'guayaquil|naranjal':      10,
@@ -215,10 +255,15 @@ function distanceBasedSharedPrice(km: number): number {
 function sharedSuvBase(
   pickup: Location,
   dropoff: Location,
-): { price: number; fixed: boolean } {
+): { price: number; fixed: boolean; fullEntry?: FullPriceEntry } {
   if (pickup.address && dropoff.address) {
-    const key = pairKey(pickup.address, dropoff.address);
-    const p = CITY_PAIR_PRICES[key];
+    // 1. Primero revisar rutas con precio completo
+    const fullKey = pairKey(pickup.address, dropoff.address);
+    const fullEntry = FULL_PRICE_ROUTES[fullKey];
+    if (fullEntry !== undefined) return { price: fullEntry.compartido, fixed: true, fullEntry };
+
+    // 2. Luego tabla compartido estándar
+    const p = CITY_PAIR_PRICES[fullKey];
     if (p !== undefined) return { price: p, fixed: true };
   }
   return {
@@ -240,13 +285,17 @@ export interface FareBreakdown {
   isPriceFixed:      boolean;
   mode:              'privado' | 'compartido';
   tier:              'confort' | 'premium';
+  /** Recargo aplicado por zona de origen */
+  originSurcharge:   number;
 }
 
 /**
  * Calcula la tarifa final según:
- *  · Compartido               → sharedBase
- *  · Privado Confort          → sharedBase × 4
- *  · Privado Premium          → ceil(Privado Confort × 1.10)
+ *  · Compartido               → sharedBase (+ recargo origen si aplica)
+ *  · Privado Confort          → round(sharedBase × 4 / 10) × 10 (+ recargo)
+ *  · Privado Premium          → Privado Confort + $10 (+ recargo)
+ *
+ *  Rutas especiales (ej. Quito ↔ Aeropuerto) usan precios exactos predefinidos.
  */
 export function getFareBreakdown(
   pickup:      Location,
@@ -255,8 +304,9 @@ export function getFareBreakdown(
   tier:        'confort' | 'premium' = 'confort',
   mode:        'privado' | 'compartido' = 'privado',
 ): FareBreakdown {
-  const dist                    = calculateDistance(pickup, dropoff);
-  const { price: base, fixed }  = sharedSuvBase(pickup, dropoff);
+  const dist = calculateDistance(pickup, dropoff);
+  const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
+  const surcharge = getOriginSurcharge(pickup);
 
   // Vehicle factor (VAN/Minibús/Bus amplían el precio privado)
   const vehicle      = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
@@ -264,24 +314,31 @@ export function getFareBreakdown(
   const vehicleFactor = isLargeVeh ? vehicle.multiplierConfort : 1;
 
   let totalFare: number;
-  if (mode === 'compartido') {
-    totalFare = base;                                            // precio compartido
+
+  if (fullEntry) {
+    // Ruta con precio completo predefinido (ej. Quito ↔ Aeropuerto)
+    if (mode === 'compartido') {
+      totalFare = fullEntry.compartido + surcharge;
+    } else {
+      totalFare = (tier === 'premium' ? fullEntry.premium : fullEntry.privado) + surcharge;
+    }
+  } else if (mode === 'compartido') {
+    totalFare = base + surcharge;
   } else {
     // Redondeamos a la decena más cercana
     const privadoConfort = Math.round(base * 4 * vehicleFactor / 10) * 10;
-    totalFare = tier === 'premium'
-      ? privadoConfort + 10                                      // privado premium = confort + $10
-      : privadoConfort;                                          // privado confort
+    totalFare = (tier === 'premium' ? privadoConfort + 10 : privadoConfort) + surcharge;
   }
 
   return {
-    sharedBase:  base,
+    sharedBase:     base,
     totalFare,
-    distanceKm:  Math.round(dist * 10) / 10,
-    durationMin: Math.round((dist / AVERAGE_SPEED_KMH) * 60),
-    isPriceFixed: fixed,
+    distanceKm:     Math.round(dist * 10) / 10,
+    durationMin:    Math.round((dist / AVERAGE_SPEED_KMH) * 60),
+    isPriceFixed:   fixed,
     mode,
     tier,
+    originSurcharge: surcharge,
   };
 }
 
