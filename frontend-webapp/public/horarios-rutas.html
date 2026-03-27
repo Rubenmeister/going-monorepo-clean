@@ -16,182 +16,87 @@
       text-align: center;
       margin-bottom: 2.5rem;
     }
-    .header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: -0.5px;
-    }
-    .header p {
-      color: #64748b;
-      margin-top: 0.4rem;
-      font-size: 0.95rem;
-    }
+    .header h1 { font-size: 1.8rem; font-weight: 700; color: #0f172a; letter-spacing: -0.5px; }
+    .header p { color: #64748b; margin-top: 0.4rem; font-size: 0.95rem; }
     .badge {
       display: inline-block;
-      background: #f0fdf4;
-      color: #16a34a;
-      border: 1px solid #bbf7d0;
-      border-radius: 999px;
-      padding: 0.2rem 0.8rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-top: 0.6rem;
+      background: #f0fdf4; color: #16a34a;
+      border: 1px solid #bbf7d0; border-radius: 999px;
+      padding: 0.2rem 0.8rem; font-size: 0.8rem; font-weight: 600; margin-top: 0.6rem;
     }
 
-    .routes-grid {
-      display: grid;
-      gap: 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
+    .routes-grid { display: grid; gap: 2.5rem; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Section label (IDA / REGRESO) ── */
+    .direction-label {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 1.5rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #64748b;
+      background: #f8fafc; border-top: 1px solid #e2e8f0;
     }
+    .direction-label span { flex: 1; height: 1px; background: #e2e8f0; }
 
     .route-card {
-      background: #fff;
-      border-radius: 16px;
+      background: #fff; border-radius: 16px;
       box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.04);
       overflow: hidden;
     }
     .route-header {
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem;
       border-bottom: 1px solid #f1f5f9;
     }
     .route-num {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 1rem;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; flex-shrink: 0;
     }
-    .route-info h2 {
-      font-size: 1.05rem;
-      font-weight: 700;
-    }
-    .route-info .stops {
-      font-size: 0.82rem;
-      color: #64748b;
-      margin-top: 2px;
-    }
-    .route-meta {
-      margin-left: auto;
-      text-align: right;
-    }
-    .route-meta .cars {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-    }
-    .route-meta .freq {
-      font-size: 0.75rem;
-      color: #94a3b8;
-    }
+    .route-info h2 { font-size: 1.05rem; font-weight: 700; }
+    .route-info .stops { font-size: 0.82rem; color: #64748b; margin-top: 2px; }
+    .route-meta { margin-left: auto; text-align: right; }
+    .route-meta .cars { font-size: 0.85rem; font-weight: 600; color: #475569; }
+    .route-meta .freq { font-size: 0.75rem; color: #94a3b8; }
 
-    .schedule-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .schedule-table thead tr {
-      background: #f8fafc;
-    }
+    .schedule-table { width: 100%; border-collapse: collapse; }
+    .schedule-table thead tr { background: #f8fafc; }
     .schedule-table th {
-      padding: 0.6rem 1rem;
-      text-align: left;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      padding: 0.6rem 1rem; text-align: left;
+      font-size: 0.72rem; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.05em;
       border-bottom: 1px solid #e2e8f0;
     }
     .schedule-table td {
-      padding: 0.65rem 1rem;
-      font-size: 0.88rem;
-      border-bottom: 1px solid #f1f5f9;
-      vertical-align: middle;
+      padding: 0.65rem 1rem; font-size: 0.88rem;
+      border-bottom: 1px solid #f1f5f9; vertical-align: middle;
     }
     .schedule-table tr:last-child td { border-bottom: none; }
     .schedule-table tr:hover td { background: #f8fafc; }
 
     .time-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-weight: 700;
-      font-size: 1rem;
-      color: #0f172a;
-      letter-spacing: 0.5px;
+      display: inline-flex; align-items: baseline; gap: 0.3rem;
+      font-weight: 700; font-size: 1rem; color: #0f172a; letter-spacing: 0.5px;
     }
-    .period {
-      font-size: 0.7rem;
-      font-weight: 400;
-      color: #94a3b8;
-    }
-
-    .origin-tag {
-      display: inline-block;
-      padding: 0.15rem 0.55rem;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
-    .surcharge-badge {
-      display: inline-block;
-      background: #fff7ed;
-      color: #c2410c;
-      border: 1px solid #fed7aa;
-      border-radius: 6px;
-      padding: 0.1rem 0.45rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      margin-left: 6px;
-    }
-
-    .car-num {
-      font-size: 0.78rem;
-      color: #94a3b8;
-    }
+    .period { font-size: 0.7rem; font-weight: 400; color: #94a3b8; }
+    .car-num { font-size: 0.78rem; color: #94a3b8; }
 
     /* Color themes */
     .r1 .route-num { background: #eff6ff; color: #1d4ed8; }
     .r1 .route-header { border-left: 4px solid #3b82f6; }
-    .r1 .origin-tag { background: #eff6ff; color: #1d4ed8; }
-
     .r2 .route-num { background: #f0fdf4; color: #15803d; }
     .r2 .route-header { border-left: 4px solid #22c55e; }
-    .r2 .origin-tag { background: #f0fdf4; color: #15803d; }
-
     .r3 .route-num { background: #fdf4ff; color: #7e22ce; }
     .r3 .route-header { border-left: 4px solid #a855f7; }
-    .r3 .origin-tag { background: #fdf4ff; color: #7e22ce; }
 
     .note-box {
-      max-width: 1100px;
-      margin: 2rem auto 0;
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      border: 1px solid #e2e8f0;
-      font-size: 0.85rem;
-      color: #475569;
-      line-height: 1.7;
+      max-width: 1100px; margin: 2rem auto 0;
+      background: #fff; border-radius: 12px;
+      padding: 1.2rem 1.5rem; border: 1px solid #e2e8f0;
+      font-size: 0.85rem; color: #475569; line-height: 1.7;
     }
     .note-box strong { color: #0f172a; }
     .note-box ul { padding-left: 1.2rem; margin-top: 0.4rem; }
 
-    footer {
-      text-align: center;
-      margin-top: 2.5rem;
-      font-size: 0.78rem;
-      color: #94a3b8;
-    }
+    footer { text-align: center; margin-top: 2.5rem; font-size: 0.78rem; color: #94a3b8; }
   </style>
 </head>
 <body>
@@ -204,67 +109,100 @@
 
 <div class="routes-grid">
 
-  <!-- ══════════════════════════════════════════════════════ -->
-  <!-- RUTA 1 — Ambato · Quito · Aeropuerto                  -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- RUTA 1 — Ambato / Baños ↔ Quito ↔ Aeropuerto                    -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
   <div class="route-card r1">
     <div class="route-header">
       <div class="route-num">1</div>
       <div class="route-info">
-        <h2>Ambato — Quito — Aeropuerto Tababela</h2>
-        <div class="stops">Ambato → Latacunga → Quito Centro Norte → Aeropuerto (ida y regreso)</div>
+        <h2>Baños — Ambato — Latacunga — Quito — Aeropuerto</h2>
+        <div class="stops">Ida y regreso · 10 vehículos · paradas en todas las ciudades</div>
       </div>
       <div class="route-meta">
         <div class="cars">🚗 10 vehículos</div>
         <div class="freq">cada ~100 min</div>
       </div>
     </div>
+
+    <!-- IDA: Ambato → Aeropuerto -->
+    <div class="direction-label">↗ IDA <span></span> Salidas desde Baños / Ambato hacia el Aeropuerto</div>
     <table class="schedule-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Salida desde Ambato</th>
-          <th>Llega Latacunga</th>
+          <th>Sale Baños</th>
+          <th>Sale Ambato</th>
+          <th>Sale Latacunga</th>
           <th>Llega Quito CN</th>
           <th>Llega Aeropuerto</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:40</td><td>05:40</td><td>06:30</td></tr>
-        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:20</td><td>07:20</td><td>08:10</td></tr>
-        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>08:00</td><td>09:00</td><td>09:50</td></tr>
-        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:40</td><td>10:40</td><td>11:30</td></tr>
-        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:20</td><td>12:20</td><td>13:10</td></tr>
-        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>13:00</td><td>14:00</td><td>14:50</td></tr>
-        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:40</td><td>15:40</td><td>16:30</td></tr>
-        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:20</td><td>17:20</td><td>18:10</td></tr>
-        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>18:00</td><td>19:00</td><td>19:50</td></tr>
-        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:40</td><td>20:40</td><td>21:30</td></tr>
+        <tr><td class="car-num">V-01</td><td>03:20</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:40</td><td>05:40</td><td>06:30</td></tr>
+        <tr><td class="car-num">V-02</td><td>05:00</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:20</td><td>07:20</td><td>08:10</td></tr>
+        <tr><td class="car-num">V-03</td><td>06:40</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>08:00</td><td>09:00</td><td>09:50</td></tr>
+        <tr><td class="car-num">V-04</td><td>08:20</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:40</td><td>10:40</td><td>11:30</td></tr>
+        <tr><td class="car-num">V-05</td><td>10:00</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:20</td><td>12:20</td><td>13:10</td></tr>
+        <tr><td class="car-num">V-06</td><td>11:40</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>13:00</td><td>14:00</td><td>14:50</td></tr>
+        <tr><td class="car-num">V-07</td><td>13:20</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:40</td><td>15:40</td><td>16:30</td></tr>
+        <tr><td class="car-num">V-08</td><td>15:00</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:20</td><td>17:20</td><td>18:10</td></tr>
+        <tr><td class="car-num">V-09</td><td>16:40</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>18:00</td><td>19:00</td><td>19:50</td></tr>
+        <tr><td class="car-num">V-10</td><td>18:20</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:40</td><td>20:40</td><td>21:30</td></tr>
+      </tbody>
+    </table>
+
+    <!-- REGRESO: Aeropuerto → Baños -->
+    <div class="direction-label">↙ REGRESO <span></span> Salidas desde Aeropuerto / Quito hacia Baños</div>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sale Aeropuerto</th>
+          <th>Sale Quito CN</th>
+          <th>Llega Latacunga</th>
+          <th>Llega Ambato</th>
+          <th>Llega Baños</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:50</td><td>05:50</td><td>06:30</td><td>07:10</td></tr>
+        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:30</td><td>07:30</td><td>08:10</td><td>08:50</td></tr>
+        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>08:10</td><td>09:10</td><td>09:50</td><td>10:30</td></tr>
+        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:50</td><td>10:50</td><td>11:30</td><td>12:10</td></tr>
+        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:30</td><td>12:30</td><td>13:10</td><td>13:50</td></tr>
+        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>13:10</td><td>14:10</td><td>14:50</td><td>15:30</td></tr>
+        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:50</td><td>15:50</td><td>16:30</td><td>17:10</td></tr>
+        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:30</td><td>17:30</td><td>18:10</td><td>18:50</td></tr>
+        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>18:10</td><td>19:10</td><td>19:50</td><td>20:30</td></tr>
+        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:50</td><td>20:50</td><td>21:30</td><td>22:10</td></tr>
       </tbody>
     </table>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- RUTA 2 — El Carmen · Santo Domingo · Quito · Aeropuerto       -->
-  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- RUTA 2 — El Carmen · Santo Domingo ↔ Quito ↔ Aeropuerto          -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
   <div class="route-card r2">
     <div class="route-header">
       <div class="route-num">2</div>
       <div class="route-info">
         <h2>El Carmen — Santo Domingo — Quito — Aeropuerto</h2>
-        <div class="stops">El Carmen → Santo Domingo → Quito Centro Norte → Aeropuerto Tababela (ida y regreso)</div>
+        <div class="stops">Ida y regreso · 10 vehículos · paradas en todas las ciudades</div>
       </div>
       <div class="route-meta">
         <div class="cars">🚗 10 vehículos</div>
         <div class="freq">cada ~100 min</div>
       </div>
     </div>
+
+    <div class="direction-label">↗ IDA <span></span> Salidas desde El Carmen hacia el Aeropuerto</div>
     <table class="schedule-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Salida desde El Carmen</th>
-          <th>Llega Sto. Domingo</th>
+          <th>Sale El Carmen</th>
+          <th>Sale Sto. Domingo</th>
           <th>Llega Quito CN</th>
           <th>Llega Aeropuerto</th>
         </tr>
@@ -282,44 +220,98 @@
         <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>20:05</td><td>22:05</td><td>22:55</td></tr>
       </tbody>
     </table>
+
+    <div class="direction-label">↙ REGRESO <span></span> Salidas desde Aeropuerto / Quito hacia El Carmen</div>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sale Aeropuerto</th>
+          <th>Sale Quito CN</th>
+          <th>Llega Sto. Domingo</th>
+          <th>Llega El Carmen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:50</td><td>06:50</td><td>07:55</td></tr>
+        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:30</td><td>08:30</td><td>09:35</td></tr>
+        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>08:10</td><td>10:10</td><td>11:15</td></tr>
+        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:50</td><td>11:50</td><td>12:55</td></tr>
+        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:30</td><td>13:30</td><td>14:35</td></tr>
+        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>13:10</td><td>15:10</td><td>16:15</td></tr>
+        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:50</td><td>16:50</td><td>17:55</td></tr>
+        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:30</td><td>18:30</td><td>19:35</td></tr>
+        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>18:10</td><td>20:10</td><td>21:15</td></tr>
+        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:50</td><td>21:50</td><td>22:55</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════ -->
-  <!-- RUTA 3 — Ibarra · Otavalo · Quito · Aeropuerto                -->
-  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- RUTA 3 — Ibarra / Otavalo / Peguche / Atuntaqui ↔ Quito ↔ Aeropuerto    -->
+  <!-- ══════════════════════════════════════════════════════════════════════════ -->
   <div class="route-card r3">
     <div class="route-header">
       <div class="route-num">3</div>
       <div class="route-info">
-        <h2>Ibarra — Otavalo — Quito — Aeropuerto</h2>
-        <div class="stops">Ibarra → Otavalo → Cayambe → Quito Centro Norte → Aeropuerto Tababela (ida y regreso)</div>
+        <h2>Ibarra — Atuntaqui — Otavalo — Peguche — Quito — Aeropuerto</h2>
+        <div class="stops">Ida y regreso · Ibarra · Atuntaqui · Otavalo · Peguche tienen la misma tarifa</div>
       </div>
       <div class="route-meta">
         <div class="cars">🚗 10 vehículos</div>
         <div class="freq">cada ~100 min</div>
       </div>
     </div>
+
+    <div class="direction-label">↗ IDA <span></span> Salidas desde Ibarra hacia el Aeropuerto</div>
     <table class="schedule-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Salida desde Ibarra</th>
-          <th>Llega Otavalo</th>
+          <th>Sale Ibarra</th>
+          <th>Sale Atuntaqui</th>
+          <th>Sale Otavalo / Peguche</th>
           <th>Llega Quito CN</th>
           <th>Llega Aeropuerto</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:25</td><td>05:55</td><td>06:45</td></tr>
-        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:05</td><td>07:35</td><td>08:25</td></tr>
-        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>07:45</td><td>09:15</td><td>10:05</td></tr>
-        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:25</td><td>10:55</td><td>11:45</td></tr>
-        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:05</td><td>12:35</td><td>13:25</td></tr>
-        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>12:45</td><td>14:15</td><td>15:05</td></tr>
-        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:25</td><td>15:55</td><td>16:45</td></tr>
-        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:05</td><td>17:35</td><td>18:25</td></tr>
-        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>17:45</td><td>19:15</td><td>20:05</td></tr>
-        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:25</td><td>20:55</td><td>21:45</td></tr>
+        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:15</td><td>04:35</td><td>06:05</td><td>06:55</td></tr>
+        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>05:55</td><td>06:15</td><td>07:45</td><td>08:35</td></tr>
+        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>07:35</td><td>07:55</td><td>09:25</td><td>10:15</td></tr>
+        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:15</td><td>09:35</td><td>11:05</td><td>11:55</td></tr>
+        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>10:55</td><td>11:15</td><td>12:45</td><td>13:35</td></tr>
+        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>12:35</td><td>12:55</td><td>14:25</td><td>15:15</td></tr>
+        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:15</td><td>14:35</td><td>16:05</td><td>16:55</td></tr>
+        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>15:55</td><td>16:15</td><td>17:45</td><td>18:35</td></tr>
+        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>17:35</td><td>17:55</td><td>19:25</td><td>20:15</td></tr>
+        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:15</td><td>19:35</td><td>21:05</td><td>21:55</td></tr>
+      </tbody>
+    </table>
+
+    <div class="direction-label">↙ REGRESO <span></span> Salidas desde Aeropuerto / Quito hacia Ibarra</div>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Sale Aeropuerto</th>
+          <th>Sale Quito CN</th>
+          <th>Llega Otavalo / Peguche</th>
+          <th>Llega Atuntaqui</th>
+          <th>Llega Ibarra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="car-num">V-01</td><td><span class="time-pill">04:00 <span class="period">AM</span></span></td><td>04:50</td><td>06:20</td><td>06:40</td><td>06:55</td></tr>
+        <tr><td class="car-num">V-02</td><td><span class="time-pill">05:40 <span class="period">AM</span></span></td><td>06:30</td><td>08:00</td><td>08:20</td><td>08:35</td></tr>
+        <tr><td class="car-num">V-03</td><td><span class="time-pill">07:20 <span class="period">AM</span></span></td><td>08:10</td><td>09:40</td><td>10:00</td><td>10:15</td></tr>
+        <tr><td class="car-num">V-04</td><td><span class="time-pill">09:00 <span class="period">AM</span></span></td><td>09:50</td><td>11:20</td><td>11:40</td><td>11:55</td></tr>
+        <tr><td class="car-num">V-05</td><td><span class="time-pill">10:40 <span class="period">AM</span></span></td><td>11:30</td><td>13:00</td><td>13:20</td><td>13:35</td></tr>
+        <tr><td class="car-num">V-06</td><td><span class="time-pill">12:20 <span class="period">PM</span></span></td><td>13:10</td><td>14:40</td><td>15:00</td><td>15:15</td></tr>
+        <tr><td class="car-num">V-07</td><td><span class="time-pill">14:00 <span class="period">PM</span></span></td><td>14:50</td><td>16:20</td><td>16:40</td><td>16:55</td></tr>
+        <tr><td class="car-num">V-08</td><td><span class="time-pill">15:40 <span class="period">PM</span></span></td><td>16:30</td><td>18:00</td><td>18:20</td><td>18:35</td></tr>
+        <tr><td class="car-num">V-09</td><td><span class="time-pill">17:20 <span class="period">PM</span></span></td><td>18:10</td><td>19:40</td><td>20:00</td><td>20:15</td></tr>
+        <tr><td class="car-num">V-10</td><td><span class="time-pill">19:00 <span class="period">PM</span></span></td><td>19:50</td><td>21:20</td><td>21:40</td><td>21:55</td></tr>
       </tbody>
     </table>
   </div>
@@ -329,11 +321,12 @@
 <div class="note-box">
   <strong>💡 Tarifas y recargos</strong>
   <ul>
-    <li>Quito Centro Norte → Aeropuerto: <strong>compartido $10 · privado $25 · premium $30</strong></li>
-    <li>Aeropuerto / Quito Sur / Valles como origen: <strong>+$5 de recargo</strong></li>
+    <li>Quito Centro Norte ↔ Aeropuerto: <strong>compartido $10 · privado $25 · premium $30</strong></li>
+    <li>Salidas desde Aeropuerto / Quito Sur / Valles: <strong>+$5 de recargo de origen</strong></li>
+    <li>Ibarra, Atuntaqui, Otavalo y Peguche tienen la <strong>misma tarifa</strong> en todas las rutas.</li>
     <li>Los horarios de llegada son estimados (tráfico puede variar ±20 min).</li>
     <li>Intervalo entre salidas: <strong>cada 1h 40min</strong> · 10 salidas diarias por ruta.</li>
-    <li>Tiempos de tránsito usados: Ambato–Latacunga 40 min · Latacunga–QCN 60 min · QCN–Aeropuerto 50 min · El Carmen–Sto. Domingo 65 min · Sto. Domingo–QCN 120 min · Ibarra–Otavalo 25 min · Otavalo–QCN 90 min.</li>
+    <li>Tiempos de tránsito usados: Aeropuerto→Quito CN 50 min · Quito CN→Latacunga 60 min · Latacunga→Ambato 40 min · Ambato→Baños 40 min · El Carmen→Sto. Domingo 65 min · Sto. Domingo↔Quito CN 120 min · Quito CN→Otavalo/Peguche 90 min · Otavalo→Ibarra 35 min.</li>
   </ul>
 </div>
 

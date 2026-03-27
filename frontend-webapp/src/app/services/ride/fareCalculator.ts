@@ -96,10 +96,13 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   // ── Rutas hacia Quito Centro Norte ───────────────────────────
   'cayambe|quito centro norte':              7,
   'guayllabamba|quito centro norte':         6,
-  'otavalo|quito centro norte':              9,
+  // Ibarra / Atuntaqui / Otavalo / Peguche — misma tarifa (zona norte)
+  'ibarra|quito centro norte':               11,
+  'atuntaqui|quito centro norte':            11,
+  'otavalo|quito centro norte':              11,
+  'peguche|quito centro norte':              11,
   'cotacachi|quito centro norte':            11,
   'tabacundo|quito centro norte':            8,
-  'ibarra|quito centro norte':               11,
   'el quinche|quito centro norte':           7,
   'pifo|quito centro norte':                 6,
   'quito centro norte|tulcan':               24,
@@ -128,7 +131,45 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'quito centro norte|zaruma':               64,
   'loja|quito centro norte':                 69,
 
-  // El Carmen → Quito / Aeropuerto (Ruta 2)
+  // ── Ruta Norte: Ibarra / Atuntaqui / Otavalo / Peguche ────────
+  // (todas con la misma tarifa — zona norte)
+  'atuntaqui|cumbaya  tumbaco valle':        19,
+  'atuntaqui|los chillos  sangolqui':        20,
+  'atuntaqui|quito sur':                     14,
+  'aeropuerto quito tababela|peguche':       14,
+
+  // ── Ruta Ambato: ciudades intermedias ──────────────────────────
+  'latacunga|salcedo':                       3,
+  'ambato|salcedo':                          5,
+  'ambato|pillaro':                          5,
+  'ambato|cevallos':                         4,
+  'ambato|tisaleo':                          4,
+  'ambato|mocha':                            4,
+  'banos|mocha':                             4,
+  'banos|cevallos':                          5,
+  'banos|tisaleo':                           5,
+  'banos|pillaro':                           6,
+  'latacunga|pillaro':                       8,
+  'latacunga|cevallos':                      9,
+  'quito centro norte|salcedo':              10,
+  'quito centro norte|pillaro':              11,
+  'quito centro norte|cevallos':             12,
+  'quito centro norte|tisaleo':              12,
+  'quito centro norte|mocha':               13,
+
+  // ── Ruta Santo Domingo: ciudades intermedias ──────────────────
+  'el carmen|la concordia':                  7,
+  'chone|el carmen':                         9,
+  'chone|santo domingo':                     14,
+  'chone|quito centro norte':                24,
+  'flavio alfaro|el carmen':                 5,
+  'flavio alfaro|santo domingo':             18,
+  'flavio alfaro|quito centro norte':        27,
+  'la concordia|santo domingo':              8,
+  'la concordia|quito centro norte':         17,
+  'aeropuerto quito tababela|la concordia':  20,
+
+  // ── El Carmen → Quito / Aeropuerto (Ruta 2) ───────────────────
   'el carmen|quito centro norte':            20,
   'el carmen|santo domingo':                 8,
   'el carmen|quito sur':                     18,
@@ -169,8 +210,11 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'aeropuerto quito tababela|riobamba':      23,
   'aeropuerto quito tababela|guayllabamba':  5,
   'aeropuerto quito tababela|cayambe':       9,
+  // Ibarra / Atuntaqui / Otavalo / Peguche — misma tarifa desde aeropuerto
   'aeropuerto quito tababela|ibarra':        14,
-  'aeropuerto quito tababela|otavalo':       12,
+  'aeropuerto quito tababela|atuntaqui':     14,
+  'aeropuerto quito tababela|otavalo':       14,
+  'aeropuerto quito tababela|peguche':       14,
   'aeropuerto quito tababela|pifo':          5,
   'aeropuerto quito tababela|el quinche':    6,
   'aeropuerto quito tababela|cuenca':        47,
