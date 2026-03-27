@@ -39,69 +39,105 @@ const SERVICES = [
   { id: 'tour'      as const, label: '🏔️ Tour',      color: '#43A047' },
 ];
 
-// ── Ciudades de origen (21 ciudades Ecuador) ───────────────────────────────
+// ── Ciudades de origen (rutas Going + Ecuador) ────────────────────────────
 type CityId =
-  | 'quito' | 'guayaquil' | 'cuenca' | 'ambato' | 'riobamba'
+  | 'aeropuerto_quito' | 'quito' | 'guayaquil' | 'cuenca' | 'ambato' | 'riobamba'
   | 'loja' | 'manta' | 'portoviejo' | 'ibarra' | 'esmeraldas'
   | 'machala' | 'santo_domingo' | 'latacunga' | 'tulcan' | 'babahoyo'
-  | 'lago_agrio' | 'tena' | 'puyo' | 'macas' | 'zamora' | 'guaranda';
+  | 'lago_agrio' | 'tena' | 'puyo' | 'macas' | 'zamora' | 'guaranda'
+  | 'banos' | 'el_carmen' | 'otavalo' | 'atuntaqui' | 'peguche'
+  | 'salcedo' | 'pillaro' | 'cevallos' | 'tisaleo' | 'mocha' | 'la_concordia';
 
 const ORIGIN_CITIES: { id: CityId; label: string; province: string }[] = [
-  { id: 'quito',        label: 'Quito',         province: 'Pichincha' },
-  { id: 'guayaquil',    label: 'Guayaquil',      province: 'Guayas' },
-  { id: 'cuenca',       label: 'Cuenca',         province: 'Azuay' },
-  { id: 'ambato',       label: 'Ambato',         province: 'Tungurahua' },
-  { id: 'riobamba',     label: 'Riobamba',       province: 'Chimborazo' },
-  { id: 'loja',         label: 'Loja',           province: 'Loja' },
-  { id: 'manta',        label: 'Manta',          province: 'Manabí' },
-  { id: 'portoviejo',   label: 'Portoviejo',     province: 'Manabí' },
-  { id: 'ibarra',       label: 'Ibarra',         province: 'Imbabura' },
-  { id: 'esmeraldas',   label: 'Esmeraldas',     province: 'Esmeraldas' },
-  { id: 'machala',      label: 'Machala',        province: 'El Oro' },
-  { id: 'santo_domingo',label: 'Santo Domingo',  province: 'Santo Domingo' },
-  { id: 'latacunga',    label: 'Latacunga',      province: 'Cotopaxi' },
-  { id: 'tulcan',       label: 'Tulcán',         province: 'Carchi' },
-  { id: 'babahoyo',     label: 'Babahoyo',       province: 'Los Ríos' },
-  { id: 'lago_agrio',   label: 'Lago Agrio',     province: 'Sucumbíos' },
-  { id: 'tena',         label: 'Tena',           province: 'Napo' },
-  { id: 'puyo',         label: 'Puyo',           province: 'Pastaza' },
-  { id: 'macas',        label: 'Macas',          province: 'Morona Santiago' },
-  { id: 'zamora',       label: 'Zamora',         province: 'Zamora Chinchipe' },
-  { id: 'guaranda',     label: 'Guaranda',       province: 'Bolívar' },
+  // ── Rutas Going (aeropuerto + Sierra principales) ──────────────────────
+  { id: 'aeropuerto_quito', label: 'Aeropuerto Quito (Tababela)', province: 'Pichincha' },
+  { id: 'quito',            label: 'Quito',                       province: 'Pichincha' },
+  // ── Sierra Centro ──────────────────────────────────────────────────────
+  { id: 'ambato',    label: 'Ambato',    province: 'Tungurahua' },
+  { id: 'banos',     label: 'Baños',     province: 'Tungurahua' },
+  { id: 'latacunga', label: 'Latacunga', province: 'Cotopaxi'   },
+  { id: 'salcedo',   label: 'Salcedo',   province: 'Cotopaxi'   },
+  { id: 'pillaro',   label: 'Píllaro',   province: 'Tungurahua' },
+  { id: 'cevallos',  label: 'Cevallos',  province: 'Tungurahua' },
+  { id: 'tisaleo',   label: 'Tisaleo',   province: 'Tungurahua' },
+  { id: 'mocha',     label: 'Mocha',     province: 'Tungurahua' },
+  // ── Sierra Norte ───────────────────────────────────────────────────────
+  { id: 'ibarra',    label: 'Ibarra',    province: 'Imbabura' },
+  { id: 'otavalo',   label: 'Otavalo',   province: 'Imbabura' },
+  { id: 'atuntaqui', label: 'Atuntaqui', province: 'Imbabura' },
+  { id: 'peguche',   label: 'Peguche',   province: 'Imbabura' },
+  { id: 'tulcan',    label: 'Tulcán',    province: 'Carchi'   },
+  // ── Costa / Santo Domingo ─────────────────────────────────────────────
+  { id: 'el_carmen',    label: 'El Carmen',    province: 'Manabí'        },
+  { id: 'la_concordia', label: 'La Concordia', province: 'Santo Domingo' },
+  { id: 'santo_domingo',label: 'Santo Domingo',province: 'Santo Domingo' },
+  // ── Resto Ecuador ─────────────────────────────────────────────────────
+  { id: 'guayaquil',    label: 'Guayaquil',    province: 'Guayas'           },
+  { id: 'cuenca',       label: 'Cuenca',       province: 'Azuay'            },
+  { id: 'riobamba',     label: 'Riobamba',     province: 'Chimborazo'       },
+  { id: 'loja',         label: 'Loja',         province: 'Loja'             },
+  { id: 'manta',        label: 'Manta',        province: 'Manabí'           },
+  { id: 'portoviejo',   label: 'Portoviejo',   province: 'Manabí'           },
+  { id: 'esmeraldas',   label: 'Esmeraldas',   province: 'Esmeraldas'       },
+  { id: 'machala',      label: 'Machala',      province: 'El Oro'           },
+  { id: 'babahoyo',     label: 'Babahoyo',     province: 'Los Ríos'         },
+  { id: 'lago_agrio',   label: 'Lago Agrio',   province: 'Sucumbíos'        },
+  { id: 'tena',         label: 'Tena',         province: 'Napo'             },
+  { id: 'puyo',         label: 'Puyo',         province: 'Pastaza'          },
+  { id: 'macas',        label: 'Macas',        province: 'Morona Santiago'  },
+  { id: 'zamora',       label: 'Zamora',       province: 'Zamora Chinchipe' },
+  { id: 'guaranda',     label: 'Guaranda',     province: 'Bolívar'          },
 ];
 
 // ── Rutas destacadas ───────────────────────────────────────────────────────
 const FEATURED_ROUTES = [
-  { id: 'r1', label: 'Santo Domingo → Quito → Aeropuerto', color: '#ff4c41', icon: '✈️', badge: 'Popular' },
-  { id: 'r2', label: 'Ambato → Latacunga → Quito',         color: '#0033A0', icon: '🔵', badge: 'Frecuente' },
-  { id: 'r3', label: 'Ibarra → Quito → Aeropuerto',        color: '#43A047', icon: '🟢', badge: 'Rápida' },
-  { id: 'r4', label: 'Cuenca → Loja → Zamora',             color: '#F59E0B', icon: '🏔️', badge: 'Turismo' },
+  { id: 'r1', label: 'Santo Domingo → Quito → Aeropuerto',        color: '#ff4c41', icon: '✈️', badge: 'Popular'   },
+  { id: 'r2', label: 'Ambato → Latacunga → Quito → Aeropuerto',   color: '#0033A0', icon: '🔵', badge: 'Frecuente' },
+  { id: 'r3', label: 'Ibarra → Quito → Aeropuerto',               color: '#43A047', icon: '🟢', badge: 'Rápida'    },
+  { id: 'r4', label: 'Cuenca → Loja → Zamora',                    color: '#F59E0B', icon: '🏔️', badge: 'Turismo'   },
 ];
 
 // ── Tarifa base por persona según ciudad de origen ─────────────────────────
 // SUV class: SUV, SUV XL  |  VAN class: VAN, VAN XL  |  BUS class: BUS
 const PERSON_RATES: Record<CityId, { suv: number; van: number; bus: number }> = {
-  quito:         { suv: 10, van: 8,  bus: 7  },
-  guayaquil:     { suv: 18, van: 15, bus: 13 },
-  cuenca:        { suv: 20, van: 17, bus: 15 },
-  ambato:        { suv: 15, van: 13, bus: 11 },
-  riobamba:      { suv: 17, van: 14, bus: 12 },
-  loja:          { suv: 25, van: 21, bus: 18 },
-  manta:         { suv: 22, van: 18, bus: 16 },
-  portoviejo:    { suv: 22, van: 18, bus: 16 },
-  ibarra:        { suv: 15, van: 13, bus: 11 },
-  esmeraldas:    { suv: 20, van: 17, bus: 15 },
-  machala:       { suv: 23, van: 19, bus: 17 },
-  santo_domingo: { suv: 15, van: 13, bus: 11 },
-  latacunga:     { suv: 13, van: 11, bus: 10 },
-  tulcan:        { suv: 18, van: 15, bus: 13 },
-  babahoyo:      { suv: 19, van: 16, bus: 14 },
-  lago_agrio:    { suv: 28, van: 24, bus: 20 },
-  tena:          { suv: 25, van: 21, bus: 18 },
-  puyo:          { suv: 22, van: 18, bus: 16 },
-  macas:         { suv: 28, van: 24, bus: 20 },
-  zamora:        { suv: 30, van: 25, bus: 22 },
-  guaranda:      { suv: 18, van: 15, bus: 13 },
+  // ── Rutas Going principales ────────────────────────────────────────────
+  aeropuerto_quito: { suv: 12, van: 10, bus: 9  },
+  quito:            { suv: 10, van: 8,  bus: 7  },
+  // ── Sierra Centro ─────────────────────────────────────────────────────
+  ambato:    { suv: 9,  van: 8,  bus: 7  },
+  banos:     { suv: 12, van: 10, bus: 9  },
+  latacunga: { suv: 8,  van: 7,  bus: 6  },
+  salcedo:   { suv: 9,  van: 8,  bus: 7  },
+  pillaro:   { suv: 10, van: 8,  bus: 7  },
+  cevallos:  { suv: 10, van: 8,  bus: 7  },
+  tisaleo:   { suv: 10, van: 8,  bus: 7  },
+  mocha:     { suv: 11, van: 9,  bus: 8  },
+  // ── Sierra Norte ──────────────────────────────────────────────────────
+  ibarra:    { suv: 11, van: 9,  bus: 8  },
+  otavalo:   { suv: 12, van: 10, bus: 9  },
+  atuntaqui: { suv: 12, van: 10, bus: 9  },
+  peguche:   { suv: 12, van: 10, bus: 9  },
+  tulcan:    { suv: 18, van: 15, bus: 13 },
+  // ── Costa / Santo Domingo ─────────────────────────────────────────────
+  el_carmen:    { suv: 14, van: 12, bus: 10 },
+  la_concordia: { suv: 13, van: 11, bus: 9  },
+  santo_domingo:{ suv: 13, van: 11, bus: 9  },
+  // ── Resto Ecuador ─────────────────────────────────────────────────────
+  guayaquil:  { suv: 18, van: 15, bus: 13 },
+  cuenca:     { suv: 20, van: 17, bus: 15 },
+  riobamba:   { suv: 17, van: 14, bus: 12 },
+  loja:       { suv: 25, van: 21, bus: 18 },
+  manta:      { suv: 22, van: 18, bus: 16 },
+  portoviejo: { suv: 22, van: 18, bus: 16 },
+  esmeraldas: { suv: 20, van: 17, bus: 15 },
+  machala:    { suv: 23, van: 19, bus: 17 },
+  babahoyo:   { suv: 19, van: 16, bus: 14 },
+  lago_agrio: { suv: 28, van: 24, bus: 20 },
+  tena:       { suv: 25, van: 21, bus: 18 },
+  puyo:       { suv: 22, van: 18, bus: 16 },
+  macas:      { suv: 28, van: 24, bus: 20 },
+  zamora:     { suv: 30, van: 25, bus: 22 },
+  guaranda:   { suv: 18, van: 15, bus: 13 },
 };
 
 // ── Modos de viaje ─────────────────────────────────────────────────────────
@@ -211,7 +247,7 @@ export default function HomeScreen() {
   const [location, setLocation] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState('');
   const [selectedService, setSelectedService] = useState<'transport' | 'delivery' | 'tour'>('transport');
-  const [originCity, setOriginCity] = useState<CityId>('latacunga');
+  const [originCity, setOriginCity] = useState<CityId>('quito');
   const [tripMode, setTripMode] = useState<TripMode>('compartido');
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleId>('suv');
   const [selectedCategory, setSelectedCategory] = useState<Category>('confort');
