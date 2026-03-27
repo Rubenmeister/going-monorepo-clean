@@ -118,12 +118,7 @@ const ACCOMMODATION_TYPES_FALLBACK = [
   },
 ];
 
-const STATS = [
-  { number: '2,400+', label: 'Propiedades verificadas' },
-  { number: '98%', label: 'Satisfacción de huéspedes' },
-  { number: '24 h', label: 'Soporte al cliente' },
-  { number: '0 %', label: 'Comisión oculta' },
-];
+const STATS: { number: string; label: string }[] = [];
 
 const BENEFITS = [
   {
@@ -229,12 +224,6 @@ export default function AccommodationPage() {
                 <div className="absolute bottom-3 left-4 text-3xl">
                   {item.icon}
                 </div>
-                <div
-                  className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-bold px-3 py-1 rounded-full"
-                  style={{ color: item.color }}
-                >
-                  {item.price}
-                </div>
               </div>
 
               {/* Content */}
@@ -323,7 +312,7 @@ export default function AccommodationPage() {
             ¿Listo para reservar tu estadía?
           </h2>
           <p className="text-white/70 mb-8 text-lg">
-            Más de 2,400 propiedades verificadas te esperan en todo Ecuador.
+            Propiedades verificadas en todo Ecuador. Encuentra tu lugar ideal.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -365,7 +354,7 @@ export default function AccommodationPage() {
                 <span style={{ color: '#a78bfa' }}>ingresos reales</span>
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Anfitriones Going ganan entre <strong className="text-white">$400 y $2,000/mes</strong> hospedando viajeros verificados.
+                Anfitriones Going generan ingresos recurrentes hospedando viajeros verificados.
                 Tú controlas tu calendario, tus precios y tus reglas. Pagos seguros antes de cada llegada.
               </p>
               <div className="grid grid-cols-2 gap-3 mb-8">
