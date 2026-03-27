@@ -165,8 +165,8 @@ export default function ComunidadPage() {
       <section className="py-0 px-6">
         <div className="max-w-6xl mx-auto -mt-10 relative z-10">
           <img
-            src="/images/Gemini_Generated_Image_4n0nss4n0nss4n0n.png"
-            alt="Going - Grupo de Senderismo Alpes Suizos 2024"
+            src="/images/senderismo quilotoa.png"
+            alt="Going - Senderismo Quilotoa Ecuador"
             className="w-full rounded-3xl shadow-2xl object-cover"
             style={{ maxHeight: '460px' }}
           />
