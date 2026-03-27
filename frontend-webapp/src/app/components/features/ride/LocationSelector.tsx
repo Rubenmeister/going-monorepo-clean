@@ -19,18 +19,51 @@ function loadStored(key: string): SavedEntry[] {
   try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
 }
 
-/* Default Ecuador cities — fallback when no query or no token */
+/* Default Ecuador locations — fallback cuando no hay token o consulta vacía */
 const DEFAULT_LOCATIONS: Location[] = [
-  { address: 'Quito, Ecuador', lat: -0.2299, lon: -78.5099, city: 'Quito' },
-  { address: 'Guayaquil, Ecuador', lat: -2.1898, lon: -79.8711, city: 'Guayaquil' },
-  { address: 'Cuenca, Ecuador', lat: -2.8969, lon: -79.0056, city: 'Cuenca' },
-  { address: 'Ambato, Ecuador', lat: -1.2264, lon: -78.6267, city: 'Ambato' },
-  { address: 'Loja, Ecuador', lat: -4.0141, lon: -79.2007, city: 'Loja' },
-  { address: 'Riobamba, Ecuador', lat: -1.6734, lon: -78.6459, city: 'Riobamba' },
-  { address: 'Machala, Ecuador', lat: -3.2587, lon: -79.9615, city: 'Machala' },
-  { address: 'Ibarra, Ecuador', lat: 0.3505, lon: -78.1236, city: 'Ibarra' },
-  { address: 'Portoviejo, Ecuador', lat: -1.0545, lon: -80.4544, city: 'Portoviejo' },
-  { address: 'Manta, Ecuador', lat: -0.9542, lon: -80.7319, city: 'Manta' },
+  // ── Zonas de Quito ─────────────────────────────────────────
+  { address: 'Quito Centro Norte',          lat: -0.1807, lon: -78.4678, city: 'Quito' },
+  { address: 'Quito Sur',                   lat: -0.3500, lon: -78.5400, city: 'Quito' },
+  { address: 'Cumbayá / Tumbaco (Valle)',   lat: -0.2010, lon: -78.4030, city: 'Quito' },
+  { address: 'Los Chillos / Sangolquí',     lat: -0.3296, lon: -78.4490, city: 'Quito' },
+  { address: 'Aeropuerto Quito (Tababela)', lat: -0.1292, lon: -78.3575, city: 'Quito' },
+
+  // ── Ciudades intermedias en rutas hacia Quito ───────────────
+  { address: 'Guayllabamba',   lat: -0.0494, lon: -78.3692, city: 'Guayllabamba' },
+  { address: 'Cayambe',        lat:  0.0423, lon: -78.1368, city: 'Cayambe' },
+  { address: 'Tabacundo',      lat:  0.0454, lon: -78.2025, city: 'Tabacundo' },
+  { address: 'El Quinche',     lat: -0.1012, lon: -78.3136, city: 'El Quinche' },
+  { address: 'Pifo',           lat: -0.2279, lon: -78.3520, city: 'Pifo' },
+  { address: 'Machachi',       lat: -0.5104, lon: -78.5698, city: 'Machachi' },
+  { address: 'Tambillo',       lat: -0.4360, lon: -78.5598, city: 'Tambillo' },
+  { address: 'Aloasí',         lat: -0.5300, lon: -78.5700, city: 'Aloasí' },
+  { address: 'Otavalo',        lat:  0.2342, lon: -78.2637, city: 'Otavalo' },
+  { address: 'Cotacachi',      lat:  0.3049, lon: -78.2656, city: 'Cotacachi' },
+
+  // ── Ciudades principales ─────────────────────────────────────
+  { address: 'Guayaquil',       lat: -2.1898, lon: -79.8711, city: 'Guayaquil' },
+  { address: 'Cuenca',          lat: -2.8969, lon: -79.0056, city: 'Cuenca' },
+  { address: 'Ambato',          lat: -1.2264, lon: -78.6267, city: 'Ambato' },
+  { address: 'Latacunga',       lat: -0.9346, lon: -78.6155, city: 'Latacunga' },
+  { address: 'Riobamba',        lat: -1.6734, lon: -78.6459, city: 'Riobamba' },
+  { address: 'Ibarra',          lat:  0.3505, lon: -78.1236, city: 'Ibarra' },
+  { address: 'Tulcán',          lat:  0.8122, lon: -77.7176, city: 'Tulcán' },
+  { address: 'Baños',           lat: -1.3969, lon: -78.4246, city: 'Baños' },
+  { address: 'Guaranda',        lat: -1.5934, lon: -78.9982, city: 'Guaranda' },
+  { address: 'Loja',            lat: -4.0141, lon: -79.2007, city: 'Loja' },
+  { address: 'Machala',         lat: -3.2587, lon: -79.9615, city: 'Machala' },
+  { address: 'Zaruma',          lat: -3.6867, lon: -79.6100, city: 'Zaruma' },
+  { address: 'Manta',           lat: -0.9542, lon: -80.7319, city: 'Manta' },
+  { address: 'Portoviejo',      lat: -1.0545, lon: -80.4544, city: 'Portoviejo' },
+  { address: 'Esmeraldas',      lat:  0.9592, lon: -79.6533, city: 'Esmeraldas' },
+  { address: 'Santo Domingo',   lat: -0.2528, lon: -79.1720, city: 'Santo Domingo' },
+  { address: 'Salinas',         lat: -2.2167, lon: -80.9667, city: 'Salinas' },
+  { address: 'Montañita',       lat: -1.8200, lon: -80.7500, city: 'Montañita' },
+  { address: 'Tena',            lat: -0.9917, lon: -77.8150, city: 'Tena' },
+  { address: 'Puyo',            lat: -1.4924, lon: -78.0024, city: 'Puyo' },
+  { address: 'Lago Agrio',      lat:  0.0868, lon: -76.8797, city: 'Lago Agrio' },
+  { address: 'Macas',           lat: -2.3003, lon: -78.1178, city: 'Macas' },
+  { address: 'Azogues',         lat: -2.7382, lon: -78.8488, city: 'Azogues' },
 ];
 
 /* Mapbox Geocoding API — Ecuador only */

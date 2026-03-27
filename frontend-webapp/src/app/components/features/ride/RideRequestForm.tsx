@@ -96,7 +96,7 @@ function RideRequestFormInner() {
       pickupLocation.lat !== dropoffLocation.lat
     ) {
       try {
-        const breakdown = getFareBreakdown(pickupLocation, dropoffLocation, vehicleType, tier);
+        const breakdown = getFareBreakdown(pickupLocation, dropoffLocation, vehicleType, tier, mode);
         const fare = breakdown.totalFare;
         setLocalFare(isNaN(fare) || !isFinite(fare) ? null : fare);
         setFareFixed(breakdown.isPriceFixed);
