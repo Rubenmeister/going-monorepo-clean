@@ -53,7 +53,7 @@ const PRIVATE_VEHICLES = [
     luggage: '8 maletas',
     color: '#EF4444',
     badge: null,
-    photo: '/images/VAN XL.png',
+    photo: '/images/VAN-XL.png',
   },
   {
     id: 'minibus',
