@@ -43,15 +43,15 @@ export function Footer() {
     { name: 'Alojamiento',        href: '/services/accommodation' },
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Experiencias',       href: '/services/experiences' },
-    { name: 'Envíos',             href: '/services/envios' },
+    { name: 'Envíos',             href: '/envios' },
     { name: 'Para Empresas',      href: '/empresas' },
   ];
 
   const proveedores = [
-    { name: '🚗 Conductores',        href: '/conductores' },
-    { name: '🏡 Anfitriones',        href: '/anfitriones' },
-    { name: '🏺 Promotores Locales', href: '/promotores-locales' },
-    { name: '🧗 Operadores',         href: '/operadores' },
+    { name: '🚗 Conductores',        href: '/services/conductores' },
+    { name: '🏡 Anfitriones',        href: '/services/anfitriones' },
+    { name: '🏺 Promotores Locales', href: '/services/promotores-locales' },
+    { name: '🧗 Operadores',         href: '/services/operadores' },
     { name: 'Registro de proveedor', href: '/auth/register', badge: 'Gratis' },
   ];
 
@@ -110,10 +110,10 @@ export function Footer() {
               <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { icon: '🚗', label: 'Conductor',       href: '/conductores' },
-                  { icon: '🏡', label: 'Anfitrión',       href: '/anfitriones' },
-                  { icon: '🏺', label: 'Promotor Local',  href: '/promotores-locales' },
-                  { icon: '🧗', label: 'Operador',        href: '/operadores' },
+                  { icon: '🚗', label: 'Conductor',       href: '/services/conductores' },
+                  { icon: '🏡', label: 'Anfitrión',       href: '/services/anfitriones' },
+                  { icon: '🏺', label: 'Promotor Local',  href: '/services/promotores-locales' },
+                  { icon: '🧗', label: 'Operador',        href: '/services/operadores' },
                   { icon: '🏢', label: 'Empresas',        href: '/empresas' },
                 ].map(item => (
                   <Link key={item.href} href={item.href}

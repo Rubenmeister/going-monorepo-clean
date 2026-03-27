@@ -414,6 +414,105 @@ export default function TransportPage() {
           </a>
         </div>
       </section>
+
+      {/* ── SECCIÓN CONDUCTORES ── */}
+      <section className="py-0 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#1a1a1a' }}>
+            {/* Foto */}
+            <div className="md:w-2/5 flex-shrink-0">
+              <img
+                src="/images/SUV de lujo.png"
+                alt="Conductor Going en Ecuador"
+                className="w-full h-full object-cover"
+                style={{ minHeight: '380px', maxHeight: '520px' }}
+              />
+            </div>
+            {/* Contenido */}
+            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3 px-3 py-1.5 rounded-full w-fit"
+                style={{ backgroundColor: 'rgba(255,76,65,0.18)', color: '#ff4c41', border: '1px solid rgba(255,76,65,0.3)' }}>
+                🚗 ¿Eres conductora o conductor?
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                Maneja tus tiempos,<br />
+                <span style={{ color: '#ff4c41' }}>multiplica tus ingresos</span>
+              </h2>
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                Únete a la flota Going. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
+                Ganas el <strong className="text-white">80% de cada viaje</strong>, con pagos garantizados en 24 horas.
+              </p>
+
+              {/* Ganancias estimadas */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {[
+                  { plan: 'Part-time', hours: '20 h/sem', range: '$480–$650' },
+                  { plan: 'Full-time', hours: '40 h/sem', range: '$900–$1,200', highlight: true },
+                  { plan: 'Full-time+', hours: '40 h/sem', range: '$1,400–$1,800' },
+                ].map(e => (
+                  <div key={e.plan} className="rounded-2xl p-4 text-center"
+                    style={{ background: e.highlight ? '#ff4c41' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="text-xs font-bold text-white/70 uppercase mb-1">{e.plan}</div>
+                    <div className="text-xs text-white/50 mb-2">{e.hours}</div>
+                    <div className="text-lg font-extrabold text-white">{e.range}</div>
+                    <div className="text-xs text-white/60 mt-0.5">por mes est.</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Requisitos rápidos */}
+              <div className="grid grid-cols-2 gap-2 mb-8">
+                {[
+                  { icon: '📄', text: 'Cédula de Identidad' },
+                  { icon: '🚗', text: 'Licencia tipo B o profesional' },
+                  { icon: '📋', text: 'Matrícula (vehículo 2015+)' },
+                  { icon: '📋', text: 'Permiso ANT y SOAT vigente' },
+                ].map(r => (
+                  <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span>{r.icon}</span><span>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/auth/register?rol=driver"
+                  className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#ff4c41' }}>
+                  Registrarme como conductor →
+                </Link>
+                <Link href="/auth/login?from=/services/conductores"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
+                  Ya soy conductor → Mi panel
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Fotos strip conductores ── */}
+      <section className="py-10 px-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <img src="/images/43.png" alt="Trabaja cuando quieres" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+          <img src="/images/41.png" alt="Sé parte del equipo Going" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+          <img src="/images/42.png" alt="Sé tu propio jefe" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+        </div>
+      </section>
+
+      {/* ── Rutas disponibles ── */}
+      <section className="py-10 px-4 pb-20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Rutas disponibles para conductores</h2>
+          <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+            <img
+              src="/images/nuevas%20rutas.png"
+              alt="Nuevas rutas Going — cobertura y expansión de zonas"
+              className="w-full object-contain"
+              style={{ maxHeight: '520px', background: '#fff' }}
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
