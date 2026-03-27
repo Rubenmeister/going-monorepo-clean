@@ -342,6 +342,61 @@ export default function AccommodationPage() {
           </div>
         </div>
       </section>
+
+      {/* ── SECCIÓN ANFITRIONES ── */}
+      <section className="py-0 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#1e1b4b' }}>
+            <div className="md:w-2/5 flex-shrink-0">
+              <img
+                src="/images/Going homes.png"
+                alt="Anfitrión Going Ecuador"
+                className="w-full h-full object-cover"
+                style={{ minHeight: '360px', maxHeight: '500px' }}
+              />
+            </div>
+            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3 px-3 py-1.5 rounded-full w-fit"
+                style={{ backgroundColor: 'rgba(124,58,237,0.2)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.3)' }}>
+                🏡 ¿Tienes un espacio en Ecuador?
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
+                Conviértelo en<br />
+                <span style={{ color: '#a78bfa' }}>ingresos reales</span>
+              </h2>
+              <p className="text-gray-300 text-base leading-relaxed mb-6">
+                Anfitriones Going ganan entre <strong className="text-white">$400 y $2,000/mes</strong> hospedando viajeros verificados.
+                Tú controlas tu calendario, tus precios y tus reglas. Pagos seguros antes de cada llegada.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { icon: '📅', text: 'Control total de tu calendario' },
+                  { icon: '🛡️', text: 'Pagos seguros garantizados' },
+                  { icon: '⭐', text: 'Perfil verificado por Going' },
+                  { icon: '📚', text: 'Academia gratuita para anfitriones' },
+                ].map(r => (
+                  <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
+                    <span>{r.icon}</span><span>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/auth/register?rol=host"
+                  className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#7c3aed' }}>
+                  Publicar mi espacio →
+                </Link>
+                <Link href="/auth/login?from=/services/anfitriones"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
+                  Ya soy anfitrión → Mi panel
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="py-10" />
     </main>
   );
 }
