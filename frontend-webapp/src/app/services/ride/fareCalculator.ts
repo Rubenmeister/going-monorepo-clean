@@ -265,14 +265,13 @@ export function getFareBreakdown(
 
   let totalFare: number;
   if (mode === 'compartido') {
-    totalFare = base;                                  // precio compartido
+    totalFare = base;                                            // precio compartido
   } else {
-    const privadoConfort = Math.round(base * 4 * vehicleFactor);
-    if (tier === 'premium') {
-      totalFare = Math.ceil(privadoConfort * 1.10);   // privado premium
-    } else {
-      totalFare = privadoConfort;                     // privado confort
-    }
+    // Redondeamos a la decena más cercana
+    const privadoConfort = Math.round(base * 4 * vehicleFactor / 10) * 10;
+    totalFare = tier === 'premium'
+      ? privadoConfort + 10                                      // privado premium = confort + $10
+      : privadoConfort;                                          // privado confort
   }
 
   return {
