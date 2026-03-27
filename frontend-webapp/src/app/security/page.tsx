@@ -4,7 +4,7 @@ export default function SecurityPage() {
   const features = [
     { icon: '🔒', title: 'Encriptación', desc: 'Encriptación SSL/TLS de grado empresarial' },
     { icon: '🔑', title: 'Autenticación', desc: 'Autenticación de dos factores disponible' },
-    { icon: '🛡️', title: 'Datos', desc: 'Protección de datos según GDPR' },
+    { icon: '🛡️', title: 'Datos', desc: 'Protección de datos según LOPDP (Ley Orgánica de Protección de Datos Personales)' },
     { icon: '🔍', title: 'Auditoría', desc: 'Auditorías de seguridad regulares' },
   ];
 
@@ -30,7 +30,7 @@ export default function SecurityPage() {
 
           <section>
             <h3 className="text-xl font-bold text-gray-900 mb-3">Reportar Vulnerabilidades</h3>
-            <p className="text-gray-600">Si encuentras una vulnerabilidad de seguridad, contáctanos en: security@going.com</p>
+            <p className="text-gray-600">Si encuentras una vulnerabilidad de seguridad, contáctanos en: security@goingec.com</p>
           </section>
         </div>
       </div>

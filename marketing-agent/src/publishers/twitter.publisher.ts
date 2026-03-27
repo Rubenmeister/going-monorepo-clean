@@ -103,8 +103,38 @@ export async function getXMetrics(): Promise<{
   impressions: number;
   engagements: number;
 }> {
-  // Twitter v2 metrics require OAuth 2.0 Bearer token + elevated access
-  // Returns placeholder until API access is confirmed
-  console.log('[twitter] Metrics: API elevated access required');
-  return { followers: 0, impressions: 0, engagements: 0 };
+  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+  if (!bearerToken) {
+    console.log('[twitter] TWITTER_BEARER_TOKEN not configured — skipping metrics');
+    return { followers: 0, impressions: 0, engagements: 0 };
+  }
+
+  try {
+    // App-only auth (Bearer token) allows reading public profile metrics
+    const res = await fetch(
+      'https://api.twitter.com/2/users/by/username/GoingAppecuador?user.fields=public_metrics',
+      { headers: { Authorization: `Bearer ${bearerToken}` } }
+    );
+
+    if (!res.ok) {
+      console.error(`[twitter] Metrics API error: ${res.status}`);
+      return { followers: 0, impressions: 0, engagements: 0 };
+    }
+
+    const data = await res.json() as {
+      data?: { public_metrics?: { followers_count?: number; tweet_count?: number } };
+    };
+
+    const metrics = data.data?.public_metrics || {};
+    const followers = metrics.followers_count || 0;
+
+    console.log(`[twitter] Metrics fetched: ${followers} followers`);
+
+    // Tweet-level impressions/engagements require elevated API access (Ads API)
+    // Returning follower count; impressions/engagements stay 0 until elevated access
+    return { followers, impressions: 0, engagements: 0 };
+  } catch (e) {
+    console.error('[twitter] Failed to fetch metrics:', (e as Error).message);
+    return { followers: 0, impressions: 0, engagements: 0 };
+  }
 }

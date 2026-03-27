@@ -204,10 +204,10 @@ export function Footer() {
                   <strong className="text-white">Email:</strong>
                 </p>
                 <a
-                  href="mailto:hola@going.com"
+                  href="mailto:hola@goingec.com"
                   className="text-blue-400 hover:text-blue-300 text-sm"
                 >
-                  hola@going.com
+                  hola@goingec.com
                 </a>
               </li>
             </ul>
@@ -222,7 +222,7 @@ export function Footer() {
           <div className="grid md:grid-cols-3 gap-4">
             {/* Web */}
             <a
-              href="https://going.com"
+              href="https://app.goingec.com"
               className="flex items-center gap-3 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-all"
             >
               <span className="text-3xl">🌐</span>

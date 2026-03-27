@@ -254,7 +254,7 @@ export default function HomePage() {
             <div className="lg:w-1/3">
               <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: '#ff4c41' }}>Primeras rutas</span>
               <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.4rem)' }}>
-                Rutas a Quito<br />y el aeropuerto de Quito
+                Rutas a Quito<br />y su Aeropuerto
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
                 Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo. Salidas <span className="font-bold" style={{ color: '#ff4c41' }}>cada hora</span>, ida y vuelta.
@@ -556,7 +556,7 @@ export default function HomePage() {
           <FadeIn className="text-center mb-12">
             <span className="text-sm font-bold uppercase tracking-widest text-blue-300">Aprende con Going</span>
             <h2 className="text-white font-black text-4xl mt-2">Academia Going</h2>
-            <p className="text-blue-200 text-lg mt-3 max-w-lg mx-auto">Capacitaciones gratuitas para conductores y emprendedores del transporte en Ecuador.</p>
+            <p className="text-blue-200 text-lg mt-3 max-w-lg mx-auto">Capacitaciones gratuitas para conductores y proveedores turísticos debidamente verificados.</p>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {ACADEMY_COURSES.map((c, i) => (

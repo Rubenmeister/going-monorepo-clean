@@ -17,12 +17,12 @@ async function graphRequest(path: string, method: 'GET' | 'POST', params: Record
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error(`Meta API GET error: ${res.status} ${await res.text()}`);
-    return res.json();
+    return res.json() as Promise<Record<string, unknown>>;
   } else {
     const body = new URLSearchParams({ access_token: token, ...params });
     const res = await fetch(url.toString(), { method: 'POST', body });
     if (!res.ok) throw new Error(`Meta API POST error: ${res.status} ${await res.text()}`);
-    return res.json();
+    return res.json() as Promise<Record<string, unknown>>;
   }
 }
 

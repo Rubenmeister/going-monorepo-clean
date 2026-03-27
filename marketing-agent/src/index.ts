@@ -5,6 +5,14 @@ import { runMarketingMonitor } from './monitors/metrics.monitor';
 // Runs as Cloud Run Job (triggered by Cloud Scheduler)
 // ============================================================
 
+// ─── Validación temprana de env vars requeridas ───────────────
+const REQUIRED_VARS = ['ANTHROPIC_API_KEY', 'GCP_PROJECT', 'TELEGRAM_BOT_TOKEN'];
+const missing = REQUIRED_VARS.filter(v => !process.env[v]);
+if (missing.length > 0) {
+  console.error(`[marketing-agent] Variables de entorno faltantes: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 async function main(): Promise<void> {
   console.log('🚀 Going Marketing Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);

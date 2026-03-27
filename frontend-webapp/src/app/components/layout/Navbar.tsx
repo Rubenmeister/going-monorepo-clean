@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -41,19 +42,18 @@ export function Navbar() {
  */
 function Logo({ onLogoClick }: { onLogoClick: () => void }) {
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className="text-3xl font-bold text-[#ff4c41] cursor-pointer"
-        onClick={onLogoClick}
-      >
-        🌍
-      </div>
-      <h1
-        className="text-xl font-bold text-[#ff4c41] hidden md:block cursor-pointer"
-        onClick={onLogoClick}
-      >
-        Going
-      </h1>
+    <div
+      className="flex items-center cursor-pointer"
+      onClick={onLogoClick}
+    >
+      <Image
+        src="/going-logo-h.png"
+        alt="Going Ecuador"
+        width={120}
+        height={40}
+        priority
+        className="object-contain"
+      />
     </div>
   );
 }
@@ -62,10 +62,10 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
  * Provider dropdown items
  */
 const PROVIDER_ITEMS = [
-  { icon: '🏡', label: 'Anfitriones',       desc: 'Publica tu espacio',      href: '/auth/login?from=/services/anfitriones',        color: '#7c3aed' },
-  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/auth/login?from=/services/promotores-locales', color: '#0891b2' },
-  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/auth/login?from=/services/operadores',          color: '#d97706' },
-  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/auth/login?from=/services/conductores',        color: '#16a34a' },
+  { icon: '🏡', label: 'Anfitriones',       desc: 'Publica tu espacio',      href: '/anfitriones',        color: '#7c3aed' },
+  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/promotores-locales', color: '#0891b2' },
+  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/operadores',          color: '#d97706' },
+  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/conductores',        color: '#16a34a' },
 ];
 
 /**
@@ -90,14 +90,14 @@ function NavLinks({ t }: { t: (key: string) => string }) {
       <a href="/" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
         {t('nav.inicio')}
       </a>
-      <a href="/services" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
-        {t('nav.servicios')}
+      <a href="/services/transport" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+        Transporte
       </a>
-      <a href="/account" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
-        {t('nav.miCuenta')}
+      <a href="/quienes-somos" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+        Quiénes somos
       </a>
-      <a href="/bookings" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
-        {t('nav.misReservas')}
+      <a href="/comunidad" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+        Comunidad Going
       </a>
       <a href="/academy" className="flex items-center gap-1 text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
         📚 Academia
@@ -165,17 +165,29 @@ function RightActions({
   t: (key: string) => string;
   onLoginClick: () => void;
 }) {
+  const handleBuscarViaje = () => {
+    if (auth.user) {
+      window.location.href = '/ride';
+    } else {
+      window.location.href = '/auth/login?from=/ride';
+    }
+  };
+
   return (
     <div className="flex items-center gap-4">
       {/* Language Switcher */}
       <LanguageSwitcher />
 
-      {/* User Menu or Login */}
-      {auth.user ? (
-        <UserMenu user={auth.user} />
-      ) : (
-        <LoginButton onClick={onLoginClick} label={t('nav.iniciarSesion')} />
-      )}
+      {/* Buscar viaje — siempre visible */}
+      <button
+        onClick={handleBuscarViaje}
+        className="px-4 py-2 bg-[#ff4c41] text-white rounded-lg hover:bg-[#e63a2f] transition-colors font-semibold text-sm"
+      >
+        Buscar viaje
+      </button>
+
+      {/* Avatar si está autenticado */}
+      {auth.user && <UserMenu user={auth.user} />}
     </div>
   );
 }

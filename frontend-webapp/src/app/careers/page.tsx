@@ -2,21 +2,21 @@ import React from 'react';
 
 const jobs = [
   {
-    title: 'Senior Full-Stack Developer',
-    location: 'Remote',
-    dept: 'Engineering',
+    title: 'Desarrollador/a Full-Stack Senior',
+    location: 'Quito, Ecuador',
+    dept: 'Tecnología',
   },
-  { title: 'Product Manager', location: 'San Francisco, CA', dept: 'Product' },
-  { title: 'UX/UI Designer', location: 'London, UK', dept: 'Design' },
-  { title: 'Data Scientist', location: 'Berlin, Germany', dept: 'Data' },
-  { title: 'DevOps Engineer', location: 'Singapore', dept: 'Infrastructure' },
-  { title: 'Sales Manager', location: 'New York, NY', dept: 'Sales' },
+  { title: 'Product Manager', location: 'Quito, Ecuador', dept: 'Producto' },
+  { title: 'Diseñador/a UX/UI', location: 'Quito, Ecuador', dept: 'Diseño' },
+  { title: 'Analista de Datos', location: 'Quito, Ecuador', dept: 'Datos' },
+  { title: 'Ingeniero/a DevOps', location: 'Quito, Ecuador', dept: 'Infraestructura' },
+  { title: 'Ejecutivo/a de Ventas', location: 'Quito, Ecuador', dept: 'Ventas' },
 ];
 
 export const metadata = {
-  title: 'Careers at Going - Join Our Team',
+  title: 'Trabaja en Going — Únete al Equipo',
   description:
-    'Explore careers and join the Going team. Help us transform mobility.',
+    'Explora oportunidades de carrera y únete al equipo Going. Ayúdanos a transformar la movilidad en Ecuador.',
 };
 
 export default function CareersPage() {
@@ -25,34 +25,34 @@ export default function CareersPage() {
       {/* Hero */}
       <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Join Our Team</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Únete al Equipo</h1>
           <p className="text-xl text-primary-100">
-            Help us transform mobility and create opportunities
+            Ayúdanos a transformar la movilidad en Ecuador
           </p>
         </div>
       </section>
 
-      {/* Why Join */}
+      {/* Por qué Going */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-          Why Join Going?
+          ¿Por qué trabajar en Going?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {
               icon: '🚀',
-              title: 'Innovation',
-              desc: 'Work on cutting-edge mobility solutions',
+              title: 'Innovación',
+              desc: 'Trabaja en soluciones de movilidad de vanguardia para Ecuador',
             },
             {
               icon: '🌍',
-              title: 'Global Impact',
-              desc: 'Reach millions of users worldwide',
+              title: 'Impacto local',
+              desc: 'Transforma la manera en que las personas se mueven en el país',
             },
             {
               icon: '💼',
-              title: 'Growth',
-              desc: 'Grow your career in a fast-paced startup',
+              title: 'Crecimiento',
+              desc: 'Desarrolla tu carrera en una startup de alto crecimiento',
             },
           ].map((item, i) => (
             <div
@@ -69,11 +69,11 @@ export default function CareersPage() {
         </div>
       </section>
 
-      {/* Open Positions */}
+      {/* Posiciones abiertas */}
       <section className="bg-gray-50 dark:bg-gray-800 py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12">
-            Open Positions
+            Posiciones Abiertas
           </h2>
           <div className="space-y-4">
             {jobs.map((job, i) => (
@@ -90,7 +90,7 @@ export default function CareersPage() {
                   </p>
                 </div>
                 <button className="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors">
-                  Apply
+                  Postularme
                 </button>
               </div>
             ))}
@@ -98,19 +98,19 @@ export default function CareersPage() {
         </div>
       </section>
 
-      {/* Benefits */}
+      {/* Beneficios */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-          Benefits & Perks
+          Beneficios y Ventajas
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            '💊 Health Insurance',
-            '📚 Learning Budget',
-            '🏠 Remote Work',
-            '💰 Competitive Salary',
-            '📈 Equity',
-            '🏖️ Vacation',
+            '💊 Seguro médico',
+            '📚 Presupuesto para aprendizaje',
+            '🏠 Trabajo flexible',
+            '💰 Salario competitivo',
+            '📈 Participación accionaria',
+            '🏖️ Vacaciones',
           ].map((benefit, i) => (
             <div
               key={i}

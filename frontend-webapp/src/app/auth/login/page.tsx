@@ -120,14 +120,6 @@ function LoginForm() {
         <div className="relative z-10 text-white">
           <h2 className="text-4xl font-bold mb-4 leading-tight">La plataforma de movilidad y servicios de Ecuador</h2>
           <p className="text-white/80 text-lg mb-10">Transporte, alojamiento, tours y mucho más. Todo en un lugar.</p>
-          <div className="grid grid-cols-3 gap-4">
-            {[['1M+','Usuarios'],['50+','Ciudades'],['5★','Calificación']].map(([n,l]) => (
-              <div key={l} className="bg-white/10 rounded-2xl p-4 text-center">
-                <div className="text-3xl font-bold">{n}</div>
-                <div className="text-white/70 text-xs mt-1">{l}</div>
-              </div>
-            ))}
-          </div>
         </div>
         <div className="relative z-10 text-white/50 text-xs">© 2026 Going · Ecuador</div>
       </div>

@@ -1,7 +1,20 @@
-import fs from 'fs';
-import path from 'path';
+/**
+ * MemoryStore — persistencia en Firestore
+ *
+ * Usa la colección `going_agent_memory`, documento `state`.
+ * Esto sobrevive reinicios del Cloud Run Job (stateless).
+ *
+ * La cuenta de servicio del Job necesita el rol:
+ *   Cloud Datastore User (roles/datastore.user)
+ */
 
-const MEMORY_FILE = path.join(__dirname, '../../memory.json');
+import { Firestore } from '@google-cloud/firestore';
+import { config } from '../config';
+
+const COLLECTION = 'going_agent_memory';
+const DOC_ID = 'state';
+
+const db = new Firestore({ projectId: config.gcpProject });
 
 export interface AgentMemory {
   lastRun: string;
@@ -18,42 +31,65 @@ const DEFAULT: AgentMemory = {
 };
 
 export class MemoryStore {
-  private data: AgentMemory;
+  private data: AgentMemory = { ...DEFAULT };
+  private loaded = false;
 
-  constructor() {
-    this.data = fs.existsSync(MEMORY_FILE)
-      ? JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'))
-      : { ...DEFAULT };
+  /** Carga el estado desde Firestore. Llamar antes de operar. */
+  async load(): Promise<void> {
+    try {
+      const doc = await db.collection(COLLECTION).doc(DOC_ID).get();
+      this.data = doc.exists ? (doc.data() as AgentMemory) : { ...DEFAULT };
+      this.loaded = true;
+    } catch (err) {
+      console.warn('[Memory] No se pudo cargar desde Firestore, usando estado vacío:', err);
+      this.data = { ...DEFAULT };
+      this.loaded = true;
+    }
   }
 
   get(): AgentMemory { return this.data; }
 
-  recordRun(): void {
+  async recordRun(): Promise<void> {
+    if (!this.loaded) await this.load();
     this.data.lastRun = new Date().toISOString();
     this.data.stats.totalRuns++;
-    this.save();
+    await this.save();
   }
 
-  recordFix(description: string, commit: string): void {
+  async recordFix(description: string, commit: string): Promise<void> {
+    if (!this.loaded) await this.load();
     this.data.fixesApplied.push({ date: new Date().toISOString(), description, commit });
+    // Mantener solo los últimos 100 fixes para no crecer indefinidamente
+    if (this.data.fixesApplied.length > 100) {
+      this.data.fixesApplied = this.data.fixesApplied.slice(-100);
+    }
     this.data.stats.totalFixes++;
-    this.save();
+    await this.save();
   }
 
-  addIssue(id: string, description: string): void {
+  async addIssue(id: string, description: string): Promise<void> {
+    if (!this.loaded) await this.load();
     if (!this.data.knownIssues.find(i => i.id === id)) {
       this.data.knownIssues.push({ id, description, status: 'open' });
-      this.save();
+      await this.save();
     }
   }
 
-  markFixed(id: string): void {
+  async markFixed(id: string): Promise<void> {
+    if (!this.loaded) await this.load();
     const issue = this.data.knownIssues.find(i => i.id === id);
-    if (issue) { issue.status = 'fixed'; this.save(); }
+    if (issue) {
+      issue.status = 'fixed';
+      await this.save();
+    }
   }
 
-  private save(): void {
-    fs.writeFileSync(MEMORY_FILE, JSON.stringify(this.data, null, 2));
+  private async save(): Promise<void> {
+    try {
+      await db.collection(COLLECTION).doc(DOC_ID).set(this.data);
+    } catch (err) {
+      console.error('[Memory] Error guardando en Firestore:', err);
+    }
   }
 
   summary(): string {

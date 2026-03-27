@@ -5,8 +5,10 @@ import { getTikTokMetrics } from '../publishers/tiktok.publisher';
 import { sendWeeklyMarketingSummary, alertFollowerMilestone, alertViralPost } from '../publishers/telegram.publisher';
 import { generateContent } from '../content/generator';
 import Anthropic from '@anthropic-ai/sdk';
+import { Firestore } from '@google-cloud/firestore';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const db = new Firestore({ projectId: process.env.GCP_PROJECT });
 
 // ============================================================
 // Metrics Monitor
@@ -19,8 +21,24 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Follower milestones to celebrate
 const FOLLOWER_MILESTONES = [100, 500, 1000, 2000, 5000, 10000, 25000, 50000, 100000];
 
-// Track last known follower counts (ideally persisted in Firestore)
-const lastKnownFollowers: Record<string, number> = {};
+// ─── Follower state: persisted in Firestore (Cloud Run is stateless) ────────
+async function loadFollowerCounts(): Promise<Record<string, number>> {
+  try {
+    const doc = await db.collection('marketing_agent_state').doc('follower_counts').get();
+    return (doc.data() as Record<string, number>) || {};
+  } catch (e) {
+    console.error('[metrics] Failed to load follower counts from Firestore:', (e as Error).message);
+    return {};
+  }
+}
+
+async function saveFollowerCounts(counts: Record<string, number>): Promise<void> {
+  try {
+    await db.collection('marketing_agent_state').doc('follower_counts').set(counts, { merge: true });
+  } catch (e) {
+    console.error('[metrics] Failed to save follower counts to Firestore:', (e as Error).message);
+  }
+}
 
 export async function collectAllMetrics(): Promise<PlatformMetrics[]> {
   const metrics: PlatformMetrics[] = [];
@@ -102,6 +120,9 @@ export async function collectAllMetrics(): Promise<PlatformMetrics[]> {
 
 // ─── Check for milestone crossings ───────────────────────────
 export async function checkFollowerMilestones(metrics: PlatformMetrics[]): Promise<void> {
+  const lastKnownFollowers = await loadFollowerCounts();
+  const updated: Record<string, number> = { ...lastKnownFollowers };
+
   for (const m of metrics) {
     const previous = lastKnownFollowers[m.platform] || 0;
     const current = m.followers;
@@ -113,8 +134,10 @@ export async function checkFollowerMilestones(metrics: PlatformMetrics[]): Promi
       }
     }
 
-    lastKnownFollowers[m.platform] = current;
+    updated[m.platform] = current;
   }
+
+  await saveFollowerCounts(updated);
 }
 
 // ─── Check for viral posts (engagement > 2x average) ─────────
