@@ -9,16 +9,17 @@ import {
   Linking,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { paymentAPI } from '../../services/api';
 
-const GOING_RED = '#ff4c41'; // Going brand red
+const GOING_RED  = '#ff4c41';
 const GOING_BLUE = '#0033A0';
 
 interface PaymentScreenProps {
   route: {
     params: {
-      amount: number; // in cents (e.g. 1500 = $15.00 COP)
-      currency: string; // e.g. 'COP', 'ARS', 'BRL'
+      amount: number;       // en dólares (e.g. 15.00)
+      currency?: string;    // siempre 'USD' para Ecuador
       bookingId?: string;
       rideId?: string;
       description?: string;
@@ -27,29 +28,27 @@ interface PaymentScreenProps {
 }
 
 export default function PaymentScreen({ route }: PaymentScreenProps) {
-  const { amount, currency, bookingId, rideId, description } = route.params;
-  const [loading, setLoading] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'mp' | 'stripe'>('mp');
+  const { amount, bookingId, rideId, description } = route.params;
+  const [loading, setLoading]           = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<'datafast' | 'cash'>('datafast');
 
-  const displayAmount = (amount / 100).toLocaleString('es-CO', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  });
+  const displayAmount = `$${amount.toFixed(2)}`;
 
-  /** Mercado Pago checkout — opens MP init_point in browser */
-  const handleMercadoPago = async () => {
+  // ── Pago con DATAFAST (pasarela oficial Ecuador) ──────────────────────────
+  const handleDatafast = async () => {
     setLoading(true);
     try {
       const response = await paymentAPI.createPaymentIntent({
-        amount,
-        currency,
-        provider: 'mercadopago',
+        amount: Math.round(amount * 100), // centavos
+        currency: 'USD',
+        provider: 'datafast',
         referenceId: bookingId ?? rideId,
       });
 
-      const checkoutUrl: string = response.data?.clientSecret;
-      if (!checkoutUrl) throw new Error('No checkout URL returned');
+      const checkoutUrl: string =
+        response.data?.redirectUrl ?? response.data?.clientSecret;
+
+      if (!checkoutUrl) throw new Error('No se recibió URL de pago.');
 
       const supported = await Linking.canOpenURL(checkoutUrl);
       if (supported) {
@@ -65,30 +64,20 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
     }
   };
 
-  /** Stripe checkout (international / USD) */
-  const handleStripe = async () => {
-    setLoading(true);
-    try {
-      await paymentAPI.createPaymentIntent({
-        amount,
-        currency: 'USD',
-        provider: 'stripe',
-        referenceId: bookingId ?? rideId,
-      });
-      Alert.alert('Redirigiendo…', 'Abriendo Stripe checkout…');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Intenta de nuevo.';
-      Alert.alert('Error de pago', msg);
-    } finally {
-      setLoading(false);
-    }
+  // ── Pago en efectivo ──────────────────────────────────────────────────────
+  const handleCash = () => {
+    Alert.alert(
+      'Pago en efectivo',
+      `Paga $${amount.toFixed(2)} directamente a tu conductor al finalizar el viaje.`,
+      [{ text: 'Entendido', style: 'default' }]
+    );
   };
 
   const handlePay = () => {
-    if (selectedMethod === 'mp') {
-      handleMercadoPago();
+    if (selectedMethod === 'datafast') {
+      handleDatafast();
     } else {
-      handleStripe();
+      handleCash();
     }
   };
 
@@ -96,7 +85,7 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerIcon}>🔒</Text>
+        <Ionicons name="lock-closed" size={32} color={GOING_BLUE} />
         <Text style={styles.title}>Pago Seguro</Text>
         <Text style={styles.subtitle}>Going protege tu transacción</Text>
       </View>
@@ -111,59 +100,45 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
       {/* Payment method selector */}
       <Text style={styles.sectionTitle}>Selecciona tu método de pago</Text>
 
+      {/* DATAFAST */}
       <TouchableOpacity
-        style={[
-          styles.methodCard,
-          selectedMethod === 'mp' && styles.methodCardSelected,
-        ]}
-        onPress={() => setSelectedMethod('mp')}
+        style={[styles.methodCard, selectedMethod === 'datafast' && styles.methodCardSelected]}
+        onPress={() => setSelectedMethod('datafast')}
         activeOpacity={0.8}
       >
         <View style={styles.methodLeft}>
-          <View style={styles.mpBadge}>
-            <Text style={styles.mpBadgeText}>MP</Text>
+          <View style={[styles.methodBadge, { backgroundColor: '#1a3a6b' }]}>
+            <Text style={styles.methodBadgeText}>DF</Text>
           </View>
           <View>
-            <Text style={styles.methodName}>Mercado Pago</Text>
+            <Text style={styles.methodName}>Tarjeta de crédito / débito</Text>
             <Text style={styles.methodDesc}>
-              PSE · Tarjetas · Efectivo · OXXO · Pix
+              Visa · Mastercard · Diners · American Express
             </Text>
           </View>
         </View>
-        <View
-          style={[
-            styles.radio,
-            selectedMethod === 'mp' && styles.radioSelected,
-          ]}
-        >
-          {selectedMethod === 'mp' && <View style={styles.radioDot} />}
+        <View style={[styles.radio, selectedMethod === 'datafast' && styles.radioSelected]}>
+          {selectedMethod === 'datafast' && <View style={styles.radioDot} />}
         </View>
       </TouchableOpacity>
 
+      {/* Efectivo */}
       <TouchableOpacity
-        style={[
-          styles.methodCard,
-          selectedMethod === 'stripe' && styles.methodCardSelected,
-        ]}
-        onPress={() => setSelectedMethod('stripe')}
+        style={[styles.methodCard, selectedMethod === 'cash' && styles.methodCardSelected]}
+        onPress={() => setSelectedMethod('cash')}
         activeOpacity={0.8}
       >
         <View style={styles.methodLeft}>
-          <View style={styles.stripeBadge}>
-            <Text style={styles.stripeBadgeText}>S</Text>
+          <View style={[styles.methodBadge, { backgroundColor: '#059669' }]}>
+            <Ionicons name="cash-outline" size={20} color="#fff" />
           </View>
           <View>
-            <Text style={styles.methodName}>Stripe (Internacional)</Text>
-            <Text style={styles.methodDesc}>Visa · Mastercard · USD</Text>
+            <Text style={styles.methodName}>Efectivo</Text>
+            <Text style={styles.methodDesc}>Pago directo al conductor</Text>
           </View>
         </View>
-        <View
-          style={[
-            styles.radio,
-            selectedMethod === 'stripe' && styles.radioSelected,
-          ]}
-        >
-          {selectedMethod === 'stripe' && <View style={styles.radioDot} />}
+        <View style={[styles.radio, selectedMethod === 'cash' && styles.radioSelected]}>
+          {selectedMethod === 'cash' && <View style={styles.radioDot} />}
         </View>
       </TouchableOpacity>
 
@@ -178,8 +153,10 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
           <ActivityIndicator color="#fff" size="small" />
         ) : (
           <>
-            <Text style={styles.lockIcon}>🔐</Text>
-            <Text style={styles.payBtnText}>Pagar {displayAmount}</Text>
+            <Ionicons name="lock-closed" size={18} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={styles.payBtnText}>
+              {selectedMethod === 'cash' ? `Pagar en efectivo` : `Pagar ${displayAmount}`}
+            </Text>
           </>
         )}
       </TouchableOpacity>
@@ -247,24 +224,14 @@ const styles = StyleSheet.create({
   },
   methodCardSelected: { borderColor: GOING_RED },
   methodLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  mpBadge: {
-    width: 42,
-    height: 42,
+  methodBadge: {
+    width: 44,
+    height: 44,
     borderRadius: 10,
-    backgroundColor: '#00B1EA',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mpBadgeText: { color: '#fff', fontWeight: '900', fontSize: 14 },
-  stripeBadge: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: '#635BFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stripeBadgeText: { color: '#fff', fontWeight: '900', fontSize: 18 },
+  methodBadgeText: { color: '#fff', fontWeight: '900', fontSize: 14 },
   methodName: { fontSize: 15, fontWeight: '700', color: '#111' },
   methodDesc: { fontSize: 12, color: '#999', marginTop: 2 },
   radio: {
@@ -304,7 +271,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#AAA',
     marginTop: 18,
+    marginBottom: 8,
   },
-  headerIcon: { fontSize: 32, marginBottom: 4 },
-  lockIcon: { fontSize: 18, marginRight: 6 },
 });
