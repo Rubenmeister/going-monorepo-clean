@@ -187,38 +187,6 @@ export default function ImpactoPage() {
         </div>
       </section>
 
-      {/* Cities */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn>
-            <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Ciudades con más impacto</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Presencia activa en las principales ciudades del Ecuador</p>
-            </div>
-          </FadeIn>
-          <FadeIn delay={100}>
-            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-              <div className="grid grid-cols-5 bg-gray-50 border-b border-gray-100 px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">
-                <span>Ciudad</span>
-                <span className="text-center">Viajes/mes</span>
-                <span className="text-center">CO₂ evitado</span>
-                <span className="text-center">Conductores</span>
-                <span className="text-center">Rating</span>
-              </div>
-              {cities.map((city, i) => (
-                <div key={city.name} className={`grid grid-cols-5 px-6 py-4 items-center ${i < cities.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                  <span className="font-bold text-gray-900">{city.name}</span>
-                  <span className="text-center text-green-600 font-semibold text-sm">{city.viajes}</span>
-                  <span className="text-center text-gray-600 text-sm">{city.co2}</span>
-                  <span className="text-center text-gray-600 text-sm">{city.conductores}</span>
-                  <span className="text-center font-bold text-amber-500">{city.rating} ⭐</span>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
       {/* Sostenibilidad */}
       <section className="py-20 bg-white" id="sostenibilidad">
         <div className="max-w-7xl mx-auto px-6">
