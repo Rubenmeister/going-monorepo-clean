@@ -72,7 +72,7 @@ export function TermsScreen() {
           <Text style={styles.contactTitle}>¿Preguntas?</Text>
           <Text style={styles.contactText}>
             Contáctanos en{' '}
-            <Text style={styles.contactEmail}>legal@goingapp.ec</Text>
+            <Text style={styles.contactEmail}>legal@goingec.com</Text>
           </Text>
         </View>
       </View>
