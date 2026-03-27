@@ -41,24 +41,21 @@ function RidePageInner() {
   const { auth }           = useMonorepoApp();
   const { activeRide, clearRide } = useRideStore();
 
-  /* Auth guard */
-  useEffect(() => {
-    if (!auth.isLoading && !auth.user) {
-      router.replace(`/auth/login?from=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-    }
-  }, [auth.isLoading, auth.user, router]);
-
   const [step, setStep]               = useState<Step>('request');
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
-  /* Mover a tracking cuando el viaje se crea */
+  /* Auth guard solo al confirmar viaje (no al buscar) */
   useEffect(() => {
     if (activeRide && step === 'request') {
+      if (!auth.isLoading && !auth.user) {
+        router.replace(`/auth/login?from=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
       setPaymentAmount(activeRide.estimatedFare);
       setStep('tracking');
     }
-  }, [activeRide, step]);
+  }, [activeRide, step, auth.isLoading, auth.user, router]);
 
   /* Mover a pago cuando el viaje se completa */
   useEffect(() => {
@@ -71,13 +68,6 @@ function RidePageInner() {
   const handlePaymentComplete = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
   const handleAccountingDone  = () => setStep('rating');
   const handleRatingComplete  = () => { clearRide(); setStep('request'); };
-
-  /* Mientras verifica auth, no renderizar nada */
-  if (auth.isLoading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="animate-pulse text-gray-400">Cargando...</div>
-    </div>;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
