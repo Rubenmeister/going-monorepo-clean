@@ -1,14 +1,13 @@
 /**
  * Fare calculation — precios fijos por par de ciudades (puerta a puerta)
  *
- * Lógica:
- *  1. Se busca el par de ciudades en la tabla CITY_PAIR_PRICES (precio SUV Confort).
- *  2. Si no se encuentra, se aplica la fórmula de respaldo calibrada al mercado.
- *  3. El resultado se multiplica por el multiplicador del tipo de vehículo
- *     (multiplierConfort) para mantener compatibilidad con RideRequestForm,
- *     que divide por multiplierConfort y multiplica por el multiplicador de tier.
+ * Modelo de precios:
+ *  · Los valores de la tabla son precio COMPARTIDO (3 pasajeros, SUV).
+ *  · Privado Confort  = compartido × 4
+ *  · Privado Premium  = ceil(Privado Confort × 1.10)
  *
- * Precios en USD · ida · SUV Confort base
+ * Quito se divide en 3 zonas: Centro Norte · Sur · Valles (Cumbayá/Tumbaco · Los Chillos)
+ * y se incluyen ciudades intermedias en las rutas principales.
  */
 
 import type { Location, VehicleType } from '@/types';
@@ -27,21 +26,20 @@ export function calculateDistance(pickup: Location, dropoff: Location): number {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// Velocidad promedio interurbana Ecuador (carretera, no autopista)
 const AVERAGE_SPEED_KMH = 75;
 
 export function calculateEstimatedDuration(pickup: Location, dropoff: Location): number {
   return Math.round((calculateDistance(pickup, dropoff) / AVERAGE_SPEED_KMH) * 60);
 }
 
-// ── Normalización de nombre de ciudad ────────────────────────
+// ── Normalización de nombre ───────────────────────────────────
 function normalizeCity(address: string): string {
   return address
-    .split(',')[0]                          // primer componente antes de la coma
+    .split(',')[0]
     .trim()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')        // sin diacríticos (ó → o, etc.)
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z\s]/g, '')
     .trim();
 }
@@ -52,181 +50,253 @@ function pairKey(a: string, b: string): string {
   return na <= nb ? `${na}|${nb}` : `${nb}|${na}`;
 }
 
-// ── Tabla de precios fijos — SUV Confort, un sentido, USD ────
+// ── Tabla de precios COMPARTIDO — SUV, un sentido, USD ────────
 //
-// Referencia: tarifas vigentes de empresas puerta-a-puerta Ecuador.
-// Ejemplos base del operador: Latacunga→Quito $13, Ambato→Quito $15,
-// Riobamba→Quito $20.
+// Precio compartido ≈ 3 pasajeros.
+// Privado Confort = este valor × 4.
+// Privado Premium = ceil(Privado Confort × 1.10).
+//
+// Quito tiene 3 zonas:
+//   "quito centro norte"  (Iñaquito, La Carolina, González Suárez, norte)
+//   "quito sur"           (Quitumbe, Chillogallo, Guamaní)
+//   "cumbaya  tumbaco valle" / "los chillos  sangolqui" (valles orientales)
+//   "aeropuerto quito tababela"
 const CITY_PAIR_PRICES: Record<string, number> = {
 
-  // ── Desde / hacia Quito ──────────────────────────────────
-  'cayambe|quito':           8,
-  'otavalo|quito':           10,
-  'ibarra|quito':            12,
-  'cotacachi|quito':         12,
-  'latacunga|quito':         13,
-  'ambato|quito':            15,
-  'quito|santo domingo':     15,
-  'banos|quito':             18,
-  'guaranda|quito':          25,
-  'quito|tulcan':            25,
-  'quito|riobamba':          20,
-  'quito|tena':              30,
-  'esmeraldas|quito':        30,
-  'alausi|quito':            30,
-  'quito|puyo':              35,
-  'lago agrio|quito':        40,
-  'nueva loja|quito':        40,
-  'quito|cuenca':            45,
-  'manta|quito':             50,
-  'portoviejo|quito':        50,
-  'quito|guayaquil':         50,
-  'quito|salinas':           60,
-  'montanita|quito':         55,
-  'macas|quito':             55,
-  'machala|quito':           65,
-  'quito|zaruma':            65,
-  'loja|quito':              70,
+  // ── Rutas hacia Quito Centro Norte ───────────────────────────
+  'cayambe|quito centro norte':              7,
+  'guayllabamba|quito centro norte':         6,
+  'otavalo|quito centro norte':              9,
+  'cotacachi|quito centro norte':            11,
+  'tabacundo|quito centro norte':            8,
+  'ibarra|quito centro norte':               11,
+  'el quinche|quito centro norte':           7,
+  'pifo|quito centro norte':                 6,
+  'quito centro norte|tulcan':               24,
+  'latacunga|quito centro norte':            13,
+  'tambillo|quito centro norte':             8,
+  'aloasi|quito centro norte':               10,
+  'machachi|quito centro norte':             9,
+  'ambato|quito centro norte':               15,
+  'banos|quito centro norte':                17,
+  'quito centro norte|riobamba':             20,
+  'quito centro norte|guaranda':             24,
+  'quito centro norte|santo domingo':        14,
+  'esmeraldas|quito centro norte':           29,
+  'quito centro norte|alausi':               29,
+  'quito centro norte|puyo':                 34,
+  'lago agrio|quito centro norte':           39,
+  'quito centro norte|tena':                 29,
+  'quito centro norte|cuenca':               44,
+  'manta|quito centro norte':                49,
+  'portoviejo|quito centro norte':           49,
+  'quito centro norte|guayaquil':            49,
+  'quito centro norte|salinas':              59,
+  'montanita|quito centro norte':            54,
+  'macas|quito centro norte':                54,
+  'machala|quito centro norte':              64,
+  'quito centro norte|zaruma':               64,
+  'loja|quito centro norte':                 69,
 
-  // ── Desde / hacia Guayaquil ──────────────────────────────
-  'guayaquil|naranjal':      12,
-  'guayaquil|salinas':       15,
-  'guayaquil|montanita':     18,
-  'guayaquil|machala':       20,
-  'alausi|guayaquil':        25,
-  'cuenca|guayaquil':        25,
-  'guayaquil|riobamba':      30,
-  'guayaquil|manta':         30,
-  'guayaquil|portoviejo':    30,
-  'guayaquil|santo domingo': 30,
-  'guayaquil|zaruma':        30,
-  'ambato|guayaquil':        35,
-  'banos|guayaquil':         35,
-  'guayaquil|latacunga':     40,
-  'guayaquil|loja':          40,
-  'esmeraldas|guayaquil':    55,
-  'guayaquil|ibarra':        55,
+  // ── Rutas hacia Quito Sur ────────────────────────────────────
+  'quito sur|latacunga':                     10,
+  'ambato|quito sur':                        13,
+  'machachi|quito sur':                      7,
+  'tambillo|quito sur':                      6,
+  'aloasi|quito sur':                        8,
+  'quito sur|riobamba':                      18,
+  'banos|quito sur':                         15,
+  'quito sur|cuenca':                        42,
+  'quito sur|guayaquil':                     47,
 
-  // ── Desde / hacia Cuenca ─────────────────────────────────
+  // ── Rutas hacia Valles (Cumbayá / Tumbaco) ──────────────────
+  'cumbaya  tumbaco valle|latacunga':        15,
+  'ambato|cumbaya  tumbaco valle':           17,
+  'banos|cumbaya  tumbaco valle':            14,
+  'cumbaya  tumbaco valle|pifo':             5,
+  'cumbaya  tumbaco valle|riobamba':         22,
+  'cumbaya  tumbaco valle|guayaquil':        53,
+  'cumbaya  tumbaco valle|cuenca':           47,
+  'cumbaya  tumbaco valle|tena':             27,
+
+  // ── Rutas hacia Los Chillos / Sangolquí ─────────────────────
+  'latacunga|los chillos  sangolqui':        14,
+  'ambato|los chillos  sangolqui':           16,
+  'banos|los chillos  sangolqui':            13,
+  'los chillos  sangolqui|riobamba':         21,
+  'cuenca|los chillos  sangolqui':           46,
+
+  // ── Aeropuerto Quito (Tababela) ──────────────────────────────
+  'aeropuerto quito tababela|latacunga':     15,
+  'aeropuerto quito tababela|ambato':        18,
+  'aeropuerto quito tababela|banos':         18,
+  'aeropuerto quito tababela|riobamba':      23,
+  'aeropuerto quito tababela|guayllabamba':  5,
+  'aeropuerto quito tababela|cayambe':       9,
+  'aeropuerto quito tababela|ibarra':        14,
+  'aeropuerto quito tababela|otavalo':       12,
+  'aeropuerto quito tababela|pifo':          5,
+  'aeropuerto quito tababela|el quinche':    6,
+  'aeropuerto quito tababela|cuenca':        47,
+  'aeropuerto quito tababela|guayaquil':     52,
+  'aeropuerto quito tababela|santo domingo': 17,
+
+  // ── Desde / hacia Guayaquil ──────────────────────────────────
+  'guayaquil|naranjal':      10,
+  'guayaquil|salinas':       14,
+  'guayaquil|montanita':     17,
+  'guayaquil|machala':       19,
+  'alausi|guayaquil':        24,
+  'cuenca|guayaquil':        24,
+  'guayaquil|riobamba':      29,
+  'guayaquil|manta':         29,
+  'guayaquil|portoviejo':    29,
+  'guayaquil|santo domingo': 29,
+  'guayaquil|zaruma':        29,
+  'ambato|guayaquil':        34,
+  'banos|guayaquil':         34,
+  'guayaquil|latacunga':     39,
+  'guayaquil|loja':          39,
+  'esmeraldas|guayaquil':    54,
+  'guayaquil|ibarra':        54,
+
+  // ── Desde / hacia Cuenca ─────────────────────────────────────
   'azogues|cuenca':          5,
-  'alausi|cuenca':           18,
-  'cuenca|machala':          20,
-  'cuenca|loja':             25,
-  'cuenca|riobamba':         25,
-  'ambato|cuenca':           30,
-  'cuenca|zaruma':           30,
-  'cuenca|latacunga':        35,
-  'cuenca|macas':            35,
+  'alausi|cuenca':           17,
+  'cuenca|machala':          19,
+  'cuenca|loja':             24,
+  'cuenca|riobamba':         24,
+  'ambato|cuenca':           29,
+  'cuenca|zaruma':           29,
+  'cuenca|latacunga':        34,
+  'cuenca|macas':            34,
 
-  // ── Sierra interna ───────────────────────────────────────
+  // ── Sierra interna ───────────────────────────────────────────
   'ibarra|otavalo':          5,
-  'ambato|banos':            6,
-  'latacunga|ambato':        6,
-  'cotacachi|ibarra':        8,
-  'ambato|riobamba':         8,
-  'latacunga|riobamba':      12,
-  'alausi|riobamba':         12,
-  'ibarra|tulcan':           15,
-  'ambato|puyo':             15,
-  'cayambe|ibarra':          15,
-  'ambato|tena':             18,
-  'ibarra|latacunga':        20,
+  'ambato|banos':            5,
+  'latacunga|ambato':        5,
+  'cotacachi|ibarra':        7,
+  'ambato|riobamba':         7,
+  'latacunga|riobamba':      11,
+  'alausi|riobamba':         11,
+  'ibarra|tulcan':           14,
+  'ambato|puyo':             14,
+  'cayambe|ibarra':          14,
+  'ambato|tena':             17,
+  'ibarra|latacunga':        19,
 
-  // ── Costa interna ────────────────────────────────────────
-  'manta|portoviejo':        5,
-  'montanita|salinas':       10,
-  'esmeraldas|manta':        45,
-  'manta|salinas':           50,
+  // ── Costa interna ────────────────────────────────────────────
+  'manta|portoviejo':        4,
+  'montanita|salinas':       9,
+  'esmeraldas|manta':        44,
+  'manta|salinas':           49,
 
-  // ── Sur del país ─────────────────────────────────────────
-  'loja|zaruma':             18,
-  'machala|zaruma':          20,
-  'loja|machala':            30,
+  // ── Sur del país ─────────────────────────────────────────────
+  'loja|zaruma':             17,
+  'machala|zaruma':          19,
+  'loja|machala':            29,
 
-  // ── Amazonía ─────────────────────────────────────────────
-  'puyo|tena':               12,
-  'lago agrio|tena':         35,
-  'macas|puyo':              35,
-  'macas|tena':              45,
+  // ── Amazonía ─────────────────────────────────────────────────
+  'puyo|tena':               11,
+  'lago agrio|tena':         34,
+  'macas|puyo':              34,
+  'macas|tena':              44,
 };
 
-// ── Fórmula de respaldo (distancia haversine) ────────────────
-// Calibrada a: 90km→$13, 130km→$15, 190km→$20
-function distanceBasedSuvPrice(km: number): number {
-  if (km <= 15) return 5;
-  if (km <= 40) return Math.round(4 + km * 0.20);
-  return Math.max(8, Math.round(4.5 + km * 0.082));
+// ── Fórmula de respaldo ───────────────────────────────────────
+// Calibrada a: 90km→$13, 130km→$15, 190km→$20 (compartido)
+function distanceBasedSharedPrice(km: number): number {
+  if (km <= 15) return 4;
+  if (km <= 40) return Math.round(3 + km * 0.20);
+  return Math.max(7, Math.round(4.5 + km * 0.082));
 }
 
-// ── Lookup principal ─────────────────────────────────────────
-function suvConfortBase(pickup: Location, dropoff: Location): { price: number; fixed: boolean } {
+// ── Lookup ────────────────────────────────────────────────────
+function sharedSuvBase(
+  pickup: Location,
+  dropoff: Location,
+): { price: number; fixed: boolean } {
   if (pickup.address && dropoff.address) {
     const key = pairKey(pickup.address, dropoff.address);
-    const fixed = CITY_PAIR_PRICES[key];
-    if (fixed !== undefined) return { price: fixed, fixed: true };
+    const p = CITY_PAIR_PRICES[key];
+    if (p !== undefined) return { price: p, fixed: true };
   }
-  const dist = calculateDistance(pickup, dropoff);
-  return { price: distanceBasedSuvPrice(dist), fixed: false };
+  return {
+    price: distanceBasedSharedPrice(calculateDistance(pickup, dropoff)),
+    fixed: false,
+  };
 }
 
 // ── API pública ───────────────────────────────────────────────
 
-/**
- * Tarifa estimada para mostrar al pasajero.
- *
- * Retorna: suvBase × multiplierConfort(vehicleType)
- * Compatible con el patrón de RideRequestForm:
- *   fare = (calculateFare(…) / multiplierConfort) × tierMultiplier
- */
-export function calculateFare(
-  pickup: Location,
-  dropoff: Location,
-  vehicleType: VehicleType = 'suv',
-): number {
-  const vehicle = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
-  const { price } = suvConfortBase(pickup, dropoff);
-  return Math.round(price * vehicle.multiplierConfort * 100) / 100;
-}
-
 export interface FareBreakdown {
-  /** Precio base SUV Confort para el par de ciudades */
-  suvConfortPrice:   number;
-  /** Multiplicador del vehículo (relativo a SUV Confort) */
-  vehicleMultiplier: number;
-  /** Multiplicador del tier aplicado */
-  tierMultiplier:    number;
+  /** Precio compartido (base de tabla o fórmula) — SUV */
+  sharedBase:        number;
   /** Tarifa final mostrada al pasajero */
   totalFare:         number;
   distanceKm:        number;
   durationMin:       number;
   /** true = precio de tabla fija · false = estimado por distancia */
   isPriceFixed:      boolean;
+  mode:              'privado' | 'compartido';
+  tier:              'confort' | 'premium';
 }
 
+/**
+ * Calcula la tarifa final según:
+ *  · Compartido               → sharedBase
+ *  · Privado Confort          → sharedBase × 4
+ *  · Privado Premium          → ceil(Privado Confort × 1.10)
+ */
 export function getFareBreakdown(
-  pickup: Location,
-  dropoff: Location,
+  pickup:      Location,
+  dropoff:     Location,
   vehicleType: VehicleType = 'suv',
-  tier: 'confort' | 'premium' = 'confort',
+  tier:        'confort' | 'premium' = 'confort',
+  mode:        'privado' | 'compartido' = 'privado',
 ): FareBreakdown {
-  const vehicle   = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
-  const dist      = calculateDistance(pickup, dropoff);
-  const { price: suvBase, fixed } = suvConfortBase(pickup, dropoff);
-  const tierMult  = tier === 'premium' ? vehicle.multiplierPremium : vehicle.multiplierConfort;
-  const totalFare = Math.round(suvBase * tierMult * 100) / 100;
+  const dist                    = calculateDistance(pickup, dropoff);
+  const { price: base, fixed }  = sharedSuvBase(pickup, dropoff);
+
+  // Vehicle factor (VAN/Minibús/Bus amplían el precio privado)
+  const vehicle      = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
+  const isLargeVeh   = !['suv', 'suv_xl', 'other'].includes(vehicleType);
+  const vehicleFactor = isLargeVeh ? vehicle.multiplierConfort : 1;
+
+  let totalFare: number;
+  if (mode === 'compartido') {
+    totalFare = base;                                  // precio compartido
+  } else {
+    const privadoConfort = Math.round(base * 4 * vehicleFactor);
+    if (tier === 'premium') {
+      totalFare = Math.ceil(privadoConfort * 1.10);   // privado premium
+    } else {
+      totalFare = privadoConfort;                     // privado confort
+    }
+  }
 
   return {
-    suvConfortPrice:   suvBase,
-    vehicleMultiplier: vehicle.multiplierConfort,
-    tierMultiplier:    tierMult,
+    sharedBase:  base,
     totalFare,
-    distanceKm:        Math.round(dist * 10) / 10,
-    durationMin:       Math.round((dist / AVERAGE_SPEED_KMH) * 60),
-    isPriceFixed:      fixed,
+    distanceKm:  Math.round(dist * 10) / 10,
+    durationMin: Math.round((dist / AVERAGE_SPEED_KMH) * 60),
+    isPriceFixed: fixed,
+    mode,
+    tier,
   };
 }
 
-// ── Legacy compat ─────────────────────────────────────────────
+/**
+ * Compat con código que solo llama calculateFare(pickup, dropoff, vehicleType).
+ * Por defecto devuelve Privado Confort.
+ */
+export function calculateFare(
+  pickup:      Location,
+  dropoff:     Location,
+  vehicleType: VehicleType = 'suv',
+): number {
+  return getFareBreakdown(pickup, dropoff, vehicleType, 'confort', 'privado').totalFare;
+}
+
 export type { VehicleType as RideType };
-/** Peak hours no aplican a transporte interurbano */
 export function isPeakHour(): boolean { return false; }
