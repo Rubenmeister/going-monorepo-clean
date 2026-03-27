@@ -37,8 +37,24 @@ const DEFAULT_LOCATIONS: Location[] = [
   { address: 'Machachi',       lat: -0.5104, lon: -78.5698, city: 'Machachi' },
   { address: 'Tambillo',       lat: -0.4360, lon: -78.5598, city: 'Tambillo' },
   { address: 'Aloasí',         lat: -0.5300, lon: -78.5700, city: 'Aloasí' },
+  // ── Ruta Norte: Ibarra / Otavalo y zona (misma tarifa) ────────
   { address: 'Otavalo',        lat:  0.2342, lon: -78.2637, city: 'Otavalo' },
+  { address: 'Peguche',        lat:  0.2520, lon: -78.2530, city: 'Otavalo' },
+  { address: 'Atuntaqui',      lat:  0.3360, lon: -78.2150, city: 'Atuntaqui' },
   { address: 'Cotacachi',      lat:  0.3049, lon: -78.2656, city: 'Cotacachi' },
+
+  // ── Ruta Santo Domingo / El Carmen ────────────────────────────
+  { address: 'La Concordia',   lat: -0.0058, lon: -79.3933, city: 'La Concordia' },
+  { address: 'Chone',          lat: -0.6875, lon: -80.0958, city: 'Chone' },
+  { address: 'Flavio Alfaro',  lat: -0.4775, lon: -79.8164, city: 'Flavio Alfaro' },
+  { address: 'La Unión (Esmeraldas)', lat:  0.7167, lon: -79.1833, city: 'La Unión' },
+
+  // ── Ruta Ambato: ciudades intermedias ─────────────────────────
+  { address: 'Salcedo',        lat: -1.0578, lon: -78.5922, city: 'Salcedo' },
+  { address: 'Píllaro',        lat: -1.1657, lon: -78.5373, city: 'Píllaro' },
+  { address: 'Cevallos',       lat: -1.3600, lon: -78.6300, city: 'Cevallos' },
+  { address: 'Tisaleo',        lat: -1.3522, lon: -78.6722, city: 'Tisaleo' },
+  { address: 'Mocha',          lat: -1.4167, lon: -78.6333, city: 'Mocha' },
 
   // ── Ciudades principales ─────────────────────────────────────
   { address: 'Guayaquil',       lat: -2.1898, lon: -79.8711, city: 'Guayaquil' },
