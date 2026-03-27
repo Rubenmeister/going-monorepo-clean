@@ -17,7 +17,7 @@ const PRIVATE_VEHICLES = [
     luggage: '3 maletas',
     color: '#3B82F6',
     badge: null,
-    photo: '/images/SUV EN LA CIUDAD NOCHE.png',
+    photo: '/images/suv-quito.png',
   },
   {
     id: 'suvxl',
@@ -41,7 +41,7 @@ const PRIVATE_VEHICLES = [
     luggage: '6 maletas',
     color: '#F59E0B',
     badge: null,
-    photo: '/images/MUJERES LLEGANDO AL AERO DE QUITO.jpg',
+    photo: '/images/sprinter-aeropuerto.png',
   },
   {
     id: 'vanxl',
@@ -53,7 +53,7 @@ const PRIVATE_VEHICLES = [
     luggage: '8 maletas',
     color: '#EF4444',
     badge: null,
-    photo: '/images/VAN-XL.png',
+    photo: '/images/van-xl.png',
   },
   {
     id: 'minibus',
@@ -65,7 +65,7 @@ const PRIVATE_VEHICLES = [
     luggage: 'Bodega incluida',
     color: '#0891B2',
     badge: null,
-    photo: '/images/viaje compartido .png',
+    photo: '/images/Minibus.png',
   },
   {
     id: 'bus',
@@ -77,7 +77,7 @@ const PRIVATE_VEHICLES = [
     luggage: 'Bodega incluida',
     color: '#DC2626',
     badge: 'Corporativo',
-    photo: '/images/Puerta a puerta entre ciudades.png',
+    photo: '/images/BUS.png',
   },
 ];
 
@@ -450,7 +450,8 @@ export default function TransportPage() {
                   { icon: '📄', text: 'Cédula de Identidad' },
                   { icon: '🚗', text: 'Licencia tipo B o profesional' },
                   { icon: '📋', text: 'Matrícula (vehículo 2015+)' },
-                  { icon: '📋', text: 'Permiso ANT y SOAT vigente' },
+                  { icon: '🛡️', text: 'Seguro de vehículo vigente' },
+                  { icon: '🏛️', text: 'Permiso ANT transporte turístico (VAN, Minibús, Bus)' },
                 ].map(r => (
                   <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
                     <span>{r.icon}</span><span>{r.text}</span>
