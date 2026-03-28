@@ -19,7 +19,7 @@ export class AgentService {
     private bookingService: BookingService,
   ) {
     this.client = new Anthropic({
-      apiKey: this.config.get<string>('ANTHROPIC_API_KEY'),
+      apiKey: this.config.get<string>('ANTHROPIC_API_KEY')?.trim(),
     });
   }
 
