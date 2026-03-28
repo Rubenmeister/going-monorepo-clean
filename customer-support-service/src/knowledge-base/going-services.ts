@@ -73,6 +73,24 @@ export const GOING_SERVICES_KB = {
     'Otavalo', 'Ibarra', 'Atuntaqui', 'Tabacundo', 'Cayambe',
   ],
 
+  // Ciudades próximamente — el bot informa que aún no hay servicio
+  coming_soon_cities: [
+    // Sierra Norte (extensión Ibarra → Tulcán)
+    'Pimampiro', 'Mira', 'El Ángel', 'Bolívar', 'San Gabriel',
+    'Huaca', 'Tulcán', 'Carchi',
+    // Sierra Centro (extensión Ambato → Riobamba)
+    'Mocha', 'Tisaleo', 'Cevallos', 'Píllaro', 'Baños',
+    'Riobamba', 'Guano', 'Penipe', 'Chambo',
+    // Cercanas a rutas pero fuera del camino principal
+    'Sigchos', 'Saquisilí', 'Pujilí', 'Pangua',
+    'Pedro Vicente Maldonado', 'Puerto Quito',
+    // Sierra Sur y Costa
+    'Cuenca', 'Loja', 'Azogues', 'Cañar',
+    'Guayaquil', 'Manta', 'Esmeraldas', 'Portoviejo', 'Machala',
+    // Amazonía
+    'Tena', 'Puyo', 'Macas', 'Lago Agrio', 'Coca',
+  ],
+
   contact: {
     whatsapp: '+593 99 XXX XXXX',
     email: 'soporte@goingec.com',
