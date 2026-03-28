@@ -10,6 +10,8 @@ import {
   IRideRepository,
   DistanceCalculatorService,
 } from '../../domain/ports';
+import { TokenService } from '../../infrastructure/token.service';
+import { RideEventsGateway } from '../../infrastructure/gateways/ride-events.gateway';
 
 /**
  * Request Ride Use Case
@@ -22,6 +24,8 @@ export class RequestRideUseCase {
     @Inject('GeolocationService')
     private readonly geoService: GeolocationService,
     private readonly distanceCalculator: DistanceCalculatorService,
+    private readonly tokenService: TokenService,
+    private readonly eventsGateway: RideEventsGateway,
   ) {}
 
   async execute(input: {
@@ -31,6 +35,12 @@ export class RequestRideUseCase {
     dropoffLatitude: number;
     dropoffLongitude: number;
     serviceType?: string;
+    modalidad?: string;
+    scheduledAt?: Date;
+    isPackage?: boolean;
+    packageDescription?: string;
+    recipientName?: string;
+    recipientPhone?: string;
   }): Promise<any> {
     const {
       userId,
@@ -76,6 +86,24 @@ export class RequestRideUseCase {
       fare,
     });
 
+    // Generar tokens de identidad y link compartido
+    const pickupToken = this.tokenService.generatePickupToken(ride.id, userId);
+    const shareToken  = this.tokenService.generateShareToken(ride.id);
+
+    // Enriquecer el ride con tokens y campos extra
+    Object.assign(ride, {
+      pickupToken,
+      shareToken,
+      serviceType:        input.serviceType ?? 'suv',
+      modalidad:          input.modalidad ?? 'compartido',
+      scheduledAt:        input.scheduledAt,
+      totalDistanceKm:    estimatedDistance,
+      isPackage:          input.isPackage ?? false,
+      packageDescription: input.packageDescription,
+      recipientName:      input.recipientName,
+      recipientPhone:     input.recipientPhone,
+    });
+
     // Save to database
     let savedRide: typeof ride;
     try {
@@ -84,6 +112,13 @@ export class RequestRideUseCase {
       throw new Error(`No se pudo crear el viaje: ${err?.message ?? 'error desconocido'}`);
     }
 
+    // Registrar ruta en el gateway para cálculo de progreso
+    this.eventsGateway.registerRoute(
+      ride.id,
+      pickupLatitude, pickupLongitude,
+      dropoffLatitude, dropoffLongitude,
+    );
+
     // Calculate ETA to nearby drivers
     const eta = this.geoService.estimateEta(
       pickupLocation,
@@ -91,21 +126,21 @@ export class RequestRideUseCase {
       40 // average speed
     );
 
+    const baseUrl = process.env.APP_URL ?? 'https://going.com.ec';
+
     return {
       rideId: savedRide.id,
       userId: savedRide.userId,
       status: savedRide.status,
-      pickupLocation: {
-        latitude: pickupLatitude,
-        longitude: pickupLongitude,
-      },
-      dropoffLocation: {
-        latitude: dropoffLatitude,
-        longitude: dropoffLongitude,
-      },
-      fare: fare.toObject(),
+      pickupLocation:  { latitude: pickupLatitude,  longitude: pickupLongitude },
+      dropoffLocation: { latitude: dropoffLatitude, longitude: dropoffLongitude },
+      fare:            fare.toObject(),
       eta,
-      requestedAt: savedRide.requestedAt,
+      requestedAt:     savedRide.requestedAt,
+      scheduledAt:     input.scheduledAt,
+      // Tokens para el pasajero/remitente
+      pickupToken,
+      shareUrl: `${baseUrl}/tracking?t=${shareToken}`,
     };
   }
 
