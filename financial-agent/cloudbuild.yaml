@@ -6,6 +6,7 @@ steps:
     args: [push, gcr.io/$PROJECT_ID/financial-agent:latest]
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
     args:
       - run
       - jobs

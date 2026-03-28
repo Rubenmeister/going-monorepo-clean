@@ -15,6 +15,7 @@ steps:
 
   # Deploy as Cloud Run Job
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
     args:
       - run
       - jobs

@@ -5,7 +5,6 @@ steps:
       - -t
       - gcr.io/$PROJECT_ID/ops-agent:latest
       - .
-    dir: ops-agent
 
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/ops-agent:latest']
