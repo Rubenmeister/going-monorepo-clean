@@ -100,7 +100,7 @@ export function getPrivateFare(
  * Retorna la tabla completa de precios para una ruta dada
  */
 export function getFareTable(origin: string, destination: string): string {
-  const shared = getFare(origin, destination, 'shared');
+  const shared = getFare(origin, destination);
   if (!shared) return '';
 
   const lines = [
@@ -114,10 +114,9 @@ export function getFareTable(origin: string, destination: string): string {
   return lines.join('\n');
 }
 
-export function getFare(origin: string, destination: string, type: 'shared' | 'private_suv' = 'shared'): number | null {
+export function getFare(origin: string, destination: string): number | null {
   const key = `${normalize(origin)}-${normalize(destination)}`;
-  const fares = type === 'shared' ? FARES.shared : FARES.private_suv;
-  return (fares as any)[key] ?? null;
+  return (FARES.shared as any)[key] ?? null;
 }
 
 function normalize(city: string): string {
