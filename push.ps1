@@ -21,6 +21,10 @@ git add frontend-webapp/src/ `
         mobile-user-app/src/ `
         mobile-driver-app/src/ `
         apps/corporate-portal/ `
+        financial-agent/src/ `
+        going-agent/src/ `
+        marketing-agent/src/ `
+        ops-agent/src/ `
         push.ps1 `
         2>&1
 

@@ -66,8 +66,9 @@ export interface RevenueData {
   today: number;
   thisWeek: number;
   thisMonth: number;
-  dailyTarget: number;       // $100 default
+  dailyTarget: number;          // $100 default
   lastRideAt?: string;
+  goalCelebratedToday?: boolean; // true si ya se envió alerta de meta $100 alcanzada hoy
 }
 
 export interface AcademyData {
