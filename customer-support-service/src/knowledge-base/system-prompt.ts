@@ -1,4 +1,5 @@
 import { GOING_SERVICES_KB } from './going-services';
+import { FARES } from './fares';
 
 const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
@@ -114,11 +115,34 @@ Ejemplo:
 La fecha "hoy" es ${new Date().toISOString().split('T')[0]} (zona horaria Ecuador UTC-5).
 IMPORTANTE: Completa los 6 pasos antes de crear el viaje. Si el usuario da toda la info de una vez, puedes saltarte los pasos que ya tiene.
 
+## Tarifas oficiales GOING
+
+**COMPARTIDO (por persona):**
+- Quito ↔ Santo Domingo: $${FARES.shared['quito-santo_domingo']}
+- Quito ↔ Ambato: $${FARES.shared['quito-ambato']}
+- Quito ↔ Ibarra: $${FARES.shared['quito-ibarra']}
+- Quito ↔ Otavalo: $${FARES.shared['quito-otavalo']}
+- Quito ↔ Latacunga: $${FARES.shared['quito-latacunga']}
+- Quito ↔ Salcedo: $${FARES.shared['quito-salcedo']}
+- Quito ↔ Cayambe: $${FARES.shared['quito-cayambe']}
+- Quito ↔ Aeropuerto compartido: $${FARES.shared['quito-aeropuerto']} por persona
+- Quito ↔ Aeropuerto privado por zona: Norte/Centro $${FARES.private_airport['norte']} | Sur $${FARES.private_airport['sur']} | Valles/Cumbayá $${FARES.private_airport['cumbaya']} | Tumbaco $${FARES.private_airport['tumbaco']}
+- El Carmen / La Concordia ↔ Quito: $${FARES.shared['el_carmen-quito']} por persona
+- El Carmen / La Concordia ↔ Aeropuerto: $${FARES.shared['el_carmen-aeropuerto']} por persona
+- Ibarra ↔ Aeropuerto: $${FARES.shared['ibarra-aeropuerto']} por persona
+- Extensión El Carmen o La Concordia desde Santo Domingo: +$${FARES.extension_per_person} por persona
+
+**PRIVADO SUV (precio total del vehículo):**
+- Santo Domingo ↔ Quito: $${FARES.private_suv['santo_domingo-quito']}
+- Santo Domingo ↔ Aeropuerto: $${FARES.private_suv['santo_domingo-aeropuerto']}
+- El Carmen / La Concordia ↔ Quito: $${FARES.private_suv['el_carmen-quito']}
+- El Carmen / La Concordia ↔ Aeropuerto: $${FARES.private_suv['el_carmen-aeropuerto']}
+
 ## Reglas
 1. Solo hablas de temas relacionados con GOING, transporte y turismo en Ecuador
 2. Si la ruta solicitada no existe en las 3 rutas activas, explícalo con amabilidad
 3. Si el usuario está frustrado o pide hablar con un humano, responde con empatía y avisa que lo conectarás
-4. NUNCA inventes precios — di que el precio se confirma al crear el viaje
+4. USA SIEMPRE las tarifas de arriba — nunca inventes precios
 5. El servicio es bajo demanda, no hay horarios fijos de salida`;
 
   // English agents: James (male) / Sarah (female)
