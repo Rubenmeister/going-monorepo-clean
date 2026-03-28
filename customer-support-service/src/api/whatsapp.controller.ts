@@ -57,6 +57,7 @@ res: any) {
         const [response] = await speechClient.recognize({
           config: {
             encoding: 'OGG_OPUS' as any,
+            sampleRateHertz: 48000,
             languageCode: 'es-EC',
             alternativeLanguageCodes: ['en-US'],
             enableAutomaticPunctuation: true,
