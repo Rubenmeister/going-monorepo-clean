@@ -1,5 +1,5 @@
 import { GOING_SERVICES_KB } from './going-services';
-import { FARES } from './fares';
+import { FARES, getFareTable } from './fares';
 
 const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
@@ -117,7 +117,21 @@ IMPORTANTE: Completa los 6 pasos antes de crear el viaje. Si el usuario da toda 
 
 ## Tarifas oficiales GOING
 
-**COMPARTIDO (por persona):**
+**Cuando el usuario pregunte por precios, pregunta primero: ¿Viaje COMPARTIDO o PRIVADO?**
+
+Si COMPARTIDO — muestra solo estas dos opciones (por persona):
+🚗 SUV Confort (hasta 4 pax): $[tarifa]
+🚙 SUV XL Premium (hasta 5 pax): $[tarifa]
+
+Si PRIVADO — muestra la tabla completa (precio total del vehículo):
+🚗 SUV (hasta 4 pax): $[tarifa × 4]
+🚙 SUV XL (hasta 5 pax): $[tarifa × 5]
+🚐 VAN (hasta 7 pax): $[tarifa × 7]
+🚐 VAN XL (hasta 12 pax): $[tarifa × 10]
+🚌 Minibús (hasta 20 pax): $[proporcional, base $250]
+🚌 Bus (30+ pax): $[proporcional, base $350]
+
+Tarifas compartidas por ruta (precio por persona):
 - Quito ↔ Santo Domingo: $${FARES.shared['quito-santo_domingo']}
 - Quito ↔ Ambato: $${FARES.shared['quito-ambato']}
 - Quito ↔ Ibarra: $${FARES.shared['quito-ibarra']}
@@ -125,18 +139,15 @@ IMPORTANTE: Completa los 6 pasos antes de crear el viaje. Si el usuario da toda 
 - Quito ↔ Latacunga: $${FARES.shared['quito-latacunga']}
 - Quito ↔ Salcedo: $${FARES.shared['quito-salcedo']}
 - Quito ↔ Cayambe: $${FARES.shared['quito-cayambe']}
-- Quito ↔ Aeropuerto compartido: $${FARES.shared['quito-aeropuerto']} por persona
-- Quito ↔ Aeropuerto privado por zona: Norte/Centro $${FARES.private_airport['norte']} | Sur $${FARES.private_airport['sur']} | Valles/Cumbayá $${FARES.private_airport['cumbaya']} | Tumbaco $${FARES.private_airport['tumbaco']}
-- El Carmen / La Concordia ↔ Quito: $${FARES.shared['el_carmen-quito']} por persona
-- El Carmen / La Concordia ↔ Aeropuerto: $${FARES.shared['el_carmen-aeropuerto']} por persona
-- Ibarra ↔ Aeropuerto: $${FARES.shared['ibarra-aeropuerto']} por persona
-- Extensión El Carmen o La Concordia desde Santo Domingo: +$${FARES.extension_per_person} por persona
+- Quito ↔ Aeropuerto (compartido): $${FARES.shared['quito-aeropuerto']}/persona
+- Quito ↔ Aeropuerto (privado por zona): Norte/Centro $${FARES.private_airport['norte']} | Sur $${FARES.private_airport['sur']} | Valles/Cumbayá $${FARES.private_airport['cumbaya']} | Tumbaco $${FARES.private_airport['tumbaco']}
+- El Carmen / La Concordia ↔ Quito: $${FARES.shared['el_carmen-quito']}/persona
+- El Carmen / La Concordia ↔ Aeropuerto: $${FARES.shared['el_carmen-aeropuerto']}/persona
+- Ibarra ↔ Aeropuerto: $${FARES.shared['ibarra-aeropuerto']}/persona
+- Extensión a El Carmen o La Concordia: +$${FARES.extension_per_person}/persona
 
-**PRIVADO SUV (precio total del vehículo):**
-- Santo Domingo ↔ Quito: $${FARES.private_suv['santo_domingo-quito']}
-- Santo Domingo ↔ Aeropuerto: $${FARES.private_suv['santo_domingo-aeropuerto']}
-- El Carmen / La Concordia ↔ Quito: $${FARES.private_suv['el_carmen-quito']}
-- El Carmen / La Concordia ↔ Aeropuerto: $${FARES.private_suv['el_carmen-aeropuerto']}
+Ejemplo tabla completa Quito↔Santo Domingo:
+${getFareTable('quito', 'santo_domingo')}
 
 ## Reglas
 1. Solo hablas de temas relacionados con GOING, transporte y turismo en Ecuador

@@ -58,25 +58,61 @@ export const FARES = {
     'tumbaco':       15,
   },
 
-  // ── PRIVADO SUV (precio total del vehículo) ───────────────────────────────
-  private_suv: {
-    'santo_domingo-quito':    60,
-    'quito-santo_domingo':    60,
-    'santo_domingo-aeropuerto': 80,
-    'aeropuerto-santo_domingo': 80,
-    'el_carmen-quito':        70,
-    'quito-el_carmen':        70,
-    'el_carmen-aeropuerto':   90,
-    'aeropuerto-el_carmen':   90,
-    'la_concordia-quito':     70,
-    'quito-la_concordia':     70,
-    'la_concordia-aeropuerto': 90,
-    'aeropuerto-la_concordia': 90,
+  // ── TIPOS DE VEHÍCULO ─────────────────────────────────────────────────────
+  vehicles: {
+    suv:      { label: 'SUV',      capacity: 4,  multiplier: 4,    fixed_minibus: false },
+    suv_xl:   { label: 'SUV XL',   capacity: 5,  multiplier: 5,    fixed_minibus: false },
+    van:      { label: 'VAN',      capacity: 7,  multiplier: 7,    fixed_minibus: false },
+    van_xl:   { label: 'VAN XL',   capacity: 12, multiplier: 10,   fixed_minibus: false },
+    minibus:  { label: 'Minibús',  capacity: 20, multiplier: null, fixed_minibus: true  },
+    bus:      { label: 'Bus',      capacity: 30, multiplier: null, fixed_minibus: true  },
   },
+
+  // Precio fijo Minibús y Bus para ruta base (Quito↔Santo Domingo $15/persona)
+  // Se escala proporcionalmente para otras rutas usando el precio compartido
+  minibus_fixed: 250,
+  bus_fixed:     350,
 
   // Extensión por desvío (El Carmen / La Concordia desde Santo Domingo)
   extension_per_person: 5,
 };
+
+/**
+ * Calcula el precio privado para un vehículo dado la tarifa compartida base
+ */
+export function getPrivateFare(
+  sharedFarePerPerson: number,
+  vehicleType: keyof typeof FARES.vehicles,
+): number {
+  const BASE_SHARED = 15; // tarifa de referencia (Quito↔Santo Domingo)
+  const vehicle = FARES.vehicles[vehicleType];
+
+  if (vehicleType === 'minibus') {
+    return Math.round(FARES.minibus_fixed * (sharedFarePerPerson / BASE_SHARED));
+  }
+  if (vehicleType === 'bus') {
+    return Math.round(FARES.bus_fixed * (sharedFarePerPerson / BASE_SHARED));
+  }
+  return sharedFarePerPerson * (vehicle.multiplier ?? vehicle.capacity);
+}
+
+/**
+ * Retorna la tabla completa de precios para una ruta dada
+ */
+export function getFareTable(origin: string, destination: string): string {
+  const shared = getFare(origin, destination, 'shared');
+  if (!shared) return '';
+
+  const lines = [
+    `🚗 *SUV* (hasta 4 pax) — Compartido $${shared}/persona | Privado $${getPrivateFare(shared, 'suv')}`,
+    `🚙 *SUV XL* (hasta 5 pax) — Compartido $${shared}/persona | Privado $${getPrivateFare(shared, 'suv_xl')}`,
+    `🚐 *VAN* (hasta 7 pax) — Privado $${getPrivateFare(shared, 'van')}`,
+    `🚐 *VAN XL* (hasta 12 pax) — Privado $${getPrivateFare(shared, 'van_xl')}`,
+    `🚌 *Minibús* (hasta 20 pax) — Privado $${getPrivateFare(shared, 'minibus')}`,
+    `🚌 *Bus* (30+ pax) — Privado $${getPrivateFare(shared, 'bus')}`,
+  ];
+  return lines.join('\n');
+}
 
 export function getFare(origin: string, destination: string, type: 'shared' | 'private_suv' = 'shared'): number | null {
   const key = `${normalize(origin)}-${normalize(destination)}`;
