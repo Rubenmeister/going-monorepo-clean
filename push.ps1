@@ -37,6 +37,10 @@ git add frontend-webapp/src/ `
         ops-agent/cloudbuild.yaml `
         ops-agent/Dockerfile `
         ops-agent/.gcloudignore `
+        customer-support-service/src/ `
+        customer-support-service/cloudbuild.yaml `
+        customer-support-service/Dockerfile `
+        customer-support-service/.gcloudignore `
         push.ps1 `
         2>&1
 

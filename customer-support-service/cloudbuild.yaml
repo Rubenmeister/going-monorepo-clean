@@ -1,0 +1,40 @@
+steps:
+  # 1. Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/customer-support-service:latest
+      - .
+
+  # 2. Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/customer-support-service:latest
+
+  # 3. Deploy as Cloud Run Service (always-on, receives Twilio webhooks)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - customer-support-service
+      - --image=gcr.io/$PROJECT_ID/customer-support-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --cpu=1
+      - --memory=512Mi
+      - --min-instances=1
+      - --max-instances=5
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
+      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID-prod:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN-prod:latest,JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
+      - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/customer-support-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
