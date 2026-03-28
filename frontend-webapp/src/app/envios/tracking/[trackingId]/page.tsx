@@ -26,6 +26,7 @@ interface ShipmentData {
     rating: number;
     vehicle: string;
     phoneNumber?: string;
+    licensePlate?: string;
   };
   createdAt: string;
   estimatedDelivery?: string;

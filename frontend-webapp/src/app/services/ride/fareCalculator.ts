@@ -208,7 +208,6 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'aeropuerto quito tababela|ibarra':        14,
   'aeropuerto quito tababela|atuntaqui':     14,
   'aeropuerto quito tababela|otavalo':       14,
-  'aeropuerto quito tababela|peguche':       14,
   'aeropuerto quito tababela|pifo':          5,
   'aeropuerto quito tababela|el quinche':    6,
   'aeropuerto quito tababela|cuenca':        47,
