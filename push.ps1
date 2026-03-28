@@ -22,9 +22,21 @@ git add frontend-webapp/src/ `
         mobile-driver-app/src/ `
         apps/corporate-portal/ `
         financial-agent/src/ `
+        financial-agent/cloudbuild.yaml `
+        financial-agent/Dockerfile `
+        financial-agent/.gcloudignore `
         going-agent/src/ `
+        going-agent/cloudbuild.yaml `
+        going-agent/Dockerfile `
+        going-agent/.gcloudignore `
         marketing-agent/src/ `
+        marketing-agent/cloudbuild.yaml `
+        marketing-agent/Dockerfile `
+        marketing-agent/.gcloudignore `
         ops-agent/src/ `
+        ops-agent/cloudbuild.yaml `
+        ops-agent/Dockerfile `
+        ops-agent/.gcloudignore `
         push.ps1 `
         2>&1
 
