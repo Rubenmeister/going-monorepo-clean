@@ -30,7 +30,7 @@ steps:
       - --min-instances=1
       - --max-instances=5
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
-      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID-prod:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN-prod:latest,JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
+      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY-prod:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID-prod:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN-prod:latest,JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
 images:
