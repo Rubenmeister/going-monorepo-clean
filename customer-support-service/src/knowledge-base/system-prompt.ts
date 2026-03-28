@@ -1,4 +1,6 @@
 import { GOING_SERVICES_KB } from './going-services';
+
+const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
 import type { AgentGender } from '../agent/conversation.service';
 
@@ -58,6 +60,10 @@ ${GOING_SERVICES_KB.summary_es}
 ${GOING_SERVICES_KB.services_es.map(s => `- ${s}`).join('\n')}
 
 ${cantonCtx}
+
+## Ciudades próximamente en GOING
+Si el usuario menciona alguna de estas ciudades, responde con entusiasmo que pronto llegaremos ahí:
+${COMING_SOON.join(', ')}
 
 ## Rutas activas de GOING
 GOING opera actualmente en estas 3 rutas. Solo puedes reservar viajes entre ciudades de estas rutas:
