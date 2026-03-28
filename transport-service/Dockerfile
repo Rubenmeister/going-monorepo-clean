@@ -11,7 +11,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY nx.json tsconfig.base.json ./
 
 # Instalar dependencias con pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copiar todo el código
 COPY . .
@@ -32,7 +32,7 @@ EXPOSE 3000
 
 # Copiar archivos necesarios para instalar deps de producción
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 
 # Copiar código compilado
 COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
