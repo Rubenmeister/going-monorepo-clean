@@ -48,7 +48,7 @@ export class RideEventsGateway
 
   private readonly logger = new Logger(RideEventsGateway.name);
 
-  // rideId → { driverId, lastLat, lastLng, lastUpdate }
+  // rideId → posición actual del conductor
   private readonly driverPositions = new Map<string, {
     driverId: string;
     lat: number;
@@ -56,6 +56,13 @@ export class RideEventsGateway
     heading?: number;
     speed?: number;
     updatedAt: Date;
+  }>();
+
+  // rideId → coordenadas de origen/destino para calcular progreso
+  private readonly rideRoutes = new Map<string, {
+    originLat: number; originLng: number;
+    destLat: number;   destLng: number;
+    totalKm: number;
   }>();
 
   constructor(private readonly jwtService: JwtService) {}
@@ -161,11 +168,15 @@ export class RideEventsGateway
         : `${Math.round(etaSeconds / 60)} min`
       : null;
 
+    // Calcular % de progreso si tenemos la ruta
+    const progressPercent = this.calcProgress(rideId, lat, lng);
+
     // Broadcast a todos en la sala del viaje
     this.server.to(`ride:${rideId}`).emit('ride:driver_location', {
       rideId, lat, lng, heading, speed,
       eta: etaSeconds,
       etaText,
+      progressPercent,
     });
 
     if (etaText) {
@@ -246,6 +257,41 @@ export class RideEventsGateway
   /** Actualiza tarifa en tiempo real (cuando cambia la ruta) */
   notifyFareUpdate(rideId: string, totalFare: number) {
     this.server.to(`ride:${rideId}`).emit('ride:fare_updated', { rideId, totalFare });
+  }
+
+  /** Registra la ruta del viaje para calcular progreso */
+  registerRoute(rideId: string, originLat: number, originLng: number, destLat: number, destLng: number) {
+    const totalKm = this.haversineKm(originLat, originLng, destLat, destLng);
+    this.rideRoutes.set(rideId, { originLat, originLng, destLat, destLng, totalKm });
+  }
+
+  /** Calcula % de progreso basado en proyección del conductor sobre la línea origen→destino */
+  private calcProgress(rideId: string, driverLat: number, driverLng: number): number | null {
+    const route = this.rideRoutes.get(rideId);
+    if (!route || route.totalKm === 0) return null;
+
+    // Distancia del conductor al origen y al destino
+    const fromOrigin = this.haversineKm(route.originLat, route.originLng, driverLat, driverLng);
+    const fromDest   = this.haversineKm(driverLat, driverLng, route.destLat, route.destLng);
+
+    // Progreso = distancia recorrida / distancia total (clamped 0–100)
+    const traveled = Math.max(0, route.totalKm - fromDest);
+    const pct = Math.min(100, Math.round((traveled / route.totalKm) * 100));
+
+    // Sanity check: si el conductor está lejos del origen, asumir 0%
+    if (fromOrigin > route.totalKm * 1.5) return null;
+
+    return pct;
+  }
+
+  /** Fórmula Haversine — distancia en km entre dos puntos */
+  private haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R  = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2
+      + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
   /** Notifica fallo de pago al pasajero */

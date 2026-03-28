@@ -13,7 +13,11 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Storage } from '@google-cloud/storage';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import {
@@ -31,6 +35,7 @@ import {
 import { IRideRepository } from '../domain/ports';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
+import { TokenService } from '../infrastructure/token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
@@ -65,6 +70,7 @@ export class RideController {
     private readonly dispatchGateway: RideDispatchGateway,
     private readonly eventsGateway: RideEventsGateway,
     private readonly paymentService: PaymentGatewayService,
+    private readonly tokenService: TokenService,
   ) {}
 
   /**
@@ -378,5 +384,125 @@ export class RideController {
     });
 
     return { rideId, status: 'cancelled', reason, cancelledAt: new Date() };
+  }
+
+  /**
+   * Verificar token de recogida (conductor escanea QR del pasajero/paquete)
+   * POST /api/rides/:rideId/verify-pickup
+   * Body: { token: string }
+   */
+  @Post(':rideId/verify-pickup')
+  async verifyPickup(
+    @Param('rideId') rideId: string,
+    @Body('token') token: string,
+  ): Promise<any> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    if (ride.pickupVerified) return { ok: true, alreadyVerified: true };
+
+    const result = this.tokenService.verifyPickupToken(token);
+    if (!result.valid || result.rideId !== rideId) {
+      throw new BadRequestException('Token de recogida inválido o expirado');
+    }
+
+    // Generar deliveryToken ahora que la recogida fue verificada
+    const deliveryToken = this.tokenService.generateDeliveryToken(rideId);
+    await this.rideRepo.update(rideId, {
+      pickupVerified: true,
+      deliveryToken,
+    });
+
+    // Notificar al pasajero via WebSocket
+    this.eventsGateway['server']?.to(`ride:${rideId}`).emit('ride:pickup_verified', {
+      rideId,
+      message: '✅ Identidad verificada — ¡buen viaje!',
+      deliveryToken,
+    });
+
+    return { ok: true, deliveryToken };
+  }
+
+  /**
+   * Confirmar entrega (pasajero/receptor entrega código + conductor sube foto)
+   * POST /api/rides/:rideId/confirm-delivery
+   * Body: { deliveryToken: string } + foto opcional (multipart)
+   */
+  @Post(':rideId/confirm-delivery')
+  @UseInterceptors(FileInterceptor('photo'))
+  async confirmDelivery(
+    @Param('rideId') rideId: string,
+    @Body('deliveryToken') deliveryToken: string,
+    @UploadedFile() photo?: Express.Multer.File,
+  ): Promise<any> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    if (ride.deliveryVerified) return { ok: true, alreadyVerified: true };
+
+    // Validar código de 6 dígitos
+    if (!deliveryToken || deliveryToken !== ride.deliveryToken) {
+      throw new BadRequestException('Código de entrega incorrecto');
+    }
+
+    let photoUrl: string | undefined;
+
+    // Subir foto a GCS si se adjuntó
+    if (photo?.buffer) {
+      try {
+        const bucket  = process.env.GCS_BUCKET ?? 'going-deliveries';
+        const storage = new Storage();
+        const fileName = `deliveries/${rideId}/${Date.now()}.jpg`;
+        const file    = storage.bucket(bucket).file(fileName);
+
+        await file.save(photo.buffer, {
+          metadata: { contentType: photo.mimetype || 'image/jpeg' },
+          public: false,
+        });
+        photoUrl = `https://storage.googleapis.com/${bucket}/${fileName}`;
+      } catch (err: any) {
+        this.logger.error(`GCS photo upload failed for ride ${rideId}: ${err?.message}`);
+        // No bloqueamos la entrega si falla la foto
+      }
+    }
+
+    await this.rideRepo.update(rideId, {
+      deliveryVerified: true,
+      deliveryPhotoUrl: photoUrl,
+      status: 'completed',
+      completedAt: new Date(),
+    });
+
+    // Notificar a todos via WebSocket
+    this.eventsGateway['server']?.to(`ride:${rideId}`).emit('ride:delivery_confirmed', {
+      rideId,
+      message: '📦 Entrega confirmada',
+      photoUrl,
+      confirmedAt: new Date(),
+    });
+
+    return { ok: true, rideId, photoUrl, confirmedAt: new Date() };
+  }
+
+  /**
+   * Obtener link de seguimiento público
+   * GET /api/rides/:rideId/share-link
+   */
+  @Get(':rideId/share-link')
+  async getShareLink(@Param('rideId') rideId: string): Promise<any> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    // Generar o reutilizar shareToken
+    let shareToken = ride.shareToken;
+    if (!shareToken) {
+      shareToken = this.tokenService.generateShareToken(rideId);
+      await this.rideRepo.update(rideId, { shareToken });
+    }
+
+    const baseUrl = process.env.APP_URL ?? 'https://going.com.ec';
+    return {
+      shareToken,
+      shareUrl: `${baseUrl}/tracking?t=${shareToken}`,
+      message: 'Comparte este link para que sigan tu viaje en tiempo real 📍',
+    };
   }
 }
