@@ -1,0 +1,44 @@
+steps:
+  # 1. Build Docker image (contexto = raíz del monorepo)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/transport-service:latest
+      - --build-arg
+      - SERVICE_NAME=transport-service
+      - -f
+      - transport-service/Dockerfile
+      - .
+
+  # 2. Push to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/transport-service:latest
+
+  # 3. Deploy as Cloud Run Service
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - transport-service
+      - --image=gcr.io/$PROJECT_ID/transport-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=512Mi
+      - --min-instances=1
+      - --max-instances=10
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production,APP_URL=https://going.com.ec,GCS_BUCKET=going-deliveries
+      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest,MONGO_URL=MONGO_URL-prod:latest
+      - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/transport-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
