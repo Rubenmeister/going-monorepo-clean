@@ -47,11 +47,30 @@ export const GOING_SERVICES_KB = {
     { q: '¿Tienen servicio a las islas Galápagos?', a: 'Tenemos servicio en las islas principales. Te recomendamos reservar con anticipación por alta demanda.' },
   ],
 
+  // ── Rutas activas de GOING ────────────────────────────────────────────────
+  routes: [
+    {
+      id: 'ruta1',
+      name: 'Quito ↔ Santo Domingo ↔ El Carmen / La Concordia',
+      stops: ['Aeropuerto Quito (Tababela)', 'Quito', 'Santo Domingo', 'El Carmen', 'La Concordia'],
+    },
+    {
+      id: 'ruta2',
+      name: 'Ambato ↔ Latacunga ↔ Salcedo ↔ Quito ↔ Aeropuerto',
+      stops: ['Ambato', 'Latacunga', 'Salcedo', 'Quito', 'Aeropuerto Quito (Tababela)'],
+    },
+    {
+      id: 'ruta3',
+      name: 'Quito ↔ Otavalo ↔ Ibarra',
+      stops: ['Aeropuerto Quito (Tababela)', 'Quito', 'Tabacundo', 'Cayambe', 'Otavalo', 'Atuntaqui', 'Ibarra'],
+    },
+  ],
+
   coverage_cities: [
-    'Quito', 'Guayaquil', 'Cuenca', 'Loja', 'Ambato', 'Riobamba',
-    'Ibarra', 'Esmeraldas', 'Manta', 'Portoviejo', 'Babahoyo',
-    'Santo Domingo', 'Latacunga', 'Tena', 'Puyo', 'Baños',
-    'Otavalo', 'Salinas', 'Montañita', 'Vilcabamba',
+    'Quito', 'Aeropuerto Quito', 'Aeropuerto Tababela',
+    'Santo Domingo', 'El Carmen', 'La Concordia',
+    'Ambato', 'Latacunga', 'Salcedo',
+    'Otavalo', 'Ibarra', 'Atuntaqui', 'Tabacundo', 'Cayambe',
   ],
 
   contact: {
