@@ -40,10 +40,18 @@ export class AgentService {
     const canton = detectCanton(userMessage);
     const systemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
 
-    const messages = conv.messages.slice(-10).map(m => ({
-      role: m.role as 'user' | 'assistant',
-      content: m.content,
-    }));
+    const messages = conv.messages.slice(-10)
+      .filter(m => m.content && m.content.trim().length > 0)
+      .map(m => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content.trim(),
+      }));
+
+    if (messages.length === 0 || messages[messages.length - 1].role !== 'user') {
+      return lang === 'en'
+        ? "Sorry, I didn't receive your message. Please try again."
+        : 'Disculpa, no recibí tu mensaje. Por favor intenta de nuevo.';
+    }
 
     let assistantMessage = '';
 

@@ -82,6 +82,7 @@ res: any) {
       }
     }
 
+    messageText = messageText.trim();
     if (!messageText) {
       return res.status(200).type('text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
     }
