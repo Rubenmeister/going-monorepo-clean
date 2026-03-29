@@ -7,10 +7,9 @@ import {
   Max,
   IsEnum,
   ValidateNested,
-  Type,
   IsArray,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 /**
  * Request Ride Matching DTO

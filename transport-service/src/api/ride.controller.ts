@@ -17,6 +17,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { File as MulterFile } from 'multer';
 import { Storage } from '@google-cloud/storage';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
@@ -432,7 +433,7 @@ export class RideController {
   async confirmDelivery(
     @Param('rideId') rideId: string,
     @Body('deliveryToken') deliveryToken: string,
-    @UploadedFile() photo?: Express.Multer.File,
+    @UploadedFile() photo?: MulterFile,
   ): Promise<any> {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
