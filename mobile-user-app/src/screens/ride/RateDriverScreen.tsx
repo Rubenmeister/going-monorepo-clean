@@ -8,11 +8,13 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { hapticLight, hapticMedium, hapticSuccess } from '../../utils/haptics';
 
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
@@ -55,13 +57,14 @@ export function RateDriverScreen() {
   const [thumbsUp, setThumbsUp] = useState<boolean | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [comment, setComment] = useState('');
+  const [tip, setTip] = useState<0 | 1 | 2 | 5>(0);
   const [submitting, setSubmitting] = useState(false);
 
   const activeTags = thumbsUp === true ? POSITIVE_TAGS : thumbsUp === false ? NEGATIVE_TAGS : [];
 
   const handleThumb = (up: boolean) => {
+    hapticLight();
     if (thumbsUp === up) {
-      // deseleccionar
       setThumbsUp(null);
     } else {
       setThumbsUp(up);
@@ -70,9 +73,23 @@ export function RateDriverScreen() {
   };
 
   const toggleTag = (id: string) => {
+    hapticLight();
     setSelectedTags(prev =>
       prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
     );
+  };
+
+  const handleTip = (amount: 0 | 1 | 2 | 5) => {
+    hapticLight();
+    setTip(prev => prev === amount ? 0 : amount);
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `¡Acabo de viajar con Going! 🚗 ${driverName} fue un excelente conductor. Descarga la app en going.com.ec`,
+      });
+    } catch {}
   };
 
   const handleSubmit = async () => {
@@ -83,7 +100,6 @@ export function RateDriverScreen() {
 
     setSubmitting(true);
     try {
-      // Convertimos thumbs a rating numérico: 5 = thumbs up, 1 = thumbs down
       const rating = thumbsUp ? 5 : 1;
       await api.post(`/transport/${rideId}/rate`, {
         userId: user?.id,
@@ -92,9 +108,13 @@ export function RateDriverScreen() {
         thumbsUp,
         tags: selectedTags,
         comment: comment.trim() || undefined,
+        tip: tip > 0 ? tip : undefined,
       });
-      Alert.alert('¡Gracias!', 'Tu calificación ha sido enviada.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      hapticSuccess();
+      const tipMsg = tip > 0 ? ` Le dejaste una propina de $${tip} a ${driverName} 🙌` : '';
+      Alert.alert('¡Gracias!', `Tu calificación fue enviada.${tipMsg}`, [
+        { text: 'Compartir experiencia', onPress: handleShare },
+        { text: 'Listo', onPress: () => navigation.goBack() },
       ]);
     } catch {
       Alert.alert('Error', 'No se pudo enviar la calificación. Intenta de nuevo.');
@@ -201,6 +221,31 @@ export function RateDriverScreen() {
           </View>
         )}
 
+        {/* Propina al conductor */}
+        {thumbsUp === true && (
+          <View style={styles.tipSection}>
+            <Text style={styles.tagsTitle}>Dejar propina (opcional)</Text>
+            <Text style={styles.tipSubtitle}>100% va directo al conductor</Text>
+            <View style={styles.tipRow}>
+              {([1, 2, 5] as const).map(amount => (
+                <TouchableOpacity
+                  key={amount}
+                  style={[styles.tipBtn, tip === amount && styles.tipBtnActive]}
+                  onPress={() => handleTip(amount)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.tipAmount, tip === amount && styles.tipAmountActive]}>
+                    ${amount}
+                  </Text>
+                  <Text style={[styles.tipLabel, tip === amount && { color: '#fff' }]}>
+                    {amount === 1 ? 'Café ☕' : amount === 2 ? 'Gracias 🙏' : 'Excelente ⭐'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Comentario */}
         {thumbsUp !== null && (
           <View style={styles.commentSection}>
@@ -286,6 +331,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6', borderWidth: 1.5, borderColor: '#E5E7EB',
   },
   tagText: { fontSize: 12, fontWeight: '600' },
+
+  // Propina
+  tipSection:     { paddingHorizontal: 20, marginBottom: 20 },
+  tipSubtitle:    { fontSize: 11, color: '#9CA3AF', marginBottom: 10 },
+  tipRow:         { flexDirection: 'row', gap: 10 },
+  tipBtn: {
+    flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14,
+    borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB',
+  },
+  tipBtnActive:    { backgroundColor: GOING_GREEN, borderColor: GOING_GREEN },
+  tipAmount:       { fontSize: 18, fontWeight: '800', color: '#374151', marginBottom: 2 },
+  tipAmountActive: { color: '#fff' },
+  tipLabel:        { fontSize: 10, fontWeight: '600', color: '#6B7280' },
 
   // Comentario
   commentSection: { paddingHorizontal: 20, marginBottom: 20 },
