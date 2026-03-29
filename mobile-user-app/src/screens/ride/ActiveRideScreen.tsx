@@ -36,7 +36,7 @@ const GOING_YELLOW = '#FFCD00';
 const GOING_RED    = '#ff4c41';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
-type RideStatus = 'searching' | 'driver_assigned' | 'arriving' | 'in_progress' | 'completed';
+type RideStatus = 'searching' | 'driver_assigned' | 'arriving' | 'arrived' | 'in_progress' | 'completed';
 
 interface DriverInfo {
   id: string;
@@ -50,20 +50,22 @@ interface DriverInfo {
 }
 
 const STATUS_CONFIG: Record<RideStatus, { label: string; color: string; icon: string }> = {
-  searching:       { label: 'Buscando conductor…',        color: GOING_YELLOW, icon: 'search-outline' },
-  driver_assigned: { label: 'Conductor asignado',          color: GOING_BLUE,   icon: 'person-outline' },
-  arriving:        { label: 'Tu conductor está en camino', color: '#fb923c',    icon: 'car-sport-outline' },
-  in_progress:     { label: 'Viaje en curso',              color: '#4ade80',    icon: 'navigate-outline' },
-  completed:       { label: 'Viaje completado',            color: GOING_BLUE,   icon: 'checkmark-circle-outline' },
+  searching:       { label: 'Buscando conductor…',           color: GOING_YELLOW, icon: 'search-outline' },
+  driver_assigned: { label: 'Conductor asignado',             color: GOING_BLUE,   icon: 'person-outline' },
+  arriving:        { label: 'Tu conductor está en camino',    color: '#fb923c',    icon: 'car-sport-outline' },
+  arrived:         { label: '¡Tu conductor llegó! 👋',        color: '#16a34a',    icon: 'checkmark-circle-outline' },
+  in_progress:     { label: 'Viaje en curso',                 color: '#4ade80',    icon: 'navigate-outline' },
+  completed:       { label: 'Viaje completado ✓',             color: GOING_BLUE,   icon: 'checkmark-circle-outline' },
 };
 
 // ── Pasos del viaje ────────────────────────────────────────────────────────
 const STEPS = [
   { key: 'searching',       label: 'Buscando conductor' },
   { key: 'driver_assigned', label: 'Conductor asignado' },
-  { key: 'arriving',        label: 'En camino a recogerte' },
+  { key: 'arriving',        label: 'En camino' },
+  { key: 'arrived',         label: 'Llegó' },
   { key: 'in_progress',     label: 'Viaje en curso' },
-  { key: 'completed',       label: 'Llegaste a tu destino' },
+  { key: 'completed',       label: 'Destino' },
 ];
 
 export type ActiveRideParams = {
@@ -142,6 +144,8 @@ export function ActiveRideScreen() {
       socket.on('ride:driver_location', (data: { lat: number; lng: number; heading?: number; etaText?: string; progressPercent?: number }) => {
         setDriverLocation([data.lng, data.lat]);
         if (data.progressPercent != null) setProgressPercent(data.progressPercent);
+        // Si recibimos ubicación del conductor y aún estamos en 'driver_assigned', pasar a 'arriving'
+        setStatus(prev => prev === 'driver_assigned' ? 'arriving' : prev);
       });
 
       // ETA actualizada
@@ -172,8 +176,8 @@ export function ActiveRideScreen() {
 
       // Conductor llegó al punto de recogida — mostrar QR de identidad
       socket.on('ride:driver_arrived', () => {
-        hapticMedium();
-        setStatus('arriving');
+        hapticHeavy();
+        setStatus('arrived');
         if (pickupToken) setShowPickupQR(true);
       });
 
@@ -231,18 +235,24 @@ export function ActiveRideScreen() {
     }
   }, [elapsedTime]);
 
-  // ── Animar barra de progreso ETA ──────────────────────────────────────────
+  // ── Animar barra de progreso ──────────────────────────────────────────────
+  // Prioridad: GPS progressPercent (real) > tiempo estimado (fallback)
   useEffect(() => {
-    if (status !== 'in_progress' || !etaTotal) return;
-    const totalSeconds = etaTotal * 60;
-    const progress = Math.min(elapsedTime / totalSeconds, 1);
+    if (status !== 'in_progress') return;
+    let progress: number | null = null;
+    if (progressPercent != null) {
+      progress = progressPercent / 100;           // GPS real (0–1)
+    } else if (etaTotal) {
+      progress = Math.min(elapsedTime / (etaTotal * 60), 1); // tiempo estimado
+    }
+    if (progress == null) return;
     Animated.timing(etaProgressAnim, {
       toValue: progress,
       duration: 800,
       easing: Easing.out(Easing.quad),
       useNativeDriver: false,
     }).start();
-  }, [elapsedTime, etaTotal, status]);
+  }, [progressPercent, elapsedTime, etaTotal, status]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -456,13 +466,15 @@ export function ActiveRideScreen() {
           )}
         </View>
 
-        {/* ── Barra de progreso ETA (solo en viaje activo) ── */}
-        {status === 'in_progress' && etaTotal && (
+        {/* ── Barra de progreso GPS/ETA (solo en viaje activo) ── */}
+        {status === 'in_progress' && (etaTotal || progressPercent != null) && (
           <View style={styles.etaContainer}>
             <View style={styles.etaLabelRow}>
               <Ionicons name="navigate-circle-outline" size={14} color={GOING_BLUE} />
               <Text style={styles.etaRemainingText}>
-                {formatRemaining(etaTotal, elapsedTime)}
+                {progressPercent != null
+                  ? `${progressPercent}% completado`
+                  : etaTotal ? formatRemaining(etaTotal, elapsedTime) : ''}
               </Text>
               <TouchableOpacity style={styles.shareBtn} onPress={handleShareTracking}>
                 <Ionicons name="share-social-outline" size={16} color={GOING_BLUE} />
