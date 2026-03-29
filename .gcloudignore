@@ -54,3 +54,7 @@ storybook-static/
 
 # Claude worktrees
 .claude/worktrees/
+
+# Vercel deploy folders — NX los detecta como proyectos duplicados
+.vercel/
+**/.vercel/
