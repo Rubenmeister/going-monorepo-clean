@@ -13,7 +13,7 @@ COPY nx.json tsconfig.base.json ./
 # Instalar dependencias con pnpm
 RUN pnpm install --no-frozen-lockfile
 
-# Copiar todo el código
+# Copiar todo el monorepo (dataconnect-generated excluido via .dockerignore)
 COPY . .
 
 # Build del servicio con Nx
