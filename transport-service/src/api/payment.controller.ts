@@ -25,15 +25,16 @@ interface AuthUser { id: string; email: string; role: string; }
 /**
  * PaymentController — Endpoints de pago para Going.
  *
- * Flujo completo:
- *  1. POST /payments/initiate   — Frontend solicita iniciar pago → recibe redirectUrl/token
- *  2. Usuario paga en DATAFAST
- *  3. POST /payments/webhook    — DATAFAST notifica el resultado (server-to-server)
- *  4. GET  /payments/:id/status — Frontend consulta estado (polling o tras redirect)
+ * Proveedores simultáneos:
+ *   Datafast  → tarjeta de crédito/débito  (paymentMethod: 'card')
+ *   DeUna     → QR Banco Pichincha         (paymentMethod: 'transfer')
  *
- * Flujo mock (desarrollo sin credenciales DATAFAST):
- *  1. POST /payments/initiate   → redirectUrl apunta a GET /payments/mock-checkout
- *  2. GET  /payments/mock-checkout → redirige a returnUrl?status=approved
+ * Flujo:
+ *  GET  /payments/methods        — métodos disponibles para mostrar al pasajero
+ *  POST /payments/initiate       — inicia el pago (incluye paymentMethod en body)
+ *  POST /payments/webhook/datafast — DATAFAST notifica resultado (server-to-server)
+ *  POST /payments/webhook/deuna  — DeUna notifica resultado
+ *  GET  /payments/:id/status     — consulta estado de una transacción
  */
 @Controller('payments')
 export class PaymentController {
@@ -46,6 +47,13 @@ export class PaymentController {
     this.appBaseUrl = config.get('APP_BASE_URL', 'http://localhost:3000');
   }
 
+  // ─── 0. MÉTODOS DISPONIBLES ──────────────────────────────────────────────────
+
+  @Get('methods')
+  getAvailableMethods() {
+    return { methods: this.gateway.availableMethods() };
+  }
+
   // ─── 1. INICIAR PAGO ─────────────────────────────────────────────────────────
 
   @UseGuards(JwtAuthGuard)
@@ -55,10 +63,10 @@ export class PaymentController {
   async initiatePayment(
     @CurrentUser() user: AuthUser,
     @Body() body: {
-      rideId:       string;
-      amountUsd:    number;
-      description?: string;
-      // Solo para direct_api — el frontend los envía cifrados en HTTPS
+      rideId:          string;
+      amountUsd:       number;
+      description?:    string;
+      paymentMethod?:  'card' | 'transfer';   // tarjeta → Datafast | QR → DeUna
       cardDetails?: {
         number:      string;
         expiryMonth: string;
@@ -76,29 +84,55 @@ export class PaymentController {
 
     const result = await this.gateway.initiatePayment({
       transactionId,
-      rideId:      body.rideId,
-      userId:      user.id,
-      amountUsd:   body.amountUsd,
-      description: body.description ?? `Viaje Going #${body.rideId.slice(0, 8)}`,
-      returnUrl:   `${this.appBaseUrl}/payment/result?status=approved&txn=${transactionId}`,
-      cancelUrl:   `${this.appBaseUrl}/payment/result?status=cancelled&txn=${transactionId}`,
-      cardDetails: body.cardDetails,
+      rideId:        body.rideId,
+      userId:        user.id,
+      amountUsd:     body.amountUsd,
+      description:   body.description ?? `Viaje Going #${body.rideId.slice(0, 8)}`,
+      paymentMethod: body.paymentMethod,
+      returnUrl:     `${this.appBaseUrl}/payment/result?status=approved&txn=${transactionId}`,
+      cancelUrl:     `${this.appBaseUrl}/payment/result?status=cancelled&txn=${transactionId}`,
+      cardDetails:   body.cardDetails,
     });
 
     return result;
   }
 
-  // ─── 2. WEBHOOK DATAFAST (sin autenticación JWT — DATAFAST llama directamente) ─
+  // ─── 2a. WEBHOOK DATAFAST (sin JWT — Datafast llama directamente) ─────────────
 
-  @Post('webhook')
+  @Post('webhook/datafast')
   @HttpCode(HttpStatus.OK)
-  async handleWebhook(
+  async handleWebhookDatafast(
     @Headers() headers: Record<string, string>,
     @Body()    body:    Record<string, unknown>,
   ) {
-    const result = await this.gateway.handleWebhook(headers, body);
-    // TODO: actualizar estado del viaje en la BD según result.status y result.transactionId
-    return { received: true, status: result.status };
+    const result = await this.gateway.handleWebhook('datafast', headers, body);
+    return { received: true, provider: 'datafast', status: result.status };
+  }
+
+  // ─── 2b. WEBHOOK DEUNA (sin JWT — DeUna llama directamente) ──────────────────
+
+  @Post('webhook/deuna')
+  @HttpCode(HttpStatus.OK)
+  async handleWebhookDeuna(
+    @Headers() headers: Record<string, string>,
+    @Body()    body:    Record<string, unknown>,
+  ) {
+    const result = await this.gateway.handleWebhook('deuna', headers, body);
+    return { received: true, provider: 'deuna', status: result.status };
+  }
+
+  // ─── 2c. WEBHOOK GENÉRICO (retrocompatibilidad) ───────────────────────────────
+
+  @Post('webhook')
+  @HttpCode(HttpStatus.OK)
+  async handleWebhookLegacy(
+    @Headers() headers: Record<string, string>,
+    @Body()    body:    Record<string, unknown>,
+  ) {
+    // Detectar proveedor por cabecera
+    const provider = headers['x-deuna-signature'] ? 'deuna' : 'datafast';
+    const result   = await this.gateway.handleWebhook(provider, headers, body);
+    return { received: true, provider, status: result.status };
   }
 
   // ─── 3. CONSULTAR ESTADO ──────────────────────────────────────────────────────
