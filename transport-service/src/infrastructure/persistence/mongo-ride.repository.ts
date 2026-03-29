@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ride, RideDocument } from '../schemas/ride.schema';
-import { IRideRepository, RideStatus } from '../../../domain/ports';
+import { IRideRepository, RideStatus } from '../../domain/ports';
 import {
   PaginationDto,
   PaginatedResult,
