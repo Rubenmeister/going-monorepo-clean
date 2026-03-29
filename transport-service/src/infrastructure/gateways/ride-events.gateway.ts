@@ -48,6 +48,9 @@ export class RideEventsGateway
 
   private readonly logger = new Logger(RideEventsGateway.name);
 
+  // rideId → ya se envió la notificación de 10 min (evitar duplicados)
+  private readonly tenMinNotified = new Set<string>();
+
   // rideId → posición actual del conductor
   private readonly driverPositions = new Map<string, {
     driverId: string;
@@ -167,6 +170,17 @@ export class RideEventsGateway
         ? 'Menos de 1 minuto'
         : `${Math.round(etaSeconds / 60)} min`
       : null;
+
+    // Notificación de 10 minutos — emitir solo una vez por viaje
+    if (etaSeconds && etaSeconds <= 600 && !this.tenMinNotified.has(rideId)) {
+      this.tenMinNotified.add(rideId);
+      this.server.to(`ride:${rideId}`).emit('ride:driver_10min', {
+        rideId,
+        message: '🚗 Tu conductor llega en ~10 minutos. ¡Prepárate!',
+        etaSeconds,
+      });
+      this.logger.log(`10-min notification sent for ride ${rideId}`);
+    }
 
     // Calcular % de progreso si tenemos la ruta
     const progressPercent = this.calcProgress(rideId, lat, lng);
