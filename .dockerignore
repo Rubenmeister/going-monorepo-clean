@@ -1,5 +1,7 @@
 node_modules
 **/dataconnect-generated/esm
+**/dataconnect-generated/react
+**/dataconnect-generated/commonjs
 npm-debug.log
 .git
 .gitignore
