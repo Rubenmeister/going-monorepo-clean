@@ -1,0 +1,56 @@
+# Archivos ignorados al subir a Cloud Build
+# Reduce el tarball de ~352 MiB a ~30-50 MiB
+
+.git
+.gitignore
+
+# Node modules (se instalan dentro del Docker)
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+**/out/
+
+# Mobile apps — no necesarias para transport-service
+mobile-user-app/
+mobile-driver-app/
+
+# Otros frontends
+frontend-webapp/.next/
+admin-dashboard/.next/
+
+# Test / coverage
+coverage/
+**/coverage/
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+**/*.test.tsx
+**/*.spec.tsx
+
+# Logs y temporales
+*.log
+*.tmp
+firebase-debug.log
+.firebase/
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
+
+# Storybook builds
+storybook-static/
+**/storybook-static/
+
+# pnpm cache local
+.pnpm-store/
+.cache/
+
+# Claude worktrees
+.claude/worktrees/

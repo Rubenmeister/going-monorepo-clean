@@ -1,9 +1,16 @@
 steps:
-  # 1. Build Docker image (contexto = raíz del monorepo)
+  # 0. Pull imagen anterior para usar como cache (falla silenciosamente si no existe)
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull gcr.io/$PROJECT_ID/transport-service:latest || true']
+
+  # 1. Build Docker image con cache de la imagen anterior
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
       - -t
+      - gcr.io/$PROJECT_ID/transport-service:latest
+      - --cache-from
       - gcr.io/$PROJECT_ID/transport-service:latest
       - --build-arg
       - SERVICE_NAME=transport-service
