@@ -91,6 +91,79 @@ export const GOING_SERVICES_KB = {
     'Tena', 'Puyo', 'Macas', 'Lago Agrio', 'Coca',
   ],
 
+  /**
+   * TABLA DE PRECIOS — Referencia completa para la IA de atención al cliente
+   * Compartido = precio por pasajero | Privado = vehículo completo
+   * Recargo +$5 cuando el PICKUP es: Quito Sur, Cumbayá/Tumbaco, Los Chillos, Aeropuerto Tababela
+   */
+  pricing: {
+    nota_compartido: 'Precio por pasajero. SUV (hasta 4 pax) y SUV XL (hasta 5 pax) tienen el mismo precio compartido.',
+    nota_privado: 'Precio por vehículo completo. Factores: SUV ×1.0 · SUV XL ×1.4 · VAN ×2.0 · VAN XL ×3.0 · Minibús ×5.0 · Bus ×10.0',
+    nota_recargo: '+$5 en todos los precios cuando el origen es: Quito Sur, Cumbayá/Tumbaco, Los Chillos o Aeropuerto Tababela.',
+    nota_premium: 'Premium SUV = Privado SUV + $10. Mayor confort, conductor seleccionado.',
+    nota_empresas: 'Transporte corporativo = +30% sobre tarifa privada Confort.',
+
+    // ── RUTA NORTE: Quito ↔ Ibarra / Otavalo / Cayambe ────────────────────
+    ruta_norte: [
+      // { ruta, comp_suv, comp_suvxl, priv_suv, priv_suvxl, priv_van, priv_vanxl, priv_minibus, priv_bus, prem_suv, nota? }
+      { ruta: 'Quito CN → Guayllabamba',                    comp_suv: 10, comp_suvxl: 10, priv_suv: 20,  priv_suvxl: 30,  priv_van: 50,  priv_vanxl: 70,  priv_minibus: 120, priv_bus: 240, prem_suv: 30  },
+      { ruta: 'Quito CN → Cayambe',                         comp_suv: 10, comp_suvxl: 10, priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 80,  priv_minibus: 140, priv_bus: 280, prem_suv: 40  },
+      { ruta: 'Quito CN → Tabacundo',                       comp_suv: 10, comp_suvxl: 10, priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 100, priv_minibus: 160, priv_bus: 320, prem_suv: 40  },
+      { ruta: 'Quito CN → El Quinche',                      comp_suv: 10, comp_suvxl: 10, priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 80,  priv_minibus: 140, priv_bus: 280, prem_suv: 40  },
+      { ruta: 'Quito CN → Otavalo / Peguche',               comp_suv: 15, comp_suvxl: 15, priv_suv: 40,  priv_suvxl: 60,  priv_van: 90,  priv_vanxl: 130, priv_minibus: 200, priv_bus: 300, prem_suv: 50  },
+      { ruta: 'Quito CN → Atuntaqui',                       comp_suv: 11, comp_suvxl: 11, priv_suv: 50,  priv_suvxl: 60,  priv_van: 90,  priv_vanxl: 130, priv_minibus: 200, priv_bus: 300, prem_suv: 60  },
+      { ruta: 'Quito CN → Ibarra',                          comp_suv: 11, comp_suvxl: 11, priv_suv: 50,  priv_suvxl: 60,  priv_van: 90,  priv_vanxl: 130, priv_minibus: 200, priv_bus: 300, prem_suv: 60  },
+      { ruta: 'Quito CN → Cotacachi',                       comp_suv: 11, comp_suvxl: 11, priv_suv: 50,  priv_suvxl: 60,  priv_van: 90,  priv_vanxl: 130, priv_minibus: 200, priv_bus: 300, prem_suv: 60  },
+      { ruta: 'Quito CN → Tulcán',                          comp_suv: 24, comp_suvxl: 24, priv_suv: 100, priv_suvxl: 130, priv_van: 190, priv_vanxl: 290, priv_minibus: 300, priv_bus: 350, prem_suv: 110 },
+      { ruta: 'Aeropuerto → Quito CN',                      comp_suv: 10, comp_suvxl: 10, priv_suv: 20,  priv_suvxl: 25,  priv_van: 60,  priv_vanxl: 70,  priv_minibus: 120, priv_bus: 200, prem_suv: 40,  nota: 'Precio fijo especial' },
+      { ruta: 'Quito CN → Aeropuerto',                      comp_suv: 10, comp_suvxl: 10, priv_suv: 25,  priv_suvxl: 25,  priv_van: 50,  priv_vanxl: 75,  priv_minibus: 125, priv_bus: 250, prem_suv: 30,  nota: 'Precio fijo especial' },
+      { ruta: 'Aeropuerto → Cayambe',                       comp_suv: 14, comp_suvxl: 14, priv_suv: 45,  priv_suvxl: 55,  priv_van: 75,  priv_vanxl: 115, priv_minibus: 185, priv_bus: 365, prem_suv: 55,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → Otavalo / Atuntaqui / Ibarra',  comp_suv: 19, comp_suvxl: 19, priv_suv: 65,  priv_suvxl: 80,  priv_van: 120, priv_vanxl: 150, priv_minibus: 200, priv_bus: 250, prem_suv: 75,  nota: '+$5 recargo origen' },
+      { ruta: 'Ibarra ↔ Otavalo',                           comp_suv: 5,  comp_suvxl: 5,  priv_suv: 20,  priv_suvxl: 30,  priv_van: 40,  priv_vanxl: 60,  priv_minibus: 100, priv_bus: 200, prem_suv: 30  },
+      { ruta: 'Quito Sur → Ibarra / Otavalo / Atuntaqui',   comp_suv: 19, comp_suvxl: 19, priv_suv: 65,  priv_suvxl: 85,  priv_van: 120, priv_vanxl: 175, priv_minibus: 285, priv_bus: 565, prem_suv: 75,  nota: '+$5 recargo origen' },
+      { ruta: 'Cumbayá/Tumbaco → Atuntaqui',                comp_suv: 24, comp_suvxl: 24, priv_suv: 85,  priv_suvxl: 115, priv_van: 155, priv_vanxl: 235, priv_minibus: 385, priv_bus: 765, prem_suv: 95,  nota: '+$5 recargo origen' },
+    ],
+
+    // ── RUTA SIERRA CENTRO: Quito ↔ Ambato / Latacunga / Riobamba ─────────
+    ruta_sierra_centro: [
+      { ruta: 'Quito CN → Tambillo',      comp_suv: 8,  comp_suvxl: 8,  priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 100, priv_minibus: 160, priv_bus: 250, prem_suv: 40  },
+      { ruta: 'Quito CN → Machachi',      comp_suv: 9,  comp_suvxl: 9,  priv_suv: 40,  priv_suvxl: 50,  priv_van: 70,  priv_vanxl: 110, priv_minibus: 180, priv_bus: 250, prem_suv: 50  },
+      { ruta: 'Quito CN → Latacunga',     comp_suv: 13, comp_suvxl: 13, priv_suv: 50,  priv_suvxl: 70,  priv_van: 100, priv_vanxl: 160, priv_minibus: 260, priv_bus: 350, prem_suv: 60  },
+      { ruta: 'Quito CN → Salcedo',       comp_suv: 10, comp_suvxl: 10, priv_suv: 40,  priv_suvxl: 60,  priv_van: 80,  priv_vanxl: 120, priv_minibus: 200, priv_bus: 350, prem_suv: 50  },
+      { ruta: 'Quito CN → Píllaro',       comp_suv: 11, comp_suvxl: 11, priv_suv: 40,  priv_suvxl: 60,  priv_van: 90,  priv_vanxl: 130, priv_minibus: 220, priv_bus: 350, prem_suv: 50  },
+      { ruta: 'Quito CN → Ambato',        comp_suv: 15, comp_suvxl: 15, priv_suv: 60,  priv_suvxl: 80,  priv_van: 120, priv_vanxl: 180, priv_minibus: 300, priv_bus: 350, prem_suv: 70  },
+      { ruta: 'Quito CN → Baños',         comp_suv: 17, comp_suvxl: 17, priv_suv: 70,  priv_suvxl: 100, priv_van: 140, priv_vanxl: 200, priv_minibus: 340, priv_bus: 350, prem_suv: 80  },
+      { ruta: 'Quito CN → Riobamba',      comp_suv: 20, comp_suvxl: 20, priv_suv: 80,  priv_suvxl: 110, priv_van: 160, priv_vanxl: 240, priv_minibus: 400, priv_bus: 500, prem_suv: 90  },
+      { ruta: 'Quito CN → Guaranda',      comp_suv: 24, comp_suvxl: 24, priv_suv: 100, priv_suvxl: 130, priv_van: 190, priv_vanxl: 290, priv_minibus: 480, priv_bus: 500, prem_suv: 110 },
+      { ruta: 'Aeropuerto → Latacunga',   comp_suv: 20, comp_suvxl: 20, priv_suv: 65,  priv_suvxl: 85,  priv_van: 125, priv_vanxl: 185, priv_minibus: 305, priv_bus: 500, prem_suv: 75,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → Ambato',      comp_suv: 23, comp_suvxl: 23, priv_suv: 75,  priv_suvxl: 105, priv_van: 145, priv_vanxl: 225, priv_minibus: 365, priv_bus: 500, prem_suv: 85,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → Baños',       comp_suv: 23, comp_suvxl: 23, priv_suv: 75,  priv_suvxl: 105, priv_van: 145, priv_vanxl: 225, priv_minibus: 365, priv_bus: 500, prem_suv: 85,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → Riobamba',    comp_suv: 28, comp_suvxl: 28, priv_suv: 95,  priv_suvxl: 135, priv_van: 185, priv_vanxl: 285, priv_minibus: 465, priv_bus: 500, prem_suv: 105, nota: '+$5 recargo origen' },
+      { ruta: 'Quito Sur → Latacunga',    comp_suv: 15, comp_suvxl: 15, priv_suv: 45,  priv_suvxl: 65,  priv_van: 85,  priv_vanxl: 125, priv_minibus: 205, priv_bus: 250, prem_suv: 55,  nota: '+$5 recargo origen' },
+      { ruta: 'Quito Sur → Ambato',       comp_suv: 18, comp_suvxl: 18, priv_suv: 55,  priv_suvxl: 75,  priv_van: 105, priv_vanxl: 165, priv_minibus: 265, priv_bus: 250, prem_suv: 65,  nota: '+$5 recargo origen' },
+      { ruta: 'Quito Sur → Riobamba',     comp_suv: 23, comp_suvxl: 23, priv_suv: 75,  priv_suvxl: 105, priv_van: 145, priv_vanxl: 225, priv_minibus: 365, priv_bus: 300, prem_suv: 85,  nota: '+$5 recargo origen' },
+      { ruta: 'Latacunga ↔ Salcedo',      comp_suv: 3,  comp_suvxl: 3,  priv_suv: 10,  priv_suvxl: 20,  priv_van: 20,  priv_vanxl: 40,  priv_minibus: 60,  priv_bus: 120, prem_suv: 20  },
+      { ruta: 'Latacunga ↔ Ambato',       comp_suv: 5,  comp_suvxl: 5,  priv_suv: 20,  priv_suvxl: 30,  priv_van: 40,  priv_vanxl: 60,  priv_minibus: 100, priv_bus: 200, prem_suv: 30  },
+      { ruta: 'Ambato ↔ Baños',           comp_suv: 5,  comp_suvxl: 5,  priv_suv: 20,  priv_suvxl: 30,  priv_van: 40,  priv_vanxl: 60,  priv_minibus: 100, priv_bus: 200, prem_suv: 30  },
+      { ruta: 'Ambato ↔ Riobamba',        comp_suv: 7,  comp_suvxl: 7,  priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 80,  priv_minibus: 100, priv_bus: 150, prem_suv: 40  },
+      { ruta: 'Baños ↔ Riobamba',         comp_suv: 10, comp_suvxl: 10, priv_suv: 40,  priv_suvxl: 60,  priv_van: 80,  priv_vanxl: 120, priv_minibus: 150, priv_bus: 200, prem_suv: 50  },
+    ],
+
+    // ── RUTA SANTO DOMINGO / EL CARMEN: Quito ↔ Costa Noroeste ────────────
+    ruta_sto_domingo: [
+      { ruta: 'Quito CN → Santo Domingo',      comp_suv: 14, comp_suvxl: 14, priv_suv: 60,  priv_suvxl: 80,  priv_van: 110, priv_vanxl: 170, priv_minibus: 250, priv_bus: 350, prem_suv: 70  },
+      { ruta: 'Quito CN → La Concordia',       comp_suv: 17, comp_suvxl: 17, priv_suv: 70,  priv_suvxl: 100, priv_van: 140, priv_vanxl: 200, priv_minibus: 250, priv_bus: 350, prem_suv: 80  },
+      { ruta: 'Quito CN → El Carmen',          comp_suv: 20, comp_suvxl: 20, priv_suv: 80,  priv_suvxl: 110, priv_van: 160, priv_vanxl: 240, priv_minibus: 250, priv_bus: 350, prem_suv: 90  },
+      { ruta: 'Aeropuerto → Santo Domingo',    comp_suv: 22, comp_suvxl: 22, priv_suv: 75,  priv_suvxl: 105, priv_van: 145, priv_vanxl: 205, priv_minibus: 250, priv_bus: 350, prem_suv: 85,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → La Concordia',     comp_suv: 25, comp_suvxl: 25, priv_suv: 85,  priv_suvxl: 115, priv_van: 165, priv_vanxl: 245, priv_minibus: 250, priv_bus: 350, prem_suv: 95,  nota: '+$5 recargo origen' },
+      { ruta: 'Aeropuerto → El Carmen',        comp_suv: 27, comp_suvxl: 27, priv_suv: 95,  priv_suvxl: 125, priv_van: 185, priv_vanxl: 265, priv_minibus: 250, priv_bus: 350, prem_suv: 105, nota: '+$5 recargo origen' },
+      { ruta: 'Quito Sur → El Carmen',         comp_suv: 23, comp_suvxl: 23, priv_suv: 75,  priv_suvxl: 105, priv_van: 145, priv_vanxl: 225, priv_minibus: 250, priv_bus: 350, prem_suv: 85,  nota: '+$5 recargo origen' },
+      { ruta: 'Santo Domingo ↔ La Concordia',  comp_suv: 8,  comp_suvxl: 8,  priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 70,  priv_minibus: 100, priv_bus: 150, prem_suv: 40  },
+      { ruta: 'La Concordia ↔ El Carmen',      comp_suv: 7,  comp_suvxl: 7,  priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 70,  priv_minibus: 100, priv_bus: 150, prem_suv: 40  },
+      { ruta: 'El Carmen ↔ Santo Domingo',     comp_suv: 8,  comp_suvxl: 8,  priv_suv: 30,  priv_suvxl: 40,  priv_van: 60,  priv_vanxl: 70,  priv_minibus: 100, priv_bus: 150, prem_suv: 40  },
+    ],
+  },
+
   contact: {
     whatsapp: '+593 99 XXX XXXX',
     email: 'soporte@goingec.com',
