@@ -26,6 +26,9 @@ import { UserSupportScreen } from '@screens/profile/UserSupportScreen';
 import { TermsScreen } from '@screens/profile/TermsScreen';
 import { SavedAddressesScreen } from '@screens/profile/SavedAddressesScreen';
 import { WalletScreen } from '@screens/profile/WalletScreen';
+import { SosScreen } from '@screens/ride/SosScreen';
+import type { SosParams } from '@screens/ride/SosScreen';
+import { CorporateScreen } from '@screens/profile/CorporateScreen';
 
 // ── Type declarations ────────────────────────────────────────────
 export type MainTabParamList = {
@@ -60,6 +63,8 @@ export type MainStackParamList = {
   Terms: undefined;
   SavedAddresses: undefined;
   Wallet: undefined;
+  Sos: SosParams;
+  Corporate: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -206,6 +211,16 @@ export function MainNavigator() {
         options={{ title: 'Mis direcciones' }}
       />
       <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Mi billetera' }} />
+      <Stack.Screen
+        name="Sos"
+        component={SosScreen}
+        options={{ headerShown: false, presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="Corporate"
+        component={CorporateScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
