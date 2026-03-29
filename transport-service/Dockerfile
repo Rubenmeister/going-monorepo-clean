@@ -6,15 +6,11 @@ WORKDIR /app
 # Instalar pnpm
 RUN npm install -g pnpm
 
-# Copiar archivos de configuración del monorepo
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY nx.json tsconfig.base.json ./
-
-# Instalar dependencias con pnpm
-RUN pnpm install --no-frozen-lockfile
-
-# Copiar todo el monorepo (dataconnect-generated excluido via .dockerignore)
+# Copiar TODO primero para que pnpm vea los package.json de todos los workspaces
 COPY . .
+
+# Instalar dependencias con pnpm (lee todos los workspace package.json)
+RUN pnpm install --no-frozen-lockfile
 
 # Build del servicio con Nx
 ARG SERVICE_NAME=transport-service
@@ -32,6 +28,7 @@ EXPOSE 3000
 
 # Copiar archivos necesarios para instalar deps de producción
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/transport-service/package.json ./transport-service/package.json
 RUN pnpm install --no-frozen-lockfile --prod
 
 # Copiar código compilado
