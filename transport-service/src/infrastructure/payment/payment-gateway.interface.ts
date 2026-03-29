@@ -28,18 +28,22 @@ export type PaymentStatus = 'pending' | 'processing' | 'approved' | 'rejected' |
 
 // ─── Initiate (checkout flow) ──────────────────────────────────────────────────
 
+/** Método de pago elegido por el pasajero */
+export type PaymentMethod = 'card' | 'transfer';
+
 export interface InitiatePaymentInput {
-  transactionId: string;   // UUID generado por Going
-  rideId:        string;
-  userId:        string;
-  amountUsd:     number;   // En dólares con 2 decimales (Ecuador usa USD)
-  description:   string;
-  returnUrl:     string;   // URL a la que el gateway redirige tras el pago
-  cancelUrl:     string;
-  cardDetails?:  {         // Solo para modo DIRECT_API
+  transactionId:  string;        // UUID generado por Going
+  rideId:         string;
+  userId:         string;
+  amountUsd:      number;        // En dólares con 2 decimales (Ecuador usa USD)
+  description:    string;
+  returnUrl:      string;        // URL a la que el gateway redirige tras el pago
+  cancelUrl:      string;
+  paymentMethod?: PaymentMethod; // 'card' → Datafast | 'transfer' → DeUna
+  cardDetails?:  {               // Solo para modo DIRECT_API
     number:      string;
-    expiryMonth: string;   // MM
-    expiryYear:  string;   // YY
+    expiryMonth: string;         // MM
+    expiryYear:  string;         // YY
     cvv:         string;
     holderName:  string;
   };
@@ -63,13 +67,14 @@ export interface InitiatePaymentResult {
 // ─── Authorize + Capture (pre-auth flow) ─────────────────────────────────────
 
 export interface AuthorizeInput {
-  transactionId: string;   // UUID Going
-  rideId:        string;
-  userId:        string;
-  amountUsd:     number;   // Monto estimado del viaje
-  description:   string;
-  cardToken?:    string;   // Token de tarjeta ya registrada (para Datafast)
-  cardDetails?:  InitiatePaymentInput['cardDetails'];
+  transactionId:  string;        // UUID Going
+  rideId:         string;
+  userId:         string;
+  amountUsd:      number;        // Monto estimado del viaje
+  description:    string;
+  paymentMethod?: PaymentMethod; // 'card' → Datafast | 'transfer' → DeUna
+  cardToken?:     string;        // Token de tarjeta ya registrada (para Datafast)
+  cardDetails?:   InitiatePaymentInput['cardDetails'];
 }
 
 export interface AuthorizeResult {
