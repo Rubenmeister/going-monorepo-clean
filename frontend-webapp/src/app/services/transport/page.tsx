@@ -404,70 +404,74 @@ export default function TransportPage() {
       {/* ── SECCIÓN CONDUCTORES ── */}
       <section className="py-0 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#1a1a1a' }}>
+          <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#141414' }}>
             {/* Foto */}
             <div className="md:w-2/5 flex-shrink-0">
               <img
                 src="/images/SUV de lujo.png"
                 alt="Conductor Going en Ecuador"
                 className="w-full h-full object-cover"
-                style={{ minHeight: '380px', maxHeight: '520px' }}
+                style={{ minHeight: '400px', maxHeight: '540px', objectPosition: 'center top' }}
               />
             </div>
             {/* Contenido */}
-            <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3 px-3 py-1.5 rounded-full w-fit"
-                style={{ backgroundColor: 'rgba(255,76,65,0.18)', color: '#ff4c41', border: '1px solid rgba(255,76,65,0.3)' }}>
-                🚗 ¿Eres conductora o conductor?
+            <div className="flex-1 p-8 md:p-14 flex flex-col justify-center">
+              <span className="inline-block text-xs font-semibold uppercase tracking-[0.15em] mb-5 w-fit"
+                style={{ color: '#ff4c41', letterSpacing: '0.12em' }}>
+                ¿Eres conductor o conductora?
               </span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
-                Maneja tus tiempos,<br />
-                <span style={{ color: '#ff4c41' }}>multiplica tus ingresos</span>
+              <h2 className="text-3xl md:text-[2.6rem] font-bold text-white mb-4 leading-[1.15] tracking-tight">
+                Maneja tus tiempos.<br />
+                <span style={{ color: '#ff4c41' }}>Multiplica tus ingresos.</span>
               </h2>
-              <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Únete a la flota Going. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar, con pagos garantizados y directos a tu cuenta.
+              <p className="text-gray-400 text-[0.95rem] leading-[1.75] mb-8 max-w-md">
+                Únete a la flota Going. Sin jefes ni horarios fijos. Tú decides cuándo y cuánto trabajar — con pagos garantizados directo a tu cuenta.
               </p>
 
               {/* Modalidades */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-3 gap-3 mb-7">
                 {[
-                  { plan: 'Part-time', hours: '20 h/sem', icon: '🕐' },
-                  { plan: 'Full-time', hours: '40 h/sem', icon: '🚀', highlight: true },
-                  { plan: 'Full-time+', hours: '40 h/sem', icon: '💼' },
+                  { plan: 'Part-time', hours: '~20 h/sem', highlight: false },
+                  { plan: 'Full-time', hours: '~40 h/sem', highlight: true },
+                  { plan: 'Full-time+', hours: '40+ h/sem', highlight: false },
                 ].map(e => (
-                  <div key={e.plan} className="rounded-2xl p-4 text-center"
-                    style={{ background: (e as any).highlight ? '#ff4c41' : 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div className="text-2xl mb-1">{e.icon}</div>
-                    <div className="text-xs font-bold text-white uppercase mb-1">{e.plan}</div>
-                    <div className="text-xs text-white/60">{e.hours}</div>
+                  <div key={e.plan} className="rounded-xl p-4 text-center"
+                    style={{
+                      background: e.highlight ? '#ff4c41' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${e.highlight ? '#ff4c41' : 'rgba(255,255,255,0.08)'}`,
+                    }}>
+                    <div className={`text-xs font-semibold uppercase tracking-widest mb-1 ${e.highlight ? 'text-white' : 'text-gray-300'}`}>{e.plan}</div>
+                    <div className={`text-xs ${e.highlight ? 'text-white/80' : 'text-gray-500'}`}>{e.hours}</div>
                   </div>
                 ))}
               </div>
 
               {/* Requisitos rápidos */}
-              <div className="grid grid-cols-2 gap-2 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 mb-9">
                 {[
-                  { icon: '📄', text: 'Cédula de Identidad' },
-                  { icon: '🚗', text: 'Licencia tipo B o profesional' },
-                  { icon: '📋', text: 'Matrícula (vehículo 2015+)' },
-                  { icon: '🛡️', text: 'Seguro de vehículo vigente' },
-                  { icon: '🏛️', text: 'Permiso ANT transporte turístico (VAN, Minibús, Bus)' },
+                  'Cédula de Identidad vigente',
+                  'Licencia tipo B o profesional',
+                  'Matrícula (vehículo 2015 en adelante)',
+                  'Seguro de vehículo vigente',
+                  'Permiso ANT (VAN, Minibús o Bus)',
                 ].map(r => (
-                  <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">
-                    <span>{r.icon}</span><span>{r.text}</span>
+                  <div key={r} className="flex items-center gap-2.5 text-sm text-gray-400">
+                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#ff4c41' }} />
+                    <span>{r}</span>
                   </div>
                 ))}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/auth/register?rol=driver"
-                  className="flex-1 py-3.5 rounded-xl text-white font-bold text-center text-sm hover:opacity-90 transition-all"
+                  className="flex-1 py-3.5 rounded-xl text-white font-semibold text-center text-sm hover:opacity-90 transition-all tracking-wide"
                   style={{ backgroundColor: '#ff4c41' }}>
-                  Registrarme como conductor →
+                  Registrarme como conductor
                 </Link>
                 <Link href="/auth/login?from=/services/conductores"
-                  className="flex-1 py-3.5 rounded-xl font-bold text-center text-sm border border-white/20 text-white hover:bg-white/10 transition-all">
-                  Ya soy conductor → Mi panel
+                  className="flex-1 py-3.5 rounded-xl font-semibold text-center text-sm border text-white hover:bg-white/10 transition-all tracking-wide"
+                  style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+                  Ya soy conductor · Mi panel
                 </Link>
               </div>
             </div>
