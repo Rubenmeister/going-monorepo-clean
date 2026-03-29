@@ -8,7 +8,6 @@ import { MapboxMap } from '@/components/features/tracking/TrackingMap';
 import type { VehicleType, ServiceTier } from '@/types';
 import { VEHICLE_TYPES } from '@/types';
 import {
-  calculateFare,
   calculateDistance,
   calculateEstimatedDuration,
   getFareBreakdown,
@@ -62,14 +61,18 @@ function RideRequestFormInner() {
   const [isScheduled, setIsScheduled]     = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [showSchedule, setShowSchedule]   = useState(false);
   const [localFare, setLocalFare]         = useState<number | null>(null);
   const [fareFixed, setFareFixed]         = useState(false);
 
-  // Auto-suggest vehicle based on pax count
+  // For compartido: always lock to SUV
   useEffect(() => {
-    setSimpleVehicle(suggestSimpleVehicle(passengers));
-  }, [passengers]);
+    if (mode === 'compartido') setSimpleVehicle('suv');
+  }, [mode]);
+
+  // Auto-suggest vehicle based on pax count (privado only)
+  useEffect(() => {
+    if (mode === 'privado') setSimpleVehicle(suggestSimpleVehicle(passengers));
+  }, [passengers, mode]);
 
   // Derived: actual VehicleType from simplified choice + pax count
   const vehicleType: VehicleType = SIMPLE_VEHICLES[simpleVehicle].vehicleForPax(passengers);
@@ -83,8 +86,8 @@ function RideRequestFormInner() {
     const time = searchParams.get('time');
     if (from && !pickupLocation)  setPickupLocation({ address: from, lat: 0, lon: 0 });
     if (to   && !dropoffLocation) setDropoffLocation({ address: to,  lat: 0, lon: 0 });
-    if (date) { setScheduledDate(date); setIsScheduled(true); setShowSchedule(true); }
-    if (time) { setScheduledTime(time); setIsScheduled(true); setShowSchedule(true); }
+    if (date) { setScheduledDate(date); setIsScheduled(true); }
+    if (time) { setScheduledTime(time); setIsScheduled(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -120,7 +123,10 @@ function RideRequestFormInner() {
   const maxPax        = mode === 'compartido' ? 4 : SIMPLE_VEHICLES[simpleVehicle].maxPax;
   const hasRoute      = !!(pickupLocation && dropoffLocation);
   const hasValidRoute = hasRoute && pickupLocation!.lat !== 0 && dropoffLocation!.lat !== 0;
-  const canConfirm    = hasValidRoute && localFare !== null && !loading && (!isScheduled || (scheduledDate && scheduledTime));
+  // isScheduled = usuario ingresó fecha Y hora; si está incompleto (solo fecha o solo hora) no confirmar
+  const scheduleOk    = !scheduledDate && !scheduledTime   // inmediato
+    || (scheduledDate && scheduledTime);                    // programado completo
+  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -203,33 +209,44 @@ function RideRequestFormInner() {
             </div>
           </div>
 
-          {/* Tipo de vehículo: SUV / VAN / BUS */}
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Vehículo</p>
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(SIMPLE_VEHICLES) as SimpleVehicle[]).map(sv => {
-                const v = SIMPLE_VEHICLES[sv];
-                const isSelected = simpleVehicle === sv;
-                const fits = passengers <= v.maxPax;
-                return (
-                  <button key={sv} type="button"
-                    onClick={() => fits && setSimpleVehicle(sv)}
-                    className={`p-3 rounded-2xl border-2 text-center transition-all ${
-                      isSelected
-                        ? 'border-[#0033A0] bg-blue-50'
-                        : !fits
-                          ? 'border-gray-100 opacity-40 cursor-not-allowed'
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{v.emoji}</div>
-                    <div className={`text-xs font-black ${isSelected ? 'text-[#0033A0]' : 'text-gray-700'}`}>{v.label}</div>
-                    <div className="text-xs text-gray-400 leading-tight mt-0.5">{v.desc}</div>
-                  </button>
-                );
-              })}
+          {/* Tipo de vehículo — solo para PRIVADO */}
+          {mode === 'privado' ? (
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Vehículo</p>
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(SIMPLE_VEHICLES) as SimpleVehicle[]).map(sv => {
+                  const v = SIMPLE_VEHICLES[sv];
+                  const isSelected = simpleVehicle === sv;
+                  const fits = passengers <= v.maxPax;
+                  return (
+                    <button key={sv} type="button"
+                      onClick={() => fits && setSimpleVehicle(sv)}
+                      className={`p-3 rounded-2xl border-2 text-center transition-all ${
+                        isSelected
+                          ? 'border-[#0033A0] bg-blue-50'
+                          : !fits
+                            ? 'border-gray-100 opacity-40 cursor-not-allowed'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{v.emoji}</div>
+                      <div className={`text-xs font-black ${isSelected ? 'text-[#0033A0]' : 'text-gray-700'}`}>{v.label}</div>
+                      <div className="text-xs text-gray-400 leading-tight mt-0.5">{v.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Compartido: SUV fijo, solo se elige categoría */
+            <div className="flex items-center gap-3 bg-blue-50 rounded-2xl px-4 py-3 border border-blue-100">
+              <span className="text-2xl">🚗</span>
+              <div>
+                <p className="text-sm font-black text-[#0033A0]">SUV Compartida</p>
+                <p className="text-xs text-gray-500">Hasta 4 personas · elige tu categoría abajo</p>
+              </div>
+            </div>
+          )}
 
           {/* Categoría: Confort / Premium */}
           <div>
@@ -260,30 +277,23 @@ function RideRequestFormInner() {
             </div>
           </div>
 
-          {/* Programar (colapsable) */}
+          {/* Fecha y hora — siempre visible */}
           <div>
-            <button type="button"
-              onClick={() => setShowSchedule(!showSchedule)}
-              className="text-xs text-[#0033A0] font-semibold flex items-center gap-1 hover:underline"
-            >
-              📅 {showSchedule ? 'Ocultar fecha/hora' : 'Programar para más tarde'} {showSchedule ? '▲' : '▼'}
-            </button>
-            {showSchedule && (
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
-                  <input type="date" min={today} value={scheduledDate}
-                    onChange={e => { setScheduledDate(e.target.value); setIsScheduled(!!e.target.value); }}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
-                  <input type="time" value={scheduledTime}
-                    onChange={e => { setScheduledTime(e.target.value); if (e.target.value) setIsScheduled(true); }}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800" />
-                </div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">📅 Fecha y hora <span className="normal-case font-normal text-gray-400">(dejar en blanco para viaje inmediato)</span></p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
+                <input type="date" min={today} value={scheduledDate}
+                  onChange={e => { setScheduledDate(e.target.value); setIsScheduled(!!e.target.value && !!scheduledTime); }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
               </div>
-            )}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
+                <input type="time" value={scheduledTime}
+                  onChange={e => { setScheduledTime(e.target.value); setIsScheduled(!!scheduledDate && !!e.target.value); }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
+              </div>
+            </div>
           </div>
 
         </div>
