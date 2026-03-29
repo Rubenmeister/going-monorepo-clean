@@ -89,7 +89,7 @@ export class PaymentGatewayService implements IPaymentGateway {
       return this.deuna;
     }
 
-    if (name === 'datafast' || (!name && this.config.get('DATAFAST_ENTITY_ID', '') && this.config.get('DATAFAST_API_KEY', ''))) {
+    if (name === 'datafast' || (!name && this.config.get<string>('DATAFAST_ENTITY_ID', '') && this.config.get<string>('DATAFAST_API_KEY', ''))) {
       return this.datafast;
     }
 
