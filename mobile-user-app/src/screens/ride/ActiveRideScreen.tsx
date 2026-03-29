@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 const TRANSPORT_WS =
   process.env.EXPO_PUBLIC_TRANSPORT_WS_URL ||
@@ -180,6 +181,19 @@ export function ActiveRideScreen() {
       socket.on('ride:pickup_verified', () => {
         hapticSuccess();
         setShowPickupQR(false);
+      });
+
+      // Conductor a 10 minutos — notificación local
+      socket.on('ride:driver_10min', (data: { message: string }) => {
+        hapticWarning();
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: '🚗 GOING — Tu conductor está cerca',
+            body: data.message ?? 'Tu conductor llega en ~10 minutos. ¡Prepárate!',
+            sound: true,
+          },
+          trigger: null, // inmediata
+        }).catch(() => {/* permisos no concedidos — silencioso */});
       });
 
       // Viaje iniciado
