@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../../store/useAuthStore';
 import { transportAPI } from '../../services/api';
 import { hapticMedium, hapticError, hapticLight } from '../../utils/haptics';
@@ -96,6 +97,41 @@ const FEATURED_ROUTES = [
   { id: 'r3', label: 'Ibarra → Quito → Aeropuerto',               color: '#43A047', icon: '🟢', badge: 'Rápida'    },
   { id: 'r4', label: 'Cuenca → Loja → Zamora',                    color: '#F59E0B', icon: '🏔️', badge: 'Turismo'   },
 ];
+
+// ── Rutas recientes del usuario (persiste en AsyncStorage) ─────────────────
+const RECENT_ROUTES_KEY = '@going:recent_routes_v1';
+const MAX_RECENT = 4;
+
+interface RecentRoute {
+  id: string;
+  origin: string;
+  destination: string;
+  originCity: CityId;
+  vehicleType: VehicleId;
+  tripMode: TripMode;
+  price: number;
+  ts: number; // timestamp
+}
+
+const loadRecentRoutes = async (): Promise<RecentRoute[]> => {
+  try {
+    const raw = await AsyncStorage.getItem(RECENT_ROUTES_KEY);
+    return raw ? (JSON.parse(raw) as RecentRoute[]) : [];
+  } catch { return []; }
+};
+
+const saveRecentRoute = async (route: Omit<RecentRoute, 'id' | 'ts'>) => {
+  try {
+    const existing = await loadRecentRoutes();
+    // Elimina duplicados exactos de mismo destino
+    const deduped = existing.filter(r => r.destination !== route.destination);
+    const updated: RecentRoute[] = [
+      { ...route, id: `r_${Date.now()}`, ts: Date.now() },
+      ...deduped,
+    ].slice(0, MAX_RECENT);
+    await AsyncStorage.setItem(RECENT_ROUTES_KEY, JSON.stringify(updated));
+  } catch {}
+};
 
 // ── Tarifa base por persona según ciudad de origen ─────────────────────────
 // SUV class: SUV, SUV XL  |  VAN class: VAN, VAN XL  |  BUS class: BUS
@@ -244,6 +280,10 @@ export default function HomeScreen() {
   const { addresses, loaded: addrLoaded, load: loadAddresses } = useSavedAddressesStore();
 
   useEffect(() => { if (!addrLoaded) loadAddresses(); }, []);
+
+  const [recentRoutes, setRecentRoutes] = useState<RecentRoute[]>([]);
+  useEffect(() => { loadRecentRoutes().then(setRecentRoutes); }, []);
+
   const [location, setLocation] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState('');
   const [selectedService, setSelectedService] = useState<'transport' | 'delivery' | 'tour'>('transport');
@@ -379,6 +419,16 @@ export default function HomeScreen() {
         price: { amount: finalPrice, currency: 'USD' },
       });
 
+      // Guardar ruta reciente (no bloqueante)
+      saveRecentRoute({
+        origin: originAddress,
+        destination,
+        originCity,
+        vehicleType: selectedVehicle,
+        tripMode,
+        price: finalPrice,
+      }).then(() => loadRecentRoutes().then(setRecentRoutes));
+
       // Analytics
       analyticsRideRequest({
         origin_city: originCity,
@@ -487,6 +537,44 @@ export default function HomeScreen() {
                 );
               })}
             </ScrollView>
+
+            {/* 1a. Mis rutas recientes (si las hay) */}
+            {recentRoutes.length > 0 && (
+              <>
+                <Text style={styles.sectionLabel}>MIS ÚLTIMAS RUTAS</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.routeScroll}
+                  contentContainerStyle={styles.routeScrollContent}
+                >
+                  {recentRoutes.map((r) => (
+                    <TouchableOpacity
+                      key={r.id}
+                      style={[styles.routeCard, styles.recentRouteCard]}
+                      onPress={() => {
+                        hapticLight();
+                        setDestination(r.destination);
+                        setOriginCity(r.originCity);
+                        setSelectedVehicle(r.vehicleType);
+                        setTripMode(r.tripMode);
+                      }}
+                    >
+                      <View style={[styles.routeIconBg, { backgroundColor: '#0033A012' }]}>
+                        <Ionicons name="time-outline" size={18} color={GOING_BLUE} />
+                      </View>
+                      <View style={styles.routeInfo}>
+                        <Text style={styles.routeLabel} numberOfLines={1}>{r.destination}</Text>
+                        <Text style={styles.recentRouteSub} numberOfLines={1}>
+                          {r.tripMode === 'compartido' ? 'Compartido' : 'Privado'} · ${r.price.toFixed(0)}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
 
             {/* 1b. Rutas destacadas */}
             <Text style={styles.sectionLabel}>RUTAS FRECUENTES</Text>
@@ -815,6 +903,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   routeBadgeText: { fontSize: 9, fontWeight: '800', color: '#fff', letterSpacing: 0.3 },
+  recentRouteCard: { borderWidth: 1.5, borderColor: '#E8EDF8', backgroundColor: '#F8FAFF' },
+  recentRouteSub:  { fontSize: 10, color: '#6B7280', fontWeight: '500' },
 
   // Quick address shortcuts
   quickRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
