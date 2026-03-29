@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsString,
   IsNumber,
+  IsOptional,
   Min,
   ValidateNested,
   IsUUID,
@@ -26,7 +27,15 @@ class LocationDto {
   @IsNotEmpty()
   @IsString()
   address: string;
-  
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
   @IsNotEmpty()
   @IsLatitude()
   latitude: number;

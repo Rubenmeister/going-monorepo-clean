@@ -16,9 +16,26 @@ export class RequestTripUseCase {
   ) {}
 
   async execute(dto: RequestTripDto): Promise<{ id: string }> {
-    const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
-    const originVOResult = Location.create(dto.origin);
-    const destinationVOResult = Location.create(dto.destination);
+    const priceResult = Money.create(dto.price.amount, dto.price.currency as 'USD');
+    if (priceResult.isErr()) {
+      throw new InternalServerErrorException(priceResult.error.message);
+    }
+    const priceVO = priceResult.value;
+
+    const originVOResult = Location.create({
+      address: dto.origin.address,
+      latitude: dto.origin.latitude,
+      longitude: dto.origin.longitude,
+      city: (dto.origin as any).city ?? '',
+      country: (dto.origin as any).country ?? 'EC',
+    });
+    const destinationVOResult = Location.create({
+      address: dto.destination.address,
+      latitude: dto.destination.latitude,
+      longitude: dto.destination.longitude,
+      city: (dto.destination as any).city ?? '',
+      country: (dto.destination as any).country ?? 'EC',
+    });
 
     if (originVOResult.isErr()) {
       throw new InternalServerErrorException(originVOResult.error.message);
