@@ -37,6 +37,6 @@ COPY --from=builder /app/transport-service/src/dataconnect-generated ./transport
 RUN pnpm install --no-frozen-lockfile --prod
 
 # Copiar código compilado
-COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
+COPY --from=builder /app/dist/${SERVICE_NAME} ./dist/
 
 CMD ["node", "dist/main.js"]
