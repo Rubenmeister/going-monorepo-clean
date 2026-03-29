@@ -389,13 +389,15 @@ export default function HomeScreen() {
 
       // Navegar a la pantalla de tracking en tiempo real
       navigation.navigate('ActiveRide', {
-        rideId: data?.id ?? data?.rideId ?? 'pending',
-        origin: originData,
-        destination: destData,
-        vehicleType: currentVehicle.label,
+        rideId:       data?.id ?? data?.rideId ?? 'pending',
+        origin:       originData,
+        destination:  destData,
+        vehicleType:  currentVehicle.label,
         tripMode,
-        category: selectedCategory,
-        price: finalPrice,
+        category:     selectedCategory,
+        price:        finalPrice,
+        pickupToken:  data?.pickupToken,
+        shareUrl:     data?.shareUrl,
       });
     } catch {
       Alert.alert('Error', 'No se pudo procesar la solicitud.');

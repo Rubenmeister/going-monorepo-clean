@@ -73,12 +73,14 @@ export type ActiveRideParams = {
   tripMode: string;
   category: string;
   price: number;
+  pickupToken?: string;   // QR de identidad — el conductor lo escanea al recoger
+  shareUrl?: string;      // link público de seguimiento en tiempo real
 };
 
 export function ActiveRideScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<RouteProp<{ params: ActiveRideParams }, 'params'>>();
-  const { rideId, origin, destination, vehicleType, tripMode, category, price } = route.params;
+  const { rideId, origin, destination, vehicleType, tripMode, category, price, pickupToken, shareUrl } = route.params;
 
   const [status, setStatus] = useState<RideStatus>('searching');
   const [driver, setDriver] = useState<DriverInfo | null>(null);
@@ -88,6 +90,8 @@ export function ActiveRideScreen() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [routeGeoJSON, setRouteGeoJSON] = useState<GeoJSON.Feature | null>(null);
   const [routeDistance, setRouteDistance] = useState<number | null>(null); // km
+  const [progressPercent, setProgressPercent] = useState<number | null>(null); // % GPS real
+  const [showPickupQR, setShowPickupQR] = useState(false);
   const [callSession, setCallSession]     = useState<CallSession | null>(null);
   const [callLoading, setCallLoading]     = useState(false);
   const cameraRef  = useRef<MapboxGL.Camera>(null);
@@ -134,8 +138,9 @@ export function ActiveRideScreen() {
       });
 
       // Posición del conductor en tiempo real
-      socket.on('ride:driver_location', (data: { lat: number; lng: number; heading?: number; etaText?: string }) => {
+      socket.on('ride:driver_location', (data: { lat: number; lng: number; heading?: number; etaText?: string; progressPercent?: number }) => {
         setDriverLocation([data.lng, data.lat]);
+        if (data.progressPercent != null) setProgressPercent(data.progressPercent);
       });
 
       // ETA actualizada
@@ -164,10 +169,17 @@ export function ActiveRideScreen() {
         }
       });
 
-      // Conductor llegó al punto de recogida
+      // Conductor llegó al punto de recogida — mostrar QR de identidad
       socket.on('ride:driver_arrived', () => {
         hapticMedium();
         setStatus('arriving');
+        if (pickupToken) setShowPickupQR(true);
+      });
+
+      // Pickup verificado — cerrar QR
+      socket.on('ride:pickup_verified', () => {
+        hapticSuccess();
+        setShowPickupQR(false);
       });
 
       // Viaje iniciado
@@ -268,11 +280,11 @@ export function ActiveRideScreen() {
   };
 
   const handleShareTracking = async () => {
-    const trackingUrl = `https://app.goingec.com/track/${rideId}`;
+    const trackingUrl = shareUrl ?? `https://app.goingec.com/tracking?t=${rideId}`;
     analyticsShareTracking(rideId);
     try {
       await Share.share({
-        title: 'Mi viaje en Going',
+        title: 'Mi viaje en Going 🚗',
         message: `Estoy en camino. Sigue mi ruta en tiempo real: ${trackingUrl}`,
         url: trackingUrl,
       });
@@ -578,6 +590,37 @@ export function ActiveRideScreen() {
       </View>
     </View>
 
+    {/* ── Modal QR de identidad (conductor llegó, necesita escanear) ── */}
+    {showPickupQR && pickupToken && (
+      <View style={styles.qrOverlay}>
+        <View style={styles.qrCard}>
+          <View style={styles.qrHeader}>
+            <Ionicons name="qr-code-outline" size={28} color={GOING_BLUE} />
+            <Text style={styles.qrTitle}>Muestra este código al conductor</Text>
+          </View>
+          <Text style={styles.qrSubtitle}>El conductor lo escaneará para confirmar que es tu viaje</Text>
+          {/* Representación visual del token como bloques coloreados */}
+          <View style={styles.qrBox}>
+            <View style={styles.qrGrid}>
+              {Array.from(pickupToken.slice(0, 16)).map((char, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.qrCell,
+                    { backgroundColor: char.charCodeAt(0) % 2 === 0 ? GOING_BLUE : GOING_YELLOW },
+                  ]}
+                />
+              ))}
+            </View>
+            <Text style={styles.qrCode}>{pickupToken.slice(0, 8).toUpperCase()}</Text>
+          </View>
+          <TouchableOpacity style={styles.qrDismiss} onPress={() => setShowPickupQR(false)}>
+            <Text style={styles.qrDismissText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )}
+
     {/* Overlay de llamada Agora (se muestra sobre todo) */}
     {callSession?.type === 'agora' && (
       <InCallOverlay
@@ -714,4 +757,30 @@ const styles = StyleSheet.create({
     backgroundColor: GOING_BLUE,
   },
   finishBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+
+  // QR de identidad
+  qrOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 100,
+  },
+  qrCard: {
+    backgroundColor: '#fff', borderRadius: 24, padding: 24,
+    width: '85%', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16,
+  },
+  qrHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  qrTitle: { fontSize: 17, fontWeight: '800', color: '#111827', flex: 1 },
+  qrSubtitle: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginBottom: 20 },
+  qrBox: { alignItems: 'center', marginBottom: 20 },
+  qrGrid: {
+    width: 120, height: 120, flexDirection: 'row', flexWrap: 'wrap',
+    borderWidth: 3, borderColor: GOING_BLUE, borderRadius: 8, overflow: 'hidden',
+  },
+  qrCell: { width: 30, height: 30 },
+  qrCode: { marginTop: 10, fontSize: 18, fontWeight: '900', letterSpacing: 4, color: GOING_BLUE },
+  qrDismiss: {
+    paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+  },
+  qrDismissText: { fontSize: 14, fontWeight: '700', color: '#374151' },
 });
