@@ -32,6 +32,8 @@ import {
   AcceptRideUseCase,
   CompleteRideUseCase,
 } from '../application/use-cases';
+import { TokenService } from '../infrastructure/token.service';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -68,6 +70,7 @@ import {
       }),
     }),
     InfrastructureModule,
+    MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
   ],
   controllers: [AppController, TransportController, RideController, HealthController, PaymentController],
   providers: [
@@ -89,6 +92,7 @@ import {
     MockPaymentProvider,
     PaymentGatewayService,
     DistanceCalculatorService,
+    TokenService,
   ],
 })
 export class AppModule {}
