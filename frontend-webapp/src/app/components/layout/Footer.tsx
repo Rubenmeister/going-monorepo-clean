@@ -39,7 +39,7 @@ export function Footer() {
   };
 
   const services = [
-    { name: 'Servicios',           href: '/services' },
+    { name: 'Transporte',          href: '/services/transport' },
     { name: 'Alojamiento',        href: '/services/accommodation' },
     { name: 'Tours',              href: '/services/tours' },
     { name: 'Experiencias',       href: '/services/experiences' },
