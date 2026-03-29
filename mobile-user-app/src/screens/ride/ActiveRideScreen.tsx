@@ -441,6 +441,28 @@ export function ActiveRideScreen() {
         )}
       </MapboxGL.MapView>
 
+      {/* ── Botón SOS flotante ── */}
+      {status !== 'completed' && status !== 'searching' && (
+        <TouchableOpacity
+          style={styles.sosBtn}
+          onPress={() =>
+            navigation.navigate('Sos', {
+              rideId,
+              driverName:  driver ? `${driver.firstName} ${driver.lastName}` : undefined,
+              driverPlate: driver?.vehiclePlate,
+              driverPhone: driver?.phone,
+              originAddress:      origin.address,
+              destinationAddress: destination.address,
+              currentLat:  driverLocation?.[1] ?? origin.latitude,
+              currentLng:  driverLocation?.[0] ?? origin.longitude,
+            })
+          }
+          activeOpacity={0.85}
+        >
+          <Text style={styles.sosBtnText}>SOS</Text>
+        </TouchableOpacity>
+      )}
+
       {/* ── PANEL INFERIOR ── */}
       <View style={styles.panel}>
 
@@ -773,6 +795,26 @@ const styles = StyleSheet.create({
   tripPrice: { fontSize: 16, fontWeight: '900', color: GOING_BLUE, marginLeft: 'auto' },
 
   // Buttons
+  // Botón SOS flotante sobre el mapa
+  sosBtn: {
+    position: 'absolute',
+    top: 56,
+    right: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+    zIndex: 10,
+  },
+  sosBtnText: { color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 0.5 },
+
   cancelBtn: {
     paddingVertical: 14, borderRadius: 12, alignItems: 'center',
     borderWidth: 1.5, borderColor: GOING_RED, backgroundColor: `${GOING_RED}08`,

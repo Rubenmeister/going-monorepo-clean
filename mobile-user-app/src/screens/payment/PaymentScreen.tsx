@@ -30,7 +30,7 @@ interface PaymentScreenProps {
 export default function PaymentScreen({ route }: PaymentScreenProps) {
   const { amount, bookingId, rideId, description } = route.params;
   const [loading, setLoading]           = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'datafast' | 'cash'>('datafast');
+  const [selectedMethod, setSelectedMethod] = useState<'datafast' | 'deuna' | 'cash'>('datafast');
 
   const displayAmount = `$${amount.toFixed(2)}`;
 
@@ -64,6 +64,36 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
     }
   };
 
+  // ── Pago con DE UNA (transferencia bancaria Pichincha) ───────────────────
+  const handleDeUna = async () => {
+    setLoading(true);
+    try {
+      const response = await paymentAPI.createPaymentIntent({
+        amount: Math.round(amount * 100),
+        currency: 'USD',
+        provider: 'deuna',
+        referenceId: bookingId ?? rideId,
+      });
+
+      const checkoutUrl: string =
+        response.data?.redirectUrl ?? response.data?.clientSecret;
+
+      if (!checkoutUrl) throw new Error('No se recibió URL de pago.');
+
+      const supported = await Linking.canOpenURL(checkoutUrl);
+      if (supported) {
+        await Linking.openURL(checkoutUrl);
+      } else {
+        Alert.alert('Error', 'No se puede abrir el link de pago.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Intenta de nuevo.';
+      Alert.alert('Error de pago', msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ── Pago en efectivo ──────────────────────────────────────────────────────
   const handleCash = () => {
     Alert.alert(
@@ -74,11 +104,9 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
   };
 
   const handlePay = () => {
-    if (selectedMethod === 'datafast') {
-      handleDatafast();
-    } else {
-      handleCash();
-    }
+    if (selectedMethod === 'datafast') handleDatafast();
+    else if (selectedMethod === 'deuna') handleDeUna();
+    else handleCash();
   };
 
   return (
@@ -122,6 +150,26 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
         </View>
       </TouchableOpacity>
 
+      {/* DE UNA — Banco Pichincha */}
+      <TouchableOpacity
+        style={[styles.methodCard, selectedMethod === 'deuna' && styles.methodCardSelected]}
+        onPress={() => setSelectedMethod('deuna')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.methodLeft}>
+          <View style={[styles.methodBadge, { backgroundColor: '#e63946' }]}>
+            <Text style={styles.methodBadgeText}>DU</Text>
+          </View>
+          <View>
+            <Text style={styles.methodName}>De Una · Banco Pichincha</Text>
+            <Text style={styles.methodDesc}>Transferencia bancaria instantánea</Text>
+          </View>
+        </View>
+        <View style={[styles.radio, selectedMethod === 'deuna' && styles.radioSelected]}>
+          {selectedMethod === 'deuna' && <View style={styles.radioDot} />}
+        </View>
+      </TouchableOpacity>
+
       {/* Efectivo */}
       <TouchableOpacity
         style={[styles.methodCard, selectedMethod === 'cash' && styles.methodCardSelected]}
@@ -155,7 +203,11 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
           <>
             <Ionicons name="lock-closed" size={18} color="#fff" style={{ marginRight: 6 }} />
             <Text style={styles.payBtnText}>
-              {selectedMethod === 'cash' ? `Pagar en efectivo` : `Pagar ${displayAmount}`}
+              {selectedMethod === 'cash'
+                ? 'Pagar en efectivo'
+                : selectedMethod === 'deuna'
+                ? `Transferir ${displayAmount} · De Una`
+                : `Pagar ${displayAmount}`}
             </Text>
           </>
         )}
