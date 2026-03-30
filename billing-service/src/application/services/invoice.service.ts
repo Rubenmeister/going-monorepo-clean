@@ -189,7 +189,7 @@ export class InvoiceService {
     if (dto.paymentTerms) {
       updates.paymentTerms = dto.paymentTerms;
       updates.dueDate = this.calculateDueDate(
-        invoice.issuedDate,
+        invoice.issueDate,
         dto.paymentTerms
       );
     }

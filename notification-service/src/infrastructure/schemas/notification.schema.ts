@@ -18,15 +18,6 @@ interface NotificationData {
 @Schema({
   collection: 'notifications',
   timestamps: true,
-  indexes: [
-    { userId: 1, companyId: 1, createdAt: -1 },
-    { companyId: 1, status: 1, createdAt: -1 },
-    { userId: 1, status: 1, readAt: 1 },
-    { type: 1, companyId: 1, createdAt: -1 },
-    { 'relatedEntity.type': 1, 'relatedEntity.id': 1 },
-    { expiresAt: 1 }, // TTL index
-    { status: 1, sentAt: 1 },
-  ],
 })
 export class NotificationSchema extends Document {
   @Prop({ required: true, index: true })

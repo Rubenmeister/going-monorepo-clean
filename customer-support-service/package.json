@@ -10,6 +10,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
     "@google-cloud/firestore": "^7.0.0",
+    "@google-cloud/speech": "^6.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^11.0.0",

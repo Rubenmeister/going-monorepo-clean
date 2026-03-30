@@ -1,6 +1,7 @@
 /**
- * Voice Commands & Voice-Controlled Navigation Service
- * Integration with Google Assistant, Alexa, and Web Speech API
+ * Voice Commands & Speech Processing Service
+ * Google Cloud Speech-to-Text and Text-to-Speech
+ * Uses Application Default Credentials (ADC) on Cloud Run
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -15,7 +16,7 @@ export interface VoiceCommand {
   userId: string;
   platform: 'GOOGLE_ASSISTANT' | 'ALEXA' | 'WEB_SPEECH' | 'SIRI';
   status: 'RECOGNIZED' | 'PROCESSING' | 'EXECUTED' | 'FAILED';
-  confidence: number; // 0-1
+  confidence: number;
   executedAt?: Date;
   createdAt: Date;
 }
@@ -52,482 +53,189 @@ export class VoiceService {
   private notifications: Map<string, VoiceNotification> = new Map();
   private conversations: Map<string, ConversationContext> = new Map();
 
-  // Voice command mappings
-  private commandMap = {
+  // Command mappings
+  private commandMap: Record<string, { action: string; params: string[] }> = {
+    'rastrea mi entrega': { action: 'TRACK_DELIVERY', params: ['orderId'] },
     'track my delivery': { action: 'TRACK_DELIVERY', params: ['orderId'] },
-    'where is my package': {
-      action: 'GET_PACKAGE_LOCATION',
-      params: ['orderId'],
-    },
+    'donde esta mi paquete': { action: 'GET_PACKAGE_LOCATION', params: ['orderId'] },
+    'where is my package': { action: 'GET_PACKAGE_LOCATION', params: ['orderId'] },
+    'llama a mi conductor': { action: 'CALL_DRIVER', params: ['orderId'] },
     'call my driver': { action: 'CALL_DRIVER', params: ['orderId'] },
+    'historial de entregas': { action: 'SHOW_HISTORY', params: [] },
     'show delivery history': { action: 'SHOW_HISTORY', params: [] },
+    'mi saldo': { action: 'CHECK_BALANCE', params: [] },
     'how much balance': { action: 'CHECK_BALANCE', params: [] },
+    'agregar fondos': { action: 'ADD_FUNDS', params: ['amount'] },
     'add funds': { action: 'ADD_FUNDS', params: ['amount'] },
-    'book delivery': {
-      action: 'CREATE_DELIVERY',
-      params: ['destination', 'items'],
-    },
-    'cancel delivery': { action: 'CANCEL_DELIVERY', params: ['orderId'] },
-    'rate delivery': { action: 'RATE_DELIVERY', params: ['orderId', 'rating'] },
-    support: { action: 'CONTACT_SUPPORT', params: [] },
+    'reservar viaje': { action: 'CREATE_RIDE', params: ['destination'] },
+    'book ride': { action: 'CREATE_RIDE', params: ['destination'] },
+    'ayuda': { action: 'SHOW_HELP', params: [] },
     help: { action: 'SHOW_HELP', params: [] },
-    'next delivery': { action: 'SHOW_NEXT_DELIVERY', params: [] },
-    'my account': { action: 'SHOW_ACCOUNT', params: [] },
   };
 
   constructor() {
-    this.speechClient = new SpeechClient({
-      keyFilename: process.env.GOOGLE_CLOUD_KEY_FILE,
-    });
-    this.ttsClient = new TextToSpeechClient({
-      keyFilename: process.env.GOOGLE_CLOUD_KEY_FILE,
-    });
-
-    this.logger.log('🎤 Voice service initialized');
-  }
-
-  /**
-   * Process voice input and recognize command
-   */
-  async recognizeCommand(
-    audioBuffer: Buffer,
-    userId: string,
-    platform: VoiceCommand['platform'] = 'WEB_SPEECH'
-  ): Promise<VoiceCommand> {
+    // Use ADC — on Cloud Run this is automatic via the service account
+    // In development, set GOOGLE_APPLICATION_CREDENTIALS env var
     try {
-      // Transcribe audio to text
-      const transcript = await this.transcribeAudio(audioBuffer);
-
-      if (!transcript) {
-        throw new Error('Failed to transcribe audio');
-      }
-
-      // Parse command from transcript
-      const command = await this.parseCommand(transcript, userId, platform);
-
-      this.logger.log(
-        `🎤 Command recognized: "${transcript}" -> ${command.action} (${(
-          command.confidence * 100
-        ).toFixed(0)}%)`
-      );
-
-      return command;
+      this.speechClient = new SpeechClient();
+      this.ttsClient = new TextToSpeechClient();
+      this.logger.log('🎤 Voice service initialized with ADC');
     } catch (error) {
-      this.logger.error(`Failed to recognize command: ${error}`);
-      throw error;
+      this.logger.warn(`Voice clients init failed (ADC not available): ${error}`);
     }
   }
 
   /**
-   * Transcribe audio to text using Google Cloud Speech-to-Text
+   * Transcribe audio buffer to text
    */
-  private async transcribeAudio(audioBuffer: Buffer): Promise<string> {
-    try {
-      const audio = {
-        content: audioBuffer.toString('base64'),
-      };
+  async transcribeAudio(audioBuffer: Buffer, languageCode = 'es-EC'): Promise<string> {
+    if (!this.speechClient) {
+      throw new Error('Speech client not initialized');
+    }
 
-      const config = {
+    const [response] = await this.speechClient.recognize({
+      config: {
         encoding: 'LINEAR16' as any,
         sampleRateHertz: 16000,
-        languageCode: 'en-US',
+        languageCode,
         model: 'latest_long',
-      };
+        alternativeLanguageCodes: ['en-US'],
+      },
+      audio: { content: audioBuffer.toString('base64') },
+    });
 
-      const request = {
-        config,
-        audio,
-      };
-
-      const [response] = await this.speechClient.recognize(request);
-      const transcription = response.results
-        ?.map((result: any) => result.alternatives?.[0]?.transcript)
-        .join('\n');
-
-      return transcription || '';
-    } catch (error) {
-      this.logger.error(`Failed to transcribe audio: ${error}`);
-      return '';
-    }
+    return response.results
+      ?.map((r: any) => r.alternatives?.[0]?.transcript)
+      .join('\n') || '';
   }
 
   /**
-   * Parse natural language command
+   * Parse voice command from text
    */
-  private async parseCommand(
-    transcript: string,
-    userId: string,
-    platform: VoiceCommand['platform']
-  ): Promise<VoiceCommand> {
-    try {
-      const normalizedText = transcript.toLowerCase().trim();
-      let bestMatch: any = null;
-      let highestScore = 0;
+  parseCommand(transcript: string, userId: string, platform: VoiceCommand['platform'] = 'WEB_SPEECH'): VoiceCommand {
+    const normalized = transcript.toLowerCase().trim();
+    let bestMatch: { action: string; params: string[] } | null = null;
+    let highestScore = 0;
 
-      // Find best matching command
-      for (const [keyword, mapping] of Object.entries(this.commandMap)) {
-        const score = this.calculateSimilarity(normalizedText, keyword);
-        if (score > highestScore) {
-          highestScore = score;
-          bestMatch = { ...mapping, text: normalizedText };
-        }
+    for (const [keyword, mapping] of Object.entries(this.commandMap)) {
+      const score = this.calculateSimilarity(normalized, keyword);
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = mapping;
       }
-
-      const command: VoiceCommand = {
-        id: `cmd-${Date.now()}`,
-        text: transcript,
-        action: bestMatch?.action || 'UNKNOWN',
-        parameters: await this.extractParameters(transcript, bestMatch?.params),
-        userId,
-        platform,
-        status: 'RECOGNIZED',
-        confidence: highestScore,
-        createdAt: new Date(),
-      };
-
-      this.commands.set(command.id!, command);
-      return command;
-    } catch (error) {
-      this.logger.error(`Failed to parse command: ${error}`);
-      throw error;
     }
+
+    const command: VoiceCommand = {
+      id: `cmd-${Date.now()}`,
+      text: transcript,
+      action: bestMatch?.action || 'UNKNOWN',
+      parameters: this.extractParameters(transcript, bestMatch?.params),
+      userId,
+      platform,
+      status: 'RECOGNIZED',
+      confidence: highestScore,
+      createdAt: new Date(),
+    };
+
+    this.commands.set(command.id!, command);
+    this.logger.log(`🎤 Command: "${transcript}" → ${command.action} (${(command.confidence * 100).toFixed(0)}%)`);
+    return command;
   }
 
   /**
-   * Calculate similarity score between strings (Levenshtein distance)
+   * Synthesize text to speech, returns base64 MP3
    */
-  private calculateSimilarity(str1: string, str2: string): number {
-    const longer = str1.length > str2.length ? str1 : str2;
-    const shorter = str1.length > str2.length ? str2 : str1;
+  async synthesizeSpeech(text: string, languageCode = 'es-US'): Promise<string> {
+    if (!this.ttsClient) {
+      throw new Error('TTS client not initialized');
+    }
 
-    if (longer.length === 0) return 1;
+    const [response] = await this.ttsClient.synthesizeSpeech({
+      input: { text },
+      voice: { languageCode, ssmlGender: 'FEMALE' as any },
+      audioConfig: { audioEncoding: 'MP3' as any },
+    });
 
-    const editDistance = this.levenshteinDistance(longer, shorter);
-    return (longer.length - editDistance) / longer.length;
+    return (response.audioContent as Buffer).toString('base64');
   }
 
   /**
-   * Levenshtein distance algorithm
+   * Full pipeline: audio → text → command
    */
-  private levenshteinDistance(str1: string, str2: string): number {
-    const track = Array(str2.length + 1)
-      .fill(null)
-      .map(() => Array(str1.length + 1).fill(null));
-
-    for (let i = 0; i <= str1.length; i += 1) {
-      track[0][i] = i;
-    }
-
-    for (let j = 0; j <= str2.length; j += 1) {
-      track[j][0] = j;
-    }
-
-    for (let j = 1; j <= str2.length; j += 1) {
-      for (let i = 1; i <= str1.length; i += 1) {
-        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-        track[j][i] = Math.min(
-          track[j][i - 1] + 1,
-          track[j - 1][i] + 1,
-          track[j - 1][i - 1] + indicator
-        );
-      }
-    }
-
-    return track[str2.length][str1.length];
+  async processAudio(audioBuffer: Buffer, userId: string, platform: VoiceCommand['platform'] = 'WEB_SPEECH'): Promise<VoiceCommand> {
+    const transcript = await this.transcribeAudio(audioBuffer);
+    if (!transcript) throw new Error('Could not transcribe audio');
+    return this.parseCommand(transcript, userId, platform);
   }
 
   /**
-   * Extract parameters from voice command
+   * Get command history for a user
    */
-  private async extractParameters(
-    transcript: string,
-    paramNames: string[] | undefined
-  ): Promise<Record<string, any>> {
-    try {
-      const params: Record<string, any> = {};
-
-      if (!paramNames) return params;
-
-      // Extract order ID (e.g., "order 12345")
-      if (paramNames.includes('orderId')) {
-        const orderMatch = transcript.match(/order\s*(\d+)/i);
-        if (orderMatch) {
-          params.orderId = orderMatch[1];
-        }
-      }
-
-      // Extract amount (e.g., "add 50 dollars")
-      if (paramNames.includes('amount')) {
-        const amountMatch = transcript.match(/(\d+)\s*(dollars|bucks|usd)/i);
-        if (amountMatch) {
-          params.amount = parseFloat(amountMatch[1]);
-        }
-      }
-
-      // Extract rating (e.g., "rate 5 stars")
-      if (paramNames.includes('rating')) {
-        const ratingMatch = transcript.match(/(\d+)\s*stars/i);
-        if (ratingMatch) {
-          params.rating = parseInt(ratingMatch[1]);
-        }
-      }
-
-      // Extract destination (e.g., "to main street")
-      if (paramNames.includes('destination')) {
-        const destMatch = transcript.match(/to\s+(.+?)(?:\s+please|$)/i);
-        if (destMatch) {
-          params.destination = destMatch[1];
-        }
-      }
-
-      return params;
-    } catch (error) {
-      this.logger.error(`Failed to extract parameters: ${error}`);
-      return {};
-    }
-  }
-
-  /**
-   * Execute voice command
-   */
-  async executeCommand(commandId: string): Promise<any> {
-    try {
-      const command = this.commands.get(commandId);
-      if (!command) {
-        throw new Error('Command not found');
-      }
-
-      command.status = 'PROCESSING';
-
-      let result: any = null;
-
-      switch (command.action) {
-        case 'TRACK_DELIVERY':
-          result = await this.handleTrackDelivery(command.parameters);
-          break;
-        case 'GET_PACKAGE_LOCATION':
-          result = await this.handleGetLocation(command.parameters);
-          break;
-        case 'CALL_DRIVER':
-          result = await this.handleCallDriver(command.parameters);
-          break;
-        case 'CHECK_BALANCE':
-          result = await this.handleCheckBalance(command.userId);
-          break;
-        case 'ADD_FUNDS':
-          result = await this.handleAddFunds(
-            command.userId,
-            command.parameters
-          );
-          break;
-        case 'SHOW_HISTORY':
-          result = await this.handleShowHistory(command.userId);
-          break;
-        case 'CREATE_DELIVERY':
-          result = await this.handleCreateDelivery(
-            command.userId,
-            command.parameters
-          );
-          break;
-        default:
-          result = { message: 'Command not implemented' };
-      }
-
-      command.status = 'EXECUTED';
-      command.executedAt = new Date();
-
-      this.logger.log(`✅ Command executed: ${command.action}`);
-
-      return result;
-    } catch (error) {
-      this.logger.error(`Failed to execute command: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate voice response
-   */
-  async generateVoiceResponse(
-    text: string,
-    userId: string
-  ): Promise<VoiceNotification> {
-    try {
-      const audioContent = await this.synthesizeSpeech(text);
-
-      const notification: VoiceNotification = {
-        id: `notif-${Date.now()}`,
-        userId,
-        message: text,
-        type: 'CONFIRMATION',
-        audioUrl: `data:audio/mp3;base64,${audioContent.toString('base64')}`,
-        status: 'PENDING',
-        createdAt: new Date(),
-      };
-
-      this.notifications.set(notification.id!, notification);
-
-      this.logger.log(
-        `🔊 Voice response generated: ${text.substring(0, 50)}...`
-      );
-
-      return notification;
-    } catch (error) {
-      this.logger.error(`Failed to generate voice response: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Synthesize text to speech using Google Cloud TTS
-   */
-  private async synthesizeSpeech(text: string): Promise<Buffer> {
-    try {
-      const request = {
-        input: { text },
-        voice: { languageCode: 'en-US', name: 'en-US-Neural2-C' },
-        audioConfig: { audioEncoding: 'MP3' as any },
-      };
-
-      const [response] = await this.ttsClient.synthesizeSpeech(request);
-      return response.audioContent as Buffer;
-    } catch (error) {
-      this.logger.error(`Failed to synthesize speech: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Send voice notification
-   */
-  async sendVoiceNotification(
-    userId: string,
-    message: string
-  ): Promise<VoiceNotification> {
-    try {
-      const notification = await this.generateVoiceResponse(message, userId);
-      notification.status = 'PLAYING';
-      notification.deliveredAt = new Date();
-
-      this.logger.log(`📢 Voice notification sent to user ${userId}`);
-
-      return notification;
-    } catch (error) {
-      this.logger.error(`Failed to send voice notification: ${error}`);
-      throw error;
-    }
+  getCommandHistory(userId: string, limit = 50): VoiceCommand[] {
+    return Array.from(this.commands.values())
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit);
   }
 
   /**
    * Create conversation session
    */
-  async createConversationSession(
-    userId: string
-  ): Promise<ConversationContext> {
-    try {
-      const sessionId = `session-${Date.now()}`;
+  createSession(userId: string): ConversationContext {
+    const session: ConversationContext = {
+      sessionId: `session-${Date.now()}`,
+      userId,
+      context: {},
+      conversationHistory: [],
+      startedAt: new Date(),
+    };
+    this.conversations.set(session.sessionId, session);
+    return session;
+  }
 
-      const session: ConversationContext = {
-        sessionId,
-        userId,
-        context: {},
-        conversationHistory: [],
-        startedAt: new Date(),
-      };
+  getSession(sessionId: string): ConversationContext | undefined {
+    return this.conversations.get(sessionId);
+  }
 
-      this.conversations.set(sessionId, session);
+  // ── Utilities ───────────────────────────────────────────────────────────
 
-      this.logger.log(`🗣️ Conversation session started: ${sessionId}`);
+  private calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    if (longer.length === 0) return 1;
+    const dist = this.levenshteinDistance(longer, shorter);
+    return (longer.length - dist) / longer.length;
+  }
 
-      return session;
-    } catch (error) {
-      this.logger.error(`Failed to create conversation session: ${error}`);
-      throw error;
+  private levenshteinDistance(str1: string, str2: string): number {
+    const track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    for (let i = 0; i <= str1.length; i++) track[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) track[j][0] = j;
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        track[j][i] = Math.min(track[j][i - 1] + 1, track[j - 1][i] + 1, track[j - 1][i - 1] + indicator);
+      }
     }
+    return track[str2.length][str1.length];
   }
 
-  /**
-   * Get command history
-   */
-  async getCommandHistory(userId: string, limit = 50): Promise<VoiceCommand[]> {
-    try {
-      return Array.from(this.commands.values())
-        .filter((c) => c.userId === userId)
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, limit);
-    } catch (error) {
-      this.logger.error(`Failed to get command history: ${error}`);
-      throw error;
+  private extractParameters(transcript: string, paramNames?: string[]): Record<string, any> {
+    const params: Record<string, any> = {};
+    if (!paramNames) return params;
+
+    if (paramNames.includes('orderId')) {
+      const m = transcript.match(/(?:order|pedido|orden)\s*(\d+)/i);
+      if (m) params.orderId = m[1];
     }
-  }
-
-  // Handler methods for specific commands
-
-  private async handleTrackDelivery(
-    params?: Record<string, any>
-  ): Promise<any> {
-    return {
-      status: 'success',
-      message: `Tracking delivery ${params?.orderId}. Your package is on the way!`,
-      eta: new Date(Date.now() + 30 * 60000).toLocaleTimeString(),
-    };
-  }
-
-  private async handleGetLocation(params?: Record<string, any>): Promise<any> {
-    return {
-      status: 'success',
-      location: { latitude: 40.7128, longitude: -74.006 },
-      message: 'Your package is at coordinates 40.71, -74.01',
-      distance: '2.5 km away',
-    };
-  }
-
-  private async handleCallDriver(params?: Record<string, any>): Promise<any> {
-    return {
-      status: 'success',
-      message: 'Initiating call to driver...',
-      driverName: 'John Doe',
-    };
-  }
-
-  private async handleCheckBalance(userId: string): Promise<any> {
-    return {
-      status: 'success',
-      balance: 245.5,
-      currency: 'USD',
-      message: 'Your wallet balance is $245.50',
-    };
-  }
-
-  private async handleAddFunds(
-    userId: string,
-    params?: Record<string, any>
-  ): Promise<any> {
-    const amount = params?.amount || 100;
-    return {
-      status: 'success',
-      message: `Adding $${amount} to your wallet...`,
-      newBalance: 245.5 + amount,
-    };
-  }
-
-  private async handleShowHistory(userId: string): Promise<any> {
-    return {
-      status: 'success',
-      message: 'Showing your delivery history...',
-      deliveries: 15,
-    };
-  }
-
-  private async handleCreateDelivery(
-    userId: string,
-    params?: Record<string, any>
-  ): Promise<any> {
-    return {
-      status: 'success',
-      message: `Creating delivery to ${params?.destination}...`,
-      orderId: `ORD-${Date.now()}`,
-      estimatedCost: '$12.50',
-    };
+    if (paramNames.includes('amount')) {
+      const m = transcript.match(/(\d+(?:\.\d+)?)\s*(?:dolares|dollars|usd|\$)/i);
+      if (m) params.amount = parseFloat(m[1]);
+    }
+    if (paramNames.includes('destination')) {
+      const m = transcript.match(/(?:to|hacia|a)\s+(.+?)(?:\s+por favor|please|$)/i);
+      if (m) params.destination = m[1].trim();
+    }
+    return params;
   }
 }

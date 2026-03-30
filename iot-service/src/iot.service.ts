@@ -140,7 +140,7 @@ export class IoTService {
           this.processLocation(deviceId, payload);
           break;
         case 'alerts':
-          this.processAlert(deviceId, payload);
+          this.logger.warn(`Alert from device ${deviceId}: ${JSON.stringify(payload)}`);
           break;
       }
     } catch (error) {
@@ -597,6 +597,50 @@ export class IoTService {
     } catch (error) {
       this.logger.error(`Failed to get dashboard: ${error}`);
       throw error;
+    }
+  }
+
+  /** Process a sensor reading (controller alias) */
+  async processReading(reading: SensorReading): Promise<SensorReading> {
+    const r = { ...reading, id: `reading-${Date.now()}`, timestamp: reading.timestamp || new Date() };
+    this.readings.push(r);
+    this.checkReadingAlerts(r);
+    return r;
+  }
+
+  /** Update device status */
+  async updateDeviceStatus(deviceId: string, status: IoTDevice['status']): Promise<IoTDevice | null> {
+    const device = this.devices.get(deviceId);
+    if (!device) return null;
+    device.status = status;
+    device.lastSeen = new Date();
+    this.devices.set(deviceId, device);
+    return device;
+  }
+
+  /** Live telemetry snapshot */
+  getLiveTelemetry(deviceId: string) {
+    const device = this.devices.get(deviceId);
+    const latest = this.readings
+      .filter((r) => r.deviceId === deviceId)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10);
+    return { device: device || null, readings: latest, asOf: new Date().toISOString() };
+  }
+
+  private checkReadingAlerts(reading: SensorReading): void {
+    if (reading.type === 'TEMPERATURE' && reading.value > 35) {
+      const alert: DeviceAlert = {
+        id: `alert-${Date.now()}`,
+        deviceId: reading.deviceId,
+        alertType: 'TEMPERATURE_EXCEEDED',
+        severity: reading.value > 45 ? 'CRITICAL' : 'HIGH',
+        message: `Temperature ${reading.value}${reading.unit} exceeds safe threshold`,
+        resolved: false,
+        createdAt: new Date(),
+      };
+      this.alerts.set(alert.id!, alert);
+      this.logger.warn(`🚨 Alert: ${alert.message}`);
     }
   }
 

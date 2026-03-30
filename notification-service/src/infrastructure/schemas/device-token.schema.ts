@@ -9,13 +9,6 @@ import { Document } from 'mongoose';
 @Schema({
   collection: 'device-tokens',
   timestamps: true,
-  indexes: [
-    { userId: 1, companyId: 1 },
-    { fcmToken: 1, isActive: 1 },
-    { userId: 1, isActive: 1 },
-    { expiresAt: 1 }, // TTL index
-    { createdAt: -1 },
-  ],
 })
 export class DeviceTokenSchema extends Document {
   @Prop({ required: true, index: true })

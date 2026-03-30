@@ -5,8 +5,8 @@ import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton } from '../knowledge-base/system-prompt';
 import { BookingService } from '../booking/booking.service';
 
-// [CREAR_VIAJE:origen=X,destino=Y,servicio=Z] o con ,hora=ISO
-const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,hora=([^\]]+))?\]/i;
+// [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
+const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
 
 @Injectable()
 export class AgentService {
@@ -77,7 +77,7 @@ export class AgentService {
     // Check if Claude wants to create a booking
     const match = BOOKING_TAG_RE.exec(assistantMessage);
     if (match) {
-      const [, origen, destino, servicio, horaStr] = match;
+      const [, origen, destino, servicio, modalidad, horaStr] = match;
       const cleanMessage = assistantMessage.replace(BOOKING_TAG_RE, '').trim();
       const scheduledAt = horaStr ? new Date(horaStr) : undefined;
 
@@ -99,9 +99,11 @@ export class AgentService {
         userId, originCoords, destCoords, servicio.trim(), scheduledAt,
       );
 
+      const esCompartido = (modalidad || '').toLowerCase() === 'compartido';
       let finalMessage: string;
       if (result.success) {
         const fare = result.estimatedTotal ? `$${result.estimatedTotal.toFixed(2)}` : 'por calcular';
+        const tipoLabel = esCompartido ? 'Compartido' : 'Privado';
 
         if (scheduledAt) {
           const hora = scheduledAt.toLocaleTimeString('es-EC', {
@@ -111,13 +113,13 @@ export class AgentService {
             weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Guayaquil',
           });
           finalMessage = lang === 'en'
-            ? `${cleanMessage}\n\n✅ *Ride scheduled!*\n📅 ${fecha} at ${hora}\n🆔 ID: ${result.rideId}\n💵 Est. fare: ${fare}\n⏰ You'll receive a WhatsApp reminder 15 min before.`
-            : `${cleanMessage}\n\n✅ *¡Viaje programado!*\n📅 ${fecha} a las ${hora}\n🆔 ID: ${result.rideId}\n💵 Tarifa estimada: ${fare}\n⏰ Recibirás un recordatorio por WhatsApp 15 min antes. 🔔`;
+            ? `${cleanMessage}\n\n✅ *Ride scheduled!*\n📅 ${fecha} at ${hora}\n🆔 ID: ${result.rideId}\n💵 Est. fare: ${fare}\n🚗 A preliminary driver will be assigned and confirmed the day before your trip.\n⏰ You'll receive a WhatsApp reminder 15 min before.`
+            : `${cleanMessage}\n\n✅ *¡Viaje programado!* (${tipoLabel})\n📅 ${fecha} a las ${hora}\n🆔 ID: ${result.rideId}\n💵 Tarifa estimada: ${fare}\n🚗 Se asignará un conductor preliminar y se confirmará el definitivo el día anterior.\n⏰ Recibirás un recordatorio por WhatsApp 15 min antes. 🔔`;
         } else {
           const eta = result.eta ? `~${Math.ceil(result.eta / 60)} min` : 'en breve';
           finalMessage = lang === 'en'
-            ? `${cleanMessage}\n\n✅ *Ride booked!*\n🆔 ID: ${result.rideId}\n💵 Est. fare: ${fare}\n🕐 Driver arriving in: ${eta}`
-            : `${cleanMessage}\n\n✅ *¡Viaje creado!*\n🆔 ID: ${result.rideId}\n💵 Tarifa estimada: ${fare}\n🕐 Conductor llegará en: ${eta}`;
+            ? `${cleanMessage}\n\n✅ *Ride booked!* (${tipoLabel})\n🆔 ID: ${result.rideId}\n💵 Est. fare: ${fare}\n🚗 Driver assigned and arriving in: ${eta}`
+            : `${cleanMessage}\n\n✅ *¡Viaje confirmado!* (${tipoLabel})\n🆔 ID: ${result.rideId}\n💵 Tarifa: ${fare}\n🚗 Conductor asignado — llega en: ${eta}`;
         }
       } else {
         finalMessage = lang === 'en'
