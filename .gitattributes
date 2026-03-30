@@ -1,2 +1,6 @@
 # Prevent Windows from converting .easignore to CRLF (breaks EAS Build pattern matching)
 .easignore text eol=lf
+
+# Always use LF for shell scripts (gradlew must not have CRLF on Linux)
+*.sh text eol=lf
+gradlew text eol=lf
