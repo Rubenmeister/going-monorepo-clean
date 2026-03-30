@@ -2,6 +2,14 @@
 node_modules/
 **/node_modules/
 
+# ── Root monorepo config (exclude so EAS treats each app as standalone) ───────
+# Without root package.json, EAS uses the app's own package.json + package-lock.json
+/package.json
+/nx.json
+/tsconfig.base.json
+/.eslintrc*
+/.prettierrc*
+
 # ── Git / CI ──────────────────────────────────────────────────────────────────
 .git/
 .github/
