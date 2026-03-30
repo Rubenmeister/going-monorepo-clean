@@ -2,8 +2,9 @@ packages:
   # Applications
   - 'frontend-webapp'
   - 'admin-dashboard'
-  - 'mobile-driver-app'
-  - 'mobile-user-app'
+  # mobile apps managed independently with npm (not pnpm workspace)
+  # - 'mobile-driver-app'
+  # - 'mobile-user-app'
 
   # Services
   - 'api-gateway'
