@@ -62,10 +62,10 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
  * Provider dropdown items
  */
 const PROVIDER_ITEMS = [
-  { icon: '🏡', label: 'Anfitriones',       desc: 'Publica tu espacio',      href: '/anfitriones',        color: '#7c3aed' },
-  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/promotores-locales', color: '#0891b2' },
-  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/operadores',          color: '#d97706' },
-  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/conductores',        color: '#16a34a' },
+  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/conductores',        registro: '/conductores/registro',        color: '#16a34a' },
+  { icon: '🏡', label: 'Anfitriones',        desc: 'Publica tu espacio',      href: '/anfitriones',        registro: '/anfitriones/registro',        color: '#7c3aed' },
+  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/promotores-locales', registro: '/promotores-locales/registro', color: '#0891b2' },
+  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/operadores',         registro: '/operadores/registro',         color: '#d97706' },
 ];
 
 /**
@@ -123,29 +123,28 @@ function NavLinks({ t }: { t: (key: string) => string }) {
               Proveedores Going
             </p>
             {PROVIDER_ITEMS.map(item => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setProviderOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-xl w-8 text-center">{item.icon}</span>
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">{item.label}</div>
-                  <div className="text-xs text-gray-400">{item.desc}</div>
-                </div>
-              </Link>
+              <div key={item.href} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors group">
+                <Link
+                  href={item.href}
+                  onClick={() => setProviderOpen(false)}
+                  className="flex items-center gap-3 flex-1 min-w-0"
+                >
+                  <span className="text-xl w-8 text-center flex-shrink-0">{item.icon}</span>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm">{item.label}</div>
+                    <div className="text-xs text-gray-400">{item.desc}</div>
+                  </div>
+                </Link>
+                <Link
+                  href={item.registro}
+                  onClick={() => setProviderOpen(false)}
+                  className="ml-2 flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-lg text-white transition-opacity hover:opacity-80"
+                  style={{ backgroundColor: item.color }}
+                >
+                  Registrarme
+                </Link>
+              </div>
             ))}
-            <div className="border-t border-gray-100 mt-1 pt-1 px-4 pb-2">
-              <Link
-                href="/auth/registro-proveedor"
-                onClick={() => setProviderOpen(false)}
-                className="block w-full text-center py-2 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#ff4c41' }}
-              >
-                Empezar ahora →
-              </Link>
-            </div>
           </div>
         )}
       </div>

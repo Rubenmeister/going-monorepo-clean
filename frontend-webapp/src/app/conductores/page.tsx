@@ -159,7 +159,7 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={300}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-4">
-                <Link href="/register?rol=driver" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.4)' }}>
+                <Link href="/conductores/registro" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.4)' }}>
                   Registrarme como conductora/conductor
                 </Link>
                 <a href="#requisitos" className="px-8 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:bg-white hover:text-gray-900" style={{ border: '2px solid rgba(255,255,255,0.3)' }}>
@@ -235,7 +235,7 @@ export default function ConductoresPage() {
                 </ul>
                 <div className="mt-8">
                   <Link
-                    href="/register?rol=driver"
+                    href="/conductores/registro"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm hover:opacity-90 transition-all"
                     style={{ background: '#ff4c41' }}
                   >
@@ -376,7 +376,7 @@ export default function ConductoresPage() {
           </FadeIn>
           <FadeIn delay={400}>
             <div className="text-center mt-4">
-              <Link href="/register?rol=driver" className="inline-block px-10 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.35)' }}>
+              <Link href="/conductores/registro" className="inline-block px-10 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.35)' }}>
                 Registrarme ahora →
               </Link>
             </div>
@@ -480,7 +480,7 @@ export default function ConductoresPage() {
             <p className="text-white mb-10 text-lg" style={{ opacity: 0.88 }}>
               Regístrate gratis. La app es gratuita. Sin comisiones de suscripción.
             </p>
-            <Link href="/register?rol=driver" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95 mb-6" style={{ background: '#fff', color: '#ff4c41' }}>
+            <Link href="/conductores/registro" className="inline-block px-10 py-4 rounded-2xl font-extrabold text-base transition-all duration-200 hover:opacity-90 active:scale-95 mb-6" style={{ background: '#fff', color: '#ff4c41' }}>
               Comenzar ahora →
             </Link>
             <div>
