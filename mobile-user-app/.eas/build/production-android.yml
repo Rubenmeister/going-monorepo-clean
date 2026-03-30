@@ -1,0 +1,12 @@
+build:
+  name: Build mobile-user-app Android
+  steps:
+    - eas/checkout
+    - run:
+        name: Install dependencies
+        command: cd mobile-user-app && npm install --legacy-peer-deps
+    - eas/prebuild:
+        app_dir: mobile-user-app
+    - eas/build:
+        app_dir: mobile-user-app
+    - eas/upload_artifact
