@@ -2,13 +2,16 @@
 node_modules/
 **/node_modules/
 
-# ── Root monorepo config (exclude so EAS treats each app as standalone) ───────
-# Without root package.json, EAS uses the app's own package.json + package-lock.json
+# ── Root monorepo config ──────────────────────────────────────────────────────
 /package.json
 /nx.json
 /tsconfig.base.json
 /.eslintrc*
 /.prettierrc*
+
+# ── pnpm files ────────────────────────────────────────────────────────────────
+pnpm-lock.yaml
+pnpm-workspace.yaml
 
 # ── Git / CI ──────────────────────────────────────────────────────────────────
 .git/
@@ -25,53 +28,76 @@ dist/
 **/coverage/
 tmp/
 
-# ── Backend NestJS services (not needed for mobile build) ─────────────────────
-api-gateway/
-user-auth-service/
-user-auth-service-e2e/
-transport-service/
-transport-service-e2e/
-payment-service/
-payment-service-e2e/
-booking-service/
-booking-service-e2e/
-analytics-service/
-anfitriones-service/
-anfitriones-service-e2e/
-billing-service/
-customer-support-service/
-envios-service/
-envios-service-e2e/
-experiencias-service/
-experiencias-service-e2e/
-notifications-service/
-notifications-service-e2e/
-notification-service/
-tracking-service/
-tracking-service-e2e/
-tours-service/
-tours-service-e2e/
-ratings-service/
-security-service/
-social-service/
-supply-chain-service/
-voice-service/
-iot-service/
-ml-service/
+# ── Backend services: keep only package.json for EAS workspace metadata scan ──
+api-gateway/**
+!api-gateway/package.json
+user-auth-service/**
+!user-auth-service/package.json
+user-auth-service-e2e/**
+!user-auth-service-e2e/package.json
+booking-service/**
+!booking-service/package.json
+booking-service-e2e/**
+!booking-service-e2e/package.json
+anfitriones-service/**
+!anfitriones-service/package.json
+anfitriones-service-e2e/**
+!anfitriones-service-e2e/package.json
+experiencias-service/**
+!experiencias-service/package.json
+experiencias-service-e2e/**
+!experiencias-service-e2e/package.json
+tours-service/**
+!tours-service/package.json
+tours-service-e2e/**
+!tours-service-e2e/package.json
+envios-service/**
+!envios-service/package.json
+envios-service-e2e/**
+!envios-service-e2e/package.json
+payment-service/**
+!payment-service/package.json
+payment-service-e2e/**
+!payment-service-e2e/package.json
+transport-service/**
+!transport-service/package.json
+transport-service-e2e/**
+!transport-service-e2e/package.json
+notifications-service/**
+!notifications-service/package.json
+notifications-service-e2e/**
+!notifications-service-e2e/package.json
+tracking-service/**
+!tracking-service/package.json
+tracking-service-e2e/**
+!tracking-service-e2e/package.json
+billing-service/**
+!billing-service/package.json
+analytics-service/**
+!analytics-service/package.json
+customer-support-service/**
+!customer-support-service/package.json
 
-# ── Other apps (not needed for mobile builds) ────────────────────────────────
-frontend-webapp/
-frontend-webapp-e2e/
-admin-dashboard/
-admin-dashboard-e2e/
-api-gateway-e2e/
-corporate-portal/
-apps/
-frontend/
-mobile-app/
+# ── Other apps: keep only package.json ───────────────────────────────────────
+frontend-webapp/**
+!frontend-webapp/package.json
+frontend-webapp-e2e/**
+!frontend-webapp-e2e/package.json
+admin-dashboard/**
+!admin-dashboard/package.json
+admin-dashboard-e2e/**
+!admin-dashboard-e2e/package.json
+api-gateway-e2e/**
+!api-gateway-e2e/package.json
 
-# ── Shared libs (mobile apps are self-contained) ─────────────────────────────
-libs/
+# ── Libs: keep only package.json per lib ─────────────────────────────────────
+libs/**
+!libs/*/package.json
+
+# ── Agents / other services not in pnpm workspace ────────────────────────────
+marketing-agent/
+financial-agent/
+ops-agent/
 
 # ── Infrastructure / DevOps ───────────────────────────────────────────────────
 k8s/
@@ -87,20 +113,10 @@ migrations/
 scripts/
 shared-infrastructure/
 
-# ── Docs / Reports ────────────────────────────────────────────────────────────
-*.md
+# ── Docs / Logs / misc ────────────────────────────────────────────────────────
 docs/
 api-docs/
-
-# ── Tests ─────────────────────────────────────────────────────────────────────
-cypress/
-cypress.config.*
-__tests__/
-
-# ── Logs / misc ───────────────────────────────────────────────────────────────
 *.log
 *.tgz
+*.md
 cloudbuild*.yaml
-# Exclude pnpm files so EAS doesn't detect monorepo/workspace structure
-pnpm-lock.yaml
-pnpm-workspace.yaml
