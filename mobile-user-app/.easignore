@@ -1,6 +1,6 @@
-# Exclude everything outside mobile-driver-app from EAS upload
+# Exclude everything outside mobile-user-app from EAS upload
 ../node_modules
-../mobile-user-app
+../mobile-driver-app
 ../frontend-webapp
 ../admin-dashboard
 ../apps
@@ -17,8 +17,3 @@
 ../voice-service
 ../.git
 ../.claude
-node_modules/
-.expo/
-dist/
-*.log
-coverage/

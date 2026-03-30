@@ -1,7 +1,8 @@
 import Layout from '../components/Layout';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { corpFetch } from '../lib/api';
 
 type ServiceType = 'transport' | 'accommodation' | 'tour' | 'experience';
 
@@ -29,59 +30,51 @@ const URGENCY_COLORS = {
   high: 'bg-red-100 text-red-700',
 };
 
-const MOCK_PENDING: ApprovalRequest[] = [
-  {
-    workflowId: 'wf-001',
-    bookingId: 'bk-004',
-    requester: {
-      id: 'emp-002',
-      name: 'Ana Martínez',
-      department: 'Engineering',
-    },
-    serviceType: 'accommodation',
-    totalPrice: { amount: 120.0, currency: 'USD' },
-    notes: 'Client meeting in Guayaquil, need hotel for 2 nights',
-    createdAt: '2026-02-20T08:00:00Z',
-    urgency: 'high',
-  },
-  {
-    workflowId: 'wf-002',
-    bookingId: 'bk-005',
-    requester: { id: 'emp-003', name: 'Luis Pérez', department: 'Marketing' },
-    serviceType: 'transport',
-    totalPrice: { amount: 55.0, currency: 'USD' },
-    notes: 'Trade show visit',
-    createdAt: '2026-02-19T16:45:00Z',
-    urgency: 'medium',
-  },
-  {
-    workflowId: 'wf-003',
-    bookingId: 'bk-006',
-    requester: { id: 'emp-004', name: 'María Gómez', department: 'HR' },
-    serviceType: 'experience',
-    totalPrice: { amount: 200.0, currency: 'USD' },
-    notes: 'Team building activity',
-    createdAt: '2026-02-18T11:20:00Z',
-    urgency: 'low',
-  },
-];
-
 export default function Approvals() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [pending, setPending] = useState<ApprovalRequest[]>(MOCK_PENDING);
+  const [pending, setPending] = useState<ApprovalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
   const [history, setHistory] = useState<
     { workflowId: string; decision: 'approved' | 'rejected'; name: string }[]
   >([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const token = (session as any)?.accessToken ?? '';
+
+  const loadApprovals = useCallback(async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await corpFetch<{ approvals: ApprovalRequest[] }>(
+        '/corporate/approvals/pending',
+        token
+      );
+      setPending(data.approvals ?? []);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
   }, [status, router]);
 
-  const decide = (workflowId: string, decision: 'approved' | 'rejected') => {
+  useEffect(() => {
+    if (status === 'authenticated') loadApprovals();
+  }, [status, loadApprovals]);
+
+  const decide = async (workflowId: string, decision: 'approved' | 'rejected') => {
     setProcessing(workflowId);
-    setTimeout(() => {
+    try {
+      await corpFetch(`/corporate/approvals/${workflowId}/decide`, token, {
+        method: 'POST',
+        body: JSON.stringify({ decision }),
+      });
       const req = pending.find((r) => r.workflowId === workflowId);
       if (req) {
         setHistory((prev) => [
@@ -90,8 +83,11 @@ export default function Approvals() {
         ]);
       }
       setPending((prev) => prev.filter((r) => r.workflowId !== workflowId));
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    } finally {
       setProcessing(null);
-    }, 600);
+    }
   };
 
   if (status === 'loading') return null;
@@ -110,7 +106,7 @@ export default function Approvals() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center">
             <p className="text-3xl font-bold text-orange-600">
-              {pending.length}
+              {loading ? '…' : pending.length}
             </p>
             <p className="text-sm text-orange-700 mt-1">Pending review</p>
           </div>
@@ -118,21 +114,38 @@ export default function Approvals() {
             <p className="text-3xl font-bold text-green-600">
               {history.filter((h) => h.decision === 'approved').length}
             </p>
-            <p className="text-sm text-green-700 mt-1">Approved today</p>
+            <p className="text-sm text-green-700 mt-1">Approved this session</p>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
             <p className="text-3xl font-bold text-red-600">
               {history.filter((h) => h.decision === 'rejected').length}
             </p>
-            <p className="text-sm text-red-700 mt-1">Rejected today</p>
+            <p className="text-sm text-red-700 mt-1">Rejected this session</p>
           </div>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-3">
+            <span>⚠️ {error}</span>
+            <button
+              onClick={loadApprovals}
+              className="ml-auto text-xs underline hover:no-underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Pending approvals */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3">
           Pending Requests
         </h2>
-        {pending.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-xl shadow p-12 text-center text-gray-400">
+            <p className="text-sm animate-pulse">Loading approval requests…</p>
+          </div>
+        ) : pending.length === 0 ? (
           <div className="bg-white rounded-xl shadow p-12 text-center text-gray-400">
             <p className="text-4xl mb-3">✅</p>
             <p className="font-medium">All caught up! No pending approvals.</p>
