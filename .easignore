@@ -100,5 +100,6 @@ __tests__/
 *.log
 *.tgz
 cloudbuild*.yaml
-# Exclude root pnpm lockfile so EAS uses npm (app has its own package-lock.json)
+# Exclude pnpm files so EAS doesn't detect monorepo/workspace structure
 pnpm-lock.yaml
+pnpm-workspace.yaml
