@@ -19,6 +19,7 @@
       }
     },
     "production": {
+      "config": "production-android.yml",
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
