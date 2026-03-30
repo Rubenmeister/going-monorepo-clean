@@ -1,7 +1,8 @@
 import Layout from '../components/Layout';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { corpFetch } from '../lib/api';
 
 interface MonthlyData {
   month: string;
@@ -20,116 +21,81 @@ interface EmployeeSpend {
   bookings: number;
 }
 
-const MONTHLY_DATA: MonthlyData[] = [
-  {
-    month: 'Sep 2025',
-    total: 1200,
-    transport: 500,
-    accommodation: 400,
-    tour: 200,
-    experience: 100,
-    bookings: 14,
-  },
-  {
-    month: 'Oct 2025',
-    total: 1800,
-    transport: 700,
-    accommodation: 600,
-    tour: 300,
-    experience: 200,
-    bookings: 22,
-  },
-  {
-    month: 'Nov 2025',
-    total: 1500,
-    transport: 600,
-    accommodation: 500,
-    tour: 250,
-    experience: 150,
-    bookings: 18,
-  },
-  {
-    month: 'Dec 2025',
-    total: 2100,
-    transport: 800,
-    accommodation: 700,
-    tour: 400,
-    experience: 200,
-    bookings: 25,
-  },
-  {
-    month: 'Jan 2026',
-    total: 1650,
-    transport: 650,
-    accommodation: 550,
-    tour: 300,
-    experience: 150,
-    bookings: 20,
-  },
-  {
-    month: 'Feb 2026',
-    total: 980,
-    transport: 400,
-    accommodation: 320,
-    tour: 160,
-    experience: 100,
-    bookings: 12,
-  },
-];
-
-const EMPLOYEE_SPEND: EmployeeSpend[] = [
-  { name: 'Carlos Rodríguez', department: 'Sales', total: 840, bookings: 8 },
-  { name: 'Ana Martínez', department: 'Engineering', total: 620, bookings: 5 },
-  { name: 'Luis Pérez', department: 'Marketing', total: 530, bookings: 6 },
-  { name: 'María Gómez', department: 'HR', total: 290, bookings: 3 },
-];
-
-const MAX_BAR = Math.max(...MONTHLY_DATA.map((d) => d.total));
+interface ReportsPayload {
+  monthly?: MonthlyData[];
+  topSpenders?: EmployeeSpend[];
+}
 
 export default function Reports() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [selectedMonth, setSelectedMonth] = useState('Feb 2026');
+  const [monthly, setMonthly] = useState<MonthlyData[]>([]);
+  const [topSpenders, setTopSpenders] = useState<EmployeeSpend[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState('');
+
+  const token = (session as any)?.accessToken ?? '';
+
+  const loadReports = useCallback(async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await corpFetch<ReportsPayload>('/corporate/reports/summary', token);
+
+      const rows: MonthlyData[] = (data.monthly ?? []).map((d: any) => ({
+        month: d.month ?? d.period ?? '—',
+        total: Number(d.total ?? d.totalAmount ?? 0),
+        transport: Number(d.transport ?? 0),
+        accommodation: Number(d.accommodation ?? 0),
+        tour: Number(d.tour ?? 0),
+        experience: Number(d.experience ?? 0),
+        bookings: Number(d.bookings ?? d.bookingCount ?? 0),
+      }));
+
+      const spenders: EmployeeSpend[] = (data.topSpenders ?? []).map((e: any) => ({
+        name: e.name ?? e.employeeName ?? '—',
+        department: e.department ?? '—',
+        total: Number(e.total ?? e.totalAmount ?? 0),
+        bookings: Number(e.bookings ?? e.bookingCount ?? 0),
+      }));
+
+      setMonthly(rows);
+      setTopSpenders(spenders);
+      if (rows.length > 0) setSelectedMonth(rows[rows.length - 1].month);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
   }, [status, router]);
 
-  const current =
-    MONTHLY_DATA.find((d) => d.month === selectedMonth) || MONTHLY_DATA.at(-1)!;
-  const prev = MONTHLY_DATA[MONTHLY_DATA.indexOf(current) - 1];
-  const diff = prev ? ((current.total - prev.total) / prev.total) * 100 : 0;
+  useEffect(() => {
+    if (status === 'authenticated') loadReports();
+  }, [status, loadReports]);
+
+  const current = monthly.find((d) => d.month === selectedMonth) ?? monthly[monthly.length - 1];
+  const prevIdx = current ? monthly.indexOf(current) - 1 : -1;
+  const prev = prevIdx >= 0 ? monthly[prevIdx] : null;
+  const diff = prev && current ? ((current.total - prev.total) / prev.total) * 100 : 0;
+  const maxBar = Math.max(...monthly.map((d) => d.total), 1);
 
   const handleExportCSV = () => {
     const rows = [
-      [
-        'Month',
-        'Total',
-        'Transport',
-        'Accommodation',
-        'Tour',
-        'Experience',
-        'Bookings',
-      ],
-      ...MONTHLY_DATA.map((d) => [
-        d.month,
-        d.total,
-        d.transport,
-        d.accommodation,
-        d.tour,
-        d.experience,
-        d.bookings,
-      ]),
+      ['Month', 'Total', 'Transport', 'Accommodation', 'Tour', 'Experience', 'Bookings'],
+      ...monthly.map((d) => [d.month, d.total, d.transport, d.accommodation, d.tour, d.experience, d.bookings]),
     ];
     const csv = rows.map((r) => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `going-corporate-report-${selectedMonth.replace(
-      ' ',
-      '-'
-    )}.csv`;
+    a.download = `going-corporate-report-${(selectedMonth || 'all').replace(' ', '-')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -143,174 +109,170 @@ export default function Reports() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-            <p className="text-gray-500 mt-1">
-              Spending analytics and expense tracking
-            </p>
+            <p className="text-gray-500 mt-1">Spending analytics and expense tracking</p>
           </div>
           <div className="flex gap-3">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
-            >
-              {MONTHLY_DATA.map((d) => (
-                <option key={d.month} value={d.month}>
-                  {d.month}
-                </option>
-              ))}
-            </select>
+            {monthly.length > 0 && (
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="border rounded-lg px-3 py-2 text-sm"
+              >
+                {monthly.map((d) => (
+                  <option key={d.month} value={d.month}>
+                    {d.month}
+                  </option>
+                ))}
+              </select>
+            )}
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900 transition"
+              disabled={monthly.length === 0}
+              className="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900 transition disabled:opacity-50"
             >
               Export CSV
             </button>
           </div>
         </div>
 
-        {/* KPI row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Total Spent</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              ${current.total.toLocaleString()}
-            </p>
-            <p
-              className={`text-xs mt-1 font-medium ${
-                diff >= 0 ? 'text-red-500' : 'text-green-500'
-              }`}
-            >
-              {diff >= 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(1)}% vs last month
-            </p>
+        {/* Error */}
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-3">
+            <span>⚠️ {error}</span>
+            <button onClick={loadReports} className="ml-auto text-xs underline">
+              Retry
+            </button>
           </div>
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Bookings</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              {current.bookings}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">trips this month</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Avg per trip</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              ${(current.total / current.bookings).toFixed(0)}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">cost per booking</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Top category</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">🚗</p>
-            <p className="text-xs text-gray-400 mt-1">Transport</p>
-          </div>
-        </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Spend by month bar chart */}
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="font-semibold text-gray-800 mb-5">Monthly Spend</h2>
-            <div className="space-y-3">
-              {MONTHLY_DATA.map((d) => (
-                <div key={d.month} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-16 shrink-0">
-                    {d.month}
-                  </span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div
-                      className="h-4 rounded-full bg-blue-500 transition-all"
-                      style={{ width: `${(d.total / MAX_BAR) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-700 w-16 text-right">
-                    ${d.total.toLocaleString()}
-                  </span>
-                </div>
-              ))}
+        {loading ? (
+          <div className="bg-white rounded-xl shadow p-16 text-center text-gray-400 text-sm animate-pulse">
+            Loading report data…
+          </div>
+        ) : !current ? (
+          <div className="bg-white rounded-xl shadow p-16 text-center text-gray-400">
+            <p className="text-4xl mb-3">📊</p>
+            <p className="font-medium">No report data available yet.</p>
+          </div>
+        ) : (
+          <>
+            {/* KPI row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-white rounded-xl shadow p-5">
+                <p className="text-sm text-gray-500">Total Spent</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  ${current.total.toLocaleString()}
+                </p>
+                {prev && (
+                  <p className={`text-xs mt-1 font-medium ${diff >= 0 ? 'text-red-500' : 'text-green-500'}`}>
+                    {diff >= 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(1)}% vs last month
+                  </p>
+                )}
+              </div>
+              <div className="bg-white rounded-xl shadow p-5">
+                <p className="text-sm text-gray-500">Bookings</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{current.bookings}</p>
+                <p className="text-xs text-gray-400 mt-1">trips this month</p>
+              </div>
+              <div className="bg-white rounded-xl shadow p-5">
+                <p className="text-sm text-gray-500">Avg per trip</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  ${current.bookings > 0 ? (current.total / current.bookings).toFixed(0) : '—'}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">cost per booking</p>
+              </div>
+              <div className="bg-white rounded-xl shadow p-5">
+                <p className="text-sm text-gray-500">Top category</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">🚗</p>
+                <p className="text-xs text-gray-400 mt-1">Transport</p>
+              </div>
             </div>
-          </div>
 
-          {/* Breakdown by category */}
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="font-semibold text-gray-800 mb-5">
-              Breakdown — {selectedMonth}
-            </h2>
-            <div className="space-y-4">
-              {[
-                {
-                  label: 'Transport',
-                  value: current.transport,
-                  color: 'bg-blue-500',
-                  icon: '🚗',
-                },
-                {
-                  label: 'Accommodation',
-                  value: current.accommodation,
-                  color: 'bg-purple-500',
-                  icon: '🏨',
-                },
-                {
-                  label: 'Tour',
-                  value: current.tour,
-                  color: 'bg-green-500',
-                  icon: '🗺️',
-                },
-                {
-                  label: 'Experience',
-                  value: current.experience,
-                  color: 'bg-orange-500',
-                  icon: '🎭',
-                },
-              ].map(({ label, value, color, icon }) => (
-                <div key={label}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-600">
-                      {icon} {label}
-                    </span>
-                    <span className="text-sm font-semibold text-gray-800">
-                      ${value} ({((value / current.total) * 100).toFixed(0)}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full ${color}`}
-                      style={{ width: `${(value / current.total) * 100}%` }}
-                    />
-                  </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Spend by month bar chart */}
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="font-semibold text-gray-800 mb-5">Monthly Spend</h2>
+                <div className="space-y-3">
+                  {monthly.map((d) => (
+                    <div key={d.month} className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500 w-16 shrink-0">{d.month}</span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                        <div
+                          className="h-4 rounded-full bg-blue-500 transition-all"
+                          style={{ width: `${(d.total / maxBar) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-gray-700 w-16 text-right">
+                        ${d.total.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        {/* Top spenders */}
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Top Spenders</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="pb-2 text-gray-500 font-medium">Employee</th>
-                  <th className="pb-2 text-gray-500 font-medium">Department</th>
-                  <th className="pb-2 text-gray-500 font-medium">Bookings</th>
-                  <th className="pb-2 text-gray-500 font-medium text-right">
-                    Total Spent
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {EMPLOYEE_SPEND.map((e, i) => (
-                  <tr key={i}>
-                    <td className="py-3 font-medium text-gray-800">{e.name}</td>
-                    <td className="py-3 text-gray-500">{e.department}</td>
-                    <td className="py-3 text-gray-700">{e.bookings}</td>
-                    <td className="py-3 text-right font-semibold text-gray-900">
-                      ${e.total.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              {/* Breakdown by category */}
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="font-semibold text-gray-800 mb-5">Breakdown — {selectedMonth}</h2>
+                <div className="space-y-4">
+                  {[
+                    { label: 'Transport', value: current.transport, color: 'bg-blue-500', icon: '🚗' },
+                    { label: 'Accommodation', value: current.accommodation, color: 'bg-purple-500', icon: '🏨' },
+                    { label: 'Tour', value: current.tour, color: 'bg-green-500', icon: '🗺️' },
+                    { label: 'Experience', value: current.experience, color: 'bg-orange-500', icon: '🎭' },
+                  ].map(({ label, value, color, icon }) => (
+                    <div key={label}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-600">
+                          {icon} {label}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-800">
+                          ${value} ({current.total > 0 ? ((value / current.total) * 100).toFixed(0) : 0}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${color}`}
+                          style={{ width: `${current.total > 0 ? (value / current.total) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Top spenders */}
+            {topSpenders.length > 0 && (
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="font-semibold text-gray-800 mb-4">Top Spenders</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="pb-2 text-gray-500 font-medium">Employee</th>
+                        <th className="pb-2 text-gray-500 font-medium">Department</th>
+                        <th className="pb-2 text-gray-500 font-medium">Bookings</th>
+                        <th className="pb-2 text-gray-500 font-medium text-right">Total Spent</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {topSpenders.map((e, i) => (
+                        <tr key={i}>
+                          <td className="py-3 font-medium text-gray-800">{e.name}</td>
+                          <td className="py-3 text-gray-500">{e.department}</td>
+                          <td className="py-3 text-gray-700">{e.bookings}</td>
+                          <td className="py-3 text-right font-semibold text-gray-900">
+                            ${e.total.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </Layout>
   );
