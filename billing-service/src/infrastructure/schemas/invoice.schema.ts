@@ -62,14 +62,6 @@ interface Payment {
 @Schema({
   collection: 'invoices',
   timestamps: true,
-  indexes: [
-    { invoiceNumber: 1, companyId: 1, isUnique: true },
-    { companyId: 1, createdAt: -1 },
-    { clientId: 1, companyId: 1 },
-    { status: 1, companyId: 1 },
-    { dueDate: 1, status: 1 },
-    { issuedDate: 1, companyId: 1 },
-  ],
 })
 export class InvoiceSchema extends Document {
   @Prop({ required: true, index: true })

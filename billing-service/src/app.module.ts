@@ -16,7 +16,7 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI, {
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/billing', {
       lazyConnection: true,
       connectionFactory: (conn) => {
         conn.on('error', (e) => console.warn('MongoDB:', e.message));

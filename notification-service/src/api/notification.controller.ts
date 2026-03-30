@@ -22,7 +22,7 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from '../application/services/notification.service';
 import { NotificationPreferencesService } from '../application/services/notification-preferences.service';
-import { CorporateJwtAuthGuard } from '../../shared/guards/corporate-jwt.guard';
+import { CorporateJwtAuthGuard } from '../shared/guards/corporate-jwt.guard';
 import {
   SendNotificationDto,
   RegisterDeviceTokenDto,
@@ -135,12 +135,12 @@ export class NotificationController {
     const notification = await this.notificationService.sendNotification({
       userId: dto.userId,
       companyId,
-      type: dto.type,
+      type: dto.type as any,
       title: dto.title,
       message: dto.message,
       description: dto.description,
-      priority: dto.priority,
-      channels: dto.channels,
+      priority: dto.priority as any,
+      channels: dto.channels as any,
       relatedEntity: dto.relatedEntity,
       actionUrl: dto.actionUrl,
       actionLabel: dto.actionLabel,
@@ -241,7 +241,7 @@ export class NotificationController {
     const preferences = await this.preferencesService.updatePreferences(
       userId,
       companyId,
-      dto
+      dto as any
     );
 
     return preferences;

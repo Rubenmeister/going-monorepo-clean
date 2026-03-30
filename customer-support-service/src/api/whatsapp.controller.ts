@@ -37,6 +37,17 @@ res: any) {
     let messageText: string = body.Body || '';
     const userId = from.replace('whatsapp:', '').trim();
 
+    // ── Handle location sharing (GPS from WhatsApp) ───────────────────
+    const latitude  = body.Latitude  ? parseFloat(body.Latitude)  : null;
+    const longitude = body.Longitude ? parseFloat(body.Longitude) : null;
+
+    if (latitude !== null && longitude !== null) {
+      const label = body.Label || '';
+      messageText = `[UBICACION_GPS:lat=${latitude},lng=${longitude},label=${label}]`;
+      this.logger.log(`GPS location from ${userId}: ${latitude},${longitude} (${label})`);
+    }
+    // ──────────────────────────────────────────────────────────────────
+
     // ── Handle audio messages ──────────────────────────────────────────
     const numMedia = parseInt(body.NumMedia || '0', 10);
     const mediaUrl: string = body.MediaUrl0 || '';
@@ -57,10 +68,11 @@ res: any) {
         const [response] = await speechClient.recognize({
           config: {
             encoding: 'OGG_OPUS' as any,
-            sampleRateHertz: 48000,
+            sampleRateHertz: 16000,
             languageCode: 'es-EC',
             alternativeLanguageCodes: ['en-US'],
             enableAutomaticPunctuation: true,
+            model: 'default',
           },
           audio: { content: audioBuffer.toString('base64') },
         });

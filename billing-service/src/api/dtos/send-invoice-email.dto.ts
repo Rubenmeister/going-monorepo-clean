@@ -11,7 +11,7 @@ export class SendInvoiceEmailDto {
   recipientEmail?: string; // If not provided, uses client.email
 
   @IsArray()
-  @IsEmail({ each: true })
+  @IsString({ each: true })
   @IsOptional()
   ccEmails?: string[];
 

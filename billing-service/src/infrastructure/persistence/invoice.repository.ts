@@ -38,7 +38,7 @@ export class InvoiceRepository {
       const newInvoice = new this.invoiceModel(invoice);
       const saved = await newInvoice.save();
       this.logger.debug(`Invoice created: ${invoice.invoiceNumber}`);
-      return saved.toObject() as Invoice;
+      return saved.toObject() as unknown as Invoice;
     } catch (error) {
       this.logger.error(`Failed to create invoice: ${error}`);
       throw error;
@@ -111,12 +111,12 @@ export class InvoiceRepository {
       }
 
       if (filters.startDate || filters.endDate) {
-        query.issuedDate = {};
+        query.issueDate = {};
         if (filters.startDate) {
-          query.issuedDate.$gte = filters.startDate;
+          query.issueDate.$gte = filters.startDate;
         }
         if (filters.endDate) {
-          query.issuedDate.$lte = filters.endDate;
+          query.issueDate.$lte = filters.endDate;
         }
       }
 
@@ -126,7 +126,7 @@ export class InvoiceRepository {
       const [invoices, total] = await Promise.all([
         this.invoiceModel
           .find(query)
-          .sort({ issuedDate: -1 })
+          .sort({ issueDate: -1 })
           .limit(limit)
           .skip(offset)
           .lean()
@@ -135,7 +135,7 @@ export class InvoiceRepository {
       ]);
 
       return {
-        invoices: invoices as Invoice[],
+        invoices: invoices as unknown as Invoice[],
         total,
       };
     } catch (error) {

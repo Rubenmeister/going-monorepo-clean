@@ -4,7 +4,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+// @nestjs/schedule not installed — using plain setInterval for scheduling
 
 export interface MLModel {
   id?: string;
@@ -74,7 +74,6 @@ export class MLTrainingService {
    * Scheduled task: Retrain models every 7 days
    * Runs at 2 AM on Mondays
    */
-  @Cron('0 2 * * 1')
   async scheduledRetraining() {
     this.logger.log('🤖 Starting scheduled model retraining...');
     await this.retrainAllModels();

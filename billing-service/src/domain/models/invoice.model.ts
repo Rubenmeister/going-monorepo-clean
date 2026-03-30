@@ -4,21 +4,21 @@
  */
 
 export enum InvoiceStatus {
-  DRAFT = 'draft',
-  ISSUED = 'issued',
-  SENT = 'sent',
-  VIEWED = 'viewed',
-  PAID = 'paid',
-  OVERDUE = 'overdue',
-  CANCELLED = 'cancelled',
-  REFUNDED = 'refunded',
+  DRAFT = 'DRAFT',
+  ISSUED = 'ISSUED',
+  SENT = 'SENT',
+  VIEWED = 'VIEWED',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
 }
 
 export enum PaymentStatus {
-  NOT_PAID = 'not_paid',
-  PARTIALLY_PAID = 'partially_paid',
-  PAID = 'paid',
-  REFUNDED = 'refunded',
+  NOT_PAID = 'NOT_PAID',
+  PARTIALLY_PAID = 'PARTIALLY_PAID',
+  PAID = 'PAID',
+  REFUNDED = 'REFUNDED',
 }
 
 export enum InvoiceLanguage {

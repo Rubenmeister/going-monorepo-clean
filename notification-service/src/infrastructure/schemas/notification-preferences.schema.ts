@@ -9,7 +9,6 @@ import { Document } from 'mongoose';
 @Schema({
   collection: 'notification-preferences',
   timestamps: true,
-  indexes: [{ userId: 1, companyId: 1, unique: true }, { companyId: 1 }],
 })
 export class NotificationPreferencesSchema extends Document {
   @Prop({ required: true, index: true })

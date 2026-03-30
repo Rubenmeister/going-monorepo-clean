@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@google-cloud/logging": "^11.0.0",
     "@google-cloud/cloudbuild": "^4.0.0",
+    "@google-cloud/firestore": "^7.0.0",
     "dotenv": "^16.4.5",
     "simple-git": "^3.27.0"
   },

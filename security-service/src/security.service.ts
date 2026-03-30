@@ -234,7 +234,7 @@ export class SecurityService {
       }
 
       // Verify code (simplified - in production use TOTP library)
-      const isValid = this.verifyTwoFactorCode(twoFactor, code);
+      const isValid = this.checkTotpCode(twoFactor, code);
 
       if (isValid) {
         twoFactor.enabled = true;
@@ -263,7 +263,7 @@ export class SecurityService {
         return false;
       }
 
-      return this.verifyTwoFactorCode(twoFactor, code);
+      return this.checkTotpCode(twoFactor, code);
     } catch (error) {
       this.logger.error(`Failed to verify 2FA code: ${error}`);
       return false;
@@ -615,7 +615,7 @@ export class SecurityService {
   /**
    * Verify two-factor code (helper)
    */
-  private verifyTwoFactorCode(twoFactor: TwoFactorAuth, code: string): boolean {
+  private checkTotpCode(twoFactor: TwoFactorAuth, code: string): boolean {
     // Check if code is a backup code
     const backupCodeIndex = twoFactor.backupCodes.indexOf(code);
     if (backupCodeIndex !== -1) {
