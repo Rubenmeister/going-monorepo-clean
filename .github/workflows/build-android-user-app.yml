@@ -47,6 +47,9 @@ jobs:
           echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> mobile-user-app/android/gradle.properties
           echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> mobile-user-app/android/gradle.properties
 
+      - name: Make gradlew executable
+        run: chmod +x mobile-user-app/android/gradlew
+
       - name: Build release AAB
         working-directory: mobile-user-app/android
         run: ./gradlew bundleRelease
