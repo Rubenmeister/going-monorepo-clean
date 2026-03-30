@@ -99,8 +99,8 @@ packagingOptions {
         applicationId 'com.going.userapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0.0"
+        versionCode 34
+        versionName "2.0.0"
     }
     signingConfigs {
         debug {
@@ -109,15 +109,26 @@ packagingOptions {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (findProperty('ANDROID_KEYSTORE_FILE')) {
+                storeFile file(findProperty('ANDROID_KEYSTORE_FILE'))
+                storePassword findProperty('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias findProperty('ANDROID_KEY_ALIAS')
+                keyPassword findProperty('ANDROID_KEY_PASSWORD')
+            } else {
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -181,4 +192,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-}
+}
