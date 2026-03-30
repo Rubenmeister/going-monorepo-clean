@@ -38,7 +38,8 @@ jobs:
 
       - name: Configure Mapbox token
         run: |
-          sed -i 's/MAPBOX_DOWNLOADS_TOKEN=YOUR_MAPBOX_SECRET_TOKEN_HERE/MAPBOX_DOWNLOADS_TOKEN=${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}/' mobile-user-app/android/gradle.properties
+          sed -i '/MAPBOX_DOWNLOADS_TOKEN/d' mobile-user-app/android/gradle.properties
+          echo "MAPBOX_DOWNLOADS_TOKEN=${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}" >> mobile-user-app/android/gradle.properties
 
       - name: Configure release signing
         run: |
