@@ -7,4 +7,3 @@ build:
         command: cd mobile-user-app && npm install --legacy-peer-deps
     - eas/prebuild
     - eas/build
-    - eas/upload_artifact
