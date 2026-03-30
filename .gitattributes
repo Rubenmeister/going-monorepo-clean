@@ -1,0 +1,2 @@
+# Prevent Windows from converting .easignore to CRLF (breaks EAS Build pattern matching)
+.easignore text eol=lf
