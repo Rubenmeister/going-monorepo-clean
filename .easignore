@@ -50,10 +50,9 @@ voice-service/
 iot-service/
 ml-service/
 
-# ── Other apps (not needed for mobile-driver-app) ────────────────────────────
+# ── Other apps (not needed for mobile builds) ────────────────────────────────
 frontend-webapp/
 frontend-webapp-e2e/
-mobile-user-app/
 admin-dashboard/
 admin-dashboard-e2e/
 api-gateway-e2e/
@@ -62,7 +61,7 @@ apps/
 frontend/
 mobile-app/
 
-# ── Shared libs (mobile-driver-app is self-contained) ────────────────────────
+# ── Shared libs (mobile apps are self-contained) ─────────────────────────────
 libs/
 
 # ── Infrastructure / DevOps ───────────────────────────────────────────────────
@@ -92,5 +91,6 @@ __tests__/
 # ── Logs / misc ───────────────────────────────────────────────────────────────
 *.log
 *.tgz
-*.lock
 cloudbuild*.yaml
+# Exclude root pnpm lockfile so EAS uses npm (app has its own package-lock.json)
+pnpm-lock.yaml
