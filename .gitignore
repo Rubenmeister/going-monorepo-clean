@@ -131,3 +131,4 @@ AGENTS.md
 
 # Note: gradle.properties uses placeholder MAPBOX_DOWNLOADS_TOKEN=YOUR_MAPBOX_TOKEN_HERE
 # Set real token via local env or CI/CD secrets, not in this file
+google-service-account.json
