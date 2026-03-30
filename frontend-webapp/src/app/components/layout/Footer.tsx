@@ -14,7 +14,8 @@ function FooterSection({ title, links, icon }: { title: string; icon?: string; l
       <ul className="space-y-2.5">
         {links.map((link) => (
           <li key={link.name} className="flex items-center gap-2">
-            <Link href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm">
+            <Link href={link.href} className="text-gray-400 hover:text-white transition-colors text-sm"
+              {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
               {link.name}
             </Link>
             {link.badge && (
@@ -82,10 +83,10 @@ export function Footer() {
 
   const support = [
     { name: 'Centro de Ayuda',      href: '/help' },
-    { name: 'Contacto',             href: '/contact' },
+    { name: 'Contacto',             href: 'https://wa.me/14705580432' },
     { name: 'Estado del Servicio',  href: '/status' },
     { name: 'Seguridad',            href: '/security' },
-    { name: 'SOS Emergencias',      href: '/sos' },
+    { name: 'SOS Emergencias',      href: 'https://wa.me/14705580432?text=SOS%20necesito%20ayuda%20urgente' },
   ];
 
   const socialLinks = [
