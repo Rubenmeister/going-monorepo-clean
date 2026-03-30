@@ -19,6 +19,7 @@ node_modules/
 dist/
 **/dist/
 **/build/
+!**/.eas/build/
 **/.next/
 **/.expo/
 **/coverage/
