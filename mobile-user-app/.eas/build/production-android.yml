@@ -5,8 +5,6 @@ build:
     - run:
         name: Install dependencies
         command: cd mobile-user-app && npm install --legacy-peer-deps
-    - eas/prebuild:
-        app_dir: mobile-user-app
-    - eas/build:
-        app_dir: mobile-user-app
+    - eas/prebuild
+    - eas/build
     - eas/upload_artifact
