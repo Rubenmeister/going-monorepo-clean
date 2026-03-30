@@ -4,6 +4,6 @@ build:
     - eas/checkout
     - run:
         name: Install dependencies
-        command: cd mobile-user-app && npm install --legacy-peer-deps
+        command: npm install --legacy-peer-deps
     - eas/prebuild
     - eas/build
