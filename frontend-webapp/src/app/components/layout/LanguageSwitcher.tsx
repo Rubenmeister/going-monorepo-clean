@@ -13,15 +13,17 @@ export function LanguageSwitcher() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  const languages: { code: Language; name: string; flag: string }[] = [
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'pt', name: 'Português', flag: '🇵🇹' },
+  const languages: { code: Language; name: string; flag: string; soon?: boolean }[] = [
+    { code: 'es', name: 'Español',   flag: '🇪🇨' },
+    { code: 'en', name: 'English',   flag: '🇺🇸', soon: true },
+    { code: 'pt', name: 'Português', flag: '🇧🇷', soon: true },
   ];
 
   const currentLang = languages.find((l) => l.code === language);
 
   const handleLanguageChange = (lang: Language) => {
+    const item = languages.find(l => l.code === lang);
+    if (item?.soon) return;
     setLanguage(lang);
     setIsOpen(false);
   };
@@ -78,37 +80,31 @@ function LanguageDropdown({
   currentLanguage,
   onSelectLanguage,
 }: {
-  languages: Array<{ code: Language; name: string; flag: string }>;
+  languages: Array<{ code: Language; name: string; flag: string; soon?: boolean }>;
   currentLanguage: Language;
   onSelectLanguage: (lang: Language) => void;
 }) {
   return (
-    <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-      {languages.map((lang) => (
+    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+      {languages.map((lang, i) => (
         <button
           key={lang.code}
           onClick={() => onSelectLanguage(lang.code)}
-          className={`w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-gray-50 transition-colors ${
-            currentLanguage === lang.code
-              ? 'bg-red-50 border-l-4 border-[#ff4c41]'
-              : ''
-          } ${
-            lang.code !== languages[languages.length - 1].code
-              ? 'border-b border-gray-200'
-              : ''
-          }`}
+          disabled={lang.soon}
+          className={`w-full text-left px-4 py-3 flex items-center gap-2 transition-colors
+            ${lang.soon ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}
+            ${currentLanguage === lang.code ? 'bg-red-50 border-l-4 border-[#ff4c41]' : ''}
+            ${i < languages.length - 1 ? 'border-b border-gray-200' : ''}
+          `}
         >
           <span className="text-lg">{lang.flag}</span>
-          <span
-            className={`font-medium ${
-              currentLanguage === lang.code ? 'text-[#ff4c41]' : 'text-gray-700'
-            }`}
-          >
+          <span className={`font-medium flex-1 ${currentLanguage === lang.code ? 'text-[#ff4c41]' : 'text-gray-700'}`}>
             {lang.name}
           </span>
-          {currentLanguage === lang.code && (
-            <span className="ml-auto text-[#ff4c41]">✓</span>
-          )}
+          {lang.soon
+            ? <span className="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded font-semibold">Pronto</span>
+            : currentLanguage === lang.code && <span className="text-[#ff4c41]">✓</span>
+          }
         </button>
       ))}
     </div>
