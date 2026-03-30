@@ -24,6 +24,7 @@ config.resolver.alias = {
   '@store': path.resolve(projectRoot, 'src/store'),
   '@navigation': path.resolve(projectRoot, 'src/navigation'),
   '@types': path.resolve(projectRoot, 'src/types'),
+  '@utils': path.resolve(projectRoot, 'src/utils'),
 };
 
 module.exports = config;
