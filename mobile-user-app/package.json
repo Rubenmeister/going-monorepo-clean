@@ -54,5 +54,6 @@
   "jest": {
     "preset": "jest-expo"
   },
-  "overrides": {}
+  "overrides": {},
+  "_comment": "build-2"
 }
