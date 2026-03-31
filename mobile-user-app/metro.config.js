@@ -16,7 +16,8 @@ config.resolver.nodeModulesPaths = [
 config.watchFolders = [projectRoot];
 
 // Resolver alias de rutas (igual que en tsconfig.json)
-config.resolver.alias = {
+// Usamos extraNodeModules para compatibilidad con paths como @utils/biometrics
+config.resolver.extraNodeModules = {
   '@': path.resolve(projectRoot, 'src'),
   '@screens': path.resolve(projectRoot, 'src/screens'),
   '@components': path.resolve(projectRoot, 'src/components'),
