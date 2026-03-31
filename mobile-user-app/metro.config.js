@@ -15,9 +15,8 @@ config.resolver.nodeModulesPaths = [
 // Only watch this app's directory (avoids scanning the full monorepo)
 config.watchFolders = [projectRoot];
 
-// Resolver alias de rutas (igual que en tsconfig.json)
-// Usamos extraNodeModules para compatibilidad con paths como @utils/biometrics
-config.resolver.extraNodeModules = {
+// Resolver alias de rutas usando resolveRequest para soporte de sub-paths (@utils/biometrics, etc.)
+const aliases = {
   '@': path.resolve(projectRoot, 'src'),
   '@screens': path.resolve(projectRoot, 'src/screens'),
   '@components': path.resolve(projectRoot, 'src/components'),
@@ -26,6 +25,16 @@ config.resolver.extraNodeModules = {
   '@navigation': path.resolve(projectRoot, 'src/navigation'),
   '@types': path.resolve(projectRoot, 'src/types'),
   '@utils': path.resolve(projectRoot, 'src/utils'),
+};
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  for (const [alias, aliasPath] of Object.entries(aliases)) {
+    if (moduleName === alias || moduleName.startsWith(alias + '/')) {
+      const resolvedPath = aliasPath + moduleName.slice(alias.length);
+      return context.resolveRequest(context, resolvedPath, platform);
+    }
+  }
+  return context.resolveRequest(context, moduleName, platform);
 };
 
 module.exports = config;
