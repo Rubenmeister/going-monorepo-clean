@@ -34,7 +34,8 @@ jobs:
 
       - name: Decode release keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mobile-user-app/android/app/release.keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '[:space:]' | base64 -d > mobile-user-app/android/app/release.keystore
+          keytool -list -keystore mobile-user-app/android/app/release.keystore -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -storetype PKCS12 || true
 
       - name: Configure Mapbox token
         run: |
