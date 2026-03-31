@@ -30,14 +30,16 @@ buildscript {
 
 apply plugin: "com.facebook.react.rootproject"
 
-// Force Kotlin 1.9.25 in all subproject configurations (compilation classpath)
-// RN ships kotlin 1.9.24 in libs.versions.toml but expo-splash-screen needs 1.9.25
-allprojects {
-    configurations.all {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion '1.9.25'
-            }
+// Suppress Compose Compiler version check for Kotlin 1.9.24 compatibility
+// expo-splash-screen uses Compose Compiler 1.5.15 which normally requires 1.9.25,
+// but RN 0.76.x forces 1.9.24 via its included build — suppressing the check is safe here.
+subprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.9.24"
+            ]
         }
     }
 }
