@@ -228,6 +228,7 @@ export const PLATFORM_LIMITS: Record<Platform, number> = {
   whatsapp: 1000,
   threads: 500,
   youtube: 5000,
+  linkedin: 3000,
   email: 50000,
   blog: 100000,
 };

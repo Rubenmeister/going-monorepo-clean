@@ -2,13 +2,31 @@ import { PlatformMetrics, WeeklyReport } from '../types/marketing.types';
 import { getFacebookMetrics, getInstagramMetrics } from '../publishers/meta.publisher';
 import { getXMetrics } from '../publishers/twitter.publisher';
 import { getTikTokMetrics } from '../publishers/tiktok.publisher';
-import { sendWeeklyMarketingSummary, alertFollowerMilestone, alertViralPost } from '../publishers/telegram.publisher';
-import { generateContent } from '../content/generator';
+import { getYouTubeMetrics } from '../publishers/youtube.publisher';
+import { getLinkedInMetrics } from '../publishers/linkedin.publisher';
+import { getThreadsMetrics } from '../publishers/threads.publisher';
+import { getWhatsAppMetrics } from '../publishers/whatsapp.publisher';
+import { getTelegramMetrics, sendWeeklyMarketingSummary, alertFollowerMilestone, alertViralPost } from '../publishers/telegram.publisher';
 import Anthropic from '@anthropic-ai/sdk';
 import { Firestore } from '@google-cloud/firestore';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const db = new Firestore({ projectId: process.env.GCP_PROJECT });
+
+// ── Helpers de timezone Ecuador ───────────────────────────────
+function currentHourEcuador(): number {
+  return parseInt(new Date().toLocaleString('en-US', {
+    timeZone: 'America/Guayaquil', hour: 'numeric', hour12: false,
+  }), 10);
+}
+function currentDayOfWeekEcuador(): number {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' })).getDay();
+}
+function isPrimaryRunOfHour(): boolean {
+  return parseInt(new Date().toLocaleString('en-US', {
+    timeZone: 'America/Guayaquil', minute: 'numeric',
+  }), 10) < 30;
+}
 
 // ============================================================
 // Metrics Monitor
@@ -115,6 +133,99 @@ export async function collectAllMetrics(): Promise<PlatformMetrics[]> {
     console.error('[metrics] TikTok failed:', (e as Error).message);
   }
 
+  // YouTube
+  try {
+    const yt = await getYouTubeMetrics();
+    const ytEngagement = yt.likes + yt.comments;
+    metrics.push({
+      platform: 'youtube',
+      fetchedAt: now,
+      followers: yt.subscribers,
+      followersGrowth: 0,
+      reach: yt.recentViews,
+      impressions: yt.recentViews,
+      engagement: ytEngagement,
+      engagementRate: yt.recentViews > 0 ? (ytEngagement / yt.recentViews) * 100 : 0,
+    });
+    console.log(`[metrics] YouTube: ${yt.subscribers} subscribers`);
+  } catch (e) {
+    console.error('[metrics] YouTube failed:', (e as Error).message);
+  }
+
+  // LinkedIn
+  try {
+    const li = await getLinkedInMetrics();
+    const liEngagement = li.likes + li.comments + li.shares;
+    metrics.push({
+      platform: 'linkedin',
+      fetchedAt: now,
+      followers: li.followers,
+      followersGrowth: 0,
+      reach: li.impressions,
+      impressions: li.impressions,
+      engagement: liEngagement,
+      engagementRate: li.impressions > 0 ? (liEngagement / li.impressions) * 100 : 0,
+    });
+    console.log(`[metrics] LinkedIn: ${li.followers} followers`);
+  } catch (e) {
+    console.error('[metrics] LinkedIn failed:', (e as Error).message);
+  }
+
+  // Threads
+  try {
+    const th = await getThreadsMetrics();
+    const thEngagement = th.likes + th.replies + th.reposts + th.quotes;
+    metrics.push({
+      platform: 'threads',
+      fetchedAt: now,
+      followers: th.followers,
+      followersGrowth: 0,
+      reach: th.views,
+      impressions: th.views,
+      engagement: thEngagement,
+      engagementRate: th.views > 0 ? (thEngagement / th.views) * 100 : 0,
+    });
+    console.log(`[metrics] Threads: ${th.followers} followers`);
+  } catch (e) {
+    console.error('[metrics] Threads failed:', (e as Error).message);
+  }
+
+  // WhatsApp (métricas de mensajería — no tiene "followers")
+  try {
+    const wa = await getWhatsAppMetrics();
+    metrics.push({
+      platform: 'whatsapp',
+      fetchedAt: now,
+      followers: 0,            // WhatsApp no expone audience size
+      followersGrowth: 0,
+      reach: wa.delivered,
+      impressions: wa.sent,
+      engagement: wa.read,
+      engagementRate: wa.delivered > 0 ? (wa.read / wa.delivered) * 100 : 0,
+    });
+    console.log(`[metrics] WhatsApp: ${wa.sent} enviados, ${wa.read} leídos`);
+  } catch (e) {
+    console.error('[metrics] WhatsApp failed:', (e as Error).message);
+  }
+
+  // Telegram Channel
+  try {
+    const tg = await getTelegramMetrics();
+    metrics.push({
+      platform: 'telegram_channel',
+      fetchedAt: now,
+      followers: tg.members,
+      followersGrowth: 0,
+      reach: tg.recentViews,
+      impressions: tg.recentViews,
+      engagement: 0,
+      engagementRate: 0,
+    });
+    console.log(`[metrics] Telegram: ${tg.members} members`);
+  } catch (e) {
+    console.error('[metrics] Telegram failed:', (e as Error).message);
+  }
+
   return metrics;
 }
 
@@ -217,54 +328,21 @@ export async function generateAndSendWeeklyReport(): Promise<void> {
   console.log('[metrics] Weekly report sent ✅');
 }
 
-// ─── Generate auto-content for the day ───────────────────────
-export async function generateDailyContent(): Promise<void> {
-  console.log('[content] Generating daily content drafts...');
-
-  // Generate 3 pieces of content for today
-  const requests = [
-    { platform: 'instagram' as const, topic: 'route_highlight' as const, contentType: 'post' as const },
-    { platform: 'x' as const, topic: 'general' as const, contentType: 'post' as const },
-    { platform: 'facebook' as const, topic: 'safety_tip' as const, contentType: 'post' as const },
-  ];
-
-  for (const req of requests) {
-    try {
-      const content = await generateContent({
-        ...req,
-        language: 'es',
-        targetAudience: 'general',
-        includeHashtags: true,
-        includeEmoji: true,
-        tone: 'friendly',
-      });
-
-      console.log(`[content] ✅ Draft for ${req.platform}:\n${content.caption.slice(0, 100)}...`);
-      // In production: save to Firestore for review before publishing
-    } catch (e) {
-      console.error(`[content] Failed for ${req.platform}:`, (e as Error).message);
-    }
-  }
-}
-
 // ─── Main runner ──────────────────────────────────────────────
+// Nota: la generación de contenido (posts, blog, revista, academia)
+// fue movida al content-agent para mantener este agente enfocado en métricas.
 export async function runMarketingMonitor(): Promise<void> {
-  const hour = new Date().getHours();
-  console.log(`[marketing-monitor] Running at hour ${hour}`);
+  const hour      = currentHourEcuador();
+  const dayOfWeek = currentDayOfWeekEcuador();
+  console.log(`[marketing-monitor] Running at Ecuador hour ${hour}`);
 
-  // 8am: Generate daily content drafts
-  if (hour === 8) {
-    await generateDailyContent();
-  }
-
-  // Every run: collect metrics and check for milestones/viral
+  // Cada corrida: recolectar métricas y detectar hitos/viral
   const metrics = await collectAllMetrics();
   await checkFollowerMilestones(metrics);
   await checkViralPosts(metrics);
 
-  // Monday 9am: send weekly report
-  const dayOfWeek = new Date().getDay(); // 1 = Monday
-  if (dayOfWeek === 1 && hour === 9) {
+  // Lunes 9am: reporte semanal (solo primera ejecución de la hora)
+  if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
     await generateAndSendWeeklyReport();
   }
 

@@ -11,6 +11,7 @@ export type Platform =
   | 'whatsapp'
   | 'threads'
   | 'youtube'
+  | 'linkedin'
   | 'email'
   | 'blog';
 
@@ -154,9 +155,16 @@ export interface MarketingAlert {
 // TWITTER_API_SECRET        - X/Twitter API secret
 // TWITTER_ACCESS_TOKEN      - X/Twitter access token
 // TWITTER_ACCESS_SECRET     - X/Twitter access token secret
-// TIKTOK_ACCESS_TOKEN       - TikTok for Business token (@goingappecuador)
-// YOUTUBE_API_KEY           - YouTube Data API v3 (@Goingappecuador)
-// SENDGRID_API_KEY          - Email campaigns via SendGrid
-// TELEGRAM_BOT_TOKEN        - Already in Secret Manager
-// TELEGRAM_CHANNEL_ID       - @goingappecuador (canal público Telegram)
-// ANTHROPIC_API_KEY         - Already in Secret Manager
+// TIKTOK_ACCESS_TOKEN           - TikTok for Business token (@goingappecuador)
+// YOUTUBE_API_KEY               - YouTube Data API v3 (@Goingappecuador)
+// YOUTUBE_CHANNEL_ID            - YouTube Channel ID de @Goingappecuador
+// LINKEDIN_ACCESS_TOKEN         - LinkedIn API v2 OAuth token
+// LINKEDIN_ORG_ID               - LinkedIn Organization ID (company/going-app)
+// THREADS_ACCESS_TOKEN          - Meta Threads API token (@goingappecuador)
+// THREADS_USER_ID               - Threads User ID (@goingappecuador)
+// WHATSAPP_ACCESS_TOKEN         - Meta WhatsApp Business API token
+// WHATSAPP_BUSINESS_ACCOUNT_ID  - WhatsApp Business Account ID
+// SENDGRID_API_KEY              - Email campaigns via SendGrid
+// TELEGRAM_BOT_TOKEN            - Already in Secret Manager
+// TELEGRAM_CHANNEL_ID           - @goingappecuador (canal público Telegram)
+// ANTHROPIC_API_KEY             - Already in Secret Manager
