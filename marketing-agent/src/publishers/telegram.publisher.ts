@@ -123,6 +123,42 @@ export async function alertFollowerMilestone(platform: string, count: number): P
   await sendTelegramMessage(chatId, text, 'HTML');
 }
 
+// ─── Channel metrics ──────────────────────────────────────────
+export interface TelegramMetrics {
+  members:     number;  // suscriptores del canal Going
+  recentViews: number;  // vistas recientes (requiere Telegram Stats API)
+  postCount:   number;  // posts en últimos 30 días (requiere Stats API)
+}
+
+export async function getTelegramMetrics(): Promise<TelegramMetrics> {
+  const token     = process.env.TELEGRAM_BOT_TOKEN  || '';
+  const channelId = process.env.TELEGRAM_CHANNEL_ID || '';
+
+  if (!token || !channelId) {
+    console.log('[telegram] Sin credenciales de canal — devolviendo métricas vacías');
+    return { members: 0, recentViews: 0, postCount: 0 };
+  }
+
+  const res = await fetch(
+    `${TELEGRAM_API}/bot${token}/getChat?chat_id=${channelId}`
+  );
+  const data = await res.json() as {
+    ok:      boolean;
+    result?: { member_count?: number };
+  };
+
+  if (!data.ok) {
+    console.warn('[telegram] getChat falló — verifica que el bot sea admin del canal');
+    return { members: 0, recentViews: 0, postCount: 0 };
+  }
+
+  return {
+    members:     data.result?.member_count ?? 0,
+    recentViews: 0,  // requiere Telegram Stats API (canales >500 miembros)
+    postCount:   0,
+  };
+}
+
 function platformEmoji(platform: string): string {
   const map: Record<string, string> = {
     instagram: '📸',
