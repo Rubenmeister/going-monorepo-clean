@@ -7,27 +7,50 @@ import { retryFailedInvoices, checkPendingAuthorization } from '../datil/invoice
 import { generateMonthlyIVAReport, generateATS } from '../sri/sri.report';
 import { detectDriverAnomalies, projectMonthlyRevenue, compareWeeklyPerformance } from '../analysis/ai.analysis';
 import { getUpcomingDeadlines, formatDeadlinesForTelegram, hasUrgentDeadlines } from '../sri/sri.deadlines';
+import { sendGmail } from './email.notify';
 
 // ============================================================
-// Financial Monitor – Alertas por Telegram
+// Financial Monitor – Alertas por Gmail (reemplaza Telegram)
 // ============================================================
 
-const TELEGRAM_API = 'https://api.telegram.org';
+/** Hora actual en Ecuador (0-23) — evita el bug UTC vs GMT-5 */
+function currentHourEcuador(): number {
+  const hourStr = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Guayaquil',
+    hour: 'numeric',
+    hour12: false,
+  });
+  return parseInt(hourStr, 10);
+}
+
+/** Minuto actual en Ecuador (0-59) — para evitar duplicados en runs de :00 y :30 */
+function currentMinuteEcuador(): number {
+  const minStr = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Guayaquil',
+    minute: 'numeric',
+  });
+  return parseInt(minStr, 10);
+}
+
+/** Día de la semana en Ecuador (0=dom, 1=lun … 6=sáb) */
+function currentDayOfWeekEcuador(): number {
+  const date = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
+  return date.getDay();
+}
+
+/** Día del mes en Ecuador (1-31) */
+function currentDayOfMonthEcuador(): number {
+  const date = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
+  return date.getDate();
+}
+
+/** true solo en la primera ejecución de cada hora (minutos 0-29) */
+function isPrimaryRunOfHour(): boolean {
+  return currentMinuteEcuador() < 30;
+}
 
 async function sendTelegram(text: string): Promise<void> {
-  const token  = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-
-  if (!token || !chatId || token === 'placeholder') {
-    console.log(`[telegram-fin] ${text.slice(0, 120)}...`);
-    return;
-  }
-
-  await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
-  });
+  await sendGmail(text);
 }
 
 function fmt(n: number): string {
@@ -334,12 +357,11 @@ export async function runMonthlySRIReport(): Promise<void> {
 
 // ─── Runner principal ─────────────────────────────────────────
 export async function runFinancialMonitor(): Promise<void> {
-  const now       = new Date();
-  const hour      = now.getHours();
-  const dayOfWeek = now.getDay();   // 0=dom, 1=lun
-  const dayOfMonth = now.getDate();
+  const hour       = currentHourEcuador();
+  const dayOfWeek  = currentDayOfWeekEcuador();   // 0=dom, 1=lun
+  const dayOfMonth = currentDayOfMonthEcuador();
 
-  console.log(`[financial-monitor] Running at hour ${hour}, day ${dayOfWeek}`);
+  console.log(`[financial-monitor] Running at Ecuador hour ${hour}, day ${dayOfWeek}`);
 
   // ── Cada corrida (cada 30 min) ────────────────────────────
   await checkPaymentErrors();
@@ -350,25 +372,26 @@ export async function runFinancialMonitor(): Promise<void> {
   await checkSRIDeadlines();          // Alertar si vence declaración
 
   // ── 8am diario: conciliación del día anterior ─────────────
-  if (hour === 8) {
-    const yesterday = new Date(now.getTime() - 86400000);
+  if (hour === 8 && isPrimaryRunOfHour()) {
+    const yesterday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
+    yesterday.setDate(yesterday.getDate() - 1);
     await reconcileDay(yesterday);
   }
 
   // ── 12pm: análisis IA (anomalías + proyección) ────────────
-  if (hour === 12) {
+  if (hour === 12 && isPrimaryRunOfHour()) {
     await sendAIFinancialInsights();
   }
 
   // ── 8pm diario: reporte + liquidaciones ───────────────────
-  if (hour === 20) {
+  if (hour === 20 && isPrimaryRunOfHour()) {
     await sendDailyFinancialReport();
     await processDailyPayouts();
     await runBankReconciliation();
   }
 
   // ── Lunes 9am: reporte semanal + análisis comparativo ─────
-  if (dayOfWeek === 1 && hour === 9) {
+  if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
     await sendWeeklyFinancialReport();
     try {
       const comparison = await compareWeeklyPerformance();
@@ -383,7 +406,7 @@ export async function runFinancialMonitor(): Promise<void> {
   }
 
   // ── Día 1 del mes 9am: reporte SRI del mes anterior ───────
-  if (dayOfMonth === 1 && hour === 9) {
+  if (dayOfMonth === 1 && hour === 9 && isPrimaryRunOfHour()) {
     await runMonthlySRIReport();
   }
 
