@@ -1,14 +1,20 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 import { useAuth, authFetch } from '../store';
 import AppShell from '../components/AppShell';
+
+const REWARDS_POINTS = 2535;
+const REWARDS_LEVEL = 'Gold';
+const REWARDS_SUBLEVEL = 'Explorador Sierra Nv.4';
+const REWARDS_NEXT = 3000;
 
 const MENU_SECTIONS = [
   {
     title: 'Mi cuenta',
     items: [
       { icon: '📋', label: 'Historial de reservas', href: '/bookings' },
+      { icon: '🎁', label: 'Going Rewards', href: '/rewards', badge: `${REWARDS_POINTS.toLocaleString()} pts` },
       { icon: '⭐', label: 'Mis reseñas', href: '/reviews' },
       { icon: '🔔', label: 'Notificaciones', href: '#' },
     ],
@@ -110,6 +116,40 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Going Rewards Card */}
+      <div className="px-4 -mt-4 mb-1 relative z-10">
+        <div
+          className="rounded-2xl p-4 shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #ff4c41 0%, #e03d32 60%, #c02820 100%)' }}
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <div className="text-[10px] font-black tracking-[2px] text-white/60 uppercase mb-0.5">Going Rewards</div>
+              <div className="text-[28px] font-black text-white leading-none">{REWARDS_POINTS.toLocaleString()}</div>
+              <div className="text-[11px] text-white/60 font-bold">puntos disponibles</div>
+            </div>
+            <div className="text-right">
+              <div className="px-2.5 py-1 rounded-full bg-white/15 border border-white/20 mb-1">
+                <span className="text-[11px] text-white font-black">{REWARDS_LEVEL}</span>
+              </div>
+              <div className="text-[10px] text-white/50">{REWARDS_SUBLEVEL}</div>
+            </div>
+          </div>
+          <div>
+            <div className="flex justify-between mb-1">
+              <span className="text-[10px] text-white/50">{REWARDS_POINTS.toLocaleString()} pts</span>
+              <span className="text-[10px] text-white/50">{REWARDS_NEXT.toLocaleString()} → Platino</span>
+            </div>
+            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white rounded-full"
+                style={{ width: `${Math.min((REWARDS_POINTS / REWARDS_NEXT) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Menu sections */}
       <div className="px-4 py-4 space-y-5">
         {MENU_SECTIONS.map((section) => (
@@ -135,6 +175,12 @@ export default function ProfilePage() {
                   <span className="flex-1 text-left font-medium">
                     {item.label}
                   </span>
+                  {(item as any).badge && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full mr-1"
+                      style={{ backgroundColor: 'rgba(255,76,65,0.12)', color: '#ff4c41' }}>
+                      {(item as any).badge}
+                    </span>
+                  )}
                   <span className="text-gray-300 text-base">›</span>
                 </button>
               ))}
