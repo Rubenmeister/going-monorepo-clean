@@ -10,10 +10,8 @@ import { ConfigService } from '@nestjs/config';
  * 3. Usuario ingresa el código → verifyCode('+593XXXXXXXXX', '693321')
  * 4. Si valid=true → marcar teléfono como verificado en la BD
  *
- * Cuenta probada ✓:
- *   Account SID: AC7a19c161b448e8f717ed0a11318b546c
- *   Verify SID:  VAd203364312e71ca170af9ef4cb99f0f8
- *   Mensaje:    "Your GOING SUPERAPP verification code is: XXXXXX"
+ * Cuenta probada ✓ — ver .env.development para las credenciales
+ *   Mensaje enviado: "Your GOING SUPERAPP verification code is: XXXXXX"
  *
  * Variables de entorno requeridas (.env):
  *   TWILIO_ACCOUNT_SID=AC7a19c161b448e8f717ed0a11318b546c
@@ -38,7 +36,7 @@ export class TwilioVerifyService {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const twilio = require('twilio');
         this.client = twilio(accountSid, authToken);
-        this.logger.log('Twilio Verify habilitado ✓ (VAd203...)');
+        this.logger.log('Twilio Verify habilitado ✓');
       } catch {
         this.logger.warn('Paquete twilio no instalado → ejecutar: npm install twilio');
       }
