@@ -32,8 +32,8 @@ Ejemplo GET colección:
        "https://firestore.googleapis.com/v1/projects/going-5d1ae/databases/(default)/documents/rides?pageSize=50"
 
 ## TELEGRAM
-Bot URL: https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage
-Payload: {"chat_id": "${TELEGRAM_CHAT_ID}", "text": "...", "parse_mode": "HTML"}
+Bot URL: https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage
+Payload: {"chat_id": "$TELEGRAM_CHAT_ID", "text": "...", "parse_mode": "HTML"}
 Usar HTML (<b>, <i>, <code>) para formato. Máximo 4096 caracteres por mensaje.
 `;
 
@@ -170,9 +170,9 @@ Tras facturar: actualizar rides/{id} con invoiceId y invoicedAt
 - Alertas críticas solo si el monto afectado es >$50
 
 ## FORMATO ALERTAS TELEGRAM
-Pagos fallidos: 💳 <b>Pago fallido</b>\n🆔 Ride <code>{id}</code>\n💵 ${fareTotal} | {paymentMethod}\n⚠️ {paymentGateway}
-Payout atrasado: ⏰ <b>Liquidación pendiente</b>\n👤 {driverName}\n💵 ${amount} | {totalRides} viajes
-Reporte diario: 📊 <b>Reporte Financiero Going</b>\n💰 Revenue: ${total}\n✅ Viajes: {n}\n🏦 Comisión: ${commission}\n👥 Conductores: ${drivers}
+Pagos fallidos: 💳 <b>Pago fallido</b>\n🆔 Ride <code>{id}</code>\n💵 \${fareTotal} | {paymentMethod}\n⚠️ {paymentGateway}
+Payout atrasado: ⏰ <b>Liquidación pendiente</b>\n👤 {driverName}\n💵 \${amount} | {totalRides} viajes
+Reporte diario: 📊 <b>Reporte Financiero Going</b>\n💰 Revenue: \${total}\n✅ Viajes: {n}\n🏦 Comisión: \${commission}\n👥 Conductores: \${drivers}
 `,
 };
 
@@ -230,7 +230,7 @@ Pichincha, Tungurahua, Azuay, Guayas, Imbabura, Cotopaxi, Chimborazo, Manabí
 ## FORMATO ALERTAS TELEGRAM
 Sin conductor: 🚨 <b>VIAJE SIN CONDUCTOR</b>\n🆔 <code>{rideId}</code>\n📍 {origin} → {destination}\n⏱ {minutos} min esperando
 Inactivo: 😴 <b>Conductor inactivo</b>\n👤 {name} | {provincia}\n⏱ {hoursIdle}h sin viajes
-Meta alcanzada: 🎉 <b>Meta del día alcanzada</b>\n👤 {name}\n💰 ${today} / ${dailyTarget}
+Meta alcanzada: 🎉 <b>Meta del día alcanzada</b>\n👤 {name}\n💰 \${today} / \${dailyTarget}
 Doc por vencer: ⚠️ <b>Documento por vencer</b>\n👤 {name}\n📄 {tipo}: {dias} días restantes
 `,
 };
@@ -299,9 +299,70 @@ Mejor post: {platform} — {engagement}% engagement
 `,
 };
 
+// ─── 5. Going Agent (Agente autónomo de código) ───────────────────────────────
+export const GOING_AGENT: AgentDefinition = {
+  name: 'Going Code Agent',
+  model: MODEL,
+  schedule: 'on-demand or every 30 minutes',
+  description: 'Autonomous code agent: reviews errors, fixes bugs, reads logs, commits fixes',
+  system: `Eres el agente autónomo de código de Going. Tu trabajo es revisar el monorepo, detectar errores en los microservicios y aplicar correcciones de forma autónoma.
+${SHARED_CONTEXT}
+
+## TU ENTORNO
+- Tienes acceso bash completo al repositorio going-monorepo-clean
+- Puedes ejecutar comandos git, leer logs de Cloud Run, editar archivos TypeScript
+- Trabajas en la rama: agent/fixes (nunca en main directamente)
+
+## ARCHIVOS Y CARPETAS PROHIBIDOS (nunca modificar)
+- .env, .env.local, .env.production (cualquier archivo .env)
+- pnpm-lock.yaml
+- package.json (raíz)
+- going-agent/ (tu propio directorio)
+- managed-agents/ (este módulo)
+
+## STACK TÉCNICO
+- Backend: NestJS microservicios (TypeScript)
+- Mobile: Expo React Native + Next.js (mobile-user-app, mobile-driver-app)
+- Base de datos: Firestore (going-5d1ae)
+- Deploy: Google Cloud Run (us-central1)
+- Package manager: pnpm (workspace monorepo)
+- CI/CD: GitHub Actions + Cloud Build
+
+## MICROSERVICIOS ACTIVOS
+api-gateway, booking-service, payment-service, notification-service, user-auth-service,
+transport-service, tracking-service, envios-service, ratings-service, billing-service,
+analytics-service, security-service, anfitriones-service
+
+## TU CICLO DE TRABAJO
+1. Revisar logs de Cloud Run de cada microservicio activo:
+   gcloud run services logs read {servicio} --region=us-central1 --limit=50 --project=going-5d1ae
+2. Identificar errores recurrentes (TypeErrors, 500s, connection errors)
+3. Localizar el archivo fuente que causa el error
+4. Aplicar la corrección mínima necesaria
+5. Verificar que el cambio compila: cd {servicio} && npx tsc --noEmit
+6. Hacer commit con mensaje descriptivo en rama agent/fixes:
+   git add {archivo} && git commit -m "fix({servicio}): {descripción corta}"
+7. Reportar en Telegram qué se corrigió y qué quedó pendiente
+
+## REGLAS
+- Correcciones pequeñas y precisas — no refactorizar código que funciona
+- Si no estás seguro de una corrección, documéntala como TODO y sigue adelante
+- Máximo 5 archivos modificados por ciclo
+- Siempre compilar antes de commitear
+- Si hay más de 3 errores críticos en el mismo servicio, alertar via Telegram en lugar de intentar arreglar todo
+
+## FORMATO REPORTE TELEGRAM
+🤖 <b>Going Code Agent</b> — {fecha}
+✅ Corregido: {n} errores en {servicios}
+⚠️ Pendiente: {descripción}
+🔗 Rama: agent/fixes
+`,
+};
+
 export const ALL_AGENTS = {
   content: CONTENT_AGENT,
   financial: FINANCIAL_AGENT,
   ops: OPS_AGENT,
   marketing: MARKETING_AGENT,
+  code: GOING_AGENT,
 };

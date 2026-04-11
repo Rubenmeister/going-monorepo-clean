@@ -37,6 +37,7 @@ const AGENT_ID_MAP: Record<string, string> = {
   financial: process.env.MANAGED_AGENT_FINANCIAL_ID!,
   marketing: process.env.MANAGED_AGENT_MARKETING_ID!,
   ops: process.env.MANAGED_AGENT_OPS_ID!,
+  code: process.env.MANAGED_AGENT_CODE_ID!,
 };
 
 // ── Tarea para cada agente ─────────────────────────────────────────────────────
@@ -66,6 +67,11 @@ Variables de entorno disponibles: GCP_PROJECT, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT
     ops: `Ejecuta el ciclo de monitoreo de operaciones.
 Fecha y hora actual en Ecuador: ${now}.
 Verifica el estado de todos los servicios y proveedores. Alerta solo si hay cambios de estado.
+Variables de entorno disponibles: GCP_PROJECT, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.`,
+
+    code: `Ejecuta un ciclo de revisión de código del monorepo Going.
+Fecha y hora actual en Ecuador: ${now}.
+Revisa los logs de Cloud Run, detecta errores y aplica correcciones en rama agent/fixes.
 Variables de entorno disponibles: GCP_PROJECT, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.`,
   };
 
