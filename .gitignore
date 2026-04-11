@@ -8,6 +8,7 @@
 .env.development
 .env.staging
 .env.production
+managed-agents/.env.managed-agents
 firebase-credentials.json
 *-credentials.json
 cloud-sql-proxy
