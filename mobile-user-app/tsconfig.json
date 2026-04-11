@@ -10,7 +10,8 @@
       "@services/*": ["./src/services/*"],
       "@store/*": ["./src/store/*"],
       "@navigation/*": ["./src/navigation/*"],
-      "@types/*": ["./src/types/*"]
+      "@types/*": ["./src/types/*"],
+      "@utils/*": ["./src/utils/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.d.ts"]
