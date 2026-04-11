@@ -21,7 +21,7 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@rnmapbox/maps": "^10.1.35",
-    "axios": "^1.6.0",
+    "axios": "^1.15.0",
     "expo": "~52.0.0",
     "expo-constants": "~17.0.0",
     "expo-haptics": "~14.0.1",
