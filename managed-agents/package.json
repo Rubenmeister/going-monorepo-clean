@@ -1,0 +1,23 @@
+{
+  "name": "going-managed-agents",
+  "version": "1.0.0",
+  "description": "Going AI Agents — migrated to Anthropic Managed Agents",
+  "main": "dist/index.js",
+  "scripts": {
+    "setup": "tsx src/setup.ts",
+    "run:content": "tsx src/runner.ts content",
+    "run:financial": "tsx src/runner.ts financial",
+    "run:marketing": "tsx src/runner.ts marketing",
+    "run:ops": "tsx src/runner.ts ops",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
