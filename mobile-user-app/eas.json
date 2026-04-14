@@ -15,15 +15,13 @@
       "distribution": "internal",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com",
-        "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoiZ29pbmdhcHAiLCJhIjoiY21taTllMWVoMGJ6NTJxcHlqNWNxN3l6YyJ9.CqOH9BgNsgoOU5Yr4dwTBA"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com",
-        "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoiZ29pbmdhcHAiLCJhIjoiY21taTllMWVoMGJ6NTJxcHlqNWNxN3l6YyJ9.CqOH9BgNsgoOU5Yr4dwTBA"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
       }
     }
   },

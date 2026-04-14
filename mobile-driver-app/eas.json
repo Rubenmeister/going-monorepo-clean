@@ -8,21 +8,21 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "prebuildCommand": "npx expo prebuild --clean",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api-gateway-lw44cnhdeq-uc.a.run.app"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
       }
     }
   },
