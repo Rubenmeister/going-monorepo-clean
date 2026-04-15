@@ -36,7 +36,7 @@ const VIBRANT_RED = '#FF2D2D';   // vibrant-red (logo drop-shadow)
 
 interface Props { onFinish: () => void; appMode?: 'viajero' | 'conductor'; }
 
-export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
+export default function SplashScreen({ onFinish, appMode = 'conductor' }: Props) {
 
   const [bgLoaded, setBgLoaded] = useState(false);
   const soundRef = useRef<{ unloadAsync?: () => void } | null>(null);
