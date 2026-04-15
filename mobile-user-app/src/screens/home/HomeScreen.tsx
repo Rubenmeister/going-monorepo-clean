@@ -5,13 +5,16 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -456,31 +459,155 @@ export default function HomeScreen() {
     }
   };
 
+  const handleServiceCard = (service: 'compartido' | 'privado' | 'delivery') => {
+    hapticMedium();
+    if (service === 'delivery') {
+      navigation.navigate('Envios' as any);
+      return;
+    }
+    setTripMode(service === 'compartido' ? 'compartido' : 'privado');
+    setShowBookingSheet(true);
+  };
+
+  const [showBookingSheet, setShowBookingSheet] = React.useState(false);
+
   return (
     <View style={styles.container}>
-      {/* ── MAP ── */}
-      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Street}>
-        <MapboxGL.Camera
-          ref={cameraRef}
-          zoomLevel={14}
-          centerCoordinate={location ?? [-78.4678, -0.1807]}
-          animationMode="flyTo"
+      {/* ── FONDO: mapa o imagen según disponibilidad ── */}
+      {location ? (
+        <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Street}>
+          <MapboxGL.Camera
+            ref={cameraRef}
+            zoomLevel={14}
+            centerCoordinate={location ?? [-78.4678, -0.1807]}
+            animationMode="flyTo"
+          />
+          <MapboxGL.UserLocation visible renderMode={MapboxGL.UserLocationRenderMode.Normal} />
+        </MapboxGL.MapView>
+      ) : (
+        <Image
+          source={require('../../../assets/home-bg.jpg')}
+          style={styles.map}
+          resizeMode="cover"
         />
-        {location && (
-          <MapboxGL.PointAnnotation id="user-location" coordinate={location}>
-            <View style={styles.userMarker}>
-              <View style={styles.userMarkerInner} />
-            </View>
-          </MapboxGL.PointAnnotation>
-        )}
-        <MapboxGL.UserLocation
-          visible
-          renderMode={MapboxGL.UserLocationRenderMode.Normal}
-        />
-      </MapboxGL.MapView>
+      )}
 
-      {/* ── BOTTOM CARD ── */}
-      <View style={styles.card}>
+      {/* Overlay degradado */}
+      <View style={styles.mapOverlay} pointerEvents="none" />
+
+      {/* ── TOP BAR ── */}
+      <View style={styles.topBar}>
+        <View style={styles.logoWrap}>
+          <Image
+            source={require('../../../assets/going-logo-horizontal.png')}
+            style={styles.topBarLogo}
+            resizeMode="contain"
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.menuBtn}
+          onPress={() => (navigation as any).openDrawer()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="menu-outline" size={24} color="#1A1A1A" />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── GREETING ── */}
+      <View style={styles.greetingArea} pointerEvents="none">
+        <Text style={styles.greeting}>
+          ¡Hola, {user?.firstName ?? 'viajero'}! 👋
+        </Text>
+        <Text style={styles.greetingSub}>¿A dónde viajamos hoy?</Text>
+      </View>
+
+      {/* ── SERVICE CARDS ── */}
+      {!showBookingSheet && (
+        <View style={styles.cardsArea}>
+          {/* Buscador rápido */}
+          <TouchableOpacity
+            style={styles.quickSearch}
+            onPress={() => setShowBookingSheet(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="search-outline" size={16} color="rgba(255,255,255,0.5)" />
+            <Text style={styles.quickSearchText}>Buscar destino...</Text>
+          </TouchableOpacity>
+
+          {/* Viaje Compartido */}
+          <Pressable
+            onPress={() => handleServiceCard('compartido')}
+            style={({ pressed }) => [
+              styles.serviceCard, styles.cardShared,
+              pressed && [styles.serviceCardPressed, styles.cardSharedPressed],
+            ]}
+          >
+            {({ pressed }) => (
+              <>
+                <View style={styles.popularBadge}>
+                  <Text style={styles.popularText}>★ MÁS POPULAR</Text>
+                </View>
+                <View style={[styles.cardIcon, styles.iconShared]}>
+                  <Ionicons name="people-outline" size={22} color={pressed ? 'rgba(100,149,255,0.9)' : GOING_BLUE} />
+                </View>
+                <View style={styles.cardInfo}>
+                  <Text style={[styles.cardTitle, pressed && styles.cardTitlePressed]}>Viaje Compartido</Text>
+                  <Text style={[styles.cardSub, pressed && styles.cardSubPressed]}>Paga solo tu asiento · SUV o VAN</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={pressed ? 'rgba(255,255,255,0.35)' : '#D1D5DB'} />
+              </>
+            )}
+          </Pressable>
+
+          {/* Viaje Privado */}
+          <Pressable
+            onPress={() => handleServiceCard('privado')}
+            style={({ pressed }) => [
+              styles.serviceCard, styles.cardPrivate,
+              pressed && [styles.serviceCardPressed, styles.cardPrivatePressed],
+            ]}
+          >
+            {({ pressed }) => (
+              <>
+                <View style={[styles.cardIcon, styles.iconPrivate]}>
+                  <Ionicons name="lock-closed-outline" size={22} color={pressed ? 'rgba(255,120,120,0.9)' : '#C0101A'} />
+                </View>
+                <View style={styles.cardInfo}>
+                  <Text style={[styles.cardTitle, pressed && styles.cardTitlePressed]}>Viaje Privado</Text>
+                  <Text style={[styles.cardSub, pressed && styles.cardSubPressed]}>Vehículo exclusivo · horario lo pones tú</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={pressed ? 'rgba(255,255,255,0.35)' : '#D1D5DB'} />
+              </>
+            )}
+          </Pressable>
+
+          {/* Envíos */}
+          <Pressable
+            onPress={() => handleServiceCard('delivery')}
+            style={({ pressed }) => [
+              styles.serviceCard, styles.cardDelivery,
+              pressed && [styles.serviceCardPressed, styles.cardDeliveryPressed],
+            ]}
+          >
+            {({ pressed }) => (
+              <>
+                <View style={[styles.cardIcon, styles.iconDelivery]}>
+                  <Ionicons name="cube-outline" size={22} color={pressed ? 'rgba(80,200,140,0.9)' : '#059669'} />
+                </View>
+                <View style={styles.cardInfo}>
+                  <Text style={[styles.cardTitle, pressed && styles.cardTitlePressed]}>Envíos</Text>
+                  <Text style={[styles.cardSub, pressed && styles.cardSubPressed]}>De punto a punto · Rastreo · Registro de entrega</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={pressed ? 'rgba(255,255,255,0.35)' : '#D1D5DB'} />
+              </>
+            )}
+          </Pressable>
+        </View>
+      )}
+
+      {/* ── BOOKING SHEET (se muestra al tocar una tarjeta o el buscador) ── */}
+      {showBookingSheet && (
+        <View style={styles.card}>
         <Text style={styles.greeting}>
           ¡Hola, {user?.firstName ?? 'viajero'}! 👋
         </Text>
@@ -776,14 +903,178 @@ export default function HomeScreen() {
             </View>
           )}
         </TouchableOpacity>
-      </View>
+
+          {/* Botón cerrar booking sheet */}
+          <TouchableOpacity
+            style={styles.closeSheet}
+            onPress={() => setShowBookingSheet(false)}
+          >
+            <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { flex: 1 },
+  map: { ...StyleSheet.absoluteFillObject },
+
+  // Overlay degradado sobre el mapa/foto
+  mapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(10,15,35,0.82) 100%)',
+  },
+
+  // Greeting
+  greetingArea: {
+    position: 'absolute',
+    bottom: 340,
+    left: 20, right: 20,
+    zIndex: 5,
+  },
+  greetingSub: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.55)',
+    marginTop: 3,
+  },
+
+  // Cards area
+  cardsArea: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    padding: 12,
+    paddingBottom: 34,
+    zIndex: 5,
+    gap: 10,
+  },
+
+  // Quick search
+  quickSearch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 16,
+    padding: 13,
+    marginBottom: 2,
+  },
+  quickSearchText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.45)',
+    flex: 1,
+  },
+
+  // Service cards — blancas por defecto
+  serviceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 18,
+    padding: 16,
+    paddingHorizontal: 18,
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  // Estado presionado — transparente
+  serviceCardPressed: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  cardShared:  { borderLeftWidth: 4, borderLeftColor: GOING_BLUE },
+  cardPrivate: { borderLeftWidth: 4, borderLeftColor: '#C0101A'  },
+  cardDelivery:{ borderLeftWidth: 4, borderLeftColor: '#059669'  },
+  cardSharedPressed:  { borderLeftWidth: 0 },
+  cardPrivatePressed: { borderLeftWidth: 0 },
+  cardDeliveryPressed:{ borderLeftWidth: 0 },
+  cardIcon: {
+    width: 44, height: 44,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  iconShared:   { backgroundColor: 'rgba(0,51,160,0.08)'   },
+  iconPrivate:  { backgroundColor: 'rgba(192,16,26,0.08)'  },
+  iconDelivery: { backgroundColor: 'rgba(5,150,105,0.08)'  },
+  cardInfo: { flex: 1 },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#111827',
+  },
+  cardTitlePressed: { color: '#fff' },
+  cardSub: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginTop: 3,
+    lineHeight: 15,
+  },
+  cardSubPressed: { color: 'rgba(255,255,255,0.60)' },
+  popularBadge: {
+    position: 'absolute',
+    top: 0, right: 14,
+    backgroundColor: GOING_YELLOW,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  popularText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: GOING_BLUE,
+    letterSpacing: 0.3,
+  },
+
+  // Booking sheet close btn
+  closeSheet: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    marginBottom: 4,
+  },
+
+  // Top bar flotante sobre el mapa
+  topBar: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 52,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  logoWrap: {
+    backgroundColor: 'rgba(255,255,255,0.90)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  topBarLogo: {
+    width: 120,
+    height: 55,
+  },
+  menuBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center', justifyContent: 'center',
+  },
   userMarker: {
     width: 22, height: 22, borderRadius: 11,
     backgroundColor: GOING_BLUE, justifyContent: 'center', alignItems: 'center',
@@ -799,7 +1090,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.12, shadowRadius: 10, elevation: 12,
   },
-  greeting: { fontSize: 16, fontWeight: '600', color: '#222', marginBottom: 14 },
+  greeting: { fontSize: 22, fontWeight: '900', color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 },
 
   // Service row
   serviceRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
