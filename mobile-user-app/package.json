@@ -57,6 +57,8 @@
   "jest": {
     "preset": "jest-expo"
   },
-  "overrides": {},
+  "overrides": {
+    "follow-redirects": "^1.16.0"
+  },
   "_comment": "build-3"
 }
