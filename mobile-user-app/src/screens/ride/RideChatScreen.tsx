@@ -8,6 +8,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -137,9 +138,16 @@ export function RideChatScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerName}>{driverName}</Text>
-          <Text style={styles.headerVehicle}>{driverVehicle}</Text>
+        <View style={styles.headerCenter}>
+          <Image
+            source={require('../../../assets/going-logo-horizontal-white.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <View style={styles.headerInfo}>
+            <Text style={styles.headerName}>{driverName}</Text>
+            <Text style={styles.headerVehicle}>{driverVehicle}</Text>
+          </View>
         </View>
         <View style={styles.headerOnline}>
           <View style={styles.onlineDot} />
@@ -215,8 +223,10 @@ const styles = StyleSheet.create({
     backgroundColor: GOING_BLUE, paddingTop: 50, paddingBottom: 14, paddingHorizontal: 16,
   },
   backBtn: { padding: 4 },
-  headerInfo: { flex: 1 },
-  headerName: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  headerCenter: { flex: 1 },
+  headerLogo: { width: 80, height: 28, marginBottom: 2 },
+  headerInfo: {},
+  headerName: { color: '#fff', fontSize: 15, fontWeight: '700' },
   headerVehicle: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
   headerOnline: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },

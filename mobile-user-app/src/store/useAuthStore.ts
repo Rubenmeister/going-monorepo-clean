@@ -28,6 +28,7 @@ interface AuthState {
   logout: () => Promise<void>;
   loadToken: () => Promise<void>;
   clearError: () => void;
+  setUser: (user: User) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -37,20 +38,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   loadToken: async () => {
+    set({ isLoading: true });
     try {
       const token = await AsyncStorage.getItem('auth_token');
       const raw   = await AsyncStorage.getItem('auth_user');
       if (token && raw) {
         // Restaurar usuario desde storage (incluye firstName, lastName, etc.)
-        set({ token, user: JSON.parse(raw) });
+        set({ token, user: JSON.parse(raw), isLoading: false });
       } else if (token) {
         // Fallback: limpiar si no hay user guardado
         await AsyncStorage.removeItem('auth_token');
-        set({ token: null, user: null });
+        set({ token: null, user: null, isLoading: false });
+      } else {
+        set({ isLoading: false });
       }
     } catch {
       await AsyncStorage.multiRemove(['auth_token', 'auth_user']);
-      set({ token: null, user: null });
+      set({ token: null, user: null, isLoading: false });
     }
   },
 
@@ -90,4 +94,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  setUser: async (user: User) => {
+    await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+    set({ user });
+  },
 }));

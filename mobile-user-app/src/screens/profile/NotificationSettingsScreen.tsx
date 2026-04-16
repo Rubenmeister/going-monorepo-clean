@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,54 +21,72 @@ interface NotifSetting {
   value: boolean;
 }
 
+const DEFAULT_SETTINGS: NotifSetting[] = [
+  {
+    id: 'ride_updates',
+    label: 'Estado del viaje',
+    desc: 'Notificaciones cuando el conductor se acerca o el estado cambia',
+    icon: 'car-outline',
+    value: true,
+  },
+  {
+    id: 'promotions',
+    label: 'Promociones',
+    desc: 'Descuentos y ofertas especiales de Going',
+    icon: 'pricetag-outline',
+    value: true,
+  },
+  {
+    id: 'chat_messages',
+    label: 'Mensajes del conductor',
+    desc: 'Cuando recibes un mensaje durante el viaje',
+    icon: 'chatbubble-outline',
+    value: true,
+  },
+  {
+    id: 'booking_reminders',
+    label: 'Recordatorios de reservas',
+    desc: 'Aviso antes de tu próximo viaje programado',
+    icon: 'calendar-outline',
+    value: false,
+  },
+  {
+    id: 'new_services',
+    label: 'Nuevos servicios',
+    desc: 'Cuando Going lanza nuevas rutas o experiencias',
+    icon: 'sparkles-outline',
+    value: false,
+  },
+];
+
 export function NotificationSettingsScreen() {
-  const [settings, setSettings] = useState<NotifSetting[]>([
-    {
-      id: 'ride_updates',
-      label: 'Estado del viaje',
-      desc: 'Notificaciones cuando el conductor se acerca o el estado cambia',
-      icon: 'car-outline',
-      value: true,
-    },
-    {
-      id: 'promotions',
-      label: 'Promociones',
-      desc: 'Descuentos y ofertas especiales de Going',
-      icon: 'pricetag-outline',
-      value: true,
-    },
-    {
-      id: 'chat_messages',
-      label: 'Mensajes del conductor',
-      desc: 'Cuando recibes un mensaje durante el viaje',
-      icon: 'chatbubble-outline',
-      value: true,
-    },
-    {
-      id: 'booking_reminders',
-      label: 'Recordatorios de reservas',
-      desc: 'Aviso antes de tu próximo viaje programado',
-      icon: 'calendar-outline',
-      value: false,
-    },
-    {
-      id: 'new_services',
-      label: 'Nuevos servicios',
-      desc: 'Cuando Going lanza nuevas rutas o experiencias',
-      icon: 'sparkles-outline',
-      value: false,
-    },
-  ]);
+  const [settings, setSettings] = useState<NotifSetting[]>(DEFAULT_SETTINGS);
+
+  // Load saved preferences from notification-service on mount
+  useEffect(() => {
+    api.get('/notifications/preferences/current')
+      .then(({ data }) => {
+        if (data && typeof data === 'object') {
+          setSettings(prev =>
+            prev.map(s => ({
+              ...s,
+              value: data[s.id] !== undefined ? Boolean(data[s.id]) : s.value,
+            }))
+          );
+        }
+      })
+      .catch(() => { /* keep defaults if endpoint not reachable */ });
+  }, []);
 
   const toggle = async (id: string) => {
     const updated = settings.map((s) =>
       s.id === id ? { ...s, value: !s.value } : s
     );
     setSettings(updated);
+    // Build preferences object for the PUT payload
+    const prefs = Object.fromEntries(updated.map(s => [s.id, s.value]));
     try {
-      await api.patch('/users/me/notifications', {
-        [id]: updated.find((s) => s.id === id)?.value,
-      });
+      await api.put('/notifications/preferences/current', prefs);
     } catch {
       // revert on error
       setSettings(settings);

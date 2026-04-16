@@ -1,8 +1,9 @@
 'use client';
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
+  process.env.EXPO_PUBLIC_API_URL ??
   'https://api-gateway-780842550857.us-central1.run.app';
 
 export interface User {
@@ -17,7 +18,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isReady: boolean;
-  init: () => void;
+  init: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (d: {
     firstName: string;
@@ -26,7 +27,7 @@ interface AuthState {
     password: string;
     phone: string;
   }) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuth = create<AuthState>((set) => ({
@@ -34,11 +35,14 @@ export const useAuth = create<AuthState>((set) => ({
   token: null,
   isReady: false,
 
-  init() {
-    if (typeof window === 'undefined') return;
-    const token = localStorage.getItem('going_token');
-    const raw = localStorage.getItem('going_user');
-    set({ token, user: raw ? JSON.parse(raw) : null, isReady: true });
+  async init() {
+    try {
+      const token = await AsyncStorage.getItem('going_token');
+      const raw = await AsyncStorage.getItem('going_user');
+      set({ token, user: raw ? JSON.parse(raw) : null, isReady: true });
+    } catch {
+      set({ token: null, user: null, isReady: true });
+    }
   },
 
   async login(email, password) {
@@ -52,8 +56,8 @@ export const useAuth = create<AuthState>((set) => ({
       throw new Error((e as any).message || 'Credenciales incorrectas');
     }
     const { token, user } = await res.json();
-    localStorage.setItem('going_token', token);
-    localStorage.setItem('going_user', JSON.stringify(user));
+    await AsyncStorage.setItem('going_token', token);
+    await AsyncStorage.setItem('going_user', JSON.stringify(user));
     set({ token, user });
   },
 
@@ -75,21 +79,20 @@ export const useAuth = create<AuthState>((set) => ({
       throw new Error((e as any).message || 'Error al registrarse');
     }
     const { token, user } = await res.json();
-    localStorage.setItem('going_token', token);
-    localStorage.setItem('going_user', JSON.stringify(user));
+    await AsyncStorage.setItem('going_token', token);
+    await AsyncStorage.setItem('going_user', JSON.stringify(user));
     set({ token, user });
   },
 
-  logout() {
-    localStorage.removeItem('going_token');
-    localStorage.removeItem('going_user');
+  async logout() {
+    await AsyncStorage.removeItem('going_token');
+    await AsyncStorage.removeItem('going_user');
     set({ user: null, token: null });
   },
 }));
 
 export function authFetch(path: string, options: RequestInit = {}) {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('going_token') : null;
+  const token = useAuth.getState().token;
   return fetch(`${API_URL}${path}`, {
     ...options,
     headers: {

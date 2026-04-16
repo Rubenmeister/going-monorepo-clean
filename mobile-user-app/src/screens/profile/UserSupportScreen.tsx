@@ -15,7 +15,8 @@ import { api } from '@services/api';
 
 const GOING_BLUE = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const WHATSAPP_NUMBER = '593987654321';
+const WHATSAPP_NUMBER = '593962499988';
+const SUPPORT_PHONE = '+593962499988';
 
 const FAQS = [
   {
@@ -55,7 +56,7 @@ export function UserSupportScreen() {
   };
 
   const callSupport = () => {
-    Linking.openURL(`tel:+${WHATSAPP_NUMBER}`);
+    Linking.openURL(`tel:${SUPPORT_PHONE}`);
   };
 
   const sendTicket = async () => {
@@ -65,11 +66,15 @@ export function UserSupportScreen() {
     }
     setLoading(true);
     try {
-      await api.post('/support/ticket', { subject, message, type: 'user' });
+      // customer-support-service: POST /chat/message
+      await api.post('/chat/message', {
+        content: `[${subject}] ${message}`,
+        type: 'user_support',
+      });
       setSubject('');
       setMessage('');
       Alert.alert(
-        'Ticket enviado',
+        'Mensaje enviado',
         'Te responderemos en menos de 24 horas. Revisa tu correo electrónico.'
       );
     } catch {

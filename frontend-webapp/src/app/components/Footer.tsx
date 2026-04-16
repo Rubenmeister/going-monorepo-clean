@@ -33,10 +33,12 @@ export function Footer() {
   ];
 
   const legal = [
-    { name: 'Términos de Servicio', href: '/legal/terms' },
-    { name: 'Política de Privacidad', href: '/legal/privacy' },
-    { name: 'Cookies', href: '/legal/cookies' },
-    { name: 'Contacto Legal', href: '/legal/contact' },
+    { name: 'Términos y Condiciones',     href: '/legal/terms' },
+    { name: 'Política de Privacidad',     href: '/legal/privacy' },
+    { name: 'Política de Envíos',         href: '/legal/shipping' },
+    { name: 'Reembolsos y Cancelaciones', href: '/legal/terms#reembolsos' },
+    { name: 'Regulación de Transporte',   href: '/legal/terms#regulacion' },
+    { name: 'Cookies',                    href: '/legal/cookies' },
   ];
 
   const support = [
@@ -49,20 +51,11 @@ export function Footer() {
   ];
 
   const socialLinks = [
-    { icon: '🐦', name: 'Twitter', url: 'https://twitter.com/goingecuador' },
-    { icon: '📘', name: 'Facebook', url: 'https://facebook.com/goingecuador' },
-    {
-      icon: '📷',
-      name: 'Instagram',
-      url: 'https://instagram.com/goingecuador',
-    },
-    { icon: '▶️', name: 'YouTube', url: 'https://youtube.com/goingecuador' },
-    {
-      icon: '💼',
-      name: 'LinkedIn',
-      url: 'https://linkedin.com/company/goingecuador',
-    },
-    { icon: '🎵', name: 'TikTok', url: 'https://tiktok.com/@goingecuador' },
+    { icon: '📘', name: 'Facebook',  url: 'https://facebook.com/goingecuador' },
+    { icon: '📷', name: 'Instagram', url: 'https://instagram.com/goingecuador' },
+    { icon: '▶️', name: 'YouTube',   url: 'https://youtube.com/goingecuador' },
+    { icon: '💼', name: 'LinkedIn',  url: 'https://linkedin.com/company/goingecuador' },
+    { icon: '🎵', name: 'TikTok',    url: 'https://tiktok.com/@goingecuador' },
   ];
 
   return (
@@ -185,7 +178,7 @@ export function Footer() {
                   <strong className="text-white">Dirección:</strong>
                 </p>
                 <p className="text-gray-400 text-sm mt-1">
-                  Calle Principal 123, Quito, Ecuador
+                  Echeverría N2-170, Quito, Ecuador
                 </p>
               </li>
               <li>
@@ -193,10 +186,10 @@ export function Footer() {
                   <strong className="text-white">Teléfono:</strong>
                 </p>
                 <a
-                  href="tel:+593123456789"
+                  href="tel:+593962499988"
                   className="text-blue-400 hover:text-blue-300 text-sm"
                 >
-                  +593 (1) 234-5678
+                  096 249 9988
                 </a>
               </li>
               <li>

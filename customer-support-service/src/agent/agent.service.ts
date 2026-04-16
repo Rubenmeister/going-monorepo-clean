@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
+import { VertexAI, Content } from '@google-cloud/vertexai';
 import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton } from '../knowledge-base/system-prompt';
 import { BookingService } from '../booking/booking.service';
@@ -8,18 +8,21 @@ import { BookingService } from '../booking/booking.service';
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
 
+const GEMINI_MODEL = 'gemini-2.5-flash-preview-04-17';
+
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
-  private client: Anthropic;
+  private vertexAI: VertexAI;
 
   constructor(
     private config: ConfigService,
     private conversationService: ConversationService,
     private bookingService: BookingService,
   ) {
-    this.client = new Anthropic({
-      apiKey: this.config.get<string>('ANTHROPIC_API_KEY')?.trim(),
+    this.vertexAI = new VertexAI({
+      project: this.config.get<string>('GCP_PROJECT') || 'going-5d1ae',
+      location: 'us-central1',
     });
   }
 
@@ -40,48 +43,52 @@ export class AgentService {
     const canton = detectCanton(userMessage);
     const systemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
 
-    const messages = conv.messages.slice(-10)
-      .filter(m => m.content && m.content.trim().length > 0)
-      .map(m => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content.trim(),
-      }));
+    const allMessages = conv.messages.slice(-10)
+      .filter(m => m.content && m.content.trim().length > 0);
 
-    if (messages.length === 0 || messages[messages.length - 1].role !== 'user') {
+    if (allMessages.length === 0) {
       return lang === 'en'
         ? "Sorry, I didn't receive your message. Please try again."
         : 'Disculpa, no recibí tu mensaje. Por favor intenta de nuevo.';
     }
 
+    // Build Vertex AI history (all messages except the last user one)
+    const history: Content[] = allMessages.slice(0, -1).map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content.trim() }],
+    }));
+
     let assistantMessage = '';
 
     try {
-      const response = await this.client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages,
+      const model = this.vertexAI.getGenerativeModel({
+        model: GEMINI_MODEL,
+        generationConfig: { maxOutputTokens: 600 },
+        systemInstruction: {
+          role: 'system',
+          parts: [{ text: systemPrompt }],
+        },
       });
 
-      assistantMessage = response.content[0].type === 'text'
-        ? response.content[0].text
-        : '';
+      const chat = model.startChat({ history });
+      const result = await chat.sendMessage(userMessage);
+      const response = await result.response;
+      assistantMessage = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     } catch (error) {
-      this.logger.error('Claude API error', error);
+      this.logger.error('Gemini API error', error);
       return lang === 'en'
         ? "Sorry, I'm having trouble right now. Please try again in a moment."
         : 'Disculpa, estoy teniendo problemas en este momento. Por favor intenta de nuevo en un momento.';
     }
 
-    // Check if Claude wants to create a booking
+    // Check if Gemini wants to create a booking
     const match = BOOKING_TAG_RE.exec(assistantMessage);
     if (match) {
       const [, origen, destino, servicio, modalidad, horaStr] = match;
       const cleanMessage = assistantMessage.replace(BOOKING_TAG_RE, '').trim();
       const scheduledAt = horaStr ? new Date(horaStr) : undefined;
 
-      // Geocode both locations in parallel
       const [originCoords, destCoords] = await Promise.all([
         this.bookingService.geocodeAddress(origen.trim()),
         this.bookingService.geocodeAddress(destino.trim()),
@@ -132,7 +139,7 @@ export class AgentService {
       return finalMessage;
     }
 
-    // Normal response (no booking)
+    // Normal response
     this.conversationService.addMessage(userId, 'assistant', assistantMessage);
     return assistantMessage;
   }

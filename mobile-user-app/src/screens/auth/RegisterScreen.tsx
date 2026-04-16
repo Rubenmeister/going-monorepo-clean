@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  Image,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -33,6 +35,8 @@ export function RegisterScreen() {
     phone: '',
   });
   const [showPwd, setShowPwd] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   const update = (field: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -45,6 +49,14 @@ export function RegisterScreen() {
     const { firstName, lastName, email, password, phone } = form;
     if (!firstName || !lastName || !email || !password || !phone) {
       Alert.alert('Campos requeridos', 'Por favor completa todos los campos.');
+      return;
+    }
+    if (!acceptedTerms) {
+      Alert.alert('Términos requeridos', 'Debes aceptar los Términos y Condiciones para continuar.');
+      return;
+    }
+    if (!acceptedPrivacy) {
+      Alert.alert('Privacidad requerida', 'Debes aceptar la Política de Privacidad para continuar (LOPDP).');
       return;
     }
     await register(form);
@@ -78,9 +90,12 @@ export function RegisterScreen() {
       >
         {/* ── Header rojo ─────────────────────────────────────────── */}
         <View style={styles.hero}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoText}>GOING</Text>
-          </View>
+          {/* Logo Going — versión blanca sobre fondo rojo */}
+          <Image
+            source={require('../../../assets/going-logo-horizontal-white.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.heroTitle}>Crea tu cuenta</Text>
           <Text style={styles.heroSub}>Únete a la plataforma de movilidad de Ecuador</Text>
         </View>
@@ -129,6 +144,55 @@ export function RegisterScreen() {
             )}
           </TouchableOpacity>
 
+          {/* ── Checkboxes legales LOPDP ───────────────────────── */}
+          <View style={styles.legalBlock}>
+            {/* Términos y Condiciones */}
+            <TouchableOpacity
+              style={styles.checkRow}
+              onPress={() => setAcceptedTerms(v => !v)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                {acceptedTerms && (
+                  <Ionicons name="checkmark" size={13} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.checkLabel}>
+                Acepto los{' '}
+                <Text
+                  style={styles.checkLink}
+                  onPress={() => Linking.openURL('https://goingec.com/terminos')}
+                >
+                  Términos y Condiciones
+                </Text>
+                {' '}de uso del servicio
+              </Text>
+            </TouchableOpacity>
+
+            {/* Política de Privacidad */}
+            <TouchableOpacity
+              style={[styles.checkRow, { marginTop: 10 }]}
+              onPress={() => setAcceptedPrivacy(v => !v)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, acceptedPrivacy && styles.checkboxChecked]}>
+                {acceptedPrivacy && (
+                  <Ionicons name="checkmark" size={13} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.checkLabel}>
+                Autorizo el tratamiento de mis datos según la{' '}
+                <Text
+                  style={styles.checkLink}
+                  onPress={() => Linking.openURL('https://goingec.com/privacidad')}
+                >
+                  Política de Privacidad
+                </Text>
+                {' '}(LOPDP)
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
             style={styles.loginRow}
             onPress={() => navigation.goBack()}
@@ -138,11 +202,6 @@ export function RegisterScreen() {
               <Text style={styles.loginBold}>Inicia sesión</Text>
             </Text>
           </TouchableOpacity>
-
-          <Text style={styles.terms}>
-            Al registrarte aceptas nuestros{' '}
-            <Text style={{ color: GOING_RED }}>Términos y condiciones</Text>
-          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -159,18 +218,10 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     paddingHorizontal: 24,
   },
-  logoBox: {
-    backgroundColor: GOING_YELLOW,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 12,
+  logo: {
+    width: 190,
+    height: 81,
     marginBottom: 14,
-  },
-  logoText: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: GOING_RED,
-    letterSpacing: 5,
   },
   heroTitle: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 4 },
   heroSub: {
@@ -217,14 +268,46 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  legalBlock: {
+    marginTop: 20,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  checkboxChecked: {
+    backgroundColor: GOING_RED,
+    borderColor: GOING_RED,
+  },
+  checkLabel: {
+    flex: 1,
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 18,
+  },
+  checkLink: {
+    color: GOING_RED,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
   loginRow: { alignItems: 'center', marginTop: 16 },
   loginText: { color: '#6B7280', fontSize: 14 },
   loginBold: { color: GOING_RED, fontWeight: '700' },
-  terms: {
-    textAlign: 'center',
-    fontSize: 11,
-    color: '#9CA3AF',
-    marginTop: 12,
-    lineHeight: 16,
-  },
 });

@@ -1,7 +1,5 @@
-'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../store';
 
 export default function RegisterPage() {
@@ -110,13 +108,13 @@ export default function RegisterPage() {
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">
             ¿Ya tienes cuenta?{' '}
-            <Link
-              href="/login"
+            <button
+              onClick={() => router.push('/login')}
               className="font-semibold"
-              style={{ color: '#ff4c41' }}
+              style={{ color: '#ff4c41', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Inicia sesión
-            </Link>
+            </button>
           </p>
         </div>
       </div>

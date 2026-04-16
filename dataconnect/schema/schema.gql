@@ -1,0 +1,50 @@
+type User @table {
+  displayName: String!
+  email: String!
+  phoneNumber: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  bio: String
+  carMake: String
+  carModel: String
+  licensePlate: String
+}
+
+type Ride @table {
+  driver: User!
+  departureCity: String!
+  destinationCity: String!
+  departureDateTime: Timestamp!
+  availableSeats: Int!
+  pricePerSeat: Float!
+  createdAt: Timestamp!
+  notes: String
+  carInfo: String
+}
+
+type Booking @table {
+  passenger: User!
+  ride: Ride!
+  seatsBooked: Int!
+  totalPrice: Float!
+  bookingStatus: String!
+  createdAt: Timestamp!
+  paymentTransactionId: String
+}
+
+type Message @table {
+  sender: User!
+  receiver: User!
+  ride: Ride!
+  content: String!
+  sentAt: Timestamp!
+}
+
+type Review @table {
+  reviewer: User!
+  reviewedUser: User!
+  ride: Ride!
+  rating: Int!
+  createdAt: Timestamp!
+  comment: String
+}

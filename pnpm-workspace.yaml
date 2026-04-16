@@ -1,5 +1,6 @@
 packages:
   # Applications
+  - 'website'            # goingec.com — sitio público de comunicación
   - 'frontend-webapp'
   - 'admin-dashboard'
   # mobile apps managed independently with npm (not pnpm workspace)
@@ -16,6 +17,7 @@ packages:
   - 'envios-service'
   - 'payment-service'
   - 'transport-service'
+  - 'notification-service'
   - 'notifications-service'
   - 'tracking-service'
   - 'billing-service'

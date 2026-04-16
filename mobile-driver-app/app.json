@@ -30,7 +30,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.driverapp",
-      "versionCode": 32,
+      "versionCode": 38,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -59,7 +59,9 @@
       "expo-system-ui",
       [
         "@rnmapbox/maps",
-        {}
+        {
+          "RNMapboxMapsVersion": "11.0.0"
+        }
       ],
       "expo-notifications",
       "@react-native-firebase/app"

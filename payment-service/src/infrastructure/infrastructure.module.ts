@@ -12,15 +12,19 @@ import {
 } from './persistence/schemas/transaction.schema';
 import { StripeGateway } from './gateways/stripe.gateway';
 import { MercadoPagoGateway } from './gateways/mercadopago.gateway';
+import { DatafastGateway } from './gateways/datafast.gateway';
+import { DeunaGateway } from './gateways/deuna.gateway';
 import { MongoPaymentRepository } from './persistence/mongo-payment.repository';
 import { MongoPayoutRepository } from './persistence/mongo-payout.repository';
 import { IPaymentRepository, IPayoutRepository } from '../domain/ports';
 import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { Payout, PayoutSchema } from './schemas/payout.schema';
 
-/** Token to select the right gateway at runtime based on currency */
+/** Token to select the right gateway at runtime based on currency/method */
 export const STRIPE_GATEWAY = 'STRIPE_GATEWAY';
 export const MERCADOPAGO_GATEWAY = 'MERCADOPAGO_GATEWAY';
+export const DATAFAST_GATEWAY = 'DATAFAST_GATEWAY';
+export const DEUNA_GATEWAY = 'DEUNA_GATEWAY';
 
 @Module({
   imports: [
@@ -54,11 +58,15 @@ export const MERCADOPAGO_GATEWAY = 'MERCADOPAGO_GATEWAY';
       provide: IPaymentGateway,
       useClass: StripeGateway,
     },
-    // Named tokens for selecting gateway by currency
+    // Named tokens for selecting gateway by currency/method
     { provide: STRIPE_GATEWAY, useClass: StripeGateway },
     { provide: MERCADOPAGO_GATEWAY, useClass: MercadoPagoGateway },
+    { provide: DATAFAST_GATEWAY, useClass: DatafastGateway },
+    { provide: DEUNA_GATEWAY, useClass: DeunaGateway },
     MercadoPagoGateway,
     StripeGateway,
+    DatafastGateway,
+    DeunaGateway,
   ],
   exports: [
     ITransactionRepository,
@@ -67,8 +75,12 @@ export const MERCADOPAGO_GATEWAY = 'MERCADOPAGO_GATEWAY';
     IPaymentGateway,
     STRIPE_GATEWAY,
     MERCADOPAGO_GATEWAY,
+    DATAFAST_GATEWAY,
+    DEUNA_GATEWAY,
     MercadoPagoGateway,
     StripeGateway,
+    DatafastGateway,
+    DeunaGateway,
   ],
 })
 export class InfrastructureModule {}

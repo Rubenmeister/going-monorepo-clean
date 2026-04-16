@@ -218,7 +218,7 @@ export default function DashboardPage() {
       {stats && stats.suspended > 0 && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">warning</span>
+            <span className="text-2xl">⚠️</span>
             <div>
               <p className="font-semibold text-orange-800">
                 {stats.suspended} usuario(s) suspendido(s)

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0f1d;padding:28px;font-family:-apple-system,sans-serif;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.col{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.phone{width:270px;height:560px;border-radius:36px;overflow:hidden;border:5px solid #222;box-shadow:0 20px 40px rgba(0,0,0,0.7);background:#F0F2F5;display:flex;flex-direction:column;}
+.lbl{color:#fff;font-size:9px;opacity:0.45;letter-spacing:2px;text-transform:uppercase;}
+.header{background:#0033A0;padding:38px 13px 12px;display:flex;align-items:center;gap:8px;}
+.back{width:30px;height:30px;border-radius:15px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;}
+.h-t{font-size:14px;font-weight:900;color:#fff;flex:1;}
+.h-s{font-size:9px;color:rgba(255,255,255,0.65);margin-top:1px;}
+.steps{display:flex;gap:3px;}
+.sd{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.25);}
+.sda{background:#FFCD00;}
+.scroll{flex:1;overflow:hidden;padding:11px;}
+.sec{font-size:8px;font-weight:800;color:#9CA3AF;letter-spacing:1.5px;margin-bottom:8px;}
+/* City cards */
+.city{background:#fff;border-radius:12px;padding:10px;margin-bottom:7px;display:flex;align-items:center;gap:8px;border:2px solid #E5E7EB;position:relative;}
+.city.active{border-color:#0033A0;background:#F0F4FF;}
+.chk{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:8px;background:#0033A0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;}
+.c-icon{font-size:18px;}
+.c-name{font-size:12px;font-weight:800;color:#111827;}
+.city.active .c-name{color:#0033A0;}
+.c-prov{font-size:9px;color:#9CA3AF;}
+/* Dest cards */
+.dest{background:#fff;border-radius:12px;padding:10px;margin-bottom:7px;display:flex;align-items:center;gap:10px;border:2px solid #E5E7EB;position:relative;}
+.dest.active{border-color:#0033A0;background:#F0F4FF;}
+.d-name{font-size:12px;font-weight:800;color:#111827;flex:1;}
+.dest.active .d-name{color:#0033A0;}
+.d-sub{font-size:9px;color:#9CA3AF;margin-top:1px;}
+.price-badge{background:#EFF6FF;border-radius:10px;padding:6px 10px;text-align:center;border:1px solid #BFDBFE;}
+.price-val{font-size:16px;font-weight:900;color:#0033A0;}
+.price-lbl{font-size:8px;color:#9CA3AF;}
+/* Days */
+.days{display:flex;gap:5px;margin-bottom:7px;}
+.day{width:30px;height:30px;border-radius:15px;background:#fff;border:1.5px solid #E5E7EB;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#374151;}
+.day.active{background:#0033A0;border-color:#0033A0;color:#fff;}
+/* Times */
+.times{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.tc{padding:5px 10px;border-radius:20px;background:#fff;border:1.5px solid #E5E7EB;font-size:11px;font-weight:700;color:#374151;}
+.tc.active{background:#0033A0;border-color:#0033A0;color:#fff;}
+.tc.green-active{background:#059669;border-color:#059669;color:#fff;}
+/* Return header */
+.ret-hdr{background:#FFF0EF;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:6px;margin-bottom:8px;border:1px solid #FECACA;}
+.ret-hdr-t{font-size:11px;font-weight:900;color:#ff4c41;}
+/* Summary */
+.sumbox{background:#fff;border-radius:12px;padding:11px;border:1.5px solid #E5E7EB;margin-top:8px;}
+.sum-t{font-size:10px;font-weight:800;color:#374151;margin-bottom:8px;}
+.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F9FAFB;}
+.sum-lbl{font-size:10px;color:#9CA3AF;font-weight:600;}
+.sum-val{font-size:11px;font-weight:700;color:#111827;}
+/* Add btn */
+.add-btn{background:#EFF6FF;border-radius:10px;padding:10px;text-align:center;font-size:11px;font-weight:800;color:#0033A0;border:1.5px solid #BFDBFE;margin-top:8px;}
+/* Footer */
+.footer{background:#fff;padding:10px 12px 22px;display:flex;align-items:center;gap:8px;border-top:1px solid #F3F4F6;}
+.f-slots{font-size:11px;font-weight:800;color:#111827;}
+.f-earn{font-size:9px;color:#059669;font-weight:600;margin-top:1px;}
+.save-btn{background:#0033A0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:5px;}
+.save-t{font-size:11px;font-weight:900;color:#fff;}
+</style></head>
+<body>
+
+<!-- PASO 1: Ciudad origen -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div style="flex:1;"><div class="h-t">Mi agenda de rutas</div><div class="h-s">¿Desde qué ciudad sales?</div></div>
+    <div class="steps"><div class="sd sda"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <div class="scroll">
+    <div class="sec">TU CIUDAD DE SALIDA</div>
+    <div class="city active"><div class="chk">✓</div><div class="c-icon">🏔️</div><div><div class="c-name">Riobamba</div><div class="c-prov">Chimborazo</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+    <div class="city"><div class="c-icon">🏔️</div><div><div class="c-name">Ambato</div><div class="c-prov">Tungurahua</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+    <div class="city"><div class="c-icon">🌊</div><div><div class="c-name">El Carmen</div><div class="c-prov">Manabí</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+    <div class="city"><div class="c-icon">🌊</div><div><div class="c-name">Santo Domingo</div><div class="c-prov">Santo Domingo</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+    <div class="city"><div class="c-icon">🌿</div><div><div class="c-name">Ibarra</div><div class="c-prov">Imbabura</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+    <div class="city"><div class="c-icon">🌿</div><div><div class="c-name">Otavalo</div><div class="c-prov">Imbabura</div></div><span style="font-size:16px;color:#D1D5DB;">›</span></div>
+  </div>
+</div>
+<div class="lbl">Paso 1 · Ciudad</div>
+</div>
+
+<!-- PASO 2: Destino + precio -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div style="flex:1;"><div class="h-t">Mi agenda de rutas</div><div class="h-s">¿Hasta dónde llevas pasajeros?</div></div>
+    <div class="steps"><div class="sd sda"></div><div class="sd sda"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div></div>
+  </div>
+  <div class="scroll">
+    <div style="background:#EFF6FF;border-radius:10px;padding:8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      <span>🏔️</span><span style="font-size:11px;font-weight:700;color:#0033A0;">Desde <strong>Riobamba</strong> puedes llegar a:</span>
+    </div>
+    <div class="sec">DESTINO Y PRECIO POR ASIENTO SUV</div>
+    <div class="dest"><div><div class="d-name">Ambato</div><div class="d-sub">Parada en ruta</div></div><div class="price-badge"><div class="price-val">$7</div><div class="price-lbl">/asiento</div></div></div>
+    <div class="dest"><div><div class="d-name">Latacunga</div><div class="d-sub">Parada en ruta</div></div><div class="price-badge"><div class="price-val">$12</div><div class="price-lbl">/asiento</div></div></div>
+    <div class="dest active"><div class="chk">✓</div><div><div class="d-name">Quito</div><div class="d-sub">Destino principal</div></div><div class="price-badge" style="background:#EFF6FF;border-color:#BFDBFE;"><div class="price-val">$17</div><div class="price-lbl">/asiento</div></div></div>
+    <div class="dest"><div><div class="d-name">✈️ Aeropuerto (Tababela)</div><div class="d-sub">Incluye recargo +$15</div></div><div class="price-badge"><div class="price-val">$32</div><div class="price-lbl">/asiento</div></div></div>
+  </div>
+</div>
+<div class="lbl">Paso 2 · Destino</div>
+</div>
+
+<!-- PASO 3-4: Días y hora IDA -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div style="flex:1;"><div class="h-t">Mi agenda de rutas</div><div class="h-s">¿Qué días y a qué hora?</div></div>
+    <div class="steps"><div class="sd sda"></div><div class="sd sda"></div><div class="sd sda"></div><div class="sd sda"></div><div class="sd"></div></div>
+  </div>
+  <div class="scroll">
+    <div style="background:#EFF6FF;border-radius:10px;padding:8px 10px;margin-bottom:10px;display:flex;justify-content:space-between;"><span style="font-size:11px;font-weight:700;color:#0033A0;">🏔️ Riobamba → Quito</span><span style="font-size:11px;font-weight:800;color:#059669;">$17/asiento</span></div>
+    <div class="sec">¿QUÉ DÍAS TRABAJAS?</div>
+    <div class="days">
+      <div class="day active">L</div><div class="day">M</div><div class="day active">X</div><div class="day active">J</div><div class="day">V</div><div class="day active">S</div><div class="day">D</div>
+    </div>
+    <div style="font-size:10px;color:#6B7280;font-style:italic;margin-bottom:10px;">Lunes · Miércoles · Jueves · Sábado</div>
+    <div class="sec">HORA DE SALIDA DESDE RIOBAMBA</div>
+    <div class="times">
+      <div class="tc">05:00</div><div class="tc active">07:00</div><div class="tc">08:00</div><div class="tc">09:00</div><div class="tc">10:00</div><div class="tc">14:00</div>
+    </div>
+    <div style="background:#0033A0;border-radius:10px;padding:11px;text-align:center;font-size:12px;font-weight:900;color:#fff;">Registrar regreso →</div>
+  </div>
+</div>
+<div class="lbl">Paso 3-4 · Días y hora</div>
+</div>
+
+<!-- PASO 5: Regreso obligatorio -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div style="flex:1;"><div class="h-t">Mi agenda de rutas</div><div class="h-s">Hora de regreso (obligatorio)</div></div>
+    <div class="steps"><div class="sd sda"></div><div class="sd sda"></div><div class="sd sda"></div><div class="sd sda"></div><div class="sd sda"></div></div>
+  </div>
+  <div class="scroll">
+    <div class="ret-hdr"><span style="font-size:16px;">🔄</span><span class="ret-hdr-t">Regreso obligatorio</span></div>
+    <div style="font-size:11px;color:#374151;margin-bottom:12px;line-height:17px;">Si sales de <strong>Riobamba</strong> a las 07:00, ¿a qué hora regresas desde Quito?</div>
+    <div class="sec">HORA DE SALIDA PARA EL REGRESO</div>
+    <div class="times">
+      <div class="tc">13:00</div><div class="tc">14:00</div><div class="tc green-active">16:00</div><div class="tc">17:00</div><div class="tc">18:00</div><div class="tc">19:00</div>
+    </div>
+    <div class="sumbox">
+      <div class="sum-t">Resumen del horario</div>
+      <div class="sum-row"><span class="sum-lbl">Ruta</span><span class="sum-val">Riobamba → Quito</span></div>
+      <div class="sum-row"><span class="sum-lbl">Días</span><span class="sum-val">L X J S</span></div>
+      <div class="sum-row"><span class="sum-lbl">IDA</span><span class="sum-val">07:00 desde Riobamba</span></div>
+      <div class="sum-row"><span class="sum-lbl">REGRESO</span><span class="sum-val">16:00 desde Quito</span></div>
+      <div class="sum-row" style="border:none;"><span class="sum-lbl">Precio</span><span class="sum-val" style="color:#059669;font-weight:900;">$17/asiento</span></div>
+    </div>
+    <div class="add-btn">+ Agregar este horario a mi agenda</div>
+  </div>
+  <div class="footer">
+    <div><div class="f-slots">1 horario registrado</div><div class="f-earn">~$204/semana estimado</div></div>
+    <div class="save-btn"><span style="color:#fff;font-size:13px;">💾</span><span class="save-t">Guardar agenda</span></div>
+  </div>
+</div>
+<div class="lbl">Paso 5 · Regreso</div>
+</div>
+
+</body></html>

@@ -8,7 +8,7 @@ ARG SERVICE_NAME=user-auth-service
 FROM node:20-slim AS builder
 ARG SERVICE_NAME
 
-# Install build tools required for native modules (bcrypt, etc.)
+# Install build tools required for native modules (bcrypt, firebase-admin, grpc, etc.)
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm via corepack
@@ -29,6 +29,7 @@ RUN pnpm install --no-frozen-lockfile
 
 # pnpm v9 blocks install scripts by default - explicitly rebuild native modules
 RUN pnpm rebuild bcrypt || true
+RUN pnpm rebuild firebase-admin || true
 
 # Strip @nx/jest plugin (version mismatch breaks project graph)
 RUN node -e "\
@@ -58,6 +59,12 @@ RUN node -e "\
 ENV NX_DAEMON=false
 RUN pnpm exec nx build ${SERVICE_NAME} --skip-nx-cache
 
+# Install production dependencies inside the dist folder using plain npm.
+# This creates a flat node_modules/ inside dist/ that Node can resolve cleanly,
+# avoiding any pnpm virtual-store symlink issues in the final image.
+# Native modules (bcrypt, grpc, etc.) are compiled here with the build tools above.
+RUN cd dist/${SERVICE_NAME} && npm install --omit=dev --no-fund --no-audit --legacy-peer-deps
+
 # ── Stage 2: Production image ────────────────────────────────────────────────
 # Use node:20-slim (glibc) to match builder so native modules work
 FROM node:20-slim AS final
@@ -65,13 +72,8 @@ ARG SERVICE_NAME
 
 WORKDIR /app
 
-# Copy compiled output
+# Copy compiled output + its self-contained node_modules (installed above)
 COPY --from=builder /app/dist/${SERVICE_NAME} ./dist
-
-# Copy node_modules from builder (includes compiled native modules for glibc)
-# This avoids re-running npm install and handles packages like bcrypt
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 
 ENV NODE_ENV=production
 # Cloud Run injects PORT=8080 (overrides service default)

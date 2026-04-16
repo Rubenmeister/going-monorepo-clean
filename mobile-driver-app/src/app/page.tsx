@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
-export default function Root() {
-  redirect('/login');
-}
+// Pantalla 0 — Splash screen conductor Going
+import SplashScreen from './components/SplashScreen';
+export default SplashScreen;

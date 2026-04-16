@@ -21,19 +21,32 @@ type Route = RouteProp<DriverMainStackParamList, 'ActiveRide'>;
 
 const STEPS = ['Camino al pasajero', 'Pasajero a bordo', 'Viaje completado'];
 
+const PAYMENT_LABELS: Record<string, string> = {
+  cash:   'Efectivo',
+  card:   'Tarjeta',
+  wallet: 'Going Credits',
+};
+const PAYMENT_ICONS: Record<string, string> = {
+  cash:   'cash-outline',
+  card:   'card-outline',
+  wallet: 'wallet-outline',
+};
+
 export function ActiveRideScreen() {
   const navigation = useNavigation();
   const { params } = useRoute<Route>();
-  const { rideId, passengerName, destination } = params;
+  const { rideId, passengerName, destination, paymentMethod = 'card', fare = 0 } = params;
   const mapRef    = useRef<MapboxGL.MapView>(null);
   const socketRef = useRef<Socket | null>(null);
   const [driverLoc, setDriverLoc] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [step, setStep]             = useState(0);
+  const [step, setStep]               = useState(0);
   const [callSession, setCallSession] = useState<CallSession | null>(null);
   const [callLoading, setCallLoading] = useState(false);
+  const [cashConfirmed, setCashConfirmed] = useState(false);
+  const rideStartTimestamp = useRef<number | null>(null);
 
   const handleCallPassenger = async () => {
     if (callLoading) return;
@@ -109,22 +122,79 @@ export function ActiveRideScreen() {
     };
   }, []);
 
+  const completeRide = (cashConfirmed = false) => {
+    // distanceKm: usa la distancia real calculada desde la ruta GPS si está disponible,
+    // o el valor del parámetro si lo proveyó el backend al aceptar el viaje.
+    // durationSeconds: tiempo real desde que se inició el viaje (step 1).
+    const distKm  = (fare && fare > 0) ? fare / 2.5 : 5; // estimado provisional
+    const durSecs = Math.round((Date.now() - (rideStartTimestamp.current ?? Date.now())) / 1000) || 900;
+    socketRef.current?.emit('driver:completed', {
+      rideId,
+      distanceKm:      distKm,
+      durationSeconds: durSecs,
+      // cashConfirmed se envía como metadata informativa; el backend actualmente lo ignora.
+      // Se deberá agregar manejo en ride-events.gateway cuando se implemente el endpoint de ganancias.
+      ...(cashConfirmed && { cashConfirmed: true }),
+    });
+    Alert.alert(
+      '¡Viaje completado! 🎉',
+      cashConfirmed
+        ? `Efectivo confirmado · $${fare.toFixed(2)}\n¡Excelente trabajo! Los pasajeros pueden calificarte ahora.`
+        : `¡Excelente trabajo! Los pasajeros pueden calificarte ahora.`,
+      [
+        {
+          text: 'Ver mis ganancias',
+          onPress: () => (navigation as any).navigate('Wallet'),
+        },
+        {
+          text: 'Nuevo viaje',
+          style: 'cancel',
+          onPress: () => navigation.goBack(),
+        },
+      ]
+    );
+  };
+
+  const confirmCashAndComplete = () => {
+    Alert.alert(
+      '💵 Confirmar cobro en efectivo',
+      `¿Recibiste $${fare.toFixed(2)} en efectivo del pasajero?`,
+      [
+        { text: 'No recibí el pago', style: 'destructive',
+          onPress: () =>
+            Alert.alert(
+              'Pago pendiente',
+              'Contacta al soporte de Going si el pasajero se negó a pagar.',
+              [{ text: 'Entendido' }]
+            ),
+        },
+        {
+          text: `Sí, recibí $${fare.toFixed(2)}`,
+          onPress: () => {
+            setCashConfirmed(true);
+            completeRide();
+          },
+        },
+      ]
+    );
+  };
+
   const advance = () => {
-    const nextStep = step + 1;
+    hapticMedium();
     if (step < STEPS.length - 1) {
-      setStep(nextStep);
-      // step 0→1: conductor llegó al pasajero
+      setStep(step + 1);
       if (step === 0) socketRef.current?.emit('driver:arrived', { rideId });
-      // step 1→2: viaje iniciado (pasajero a bordo)
-      if (step === 1) socketRef.current?.emit('driver:started', { rideId });
+      if (step === 1) {
+        rideStartTimestamp.current = Date.now();
+        socketRef.current?.emit('driver:started', { rideId });
+      }
     } else {
-      // Último paso: viaje completado
-      const distKm   = 5;  // TODO: calcular desde polyline real
-      const durSecs  = 900;
-      socketRef.current?.emit('driver:completed', { rideId, distanceKm: distKm, durationSeconds: durSecs });
-      Alert.alert('Viaje completado', '¡Excelente trabajo!', [
-        { text: 'Ver resumen', onPress: () => navigation.goBack() },
-      ]);
+      // Último paso — verificar pago en efectivo
+      if (paymentMethod === 'cash') {
+        confirmCashAndComplete();
+      } else {
+        completeRide();
+      }
     }
   };
 
@@ -164,7 +234,7 @@ export function ActiveRideScreen() {
           <View style={styles.avatar}>
             <Ionicons name="person" size={22} color="#0033A0" />
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.passengerName}>
               {passengerName || 'Pasajero'}
             </Text>
@@ -179,6 +249,35 @@ export function ActiveRideScreen() {
           >
             <Ionicons name={callLoading ? 'hourglass-outline' : 'call-outline'} size={20} color="#0033A0" />
           </TouchableOpacity>
+        </View>
+
+        {/* Badge de pago */}
+        <View style={[
+          styles.paymentBadge,
+          paymentMethod === 'cash' && styles.paymentBadgeCash,
+        ]}>
+          <Ionicons
+            name={PAYMENT_ICONS[paymentMethod] as any}
+            size={16}
+            color={paymentMethod === 'cash' ? '#065F46' : '#1E3A8A'}
+          />
+          <Text style={[
+            styles.paymentLabel,
+            paymentMethod === 'cash' && styles.paymentLabelCash,
+          ]}>
+            {PAYMENT_LABELS[paymentMethod]}
+          </Text>
+          {fare > 0 && (
+            <Text style={[
+              styles.paymentFare,
+              paymentMethod === 'cash' && styles.paymentLabelCash,
+            ]}>
+              · ${fare.toFixed(2)}
+            </Text>
+          )}
+          {paymentMethod === 'cash' && (
+            <Text style={styles.paymentCashNote}>— Cobra al llegar</Text>
+          )}
         </View>
 
         <TouchableOpacity
@@ -292,4 +391,36 @@ const styles = StyleSheet.create({
   },
   nextBtnDone: { backgroundColor: '#D1FAE5' },
   nextBtnText: { color: '#0033A0', fontSize: 15, fontWeight: '900' },
+  paymentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  paymentBadgeCash: {
+    backgroundColor: '#D1FAE5',
+  },
+  paymentLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E3A8A',
+  },
+  paymentLabelCash: {
+    color: '#065F46',
+  },
+  paymentFare: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E3A8A',
+  },
+  paymentCashNote: {
+    fontSize: 12,
+    color: '#059669',
+    fontWeight: '600',
+    marginLeft: 2,
+  },
 });

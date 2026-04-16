@@ -30,7 +30,7 @@ const DOCS = [
 type DocKey = typeof DOCS[number]['key'];
 
 export function DriverRegisterScreen({ navigation }: any) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Step 1 — Datos personales
   const [firstName, setFirstName] = useState('');
@@ -107,6 +107,10 @@ export function DriverRegisterScreen({ navigation }: any) {
       Alert.alert('Datos del vehículo', 'Completa todos los datos del vehículo');
       return false;
     }
+    return true;
+  };
+
+  const validateStep3 = () => {
     const missingDocs = DOCS.filter(d => !docs[d.key]);
     if (missingDocs.length > 0) {
       Alert.alert('Documentos faltantes', `Sube: ${missingDocs.map(d => d.label).join(', ')}`);
@@ -117,7 +121,7 @@ export function DriverRegisterScreen({ navigation }: any) {
 
   // ── Registro final ─────────────────────────────────────────────────────────
   const handleRegister = async () => {
-    if (!validateStep2()) return;
+    if (!validateStep3()) return;
     setLoading(true);
     try {
       // 1. Crear cuenta
@@ -180,7 +184,7 @@ export function DriverRegisterScreen({ navigation }: any) {
       <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
         {/* Header */}
-        <TouchableOpacity style={styles.back} onPress={() => step === 1 ? navigation.goBack() : setStep(1)}>
+        <TouchableOpacity style={styles.back} onPress={() => step === 1 ? navigation.goBack() : setStep((step - 1) as 1 | 2 | 3)}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
 
@@ -201,14 +205,21 @@ export function DriverRegisterScreen({ navigation }: any) {
             <View style={[styles.stepDot, step >= 1 && styles.stepDotActive]}>
               <Text style={[styles.stepNum, step >= 1 && styles.stepNumActive]}>1</Text>
             </View>
-            <Text style={[styles.stepLabel, step >= 1 && styles.stepLabelActive]}>Datos personales</Text>
+            <Text style={[styles.stepLabel, step >= 1 && styles.stepLabelActive]}>Datos{'\n'}personales</Text>
           </View>
           <View style={[styles.stepLine, step >= 2 && styles.stepLineActive]} />
           <View style={styles.stepItem}>
             <View style={[styles.stepDot, step >= 2 && styles.stepDotActive]}>
               <Text style={[styles.stepNum, step >= 2 && styles.stepNumActive]}>2</Text>
             </View>
-            <Text style={[styles.stepLabel, step >= 2 && styles.stepLabelActive]}>Vehículo y docs</Text>
+            <Text style={[styles.stepLabel, step >= 2 && styles.stepLabelActive]}>Vehículo</Text>
+          </View>
+          <View style={[styles.stepLine, step >= 3 && styles.stepLineActive]} />
+          <View style={styles.stepItem}>
+            <View style={[styles.stepDot, step >= 3 && styles.stepDotActive]}>
+              <Text style={[styles.stepNum, step >= 3 && styles.stepNumActive]}>3</Text>
+            </View>
+            <Text style={[styles.stepLabel, step >= 3 && styles.stepLabelActive]}>Documentos</Text>
           </View>
         </View>
 
@@ -245,7 +256,7 @@ export function DriverRegisterScreen({ navigation }: any) {
             </>
           )}
 
-          {/* ── PASO 2: Vehículo + Documentos ── */}
+          {/* ── PASO 2: Vehículo ── */}
           {step === 2 && (
             <>
               <Text style={styles.sectionTitle}>Datos del Vehículo</Text>
@@ -264,9 +275,19 @@ export function DriverRegisterScreen({ navigation }: any) {
                   value={plate} onChangeText={t => setPlate(t.toUpperCase())} autoCapitalize="characters" editable={!loading} />
               </View>
 
-              {/* Documentos */}
+              <TouchableOpacity style={styles.button} onPress={() => { if (validateStep2()) setStep(3); }}>
+                <Text style={styles.buttonText}>Continuar →</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* ── PASO 3: Documentos ── */}
+          {step === 3 && (
+            <>
               <Text style={styles.sectionTitle}>Documentos Requeridos</Text>
-              <Text style={styles.docHint}>Todos los documentos son obligatorios para activar tu cuenta.</Text>
+              <Text style={styles.docHint}>
+                Sube una foto clara de cada documento. Todos son obligatorios para activar tu cuenta como conductor.
+              </Text>
 
               {DOCS.map((doc) => {
                 const uploaded = !!docs[doc.key];
@@ -293,6 +314,19 @@ export function DriverRegisterScreen({ navigation }: any) {
                   </TouchableOpacity>
                 );
               })}
+
+              {/* Progreso de documentos */}
+              <View style={styles.docProgressRow}>
+                {DOCS.map((doc) => (
+                  <View
+                    key={doc.key}
+                    style={[styles.docProgressDot, docs[doc.key] && styles.docProgressDotDone]}
+                  />
+                ))}
+                <Text style={styles.docProgressLabel}>
+                  {Object.keys(docs).length} / {DOCS.length} documentos
+                </Text>
+              </View>
 
               {/* Preview de imágenes subidas */}
               {Object.keys(docs).length > 0 && (
@@ -397,6 +431,29 @@ const styles = StyleSheet.create({
   docLabel: { fontWeight: '600', fontSize: 14, color: BLACK, marginBottom: 2 },
   docLabelDone: { color: '#0033A0' },
   docStatus: { fontSize: 12, color: '#aaa' },
+
+  // Doc progress indicator
+  docProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 14,
+    marginTop: 4,
+  },
+  docProgressDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E5E7EB',
+  },
+  docProgressDotDone: {
+    backgroundColor: YELLOW,
+  },
+  docProgressLabel: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginLeft: 4,
+  },
 
   // Image previews
   previewRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },

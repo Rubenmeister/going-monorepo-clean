@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Going – Cómo pedir tu viaje</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',sans-serif;background:#f0f2f8;color:#222;min-height:100vh;}
+
+    /* HEADER */
+    header{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white;text-align:center;padding:32px 20px 24px;}
+    .logo{font-size:2.2rem;font-weight:900;letter-spacing:3px;color:#e94560;}
+    header p{margin-top:6px;font-size:.95rem;opacity:.75;}
+
+    /* PROGRESS */
+    .prog-wrap{background:#16213e;padding:14px 10px 18px;display:flex;justify-content:center;}
+    .prog-step{display:flex;flex-direction:column;align-items:center;flex:1;max-width:64px;position:relative;cursor:pointer;}
+    .prog-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:3px;background:#2a2a5a;z-index:0;transition:background .4s;}
+    .prog-step.done:not(:last-child)::after{background:#e94560;}
+    .s-dot{width:30px;height:30px;border-radius:50%;background:#2a2a5a;border:2px solid #2a2a5a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#666;position:relative;z-index:1;transition:all .3s;}
+    .prog-step.active .s-dot{background:#e94560;border-color:#e94560;color:white;box-shadow:0 0 10px #e9456088;}
+    .prog-step.done .s-dot{background:#e94560;border-color:#e94560;color:white;}
+    .s-lbl{font-size:.55rem;color:#555;margin-top:4px;text-align:center;transition:color .3s;}
+    .prog-step.active .s-lbl,.prog-step.done .s-lbl{color:#e94560;}
+
+    /* CARD */
+    .wrap{max-width:500px;margin:24px auto 40px;padding:0 14px;}
+    .counter{text-align:center;font-size:.78rem;color:#aaa;margin-bottom:10px;}
+    .card{background:white;border-radius:20px;box-shadow:0 6px 28px rgba(0,0,0,.10);overflow:hidden;display:none;animation:up .35s ease;}
+    .card.active{display:block;}
+    @keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ILLUSTRATION */
+    .illus{width:100%;height:190px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+    .card[data-step="1"] .illus{background:linear-gradient(135deg,#1a1a2e,#0f3460);}
+    .card[data-step="2"] .illus{background:linear-gradient(135deg,#0f3460,#533483);}
+    .card[data-step="3"] .illus{background:linear-gradient(135deg,#533483,#e94560);}
+    .card[data-step="4"] .illus{background:linear-gradient(135deg,#c0392b,#f5a623);}
+    .card[data-step="5"] .illus{background:linear-gradient(135deg,#f5a623,#1abc9c);}
+    .card[data-step="6"] .illus{background:linear-gradient(135deg,#16213e,#e94560);}
+    .card[data-step="7"] .illus{background:linear-gradient(135deg,#2ecc71,#0f3460);}
+    .illus-icon{font-size:82px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.3));animation:pulse 2.2s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+    .badge{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.15);color:white;font-size:.72rem;font-weight:600;padding:3px 11px;border-radius:20px;backdrop-filter:blur(4px);}
+
+    /* BODY */
+    .body{padding:20px 20px 14px;}
+    .body h2{font-size:1.2rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;}
+    .body p{font-size:.9rem;color:#555;line-height:1.6;}
+
+    /* MINI STEPS */
+    .mini{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+    .mini-row{display:flex;align-items:flex-start;gap:10px;background:#fafafa;border-radius:10px;padding:9px 12px;font-size:.85rem;color:#333;}
+    .mini-row .n{width:24px;height:24px;border-radius:50%;background:#e94560;color:white;font-weight:700;font-size:.72rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+
+    /* TIPO VIAJE CARDS */
+    .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+    .type-card{border:2px solid #eee;border-radius:12px;padding:14px 10px;text-align:center;transition:all .2s;}
+    .type-card.sel{border-color:#e94560;background:#fff5f6;}
+    .type-card .tc-icon{font-size:2rem;}
+    .type-card .tc-name{font-weight:700;font-size:.88rem;margin-top:4px;color:#1a1a2e;}
+    .type-card .tc-desc{font-size:.75rem;color:#888;margin-top:2px;}
+    .pax-row{display:flex;align-items:center;gap:12px;margin-top:14px;background:#fafafa;border-radius:10px;padding:10px 14px;}
+    .pax-row span{font-size:.88rem;color:#444;flex:1;}
+    .pax-btn{width:30px;height:30px;border-radius:50%;border:none;background:#e94560;color:white;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .pax-count{font-size:1.1rem;font-weight:700;color:#1a1a2e;min-width:24px;text-align:center;}
+
+    /* PAGOS */
+    .pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+    .pay-item{border:2px solid #eee;border-radius:10px;padding:10px 6px;text-align:center;font-size:.75rem;color:#444;font-weight:600;}
+    .pay-item .pi{font-size:1.6rem;display:block;margin-bottom:4px;}
+    .pay-item.green{border-color:#2ecc71;background:#f0fff8;}
+    .pay-item.blue{border-color:#3498db;background:#f0f8ff;}
+    .pay-item.orange{border-color:#f5a623;background:#fffbf0;}
+
+    /* TIP */
+    .tip{margin-top:14px;background:#f0f4ff;border-left:4px solid #e94560;border-radius:0 10px 10px 0;padding:10px 12px;font-size:.83rem;color:#444;display:flex;gap:8px;align-items:flex-start;}
+    .ti{font-size:1rem;flex-shrink:0;}
+
+    /* ESPERA TIMER */
+    .timer-box{margin-top:14px;background:#fff5f6;border:2px solid #e94560;border-radius:12px;padding:14px;text-align:center;}
+    .timer-box .big-time{font-size:2rem;font-weight:800;color:#e94560;}
+    .timer-box p{font-size:.8rem;color:#888;margin-top:4px;}
+
+    /* SOS */
+    .sos-row{display:flex;gap:10px;margin-top:14px;}
+    .sos-btn{flex:1;padding:12px 8px;border-radius:12px;border:none;font-weight:700;font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .sos-red{background:#e94560;color:white;}
+    .sos-gray{background:#f0f0f0;color:#555;}
+
+    /* CANCEL */
+    .cancel-box{margin-top:14px;border:2px dashed #ddd;border-radius:12px;padding:12px 14px;}
+    .cancel-box h4{font-size:.88rem;font-weight:700;color:#1a1a2e;margin-bottom:8px;}
+    .cancel-box ol{padding-left:18px;font-size:.82rem;color:#555;line-height:1.8;}
+
+    /* RATING FINAL */
+    .final-body{text-align:center;padding:28px 20px 16px;}
+    .big-check{font-size:64px;}
+    .final-body h2{font-size:1.3rem;font-weight:800;color:#1a1a2e;margin:12px 0 8px;}
+    .final-body p{font-size:.88rem;color:#666;line-height:1.6;}
+    .stars{display:flex;justify-content:center;gap:10px;margin-top:18px;}
+    .star{font-size:1.8rem;cursor:pointer;transition:transform .2s;filter:grayscale(1);opacity:.35;}
+    .star.lit{filter:none;opacity:1;}
+    .star:hover{transform:scale(1.2);}
+    .rate-msg{min-height:20px;font-size:.85rem;font-weight:600;color:#e94560;margin-top:8px;}
+
+    /* NAV */
+    .nav{padding:0 20px 20px;display:flex;gap:10px;}
+    .btn{flex:1;padding:13px;border:none;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-p{background:#f0f0f0;color:#555;}
+    .btn-p:hover{background:#e0e0e0;}
+    .btn-n{background:linear-gradient(135deg,#e94560,#c0392b);color:white;box-shadow:0 4px 12px #e9456044;}
+    .btn-n:hover{transform:translateY(-1px);box-shadow:0 6px 16px #e9456066;}
+    .btn:disabled{opacity:.3;cursor:default;transform:none!important;}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">GOING</div>
+  <p>Guía paso a paso para pedir tu viaje</p>
+</header>
+
+<!-- BARRA DE PROGRESO -->
+<div class="prog-wrap" id="pb">
+  <div class="prog-step active" data-n="1" onclick="go(1)"><div class="s-dot">1</div><span class="s-lbl">App</span></div>
+  <div class="prog-step" data-n="2" onclick="go(2)"><div class="s-dot">2</div><span class="s-lbl">Destino</span></div>
+  <div class="prog-step" data-n="3" onclick="go(3)"><div class="s-dot">3</div><span class="s-lbl">Viaje</span></div>
+  <div class="prog-step" data-n="4" onclick="go(4)"><div class="s-dot">4</div><span class="s-lbl">Pago</span></div>
+  <div class="prog-step" data-n="5" onclick="go(5)"><div class="s-dot">5</div><span class="s-lbl">Espera</span></div>
+  <div class="prog-step" data-n="6" onclick="go(6)"><div class="s-dot">6</div><span class="s-lbl">En viaje</span></div>
+  <div class="prog-step" data-n="7" onclick="go(7)"><div class="s-dot">7</div><span class="s-lbl">¡Listo!</span></div>
+</div>
+
+<div class="wrap">
+  <p class="counter" id="ctr">Paso 1 de 7</p>
+
+  <!-- PASO 1: ABRIR APP -->
+  <div class="card active" data-step="1">
+    <div class="illus"><span class="badge">Paso 1</span><span class="illus-icon">📱</span></div>
+    <div class="body">
+      <h2>Abre la app Going</h2>
+      <p>Descarga Going desde la App Store o Google Play. El registro es gratuito y toma menos de 2 minutos.</p>
+      <div class="mini">
+        <div class="mini-row"><span class="n">1</span>Descarga Going e instálala</div>
+        <div class="mini-row"><span class="n">2</span>Regístrate o inicia sesión</div>
+        <div class="mini-row"><span class="n">3</span>Permite el acceso a tu ubicación</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" disabled>← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: DESTINO -->
+  <div class="card" data-step="2">
+    <div class="illus"><span class="badge">Paso 2</span><span class="illus-icon">📍</span></div>
+    <div class="body">
+      <h2>¿A dónde vas?</h2>
+      <p>Toca la barra de búsqueda en la pantalla principal y escribe tu destino. El mapa mostrará tu punto de recogida automáticamente.</p>
+      <div class="mini">
+        <div class="mini-row"><span class="n">1</span>Toca <strong>"¿A dónde vas?"</strong></div>
+        <div class="mini-row"><span class="n">2</span>Escribe la dirección o nombre del lugar</div>
+        <div class="mini-row"><span class="n">3</span>Selecciona el resultado correcto del listado</div>
+        <div class="mini-row"><span class="n">4</span>Confirma tu punto de recogida en el mapa</div>
+      </div>
+      <div class="tip"><span class="ti">💡</span>Guarda "Casa" y "Trabajo" como favoritos para pedir viajes más rápido.</div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: TIPO DE VIAJE + PASAJEROS -->
+  <div class="card" data-step="3">
+    <div class="illus"><span class="badge">Paso 3</span><span class="illus-icon">🚗</span></div>
+    <div class="body">
+      <h2>Elige tu tipo de viaje</h2>
+      <p>Going te ofrece dos modalidades. Selecciona la que mejor se adapte a ti:</p>
+      <div class="type-grid">
+        <div class="type-card sel" onclick="selType(this)">
+          <div class="tc-icon">🚗</div>
+          <div class="tc-name">Privado</div>
+          <div class="tc-desc">Solo tú y quienes te acompañan</div>
+        </div>
+        <div class="type-card" onclick="selType(this)">
+          <div class="tc-icon">👥</div>
+          <div class="tc-name">Compartido</div>
+          <div class="tc-desc">Comparte el viaje y paga menos</div>
+        </div>
+      </div>
+      <div class="pax-row">
+        <span>¿Cuántos viajan contigo?</span>
+        <button class="pax-btn" onclick="changePax(-1)">−</button>
+        <span class="pax-count" id="pax">1</span>
+        <button class="pax-btn" onclick="changePax(1)">+</button>
+      </div>
+      <div class="tip"><span class="ti">💡</span>El precio estimado se actualiza según el tipo de viaje y número de pasajeros.</div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: PAGO -->
+  <div class="card" data-step="4">
+    <div class="illus"><span class="badge">Paso 4</span><span class="illus-icon">💳</span></div>
+    <div class="body">
+      <h2>Elige cómo pagar</h2>
+      <p>Going acepta todos los métodos de pago más comunes. Selecciona el tuyo antes de confirmar el viaje:</p>
+      <div class="pay-grid">
+        <div class="pay-item green"><span class="pi">💵</span>Efectivo</div>
+        <div class="pay-item blue"><span class="pi">🏦</span>Transferencia</div>
+        <div class="pay-item orange"><span class="pi">💳</span>Débito</div>
+        <div class="pay-item orange"><span class="pi">💳</span>Crédito</div>
+        <div class="pay-item blue"><span class="pi">📱</span>Billetera digital</div>
+        <div class="pay-item green"><span class="pi">✅</span>Pago en app</div>
+      </div>
+      <div class="tip"><span class="ti">🔒</span>Tus datos de pago están protegidos. Puedes cambiar el método en cualquier momento desde Ajustes.</div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 5: ESPERA -->
+  <div class="card" data-step="5">
+    <div class="illus"><span class="badge">Paso 5</span><span class="illus-icon">⏳</span></div>
+    <div class="body">
+      <h2>Tu conductor está en camino</h2>
+      <p>Una vez confirmado, verás en el mapa cómo se acerca tu conductor con su nombre, foto y placa del vehículo.</p>
+      <div class="timer-box">
+        <div class="big-time">⏱ 5 min</div>
+        <p>Tiempo máximo que esperará tu conductor antes de cancelar</p>
+      </div>
+      <div class="cancel-box">
+        <h4>¿Cómo cancelar el viaje?</h4>
+        <ol>
+          <li>Toca los <strong>3 puntos (···)</strong> en la pantalla del viaje</li>
+          <li>Selecciona <strong>"Cancelar viaje"</strong></li>
+          <li>Indica el motivo de cancelación</li>
+          <li>Confirma — cancela gratis antes de que el conductor llegue</li>
+        </ol>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 6: EN VIAJE + SOS -->
+  <div class="card" data-step="6">
+    <div class="illus"><span class="badge">Paso 6</span><span class="illus-icon">🛣️</span></div>
+    <div class="body">
+      <h2>¡En camino a tu destino!</h2>
+      <p>Sigue la ruta en tiempo real. Antes de subir, verifica siempre la placa y la foto del conductor.</p>
+      <div class="mini">
+        <div class="mini-row"><span class="n">1</span>Verifica placa y foto del conductor al subir</div>
+        <div class="mini-row"><span class="n">2</span>Sigue la ruta en el mapa desde la app</div>
+        <div class="mini-row"><span class="n">3</span>Comparte tu viaje en tiempo real con un familiar</div>
+      </div>
+      <div class="sos-row">
+        <button class="sos-btn sos-red">🆘 Botón SOS</button>
+        <button class="sos-btn sos-gray">📤 Compartir viaje</button>
+      </div>
+      <div class="tip"><span class="ti">🆘</span><span>El <strong>botón SOS</strong> alerta a contactos de emergencia y comparte tu ubicación exacta en tiempo real con un solo toque.</span></div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="next()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- PASO 7: LLEGASTE + CALIFICACIÓN -->
+  <div class="card" data-step="7">
+    <div class="illus"><span class="badge">Paso 7</span><span class="illus-icon">🎉</span></div>
+    <div class="final-body">
+      <div class="big-check">✅</div>
+      <h2>¡Llegaste a tu destino!</h2>
+      <p>El viaje se completa automáticamente al llegar. Ahora califica a tu conductor para ayudar a toda la comunidad Going.</p>
+      <div class="stars" id="stars">
+        <span class="star" onclick="rate(1)">⭐</span>
+        <span class="star" onclick="rate(2)">⭐</span>
+        <span class="star" onclick="rate(3)">⭐</span>
+        <span class="star" onclick="rate(4)">⭐</span>
+        <span class="star" onclick="rate(5)">⭐</span>
+      </div>
+      <p class="rate-msg" id="rmsg"></p>
+      <div class="tip" style="margin-top:16px;text-align:left;"><span class="ti">💬</span>Puedes dejar un comentario sobre tu experiencia. Tu opinión ayuda a mantener la calidad del servicio.</div>
+    </div>
+    <div class="nav">
+      <button class="btn btn-p" onclick="prev()">← Anterior</button>
+      <button class="btn btn-n" onclick="go(1)" style="background:linear-gradient(135deg,#2ecc71,#27ae60)">Ver de nuevo ↺</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let cur = 1, pax = 1;
+  const total = 7;
+  const rmsgs = ['','😕 Gracias, trabajamos para mejorar.','😐 Gracias por tu retroalimentación.','🙂 Bien, seguimos mejorando.','😊 ¡Genial! Nos alegra tu experiencia.','🤩 ¡Excelente! Gracias por confiar en Going.'];
+
+  function render(){
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    document.querySelector(`.card[data-step="${cur}"]`).classList.add('active');
+    document.querySelectorAll('.prog-step').forEach(s=>{
+      const n=parseInt(s.dataset.n);
+      s.classList.remove('active','done');
+      if(n===cur) s.classList.add('active');
+      if(n<cur)   s.classList.add('done');
+    });
+    document.getElementById('ctr').textContent=`Paso ${cur} de ${total}`;
+  }
+  function next(){if(cur<total){cur++;render();}}
+  function prev(){if(cur>1){cur--;render();}}
+  function go(n){cur=n;render();}
+  function selType(el){document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+  function changePax(d){pax=Math.max(1,Math.min(6,pax+d));document.getElementById('pax').textContent=pax;}
+  function rate(n){
+    document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<n));
+    document.getElementById('rmsg').textContent=rmsgs[n];
+  }
+</script>
+</body>
+</html>

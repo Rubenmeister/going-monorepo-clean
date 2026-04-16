@@ -1,7 +1,5 @@
-'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../store';
 
 export default function LoginPage() {
@@ -100,13 +98,13 @@ export default function LoginPage() {
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">
             ¿No tienes cuenta?{' '}
-            <Link
-              href="/register"
+            <button
+              onClick={() => router.push('/register')}
               className="font-semibold"
-              style={{ color: '#ff4c41' }}
+              style={{ color: '#ff4c41', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Regístrate
-            </Link>
+            </button>
           </p>
         </div>
 

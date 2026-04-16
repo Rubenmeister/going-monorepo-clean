@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Going | Splash</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#b71416",
+              "vibrant-red": "#FF2D2D",
+              "background": "#0a0f1d",
+              "on-background": "#faf8ff",
+            },
+            fontFamily: {
+              "headline": ["Nunito"],
+              "body": ["Nunito"],
+              "label": ["Nunito"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            keyframes: {
+              'logo-born': {
+                '0%': { transform: 'scale(0.3) rotate(-10deg)', opacity: '0', filter: 'blur(20px) brightness(2)' },
+                '60%': { transform: 'scale(1.1)', opacity: '1', filter: 'blur(0px) brightness(1.2)' },
+                '100%': { transform: 'scale(1)', opacity: '1', filter: 'blur(0px) brightness(1)' }
+              },
+              'fade-in-up': {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              },
+              'pulse-glow': {
+                '0%, 100%': { opacity: '0.4', transform: 'scale(0.8)' },
+                '50%': { opacity: '0.7', transform: 'scale(1.2)' }
+              }
+            },
+            animation: {
+              'logo-born': 'logo-born 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+              'fade-in-up': 'fade-in-up 1s ease-out forwards',
+              'pulse-glow': 'pulse-glow 4s ease-in-out infinite'
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .cinematic-vignette {
+            background: radial-gradient(circle at center, transparent 20%, rgba(10, 15, 29, 0.6) 100%);
+        }
+        .vibrant-red-logo {
+            filter: invert(15%) sepia(95%) saturate(6932%) hue-rotate(355deg) brightness(95%) contrast(118%);
+        }
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background font-body overflow-hidden h-full">
+<!-- Main Canvas -->
+<main class="relative h-screen w-screen flex flex-col items-center justify-center overflow-hidden">
+<!-- 1. Cinematic Background Image (Referencing SCREEN_12/16 style) -->
+<div class="absolute inset-0 z-0">
+<img alt="Cinematic low angle of a winding coastal highway at dusk" class="w-full h-full object-cover scale-110 opacity-70 brightness-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpyzMqEpB8iGMKpPKRhcYc91JbSGDX_O9FNxl0vK4lv9ZBccJOBihEKwXqnroOm0utk9n4X_E-p2k3C6zOWOxDINOyfJHgqASWuUBIRRVq6SsTfjy6g5lKz_AozqbA9F8HPurCD9jbl4v68VLxtffNig9lgO58F39GOtOSPYzfrcAELstxg0cQPDcCwq3HUfga9AD8Rm7RTqwjNAtEgl0TAydxL2GO_aCkCrgvipcHYgRI1rchO8ExPOsxzIU1J6debnlq2_UyZfRN"/>
+<!-- Cinematic Overlays -->
+<div class="absolute inset-0 cinematic-vignette"></div>
+<div class="absolute inset-0 bg-background/10 mix-blend-multiply"></div>
+</div>
+<!-- 2. Logo Animation & Brand Content -->
+<div class="relative z-10 flex flex-col items-center text-center">
+<!-- Logo Container -->
+<div class="relative mb-6 group">
+<!-- Birth Effect Glow -->
+<div class="absolute inset-0 bg-primary/20 blur-[80px] rounded-full scale-150 animate-pulse-glow"></div>
+<!-- Official Logo Image (Vibrant Red & Born Animation) -->
+<div class="animate-logo-born">
+<img alt="Going Logo" class="relative w-48 md:w-64 h-auto drop-shadow-[0_0_30px_rgba(255,76,65,0.3)]" src="https://lh3.googleusercontent.com/aida/ADBb0uj75eZEjBiudNXapI1rhdiSgCSiwAmwfqgBjbvAYDkQlsjzaAhOO2R6dLniS-mUh9ig8IR95U091KQV5kwCvSm6mTFhyldbDl1lEPp00Oa_6EbEtRVnJjhllp5bUsBeBi0Y3cYGhXYGY81_hpwwy_inXrzpBADlE0VmargO8Wu3jm_v5Sw4y5ehnQokvBwnG3y5slqTrb4d9OrFQNTfshqGO0jqt3Hg67DLCNOSnpZlfvXFmBui7kN-mmNFFQ0LtUjbZUPI94-rBfo"/>
+</div>
+</div>
+<!-- 3. 'NOS MOVEMOS CONTIGO' -->
+<div class="mt-4 opacity-0 animate-fade-in-up" style="animation-delay: 1.2s;">
+<p class="text-on-background font-bold text-sm md:text-base tracking-[0.6em] uppercase drop-shadow-md">
+                Nos movemos contigo
+            </p>
+</div>
+</div>
+<!-- 4. 'EST. MMXXVI' at bottom -->
+<div class="absolute bottom-16 flex flex-col items-center gap-6 opacity-0 animate-fade-in-up" style="animation-delay: 1.8s;">
+<!-- Editorial Line -->
+<div class="w-24 h-[1px] bg-on-background/20 relative">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-vibrant-red/60 to-transparent"></div>
+</div>
+<!-- Quality Stamp -->
+<div class="flex items-center gap-4">
+<span class="w-6 h-[1px] bg-on-background/10"></span>
+<span class="text-[10px] uppercase tracking-[0.4em] font-black text-on-background/40">EST. MMXXVI</span>
+<span class="w-6 h-[1px] bg-on-background/10"></span>
+</div>
+</div>
+<!-- Cinematic Depth Accents -->
+<div class="absolute top-12 left-12 z-20 opacity-20 border-l border-t border-on-background w-12 h-12"></div>
+<div class="absolute bottom-12 right-12 z-20 opacity-20 border-r border-b border-on-background w-12 h-12"></div>
+</main>
+</body></html>

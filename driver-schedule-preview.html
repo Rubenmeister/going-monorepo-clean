@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0f1d;padding:30px;font-family:-apple-system,sans-serif;display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+.col{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.phone{width:300px;height:640px;border-radius:38px;overflow:hidden;border:5px solid #222;box-shadow:0 24px 48px rgba(0,0,0,0.7);background:#F0F2F5;display:flex;flex-direction:column;}
+.lbl{color:#fff;font-size:10px;opacity:0.45;letter-spacing:2px;text-transform:uppercase;}
+
+/* HEADER */
+.header{background:#0033A0;padding:40px 14px 14px;display:flex;align-items:center;gap:10px;}
+.back{width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+.h-title{font-size:16px;font-weight:900;color:#fff;flex:1;}
+.h-sub{font-size:10px;color:rgba(255,255,255,0.65);margin-top:1px;}
+
+/* EARNINGS BANNER */
+.earn{background:#ECFDF5;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #BBF7D0;}
+.earn-text{font-size:12px;color:#065F46;font-weight:600;}
+
+/* SCROLL */
+.scroll{flex:1;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:12px;}
+.sec{font-size:8px;font-weight:800;color:#9CA3AF;letter-spacing:1.5px;margin-bottom:6px;}
+
+/* ROUTE CARDS */
+.route-card{background:#fff;border-radius:14px;padding:11px;display:flex;align-items:center;gap:10px;border:2px solid #E5E7EB;position:relative;}
+.route-card.active{border-color:#0033A0;background:#F0F4FF;}
+.r-check{position:absolute;top:9px;right:9px;width:18px;height:18px;border-radius:9px;background:#0033A0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;}
+.r-icon{font-size:20px;}
+.r-label{font-size:12px;font-weight:800;color:#111827;}
+.route-card.active .r-label{color:#0033A0;}
+.r-stops{font-size:9px;color:#9CA3AF;margin-top:1px;}
+.r-income{text-align:right;font-size:13px;font-weight:900;color:#059669;}
+.r-income-lbl{font-size:8px;color:#9CA3AF;}
+
+/* TIMES GRID */
+.times{display:flex;flex-wrap:wrap;gap:6px;}
+.time-chip{padding:6px 12px;border-radius:20px;background:#fff;border:1.5px solid #E5E7EB;font-size:11px;font-weight:700;color:#374151;}
+.time-chip.active{background:#0033A0;border-color:#0033A0;color:#fff;}
+
+/* DAYS */
+.days{display:flex;gap:6px;}
+.day{width:32px;height:32px;border-radius:16px;background:#fff;border:1.5px solid #E5E7EB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#374151;}
+.day.active{background:#0033A0;border-color:#0033A0;color:#fff;}
+.days-sel{font-size:10px;color:#6B7280;margin-top:3px;font-style:italic;}
+
+/* RETURN */
+.return-row{background:#F0FDF4;border-radius:12px;padding:10px;border:1px solid #BBF7D0;display:flex;align-items:center;gap:10px;}
+.ret-title{font-size:12px;font-weight:800;color:#065F46;}
+.ret-sub{font-size:9px;color:#059669;margin-top:1px;}
+.toggle{width:40px;height:22px;border-radius:11px;background:#059669;position:relative;margin-left:auto;}
+.toggle::after{content:'';position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:8px;background:#fff;}
+
+/* ADD BTN */
+.add-btn{background:#EFF6FF;border-radius:12px;padding:11px;text-align:center;font-size:12px;font-weight:800;color:#0033A0;border:1.5px solid #BFDBFE;}
+
+/* SLOTS */
+.slot{background:#fff;border-radius:12px;padding:10px;margin-bottom:6px;border-left:4px solid #0033A0;display:flex;align-items:center;gap:8px;}
+.slot-icon{font-size:18px;}
+.slot-route{font-size:11px;font-weight:800;color:#111827;}
+.slot-time{font-size:10px;color:#6B7280;margin-top:1px;}
+.slot-del{font-size:14px;color:#DC2626;margin-left:auto;}
+
+/* FOOTER */
+.footer{background:#fff;padding:12px 14px 24px;display:flex;align-items:center;gap:10px;border-top:1px solid #F3F4F6;}
+.foot-info{flex:1;}
+.foot-slots{font-size:12px;font-weight:800;color:#111827;}
+.foot-earn{font-size:10px;color:#059669;font-weight:600;margin-top:1px;}
+.save-btn{background:#0033A0;border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,51,160,0.3);}
+.save-text{font-size:13px;font-weight:900;color:#fff;}
+</style></head>
+<body>
+
+<!-- PASO 1: Elegir ruta -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div>
+      <div class="h-title">Mi agenda de rutas</div>
+      <div class="h-sub">Elige en qué rutas y horarios quieres trabajar</div>
+    </div>
+  </div>
+  <div class="earn">
+    <span style="font-size:16px;">📈</span>
+    <div class="earn-text">Estimado semanal: <strong>$240</strong> con 2 horarios</div>
+  </div>
+  <div class="scroll">
+    <div>
+      <div class="sec">1. ELIGE TU RUTA</div>
+      <div class="route-card active" style="margin-bottom:8px;">
+        <div class="r-check">✓</div>
+        <div class="r-icon">🏔️</div>
+        <div style="flex:1;">
+          <div class="r-label">Sierra Centro → Quito</div>
+          <div class="r-stops">Riobamba · Ambato · Latacunga · Quito</div>
+        </div>
+        <div><div class="r-income">~$30</div><div class="r-income-lbl">por viaje</div></div>
+      </div>
+      <div class="route-card" style="margin-bottom:8px;">
+        <div class="r-icon">🌊</div>
+        <div style="flex:1;">
+          <div class="r-label">Costa → Quito</div>
+          <div class="r-stops">El Carmen · Sto. Domingo · Quito</div>
+        </div>
+        <div><div class="r-income">~$39</div><div class="r-income-lbl">por viaje</div></div>
+      </div>
+      <div class="route-card">
+        <div class="r-icon">🌿</div>
+        <div style="flex:1;">
+          <div class="r-label">Sierra Norte → Quito</div>
+          <div class="r-stops">Ibarra · Otavalo · Quito</div>
+        </div>
+        <div><div class="r-income">~$27</div><div class="r-income-lbl">por viaje</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lbl">Paso 1 · Ruta</div>
+</div>
+
+<!-- PASO 2: Horario y días -->
+<div class="col">
+<div class="phone">
+  <div class="header">
+    <div class="back">‹</div>
+    <div>
+      <div class="h-title">Mi agenda de rutas</div>
+      <div class="h-sub">Sierra Centro seleccionada</div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div>
+      <div class="sec">2. HORA DE SALIDA</div>
+      <div class="times">
+        <div class="time-chip">05:00</div>
+        <div class="time-chip">06:00</div>
+        <div class="time-chip active">07:00</div>
+        <div class="time-chip">08:00</div>
+        <div class="time-chip">09:00</div>
+        <div class="time-chip">10:00</div>
+        <div class="time-chip">12:00</div>
+        <div class="time-chip">14:00</div>
+        <div class="time-chip">16:00</div>
+        <div class="time-chip">18:00</div>
+      </div>
+    </div>
+    <div>
+      <div class="sec">3. DÍAS DE LA SEMANA</div>
+      <div class="days">
+        <div class="day active">L</div>
+        <div class="day">M</div>
+        <div class="day active">X</div>
+        <div class="day active">J</div>
+        <div class="day">V</div>
+        <div class="day active">S</div>
+        <div class="day">D</div>
+      </div>
+      <div class="days-sel">Lunes, Miércoles, Jueves, Sábado</div>
+    </div>
+    <div class="return-row">
+      <div>
+        <div class="ret-title">Quiero hacer el viaje de regreso</div>
+        <div class="ret-sub">Duplica tus ingresos · se asigna 1-2h después de llegar</div>
+      </div>
+      <div class="toggle"></div>
+    </div>
+    <div class="add-btn">+ Agregar este horario a mi agenda</div>
+    <div>
+      <div class="sec">MI AGENDA REGISTRADA</div>
+      <div class="slot">
+        <div class="slot-icon">🏔️</div>
+        <div>
+          <div class="slot-route">Sierra Centro → Quito</div>
+          <div class="slot-time">07:00 · L X J S · + regreso</div>
+        </div>
+        <div class="slot-del">🗑</div>
+      </div>
+      <div class="slot" style="border-left-color:#059669;">
+        <div class="slot-icon">🌿</div>
+        <div>
+          <div class="slot-route">Sierra Norte → Quito</div>
+          <div class="slot-time">06:00 · M V</div>
+        </div>
+        <div class="slot-del">🗑</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="foot-info">
+      <div class="foot-slots">2 horarios registrados</div>
+      <div class="foot-earn">~$240/semana estimado</div>
+    </div>
+    <div class="save-btn">
+      <span style="font-size:14px;color:#fff;">💾</span>
+      <span class="save-text">Guardar agenda</span>
+    </div>
+  </div>
+</div>
+<div class="lbl">Paso 2-3 · Horario y días</div>
+</div>
+
+</body></html>
