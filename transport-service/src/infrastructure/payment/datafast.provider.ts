@@ -76,33 +76,154 @@ export class DatafastProvider implements IPaymentGateway {
     }
   }
 
+  /**
+   * Crea un checkout en Datafast (Fase 2 — todos los campos obligatorios).
+   * Retorna el checkoutId para renderizar el widget en WebView.
+   *
+   * Flujo móvil:
+   *  1. Backend llama a este método → obtiene checkoutId
+   *  2. App abre WebView con el script del widget
+   *  3. Usuario paga → widget redirige a shopperResultUrl con ?resourcePath=
+   *  4. Backend llama a getStatusByResourcePath(resourcePath) para confirmar
+   */
   private async _initiateRedirect(input: InitiatePaymentInput): Promise<InitiatePaymentResult> {
-    const body = new URLSearchParams({
-      'entityId':                    this.entityId,
-      'amount':                      input.amountUsd.toFixed(2),
-      'currency':                    'USD',
-      'paymentType':                 'DB',
-      'merchantTransactionId':       input.transactionId,
-      'descriptor':                  input.description,
-      'customer.merchantCustomerId': input.userId,
-      'shopperResultUrl':            input.returnUrl,
-      'cancelUrl':                   input.cancelUrl,
-    });
+    const isTest = !this.baseUrl.includes('ccapi.datafast') ||
+                   this.config.get('NODE_ENV') !== 'production';
 
-    const res  = await this._postForm('/v1/checkouts', body);
+    // ── IVA Ecuador: 15% sobre la base imponible ────────────────────────────
+    // Los viajes de transporte no gravan IVA en Ecuador (exentos Art. 56 LRTI)
+    // Si el servicio es exento: BASEIMP=0, IVA=0, BASE0=amount
+    const baseImp = input.taxableAmount ?? 0;
+    const ivaRate = 0.15;
+    const ivaVal  = +(baseImp * ivaRate).toFixed(2);
+    const base0   = +(input.amountUsd - baseImp - ivaVal).toFixed(2);
+
+    // ── merchantTransactionId: único por transacción, 8-255 caracteres ──────
+    const merchantTxId = input.transactionId.length >= 8
+      ? input.transactionId.slice(0, 255)
+      : input.transactionId.padEnd(8, '0');
+
+    // ── Cédula: siempre 10 dígitos, completar con ceros a la izquierda ──────
+    const docId = (input.customerDocId ?? '0000000000').padStart(10, '0').slice(0, 10);
+
+    const params: Record<string, string> = {
+      // ── Identificación ───────────────────────────────────────────────────
+      'entityId':                      this.entityId,
+      'amount':                        input.amountUsd.toFixed(2),
+      'currency':                      'USD',
+      'paymentType':                   'DB',
+      'merchantTransactionId':         merchantTxId,
+
+      // ── Cliente ──────────────────────────────────────────────────────────
+      'customer.givenName':            (input.customerFirstName ?? 'Cliente').slice(0, 48),
+      'customer.middleName':           (input.customerMiddleName ?? 'G').slice(0, 50),
+      'customer.surname':              (input.customerLastName ?? 'Going').slice(0, 48),
+      'customer.email':                (input.customerEmail ?? 'cliente@goingec.com').slice(0, 128),
+      'customer.phone':                (input.customerPhone ?? '0999999999').slice(0, 25),
+      'customer.ip':                   (input.customerIp ?? '127.0.0.1').slice(0, 255),
+      'customer.merchantCustomerId':   (input.userId ?? 'GUEST').slice(0, 16),
+      'customer.identificationDocType': 'IDCARD',
+      'customer.identificationDocId':  docId,
+
+      // ── Producto (viaje Going) ────────────────────────────────────────────
+      'cart.items[0].name':            (input.description ?? 'Viaje Going').slice(0, 255),
+      'cart.items[0].description':     (input.description ?? 'Servicio de transporte Going Ecuador').slice(0, 255),
+      'cart.items[0].price':           input.amountUsd.toFixed(2),
+      'cart.items[0].quantity':        '1',
+
+      // ── Dirección ────────────────────────────────────────────────────────
+      'billing.street1':               (input.billingAddress ?? 'Quito, Ecuador').slice(0, 100),
+      'billing.country':               'EC',
+      'shipping.street1':              (input.shippingAddress ?? input.billingAddress ?? 'Quito, Ecuador').slice(0, 100),
+      'shipping.country':              'EC',
+
+      // ── Redirect ─────────────────────────────────────────────────────────
+      'shopperResultUrl':              input.returnUrl ?? `${this.config.get('APP_URL', 'https://api.goingec.com')}/payments/datafast/return`,
+
+      // ── Impuestos Ecuador (exención IVA para transporte) ─────────────────
+      'customParameters[SHOPPER_VAL_BASE0]':   base0.toFixed(2),
+      'customParameters[SHOPPER_VAL_BASEIMP]': baseImp.toFixed(2),
+      'customParameters[SHOPPER_VAL_IVA]':     ivaVal.toFixed(2),
+
+      // ── Identificadores Datafast ──────────────────────────────────────────
+      'customParameters[SHOPPER_MID]': this.config.get('DATAFAST_MID', '1000000406'),
+      'customParameters[SHOPPER_TID]': this.config.get('DATAFAST_TID', 'PD100406'),
+      'customParameters[SHOPPER_ECI]': '0103910',
+    };
+
+    // En ambiente de prueba (Fase 2) agregar textMode
+    if (isTest) {
+      params['testMode'] = 'EXTERNAL';
+    }
+
+    const res  = await this._postForm('/v1/checkouts', new URLSearchParams(params));
     const data = await res.json() as Record<string, any>;
 
     if (!res.ok || !this._isSuccess(data)) {
-      this.logger.error(`DATAFAST redirect error: ${JSON.stringify(data?.result)}`);
-      throw new Error(`DATAFAST ${res.status}: ${data?.result?.description ?? 'error'}`);
+      this.logger.error(`DATAFAST checkout error: ${JSON.stringify(data?.result)}`);
+      throw new Error(`DATAFAST ${res.status}: ${data?.result?.description ?? 'error iniciando checkout'}`);
     }
 
-    const checkoutId = data.id;
+    const checkoutId  = data.id as string;
+    const widgetJsUrl = `${this.baseUrl}/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+
+    this.logger.log(`DATAFAST checkout creado: id=${checkoutId} monto=${input.amountUsd}`);
+
     return {
-      mode:         'redirect',
+      mode:          'redirect',
       transactionId: input.transactionId,
-      redirectUrl:  `${this.baseUrl}/v1/paymentWidgets.js?checkoutId=${checkoutId}`,
-      gatewayRef:   checkoutId,
+      gatewayRef:    checkoutId,
+      // URL del widget JS para cargar en WebView
+      redirectUrl:   widgetJsUrl,
+      // HTML mínimo para el WebView
+      checkoutHtml:  this._buildCheckoutHtml(widgetJsUrl, input.returnUrl ?? ''),
+    };
+  }
+
+  /**
+   * Genera el HTML mínimo para cargar el widget Datafast en un WebView móvil.
+   * El form se auto-envía al shopperResultUrl tras el pago.
+   */
+  private _buildCheckoutHtml(widgetJsUrl: string, shopperResultUrl: string): string {
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.datafast.com.ec/js/dfAdditionalValidations1.js"></script>
+</head>
+<body style="margin:0;padding:16px;background:#f0f2f5;font-family:sans-serif;">
+  <script src="${widgetJsUrl}"></script>
+  <form action="${shopperResultUrl}"
+        class="paymentWidgets"
+        data-brands="VISA MASTER AMEX DINERS DISCOVER">
+  </form>
+</body>
+</html>`;
+  }
+
+  /**
+   * Verifica el estado de una transacción usando el resourcePath
+   * que Datafast envía como parámetro al shopperResultUrl.
+   * resourcePath ejemplo: /v1/checkouts/{checkoutId}/payment
+   */
+  async getStatusByResourcePath(resourcePath: string): Promise<PaymentStatusResult> {
+    const url  = `${this.baseUrl}${resourcePath}?entityId=${this.entityId}`;
+    const res  = await this._get(url);
+    const data = await res.json() as Record<string, any>;
+
+    const approved = this._isApproved(data);
+    const txnId    = data?.merchantTransactionId ?? data?.id ?? '';
+
+    this.logger.log(`DATAFAST resourcePath status: code=${data?.result?.code} approved=${approved}`);
+
+    return {
+      transactionId: txnId,
+      status:        approved ? 'approved' : 'rejected',
+      gatewayRef:    data?.id ?? '',
+      amount:        parseFloat(data?.amount ?? '0'),
+      paidAt:        approved ? new Date(data?.timestamp ?? Date.now()) : undefined,
+      raw:           data,
     };
   }
 

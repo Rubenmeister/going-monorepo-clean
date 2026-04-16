@@ -1,3 +1,5 @@
+# Exclude node_modules - EAS will run npm ci on Linux with fixed package-lock.json
+node_modules/
 # Exclude everything outside mobile-driver-app from EAS upload
 ../node_modules
 ../mobile-user-app
@@ -17,7 +19,6 @@
 ../voice-service
 ../.git
 ../.claude
-node_modules/
 .expo/
 dist/
 *.log

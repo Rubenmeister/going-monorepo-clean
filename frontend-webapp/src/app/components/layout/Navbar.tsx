@@ -38,12 +38,12 @@ export function Navbar() {
 }
 
 /**
- * Logo component
+ * Logo component — imagen principal con fallback de texto Going
  */
 function Logo({ onLogoClick }: { onLogoClick: () => void }) {
   return (
     <div
-      className="flex items-center cursor-pointer"
+      className="flex items-center cursor-pointer gap-1"
       onClick={onLogoClick}
     >
       <Image
@@ -53,6 +53,18 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
         height={40}
         priority
         className="object-contain"
+        onError={(e) => {
+          // Fallback: ocultar imagen y mostrar texto
+          (e.target as HTMLImageElement).style.display = 'none';
+          const parent = (e.target as HTMLImageElement).parentElement;
+          if (parent && !parent.querySelector('.logo-text-fallback')) {
+            const span = document.createElement('span');
+            span.className = 'logo-text-fallback';
+            span.style.cssText = 'color:#ff4c41;font-weight:900;font-size:22px;letter-spacing:-1px';
+            span.textContent = 'Going';
+            parent.appendChild(span);
+          }
+        }}
       />
     </div>
   );

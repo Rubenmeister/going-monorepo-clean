@@ -48,9 +48,9 @@ steps:
       - '5'
       - '--timeout'
       - '60'
-      - '--update-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY-prod:latest'
+      - '--update-secrets=WHATSAPP_PHONE_NUMBER_ID=WHATSAPP_PHONE_NUMBER_ID:latest,META_WA_ACCESS_TOKEN=META_WA_ACCESS_TOKEN:latest,WHATSAPP_VERIFY_TOKEN=WHATSAPP_VERIFY_TOKEN:latest'
       - '--set-env-vars'
-      - 'NODE_ENV=production'
+      - 'NODE_ENV=production,GCP_PROJECT=$PROJECT_ID'
 
 images:
   - 'gcr.io/$PROJECT_ID/customer-support-service:$BUILD_ID'

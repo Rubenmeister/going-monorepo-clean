@@ -146,6 +146,45 @@ export class PaymentController {
     return result;
   }
 
+  // ─── DATAFAST RETURN URL ──────────────────────────────────────────────────────
+  /**
+   * GET /payments/datafast/return?resourcePath=/v1/checkouts/{id}/payment
+   *
+   * Datafast redirige aquí tras el pago con el parámetro resourcePath.
+   * Verificamos el estado con Datafast y redirigimos a la app móvil via deep link.
+   */
+  @Get('datafast/return')
+  async datafastReturn(
+    @Query('resourcePath') resourcePath: string,
+    @Res() res: Response,
+  ) {
+    const appScheme = this.config.get('APP_DEEP_LINK_SCHEME', 'goingapp');
+
+    if (!resourcePath) {
+      return res.redirect(`${appScheme}://payment/result?status=error&msg=no_resource_path`);
+    }
+
+    try {
+      const datafastProvider = (this.gateway as any).datafast as any;
+      if (!datafastProvider?.getStatusByResourcePath) {
+        throw new Error('Datafast provider no disponible');
+      }
+
+      const result = await datafastProvider.getStatusByResourcePath(resourcePath);
+      const status = result.status === 'approved' ? 'approved' : 'rejected';
+      const txnId  = result.transactionId ?? '';
+      const amount = result.amount ?? 0;
+
+      // Deep link a la app: goingapp://payment/result?status=approved&txn=xxx&amount=10.00
+      return res.redirect(
+        `${appScheme}://payment/result?status=${status}&txn=${encodeURIComponent(txnId)}&amount=${amount}`
+      );
+    } catch (err: any) {
+      this.logger.error(`Datafast return error: ${err.message}`);
+      return res.redirect(`${appScheme}://payment/result?status=error&msg=${encodeURIComponent(err.message)}`);
+    }
+  }
+
   // ─── 4. MOCK CHECKOUT (solo en modo mock) ─────────────────────────────────────
   // Simula la página de DATAFAST. Aprueba automáticamente y redirige al returnUrl.
 

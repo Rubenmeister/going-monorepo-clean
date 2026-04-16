@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Dimensions, Animated, FlatList, StatusBar,
+  Dimensions, Animated, FlatList, StatusBar, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -156,6 +156,16 @@ export function OnboardingScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
+      {/* Logo Going — fijo en la parte superior, letras blancas sobre fondos oscuros */}
+      <View style={styles.logoOverlay} pointerEvents="none">
+        {/* Logo blanco — visible sobre todos los fondos de color del onboarding */}
+        <Image
+          source={require('../../../assets/going-logo-white.png')}
+          style={styles.onboardingLogo}
+          resizeMode="contain"
+        />
+      </View>
+
       {/* Slides */}
       <Animated.FlatList
         ref={flatListRef}
@@ -231,6 +241,18 @@ export { ONBOARDING_KEY };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // Logo overlay (encima de las slides)
+  logoOverlay: {
+    position: 'absolute',
+    top: 48,
+    left: 20,
+    zIndex: 10,
+  },
+  onboardingLogo: {
+    width: 120,
+    height: 48,
+  },
 
   // Slide
   slide: {

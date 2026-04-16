@@ -63,11 +63,14 @@ export async function getExpiringDocuments(daysAhead: number = 15): Promise<{
 }
 
 export async function getLowRatingDrivers(minRating: number = 4.0): Promise<Driver[]> {
+  // Nota: se usa una sola condición en Firestore para evitar requerir índice compuesto.
+  // El filtro de rating.count >= 5 se aplica en memoria.
   const snap = await db.collection('drivers')
     .where('rating.average', '<', minRating)
-    .where('rating.count', '>=', 5)
     .get();
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Driver));
+  return snap.docs
+    .map(d => ({ id: d.id, ...d.data() } as Driver))
+    .filter(d => (d.rating?.count || 0) >= 5);
 }
 
 export async function getAcademyInactiveDrivers(days: number = 30): Promise<Driver[]> {

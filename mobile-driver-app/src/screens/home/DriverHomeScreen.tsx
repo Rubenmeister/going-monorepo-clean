@@ -152,6 +152,24 @@ export function DriverHomeScreen() {
     });
   };
 
+  const activateOpportunistic = async (city: string) => {
+    try {
+      const token = await AsyncStorage.getItem('driver_token');
+      await axios.post(
+        `${API_BASE_URL}/drivers/me/schedule/opportunistic`,
+        { city, durationHours: 2 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      Alert.alert(
+        '⚡ Modo libre activado',
+        `Estás disponible para viajes cortos en ${city} por 2 horas. Te notificaremos si aparece uno.`,
+        [{ text: 'Perfecto' }]
+      );
+    } catch {
+      Alert.alert('Sin conexión', 'El modo se activará cuando vuelvas a tener internet.');
+    }
+  };
+
   const handleToggleOnline = async () => {
     if (!isOnline) {
       const { status } = await Location.requestBackgroundPermissionsAsync();
@@ -286,45 +304,88 @@ export function DriverHomeScreen() {
           </View>
         </View>
 
-        {/* Zonas calientes */}
-        {isOnline && (
-          <>
-            <Text style={styles.zonesLabel}>🔥 Zonas con alta demanda ahora</Text>
-            <View style={styles.zonesRow}>
-              {HOT_ZONES.map((zone) => (
-                <View
-                  key={zone.name}
-                  style={[styles.zoneChip, zone.intensity === 'alta' && styles.zoneChipHot]}
-                >
-                  <Text style={[styles.zoneChipText, zone.intensity === 'alta' && styles.zoneChipTextHot]}>
-                    {zone.name}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </>
-        )}
-
-        {!isOnline ? (
+        {/* ── BOTONES RÁPIDOS ── */}
+        <View style={styles.quickBtnsRow}>
           <TouchableOpacity
-            style={styles.goOnlineBtn}
-            onPress={handleToggleOnline}
+            style={styles.quickBtn}
+            onPress={() => navigation.navigate('Schedule')}
           >
-            <Text style={styles.goOnlineBtnText}>Ponerse en línea</Text>
+            <Ionicons name="calendar-outline" size={18} color={NAVY} />
+            <Text style={styles.quickBtnText}>Mi agenda</Text>
           </TouchableOpacity>
-        ) : (
-          <View style={styles.waitingBanner}>
-            <Ionicons
-              name="radio-outline"
-              size={18}
-              color="#10B981"
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.waitingText}>
-              Esperando solicitudes de viaje…
-            </Text>
+          <TouchableOpacity
+            style={[styles.quickBtn, styles.quickBtnGold]}
+            onPress={() => {
+              Alert.alert(
+                '⚡ Activar modo libre',
+                '¿Estás en otra ciudad con tiempo libre? Recibirás viajes cortos disponibles.\n\n¿En qué ciudad estás?',
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Ambato', onPress: () => activateOpportunistic('Ambato') },
+                  { text: 'Santo Domingo', onPress: () => activateOpportunistic('Santo Domingo') },
+                  { text: 'Ibarra', onPress: () => activateOpportunistic('Ibarra') },
+                ]
+              );
+            }}
+          >
+            <Ionicons name="flash-outline" size={18} color={NAVY} />
+            <Text style={styles.quickBtnText}>Modo libre</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── PRÓXIMO VIAJE PROGRAMADO ── */}
+        <Text style={styles.zonesLabel}>📅 PRÓXIMO VIAJE</Text>
+        <View style={styles.nextTripCard}>
+          <View style={styles.nextTripTimeRow}>
+            <Text style={styles.nextTripTime}>08:30 AM</Text>
+            <View style={styles.countdownBadge}>
+              <Text style={styles.countdownText}>⏱ En 45 min</Text>
+            </View>
           </View>
-        )}
+          <View style={styles.nextTripRoute}>
+            <View style={styles.routeDotBlue} />
+            <Text style={styles.nextTripAddr}>Quito · La Y</Text>
+          </View>
+          <View style={styles.routeLineShort} />
+          <View style={styles.nextTripRoute}>
+            <View style={styles.routeDotGreen} />
+            <Text style={styles.nextTripAddr}>Ambato Centro</Text>
+          </View>
+          <View style={styles.passengerChips}>
+            <View style={[styles.passengerChip, styles.passengerChipConfirmed]}>
+              <Text style={styles.passengerChipText}>✓ 2 confirmados</Text>
+            </View>
+            <View style={styles.passengerChip}>
+              <Text style={styles.passengerChipText}>⏳ 1 pendiente</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.startRouteBtn} disabled>
+            <Text style={styles.startRouteBtnText}>Disponible en 45 min</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── AGENDA DEL DÍA ── */}
+        <Text style={[styles.zonesLabel, { marginTop: 10 }]}>🗓️ HOY</Text>
+        <View style={styles.agendaItem}>
+          <Text style={styles.agendaTime}>08:30</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.agendaRoute}>Quito → Ambato · Compartido</Text>
+            <Text style={styles.agendaSub}>3 pasajeros · 127 km · $20</Text>
+          </View>
+          <View style={styles.agendaBadgePending}>
+            <Text style={styles.agendaBadgeText}>Próximo</Text>
+          </View>
+        </View>
+        <View style={styles.agendaItem}>
+          <Text style={styles.agendaTime}>14:00</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.agendaRoute}>Ambato → Quito · Privado</Text>
+            <Text style={styles.agendaSub}>Vehículo completo · $40</Text>
+          </View>
+          <View style={styles.agendaBadgeScheduled}>
+            <Text style={styles.agendaBadgeText}>Programado</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -503,4 +564,50 @@ const styles = StyleSheet.create({
   zoneMarkerEmoji: {
     fontSize: 16,
   },
+
+  // ── Botones rápidos ────────────────────────────────────────────────────────
+  quickBtnsRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  quickBtn: {
+    flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 10,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    borderWidth: 1.5, borderColor: '#E5E7EB',
+  },
+  quickBtnGold: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+  quickBtnText: { fontSize: 12, fontWeight: '800', color: NAVY },
+
+  // ── Agenda y próximo viaje ──────────────────────────────────────────────────
+  nextTripCard: {
+    backgroundColor: '#fff', borderRadius: 14, padding: 12,
+    borderLeftWidth: 4, borderLeftColor: '#0033A0',
+    marginBottom: 8,
+  },
+  nextTripTimeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  nextTripTime:   { fontSize: 20, fontWeight: '900', color: '#0033A0' },
+  countdownBadge: { backgroundColor: '#EFF6FF', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 },
+  countdownText:  { fontSize: 10, fontWeight: '800', color: '#0033A0' },
+  nextTripRoute:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  nextTripAddr:   { fontSize: 12, fontWeight: '700', color: '#111827' },
+  routeDotBlue:   { width: 9, height: 9, borderRadius: 4.5, backgroundColor: '#0033A0' },
+  routeDotGreen:  { width: 9, height: 9, borderRadius: 4.5, backgroundColor: '#059669' },
+  routeLineShort: { width: 2, height: 12, backgroundColor: '#BFDBFE', marginLeft: 3.5, marginVertical: 2 },
+  passengerChips: { flexDirection: 'row', gap: 6, marginTop: 8 },
+  passengerChip:          { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, backgroundColor: '#F3F4F6' },
+  passengerChipConfirmed: { backgroundColor: '#ECFDF5' },
+  passengerChipText:      { fontSize: 10, fontWeight: '700', color: '#374151' },
+  startRouteBtn: {
+    backgroundColor: '#E5E7EB', borderRadius: 10, paddingVertical: 9,
+    alignItems: 'center', marginTop: 8,
+  },
+  startRouteBtnText: { fontSize: 12, fontWeight: '800', color: '#9CA3AF' },
+
+  agendaItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#fff', borderRadius: 12, padding: 10, marginBottom: 6,
+  },
+  agendaTime:  { fontSize: 13, fontWeight: '900', color: '#374151', minWidth: 46 },
+  agendaRoute: { fontSize: 12, fontWeight: '700', color: '#111827' },
+  agendaSub:   { fontSize: 10, color: '#6B7280', marginTop: 1 },
+  agendaBadgePending:   { backgroundColor: '#EFF6FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  agendaBadgeScheduled: { backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  agendaBadgeText: { fontSize: 9, fontWeight: '800', color: '#374151' },
 });

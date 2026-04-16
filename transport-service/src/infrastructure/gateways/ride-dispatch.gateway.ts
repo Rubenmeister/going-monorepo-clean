@@ -109,4 +109,100 @@ export class RideDispatchGateway {
   getActiveDriverCount(): number {
     return 0; // Managed by tracking-service via Redis
   }
+
+  /**
+   * Viajes oportunistas — modelo Going
+   *
+   * Cuando un conductor está en una ciudad destino con 1-2h libre,
+   * se notifica a TODOS los conductores elegibles simultáneamente.
+   * El primero en aceptar (y más cercano) se queda con el viaje.
+   *
+   * Reglas:
+   *  - Driver.opportunisticMode = true
+   *  - Driver.currentCity = ciudad del pickup
+   *  - Driver.opportunisticUntil > now
+   *  - Solo para viajes cortos urbanos / aeropuerto (< 30 km)
+   */
+  async broadcastOpportunisticTrip(
+    rideId:    UUID,
+    city:      string,
+    driverIds: UUID[],
+    rideInfo:  {
+      origin:      string;
+      destination: string;
+      distanceKm:  number;
+      estimatedFare: number;
+    }
+  ): Promise<Result<void, Error>> {
+    try {
+      this.logger.log(
+        `[OPORTUNISTA] Ride ${rideId} en ${city} → ${driverIds.length} conductores disponibles`
+      );
+
+      const sends = driverIds.map(driverId =>
+        fetch(`${this.notificationsUrl}/notifications/push`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId:  driverId,
+            title:   '⚡ Viaje oportunista disponible',
+            body:    `${rideInfo.origin} → ${rideInfo.destination} · $${rideInfo.estimatedFare.toFixed(0)} · El primero en aceptar lo toma`,
+            data: {
+              type:          'OPPORTUNISTIC_RIDE',
+              rideId,
+              city,
+              origin:        rideInfo.origin,
+              destination:   rideInfo.destination,
+              distanceKm:    rideInfo.distanceKm,
+              estimatedFare: rideInfo.estimatedFare,
+              expiresIn:     30, // segundos para aceptar
+            },
+          }),
+        }).catch(e => this.logger.warn(`Push oportunista a ${driverId} falló: ${e.message}`))
+      );
+
+      await Promise.allSettled(sends);
+      return ok(undefined);
+    } catch (error) {
+      this.logger.error(`Error broadcast oportunista: ${error.message}`);
+      return err(new Error(error.message));
+    }
+  }
+
+  /**
+   * Notificación programada — T-24h y T-1h
+   * Se envía a conductor Y pasajeros del viaje programado
+   */
+  async broadcastScheduledTripReminder(
+    rideId:    UUID,
+    userIds:   UUID[],   // conductores + pasajeros
+    type:      '24h' | '1h',
+    tripInfo:  { route: string; departureTime: string; date: string }
+  ): Promise<Result<void, Error>> {
+    try {
+      const title = type === '24h'
+        ? '📅 Tu viaje es mañana'
+        : '⏰ Tu viaje comienza en 1 hora';
+      const body = type === '24h'
+        ? `${tripInfo.route} · ${tripInfo.date} a las ${tripInfo.departureTime}. ¡Confirma que estés listo!`
+        : `${tripInfo.route} · Salida a las ${tripInfo.departureTime}. Prepárate.`;
+
+      const sends = userIds.map(userId =>
+        fetch(`${this.notificationsUrl}/notifications/push`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId, title, body,
+            data: { type: `TRIP_REMINDER_${type.toUpperCase()}`, rideId, ...tripInfo },
+          }),
+        }).catch(() => {})
+      );
+
+      await Promise.allSettled(sends);
+      this.logger.log(`[T-${type}] Reminder enviado para viaje ${rideId} a ${userIds.length} usuarios`);
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
 }

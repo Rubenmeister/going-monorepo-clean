@@ -15,6 +15,7 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -75,7 +76,12 @@ export function CorporateScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Going Empresas</Text>
+        {/* Logo Going — versión blanca sobre fondo azul */}
+        <Image
+          source={require('../../../assets/going-logo-horizontal-white.png')}
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
         <View style={{ width: 36 }} />
       </View>
 
@@ -207,8 +213,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingHorizontal: 16,
   },
-  backBtn:     { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: '#fff' },
+  backBtn:    { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  headerLogo: { width: 100, height: 38 },
 
   body: { padding: 20, paddingBottom: 48 },
 

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../store';
 import AppShell from '../components/AppShell';
 
@@ -20,7 +20,10 @@ export default function TrackingPage() {
   const trackingLink = `https://going.app/track/${user?.id ?? 'demo123'}`;
 
   const handleCopy = () => {
-    navigator.clipboard?.writeText(trackingLink).catch(() => {});
+    // Clipboard API: funciona en web; en native se usa Clipboard de expo
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(trackingLink).catch(() => {});
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

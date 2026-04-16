@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'expo-router';
 import { useAuth, authFetch } from '../store';
 import AppShell from '../components/AppShell';
 

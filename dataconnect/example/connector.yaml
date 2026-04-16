@@ -1,0 +1,232 @@
+connectorId: example
+generate:
+  swiftSdk:
+    - outputDir: ..\..\mobile-user-app\FirebaseDataConnectGenerated
+      package: DataConnectGenerated
+    - outputDir: ..\..\mobile-driver-app\FirebaseDataConnectGenerated
+      package: DataConnectGenerated
+  adminNodeSdk:
+    - outputDir: ..\..\src\dataconnect-admin-generated
+      package: "@dataconnect/admin-generated"
+      packageJsonDir: ..\..
+  javascriptSdk:
+    - outputDir: ..\..\user-auth-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\user-auth-service
+      react: false
+      angular: false
+    - outputDir: ..\..\transport-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\transport-service
+      react: false
+      angular: false
+    - outputDir: ..\..\tracking-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\tracking-service
+      react: false
+      angular: false
+    - outputDir: ..\..\tours-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\tours-service
+      react: false
+      angular: false
+    - outputDir: ..\..\ratings-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\ratings-service
+      react: false
+      angular: false
+    - outputDir: ..\..\payment-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\payment-service
+      react: false
+      angular: false
+    - outputDir: ..\..\notifications-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\notifications-service
+      react: false
+      angular: false
+    - outputDir: ..\..\mobile-user-app\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\mobile-user-app
+      react: true
+      angular: false
+    - outputDir: ..\..\mobile-driver-app\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\mobile-driver-app
+      react: true
+      angular: false
+    - outputDir: ..\..\going-agent\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\going-agent
+      react: false
+      angular: false
+    - outputDir: ..\..\frontend-webapp\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\frontend-webapp
+      react: true
+      angular: false
+    - outputDir: ..\..\experiencias-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\experiencias-service
+      react: false
+      angular: false
+    - outputDir: ..\..\envios-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\envios-service
+      react: false
+      angular: false
+    - outputDir: ..\..\customer-support-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\customer-support-service
+      react: false
+      angular: false
+    - outputDir: ..\..\booking-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\booking-service
+      react: false
+      angular: false
+    - outputDir: ..\..\billing-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\billing-service
+      react: false
+      angular: false
+    - outputDir: ..\..\api-gateway\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\api-gateway
+      react: false
+      angular: false
+    - outputDir: ..\..\anfitriones-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\anfitriones-service
+      react: false
+      angular: false
+    - outputDir: ..\..\analytics-service\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\analytics-service
+      react: false
+      angular: false
+    - outputDir: ..\..\admin-dashboard\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\admin-dashboard
+      react: true
+      angular: false
+    - outputDir: ..\..\libs\transport\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\transport
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\tour\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\tour
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\payment\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\payment
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\parcel\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\parcel
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\experience\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\experience
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\accommodation\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\accommodation
+      react: false
+      angular: false
+    - outputDir: ..\..\apps\corporate-portal\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\apps\corporate-portal
+      react: true
+      angular: false
+    - outputDir: ..\..\libs\shared\observability\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\shared\observability
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\shared\infrastructure\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\shared\infrastructure
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\frontend\stores\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\frontend\stores
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\features\corporate-booking\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\features\corporate-booking
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\features\corporate-auth\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\features\corporate-auth
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\user-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\user-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\user\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\user
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\transport-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\transport-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\tracking-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\tracking-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\tour-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\tour-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\payment-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\payment-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\parcel-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\parcel-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\notification-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\notification-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\experience-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\experience-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\booking-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\booking-frontend
+      react: false
+      angular: false
+    - outputDir: ..\..\libs\domains\accommodation-frontend\src\dataconnect-generated
+      package: "@dataconnect/generated"
+      packageJsonDir: ..\..\libs\domains\accommodation-frontend
+      react: false
+      angular: false

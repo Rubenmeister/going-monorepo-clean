@@ -1,0 +1,64 @@
+mutation seedDemoData @transaction @auth(level: USER, insecureReason: "This mutation inserts demo data and is safe to execute by any logged-in user.") {
+  user_insertMany(data: [
+    {
+      id: "b2d07584-6e69-42c2-841f-0e1f6e2b1c3d",
+      displayName: "Alice Smith",
+      email: "alice.smith@example.com",
+      phoneNumber: "+15551234567",
+      createdAt: "2023-10-26T10:00:00Z",
+      bio: "Avid traveler looking for carpooling adventures.",
+      carMake: "Toyota",
+      carModel: "Corolla",
+      licensePlate: "ABC123"
+    },
+    {
+      id: "f3a9e6d0-4b8c-4c7a-9f5e-1d2a3b4c5d6e",
+      displayName: "Bob Johnson",
+      email: "bob.johnson@example.com",
+      phoneNumber: "+15559876543",
+      createdAt: "2023-10-26T10:05:00Z",
+      bio: "Commuter offering rides to work.",
+      carMake: "Honda",
+      carModel: "Civic",
+      licensePlate: "DEF456"
+    }
+  ])
+  ride_insertMany(data: [
+    {
+      id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      driverId: "b2d07584-6e69-42c2-841f-0e1f6e2b1c3d",
+      departureCity: "New York",
+      destinationCity: "Boston",
+      departureDateTime: "2023-11-15T08:00:00Z",
+      availableSeats: 3,
+      pricePerSeat: 25.00,
+      createdAt: "2023-10-26T10:10:00Z",
+      notes: "Luggage space available.",
+      carInfo: "Blue Toyota Corolla"
+    },
+    {
+      id: "b9a8c7d6-e5f4-3210-fedc-ba9876543210",
+      driverId: "f3a9e6d0-4b8c-4c7a-9f5e-1d2a3b4c5d6e",
+      departureCity: "Los Angeles",
+      destinationCity: "San Francisco",
+      departureDateTime: "2023-11-20T14:30:00Z",
+      availableSeats: 2,
+      pricePerSeat: 50.00,
+      createdAt: "2023-10-26T10:15:00Z",
+      notes: "Snacks and water provided.",
+      carInfo: "Silver Honda Civic"
+    }
+  ])
+  booking_insertMany(data: [
+    {
+      id: "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f",
+      passengerId: "f3a9e6d0-4b8c-4c7a-9f5e-1d2a3b4c5d6e",
+      rideId: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      seatsBooked: 1,
+      totalPrice: 25.00,
+      bookingStatus: "CONFIRMED",
+      createdAt: "2023-10-26T10:20:00Z",
+      paymentTransactionId: "PAYID12345"
+    }
+  ])
+}

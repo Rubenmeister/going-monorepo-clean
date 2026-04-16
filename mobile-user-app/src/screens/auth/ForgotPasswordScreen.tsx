@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, ActivityIndicator,
+  StyleSheet, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '@services/api';
@@ -64,6 +64,12 @@ export function ForgotPasswordScreen({ navigation }: any) {
       </TouchableOpacity>
 
       <View style={styles.header}>
+        {/* Logo Going — rojo + letras negras (fondo blanco) */}
+        <Image
+          source={require('../../../assets/going-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <View style={styles.iconCircle}>
           <Ionicons name="lock-open-outline" size={40} color={GOING_RED} />
         </View>
@@ -115,6 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     marginBottom: 8,
   },
+  logo: { width: 150, height: 58, marginBottom: 16 },
   header: { alignItems: 'center', marginBottom: 36 },
   title: {
     fontWeight: '800', fontSize: 22, color: BLACK,

@@ -48,6 +48,31 @@ interface SearchResult {
   imageUrl?: string;
 }
 
+// ── Demo results — Ecuador ────────────────────────────────────────────────────
+const DEMO_RESULTS: Record<ServiceTab, SearchResult[]> = {
+  tours: [
+    { id: 't1', name: 'Tren Nariz del Diablo',    city: 'Alausí',     price: 45, rating: 4.9, description: 'Descenso en tren por el cañón del Chanchán' },
+    { id: 't2', name: 'Cotopaxi & Quilotoa',       city: 'Latacunga',  price: 65, rating: 4.8, description: 'Volcán nevado + laguna esmeralda' },
+    { id: 't3', name: 'Baños Full Day',             city: 'Baños',      price: 35, rating: 4.9, description: 'Cascadas, tirolesa y aguas termales' },
+    { id: 't4', name: 'Mercado de Otavalo',         city: 'Otavalo',    price: 40, rating: 4.7, description: 'Artesanía kichwa + laguna Cuicocha' },
+    { id: 't5', name: 'Amazonia: Tena & Napo',      city: 'Tena',       price: 85, rating: 4.8, description: 'Rafting + comunidad kichwa' },
+  ],
+  accommodations: [
+    { id: 'a1', name: 'Hacienda San Agustín del Callo', city: 'Latacunga', price: 120, rating: 4.9, description: 'Hacienda histórica frente al Cotopaxi' },
+    { id: 'a2', name: 'Casa Gangotena Boutique',         city: 'Quito',     price: 95,  rating: 4.8, description: 'Lujo colonial en el centro histórico UNESCO' },
+    { id: 'a3', name: 'Glamping Volcánico Cotopaxi',     city: 'Machachi',  price: 75,  rating: 5.0, description: 'Tiendas de lujo con vista al volcán' },
+    { id: 'a4', name: 'Cabaña Bosque Nublado Mindo',     city: 'Mindo',     price: 45,  rating: 4.7, description: 'Naturaleza, aves y río cristalino' },
+    { id: 'a5', name: 'Lodge Amazónico Napo',            city: 'Tena',      price: 85,  rating: 4.9, description: 'Selva virgen con guía nativo incluido' },
+  ],
+  experiences: [
+    { id: 'e1', name: 'Cocina serrana con abuela',    city: 'Ambato',       price: 25, rating: 5.0, description: 'Hornado, llapingachos y mote casero' },
+    { id: 'e2', name: 'Telar ancestral kichwa',        city: 'Otavalo',      price: 30, rating: 4.9, description: 'Arte milenario del telar de cintura' },
+    { id: 'e3', name: 'Ciclismo Chimborazo',           city: 'Riobamba',     price: 55, rating: 4.8, description: 'Descenso desde 4.800 m con vicuñas' },
+    { id: 'e4', name: 'Surf & Yoga Montañita',         city: 'Montañita',    price: 40, rating: 4.7, description: 'Océano Pacífico al amanecer' },
+    { id: 'e5', name: 'Ballenas Jorobadas Pacífico',   city: 'Puerto López', price: 50, rating: 4.9, description: 'Avistamiento julio-octubre' },
+  ],
+};
+
 export function SearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
@@ -85,18 +110,29 @@ export function SearchScreen() {
 
       const items: SearchResult[] = Array.isArray(data) ? data : data?.results ?? data?.items ?? [];
 
+      // Si la API no retorna nada, usar demo data del tab activo
+      const sourceItems = items.length > 0 ? items : DEMO_RESULTS[activeTab];
+
       // Filtro local por texto
       const filtered = query.trim()
-        ? items.filter(i =>
+        ? sourceItems.filter(i =>
             i.name?.toLowerCase().includes(query.toLowerCase()) ||
             i.description?.toLowerCase().includes(query.toLowerCase()) ||
             i.city?.toLowerCase().includes(query.toLowerCase())
           )
-        : items;
+        : sourceItems;
 
       setResults(filtered);
     } catch {
-      setResults([]);
+      const demo = DEMO_RESULTS[activeTab];
+      setResults(
+        query.trim()
+          ? demo.filter(i =>
+              i.name?.toLowerCase().includes(query.toLowerCase()) ||
+              (i.city ?? '').toLowerCase().includes(query.toLowerCase())
+            )
+          : demo
+      );
     } finally {
       setIsLoading(false);
     }

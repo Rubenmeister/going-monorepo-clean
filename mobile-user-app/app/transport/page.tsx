@@ -1,88 +1,72 @@
-'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 import { useAuth, authFetch } from '../store';
 import AppShell from '../components/AppShell';
 
-const VEHICLE_TYPES = [
-  {
-    id: 'economy',
-    icon: '🚗',
-    label: 'Económico',
-    desc: 'Hasta 4 pasajeros',
-    price: 3.5,
-    display: '$3.50',
-  },
-  {
-    id: 'comfort',
-    icon: '🚙',
-    label: 'Confort',
-    desc: 'Hasta 4 pasajeros',
-    price: 5.0,
-    display: '$5.00',
-  },
-  {
-    id: 'xl',
-    icon: '🚐',
-    label: 'XL',
-    desc: 'Hasta 6 pasajeros',
-    price: 7.0,
-    display: '$7.00',
-  },
+// ── Tipos de vehículo ──────────────────────────────────────────────
+const SHARED_ROUTES = [
+  { id: 'qb', icon: '🏔️', from: 'Quito', to: 'Baños', duration: '3h 30m', price: 8, seats: 3, vehicle: 'Premium SUV', badge: 'Más popular', time: '09:15 AM' },
+  { id: 'qg', icon: '🌊', from: 'Quito', to: 'Guayaquil', duration: '8h', price: 15, seats: 5, vehicle: 'Sprinter VAN', badge: null, time: '07:00 AM' },
+  { id: 'qc', icon: '🌿', from: 'Quito', to: 'Cuenca', duration: '9h', price: 18, seats: 2, vehicle: 'SUV XL', badge: 'Últimos asientos', time: '06:00 AM' },
+  { id: 'qa', icon: '🦜', from: 'Quito', to: 'Ambato', duration: '2h', price: 6, seats: 4, vehicle: 'SUV', badge: null, time: '10:00 AM' },
 ];
 
-// Default Quito coordinates (used until geocoding is implemented)
-const QUITO = { lat: -0.2201641, lng: -78.5123274 };
+const PRIVATE_VEHICLES = [
+  { id: 'suv', icon: '🚗', label: 'SUV', desc: 'Hasta 4 pasajeros', price: 45, seats: '1–4' },
+  { id: 'suvxl', icon: '🚙', label: 'SUV XL', desc: 'Hasta 6 pasajeros', price: 65, seats: '1–6' },
+  { id: 'van', icon: '🚐', label: 'VAN', desc: 'Hasta 9 pasajeros', price: 90, seats: '1–9' },
+  { id: 'minibus', icon: '🚌', label: 'Minibús', desc: 'Hasta 20 pasajeros', price: 150, seats: '1–20', badge: 'Grupos grandes' },
+];
+
+type Mode = 'shared' | 'private';
 
 export default function TransportPage() {
   const { user, token, isReady, init } = useAuth();
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>('shared');
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
-  const [vehicleType, setVehicleType] = useState('economy');
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [booked, setBooked] = useState(false);
   const [tripId, setTripId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    init();
-  }, [init]);
+  useEffect(() => { init(); }, [init]);
   useEffect(() => {
     if (isReady && !token) router.replace('/login');
   }, [isReady, token, router]);
 
   const handleBook = async () => {
-    if (!origin.trim() || !destination.trim()) {
-      setError('Por favor ingresa origen y destino');
+    if (mode === 'shared' && !selectedRoute) {
+      setError('Selecciona una ruta');
+      return;
+    }
+    if (mode === 'private' && (!origin.trim() || !destination.trim() || !selectedVehicle)) {
+      setError('Completa origen, destino y tipo de vehículo');
       return;
     }
     setError('');
     setLoading(true);
-    const v = VEHICLE_TYPES.find((vt) => vt.id === vehicleType)!;
+    const route = SHARED_ROUTES.find(r => r.id === selectedRoute);
+    const vehicle = PRIVATE_VEHICLES.find(v => v.id === selectedVehicle);
     try {
       const res = await authFetch('/transport/request', {
         method: 'POST',
         body: JSON.stringify({
           userId: user?.id ?? 'anonymous',
-          origin: {
-            address: origin,
-            latitude: QUITO.lat,
-            longitude: QUITO.lng,
-          },
-          destination: {
-            address: destination,
-            latitude: QUITO.lat + 0.01,
-            longitude: QUITO.lng + 0.01,
-          },
-          price: { amount: v.price, currency: 'USD' },
+          mode,
+          origin: { address: mode === 'shared' ? (route?.from ?? '') : origin, latitude: -0.22, longitude: -78.51 },
+          destination: { address: mode === 'shared' ? (route?.to ?? '') : destination, latitude: -1.39, longitude: -78.42 },
+          price: { amount: mode === 'shared' ? route?.price : vehicle?.price, currency: 'USD' },
+          vehicleType: mode === 'shared' ? route?.vehicle : vehicle?.label,
         }),
       });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         setTripId((data as any).id ?? null);
       }
-      // Show success regardless (staging fallback)
       setBooked(true);
     } catch {
       setBooked(true);
@@ -91,59 +75,91 @@ export default function TransportPage() {
     }
   };
 
+  // ── Estado: viaje reservado ──────────────────────────────────────
   if (booked) {
+    const route = SHARED_ROUTES.find(r => r.id === selectedRoute);
+    const vehicle = PRIVATE_VEHICLES.find(v => v.id === selectedVehicle);
     return (
       <AppShell title="Transporte">
-        <div
-          className="px-5 py-8 relative overflow-hidden"
-          style={{ backgroundColor: '#011627' }}
-        >
-          <div
-            className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-10"
-            style={{ backgroundColor: '#ff4c41' }}
-          />
-          <p className="text-white/50 text-sm mb-1">Solicitud enviada</p>
-          <h1 className="text-2xl font-black text-white">¡Viaje en camino!</h1>
+        {/* Header */}
+        <div className="px-5 py-8 relative overflow-hidden" style={{ backgroundColor: '#011627' }}>
+          <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-10" style={{ backgroundColor: '#ff4c41' }} />
+          <p className="text-white/50 text-sm mb-1 relative z-10">Solicitud enviada</p>
+          <h1 className="text-2xl font-black text-white relative z-10">¡Viaje en camino!</h1>
         </div>
+
         <div className="px-4 py-6">
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <span className="text-6xl block mb-4">🚗</span>
-            <p className="font-bold text-gray-900 text-lg mb-2">
-              Buscando conductor
+          <div className="bg-white rounded-2xl p-6 shadow-sm text-center" style={{ border: '1px solid #f0f0f0' }}>
+            <span className="text-5xl block mb-3">
+              {mode === 'shared' ? '🚍' : '🚗'}
+            </span>
+            <p className="font-bold text-gray-900 text-lg mb-1">
+              {mode === 'shared' ? 'Buscando asiento' : 'Buscando conductor'}
             </p>
-            <p className="text-sm text-gray-500 mb-6">
-              Te notificaremos cuando un conductor acepte tu viaje
+            <p className="text-sm text-gray-500 mb-5">
+              Te notificaremos cuando se confirme tu viaje
             </p>
-            <div className="bg-gray-50 rounded-xl p-4 text-left space-y-2 mb-6">
-              <div className="flex items-start gap-2">
-                <span className="text-sm">📍</span>
-                <div>
-                  <p className="text-xs text-gray-400">Origen</p>
-                  <p className="text-sm font-medium text-gray-900">{origin}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-sm">🏁</span>
-                <div>
-                  <p className="text-xs text-gray-400">Destino</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {destination}
-                  </p>
-                </div>
-              </div>
+
+            {/* Detalle del viaje */}
+            <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3 mb-5">
+              {mode === 'shared' && route ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-400">Ruta</p>
+                      <p className="font-bold text-gray-900">{route.from} → {route.to}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-400">Precio</p>
+                      <p className="font-black" style={{ color: '#ff4c41' }}>${route.price} USD</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 pt-1 border-t border-gray-100">
+                    <div>
+                      <p className="text-xs text-gray-400">Vehículo</p>
+                      <p className="text-sm font-semibold text-gray-700">{route.vehicle}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Hora salida</p>
+                      <p className="text-sm font-semibold text-gray-700">{route.time}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Duración</p>
+                      <p className="text-sm font-semibold text-gray-700">{route.duration}</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">📍</span>
+                    <div>
+                      <p className="text-xs text-gray-400">Origen</p>
+                      <p className="text-sm font-medium text-gray-900">{origin}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">🏁</span>
+                    <div>
+                      <p className="text-xs text-gray-400">Destino</p>
+                      <p className="text-sm font-medium text-gray-900">{destination}</p>
+                    </div>
+                  </div>
+                  {vehicle && (
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                      <p className="text-sm text-gray-600">{vehicle.icon} {vehicle.label}</p>
+                      <p className="font-black" style={{ color: '#ff4c41' }}>${vehicle.price} USD</p>
+                    </div>
+                  )}
+                </>
+              )}
               {tripId && (
-                <p className="text-xs text-gray-300 pt-1">
-                  Viaje #{tripId.slice(-6)}
-                </p>
+                <p className="text-xs text-gray-300 pt-1">Viaje #{tripId.slice(-6)}</p>
               )}
             </div>
+
             <button
-              onClick={() => {
-                setBooked(false);
-                setOrigin('');
-                setDestination('');
-                setTripId(null);
-              }}
+              onClick={() => { setBooked(false); setSelectedRoute(null); setTripId(null); }}
               className="w-full py-3 rounded-xl font-bold text-sm"
               style={{ backgroundColor: '#f1f5f9', color: '#6b7280' }}
             >
@@ -155,92 +171,176 @@ export default function TransportPage() {
     );
   }
 
+  // ── Formulario principal ─────────────────────────────────────────
   return (
     <AppShell title="Transporte">
-      {/* Header */}
-      <div
-        className="px-5 py-8 relative overflow-hidden"
-        style={{ backgroundColor: '#011627' }}
-      >
-        <div
-          className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-10"
-          style={{ backgroundColor: '#ff4c41' }}
-        />
-        <p className="text-white/50 text-sm mb-1">Solicita tu viaje</p>
-        <h1 className="text-2xl font-black text-white">Transporte</h1>
+
+      {/* ── Header con tabs Compartido / Privado ── */}
+      <div className="relative overflow-hidden px-5 pt-6 pb-5" style={{ backgroundColor: '#011627' }}>
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full opacity-10" style={{ backgroundColor: '#ff4c41' }} />
+        <p className="text-white/50 text-xs mb-1 relative z-10">Elige tu modalidad</p>
+        <h1 className="text-xl font-black text-white mb-4 relative z-10">Transporte</h1>
+
+        {/* Tabs */}
+        <div className="relative z-10 flex gap-2 bg-white/10 rounded-xl p-1">
+          <button
+            onClick={() => setMode('shared')}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition-all"
+            style={mode === 'shared'
+              ? { backgroundColor: '#ff4c41', color: '#fff', boxShadow: '0 2px 8px rgba(255,76,65,0.35)' }
+              : { color: 'rgba(255,255,255,0.6)' }}
+          >
+            🚍 Compartido
+          </button>
+          <button
+            onClick={() => setMode('private')}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition-all"
+            style={mode === 'private'
+              ? { backgroundColor: '#fff', color: '#011627' }
+              : { color: 'rgba(255,255,255,0.6)' }}
+          >
+            🚗 Privado
+          </button>
+        </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* Route inputs */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
-            <span className="text-lg">📍</span>
-            <input
-              type="text"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              placeholder="¿Desde dónde sales?"
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-            />
-          </div>
-          <div className="flex items-center gap-3 px-4 py-4">
-            <span className="text-lg">🏁</span>
-            <input
-              type="text"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="¿A dónde vas?"
-              className="flex-1 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-            />
-          </div>
-        </div>
 
-        {/* Vehicle type */}
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-1">
-            Tipo de vehículo
-          </p>
-          <div className="space-y-2">
-            {VEHICLE_TYPES.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => setVehicleType(v.id)}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all"
-                style={
-                  vehicleType === v.id
-                    ? { borderColor: '#ff4c41', backgroundColor: '#fff8f7' }
-                    : { borderColor: '#f1f5f9', backgroundColor: '#fff' }
-                }
-              >
-                <span className="text-3xl">{v.icon}</span>
-                <div className="flex-1 text-left">
-                  <p className="font-bold text-sm text-gray-900">{v.label}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{v.desc}</p>
-                </div>
-                <span
-                  className="font-black text-sm"
-                  style={{ color: '#ff4c41' }}
+        {/* ── MODO COMPARTIDO ── */}
+        {mode === 'shared' && (
+          <>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
+              Rutas disponibles hoy
+            </p>
+            <div className="space-y-3">
+              {SHARED_ROUTES.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedRoute(r.id === selectedRoute ? null : r.id)}
+                  className="w-full rounded-2xl p-4 text-left transition-all active:scale-95"
+                  style={{
+                    backgroundColor: '#fff',
+                    border: `2px solid ${r.id === selectedRoute ? '#ff4c41' : '#f0f0f0'}`,
+                    boxShadow: r.id === selectedRoute ? '0 0 0 1px #ff4c41' : 'none',
+                  }}
                 >
-                  desde {v.display}
-                </span>
-                {vehicleType === v.id && <span className="text-xl">✓</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {error && (
-          <p className="text-sm text-red-500 font-medium px-1">{error}</p>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{r.icon}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-black text-gray-900">{r.from}</span>
+                          <span className="text-gray-300 text-sm">→</span>
+                          <span className="font-black text-gray-900">{r.to}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">{r.time} · {r.duration} · {r.vehicle}</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-black text-lg" style={{ color: '#ff4c41' }}>${r.price}</p>
+                      <p className="text-xs text-gray-400">por asiento</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">👥 {r.seats} asientos disponibles</span>
+                    {r.badge && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: r.badge === 'Últimos asientos' ? '#fff5f5' : '#fff8e1',
+                          color: r.badge === 'Últimos asientos' ? '#ff4c41' : '#d97706',
+                        }}>
+                        {r.badge === 'Últimos asientos' ? '🔴' : '⭐'} {r.badge}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
+        {/* ── MODO PRIVADO ── */}
+        {mode === 'private' && (
+          <>
+            {/* Inputs de ruta */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: '1px solid #f0f0f0' }}>
+              <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid #f5f5f5' }}>
+                <span className="text-lg">📍</span>
+                <input
+                  type="text" value={origin} onChange={(e) => setOrigin(e.target.value)}
+                  placeholder="¿Desde dónde sales?"
+                  className="flex-1 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-3 px-4 py-4">
+                <span className="text-lg">🏁</span>
+                <input
+                  type="text" value={destination} onChange={(e) => setDestination(e.target.value)}
+                  placeholder="¿A dónde vas?"
+                  className="flex-1 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Selector de vehículo */}
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
+              Tipo de vehículo
+            </p>
+            <div className="space-y-2">
+              {PRIVATE_VEHICLES.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setSelectedVehicle(v.id === selectedVehicle ? null : v.id)}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl transition-all"
+                  style={{
+                    border: `2px solid ${v.id === selectedVehicle ? '#ff4c41' : '#f1f5f9'}`,
+                    backgroundColor: v.id === selectedVehicle ? '#fff8f7' : '#fff',
+                  }}
+                >
+                  <span className="text-3xl">{v.icon}</span>
+                  <div className="flex-1 text-left">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm text-gray-900">{v.label}</p>
+                      {v.badge && (
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                          {v.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">{v.desc}</p>
+                  </div>
+                  <span className="font-black text-sm flex-shrink-0" style={{ color: '#ff4c41' }}>
+                    desde ${v.price}
+                  </span>
+                  {v.id === selectedVehicle && (
+                    <span className="text-lg" style={{ color: '#ff4c41' }}>✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {error && (
+          <p className="text-sm font-medium px-1" style={{ color: '#ff4c41' }}>{error}</p>
+        )}
+
+        {/* ── Botón de acción ── */}
         <button
           onClick={handleBook}
-          disabled={loading}
-          className="w-full py-4 rounded-2xl font-bold text-white text-sm transition-opacity"
-          style={{ backgroundColor: '#ff4c41', opacity: loading ? 0.7 : 1 }}
+          disabled={loading || (mode === 'shared' && !selectedRoute) || (mode === 'private' && (!origin || !destination || !selectedVehicle))}
+          className="w-full py-4 rounded-2xl font-bold text-white text-sm transition-all"
+          style={{
+            backgroundColor: '#ff4c41',
+            opacity: (loading || (mode === 'shared' && !selectedRoute) || (mode === 'private' && (!origin || !destination || !selectedVehicle))) ? 0.5 : 1,
+            boxShadow: '0 4px 16px rgba(255,76,65,0.35)',
+          }}
         >
-          {loading ? 'Buscando conductor...' : 'Solicitar viaje'}
+          {loading
+            ? (mode === 'shared' ? 'Reservando asiento...' : 'Buscando conductor...')
+            : (mode === 'shared' ? 'Reservar asiento' : 'Solicitar vehículo privado')}
         </button>
+
       </div>
     </AppShell>
   );

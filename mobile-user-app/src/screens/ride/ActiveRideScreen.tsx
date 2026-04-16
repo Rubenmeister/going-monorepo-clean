@@ -212,7 +212,7 @@ export function ActiveRideScreen() {
         setStatus('in_progress');
       });
 
-      // Viaje completado — recibimos resumen del backend
+      // Viaje completado — navegar a resumen
       socket.on('ride:completed', (data: {
         distanceKm?: number;
         durationSeconds?: number;
@@ -225,6 +225,26 @@ export function ActiveRideScreen() {
           durationSeconds: data?.durationSeconds,
         });
         analyticsRideCompleted({ ride_id: rideId, duration_minutes: elapsedTime, price });
+
+        // Navegar automáticamente al resumen del viaje
+        setTimeout(() => {
+          navigation.replace('TripSummary' as any, {
+            rideId,
+            driverId:        driver?.id ?? '',
+            driverName:      driver ? `${driver.firstName} ${driver.lastName}` : 'Conductor',
+            origin:          origin.address,
+            destination:     destination.address,
+            fare:            price,
+            distanceKm:      data?.distanceKm,
+            durationSeconds: data?.durationSeconds,
+            paymentMethod:   (route.params as any)?.paymentMethod ?? 'card',
+            cashConfirmed:   data?.cashConfirmed,
+            vehiclePlate:    driver?.vehiclePlate,
+            vehicleModel:    driver?.vehicleModel,
+            rideType:        (tripMode as any) ?? 'privado',
+            referenceCode:   `GEC-${rideId.slice(-8).toUpperCase()}`,
+          });
+        }, 1500); // pequeño delay para mostrar el estado "completado"
       });
     });
 

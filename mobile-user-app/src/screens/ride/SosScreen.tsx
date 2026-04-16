@@ -9,6 +9,7 @@ import {
   Share,
   ScrollView,
   StatusBar,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -112,8 +113,12 @@ export function SosScreen() {
           <Ionicons name="close" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name="warning" size={28} color={GOING_YELLOW} />
-          <Text style={styles.headerTitle}>Asistencia de Emergencia</Text>
+          <Image
+            source={require('../../../assets/going-logo-horizontal-white.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Ionicons name="warning" size={22} color={GOING_YELLOW} style={{ marginLeft: 4 }} />
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -204,7 +209,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   backBtn:      { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  headerLogo:   { width: 90, height: 34 },
   headerTitle:  { fontSize: 17, fontWeight: '700', color: '#fff' },
 
   body: { padding: 20, paddingBottom: 40 },

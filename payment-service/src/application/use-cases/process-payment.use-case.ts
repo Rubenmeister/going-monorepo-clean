@@ -26,7 +26,7 @@ export class ProcessPaymentUseCase {
     durationMinutes?: number;
     weightKg?: number;
     quantity?: number;
-    paymentMethod: 'card' | 'wallet' | 'cash';
+    paymentMethod: 'card' | 'wallet' | 'cash' | 'datafast' | 'deuna';
     paymentMethodId?: string;
   }): Promise<any> {
     // Calculate fees dynamically based on service type
@@ -76,12 +76,20 @@ export class ProcessPaymentUseCase {
       createdAt: new Date(),
     });
 
-    // Skip Stripe processing for cash and wallet payments
+    // Efectivo y wallet: pago confirmado al instante (sin procesador externo)
+    // Datafast y DeUna: el checkoutId/orderId se maneja en el controller,
+    // aquí solo se registra el intento — se completa vía webhook
     if (input.paymentMethod === 'cash' || input.paymentMethod === 'wallet') {
       return await this.paymentRepository.update(payment.id, {
         status: 'completed',
         completedAt: new Date(),
       });
+    }
+
+    if (input.paymentMethod === 'datafast' || input.paymentMethod === 'deuna') {
+      // El pago digital ecuatoriano se inicia desde el controller
+      // y se confirma cuando llega el webhook correspondiente
+      return payment; // queda en status 'pending' hasta el webhook
     }
 
     // Process card payment with Stripe

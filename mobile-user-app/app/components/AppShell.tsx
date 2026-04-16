@@ -1,8 +1,14 @@
-'use client';
 import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Image from 'next/image';
+import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '../store';
+
+// Tabs visibles en la barra inferior
+const BOTTOM_TABS = [
+  { href: '/home', icon: '🏠', label: 'Inicio' },
+  { href: '/transport', icon: '🚗', label: 'Viaje' },
+  { href: '/bookings', icon: '📋', label: 'Historial' },
+  { href: '/profile', icon: '👤', label: 'Perfil' },
+];
 
 const NAV = [
   { href: '/home', icon: '🏠', label: 'INICIO' },
@@ -40,7 +46,7 @@ export default function AppShell({
     : '?';
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col">
       {/* ── Top header ── */}
       <header
         className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 shadow-md"
@@ -57,13 +63,16 @@ export default function AppShell({
         </button>
 
         <div className="flex-1">
-          <Image
-            src="/going-logo-white-h.png"
-            alt="Going"
-            height={26}
-            width={90}
-            style={{ objectFit: 'contain' }}
-          />
+          <span
+            style={{
+              color: '#ff4c41',
+              fontWeight: 900,
+              fontSize: 22,
+              letterSpacing: -1,
+            }}
+          >
+            Going
+          </span>
         </div>
 
         {title && (
@@ -82,7 +91,49 @@ export default function AppShell({
       </header>
 
       {/* ── Main content ── */}
-      <main>{children}</main>
+      <main className="flex-1 overflow-y-auto pb-16">{children}</main>
+
+      {/* ── Bottom tab bar ── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-20 flex"
+        style={{
+          backgroundColor: '#fff',
+          borderTop: '1px solid #f0f0f0',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.06)',
+          height: 60,
+        }}
+      >
+        {BOTTOM_TABS.map((tab) => {
+          const active = pathname.startsWith(tab.href);
+          return (
+            <button
+              key={tab.href}
+              onClick={() => go(tab.href)}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-all"
+              style={{ color: active ? '#ff4c41' : '#9ca3af' }}
+            >
+              <span style={{ fontSize: tab.href === '/transport' ? 22 : 18 }}>
+                {tab.icon}
+              </span>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: active ? 700 : 500,
+                  letterSpacing: 0.3,
+                }}
+              >
+                {tab.label}
+              </span>
+              {active && (
+                <span
+                  className="absolute bottom-0 w-6 h-0.5 rounded-full"
+                  style={{ backgroundColor: '#ff4c41' }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </nav>
 
       {/* ── Overlay ── */}
       {open && (
@@ -107,13 +158,16 @@ export default function AppShell({
           className="flex items-center justify-between px-5 py-4"
           style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <Image
-            src="/going-logo-white-h.png"
-            alt="Going"
-            height={30}
-            width={104}
-            style={{ objectFit: 'contain' }}
-          />
+          <span
+            style={{
+              color: '#ff4c41',
+              fontWeight: 900,
+              fontSize: 24,
+              letterSpacing: -1,
+            }}
+          >
+            Going
+          </span>
           <button
             onClick={() => setOpen(false)}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition text-lg"

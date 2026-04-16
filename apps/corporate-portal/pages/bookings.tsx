@@ -1,4 +1,5 @@
 import Layout from '../components/Layout';
+import BookingFormModal from '../components/BookingFormModal';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState, useCallback } from 'react';
@@ -33,6 +34,7 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [showModal, setShowModal] = useState(false);
 
   const load = useCallback(async () => {
     if (!session?.accessToken) return;
@@ -68,10 +70,28 @@ export default function BookingsPage() {
 
   return (
     <Layout>
+      {showModal && (
+        <BookingFormModal
+          onClose={() => setShowModal(false)}
+          onSubmit={async (data) => {
+            setShowModal(false);
+            if (!session?.accessToken) return;
+            try {
+              await corpFetch('/corporate/bookings', session.accessToken as string, {
+                method: 'POST',
+                body: JSON.stringify(data),
+              });
+            } catch {
+              // silently ignore — booking may still be queued
+            }
+            load();
+          }}
+        />
+      )}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Reservas Corporativas</h1>
-          <button onClick={() => router.push('/bookings/new')}
+          <button onClick={() => setShowModal(true)}
             className="px-4 py-2 rounded-xl text-sm font-bold text-white"
             style={{ backgroundColor: '#ff4c41' }}>
             + Nueva Reserva

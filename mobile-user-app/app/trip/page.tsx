@@ -263,13 +263,15 @@ export default function TripPage() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button style={{
-                width: 42, height: 42,
-                borderRadius: '50%',
-                background: 'rgba(255,76,65,0.1)',
-                border: '1px solid rgba(255,76,65,0.25)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', fontSize: 18,
+              <button
+                style={{
+                  width: 42, height: 42,
+                  borderRadius: '50%',
+                  background: 'rgba(255,76,65,0.1)',
+                  border: '1px solid rgba(255,76,65,0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 18,
+                }}
                 onClick={() => window.location.href = `tel:${TRIP_DATA.proxyPhone.replace(/\s/g,'')}`}
                 title={`Llamar al conductor vía número seguro Going\n${TRIP_DATA.proxyPhone}`}
               >📞</button>

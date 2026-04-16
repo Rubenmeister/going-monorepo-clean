@@ -12,6 +12,14 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+export class RelatedEntityDto {
+  @IsString()
+  type: string;
+
+  @IsString()
+  id: string;
+}
+
 export class SendNotificationDto {
   @IsString()
   userId: string;
@@ -67,14 +75,6 @@ export class SendNotificationDto {
 
   @IsOptional()
   data?: Record<string, any>;
-}
-
-class RelatedEntityDto {
-  @IsString()
-  type: string;
-
-  @IsString()
-  id: string;
 }
 
 export class RegisterDeviceTokenDto {

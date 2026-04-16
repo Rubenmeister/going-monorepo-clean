@@ -6,7 +6,7 @@ import { runMarketingMonitor } from './monitors/metrics.monitor';
 // ============================================================
 
 // ─── Validación temprana de env vars requeridas ───────────────
-const REQUIRED_VARS = ['ANTHROPIC_API_KEY', 'GCP_PROJECT', 'TELEGRAM_BOT_TOKEN'];
+const REQUIRED_VARS = ['ANTHROPIC_API_KEY', 'GCP_PROJECT'];
 const missing = REQUIRED_VARS.filter(v => !process.env[v]);
 if (missing.length > 0) {
   console.error(`[marketing-agent] Variables de entorno faltantes: ${missing.join(', ')}`);

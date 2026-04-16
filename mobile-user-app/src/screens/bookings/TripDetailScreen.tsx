@@ -12,9 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { SkeletonTripDetail } from '@components/Skeleton';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import type { MainStackParamList } from '@navigation/MainNavigator';
-import { bookingsAPI } from '@services/api';
+import { bookingsAPI, parcelsAPI, ridesAPI } from '@services/api';
 
-export type TripDetailParams = { bookingId: string };
+export type TripDetailParams = {
+  bookingId: string;
+  type?: 'ride' | 'envio' | 'booking';
+};
 type TripDetailRouteProp = RouteProp<MainStackParamList, 'TripDetail'>;
 
 const GOING_BLUE = '#0033A0';
@@ -55,21 +58,55 @@ export function TripDetailScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await bookingsAPI.getById(params.bookingId);
-        setTrip(data.data ?? data);
+        let raw: any;
+        if (params.type === 'envio') {
+          const { data } = await parcelsAPI.getById(params.bookingId);
+          const p = data.data ?? data;
+          raw = {
+            id:          p.id,
+            type:        'envio',
+            status:      p.status === 'delivered' ? 'completed' : p.status === 'cancelled' ? 'cancelled' : p.status === 'in_transit' ? 'active' : 'pending',
+            origin:      p.origin?.address,
+            destination: p.destination?.address,
+            date:        p.createdAt ?? new Date().toISOString(),
+            amount:      p.price?.amount ?? p.estimatedPrice,
+          };
+        } else if (params.type === 'ride') {
+          const { data } = await ridesAPI.getById(params.bookingId);
+          const r = data.data ?? data;
+          raw = {
+            id:           r.id ?? r.rideId,
+            type:         'ride',
+            status:       r.status === 'completed' ? 'completed' : r.status === 'cancelled' ? 'cancelled' : 'active',
+            origin:       r.origin?.address,
+            destination:  r.destination?.address,
+            date:         r.createdAt ?? r.startTime ?? new Date().toISOString(),
+            amount:       r.price?.amount ?? r.amount,
+            driverName:   r.driver?.name ?? r.driverName,
+            driverRating: r.driver?.rating ?? r.driverRating,
+            vehicle:      r.vehicle?.plate ?? r.vehicle,
+            duration:     r.durationMinutes,
+            distance:     r.distanceKm,
+            mode:         r.mode,
+          };
+        } else {
+          const { data } = await bookingsAPI.getById(params.bookingId);
+          raw = data.data ?? data;
+        }
+        setTrip(raw);
       } catch {
         // fallback with minimal data from params
         setTrip({
           id: params.bookingId,
           status: 'completed',
           date: new Date().toISOString(),
-          type: 'transport',
+          type: params.type ?? 'booking',
         });
       } finally {
         setLoading(false);
       }
     })();
-  }, [params.bookingId]);
+  }, [params.bookingId, params.type]);
 
   if (loading) {
     return <ScrollView><SkeletonTripDetail /></ScrollView>;

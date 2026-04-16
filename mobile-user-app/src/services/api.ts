@@ -107,6 +107,56 @@ export const searchAPI = {
     api.get('/experiences/search', { params }),
 };
 
+// ── Parcels / Envíos ─────────────────────────────────────────────────────────
+export const parcelsAPI = {
+  /** Crear nuevo envío */
+  create: (data: {
+    userId?:         string;
+    type:            'sobre' | 'paquete' | 'maleta';
+    origin:          { address: string; latitude?: number; longitude?: number };
+    destination:     { address: string; latitude?: number; longitude?: number };
+    recipientName:   string;
+    recipientPhone:  string;
+    notes?:          string;
+  }) => api.post('/parcels', data),
+
+  /** Mis envíos */
+  getMine: () => api.get('/parcels/my'),
+
+  /** Detalle de un envío */
+  getById: (id: string) => api.get(`/parcels/${id}`),
+
+  /** Cancelar envío */
+  cancel: (id: string) => api.patch(`/parcels/${id}/cancel`),
+};
+
+// ── Rides history ─────────────────────────────────────────────────────────────
+export const ridesAPI = {
+  /** Historial de viajes del usuario autenticado */
+  getUserHistory: (limit = 20) =>
+    api.get('/transport/rides/history/user', { params: { limit } }),
+
+  /** Detalle de un viaje por ID */
+  getById: (rideId: string) =>
+    api.get(`/transport/rides/${rideId}`),
+
+  /** Calificar conductor */
+  submitRating: (data: {
+    tripId:      string;
+    rateeId:     string;
+    stars:       number;
+    review?:     string;
+    categories?: string[];
+  }) => api.post('/ratings/submit', data),
+
+  /** Estimar precio */
+  estimate: (data: {
+    serviceType:    string;
+    distanceKm?:    number;
+    durationMinutes?: number;
+  }) => api.post('/payments/estimate', data),
+};
+
 // ── Payments ─────────────────────────────────────────────────────────────────
 export const paymentAPI = {
   createPaymentIntent: (data: {

@@ -33,6 +33,10 @@ export function RideRequestScreen() {
     origin,
     destination,
     amount,
+    paymentMethod = 'card',
+    rideType = 'private',
+    passengerCount = 1,
+    scheduledDate,
   } = params as any;
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -88,6 +92,8 @@ export function RideRequestScreen() {
           rideId,
           passengerName: passenger,
           destination,
+          paymentMethod: paymentMethod as 'cash' | 'card' | 'wallet',
+          fare: amount ?? 0,
         });
       } else {
         navigation.goBack();
@@ -133,15 +139,51 @@ export function RideRequestScreen() {
       </View>
 
       <View style={styles.card}>
+        {/* Ride type badge */}
+        <View style={styles.rideTipeRow}>
+          <View style={[
+            styles.rideTypeBadge,
+            rideType === 'shared' ? styles.rideTypeBadgeShared : styles.rideTypeBadgePrivate,
+          ]}>
+            <Ionicons
+              name={rideType === 'shared' ? 'people' : 'person'}
+              size={13}
+              color={rideType === 'shared' ? '#065F46' : '#1E3A8A'}
+            />
+            <Text style={[
+              styles.rideTypeBadgeText,
+              { color: rideType === 'shared' ? '#065F46' : '#1E3A8A' },
+            ]}>
+              {rideType === 'shared'
+                ? `Viaje Compartido · ${passengerCount} pasajero${passengerCount > 1 ? 's' : ''}`
+                : 'Viaje Privado'}
+            </Text>
+          </View>
+          {scheduledDate && (
+            <View style={styles.scheduledBadge}>
+              <Ionicons name="calendar-outline" size={12} color="#7C3AED" />
+              <Text style={styles.scheduledText}>
+                {new Date(scheduledDate).toLocaleDateString('es-EC', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                })}
+              </Text>
+            </View>
+          )}
+        </View>
+
         <View style={styles.iconArea}>
           <View style={styles.iconBg}>
-            <Ionicons name="person" size={36} color="#0033A0" />
+            <Ionicons name={rideType === 'shared' ? 'people' : 'person'} size={36} color="#0033A0" />
           </View>
-          <Text style={styles.passengerName}>{passenger || 'Pasajero'}</Text>
-          <View style={styles.rating}>
-            <Ionicons name="star" size={14} color="#FFCD00" />
-            <Text style={styles.ratingText}>4.9</Text>
-          </View>
+          <Text style={styles.passengerName}>
+            {rideType === 'shared' ? `${passengerCount} pasajeros` : (passenger || 'Pasajero')}
+          </Text>
+          {rideType !== 'shared' && (
+            <View style={styles.rating}>
+              <Ionicons name="star" size={14} color="#FFCD00" />
+              <Text style={styles.ratingText}>4.9</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.route}>
@@ -289,6 +331,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
+  rideTipeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  rideTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  rideTypeBadgeShared: { backgroundColor: '#D1FAE5' },
+  rideTypeBadgePrivate: { backgroundColor: '#EFF6FF' },
+  rideTypeBadgeText: { fontSize: 11, fontWeight: '700' },
+  scheduledBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#EDE9FE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  scheduledText: { fontSize: 11, fontWeight: '700', color: '#7C3AED' },
+
   amountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

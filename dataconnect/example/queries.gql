@@ -1,0 +1,13 @@
+query GetAllRides @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+      rides {
+        id
+        driver {
+          displayName
+        }
+        departureCity
+        destinationCity
+        departureDateTime
+        availableSeats
+        pricePerSeat
+      }
+    }

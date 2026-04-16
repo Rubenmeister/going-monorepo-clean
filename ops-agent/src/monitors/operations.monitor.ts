@@ -22,6 +22,20 @@ function currentHour(): number {
   return parseInt(hourStr, 10);
 }
 
+/** Minuto actual en Ecuador (0-59) — usado para evitar duplicados en runs de :00 y :30 */
+function currentMinute(): number {
+  const minStr = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Guayaquil',
+    minute: 'numeric',
+  });
+  return parseInt(minStr, 10);
+}
+
+/** Devuelve true solo en la primera ejecución de cada hora (minutos 0-29) */
+function isPrimaryRunOfHour(): boolean {
+  return currentMinute() < 30;
+}
+
 /** Timestamp de inicio del día actual en Ecuador */
 function todayStartTimestamp(): Timestamp {
   const ecuadorDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guayaquil' }); // "YYYY-MM-DD"
@@ -122,7 +136,9 @@ export async function checkIngresos(): Promise<void> {
     const hora = currentHour();
 
     // Solo revisar en horas estratégicas: 12pm y 6pm (Ecuador)
+    // isPrimaryRunOfHour() evita duplicar la alerta en la ejecución de :30
     if (hora !== 12 && hora !== 18) return;
+    if (!isPrimaryRunOfHour()) return;
 
     const threshold = hora === 12 ? 30 : 60; // $30 al mediodía, $60 a las 6pm
     const horaStr = hora === 12 ? '12:00' : '18:00';
@@ -279,6 +295,7 @@ export async function checkCalificaciones(): Promise<void> {
 // ─── 6. Reporte diario (8pm Ecuador) ──────────────────────────
 export async function enviarReporteDiario(): Promise<void> {
   if (currentHour() !== 20) return;
+  if (!isPrimaryRunOfHour()) return; // evitar duplicado en la ejecución de las 20:30
   console.log('[Monitor] Generando reporte diario...');
   try {
     const stats = await getDailyRevenueStats();
