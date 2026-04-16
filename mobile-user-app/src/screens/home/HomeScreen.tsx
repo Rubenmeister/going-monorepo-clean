@@ -93,12 +93,65 @@ const ORIGIN_CITIES: { id: CityId; label: string; province: string }[] = [
   { id: 'guaranda',     label: 'Guaranda',     province: 'Bolívar'          },
 ];
 
-// ── Rutas destacadas ───────────────────────────────────────────────────────
+// ── Zonas de destino dentro de Quito ──────────────────────────────────────────
+export type QuitoZone = 'quito_norte' | 'quito_centro' | 'quito_sur' | 'valles' | 'aeropuerto';
+
+export const QUITO_ZONES: { id: QuitoZone; label: string; surcharge: number; examples: string }[] = [
+  { id: 'quito_norte',  label: 'Quito Norte',  surcharge: 0,  examples: 'La Y, Cotocollao, Carapungo, El Condado' },
+  { id: 'quito_centro', label: 'Quito Centro', surcharge: 1,  examples: 'Centro Histórico, La Marín, El Ejido'    },
+  { id: 'quito_sur',    label: 'Quito Sur',    surcharge: 1,  examples: 'El Recreo, Quitumbe, Guajaló'            },
+  { id: 'valles',       label: 'Los Valles',   surcharge: 2,  examples: 'Cumbayá, Tumbaco, Sangolquí, Los Chillos'},
+  { id: 'aeropuerto',   label: 'Aeropuerto',   surcharge: 15, examples: 'Tababela (Aeropuerto Internacional)'      },
+];
+
+// ── Rutas oficiales de Viaje Compartido Going ──────────────────────────────
+export const GOING_SHARED_ROUTES = [
+  {
+    id:    'sierra_centro',
+    label: 'Sierra Centro → Quito',
+    icon:  '🏔️',
+    stops: ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
+    // Precio SUV por asiento desde cada parada (destino: Quito Norte)
+    stopPrices: { Riobamba: 17, Ambato: 10, Latacunga: 8 } as Record<string, number>,
+  },
+  {
+    id:    'costa_quito',
+    label: 'Costa → Quito',
+    icon:  '🌊',
+    stops: ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
+    stopPrices: { 'El Carmen': 14, 'La Concordia': 13, 'Santo Domingo': 11 } as Record<string, number>,
+  },
+  {
+    id:    'sierra_norte',
+    label: 'Sierra Norte → Quito',
+    icon:  '🌿',
+    stops: ['Ibarra', 'Otavalo', 'Quito'],
+    stopPrices: { Ibarra: 11, Otavalo: 9 } as Record<string, number>,
+  },
+];
+
+/**
+ * Calcula el precio de un asiento en viaje compartido.
+ * @param origin  Ciudad de origen (parada)
+ * @param zone    Zona de destino dentro de Quito
+ * @param frontSeat  +$3 si es asiento delantero
+ */
+export function calcSharedSeatPrice(
+  origin: string,
+  zone: QuitoZone = 'quito_norte',
+  frontSeat = false,
+): number {
+  const route = GOING_SHARED_ROUTES.find(r => r.stopPrices[origin] !== undefined);
+  const base  = route?.stopPrices[origin] ?? 10;
+  const surge = QUITO_ZONES.find(z => z.id === zone)?.surcharge ?? 0;
+  return base + surge + (frontSeat ? 3 : 0);
+}
+
+// ── Rutas destacadas (para el Home) ───────────────────────────────────────────
 const FEATURED_ROUTES = [
-  { id: 'r1', label: 'Santo Domingo → Quito → Aeropuerto',        color: '#ff4c41', icon: '✈️', badge: 'Popular'   },
-  { id: 'r2', label: 'Ambato → Latacunga → Quito → Aeropuerto',   color: '#0033A0', icon: '🔵', badge: 'Frecuente' },
-  { id: 'r3', label: 'Ibarra → Quito → Aeropuerto',               color: '#43A047', icon: '🟢', badge: 'Rápida'    },
-  { id: 'r4', label: 'Cuenca → Loja → Zamora',                    color: '#F59E0B', icon: '🏔️', badge: 'Turismo'   },
+  { id: 'r1', label: 'El Carmen → Sto. Domingo → Quito → Aeropuerto', color: '#ff4c41', icon: '✈️', badge: 'Popular'   },
+  { id: 'r2', label: 'Riobamba → Ambato → Latacunga → Quito',         color: '#0033A0', icon: '🏔️', badge: 'Frecuente' },
+  { id: 'r3', label: 'Ibarra → Otavalo → Quito → Aeropuerto',         color: '#43A047', icon: '🌿', badge: 'Rápida'    },
 ];
 
 // ── Rutas recientes del usuario (persiste en AsyncStorage) ─────────────────

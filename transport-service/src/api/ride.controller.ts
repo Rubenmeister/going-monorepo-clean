@@ -40,6 +40,9 @@ import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-tran
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { DriverRatingModel, DriverRatingDocument } from './driver.controller';
 import { v4 as uuidv4 } from 'uuid';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
@@ -71,6 +74,8 @@ export class RideController {
     private readonly eventsGateway: RideEventsGateway,
     private readonly paymentService: PaymentGatewayService,
     private readonly tokenService: TokenService,
+    @InjectModel(DriverRatingModel.name)
+    private readonly ratingModel: Model<DriverRatingDocument>,
   ) {}
 
   /**
@@ -504,5 +509,50 @@ export class RideController {
       shareUrl: `${baseUrl}/tracking?t=${shareToken}`,
       message: 'Comparte este link para que sigan tu viaje en tiempo real 📍',
     };
+  }
+
+  /**
+   * Calificar al conductor tras finalizar el viaje
+   * POST /rides/:rideId/rate
+   * Body: { driverId, rating, thumbsUp, tags?, comment?, tip?, passengerName? }
+   */
+  @Post(':rideId/rate')
+  @SkipThrottle()
+  async rateDriver(
+    @Param('rideId')         rideId: string,
+    @CurrentUser()           user: AuthUser,
+    @Body() body: {
+      driverId:      string;
+      rating:        number;
+      thumbsUp:      boolean;
+      tags?:         string[];
+      comment?:      string;
+      tip?:          number;
+      passengerName?: string;
+    },
+  ) {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    const rating = Math.max(1, Math.min(5, Math.round(body.rating)));
+
+    // Upsert — un pasajero solo puede calificar una vez por viaje
+    await this.ratingModel.findOneAndUpdate(
+      { driverId: body.driverId, passengerId: user.id, rideId },
+      {
+        driverId:      body.driverId,
+        passengerId:   user.id,
+        rideId,
+        rating,
+        comment:       body.comment ?? null,
+        tags:          body.tags ?? [],
+        passengerName: body.passengerName ?? null,
+      },
+      { upsert: true },
+    );
+
+    this.logger.log(`Passenger ${user.id} rated driver ${body.driverId} → ${rating}★ (ride ${rideId})`);
+
+    return { ok: true, rideId, rating };
   }
 }

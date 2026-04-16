@@ -44,6 +44,18 @@ export class RideModelSchema {
   @Prop() paymentRef: string;
   @Prop() paymentTxnId: string;
   @Prop() paymentEstimated: number;
+  /**
+   * Método de pago usado en este viaje: 'card' | 'transfer' | 'cash'.
+   * 'cash' no pasa por el payment gateway — el conductor lo cobra físicamente
+   * y confirma la recepción via cashConfirmed.
+   */
+  @Prop() paymentMethod: string;
+  /**
+   * true cuando el conductor confirmó haber recibido el efectivo del pasajero.
+   * Solo relevante si paymentMethod === 'cash'.
+   * Usado por el servicio de ganancias para contabilizar ingresos en efectivo.
+   */
+  @Prop({ default: false }) cashConfirmed: boolean;
 }
 
 export type RideDocument = RideModelSchema & Document;
