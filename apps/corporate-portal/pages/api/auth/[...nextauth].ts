@@ -124,6 +124,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).companyId = token.companyId;
         (session.user as any).accessToken = token.accessToken;
+        (session as any).accessToken = token.accessToken;
       }
       return session;
     },
