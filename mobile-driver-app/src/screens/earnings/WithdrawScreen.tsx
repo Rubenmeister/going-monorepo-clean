@@ -89,7 +89,7 @@ export function WithdrawScreen() {
         const token = await AsyncStorage.getItem('driver_token');
         await axios.post(
           `${API_BASE}/drivers/me/withdraw`,
-          { amount: parseFloat(amount), method: 'bank_transfer', currency: displayCurrency },
+          { amount: parseFloat(amount), paymentMethod: 'bank_account' },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         Alert.alert(

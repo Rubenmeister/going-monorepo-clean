@@ -1,5 +1,62 @@
 import { Injectable } from '@nestjs/common';
 
+// ── Zonas de destino dentro de Quito ──────────────────────────────────────────
+// Recargo adicional al precio base según la zona de llegada
+export type QuitoZone =
+  | 'quito_norte'    // La Y, Cotocollao, Carapungo, El Condado       → base
+  | 'quito_centro'   // Centro Histórico, La Marín, El Ejido           → +$1
+  | 'quito_sur'      // El Recreo, Quitumbe, Guajaló                  → +$1
+  | 'valles'         // Cumbayá, Tumbaco, Sangolquí, Los Chillos       → +$2
+  | 'aeropuerto';    // Tababela (Aeropuerto Internacional)            → +$15
+
+export const QUITO_ZONE_SURCHARGE: Record<QuitoZone, number> = {
+  quito_norte:  0,
+  quito_centro: 1,
+  quito_sur:    1,
+  valles:       2,
+  aeropuerto:   15,
+};
+
+// ── Rutas oficiales de Viaje Compartido Going ─────────────────────────────────
+export const GOING_SHARED_ROUTES = [
+  {
+    id:        'sierra_centro',
+    label:     'Sierra Centro → Quito',
+    stops:     ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
+    basePrice: { suv: 9, van: 8 },  // precio por asiento desde origen de ruta
+    // Precio desde cada parada (SUV, por asiento)
+    stopPrices: {
+      Riobamba: 17,
+      Ambato:   10,
+      Latacunga: 8,
+      Quito:     0,
+    },
+  },
+  {
+    id:        'costa_quito',
+    label:     'Costa → Quito',
+    stops:     ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
+    basePrice: { suv: 14, van: 12 },
+    stopPrices: {
+      'El Carmen':     14,
+      'La Concordia':  13,
+      'Santo Domingo': 11,
+      Quito:            0,
+    },
+  },
+  {
+    id:        'sierra_norte',
+    label:     'Sierra Norte → Quito',
+    stops:     ['Ibarra', 'Otavalo', 'Quito'],
+    basePrice: { suv: 11, van: 9 },
+    stopPrices: {
+      Ibarra:  11,
+      Otavalo: 9,
+      Quito:    0,
+    },
+  },
+] as const;
+
 /**
  * PricingService
  * Calculates fare and fee split dynamically per service type.
@@ -16,6 +73,7 @@ import { Injectable } from '@nestjs/common';
 export type ServiceType =
   | 'transport'
   | 'shared'
+  | 'shared_route'   // viaje compartido en ruta programada Going
   | 'envio'
   | 'accommodation'
   | 'tour'
@@ -49,7 +107,17 @@ interface FixedInput {
   quantity?: number; // nights or persons
 }
 
-type PricingInput = TransportInput | EnvioInput | FixedInput;
+// Viaje compartido en ruta programada Going
+interface SharedRouteInput {
+  serviceType: 'shared_route';
+  originStop:  string;          // ej. 'Ambato'
+  quitoZone?:  QuitoZone;      // zona de destino dentro de Quito
+  vehicleType: 'suv' | 'van';
+  frontSeat?:  boolean;         // asiento delantero +$3
+  passengers?: number;          // número de asientos (default 1)
+}
+
+type PricingInput = TransportInput | EnvioInput | FixedInput | SharedRouteInput;
 
 // ── Rate config (can be moved to DB/config service later) ────────
 const RATES = {
@@ -83,6 +151,8 @@ export class PricingService {
       case 'transport':
       case 'shared':
         return this.calcTransport(input as TransportInput);
+      case 'shared_route':
+        return this.calcSharedRoute(input as SharedRouteInput);
       case 'envio':
         return this.calcEnvio(input as EnvioInput);
       case 'accommodation':
@@ -90,6 +160,52 @@ export class PricingService {
       case 'experience':
         return this.calcFixed(input as FixedInput);
     }
+  }
+
+  /**
+   * Calcula tarifa de viaje compartido en ruta programada Going.
+   * Precio base según parada de origen + recargo por zona de destino en Quito.
+   *
+   * Ejemplo: Ambato → Aeropuerto (SUV, asiento delantero)
+   *   = $10 (Ambato) + $15 (aeropuerto) + $3 (delantero) = $28
+   */
+  calcSharedRoute(input: SharedRouteInput): FareBreakdown {
+    // Buscar el precio base de la parada de origen
+    const route = GOING_SHARED_ROUTES.find(r =>
+      Object.keys(r.stopPrices).includes(input.originStop)
+    );
+
+    const basePerSeat = route
+      ? (route.stopPrices as any)[input.originStop] ?? 10
+      : 10;
+
+    const vehicleBase = input.vehicleType === 'van'
+      ? Math.max(0, basePerSeat - 2) // VAN es ~$2 menos que SUV
+      : basePerSeat;
+
+    const zoneSurcharge   = QUITO_ZONE_SURCHARGE[input.quitoZone ?? 'quito_norte'];
+    const frontSeatExtra  = input.frontSeat ? 3 : 0;
+    const passengers      = input.passengers ?? 1;
+
+    const pricePerSeat    = vehicleBase + zoneSurcharge + frontSeatExtra;
+    const subtotal        = round(pricePerSeat * passengers);
+    const platformFee     = round(subtotal * RATES.shared.platformFeePct);
+    const providerAmount  = round(subtotal - platformFee);
+
+    return {
+      subtotal,
+      platformFee,
+      providerAmount,
+      total: subtotal,
+      currency: 'USD',
+      breakdown: {
+        basePerSeat:     vehicleBase,
+        zoneSurcharge,
+        frontSeatExtra,
+        passengers,
+        pricePerSeat,
+      },
+    };
   }
 
   private calcTransport(input: TransportInput): FareBreakdown {

@@ -9,6 +9,7 @@ import {
   Animated,
   Easing,
   Share,
+  Image,
 } from 'react-native';
 import MapboxGL from '@rnmapbox/maps';
 import { Ionicons } from '@expo/vector-icons';
@@ -97,6 +98,11 @@ export function ActiveRideScreen() {
   const [showPickupQR, setShowPickupQR] = useState(false);
   const [callSession, setCallSession]     = useState<CallSession | null>(null);
   const [callLoading, setCallLoading]     = useState(false);
+  // Datos del resumen del viaje recibidos en ride:completed
+  const [rideCompleted, setRideCompleted] = useState<{
+    distanceKm?: number;
+    durationSeconds?: number;
+  }>({});
   const cameraRef  = useRef<MapboxGL.Camera>(null);
   const socketRef  = useRef<Socket | null>(null);
 
@@ -206,10 +212,18 @@ export function ActiveRideScreen() {
         setStatus('in_progress');
       });
 
-      // Viaje completado
-      socket.on('ride:completed', () => {
+      // Viaje completado — recibimos resumen del backend
+      socket.on('ride:completed', (data: {
+        distanceKm?: number;
+        durationSeconds?: number;
+        cashConfirmed?: boolean;
+      }) => {
         hapticSuccess();
         setStatus('completed');
+        setRideCompleted({
+          distanceKm:      data?.distanceKm,
+          durationSeconds: data?.durationSeconds,
+        });
         analyticsRideCompleted({ ride_id: rideId, duration_minutes: elapsedTime, price });
       });
     });
@@ -369,8 +383,11 @@ export function ActiveRideScreen() {
     if (driver) {
       navigation.navigate('RateDriver', {
         rideId,
-        driverId: driver.id,
-        driverName: `${driver.firstName} ${driver.lastName}`,
+        driverId:        driver.id,
+        driverName:      `${driver.firstName} ${driver.lastName}`,
+        fare:            price,
+        distanceKm:      rideCompleted.distanceKm,
+        durationSeconds: rideCompleted.durationSeconds,
       });
     } else {
       navigation.goBack();
@@ -462,6 +479,15 @@ export function ActiveRideScreen() {
           <Text style={styles.sosBtnText}>SOS</Text>
         </TouchableOpacity>
       )}
+
+      {/* ── LOGO GOING — esquina superior izquierda sobre el mapa ── */}
+      <View style={styles.mapLogoOverlay} pointerEvents="none">
+        <Image
+          source={require('../../../assets/going-logo-horizontal.png')}
+          style={styles.mapLogo}
+          resizeMode="contain"
+        />
+      </View>
 
       {/* ── PANEL INFERIOR ── */}
       <View style={styles.panel}>
@@ -698,6 +724,19 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18, backgroundColor: GOING_BLUE,
     justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: GOING_YELLOW,
   },
+
+  // Logo sobre el mapa
+  mapLogoOverlay: {
+    position: 'absolute',
+    top: 52,
+    left: 16,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.88)',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  mapLogo: { width: 110, height: 47 },
 
   // Panel inferior
   panel: {

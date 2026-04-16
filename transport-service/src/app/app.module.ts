@@ -27,6 +27,7 @@ import { DeUnaProvider } from '../infrastructure/payment/deuna.provider';
 import { MockPaymentProvider } from '../infrastructure/payment/mock-payment.provider';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
 import { PaymentController } from '../api/payment.controller';
+import { DriverController } from '../api/driver.controller';
 import {
   RequestRideUseCase,
   AcceptRideUseCase,
@@ -72,7 +73,7 @@ import { MulterModule } from '@nestjs/platform-express';
     InfrastructureModule,
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
   ],
-  controllers: [AppController, TransportController, RideController, HealthController, PaymentController],
+  controllers: [AppController, TransportController, RideController, HealthController, PaymentController, DriverController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     AppService,

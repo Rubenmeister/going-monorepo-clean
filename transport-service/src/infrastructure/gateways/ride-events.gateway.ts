@@ -8,8 +8,12 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { RideModelSchema, RideDocument } from '../persistence/schemas/ride.schema';
+import { DriverRatingModel, DriverRatingDocument } from '../../api/driver.controller';
 
 /**
  * RideEventsGateway — Socket.io server para eventos en tiempo real del viaje.
@@ -68,7 +72,13 @@ export class RideEventsGateway
     totalKm: number;
   }>();
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectModel(RideModelSchema.name)
+    private readonly rideModel: Model<RideDocument>,
+    @InjectModel(DriverRatingModel.name)
+    private readonly ratingModel: Model<DriverRatingDocument>,
+  ) {}
 
   // ─── Conexión ──────────────────────────────────────────────────────────────
 
@@ -234,17 +244,96 @@ export class RideEventsGateway
   // ─── Conductor completa el viaje ───────────────────────────────────────────
 
   @SubscribeMessage('driver:completed')
-  handleRideCompleted(
+  async handleRideCompleted(
     @ConnectedSocket() _client: Socket,
-    @MessageBody() data: { rideId: string; distanceKm: number; durationSeconds: number },
+    @MessageBody() data: {
+      rideId: string;
+      distanceKm: number;
+      durationSeconds: number;
+      cashConfirmed?: boolean;
+    },
   ) {
     this.driverPositions.delete(data.rideId);
+    this.rideRoutes.delete(data.rideId);
+
+    const completedAt = new Date();
+
+    // Persist completion data + cashConfirmed flag on the Ride document
+    try {
+      await this.rideModel.findOneAndUpdate(
+        { _id: data.rideId },
+        {
+          $set: {
+            status:          'completed',
+            completedAt,
+            distanceKm:      data.distanceKm,
+            durationSeconds: data.durationSeconds,
+            ...(data.cashConfirmed != null && { cashConfirmed: data.cashConfirmed }),
+          },
+        },
+      ).exec();
+    } catch (err) {
+      this.logger.warn(`Could not persist ride:completed for ${data.rideId}: ${err}`);
+    }
+
     this.server.to(`ride:${data.rideId}`).emit('ride:completed', {
       rideId:          data.rideId,
       distanceKm:      data.distanceKm,
       durationSeconds: data.durationSeconds,
-      completedAt:     new Date(),
+      cashConfirmed:   data.cashConfirmed ?? false,
+      completedAt,
     });
+  }
+
+  // ─── Pasajero califica al conductor ───────────────────────────────────────
+
+  /**
+   * Evento: passenger:rate_driver
+   * Payload: { rideId, driverId, rating, comment?, tags?, passengerName? }
+   * El pasajero lo emite desde la pantalla de calificación post-viaje.
+   */
+  @SubscribeMessage('passenger:rate_driver')
+  async handleRateDriver(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: {
+      rideId:        string;
+      driverId:      string;
+      rating:        number;
+      comment?:      string;
+      tags?:         string[];
+      passengerName?: string;
+    },
+  ) {
+    const passengerId = client.data.userId;
+    if (!passengerId) {
+      client.emit('error', { message: 'No autorizado' });
+      return;
+    }
+
+    const rating = Math.max(1, Math.min(5, Math.round(data.rating)));
+
+    try {
+      // Upsert — un pasajero solo puede calificar una vez por viaje
+      await this.ratingModel.findOneAndUpdate(
+        { driverId: data.driverId, passengerId, rideId: data.rideId },
+        {
+          driverId:      data.driverId,
+          passengerId,
+          rideId:        data.rideId,
+          rating,
+          comment:       data.comment ?? null,
+          tags:          data.tags ?? [],
+          passengerName: data.passengerName ?? null,
+        },
+        { upsert: true },
+      );
+
+      client.emit('rating:saved', { rideId: data.rideId, rating });
+      this.logger.log(`Passenger ${passengerId} rated driver ${data.driverId}: ${rating}★`);
+    } catch (err) {
+      this.logger.warn(`Could not save rating for ride ${data.rideId}: ${err}`);
+      client.emit('error', { message: 'No se pudo guardar la calificación' });
+    }
   }
 
   // ─── Métodos públicos para llamar desde otros servicios ────────────────────

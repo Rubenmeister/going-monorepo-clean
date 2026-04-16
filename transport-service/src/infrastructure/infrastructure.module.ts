@@ -11,6 +11,7 @@ import { TripModelSchema, TripSchema } from './persistence/schemas/trip.schema';
 import { RideModelSchema, RideSchema } from './persistence/schemas/ride.schema';
 import { RideMatchSchema } from './schemas/ride-match.schema';
 import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
+import { DriverDocumentModel, DriverDocumentSchema, DriverRatingModel, DriverRatingSchema } from '../api/driver.controller';
 
 @Global()
 @Module({
@@ -20,6 +21,8 @@ import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
       { name: TripModelSchema.name, schema: TripSchema },
       { name: RideModelSchema.name, schema: RideSchema },
       { name: 'RideMatch', schema: RideMatchSchema },
+      { name: DriverDocumentModel.name, schema: DriverDocumentSchema },
+      { name: DriverRatingModel.name,   schema: DriverRatingSchema   },
     ]),
   ],
   providers: [
@@ -65,6 +68,7 @@ import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
     DistanceCalculatorService,
     'GeolocationService',
     'REDIS_CLIENT',
+    MongooseModule,
   ],
 })
 export class InfrastructureModule {}
