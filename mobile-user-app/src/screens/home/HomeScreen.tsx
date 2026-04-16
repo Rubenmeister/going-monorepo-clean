@@ -14,7 +14,7 @@ import {
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+// expo-blur removed — not needed for current implementation
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -105,45 +105,84 @@ export const QUITO_ZONES: { id: QuitoZone; label: string; surcharge: number; exa
 ];
 
 // ── Rutas oficiales de Viaje Compartido Going ──────────────────────────────
+// Rutas Going — IDA (hacia Quito) y VUELTA (desde Quito)
 export const GOING_SHARED_ROUTES = [
+  // ── IDA: ciudades → Quito ─────────────────────────────────────────────────
   {
-    id:    'sierra_centro',
-    label: 'Sierra Centro → Quito',
-    icon:  '🏔️',
-    stops: ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
-    // Precio SUV por asiento desde cada parada (destino: Quito Norte)
-    stopPrices: { Riobamba: 17, Ambato: 10, Latacunga: 8 } as Record<string, number>,
+    id:        'sierra_centro',
+    label:     'Sierra Centro → Quito',
+    icon:      '🏔️',
+    direction: 'ida' as const,
+    stops:     ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
+    stopPrices:{ Riobamba: 17, Ambato: 10, Latacunga: 8 } as Record<string, number>,
   },
   {
-    id:    'costa_quito',
-    label: 'Costa → Quito',
-    icon:  '🌊',
-    stops: ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
-    stopPrices: { 'El Carmen': 14, 'La Concordia': 13, 'Santo Domingo': 11 } as Record<string, number>,
+    id:        'costa_quito',
+    label:     'Costa → Quito',
+    icon:      '🌊',
+    direction: 'ida' as const,
+    stops:     ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
+    stopPrices:{ 'El Carmen': 14, 'La Concordia': 13, 'Santo Domingo': 11 } as Record<string, number>,
   },
   {
-    id:    'sierra_norte',
-    label: 'Sierra Norte → Quito',
-    icon:  '🌿',
-    stops: ['Ibarra', 'Otavalo', 'Quito'],
-    stopPrices: { Ibarra: 11, Otavalo: 9 } as Record<string, number>,
+    id:        'sierra_norte',
+    label:     'Sierra Norte → Quito',
+    icon:      '🌿',
+    direction: 'ida' as const,
+    stops:     ['Ibarra', 'Otavalo', 'Quito'],
+    stopPrices:{ Ibarra: 11, Otavalo: 9 } as Record<string, number>,
+  },
+  // ── VUELTA: Quito → ciudades (viajes de regreso del conductor) ────────────
+  {
+    id:        'quito_sierra_centro',
+    label:     'Quito → Sierra Centro',
+    icon:      '🏔️',
+    direction: 'vuelta' as const,
+    stops:     ['Quito', 'Latacunga', 'Ambato', 'Riobamba'],
+    stopPrices:{ Quito: 10, Latacunga: 8, Ambato: 6 } as Record<string, number>,
+  },
+  {
+    id:        'quito_costa',
+    label:     'Quito → Costa',
+    icon:      '🌊',
+    direction: 'vuelta' as const,
+    stops:     ['Quito', 'Santo Domingo', 'La Concordia', 'El Carmen'],
+    stopPrices:{ Quito: 11, 'Santo Domingo': 8, 'La Concordia': 6 } as Record<string, number>,
+  },
+  {
+    id:        'quito_sierra_norte',
+    label:     'Quito → Sierra Norte',
+    icon:      '🌿',
+    direction: 'vuelta' as const,
+    stops:     ['Quito', 'Otavalo', 'Ibarra'],
+    stopPrices:{ Quito: 9, Otavalo: 6 } as Record<string, number>,
   },
 ];
 
 /**
  * Calcula el precio de un asiento en viaje compartido.
- * @param origin  Ciudad de origen (parada)
- * @param zone    Zona de destino dentro de Quito
- * @param frontSeat  +$3 si es asiento delantero
+ * @param originStop  Nombre de la parada de origen (ej: 'Ambato', 'Quito')
+ * @param zone        Zona de destino dentro de Quito (aplica recargo)
+ * @param frontSeat   +$3 si es asiento delantero
+ * @param routeId     ID de ruta específica (opcional, mejora precisión)
  */
 export function calcSharedSeatPrice(
-  origin: string,
+  originStop: string,
   zone: QuitoZone = 'quito_norte',
   frontSeat = false,
+  routeId?: string,
 ): number {
-  const route = GOING_SHARED_ROUTES.find(r => r.stopPrices[origin] !== undefined);
-  const base  = route?.stopPrices[origin] ?? 10;
-  const surge = QUITO_ZONES.find(z => z.id === zone)?.surcharge ?? 0;
+  const route = routeId
+    ? GOING_SHARED_ROUTES.find(r => r.id === routeId)
+    : GOING_SHARED_ROUTES.find(r => r.stopPrices[originStop] !== undefined);
+
+  const base  = route?.stopPrices[originStop] ?? 10;
+  // Recargo de zona solo aplica cuando el destino ES Quito
+  const isDestinationQuito = route?.direction === 'ida' || !route;
+  const surge = isDestinationQuito
+    ? (QUITO_ZONES.find(z => z.id === zone)?.surcharge ?? 0)
+    : 0;
+
   return base + surge + (frontSeat ? 3 : 0);
 }
 
@@ -514,12 +553,16 @@ export default function HomeScreen() {
 
   const handleServiceCard = (service: 'compartido' | 'privado' | 'delivery') => {
     hapticMedium();
+    if (service === 'compartido') {
+      navigation.navigate('SharedRideBooking' as any, { originCity });
+      return;
+    }
     if (service === 'delivery') {
       navigation.navigate('Envios' as any);
       return;
     }
-    setTripMode(service === 'compartido' ? 'compartido' : 'privado');
-    setShowBookingSheet(true);
+    // Privado — pantalla dedicada
+    navigation.navigate('PrivateRideBooking' as any, { originCity });
   };
 
   const [showBookingSheet, setShowBookingSheet] = React.useState(false);
@@ -658,8 +701,8 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* ── BOOKING SHEET (se muestra al tocar una tarjeta o el buscador) ── */}
-      {showBookingSheet && (
+      {/* ── BOOKING SHEET eliminado: cada tarjeta navega a su propia pantalla ── */}
+      {showBookingSheet && false && (
         <View style={styles.card}>
         <Text style={styles.greeting}>
           ¡Hola, {user?.firstName ?? 'viajero'}! 👋
