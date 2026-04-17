@@ -30,7 +30,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.conductor",
-      "versionCode": 41,
+      "versionCode": 42,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -50,6 +50,7 @@
       }
     },
     "plugins": [
+      "./plugins/withKotlinVersion",
       [
         "expo-location",
         {
