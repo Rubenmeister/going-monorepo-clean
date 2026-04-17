@@ -30,7 +30,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.conductor",
-      "versionCode": 40,
+      "versionCode": 41,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -60,7 +60,7 @@
       [
         "@rnmapbox/maps",
         {
-          "RNMapboxMapsVersion": "11.0.0"
+          "RNMapboxMapsVersion": "11.18.2"
         }
       ],
       "expo-notifications",
