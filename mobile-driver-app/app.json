@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.going.driverapp",
+      "bundleIdentifier": "com.going.conductor",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para mostrar tu posición a los pasajeros.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Going necesita rastrear tu ubicación en segundo plano mientras estás en línea.",
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ff4c41"
       },
-      "package": "com.going.driverapp",
+      "package": "com.going.conductor",
       "versionCode": 38,
       "permissions": [
         "ACCESS_FINE_LOCATION",
