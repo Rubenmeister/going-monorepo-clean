@@ -115,10 +115,10 @@ export default function HostsPage() {
       const token = localStorage.getItem('authToken') ?? '';
 
       /* 1. Users with host role */
-      const usersRes = await adminFetch<{ users?: HostUser[]; data?: HostUser[] }>(
+      const usersRes = await adminFetch(
         '/auth/admin/users?role=host&limit=200',
         token
-      ).catch(() => ({ users: [] as HostUser[] }));
+      ).catch(() => ({ users: [] as HostUser[] })) as { users?: HostUser[]; data?: HostUser[] };
 
       const hostUsers: HostUser[] = (usersRes as any).users
         ?? (usersRes as any).data
