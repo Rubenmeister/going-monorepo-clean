@@ -106,7 +106,7 @@ export default function MarketPage() {
   const [growth,    setGrowth]    = useState<UserGrowth[]>(DEMO_GROWTH);
   const [loading,   setLoading]   = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [sortBy,    setSortBy]    = useState<'trips' | 'demand' | 'trend'>('trips');
+  const [sortBy,    setSortBy]    = useState('trips' as 'trips' | 'demand' | 'trend');
   const [filterSvc, setFilterSvc] = useState<string>('all');
 
   useEffect(() => {

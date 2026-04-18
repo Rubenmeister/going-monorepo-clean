@@ -86,11 +86,11 @@ export default function DriversPage() {
   const [tab, setTab]                   = useState<Tab>('gestion');
   const [drivers, setDrivers]           = useState<DriverRecord[]>([]);
   const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState<string | null>(null);
-  const [updatingId, setUpdatingId]     = useState<string | null>(null);
+  const [error, setError]               = useState(null as string | null);
+  const [updatingId, setUpdatingId]     = useState(null as string | null);
   const [search, setSearch]             = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedDriver, setSelectedDriver] = useState<DriverRecord | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState(null as DriverRecord | null);
 
   const [activeDrivers, setActiveDrivers] = useState<ActiveDriver[]>([]);
   const [gpsLoading, setGpsLoading]       = useState(false);
@@ -583,19 +583,4 @@ export default function DriversPage() {
                   >
                     Aprobar
                   </button>
-                  <button
-                    onClick={() => handleStatusChange(selectedDriver, 'suspended')}
-                    className="px-4 py-2 text-sm font-bold bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
-                  >
-                    Rechazar
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      )}
-
-    </AdminLayout>
-  );
-}
+             

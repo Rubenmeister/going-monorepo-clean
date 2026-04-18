@@ -94,14 +94,14 @@ export default function HostsPage() {
   const { auth } = useMonorepoApp();
   const router   = useRouter();
 
-  const [hosts,       setHosts]       = useState<Host[]>([]);
+  const [hosts,       setHosts]       = useState([] as Host[]);
   const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState<string | null>(null);
-  const [activeTab,   setActiveTab]   = useState<HostTab>('todos');
+  const [error,       setError]       = useState(null as string | null);
+  const [activeTab,   setActiveTab]   = useState('todos' as HostTab);
   const [search,      setSearch]      = useState('');
   const [filterStatus,setFilterStatus]= useState('all');
-  const [selectedHost,setSelectedHost]= useState<Host | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedHost,setSelectedHost]= useState(null as Host | null);
+  const [actionLoading, setActionLoading] = useState(null as string | null);
 
   useEffect(() => {
     if (!auth.isLoading && !auth.user) router.push('/login');
