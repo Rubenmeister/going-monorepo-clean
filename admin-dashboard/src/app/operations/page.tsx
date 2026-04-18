@@ -179,16 +179,16 @@ function DriverPin({ driver }: { driver: ActiveDriver }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function OperationsPage() {
-  const [socketStatus, setSocketStatus] = useState<SocketStatus>('disconnected');
-  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
-  const [activeDrivers, setActiveDrivers] = useState<ActiveDriver[]>([]);
-  const [services, setServices] = useState<ServiceCard[]>([
+  const [socketStatus, setSocketStatus] = useState('disconnected' as SocketStatus);
+  const [liveEvents, setLiveEvents] = useState([] as LiveEvent[]);
+  const [activeDrivers, setActiveDrivers] = useState([] as ActiveDriver[]);
+  const [services, setServices] = useState([
     { key: 'transporte',   label: 'Transporte',   icon: '🚗', color: '#ff4c41', active: 0, total: 0, trend: 'flat' },
     { key: 'envios',       label: 'Envíos',       icon: '📦', color: '#0033A0', active: 0, total: 0, trend: 'flat' },
     { key: 'tours',        label: 'Tours',        icon: '🗺️', color: '#059669', active: 0, total: 0, trend: 'flat' },
     { key: 'experiencias', label: 'Experiencias', icon: '🎭', color: '#7c3aed', active: 0, total: 0, trend: 'flat' },
     { key: 'alojamientos', label: 'Alojamientos', icon: '🏨', color: '#d97706', active: 0, total: 0, trend: 'flat' },
-  ]);
+  ] as ServiceCard[]);
   const [totalOps, setTotalOps] = useState(0);
   const [filterService, setFilterService] = useState('all' as ServiceType | 'all');
   const socketRef = useRef<unknown>(null);
@@ -569,4 +569,4 @@ export default function OperationsPage() {
               <code className="bg-gray-100 px-1 rounded">/admin/stats/live</code> con breakdown por servicio.
               El feed de eventos ya está listo para recibir cualquier evento adicional que el backend emita via WebSocket.
             </p>
-          </div>
+         
