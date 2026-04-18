@@ -38,7 +38,7 @@ export default function ClientsPage() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterRole, setFilterRole] = useState('');
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState(null as string | null);
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 50;
 

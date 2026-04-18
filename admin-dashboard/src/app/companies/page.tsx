@@ -24,7 +24,7 @@ export default function CompaniesPage() {
   const router = useRouter();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const loadCompanies = useCallback(async () => {
     if (!auth.user?.token) return;

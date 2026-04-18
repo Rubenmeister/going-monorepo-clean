@@ -9,6 +9,8 @@ import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
 import { useAdminSocket, type LiveEvent } from '../lib/useAdminSocket';
 import { LiveOperationsFeed } from './components/LiveOperationsFeed';
 
+type DriversPayload = { drivers?: unknown[] };
+
 interface AdminStats {
   total: number;
   active: number;
@@ -93,7 +95,7 @@ export default function DashboardPage() {
         setStats(adminStats as AdminStats);
         const driversArr = Array.isArray(drivers)
           ? drivers
-          : (drivers as { drivers?: unknown[] } | null)?.drivers ?? [];
+          : (drivers as (DriversPayload | null))?.drivers ?? [];
         setActiveDrivers(driversArr.length);
       })
       .catch((err: unknown) => {

@@ -25,7 +25,7 @@ export default function IngresosPage() {
   const [rows, setRows] = useState<IngresoRow[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const load = useCallback(async () => {
     if (!auth.user?.token) return;
