@@ -4,20 +4,13 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useCallback } from 'react';
 import { corpFetch } from '../lib/api';
 
-type SSOProvider = 'okta' | 'azure_ad' | 'google_workspace' | 'none';
-type Tab = 'general' | 'sso' | 'spending' | 'users' | 'security';
-
-interface SpendingLimit {
-  department: string;
-  dailyLimit: number;
-  monthlyLimit: number;
-}
+type Tab = 'empresa' | 'usuarios' | 'pagos' | 'seguridad';
 
 interface Employee {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'manager' | 'employee';
   department: string;
 }
 
@@ -25,108 +18,139 @@ interface CompanySettings {
   companyName: string;
   ruc: string;
   billingEmail: string;
+  phone?: string;
+  address?: string;
   currency: string;
   requireApproval: boolean;
   trackingEnabled: boolean;
   mfaRequired: boolean;
   dataRetentionMonths: number;
-  ssoProvider: SSOProvider;
-  ssoClientId?: string;
-  ssoIssuerOrTenant?: string;
-  spendingLimits: SpendingLimit[];
+  defaultPaymentMethod: string;
+  creditLimit?: number;
+  invoiceDays: number;
 }
 
 const DEFAULT_SETTINGS: CompanySettings = {
   companyName: '',
   ruc: '',
   billingEmail: '',
+  phone: '',
+  address: '',
   currency: 'USD',
-  requireApproval: false,
+  requireApproval: true,
   trackingEnabled: true,
-  mfaRequired: true,
+  mfaRequired: false,
   dataRetentionMonths: 12,
-  ssoProvider: 'none',
-  spendingLimits: [],
+  defaultPaymentMethod: 'corporate_card',
+  creditLimit: 0,
+  invoiceDays: 30,
 };
+
+const TABS: { key: Tab; label: string; icon: string }[] = [
+  { key: 'empresa',   label: 'Empresa',   icon: '🏢' },
+  { key: 'usuarios',  label: 'Usuarios',  icon: '👥' },
+  { key: 'pagos',     label: 'Pagos',     icon: '💳' },
+  { key: 'seguridad', label: 'Seguridad', icon: '🔒' },
+];
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrador', manager: 'Manager', employee: 'Empleado',
+};
+const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
+  admin:    { bg: '#fee2e2', color: '#991b1b' },
+  manager:  { bg: '#dbeafe', color: '#1e40af' },
+  employee: { bg: '#f3f4f6', color: '#6b7280' },
+};
+
+const INPUT = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent bg-white';
+const LABEL = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5';
+
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <label className="flex items-center justify-between gap-4 cursor-pointer py-1">
+      <span className="text-sm text-gray-700">{label}</span>
+      <div
+        onClick={() => onChange(!checked)}
+        className={`w-11 h-6 rounded-full relative transition-colors ${checked ? 'bg-[#ff4c41]' : 'bg-gray-200'}`}
+      >
+        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? 'left-5' : 'left-0.5'}`} />
+      </div>
+    </label>
+  );
+}
 
 export default function Settings() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [cfg, setCfg] = useState<CompanySettings>(DEFAULT_SETTINGS);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [tab, setTab] = useState('empresa' as Tab);
+  const [cfg, setCfg] = useState(DEFAULT_SETTINGS as CompanySettings);
+  const [employees, setEmployees] = useState([] as Employee[]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const token = (session as any)?.accessToken ?? '';
 
-  const loadSettings = useCallback(async () => {
+  const load = useCallback(async () => {
     if (!token) return;
     try {
-      setLoadingSettings(true);
-      setError(null);
-      const [settingsData, employeesData] = await Promise.all([
+      setLoading(true);
+      const [settingsRes, empRes] = await Promise.allSettled([
         corpFetch<any>('/corporate/settings', token),
-        corpFetch<any>('/corporate/employees', token).catch(() => ({ employees: [] })),
+        corpFetch<any>('/corporate/employees', token),
       ]);
-
-      const s = settingsData.settings ?? settingsData;
-      setCfg({
-        companyName: s.companyName ?? s.name ?? '',
-        ruc: s.ruc ?? s.taxId ?? '',
-        billingEmail: s.billingEmail ?? s.email ?? '',
-        currency: s.currency ?? 'USD',
-        requireApproval: Boolean(s.requireApproval ?? s.approvalRequired),
-        trackingEnabled: s.trackingEnabled !== false,
-        mfaRequired: s.mfaRequired !== false,
-        dataRetentionMonths: Number(s.dataRetentionMonths ?? s.dataRetention ?? 12),
-        ssoProvider: (s.ssoProvider ?? 'none') as SSOProvider,
-        ssoClientId: s.ssoClientId ?? '',
-        ssoIssuerOrTenant: s.ssoIssuerOrTenant ?? s.ssoTenantId ?? s.ssoIssuerUrl ?? '',
-        spendingLimits: (s.spendingLimits ?? []).map((l: any) => ({
-          department: l.department,
-          dailyLimit: Number(l.dailyLimit ?? 0),
-          monthlyLimit: Number(l.monthlyLimit ?? 0),
-        })),
-      });
-
-      const emps = employeesData.employees ?? employeesData.data ?? [];
-      setEmployees(
-        emps.map((e: any) => ({
-          id: e.id ?? e._id,
-          name: e.name ?? `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim(),
-          email: e.email ?? '',
-          role: e.role ?? 'Employee',
-          department: e.department ?? '—',
-        }))
-      );
+      if (settingsRes.status === 'fulfilled') {
+        const s = settingsRes.value;
+        setCfg({
+          companyName: s.companyName ?? s.name ?? '',
+          ruc: s.ruc ?? s.taxId ?? '',
+          billingEmail: s.billingEmail ?? s.email ?? '',
+          phone: s.phone ?? '',
+          address: s.address ?? '',
+          currency: s.currency ?? 'USD',
+          requireApproval: Boolean(s.requireApproval ?? true),
+          trackingEnabled: Boolean(s.trackingEnabled ?? true),
+          mfaRequired: Boolean(s.mfaRequired ?? false),
+          dataRetentionMonths: Number(s.dataRetentionMonths ?? 12),
+          defaultPaymentMethod: s.defaultPaymentMethod ?? 'corporate_card',
+          creditLimit: Number(s.creditLimit ?? 0),
+          invoiceDays: Number(s.invoiceDays ?? 30),
+        });
+      }
+      if (empRes.status === 'fulfilled') {
+        const e = empRes.value;
+        const list: any[] = e.employees ?? e.data ?? (Array.isArray(e) ? e : []);
+        setEmployees(list.map((u: any) => ({
+          id: u.id ?? u._id,
+          name: u.name ?? `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.email,
+          email: u.email ?? '',
+          role: u.role ?? 'employee',
+          department: u.department ?? '—',
+        })));
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
-      setLoadingSettings(false);
+      setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
   }, [status, router]);
-
   useEffect(() => {
-    if (status === 'authenticated') loadSettings();
-  }, [status, loadSettings]);
+    if (status === 'authenticated') load();
+  }, [status, load]);
 
   const save = async () => {
+    if (!token) return;
     setSaving(true);
     setError(null);
     try {
-      await corpFetch('/corporate/settings', token, {
-        method: 'PUT',
-        body: JSON.stringify(cfg),
-      });
+      await corpFetch('/corporate/settings', token, { method: 'PUT', body: JSON.stringify(cfg) });
       setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -134,418 +158,219 @@ export default function Settings() {
     }
   };
 
-  const updateLimit = (dept: string, field: 'dailyLimit' | 'monthlyLimit', value: number) => {
-    setCfg((prev) => ({
-      ...prev,
-      spendingLimits: prev.spendingLimits.map((l) =>
-        l.department === dept ? { ...l, [field]: value } : l
-      ),
-    }));
-  };
-
-  const TABS: { id: Tab; label: string }[] = [
-    { id: 'general', label: 'General' },
-    { id: 'sso', label: 'SSO / Identity' },
-    { id: 'spending', label: 'Spending Limits' },
-    { id: 'users', label: 'Team Members' },
-    { id: 'security', label: 'Security' },
-  ];
+  const set = (key: keyof CompanySettings, value: any) => setCfg(prev => ({ ...prev, [key]: value }));
 
   if (status === 'loading') return null;
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500 mt-1">
-            Configure your company's portal preferences
-          </p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Gestiona tu cuenta corporativa Going Empresas</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+          {TABS.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${tab === t.key ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+              <span>{t.icon}</span>
+              <span className="hidden sm:inline">{t.label}</span>
+            </button>
+          ))}
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
-            ⚠️ {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">⚠️ {error}</div>
         )}
 
-        {loadingSettings ? (
-          <div className="bg-white rounded-xl shadow p-16 text-center text-gray-400 text-sm animate-pulse">
-            Loading settings…
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <div className="w-8 h-8 border-4 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="flex gap-6">
-            {/* Sidebar tabs */}
-            <nav className="w-48 shrink-0">
-              <ul className="space-y-1">
-                {TABS.map((t) => (
-                  <li key={t.id}>
-                    <button
-                      onClick={() => setActiveTab(t.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        activeTab === t.id
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            {/* Content */}
-            <div className="flex-1 bg-white rounded-xl shadow p-6">
-              {/* General */}
-              {activeTab === 'general' && (
-                <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800 border-b pb-3">
-                    Company Settings
-                  </h2>
+          <>
+            {/* ─── EMPRESA ─── */}
+            {tab === 'empresa' && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <h2 className="font-bold text-gray-900">Información de la empresa</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company name
-                    </label>
-                    <input
-                      type="text"
-                      value={cfg.companyName}
-                      onChange={(e) => setCfg({ ...cfg, companyName: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <label className={LABEL}>Nombre de la empresa *</label>
+                    <input className={INPUT} value={cfg.companyName} onChange={e => set('companyName', e.target.value)} placeholder="Ej: Corporación XYZ S.A." />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      RUC (Tax ID)
-                    </label>
-                    <input
-                      type="text"
-                      value={cfg.ruc}
-                      onChange={(e) => setCfg({ ...cfg, ruc: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <label className={LABEL}>RUC / Identificación tributaria</label>
+                    <input className={INPUT} value={cfg.ruc} onChange={e => set('ruc', e.target.value)} placeholder="Ej: 1791234567001" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Billing email
-                    </label>
-                    <input
-                      type="email"
-                      value={cfg.billingEmail}
-                      onChange={(e) => setCfg({ ...cfg, billingEmail: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    <label className={LABEL}>Email de facturación</label>
+                    <input type="email" className={INPUT} value={cfg.billingEmail} onChange={e => set('billingEmail', e.target.value)} placeholder="facturacion@empresa.com" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default currency
-                    </label>
-                    <select
-                      value={cfg.currency}
-                      onChange={(e) => setCfg({ ...cfg, currency: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                      <option value="USD">USD — US Dollar</option>
+                    <label className={LABEL}>Teléfono de contacto</label>
+                    <input className={INPUT} value={cfg.phone ?? ''} onChange={e => set('phone', e.target.value)} placeholder="+593 2 000 0000" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={LABEL}>Dirección fiscal</label>
+                    <input className={INPUT} value={cfg.address ?? ''} onChange={e => set('address', e.target.value)} placeholder="Av. Principal 123, Quito, Ecuador" />
+                  </div>
+                  <div>
+                    <label className={LABEL}>Moneda</label>
+                    <select className={INPUT} value={cfg.currency} onChange={e => set('currency', e.target.value)}>
+                      <option value="USD">USD — Dólar americano</option>
                       <option value="EUR">EUR — Euro</option>
                     </select>
                   </div>
-                  <Toggle
-                    label="Require approval for all bookings"
-                    description="Even manager bookings will require Super Admin approval."
-                    checked={cfg.requireApproval}
-                    onChange={(v) => setCfg({ ...cfg, requireApproval: v })}
-                  />
-                  <Toggle
-                    label="Enable real-time tracking"
-                    description="Allow the portal to show live location of active trips (requires employee consent)."
-                    checked={cfg.trackingEnabled}
-                    onChange={(v) => setCfg({ ...cfg, trackingEnabled: v })}
-                  />
                 </div>
-              )}
+                <div className="pt-2 border-t border-gray-100 space-y-3">
+                  <h3 className="text-sm font-bold text-gray-700">Flujo de reservas</h3>
+                  <Toggle checked={cfg.requireApproval} onChange={v => set('requireApproval', v)} label="Requerir aprobación de manager para reservas de empleados" />
+                  <Toggle checked={cfg.trackingEnabled} onChange={v => set('trackingEnabled', v)} label="Habilitar seguimiento GPS de servicios de transporte" />
+                </div>
+              </div>
+            )}
 
-              {/* SSO */}
-              {activeTab === 'sso' && (
-                <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800 border-b pb-3">
-                    Single Sign-On (SSO)
-                  </h2>
+            {/* ─── USUARIOS ─── */}
+            {tab === 'usuarios' && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Identity provider
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {(
-                        [
-                          { id: 'none', label: 'None (email/password)', icon: '🔑' },
-                          { id: 'okta', label: 'Okta', icon: '🔷' },
-                          { id: 'azure_ad', label: 'Azure AD', icon: '🪟' },
-                          { id: 'google_workspace', label: 'Google Workspace', icon: '🇬' },
-                        ] as { id: SSOProvider; label: string; icon: string }[]
-                      ).map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setCfg({ ...cfg, ssoProvider: p.id })}
-                          className={`flex items-center gap-2 p-3 border-2 rounded-xl text-sm font-medium transition ${
-                            cfg.ssoProvider === p.id
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                          }`}
-                        >
-                          <span>{p.icon}</span>
-                          {p.label}
-                        </button>
-                      ))}
-                    </div>
+                    <h2 className="font-bold text-gray-900">Equipo corporativo</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">{employees.length} usuario{employees.length !== 1 ? 's' : ''} registrado{employees.length !== 1 ? 's' : ''}</p>
                   </div>
-
-                  {cfg.ssoProvider !== 'none' && (
-                    <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                      <p className="text-sm font-semibold text-gray-700">
-                        {cfg.ssoProvider === 'okta' && 'Okta Configuration'}
-                        {cfg.ssoProvider === 'azure_ad' && 'Azure AD Configuration'}
-                        {cfg.ssoProvider === 'google_workspace' && 'Google Workspace Configuration'}
-                      </p>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Client ID
-                        </label>
-                        <input
-                          type="text"
-                          value={cfg.ssoClientId ?? ''}
-                          onChange={(e) => setCfg({ ...cfg, ssoClientId: e.target.value })}
-                          placeholder="Enter Client ID..."
-                          className="w-full border rounded-lg px-3 py-1.5 text-sm"
-                        />
-                      </div>
-                      {(cfg.ssoProvider === 'okta' || cfg.ssoProvider === 'azure_ad') && (
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
-                            {cfg.ssoProvider === 'okta' ? 'Issuer URL' : 'Tenant ID'}
-                          </label>
-                          <input
-                            type="text"
-                            value={cfg.ssoIssuerOrTenant ?? ''}
-                            onChange={(e) => setCfg({ ...cfg, ssoIssuerOrTenant: e.target.value })}
-                            placeholder={
-                              cfg.ssoProvider === 'okta'
-                                ? 'https://your-domain.okta.com'
-                                : 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-                            }
-                            className="w-full border rounded-lg px-3 py-1.5 text-sm"
-                          />
-                        </div>
-                      )}
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700">
-                        Callback URL:{' '}
-                        <code className="font-mono">
-                          https://portal.going.com/api/auth/callback/{cfg.ssoProvider}
-                        </code>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Spending Limits */}
-              {activeTab === 'spending' && (
-                <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800 border-b pb-3">
-                    Spending Limits by Department
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Set daily and monthly limits. Bookings that would exceed these
-                    limits require Super Admin approval.
-                  </p>
-                  {cfg.spendingLimits.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-8">
-                      No spending limits configured yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {cfg.spendingLimits.map((limit) => (
-                        <div key={limit.department} className="bg-gray-50 rounded-xl p-4">
-                          <p className="font-semibold text-gray-800 mb-3">{limit.department}</p>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-xs text-gray-500 mb-1 block">
-                                Daily limit (USD)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                value={limit.dailyLimit}
-                                onChange={(e) =>
-                                  updateLimit(limit.department, 'dailyLimit', Number(e.target.value))
-                                }
-                                className="w-full border rounded-lg px-3 py-1.5 text-sm"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs text-gray-500 mb-1 block">
-                                Monthly limit (USD)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                value={limit.monthlyLimit}
-                                onChange={(e) =>
-                                  updateLimit(limit.department, 'monthlyLimit', Number(e.target.value))
-                                }
-                                className="w-full border rounded-lg px-3 py-1.5 text-sm"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Users */}
-              {activeTab === 'users' && (
-                <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800 border-b pb-3">
-                    Team Members
-                  </h2>
-                  {employees.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-8">No team members found.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {employees.map((u) => (
-                        <div key={u.id} className="flex items-center gap-4 p-3 border rounded-xl">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                            {u.name.charAt(0)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 text-sm truncate">{u.name}</p>
-                            <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                          </div>
-                          <span className="text-xs text-gray-500">{u.department}</span>
-                          <span
-                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                              u.role === 'super_admin' || u.role === 'Super Admin'
-                                ? 'bg-purple-100 text-purple-700'
-                                : u.role === 'manager' || u.role === 'Manager'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}
-                          >
-                            {u.role}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <button className="w-full py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition">
-                    + Invite team member
+                  <button onClick={() => alert('Funcionalidad de invitación próximamente')}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-white hover:opacity-90 transition"
+                    style={{ backgroundColor: '#ff4c41' }}>
+                    + Invitar
                   </button>
                 </div>
-              )}
+                {employees.length === 0 ? (
+                  <div className="py-12 text-center text-gray-400">
+                    <p className="text-4xl mb-3">👥</p>
+                    <p className="font-medium">No hay usuarios registrados</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {employees.map(emp => {
+                      const rc = ROLE_COLORS[emp.role] ?? ROLE_COLORS.employee;
+                      return (
+                        <div key={emp.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                            style={{ backgroundColor: '#ff4c41' }}>
+                            {emp.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{emp.name}</p>
+                            <p className="text-xs text-gray-400 truncate">{emp.email} · {emp.department}</p>
+                          </div>
+                          <span className="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0"
+                            style={{ backgroundColor: rc.bg, color: rc.color }}>
+                            {ROLE_LABELS[emp.role] ?? emp.role}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
-              {/* Security */}
-              {activeTab === 'security' && (
-                <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800 border-b pb-3">
-                    Security & Privacy
-                  </h2>
-                  <Toggle
-                    label="Require MFA for all admins"
-                    description="Super Admins and Managers must use two-factor authentication."
-                    checked={cfg.mfaRequired}
-                    onChange={(v) => setCfg({ ...cfg, mfaRequired: v })}
-                  />
-                  <Toggle
-                    label="Require consent for location tracking"
-                    description="Employees must explicitly consent before their location is shared with the company during trips. (LOPD Ecuador compliance)"
-                    checked={true}
-                    onChange={() => {}}
-                    locked
-                  />
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
-                    <p className="font-semibold mb-1">LOPD Ecuador Compliance</p>
-                    <p>
-                      Consent tracking is mandatory and cannot be disabled to comply with Ecuador's
-                      Ley Orgánica de Protección de Datos Personales.
-                    </p>
+            {/* ─── PAGOS ─── */}
+            {tab === 'pagos' && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <h2 className="font-bold text-gray-900">Configuración de pagos</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={LABEL}>Método de pago por defecto</label>
+                    <select className={INPUT} value={cfg.defaultPaymentMethod} onChange={e => set('defaultPaymentMethod', e.target.value)}>
+                      <option value="corporate_card">💳 Tarjeta corporativa</option>
+                      <option value="invoice_30">🧾 Factura a 30 días</option>
+                      <option value="cash_transfer">🏦 Transferencia / contado</option>
+                      <option value="agency_invoice">✈️ Factura agencia</option>
+                    </select>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Data retention policy</p>
-                    <select
-                      value={cfg.dataRetentionMonths}
-                      onChange={(e) => setCfg({ ...cfg, dataRetentionMonths: Number(e.target.value) })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                      <option value={12}>12 months</option>
-                      <option value={24}>24 months</option>
-                      <option value={36}>36 months</option>
+                    <label className={LABEL}>Días de crédito para facturas</label>
+                    <select className={INPUT} value={cfg.invoiceDays} onChange={e => set('invoiceDays', Number(e.target.value))}>
+                      <option value={15}>15 días</option>
+                      <option value={30}>30 días (estándar)</option>
+                      <option value={45}>45 días</option>
+                      <option value={60}>60 días</option>
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Booking and tracking data older than this period will be automatically purged.
-                    </p>
+                  </div>
+                  <div>
+                    <label className={LABEL}>Límite de crédito mensual (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                      <input type="number" min="0" className={INPUT + ' pl-7'} value={cfg.creditLimit ?? 0}
+                        onChange={e => set('creditLimit', Number(e.target.value))} placeholder="0 = sin límite" />
+                    </div>
                   </div>
                 </div>
-              )}
-
-              {/* Save button */}
-              <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
-                {saved && (
-                  <span className="text-sm text-green-600 font-medium">✓ Changes saved</span>
-                )}
-                {error && (
-                  <span className="text-sm text-red-600 font-medium">⚠️ Save failed</span>
-                )}
-                <button
-                  onClick={save}
-                  disabled={saving}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
-                >
-                  {saving ? 'Saving…' : 'Save changes'}
-                </button>
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-xs text-amber-700">
+                  <p className="font-semibold mb-1">💡 Tarifas B2B Going Empresas</p>
+                  <p>Las tarifas corporativas incluyen IVA, cargo por servicio de gestión y seguro básico. Las condiciones de crédito están sujetas al contrato marco vigente. Para ajustes en tu línea de crédito, contacta a <strong>empresas@goingec.com</strong>.</p>
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* ─── SEGURIDAD ─── */}
+            {tab === 'seguridad' && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <h2 className="font-bold text-gray-900">Seguridad y privacidad</h2>
+                <div className="space-y-4 divide-y divide-gray-100">
+                  <div className="space-y-3 pb-4">
+                    <h3 className="text-sm font-bold text-gray-700">Acceso y autenticación</h3>
+                    <Toggle checked={cfg.mfaRequired} onChange={v => set('mfaRequired', v)} label="Requerir autenticación de dos factores (MFA) para todos los usuarios" />
+                  </div>
+                  <div className="space-y-3 py-4">
+                    <h3 className="text-sm font-bold text-gray-700">Datos y retención</h3>
+                    <div>
+                      <label className={LABEL}>Retención de datos de reservas</label>
+                      <select className={INPUT} value={cfg.dataRetentionMonths} onChange={e => set('dataRetentionMonths', Number(e.target.value))}>
+                        <option value={6}>6 meses</option>
+                        <option value={12}>12 meses (recomendado)</option>
+                        <option value={24}>24 meses</option>
+                        <option value={36}>36 meses</option>
+                      </select>
+                      <p className="text-xs text-gray-400 mt-1.5">Los registros más antiguos se archivarán automáticamente</p>
+                    </div>
+                  </div>
+                  <div className="pt-4">
+                    <div className="bg-gray-50 rounded-xl p-4 text-xs text-gray-500 space-y-1">
+                      <p className="font-semibold text-gray-700">Información de privacidad</p>
+                      <p>Going procesa los datos corporativos conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP). Tus datos se almacenan en servidores certificados SOC 2.</p>
+                      <p className="mt-2">
+                        <a href="mailto:privacidad@goingec.com" className="text-[#ff4c41] underline">privacidad@goingec.com</a> ·
+                        <a href="#" className="text-[#ff4c41] underline ml-1">Política de privacidad</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Save button (not for users tab) */}
+            {tab !== 'usuarios' && (
+              <div className="flex items-center gap-3">
+                <button onClick={save} disabled={saving}
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition hover:opacity-90"
+                  style={{ backgroundColor: '#ff4c41' }}>
+                  {saving ? 'Guardando…' : 'Guardar cambios'}
+                </button>
+                {saved && (
+                  <span className="text-sm text-green-600 font-semibold flex items-center gap-1.5">
+                    ✓ Cambios guardados
+                  </span>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </Layout>
-  );
-}
-
-function Toggle({
-  label,
-  description,
-  checked,
-  onChange,
-  locked = false,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  locked?: boolean;
-}) {
-  return (
-    <div className="flex items-start gap-4">
-      <button
-        type="button"
-        disabled={locked}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 mt-0.5 ${
-          checked ? 'bg-blue-600' : 'bg-gray-200'
-        } ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-      >
-        <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 m-0.5 ${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        />
-      </button>
-      <div>
-        <p className="text-sm font-medium text-gray-800">{label}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      </div>
-    </div>
   );
 }

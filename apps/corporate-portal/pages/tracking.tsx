@@ -62,12 +62,10 @@ function minutesAgo(iso: string) {
 export default function Tracking() {
   const { status } = useSession();
   const router = useRouter();
-  const [trips, setTrips] = useState<ActiveTrip[]>(INITIAL_TRIPS);
-  const [selected, setSelected] = useState<ActiveTrip | null>(null);
-  const [wsStatus, setWsStatus] = useState<
-    'connecting' | 'connected' | 'disconnected'
-  >('disconnected');
-  const wsRef = useRef<WebSocket | null>(null);
+  const [trips, setTrips] = useState(INITIAL_TRIPS as ActiveTrip[]);
+  const [selected, setSelected] = useState(null as ActiveTrip | null);
+  const [wsStatus, setWsStatus] = useState('disconnected' as 'connecting' | 'connected' | 'disconnected');
+  const wsRef = useRef(null as WebSocket | null);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
