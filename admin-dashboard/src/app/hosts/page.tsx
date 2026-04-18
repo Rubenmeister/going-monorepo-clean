@@ -10,6 +10,7 @@ import { adminFetch, API } from '../../lib/admin-api';
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type HostType = 'tour' | 'experiencia' | 'alojamiento' | 'mixto';
 type HostTab  = 'todos' | HostType;
+type UsersRes = { users?: HostUser[]; data?: HostUser[] };
 
 interface HostUser {
   id: string;
@@ -118,7 +119,7 @@ export default function HostsPage() {
       const usersRes = await adminFetch(
         '/auth/admin/users?role=host&limit=200',
         token
-      ).catch(() => ({ users: [] as HostUser[] })) as { users?: HostUser[]; data?: HostUser[] };
+      ).catch(() => ({ users: [] as HostUser[] })) as UsersRes;
 
       const hostUsers: HostUser[] = (usersRes as any).users
         ?? (usersRes as any).data

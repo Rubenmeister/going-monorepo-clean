@@ -23,7 +23,7 @@ export default function PaymentsManagementPage() {
   const router = useRouter();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const loadPayments = useCallback(async () => {
     if (!auth.user?.token) return;

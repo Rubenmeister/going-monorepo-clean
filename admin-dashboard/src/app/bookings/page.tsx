@@ -23,7 +23,7 @@ export default function BookingsManagementPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const loadBookings = useCallback(async () => {
     if (!auth.user?.token) return;

@@ -48,6 +48,11 @@ type DriversRes = { drivers?: Array<{ id: string; name?: string; lat?: number; l
 type IoFn = (url: string, opts: unknown) => unknown;
 type SocketApi = { on: (ev: string, cb: (...a: unknown[]) => void) => void; emit: (ev: string, ...a: unknown[]) => void };
 type PushEventArg = Omit<LiveEvent, 'id' | 'ts'>;
+type Disconnectable = { disconnect: () => void };
+type LocationData = { driverId?: string; id?: string; name?: string; lat?: number; latitude?: number; lng?: number; longitude?: number; status?: string };
+type RideData = { driverName?: string; origin?: string; destination?: string };
+type RideCompleteData = { driverName?: string; amount?: number };
+type CancelData = { reason?: string };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -314,7 +319,7 @@ export default function OperationsPage() {
         // Driver location updates
         const handleLocation = (data: unknown) => {
           if (!mounted) return;
-          const d = data as { driverId?: string; id?: string; name?: string; lat?: number; latitude?: number; lng?: number; longitude?: number; status?: string };
+          const d = data as LocationData;
           const id = d.driverId ?? d.id ?? '';
           const lat = d.lat ?? d.latitude ?? 0;
           const lng = d.lng ?? d.longitude ?? 0;
@@ -331,7 +336,7 @@ export default function OperationsPage() {
 
         s.on('ride:driver_accepted', (data: unknown) => {
           if (!mounted) return;
-          const d = data as { driverName?: string; origin?: string; destination?: string };
+          const d = data as RideData;
           pushEvent({
             type: 'ride_accepted',
             service: 'transporte',
@@ -342,7 +347,7 @@ export default function OperationsPage() {
 
         s.on('ride:started', (data: unknown) => {
           if (!mounted) return;
-          const d = data as { driverName?: string; origin?: string; destination?: string };
+          const d = data as RideData;
           pushEvent({
             type: 'ride_started',
             service: 'transporte',
@@ -353,7 +358,7 @@ export default function OperationsPage() {
 
         s.on('ride:completed', (data: unknown) => {
           if (!mounted) return;
-          const d = data as { driverName?: string; amount?: number };
+          const d = data as RideCompleteData;
           pushEvent({
             type: 'ride_completed',
             service: 'transporte',
@@ -364,7 +369,7 @@ export default function OperationsPage() {
 
         s.on('ride:cancelled', (data: unknown) => {
           if (!mounted) return;
-          const d = data as { reason?: string };
+          const d = data as CancelData;
           pushEvent({
             type: 'ride_cancelled',
             service: 'transporte',
@@ -388,7 +393,7 @@ export default function OperationsPage() {
       mounted = false;
       clearInterval(statsInterval);
       if (socket) {
-        (socket as { disconnect: () => void }).disconnect();
+        (socket as Disconnectable).disconnect();
         socketRef.current = null;
       }
     };
