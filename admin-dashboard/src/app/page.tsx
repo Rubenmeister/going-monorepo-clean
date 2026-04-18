@@ -1,11 +1,13 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { Card, CardBody, Button } from '@going-monorepo-clean/shared-ui';
 import { useRouter } from 'next/navigation';
 import { AdminLayout, StatCard } from './components';
 import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
+import { useAdminSocket, type LiveEvent } from '../lib/useAdminSocket';
+import { LiveOperationsFeed } from './components/LiveOperationsFeed';
 
 interface AdminStats {
   total: number;
@@ -68,6 +70,15 @@ export default function DashboardPage() {
   const [activeDrivers, setActiveDrivers] = useState<number>(0);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
+
+  const handleLiveEvent = useCallback((evt: LiveEvent) => {
+    setLiveEvents(prev => [...prev.slice(-99), evt]);
+  }, []);
+
+  const { status: socketStatus } = useAdminSocket({
+    onLiveEvent: handleLiveEvent,
+  });
 
   useEffect(() => {
     if (auth.isLoading) return;
@@ -215,17 +226,14 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Live operations feed */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Operaciones en tiempo real</h2>
+        <LiveOperationsFeed events={liveEvents} status={socketStatus} />
+      </div>
+
       {stats && stats.suspended > 0 && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">⚠️</span>
-            <div>
-              <p className="font-semibold text-orange-800">
-                {stats.suspended} usuario(s) suspendido(s)
-              </p>
-              <p className="text-sm text-orange-600">Revisar en Clientes App</p>
-            </div>
-          </div>
           <button
             onClick={() => router.push('/clients')}
             className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-semibold hover:bg-orange-200 transition-colors"

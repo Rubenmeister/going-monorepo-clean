@@ -125,21 +125,21 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">
-          <p className="text-xs text-gray-400">
-            ¿Primera vez?{' '}
-            <a href="/login/crear-admin" className="text-indigo-500 hover:text-indigo-700 font-medium underline">
-              Crear cuenta de administrador
-            </a>
-          </p>
-          <p className="text-xs text-gray-400">
-            ¿Olvidaste tu contraseña?{' '}
-            <a href="/login/recuperar" className="text-indigo-500 hover:text-indigo-700 font-medium underline">
-              Recuperar contraseña
-            </a>
-          </p>
-          <p className="text-xs text-gray-300 mt-2">Going Admin Dashboard — Solo personal autorizado</p>
+        <div className="mt-6 space-y-3">
+          <a
+            href="/login/recuperar"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+          >
+            🔑 Olvidé mi contraseña
+          </a>
+          <a
+            href="/login/crear-admin"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-indigo-200 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors"
+          >
+            🛡️ Crear cuenta de administrador
+          </a>
         </div>
+        <p className="text-xs text-gray-300 mt-5 text-center">Going Admin Dashboard — Solo personal autorizado</p>
       </div>
     </div>
   );
@@ -147,8 +147,4 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800" />}>
-      <LoginForm />
-    </Suspense>
-  );
-}
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-900 

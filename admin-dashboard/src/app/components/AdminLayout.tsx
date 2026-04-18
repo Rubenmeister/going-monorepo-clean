@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -45,7 +46,11 @@ const NAV_SECTIONS = [
   },
   {
     title: 'Análisis',
-    items: [{ label: 'Analítica', href: '/analytics', icon: '📈' }],
+    items: [
+      { label: 'Analítica',    href: '/analytics',   icon: '📈' },
+      { label: 'Mercado',      href: '/market',      icon: '🌍' },
+      { label: 'Operaciones',  href: '/operations',  icon: '📡' },
+    ],
   },
   {
     title: 'Cuenta',
@@ -59,7 +64,6 @@ export function AdminLayout({
   userName = 'Admin',
 }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const router = useRouter();
   const pathname = usePathname();
 
   return (
@@ -107,18 +111,18 @@ export function AdminLayout({
                 {section.items.map((item) => {
                   const isActive = pathname === item.href;
                   return (
-                    <button
+                    <Link
                       key={item.href}
-                      onClick={() => router.push(item.href)}
+                      href={item.href}
                       title={!sidebarOpen ? item.label : undefined}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-medium ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
                         isActive ? 'text-white' : 'text-white/60 hover:text-white hover:bg-white/8'
                       }`}
                       style={isActive ? { backgroundColor: '#ff4c41' } : undefined}
                     >
                       <span className="text-base flex-shrink-0">{item.icon}</span>
                       {sidebarOpen && <span>{item.label}</span>}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -164,13 +168,4 @@ export function AdminLayout({
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
               style={{ backgroundColor: '#ff4c41' }}
             >
-              {userName.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 p-8">{children}</main>
-      </div>
-    </div>
-  );
-}
+              {userName.charAt(0).
