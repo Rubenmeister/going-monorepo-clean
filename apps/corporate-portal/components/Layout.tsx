@@ -8,7 +8,9 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const BASE_NAV = [
+type NavItem = { href: string; label: string; icon: string; badge?: number };
+
+const BASE_NAV: NavItem[] = [
   { href: '/dashboard',   label: 'Dashboard',      icon: '🏠' },
   { href: '/bookings',    label: 'Reservas',        icon: '📋' },
   { href: '/approvals',   label: 'Aprobaciones',    icon: '✅' },
