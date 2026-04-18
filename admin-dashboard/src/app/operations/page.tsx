@@ -43,6 +43,11 @@ interface ServiceCard {
 }
 
 type SocketStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
+type StatsRes = { activeRides?: number; completedToday?: number; cancelledToday?: number };
+type DriversRes = { drivers?: Array<{ id: string; name?: string; lat?: number; lng?: number; status?: string; lastUpdate?: string }> };
+type IoFn = (url: string, opts: unknown) => unknown;
+type SocketApi = { on: (ev: string, cb: (...a: unknown[]) => void) => void; emit: (ev: string, ...a: unknown[]) => void };
+type PushEventArg = Omit<LiveEvent, 'id' | 'ts'>;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -204,7 +209,7 @@ export default function OperationsPage() {
   }, [liveEvents]);
 
   // Push event helper
-  const pushEvent = useCallback((ev: Omit<LiveEvent, 'id' | 'ts'>) => {
+  const pushEvent = useCallback((ev: PushEventArg) => {
     const full: LiveEvent = { ...ev, id: uid(), ts: new Date() };
     setLiveEvents(prev => [...prev.slice(-99), full]);
     if (ev.type === 'ride_started') {
@@ -225,10 +230,10 @@ export default function OperationsPage() {
       const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       if (!token) return;
 
-      const statsRes = await adminFetch(
+      const statsRes = (await adminFetch(
         '/admin/stats/transport',
         token
-      ).catch(() => null) as { activeRides?: number; completedToday?: number; cancelledToday?: number } | null;
+      ).catch(() => null)) as (StatsRes | null);
 
       if (statsRes) {
         const active = statsRes.activeRides ?? 0;
@@ -240,11 +245,10 @@ export default function OperationsPage() {
       }
 
       // Active drivers from GPS
-      type DriversRes = { drivers?: Array<{ id: string; name?: string; lat?: number; lng?: number; status?: string; lastUpdate?: string }> };
-      const driversRes = await adminFetch(
+      const driversRes = (await adminFetch(
         '/admin/active-drivers',
         token
-      ).catch(() => null) as DriversRes | null;
+      ).catch(() => null)) as (DriversRes | null);
 
       if (driversRes?.drivers) {
         setActiveDrivers(driversRes.drivers.map(d => ({
@@ -272,7 +276,7 @@ export default function OperationsPage() {
       pushEvent({ type: 'info', service: 'transporte', title: 'Conectando al servidor de eventos…' });
 
       try {
-        const io = await loadSocketIO() as (url: string, opts: unknown) => unknown;
+        const io = (await loadSocketIO()) as IoFn;
         if (!mounted) return;
 
         const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app';
@@ -287,10 +291,7 @@ export default function OperationsPage() {
         });
 
         socketRef.current = socket;
-        const s = socket as {
-          on: (ev: string, cb: (...args: unknown[]) => void) => void;
-          emit: (ev: string, ...args: unknown[]) => void;
-        };
+        const s = socket as SocketApi;
 
         s.on('connect', () => {
           if (!mounted) return;
@@ -569,4 +570,9 @@ export default function OperationsPage() {
               <code className="bg-gray-100 px-1 rounded">/admin/stats/live</code> con breakdown por servicio.
               El feed de eventos ya está listo para recibir cualquier evento adicional que el backend emita via WebSocket.
             </p>
-         
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}

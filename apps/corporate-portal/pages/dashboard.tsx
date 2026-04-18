@@ -11,6 +11,22 @@ interface DashStats {
   activeTrips: number;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  pending:     'Pendiente',
+  confirmed:   'Confirmada',
+  in_progress: 'En curso',
+  completed:   'Completada',
+  cancelled:   'Cancelada',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending:     'bg-yellow-100 text-yellow-700',
+  confirmed:   'bg-blue-100 text-blue-700',
+  in_progress: 'bg-purple-100 text-purple-700',
+  completed:   'bg-green-100 text-green-700',
+  cancelled:   'bg-gray-100 text-gray-500',
+};
+
 interface RecentActivity {
   id: string;
   employee: string;
@@ -30,10 +46,11 @@ const QUICK_ACTIONS = [
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [stats, setStats] = useState<DashStats | null>(null);
-  const [activity, setActivity] = useState<RecentActivity[]>([]);
+  const [stats, setStats] = useState(null as DashStats | null);
+  const [companyName, setCompanyName] = useState('');
+  const [activity, setActivity] = useState([] as RecentActivity[]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const load = useCallback(async () => {
     if (!session?.accessToken) return;
@@ -51,6 +68,10 @@ export default function Dashboard() {
         monthlySpend: s?.monthlySpend ?? s?.totalSpend ?? 0,
         activeTrips: s?.activeTrips ?? s?.active ?? 0,
       });
+      // Nombre de empresa: desde API primero, fallback al email
+      const apiName = s?.companyName ?? s?.company?.name ?? s?.organizationName;
+      const emailFallback = (session?.user?.email ?? '').split('@')[1]?.split('.')[0] ?? 'Empresa';
+      setCompanyName(apiName ?? emailFallback);
 
       const bookings: any[] = bookingsRes.status === 'fulfilled'
         ? (Array.isArray(bookingsRes.value) ? bookingsRes.value : bookingsRes.value?.bookings ?? [])
@@ -85,7 +106,6 @@ export default function Dashboard() {
     );
   }
 
-  const companyName = (session?.user?.email ?? '').split('@')[1]?.split('.')[0] ?? 'Empresa';
 
   const STAT_CARDS = [
     { label: 'Reservas pendientes', value: stats?.pendingBookings ?? 0, sub: 'Por aprobar', icon: '📋', color: '#F59E0B' },
@@ -155,8 +175,8 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     {a.amount && <span className="font-semibold text-gray-700">${a.amount}</span>}
                     <span>{a.time}</span>
-                    <span className={`px-2 py-0.5 rounded-full font-semibold ${a.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                      {a.status}
+                    <span className={`px-2 py-0.5 rounded-full font-semibold text-xs ${STATUS_COLORS[a.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                      {STATUS_LABELS[a.status] ?? a.status}
                     </span>
                   </div>
                 </div>

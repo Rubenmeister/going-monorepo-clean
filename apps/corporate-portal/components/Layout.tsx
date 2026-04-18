@@ -1,26 +1,43 @@
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { corpFetch } from '../lib/api';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
-  { href: '/bookings', label: 'Reservas', icon: '📋' },
-  { href: '/approvals', label: 'Aprobaciones', icon: '✅', badge: 3 },
-  { href: '/tracking', label: 'Seguimiento', icon: '📍' },
-  { href: '/reports', label: 'Reportes', icon: '📊' },
-  { href: '/invoices', label: 'Facturas', icon: '🧾' },
-  { href: '/settings', label: 'Configuración', icon: '⚙️' },
+const BASE_NAV = [
+  { href: '/dashboard',   label: 'Dashboard',      icon: '🏠' },
+  { href: '/bookings',    label: 'Reservas',        icon: '📋' },
+  { href: '/approvals',   label: 'Aprobaciones',    icon: '✅' },
+  { href: '/tracking',    label: 'Seguimiento',      icon: '📍' },
+  { href: '/reports',     label: 'Reportes',         icon: '📊' },
+  { href: '/invoices',    label: 'Facturas',         icon: '🧾' },
+  { href: '/settings',    label: 'Configuración',    icon: '⚙️' },
 ];
 
 export default function Layout({ children }: LayoutProps) {
   const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
   const { pathname } = useRouter();
+
+  // Badge dinámico de aprobaciones pendientes
+  useEffect(() => {
+    const token = (session as any)?.accessToken;
+    if (!token) return;
+    corpFetch<{ approvals?: unknown[] }>('/corporate/approvals/pending', token)
+      .then((res) => setPendingCount(res.approvals?.length ?? 0))
+      .catch(() => setPendingCount(null));
+  }, [session]);
+
+  const NAV_ITEMS = BASE_NAV.map((item) =>
+    item.href === '/approvals' && pendingCount
+      ? { ...item, badge: pendingCount }
+      : item
+  );
 
   const userName =
     session?.user?.name || session?.user?.email?.split('@')[0] || 'Usuario';
@@ -121,7 +138,7 @@ export default function Layout({ children }: LayoutProps) {
                 {userName}
               </p>
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                Administrador
+                Going Empresas
               </p>
             </div>
           </div>

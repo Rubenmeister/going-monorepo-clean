@@ -6,7 +6,7 @@ export default function Login() {
   const { status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 

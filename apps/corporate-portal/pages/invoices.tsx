@@ -16,13 +16,14 @@ interface Invoice {
   status: InvoiceStatus;
   dueDate: string;
   paidAt?: string;
+  paymentMethod?: string;
 }
 
-const STATUS_STYLES: Record<InvoiceStatus, { bg: string; label: string }> = {
-  draft: { bg: 'bg-gray-100 text-gray-600', label: 'Draft' },
-  sent: { bg: 'bg-blue-100 text-blue-700', label: 'Sent' },
-  paid: { bg: 'bg-green-100 text-green-700', label: 'Paid' },
-  overdue: { bg: 'bg-red-100 text-red-700', label: 'Overdue' },
+const STATUS_CONFIG: Record<InvoiceStatus, { label: string; bg: string; color: string; icon: string }> = {
+  draft:   { label: 'Borrador', bg: '#f3f4f6', color: '#6b7280', icon: '📝' },
+  sent:    { label: 'Enviada',  bg: '#dbeafe', color: '#1e40af', icon: '📨' },
+  paid:    { label: 'Pagada',   bg: '#dcfce7', color: '#166534', icon: '✅' },
+  overdue: { label: 'Vencida',  bg: '#fee2e2', color: '#991b1b', icon: '⚠️' },
 };
 
 function normalizeStatus(s: string): InvoiceStatus {
@@ -33,9 +34,9 @@ function normalizeStatus(s: string): InvoiceStatus {
 export default function Invoices() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState([] as Invoice[]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null as string | null);
 
   const token = (session as any)?.accessToken ?? '';
 
@@ -44,24 +45,20 @@ export default function Invoices() {
     try {
       setLoading(true);
       setError(null);
-      const data = await corpFetch<{ invoices?: Invoice[]; data?: Invoice[] }>(
-        '/corporate/invoices',
-        token
-      );
-      const raw = (data.invoices ?? data.data ?? []) as any[];
-      setInvoices(
-        raw.map((inv) => ({
-          invoiceId: inv.invoiceId ?? inv._id ?? inv.id,
-          invoiceNumber: inv.invoiceNumber ?? inv.number ?? '—',
-          period: inv.period ?? inv.billingPeriod ?? '—',
-          bookings: Number(inv.bookings ?? inv.bookingCount ?? 0),
-          totalAmount: Number(inv.totalAmount ?? inv.amount ?? 0),
-          currency: inv.currency ?? 'USD',
-          status: normalizeStatus(inv.status),
-          dueDate: inv.dueDate ?? inv.due_date ?? '',
-          paidAt: inv.paidAt ?? inv.paid_at,
-        }))
-      );
+      const data = await corpFetch<any>('/corporate/invoices', token);
+      const raw: any[] = data.invoices ?? data.data ?? (Array.isArray(data) ? data : []);
+      setInvoices(raw.map(inv => ({
+        invoiceId: inv.invoiceId ?? inv._id ?? inv.id,
+        invoiceNumber: inv.invoiceNumber ?? inv.number ?? '—',
+        period: inv.period ?? inv.billingPeriod ?? '—',
+        bookings: Number(inv.bookings ?? inv.bookingCount ?? 0),
+        totalAmount: Number(inv.totalAmount ?? inv.amount ?? 0),
+        currency: inv.currency ?? 'USD',
+        status: normalizeStatus(inv.status),
+        dueDate: inv.dueDate ?? inv.due_date ?? '',
+        paidAt: inv.paidAt ?? inv.paid_at,
+        paymentMethod: inv.paymentMethod,
+      })));
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -72,179 +69,180 @@ export default function Invoices() {
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/auth/login');
   }, [status, router]);
-
   useEffect(() => {
     if (status === 'authenticated') loadInvoices();
   }, [status, loadInvoices]);
 
-  const downloadCSV = (invoice: Invoice) => {
+  const downloadCSV = (inv: Invoice) => {
     const rows = [
-      ['Invoice Number', 'Period', 'Bookings', 'Total Amount', 'Status', 'Due Date'],
-      [
-        invoice.invoiceNumber,
-        invoice.period,
-        invoice.bookings,
-        `${invoice.currency} ${invoice.totalAmount}`,
-        invoice.status,
-        invoice.dueDate,
-      ],
+      ['N° Factura', 'Período', 'Reservas', 'Total', 'Estado', 'Vencimiento'],
+      [inv.invoiceNumber, inv.period, inv.bookings, `${inv.currency} ${inv.totalAmount}`, STATUS_CONFIG[inv.status].label, inv.dueDate],
     ];
-    const csv = rows.map((r) => r.join(',')).join('\n');
+    const csv = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `${invoice.invoiceNumber}.csv`;
-    a.click();
+    a.href = url; a.download = `${inv.invoiceNumber}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
-  const unpaidTotal = invoices
-    .filter((i) => i.status !== 'paid')
-    .reduce((sum, i) => sum + i.totalAmount, 0);
-  const paidTotal = invoices
-    .filter((i) => i.status === 'paid')
-    .reduce((sum, i) => sum + i.totalAmount, 0);
+  const outstanding = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.totalAmount, 0);
+  const paid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.totalAmount, 0);
+  const overdueCount = invoices.filter(i => i.status === 'overdue').length;
 
   if (status === 'loading') return null;
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-500 mt-1">
-            Consolidated monthly billing for your company
-          </p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Facturación</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Historial de facturas y pagos corporativos Going</p>
         </div>
 
-        {/* Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Outstanding</p>
-            <p className="text-3xl font-bold text-orange-600 mt-1">
-              {loading ? '…' : `$${unpaidTotal.toLocaleString()}`}
+        {/* Summary cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-500">Por cobrar</p>
+              <span className="text-xl">💰</span>
+            </div>
+            <p className="text-3xl font-black text-orange-600">
+              {loading ? '…' : `$${outstanding.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              {invoices.filter((i) => i.status !== 'paid').length} invoice(s) pending
+              {invoices.filter(i => i.status !== 'paid').length} factura{invoices.filter(i => i.status !== 'paid').length !== 1 ? 's' : ''} pendiente{invoices.filter(i => i.status !== 'paid').length !== 1 ? 's' : ''}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Paid</p>
-            <p className="text-3xl font-bold text-green-600 mt-1">
-              {loading ? '…' : `$${paidTotal.toLocaleString()}`}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-500">Pagado</p>
+              <span className="text-xl">✅</span>
+            </div>
+            <p className="text-3xl font-black text-green-600">
+              {loading ? '…' : `$${paid.toLocaleString('es-ES', { minimumFractionDigits: 2 })}`}
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              {invoices.filter((i) => i.status === 'paid').length} invoice(s)
+              {invoices.filter(i => i.status === 'paid').length} factura{invoices.filter(i => i.status === 'paid').length !== 1 ? 's' : ''} pagada{invoices.filter(i => i.status === 'paid').length !== 1 ? 's' : ''}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-sm text-gray-500">Total bookings</p>
-            <p className="text-3xl font-bold text-blue-600 mt-1">
-              {loading ? '…' : invoices.reduce((s, i) => s + i.bookings, 0)}
+          <div className={`rounded-2xl border shadow-sm p-5 ${overdueCount > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <p className={`text-sm ${overdueCount > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>Vencidas</p>
+              <span className="text-xl">⚠️</span>
+            </div>
+            <p className={`text-3xl font-black ${overdueCount > 0 ? 'text-red-700' : 'text-gray-400'}`}>
+              {loading ? '…' : overdueCount}
             </p>
-            <p className="text-xs text-gray-400 mt-1">across all invoices</p>
+            <p className={`text-xs mt-1 ${overdueCount > 0 ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+              {overdueCount > 0 ? 'Requieren atención inmediata' : 'Sin facturas vencidas'}
+            </p>
           </div>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-3">
-            <span>⚠️ {error}</span>
-            <button onClick={loadInvoices} className="ml-auto text-xs underline">
-              Retry
-            </button>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 flex gap-3">
+            ⚠️ {error}
+            <button onClick={loadInvoices} className="ml-auto underline text-xs">Reintentar</button>
           </div>
         )}
 
-        {/* Invoice list */}
-        <div className="bg-white rounded-xl shadow overflow-hidden">
+        {/* Invoice table */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-gray-400 text-sm animate-pulse">
-              Loading invoices…
+            <div className="flex justify-center py-16">
+              <div className="w-8 h-8 border-4 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : invoices.length === 0 ? (
-            <div className="p-12 text-center text-gray-400">
-              <p className="text-4xl mb-3">🧾</p>
-              <p className="font-medium">No invoices found.</p>
+            <div className="p-14 text-center text-gray-400">
+              <p className="text-5xl mb-3">🧾</p>
+              <p className="font-medium text-gray-600">No hay facturas todavía</p>
+              <p className="text-sm mt-1">Las facturas se generan al final de cada período de facturación</p>
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Invoice
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Period
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Bookings
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Amount
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
-                    Due Date
-                  </th>
-                  <th className="px-6 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {invoices.map((inv) => (
-                  <tr key={inv.invoiceId} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 font-mono text-sm text-gray-800">
-                      {inv.invoiceNumber}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">{inv.period}</td>
-                    <td className="px-6 py-4 text-gray-700">{inv.bookings}</td>
-                    <td className="px-6 py-4 font-semibold text-gray-900">
-                      {inv.currency} {inv.totalAmount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          STATUS_STYLES[inv.status].bg
-                        }`}
-                      >
-                        {STATUS_STYLES[inv.status].label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {inv.paidAt ? (
-                        <span className="text-green-600">
-                          Paid {new Date(inv.paidAt).toLocaleDateString()}
-                        </span>
-                      ) : inv.dueDate ? (
-                        new Date(inv.dueDate).toLocaleDateString()
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => downloadCSV(inv)}
-                          className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
-                        >
-                          CSV
-                        </button>
-                        <button
-                          onClick={() => alert('PDF generation coming soon')}
-                          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                        >
-                          PDF
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #f3f4f6', backgroundColor: '#fafafa' }}>
+                    {['N° Factura', 'Período', 'Reservas', 'Total', 'Estado', 'Vencimiento', ''].map(h => (
+                      <th key={h} className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {invoices.map(inv => {
+                    const sc = STATUS_CONFIG[inv.status];
+                    const isOverdue = inv.status === 'overdue';
+                    return (
+                      <tr key={inv.invoiceId} className={`border-b border-gray-50 hover:bg-gray-50 transition ${isOverdue ? 'bg-red-50/40' : ''}`}>
+                        <td className="px-5 py-4">
+                          <p className="font-mono text-sm font-semibold text-gray-800">{inv.invoiceNumber}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm text-gray-700 font-medium">{inv.period}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm text-gray-700">{inv.bookings} reserva{inv.bookings !== 1 ? 's' : ''}</p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="text-sm font-bold text-gray-900">
+                            {inv.currency} {inv.totalAmount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                          </p>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                            style={{ backgroundColor: sc.bg, color: sc.color }}>
+                            {sc.icon} {sc.label}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          {inv.paidAt ? (
+                            <p className="text-xs text-green-600 font-medium">
+                              Pagado el {new Date(inv.paidAt).toLocaleDateString('es-ES')}
+                            </p>
+                          ) : inv.dueDate ? (
+                            <p className={`text-xs font-medium ${isOverdue ? 'text-red-600' : 'text-gray-500'}`}>
+                              {isOverdue ? '⚠️ ' : ''}{new Date(inv.dueDate).toLocaleDateString('es-ES')}
+                            </p>
+                          ) : <span className="text-gray-400">—</span>}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex gap-2 justify-end">
+                            <button onClick={() => downloadCSV(inv)}
+                              className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition font-medium">
+                              CSV
+                            </button>
+                            <button onClick={() => alert('Descarga PDF próximamente')}
+                              className="text-xs px-3 py-1.5 rounded-lg text-white font-medium hover:opacity-90 transition"
+                              style={{ backgroundColor: '#ff4c41' }}>
+                              PDF
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
+        </div>
+
+        {/* Info box */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex gap-3">
+            <span className="text-xl flex-shrink-0">ℹ️</span>
+            <div>
+              <p className="font-semibold text-gray-800 text-sm mb-1">Condiciones de pago Going Empresas</p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Las facturas se generan el primer día de cada mes por los servicios del período anterior.
+                El plazo estándar es <strong>30 días</strong> desde la fecha de emisión.
+                Pago por transferencia bancaria o tarjeta corporativa autorizada.
+                Para facturas vencidas, contacta a <strong>empresas@goingec.com</strong>.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>
