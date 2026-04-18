@@ -83,15 +83,15 @@ export default function DriverProfilePage() {
   const params              = useParams();
   const driverId            = params?.id as string;
 
-  const [driver,      setDriver]      = useState<DriverUser | null>(null);
+  const [driver,      setDriver]      = useState(null as DriverUser | null);
   const [trips,       setTrips]       = useState<Trip[]>([]);
-  const [ratings,     setRatings]     = useState<RatingSummary | null>(null);
-  const [gpsPos,      setGpsPos]      = useState<ActiveDriver | null>(null);
+  const [ratings,     setRatings]     = useState(null as RatingSummary | null);
+  const [gpsPos,      setGpsPos]      = useState(null as ActiveDriver | null);
   const [loading,     setLoading]     = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [tripsPage,   setTripsPage]   = useState(1);
   const [tripsMeta,   setTripsMeta]   = useState({ total: 0, totalPages: 1 });
-  const [activeSection, setActiveSection] = useState<'info' | 'trips' | 'ratings'>('info');
+  const [activeSection, setActiveSection] = useState('info' as 'info' | 'trips' | 'ratings');
 
   useEffect(() => {
     if (!auth.isLoading && !auth.user) router.push('/login');

@@ -190,7 +190,7 @@ export default function OperationsPage() {
     { key: 'alojamientos', label: 'Alojamientos', icon: '🏨', color: '#d97706', active: 0, total: 0, trend: 'flat' },
   ]);
   const [totalOps, setTotalOps] = useState(0);
-  const [filterService, setFilterService] = useState<ServiceType | 'all'>('all');
+  const [filterService, setFilterService] = useState('all' as ServiceType | 'all');
   const socketRef = useRef<unknown>(null);
   const feedRef = useRef<HTMLDivElement>(null);
   const handlersRef = useRef({ setLiveEvents, setActiveDrivers, setServices });
@@ -570,8 +570,3 @@ export default function OperationsPage() {
               El feed de eventos ya está listo para recibir cualquier evento adicional que el backend emita via WebSocket.
             </p>
           </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-}

@@ -66,10 +66,10 @@ const QUICK_ITEMS = [
 export default function DashboardPage() {
   const { auth, domain } = useMonorepoApp();
   const router = useRouter();
-  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [stats, setStats] = useState(null as AdminStats | null);
   const [activeDrivers, setActiveDrivers] = useState<number>(0);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState<string | null>(null);
+  const [statsError, setStatsError] = useState(null as string | null);
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
 
   const handleLiveEvent = useCallback((evt: LiveEvent) => {
