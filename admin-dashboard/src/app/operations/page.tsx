@@ -225,10 +225,10 @@ export default function OperationsPage() {
       const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
       if (!token) return;
 
-      const statsRes = await adminFetch<{ activeRides?: number; completedToday?: number; cancelledToday?: number }>(
+      const statsRes = await adminFetch(
         '/admin/stats/transport',
         token
-      ).catch(() => null);
+      ).catch(() => null) as { activeRides?: number; completedToday?: number; cancelledToday?: number } | null;
 
       if (statsRes) {
         const active = statsRes.activeRides ?? 0;
@@ -240,10 +240,11 @@ export default function OperationsPage() {
       }
 
       // Active drivers from GPS
-      const driversRes = await adminFetch<{ drivers?: Array<{ id: string; name?: string; lat?: number; lng?: number; status?: string; lastUpdate?: string }> }>(
+      type DriversRes = { drivers?: Array<{ id: string; name?: string; lat?: number; lng?: number; status?: string; lastUpdate?: string }> };
+      const driversRes = await adminFetch(
         '/admin/active-drivers',
         token
-      ).catch(() => null);
+      ).catch(() => null) as DriversRes | null;
 
       if (driversRes?.drivers) {
         setActiveDrivers(driversRes.drivers.map(d => ({
