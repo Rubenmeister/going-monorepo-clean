@@ -12,9 +12,13 @@ import {
   Req,
   Res,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
+import { randomUUID, timingSafeEqual } from 'crypto';
 import {
   RegisterUserDto,
   RegisterUserUseCase,
@@ -28,6 +32,10 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
 import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
 import { AccountLockoutService } from '../application/account-lockout.service';
+import { GoogleOauthGuard } from '../infrastructure/oauth/google-oauth.guard';
+import { FacebookOauthGuard } from '../infrastructure/oauth/facebook-oauth.guard';
+import { OauthStateService } from '../infrastructure/oauth/oauth-state.service';
+import { UserDocument, UserModelSchema } from '../infrastructure/user.schema';
 
 /**
  * Auth Controller
@@ -54,7 +62,93 @@ export class AuthController {
     private readonly auditLogService: AuditLogService,
     private readonly accountLockoutService: AccountLockoutService,
     private readonly oauthLoginUseCase: OAuthLoginUseCase,
+    private readonly oauthStateService: OauthStateService,
+    @InjectModel(UserModelSchema.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
+
+  // ────────────────────────────────────────────────
+  // POST /auth/bootstrap-admin
+  // One-shot: crea o resetea un admin con password.
+  // Protegido por header x-bootstrap-token == BOOTSTRAP_TOKEN env var.
+  // Body: { email, password, firstName?, lastName? }
+  // ────────────────────────────────────────────────
+  @Post('bootstrap-admin')
+  @HttpCode(200)
+  async bootstrapAdmin(
+    @Req() req: Request,
+    @Body() body: { email: string; password: string; firstName?: string; lastName?: string },
+  ): Promise<any> {
+    const expected = process.env.BOOTSTRAP_TOKEN;
+    if (!expected) {
+      throw new HttpException('Bootstrap disabled (no BOOTSTRAP_TOKEN env)', HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    const provided = String(req.headers['x-bootstrap-token'] ?? '');
+    const a = Buffer.from(provided);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+    if (!body?.email || !body?.password) {
+      throw new HttpException('email and password required', HttpStatus.BAD_REQUEST);
+    }
+
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    const existing = await this.userModel.findOne({ email: body.email }).exec();
+
+    if (existing) {
+      const roles = Array.from(new Set([...(existing.roles ?? []), 'admin']));
+      await this.userModel.updateOne(
+        { email: body.email },
+        {
+          $set: {
+            passwordHash,
+            roles,
+            status: 'active',
+            firstName: existing.firstName || body.firstName || 'Admin',
+            lastName: existing.lastName || body.lastName || 'Root',
+          },
+          $unset: { passwo_1drdHash: '', passwo_idrdHash: '' },
+        },
+      ).exec();
+      this.logger.warn(`[BOOTSTRAP] Admin reset: ${body.email}`);
+      return { ok: true, action: 'reset', email: body.email, roles, status: 'active' };
+    }
+
+    const id = randomUUID();
+    await this.userModel.create({
+      _id: id,
+      id,
+      email: body.email,
+      passwordHash,
+      firstName: body.firstName ?? 'Admin',
+      lastName: body.lastName ?? 'Root',
+      roles: ['admin'],
+      status: 'active',
+      createdAt: new Date(),
+    });
+    this.logger.warn(`[BOOTSTRAP] Admin created: ${body.email}`);
+    return { ok: true, action: 'created', email: body.email, id };
+  }
+
+  /**
+   * Resuelve la URL final a la que redirigir tras el callback OAuth.
+   *
+   * Orden de precedencia:
+   *   1. `state` firmado (returnTo del JWT) → validado contra ALLOWED_RETURN_URLS
+   *   2. `FRONTEND_URL` + `/auth/callback` como fallback legacy
+   *   3. `http://localhost:3000/auth/callback` como último recurso (dev)
+   *
+   * Devuelve una URL absoluta que YA incluye el path de callback.
+   */
+  private resolveOauthRedirectUrl(stateParam: string | undefined): string {
+    const returnToRaw = this.oauthStateService.verify(stateParam);
+    const validated = this.oauthStateService.validateReturnTo(returnToRaw);
+    if (validated) return validated;
+
+    const fallback = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    return `${fallback.replace(/\/$/, '')}/auth/callback`;
+  }
 
   /**
    * Register New User
@@ -501,37 +595,52 @@ export class AuthController {
 
   // ─── Google OAuth ───────────────────────────────────────────────────────────
 
+  /**
+   * Inicia el flujo Google OAuth.
+   *
+   * Se puede llamar con `?returnTo=<url>` para indicar a qué app volver tras el
+   * login. Ej: `/auth/google?returnTo=https://admin.goingec.com/auth/callback`.
+   *
+   * El `returnTo` se firma como JWT y se manda a Google en el parámetro `state`.
+   * Si no se envía returnTo, cae al FRONTEND_URL por defecto (retro-compatibilidad).
+   */
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOauthGuard)
   googleLogin(): void {
     // Passport redirige al usuario a Google automáticamente
   }
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOauthGuard)
   async googleCallback(@Req() req: any, @Res() res: Response): Promise<void> {
     const result = await this.oauthLoginUseCase.execute(req.user as OAuthLoginDto);
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const redirectBase = this.resolveOauthRedirectUrl(
+      typeof req?.query?.state === 'string' ? req.query.state : undefined
+    );
+    const separator = redirectBase.includes('?') ? '&' : '?';
     res.redirect(
-      `${frontendUrl}/auth/callback?token=${result.token}&isNewUser=${result.isNewUser}`
+      `${redirectBase}${separator}token=${encodeURIComponent(result.token)}&isNewUser=${result.isNewUser}`
     );
   }
 
   // ─── Facebook OAuth ─────────────────────────────────────────────────────────
 
   @Get('facebook')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookOauthGuard)
   facebookLogin(): void {
     // Passport redirige al usuario a Facebook automáticamente
   }
 
   @Get('facebook/callback')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookOauthGuard)
   async facebookCallback(@Req() req: any, @Res() res: Response): Promise<void> {
     const result = await this.oauthLoginUseCase.execute(req.user as OAuthLoginDto);
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:3000';
+    const redirectBase = this.resolveOauthRedirectUrl(
+      typeof req?.query?.state === 'string' ? req.query.state : undefined
+    );
+    const separator = redirectBase.includes('?') ? '&' : '?';
     res.redirect(
-      `${frontendUrl}/auth/callback?token=${result.token}&isNewUser=${result.isNewUser}`
+      `${redirectBase}${separator}token=${encodeURIComponent(result.token)}&isNewUser=${result.isNewUser}`
     );
   }
 }

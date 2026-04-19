@@ -12,6 +12,7 @@ import {
 } from '@going-monorepo-clean/domains-user-application';
 import { AuditModule } from './audit/audit.module';
 import { AccountLockoutService } from './application/account-lockout.service';
+import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
 
 @Module({
   imports: [
@@ -28,6 +29,9 @@ import { AccountLockoutService } from './application/account-lockout.service';
         return conn;
       },
     }),
+    MongooseModule.forFeature([
+      { name: UserModelSchema.name, schema: UserSchema },
+    ]),
     InfrastructureModule,
     AuditModule,
   ],
