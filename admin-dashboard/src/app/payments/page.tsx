@@ -26,12 +26,13 @@ export default function PaymentsManagementPage() {
   const [error, setError] = useState(null as string | null);
 
   const loadPayments = useCallback(async () => {
-    if (!auth.user?.token) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!auth.user || !token) return;
     setLoading(true);
     setError(null);
     try {
       // Billing service invoices as proxy for payments
-      const data = await adminFetch<any>('/invoices', auth.user.token);
+      const data = await adminFetch<any>('/invoices', token);
       const list: any[] = Array.isArray(data) ? data : data?.invoices ?? data?.data ?? [];
       setPayments(list.map((inv: any) => ({
         id: inv.id ?? inv._id ?? '—',
