@@ -101,7 +101,7 @@ export default function PaymentsManagementPage() {
         <StatCard icon="💰" title="Total Cobrado" value={`$${total.toFixed(2)}`} color="primary" />
         <StatCard icon="✅" title="Exitosos" value={stats.succeeded} color="success" />
         <StatCard icon="⏳" title="Pendientes" value={stats.pending} color="warning" />
-        <StatCard icon="❌" title="Fallidos" value={stats.failed} color="danger" />
+        <StatCard icon="❌" title="Fallidos" value={stats.failed} color="error" />
       </div>
       <DataTable<Payment> columns={columns} data={payments} rowKey="id" loading={loading}
         emptyMessage="No hay pagos registrados" />
