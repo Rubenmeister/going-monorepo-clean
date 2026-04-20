@@ -225,7 +225,8 @@ export default function AnalyticsPage() {
         if (t.key === 'transporte') {
           merged[t.key] = { ...demo, ...transportReal };
         } else {
-          const count = { tours: tourCount, experiencias: expCount, alojamientos: accCount, envios: parcelCount }[t.key];
+          const counts: Record<string, number> = { tours: tourCount, experiencias: expCount, alojamientos: accCount, envios: parcelCount };
+          const count = counts[t.key];
           merged[t.key] = { ...demo, ...(count != null && count > 0 ? { total: count } : {}) };
         }
       });
@@ -380,9 +381,4 @@ export default function AnalyticsPage() {
       )}
 
       <div className="mt-6">
-        <Button variant="ghost" onClick={() => router.push('/')}>← Volver al Dashboard</Button>
-      </div>
-
-    </AdminLayout>
-  );
-}
+        <Button variant="ghost" onClick={() => router.push('/')}>← Volver al Da
