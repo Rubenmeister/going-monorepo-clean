@@ -381,4 +381,9 @@ export default function AnalyticsPage() {
       )}
 
       <div className="mt-6">
-        <Button variant="ghost" onClick={() => router.push('/')}>← Volver al Da
+        <Button variant="ghost" onClick={() => router.push('/')}>← Volver al Dashboard</Button>
+      </div>
+
+    </AdminLayout>
+  );
+}
