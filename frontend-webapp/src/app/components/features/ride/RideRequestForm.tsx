@@ -116,7 +116,13 @@ function RideRequestFormInner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickupLocation || !dropoffLocation) return;
-    await createRide(vehicleType, tier, passengers, isScheduled ? `${scheduledDate}T${scheduledTime}` : undefined);
+    await createRide(
+      vehicleType,
+      tier,
+      passengers,
+      isScheduled ? `${scheduledDate}T${scheduledTime}` : undefined,
+      mode,
+    );
   };
 
   const today         = new Date().toISOString().split('T')[0];

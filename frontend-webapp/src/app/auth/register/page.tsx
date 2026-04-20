@@ -95,8 +95,13 @@ function RegisterForm() {
         document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
       }
 
-      // Si vino desde una ruta protegida (ej: /ride), redirigir ahí
-      window.location.href = (fromParam && selectedRole === 'user') ? fromParam : active.redirect;
+      // Onboarding solo para nuevos usuarios tipo 'user' que no vienen de una ruta específica
+      const onboardingDone = localStorage.getItem('going_onboarding_done');
+      if (selectedRole === 'user' && !fromParam && !onboardingDone) {
+        window.location.href = '/onboarding';
+      } else {
+        window.location.href = (fromParam && selectedRole === 'user') ? fromParam : active.redirect;
+      }
 
     } catch {
       setError('No se pudo conectar con el servidor. Verifica tu conexión.');
@@ -264,6 +269,21 @@ function RegisterForm() {
             <p className="text-gray-500 text-sm">
               ¿Ya tienes cuenta?{' '}
               <Link href="/auth/login" className="text-[#ff4c41] font-semibold hover:underline">Inicia sesión</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
             </p>
           </div>
         </div>

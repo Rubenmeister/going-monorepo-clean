@@ -7,6 +7,28 @@ import { useRideStore } from '@/stores/rideStore';
 import { rideService } from '@/services/ride';
 import type { Ride, Location, VehicleType, ServiceTier } from '@/types';
 
+export interface UseRideServiceReturn {
+  activeRide:       Ride | null;
+  rideHistory:      Ride[];
+  pickupLocation:   Location | null;
+  dropoffLocation:  Location | null;
+  estimatedFare:    number | null;
+  loading:          boolean;
+  error:            string | null;
+
+  setPickupLocation:  (location: Location) => void;
+  setDropoffLocation: (location: Location) => void;
+  createRide:         (
+    rideType?:      VehicleType,
+    serviceTier?:   ServiceTier,
+    passengers?:    number,
+    scheduledAt?:   string,
+    transportMode?: 'privado' | 'compartido'
+  ) => Promise<void>;
+  cancelRide:   () => Promise<void>;
+  clearLocations: () => void;
+}
+
 /** Decode user ID from JWT stored in localStorage */
 function getUserIdFromToken(): string {
   try {
@@ -20,27 +42,6 @@ function getUserIdFromToken(): string {
   } catch {
     return 'guest';
   }
-}
-
-export interface UseRideServiceReturn {
-  activeRide:       Ride | null;
-  rideHistory:      Ride[];
-  pickupLocation:   Location | null;
-  dropoffLocation:  Location | null;
-  estimatedFare:    number | null;
-  loading:          boolean;
-  error:            string | null;
-
-  setPickupLocation:  (location: Location) => void;
-  setDropoffLocation: (location: Location) => void;
-  createRide:         (
-    rideType?:    VehicleType,
-    serviceTier?: ServiceTier,
-    passengers?:  number,
-    scheduledAt?: string
-  ) => Promise<void>;
-  cancelRide:   () => Promise<void>;
-  clearLocations: () => void;
 }
 
 export function useRideService(): UseRideServiceReturn {
@@ -66,6 +67,7 @@ export function useRideService(): UseRideServiceReturn {
       serviceTier: ServiceTier = 'confort',
       passengers = 1,
       scheduledAt?: string,
+      transportMode: 'privado' | 'compartido' = 'privado',
     ) => {
       if (!pickupLocation || !dropoffLocation) {
         setError('Selecciona origen y destino');
@@ -78,13 +80,14 @@ export function useRideService(): UseRideServiceReturn {
       try {
         const passengerId = getUserIdFromToken();
         const ride = await rideService.createRide({
-          pickup:     pickupLocation,
-          dropoff:    dropoffLocation,
+          pickup:        pickupLocation,
+          dropoff:       dropoffLocation,
           rideType,
           serviceTier,
           passengers,
           passengerId,
           scheduledAt,
+          transportMode,
         });
         storeCreateRide(ride);
       } catch (err) {

@@ -1,6 +1,6 @@
 import Layout from '../components/Layout';
 import TrackingConsentBadge from '../components/TrackingConsentBadge';
-import { useSession } from 'next-auth/react';
+import { useSession } from '../lib/auth';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState, useCallback } from 'react';
 

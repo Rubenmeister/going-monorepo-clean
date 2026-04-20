@@ -27,6 +27,24 @@ interface RideHistory {
   rideType?: string;
 }
 
+interface PaymentMethod {
+  id: string;
+  type: 'card' | 'cash' | 'wallet';
+  label: string;
+  last4?: string;
+  brand?: string;
+  isDefault: boolean;
+}
+
+interface SavedAddress {
+  id: string;
+  label: string;
+  address: string;
+  lat?: number;
+  lon?: number;
+  icon: string;
+}
+
 interface ParcelHistory {
   id: string;
   origin: { address: string };
@@ -67,13 +85,21 @@ export default function AccountPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
 
-  const [rides, setRides] = useState<RideHistory[]>([]);
+  const [rides,   setRides]   = useState<RideHistory[]>([]);
   const [parcels, setParcels] = useState<ParcelHistory[]>([]);
-  const [ridesLoading, setRidesLoading] = useState(false);
+  const [methods, setMethods] = useState<PaymentMethod[]>([]);
+  const [addresses, setAddresses] = useState<SavedAddress[]>([]);
+  const [ridesLoading,   setRidesLoading]   = useState(false);
   const [parcelsLoading, setParcelsLoading] = useState(false);
+  const [methodsLoading, setMethodsLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [deletingMethod,  setDeletingMethod]  = useState<string | null>(null);
+  const [deletingAddress, setDeletingAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (activeTab === 'rides' && auth.user) {
+    if (!auth.user) return;
+
+    if (activeTab === 'rides') {
       setRidesLoading(true);
       authHeaders().then(headers =>
         fetch(`${API_BASE}/transport/rides?page=1&limit=20`, { headers })
@@ -83,7 +109,7 @@ export default function AccountPage() {
           .finally(() => setRidesLoading(false))
       );
     }
-    if (activeTab === 'envios' && auth.user) {
+    if (activeTab === 'envios') {
       setParcelsLoading(true);
       authHeaders().then(headers =>
         fetch(`${API_BASE}/envios/parcels/my`, { headers })
@@ -91,6 +117,33 @@ export default function AccountPage() {
           .then(data => setParcels(Array.isArray(data) ? data : data.parcels || []))
           .catch(() => setParcels([]))
           .finally(() => setParcelsLoading(false))
+      );
+    }
+    if (activeTab === 'payments') {
+      setMethodsLoading(true);
+      authHeaders().then(headers =>
+        fetch(`${API_BASE}/payment/methods`, { headers })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            const list: PaymentMethod[] = data?.methods ?? data?.data ?? data ?? [];
+            setMethods(Array.isArray(list) ? list : []);
+          })
+          .catch(() => setMethods([]))
+          .finally(() => setMethodsLoading(false))
+      );
+    }
+    if (activeTab === 'addresses') {
+      setAddressLoading(true);
+      const userId = (auth.user as any)?.id ?? (auth.user as any)?._id ?? '';
+      authHeaders().then(headers =>
+        fetch(`${API_BASE}/users/${userId}/addresses`, { headers })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            const list: SavedAddress[] = data?.addresses ?? data?.data ?? data ?? [];
+            setAddresses(Array.isArray(list) ? list : []);
+          })
+          .catch(() => setAddresses([]))
+          .finally(() => setAddressLoading(false))
       );
     }
   }, [activeTab, auth.user]);
@@ -114,10 +167,12 @@ export default function AccountPage() {
   }
 
   const tabs = [
-    { id: 'profile', label: '👤 Perfil' },
-    { id: 'rides', label: '🚗 Mis Viajes' },
-    { id: 'envios', label: '📦 Mis Envíos' },
-    { id: 'settings', label: '⚙️ Ajustes' },
+    { id: 'profile',   label: '👤 Perfil'     },
+    { id: 'rides',     label: '🚗 Mis Viajes'  },
+    { id: 'envios',    label: '📦 Mis Envíos'  },
+    { id: 'payments',  label: '💳 Pagos'       },
+    { id: 'addresses', label: '📍 Direcciones' },
+    { id: 'settings',  label: '⚙️ Ajustes'    },
   ];
 
   return (
@@ -184,6 +239,26 @@ export default function AccountPage() {
                 className="flex-1 py-3 rounded-xl text-center text-sm font-bold border-2"
                 style={{ borderColor: '#ff4c41', color: '#ff4c41' }}>
                 📦 Enviar paquete
+              </Link>
+            </div>
+
+            {/* Links adicionales */}
+            <div className="pt-2 space-y-2">
+              <Link href="/account/corporate"
+                className="flex items-center justify-between w-full py-3 px-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#0033A0] transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">🏢</span>
+                  <span className="text-sm font-semibold text-gray-700">Cuenta Corporativa</span>
+                </div>
+                <span className="text-gray-400">→</span>
+              </Link>
+              <Link href="/academy"
+                className="flex items-center justify-between w-full py-3 px-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#ff4c41] transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">🎓</span>
+                  <span className="text-sm font-semibold text-gray-700">Academia Going</span>
+                </div>
+                <span className="text-gray-400">→</span>
               </Link>
             </div>
           </div>
@@ -304,7 +379,7 @@ export default function AccountPage() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xl font-bold" style={{ color: '#ff4c41' }}>
+                      <p className="text-xl font-bold" style={{ color: "#ff4c41" }}>
                         ${(parcel.price?.amount ?? 0).toFixed(2)}
                       </p>
                       {parcel.trackingCode && (
@@ -322,7 +397,139 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* ─── Ajustes ─── */}
+        {/* \u2500\u2500\u2500 Métodos de pago \u2500\u2500\u2500 */}
+        {activeTab === 'payments' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Métodos de pago</h2>
+              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: '#ff4c41' }}>
+                + Agregar
+              </button>
+            </div>
+
+            {methodsLoading && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+
+            {!methodsLoading && methods.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+                <p className="text-5xl mb-3">\ud83d\udcb3</p>
+                <p className="text-gray-700 font-semibold mb-1">Sin métodos de pago</p>
+                <p className="text-gray-400 text-sm mb-5">Agrega una tarjeta para pagar tus viajes más fácilmente</p>
+                <button className="px-6 py-3 rounded-xl text-white font-bold text-sm" style={{ backgroundColor: '#ff4c41' }}>
+                  Agregar tarjeta
+                </button>
+              </div>
+            )}
+
+            {!methodsLoading && methods.map(m => (
+              <div key={m.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                  style={{ background: m.type === 'card' ? '#eff6ff' : m.type === 'wallet' ? '#f0fdf4' : '#fafafa' }}>
+                  {m.type === 'card' ? '\ud83d\udcb3' : m.type === 'wallet' ? '\ud83d\udc5b' : '\ud83d\udcb5'}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 text-sm">{m.label}</p>
+                  {m.last4 && <p className="text-xs text-gray-400">···· {m.last4} · {m.brand}</p>}
+                  {m.isDefault && (
+                    <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Predeterminado</span>
+                  )}
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!confirm('¿Eliminar este método de pago?')) return;
+                    setDeletingMethod(m.id);
+                    const headers = await authHeaders();
+                    await fetch(`${API_BASE}/payment/methods/${m.id}`, { method: 'DELETE', headers }).catch(() => {});
+                    setMethods(prev => prev.filter(x => x.id !== m.id));
+                    setDeletingMethod(null);
+                  }}
+                  disabled={deletingMethod === m.id}
+                  className="text-xs text-red-500 font-semibold hover:underline disabled:opacity-40"
+                >
+                  {deletingMethod === m.id ? '…' : 'Eliminar'}
+                </button>
+              </div>
+            ))}
+
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700">
+              <p className="font-semibold mb-1">\ud83d\udca1 Métodos aceptados</p>
+              <p className="text-xs text-blue-600">Tarjeta de crédito/débito (DATAFAST), efectivo al conductor y Going Wallet.</p>
+            </div>
+          </div>
+        )}
+
+        {/* \u2500\u2500\u2500 Direcciones guardadas \u2500\u2500\u2500 */}
+        {activeTab === 'addresses' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Direcciones guardadas</h2>
+              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: '#ff4c41' }}>
+                + Agregar
+              </button>
+            </div>
+
+            {addressLoading && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+
+            {!addressLoading && addresses.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+                <p className="text-5xl mb-3">\ud83d\udccd</p>
+                <p className="text-gray-700 font-semibold mb-1">Sin direcciones guardadas</p>
+                <p className="text-gray-400 text-sm mb-5">Guarda tu casa, trabajo u otros lugares frecuentes</p>
+                <div className="flex gap-3 justify-center">
+                  {[
+                    { icon: '\ud83c\udfe0', label: 'Casa' },
+                    { icon: '\ud83d\udcbc', label: 'Trabajo' },
+                  ].map(p => (
+                    <button key={p.label}
+                      className="flex-1 max-w-36 py-3 rounded-xl border-2 border-dashed border-gray-300 text-center hover:border-[#ff4c41] transition-colors">
+                      <p className="text-2xl">{p.icon}</p>
+                      <p className="text-xs font-semibold text-gray-600 mt-1">{p.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!addressLoading && addresses.map(addr => (
+              <div key={addr.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">
+                  {addr.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm">{addr.label}</p>
+                  <p className="text-xs text-gray-400 truncate">{addr.address}</p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button className="text-xs text-[#0033A0] font-semibold hover:underline">Editar</button>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Eliminar esta dirección?')) return;
+                      setDeletingAddress(addr.id);
+                      const headers = await authHeaders();
+                      const userId = (auth.user as any)?.id ?? '';
+                      await fetch(`${API_BASE}/users/${userId}/addresses/${addr.id}`, { method: 'DELETE', headers }).catch(() => {});
+                      setAddresses(prev => prev.filter(x => x.id !== addr.id));
+                      setDeletingAddress(null);
+                    }}
+                    disabled={deletingAddress === addr.id}
+                    className="text-xs text-red-500 font-semibold hover:underline disabled:opacity-40"
+                  >
+                    {deletingAddress === addr.id ? '…' : 'Eliminar'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* \u2500\u2500\u2500 Ajustes \u2500\u2500\u2500 */}
         {activeTab === 'settings' && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -355,7 +562,7 @@ export default function AccountPage() {
             </div>
 
             <div className="bg-red-50 rounded-2xl border border-red-200 p-6">
-              <h2 className="text-lg font-bold text-red-600 mb-2">⚠️ Zona de Peligro</h2>
+              <h2 className="text-lg font-bold text-red-600 mb-2">\u26a0\ufe0f Zona de Peligro</h2>
               <p className="text-gray-600 text-sm mb-4">Esta acción es irreversible.</p>
               <button className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors">
                 Eliminar Cuenta

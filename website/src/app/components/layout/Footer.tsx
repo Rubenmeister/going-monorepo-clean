@@ -1,12 +1,12 @@
 import Link from 'next/link';
+import { GoingLogo } from '../GoingLogo';
 
-const GoingLogo = () => (
-  <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
-    <circle cx="72" cy="18" r="8" fill="#ff4c41" />
-    <path d="M68 26 C68 26 58 30 50 40 C38 54 34 68 38 80 C42 92 58 96 70 90 C82 84 86 70 82 58 C78 46 66 42 58 46 C50 50 48 60 52 68 C56 76 64 76 70 70"
-      stroke="#ff4c41" strokeWidth="7" strokeLinecap="round" fill="none" />
-  </svg>
-);
+const SOCIAL_LINKS = [
+  { icon: '📸', label: 'Instagram', href: 'https://instagram.com/goingecuador' },
+  { icon: '🐦', label: 'Twitter / X', href: 'https://x.com/goingecuador' },
+  { icon: '💼', label: 'LinkedIn', href: 'https://linkedin.com/company/goingecuador' },
+  { icon: '▶️', label: 'YouTube', href: 'https://youtube.com/@goingecuador' },
+];
 
 const FOOTER_COLS = [
   {
@@ -67,7 +67,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
-              <GoingLogo />
+              <GoingLogo size={22} />
               <span className="text-xl font-black">Going</span>
             </div>
             <p className="text-sm text-white/40 leading-relaxed mb-5">
@@ -76,13 +76,17 @@ export function Footer() {
               Est. MMXXVI
             </p>
             <div className="flex gap-2.5">
-              {['📸', '🐦', '💼', '▶️'].map((icon, i) => (
-                <button
-                  key={i}
+              {SOCIAL_LINKS.map((s) => (
+                <Link
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
                   className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.09] flex items-center justify-center text-base hover:bg-red-500/20 hover:border-red-500/30 transition-all"
                 >
-                  {icon}
-                </button>
+                  {s.icon}
+                </Link>
               ))}
             </div>
           </div>

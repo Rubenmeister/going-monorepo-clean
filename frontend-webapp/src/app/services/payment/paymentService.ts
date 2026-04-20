@@ -38,6 +38,7 @@ class PaymentService {
     rideId:       string;
     amountUsd:    number;
     description?: string;
+    gateway?:     'datafast' | 'deuna';
     cardDetails?: {           // Solo para modo direct_api
       number:      string;
       expiryMonth: string;

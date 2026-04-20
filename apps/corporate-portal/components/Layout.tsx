@@ -1,4 +1,4 @@
-import { signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from '../lib/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
@@ -145,9 +145,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <button
-            onClick={() =>
-              signOut({ redirect: true, callbackUrl: '/auth/login' })
-            }
+            onClick={() => signOut({ callbackUrl: '/auth/login' })}
             className="w-full px-4 py-2 text-xs rounded-xl transition-colors text-left flex items-center gap-2"
             style={{
               backgroundColor: 'rgba(255,255,255,0.06)',

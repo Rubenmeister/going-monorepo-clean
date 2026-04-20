@@ -48,22 +48,23 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 const NAV_SERVICES = [
-  { label: 'Servicios', href: '/services' },
-  { label: 'Alojamiento', href: '/services/accommodation' },
-  { label: 'Tours', href: '/services/tours' },
-  { label: 'Experiencias', href: '/services/experiences' },
-  { label: 'Envíos', href: '/envios' },
-  { label: 'Empresas', href: '/empresas' },
+  { label: 'Servicios',    href: '/services' },
+  { label: 'Alojamiento',  href: '/accommodation' },
+  { label: 'Tours',        href: '/tours' },
+  { label: 'Experiencias', href: '/experiences' },
+  { label: 'Envíos',       href: '/envios' },
+  { label: 'Empresas',     href: '/empresas' },
 ];
 
 const SIDEBAR_NAV = [
-  { icon: '🏠', label: 'Inicio',     href: '/dashboard/pasajero' },
-  { icon: '🚗', label: 'Pedir viaje',href: '/ride' },
-  { icon: '🕐', label: 'Historial',  href: '/ride/historial' },
-  { icon: '💳', label: 'Wallet',     href: '/payment/wallet' },
-  { icon: '📦', label: 'Envíos',     href: '/envios' },
-  { icon: '🏨', label: 'Alojamiento',href: '/services/accommodation' },
-  { icon: '⚙️', label: 'Mi cuenta',  href: '/account' },
+  { icon: '🏠', label: 'Inicio',      href: '/dashboard/pasajero' },
+  { icon: '🚗', label: 'Pedir viaje', href: '/ride' },
+  { icon: '🕐', label: 'Historial',   href: '/bookings' },
+  { icon: '💳', label: 'Wallet',      href: '/payment/wallet' },
+  { icon: '⭐', label: 'Puntos',      href: '/puntos' },
+  { icon: '📦', label: 'Envíos',      href: '/envios' },
+  { icon: '🏨', label: 'Alojamiento', href: '/accommodation' },
+  { icon: '⚙️', label: 'Mi cuenta',   href: '/account' },
 ];
 
 export default function PassengerDashboard() {
@@ -71,7 +72,7 @@ export default function PassengerDashboard() {
   const [user, setUser]           = useState<UserInfo | null>(null);
   const [rides, setRides]         = useState<Ride[]>([]);
   const [loadingRides, setLoadingRides] = useState(true);
-  const [walletBalance]           = useState<number | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -89,6 +90,13 @@ export default function PassengerDashboard() {
       .then(data => setRides(Array.isArray(data) ? data.slice(0, 5) : []))
       .catch(() => setRides([]))
       .finally(() => setLoadingRides(false));
+
+    fetch(`${API_URL}/payment/wallet/${decoded.id}/balance`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setWalletBalance(data.balance ?? data.amount ?? 0); })
+      .catch(() => {});
   }, []);
 
   const logout = () => {
@@ -285,12 +293,12 @@ export default function PassengerDashboard() {
           {/* ── Grid de acciones rápidas ── */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {[
-              { icon: '💳', label: 'Wallet',      href: '/payment/wallet',         color: '#0033A0' },
-              { icon: '🕐', label: 'Historial',   href: '/ride/historial',          color: '#0033A0' },
-              { icon: '🆘', label: 'SOS',         href: '/sos',                     color: '#ef4444' },
-              { icon: '📦', label: 'Envíos',      href: '/envios',                  color: '#f59e0b' },
-              { icon: '🏨', label: 'Alojamiento', href: '/services/accommodation',  color: '#8b5cf6' },
-              { icon: '🗺️', label: 'Tours',       href: '/services/tours',          color: '#10b981' },
+              { icon: '💳', label: 'Wallet',      href: '/payment/wallet', color: '#0033A0' },
+              { icon: '🎫', label: 'Reservas',    href: '/bookings',       color: '#0033A0' },
+              { icon: '⭐', label: 'Puntos',      href: '/puntos',         color: '#f59e0b' },
+              { icon: '📦', label: 'Envíos',      href: '/envios',         color: '#f59e0b' },
+              { icon: '🏨', label: 'Alojamiento', href: '/accommodation',  color: '#8b5cf6' },
+              { icon: '🗺️', label: 'Tours',       href: '/tours',          color: '#10b981' },
             ].map(item => (
               <Link key={item.label} href={item.href}
                 className="bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-md transition-all flex flex-col items-center gap-2 text-center group">
@@ -304,7 +312,7 @@ export default function PassengerDashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Últimos viajes</h3>
-              <Link href="/ride/historial" className="text-xs text-[#0033A0] font-semibold hover:underline">Ver todos →</Link>
+              <Link href="/bookings" className="text-xs text-[#0033A0] font-semibold hover:underline">Ver todos →</Link>
             </div>
 
             {loadingRides ? (

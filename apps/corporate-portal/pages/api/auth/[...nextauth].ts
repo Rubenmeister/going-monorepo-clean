@@ -1,134 +1,18 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import AzureADProvider from 'next-auth/providers/azure-ad';
-import axios from 'axios';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-const API_BASE_URL =
-  process.env.AUTH_SERVICE_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'https://user-auth-service-780842550857.us-central1.run.app';
-
-export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-    maxAge: 8 * 60 * 60, // 8 hours
-  },
-  pages: {
-    signIn: '/auth/login',
-    error: '/auth/login',
-  },
-  providers: [
-    CredentialsProvider({
-      name: 'Email & Password',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        // ── Bypass de emergencia (sin backend) ───────────────────────────
-        const bypassEmail = process.env.EMPRESAS_BYPASS_EMAIL;
-        const bypassPass  = process.env.EMPRESAS_BYPASS_PASSWORD;
-        if (
-          bypassEmail && bypassPass &&
-          credentials.email === bypassEmail &&
-          credentials.password === bypassPass
-        ) {
-          return {
-            id: 'bypass-corp',
-            email: bypassEmail,
-            name: 'Administrador Empresas',
-            role: 'corporate_admin',
-            companyId: 'going-corp',
-            accessToken: 'bypass-token',
-          };
-        }
-        // ── Fin bypass ───────────────────────────────────────────────────
-
-        try {
-          const response = await axios.post(
-            `${API_BASE_URL}/auth/corporate/login`,
-            {
-              email: credentials.email,
-              password: credentials.password,
-            }
-          );
-          // El backend retorna: { accessToken, refreshToken, expiresIn, user: { id, email, firstName, lastName, roles }, companyId }
-          const body = response.data;
-          const userData = body.user;
-          if (userData && userData.id) {
-            return {
-              id: userData.id,
-              email: userData.email,
-              name: [userData.firstName, userData.lastName].filter(Boolean).join(' '),
-              role: Array.isArray(userData.roles) ? userData.roles[0] : 'corporate',
-              companyId: body.companyId ?? null,
-              accessToken: body.accessToken || body.token,
-            };
-          }
-          return null;
-        } catch {
-          return null;
-        }
-      },
-    }),
-
-    ...(process.env.GOOGLE_WORKSPACE_CLIENT_ID &&
-    process.env.GOOGLE_WORKSPACE_CLIENT_SECRET
-      ? [
-          GoogleProvider({
-            clientId: process.env.GOOGLE_WORKSPACE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_WORKSPACE_CLIENT_SECRET,
-            authorization: {
-              params: {
-                hd: process.env.GOOGLE_WORKSPACE_DOMAIN,
-                prompt: 'consent',
-                access_type: 'offline',
-                response_type: 'code',
-              },
-            },
-          }),
-        ]
-      : []),
-
-    ...(process.env.AZURE_AD_CLIENT_ID &&
-    process.env.AZURE_AD_CLIENT_SECRET &&
-    process.env.AZURE_AD_TENANT_ID
-      ? [
-          AzureADProvider({
-            clientId: process.env.AZURE_AD_CLIENT_ID,
-            clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-            tenantId: process.env.AZURE_AD_TENANT_ID,
-          }),
-        ]
-      : []),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-        token.companyId = (user as any).companyId;
-        token.accessToken = (user as any).accessToken;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).companyId = token.companyId;
-        (session.user as any).accessToken = token.accessToken;
-        (session as any).accessToken = token.accessToken;
-      }
-      return session;
-    },
-  },
-};
-
-export default NextAuth(authOptions);
+/**
+ * DEPRECATED — next-auth fue removido del corporate-portal.
+ *
+ * Las rutas de autenticación ahora las sirve directamente `user-auth-service`
+ * vía el API Gateway. Este handler queda como stub para que Next.js no falle
+ * si alguien guardó un link antiguo a `/api/auth/...`, devolviendo 410 Gone.
+ *
+ * Puede borrarse cuando se confirme que no hay callers externos.
+ */
+export default function handler(_req: NextApiRequest, res: NextApiResponse) {
+  res.status(410).json({
+    error: 'gone',
+    message:
+      'next-auth was removed. Use /auth/login (email/password) or /auth/google (OAuth) via the user-auth-service.',
+  });
+}

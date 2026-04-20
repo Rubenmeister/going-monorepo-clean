@@ -12,19 +12,11 @@ interface PaymentFormProps {
 }
 
 /**
- * PaymentForm — Selección de método y disparo del flujo de pago.
+ * PaymentForm -- Seleccion de metodo y disparo del flujo de pago.
  *
- * Para DATAFAST (modo redirect o lightbox):
- *   - NO se ingresan datos de tarjeta aquí.
- *   - El botón llama al backend → recibe redirectUrl → redirige a DATAFAST.
- *   - DATAFAST maneja el formulario de tarjeta en su entorno PCI DSS.
- *
- * Para Efectivo:
- *   - Confirmación local sin gateway.
- *
- * Modo lightbox (cuando DATAFAST lo habilite):
- *   - Backend retorna { mode:'lightbox', token, checkoutJsUrl }.
- *   - Se carga el JS SDK y se llama PAYMENT_WIDGET.initiate(token).
+ * DATAFAST: redirige al entorno PCI DSS de DATAFAST (no se ingresan tarjetas aqui).
+ * DeUna:    redirige al portal Banco Pichincha.
+ * Efectivo: confirmacion local sin gateway.
  */
 export function PaymentForm({
   rideId = '',
@@ -38,7 +30,7 @@ export function PaymentForm({
   const summary = paymentService.calculatePaymentSummary(amount);
 
   const handlePay = async () => {
-    if (!rideId) { setError('ID de viaje no disponible'); return; }
+    if (rideId === '') { setError('ID de viaje no disponible'); return; }
     setError(null);
     setLoading(true);
 
@@ -48,13 +40,34 @@ export function PaymentForm({
         return;
       }
 
-      // Si no hay rideId real, aprobar localmente (modo demo)
-      if (!rideId || rideId.startsWith('trip-')) {
+      // Modo demo: rideId local o vacio
+      if (rideId === '' || rideId.startsWith('trip-')) {
         onPaymentComplete?.(paymentMethod === 'datafast' ? 'card' : paymentMethod);
         return;
       }
 
-      const result = await paymentService.initiatePayment({ rideId, amountUsd: amount, description: 'Viaje Going' });
+      // DeUna: redirect al portal Banco Pichincha
+      if (paymentMethod === 'deuna') {
+        const result = await paymentService.initiatePayment({
+          rideId,
+          amountUsd:   amount,
+          description: 'Viaje Going',
+          gateway:     'deuna',
+        });
+        if (result.mode === 'redirect' && result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+          return;
+        }
+        onPaymentComplete?.('deuna');
+        return;
+      }
+
+      // DATAFAST
+      const result = await paymentService.initiatePayment({
+        rideId,
+        amountUsd:   amount,
+        description: 'Viaje Going',
+      });
 
       if (result.mode === 'redirect' && result.redirectUrl) {
         window.location.href = result.redirectUrl;
@@ -80,6 +93,14 @@ export function PaymentForm({
     }
   };
 
+  const btnLabel = loading
+    ? 'Procesando...'
+    : paymentMethod === 'cash'
+    ? 'Confirmar pago en efectivo'
+    : paymentMethod === 'deuna'
+    ? `Pagar $${summary.total.toFixed(2)} con DeUna`
+    : `Pagar $${summary.total.toFixed(2)} con DATAFAST`;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6" data-testid="payment-form">
       <h3 className="text-lg font-bold text-gray-800 mb-4">Pago del viaje</h3>
@@ -91,7 +112,7 @@ export function PaymentForm({
           <span className="font-semibold">${summary.baseFare.toFixed(2)}</span>
         </div>
         <div className="flex justify-between mb-4">
-          <span className="text-gray-600">Comisión plataforma ({PLATFORM_FEE_PERCENTAGE}%)</span>
+          <span className="text-gray-600">Comision plataforma ({PLATFORM_FEE_PERCENTAGE}%)</span>
           <span className="font-semibold">${summary.platformFee.toFixed(2)}</span>
         </div>
         <div className="border-t pt-2 flex justify-between text-lg">
@@ -100,9 +121,9 @@ export function PaymentForm({
         </div>
       </div>
 
-      {/* Selección de método */}
+      {/* Seleccion de metodo */}
       <div className="mb-5">
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Método de pago</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">Metodo de pago</label>
         <div className="space-y-2">
           {(Object.entries(PAYMENT_METHODS) as Array<[PaymentMethod, (typeof PAYMENT_METHODS)[PaymentMethod]]>)
             .map(([method, cfg]) => (
@@ -124,12 +145,20 @@ export function PaymentForm({
         </div>
       </div>
 
-      {/* Nota DATAFAST */}
+      {/* Notas por metodo */}
       {paymentMethod === 'datafast' && (
         <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
           <span className="text-blue-500 mt-0.5">🔒</span>
           <p className="text-xs text-blue-700">
-            Serás redirigido a la página segura de DATAFAST. Going nunca almacena datos de tarjetas.
+            Seras redirigido a la pagina segura de DATAFAST. Going nunca almacena datos de tarjetas.
+          </p>
+        </div>
+      )}
+      {paymentMethod === 'deuna' && (
+        <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-green-50 border border-green-100">
+          <span className="text-green-500 mt-0.5">🏦</span>
+          <p className="text-xs text-green-700">
+            Seras redirigido al portal seguro de DeUna / Banco Pichincha para autorizar el pago.
           </p>
         </div>
       )}
@@ -141,15 +170,11 @@ export function PaymentForm({
         </div>
       )}
 
-      {/* Botón */}
+      {/* Boton */}
       <button onClick={handlePay} disabled={loading}
         className="w-full py-3 rounded-xl font-bold text-white bg-[#0033A0] hover:bg-[#002680] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         data-testid="pay-button">
-        {loading
-          ? '⏳ Procesando...'
-          : paymentMethod === 'cash'
-          ? '✅ Confirmar pago en efectivo'
-          : `💳 Pagar $${summary.total.toFixed(2)} con DATAFAST`}
+        {btnLabel}
       </button>
     </div>
   );

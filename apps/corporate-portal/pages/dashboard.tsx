@@ -1,4 +1,4 @@
-import { useSession } from 'next-auth/react';
+import { useSession } from '../lib/auth';
 import { useRouter } from 'next/router';
 import { useEffect, useState, useCallback } from 'react';
 import Layout from '../components/Layout';

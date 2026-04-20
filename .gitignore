@@ -136,3 +136,6 @@ AGENTS.md
 # Set real token via local env or CI/CD secrets, not in this file
 google-service-account.json
 .env*.local
+
+# Temporary secret staging (created for Secret Manager migration; contents never go to git)
+.secrets-tmp/

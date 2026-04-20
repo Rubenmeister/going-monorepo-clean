@@ -1,8 +1,8 @@
 /**
- * Tipos de pago Going — compatibles con la arquitectura DATAFAST
+ * Tipos de pago Going -- compatibles con la arquitectura DATAFAST
  */
 
-export type PaymentMethod = 'datafast' | 'cash';
+export type PaymentMethod = 'datafast' | 'deuna' | 'cash';
 export type PaymentStatus = 'pending' | 'processing' | 'approved' | 'rejected' | 'error';
 export type PaymentMode   = 'redirect' | 'lightbox' | 'direct_api';
 
@@ -17,8 +17,14 @@ export const PAYMENT_METHODS: Record<PaymentMethod, PaymentMethodConfig> = {
   datafast: {
     label:           'Tarjeta (DATAFAST)',
     emoji:           '💳',
-    requiresDetails: false,  // Los datos se ingresan en DATAFAST, no aquí
-    description:     'Visa, Mastercard, Amex — procesado por DATAFAST Ecuador',
+    requiresDetails: false,
+    description:     'Visa, Mastercard, Amex -- procesado por DATAFAST Ecuador',
+  },
+  deuna: {
+    label:           'DeUna (Banco Pichincha)',
+    emoji:           '🏦',
+    requiresDetails: false,
+    description:     'Pago digital con tu cuenta Banco Pichincha',
   },
   cash: {
     label:           'Efectivo',
@@ -39,10 +45,10 @@ export interface PaymentSummary {
 export interface InitiatePaymentResult {
   mode:           PaymentMode;
   transactionId:  string;
-  redirectUrl?:   string;    // Para modo redirect
-  token?:         string;    // Para modo lightbox
-  checkoutJsUrl?: string;    // Para modo lightbox
-  status?:        PaymentStatus; // Para modo direct_api
+  redirectUrl?:   string;
+  token?:         string;
+  checkoutJsUrl?: string;
+  status?:        PaymentStatus;
   gatewayRef?:    string;
 }
 
