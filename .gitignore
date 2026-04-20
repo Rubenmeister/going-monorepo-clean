@@ -139,3 +139,7 @@ google-service-account.json
 
 # Temporary secret staging (created for Secret Manager migration; contents never go to git)
 .secrets-tmp/
+
+*.jks
+*.pem
+.~lock.*#

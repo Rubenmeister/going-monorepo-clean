@@ -583,4 +583,25 @@ export default function DriversPage() {
                   >
                     Aprobar
                   </button>
-             
+                               <button
+                    onClick={() => handleStatusChange(selectedDriver, 'suspended')}
+                    className="px-4 py-2 text-sm font-bold bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
+                  >
+                    Rechazar
+                  </button>
+                </>
+              ) : null}
+            </div>
+
+            <button
+              onClick={() => setSelectedDriver(null)}
+              className="w-full py-3 text-sm font-semibold text-gray-500 border-t border-gray-100 hover:bg-gray-50"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
+  );
+}

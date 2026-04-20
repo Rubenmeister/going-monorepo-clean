@@ -95,14 +95,14 @@ export default function HostsPage() {
   const { auth } = useMonorepoApp();
   const router   = useRouter();
 
-  const [hosts,       setHosts]       = useState([] as Host[]);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null as string | null);
-  const [activeTab,   setActiveTab]   = useState('todos' as HostTab);
-  const [search,      setSearch]      = useState('');
-  const [filterStatus,setFilterStatus]= useState('all');
-  const [selectedHost,setSelectedHost]= useState(null as Host | null);
-  const [actionLoading, setActionLoading] = useState(null as string | null);
+  const [hosts, setHosts] = useState<Host[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<HostTab>('todos');
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth.isLoading && !auth.user) router.push('/login');
@@ -224,12 +224,12 @@ export default function HostsPage() {
     mixto:       hosts.filter(h => h.type === 'mixto').length,
   };
 
-  const TABS: { key: HostTab; label: string; icon: string }[] = [
-    { key: 'todos',       label: 'Todos',        icon: '📋' },
-    { key: 'alojamiento', label: 'Alojamientos', icon: '🏨' },
-    { key: 'tour',        label: 'Tours',        icon: '🗺️' },
-    { key: 'experiencia', label: 'Experiencias', icon: '🎭' },
-    { key: 'mixto',       label: 'Mixtos',       icon: '🌐' },
+  const TABS = [
+    { key: 'todos' as HostTab,       label: 'Todos',        icon: '📋' },
+    { key: 'alojamiento' as HostTab, label: 'Alojamientos', icon: '🏨' },
+    { key: 'tour' as HostTab,        label: 'Tours',        icon: '🗺️' },
+    { key: 'experiencia' as HostTab, label: 'Experiencias', icon: '🎭' },
+    { key: 'mixto' as HostTab,       label: 'Mixtos',       icon: '🌐' },
   ];
 
   return (
@@ -420,10 +420,10 @@ export default function HostsPage() {
               </div>
             );
           })}
-          {filtered.length === 0 && \!loading && (
+          {filtered.length === 0 && !loading && (
             <div className="col-span-3 text-center py-12 text-gray-400">
               {hosts.length === 0
-                ? 'No hay proveedores registrados con rol host ún.'
+                ? 'No hay proveedores registrados con rol host aún.'
                 : 'No se encontraron proveedores con estos filtros.'}
             </div>
           )}
@@ -455,8 +455,8 @@ export default function HostsPage() {
                   ['Ciudad',    selectedHost.city],
                   ['Servicios', selectedHost.servicesCount.toString()],
                   ['Reservas',  selectedHost.totalBookings?.toString() ?? 'N/D'],
-                  ['Ingresos',  selectedHost.totalRevenue \!= null ? `$${selectedHost.totalRevenue}` : 'N/D'],
-                  ['Pendiente', selectedHost.pendingPayout \!= null ? `$${selectedHost.pendingPayout}` : 'N/D'],
+                  ['Ingresos',  selectedHost.totalRevenue != null ? `$${selectedHost.totalRevenue}` : 'N/D'],
+                  ['Pendiente', selectedHost.pendingPayout != null ? `$${selectedHost.pendingPayout}` : 'N/D'],
                   ['Desde',     selectedHost.joinedAt ? new Date(selectedHost.joinedAt).toLocaleDateString('es-EC') : '—'],
                 ].map(([k, v]) => (
                   <div key={k}>
