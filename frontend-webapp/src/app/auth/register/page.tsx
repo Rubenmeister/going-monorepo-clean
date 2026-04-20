@@ -284,18 +284,3 @@ export default function RegisterPage() {
     </Suspense>
   );
 }
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-white" />}>
-      <RegisterForm />
-    </Suspense>
-  );
-}
