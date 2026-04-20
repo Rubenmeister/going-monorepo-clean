@@ -22,6 +22,9 @@ import { TokenManagerService } from './services/token-manager.service';
 import { AccountLockoutService } from './services/account-lockout.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
+import { OauthStateService } from './oauth/oauth-state.service';
+import { GoogleOauthGuard } from './oauth/google-oauth.guard';
+import { FacebookOauthGuard } from './oauth/facebook-oauth.guard';
 
 @Module({
   imports: [
@@ -82,6 +85,10 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     // OAuth Strategies
     GoogleStrategy,
     FacebookStrategy,
+    // OAuth multi-app (state firmado + whitelist)
+    OauthStateService,
+    GoogleOauthGuard,
+    FacebookOauthGuard,
   ],
   exports: [
     IUserRepository,
@@ -93,6 +100,10 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
     TokenManagerService,
     AccountLockoutService,
     JwtModule,
+    // Re-exportados para que el controlador los pueda inyectar
+    OauthStateService,
+    GoogleOauthGuard,
+    FacebookOauthGuard,
   ],
 })
 export class InfrastructureModule {}

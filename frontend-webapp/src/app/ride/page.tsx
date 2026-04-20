@@ -35,6 +35,31 @@ const ChatInterface = dynamic(
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type Step = 'request' | 'tracking' | 'payment' | 'accounting' | 'rating';
 
+const STEPS: Step[] = ['request', 'tracking', 'payment', 'accounting', 'rating'];
+
+/* ─── Stepper component ─────────────────────────────────────────────── */
+function RideStepper({ step }: { step: Step }) {
+  const current = STEPS.indexOf(step);
+  return (
+    <div className="flex items-center justify-center gap-1 pt-2 pb-1">
+      {STEPS.map((s, i) => {
+        const isDone   = i < current;
+        const isActive = i === current;
+        return (
+          <span key={s} className="flex items-center gap-1">
+            <span className={`block rounded-full transition-all duration-300 ${
+              isActive ? 'w-6 h-2 bg-[#ff4c41]' : isDone ? 'w-2 h-2 bg-[#ff4c41] opacity-40' : 'w-2 h-2 bg-gray-200'
+            }`} />
+            {i < STEPS.length - 1 && (
+              <span className={`block w-4 h-px ${isDone ? 'bg-[#ff4c41] opacity-40' : 'bg-gray-200'}`} />
+            )}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ─── Page ──────────────────────────────────────────────────────────── */
 function RidePageInner() {
   const router             = useRouter();
@@ -45,17 +70,21 @@ function RidePageInner() {
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
-  /* Auth guard solo al confirmar viaje (no al buscar) */
+  /* Auth guard INICIAL — redirige antes de mostrar el formulario */
   useEffect(() => {
-    if (activeRide && step === 'request') {
-      if (!auth.isLoading && !auth.user) {
-        router.replace(`/auth/login?from=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-        return;
-      }
+    if (auth.isLoading) return;
+    if (!auth.user) {
+      router.replace(`/auth/login?from=/ride`);
+    }
+  }, [auth.isLoading, auth.user, router]);
+
+  /* Avanzar a tracking cuando el viaje se crea */
+  useEffect(() => {
+    if (activeRide && step === 'request' && auth.user) {
       setPaymentAmount(activeRide.estimatedFare);
       setStep('tracking');
     }
-  }, [activeRide, step, auth.isLoading, auth.user, router]);
+  }, [activeRide, step, auth.user]);
 
   /* Mover a pago cuando el viaje se completa */
   useEffect(() => {
@@ -73,11 +102,11 @@ function RidePageInner() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Header ── */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10 shadow-sm">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.back()}
+              onClick={() => step === 'request' ? router.push('/dashboard/pasajero') : router.back()}
               className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
             >
               ←
@@ -95,6 +124,9 @@ function RidePageInner() {
               ← Nuevo viaje
             </button>
           )}
+        </div>
+        <div className="max-w-2xl mx-auto">
+          <RideStepper step={step} />
         </div>
       </div>
 
@@ -143,8 +175,8 @@ function RidePageInner() {
         <ChatInterface
           rideId={activeRide.tripId}
           driverName={activeRide.driverInfo?.name}
-          userId="current-user"
-          userName="Pasajero"
+          userId={(auth.user as any)?.id ?? (auth.user as any)?._id ?? 'anon'}
+          userName={(auth.user as any)?.firstName ?? 'Pasajero'}
         />
       )}
     </div>

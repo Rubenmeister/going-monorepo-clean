@@ -1,16 +1,3 @@
-import "next-auth";
-
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id?: string;
-    role?: string;
-    companyId?: string;
-    accessToken?: string;
-  }
-}
+// DEPRECATED — next-auth fue removido del corporate-portal.
+// Tipos de sesión viven ahora en `apps/corporate-portal/lib/auth.ts`.
+export {};

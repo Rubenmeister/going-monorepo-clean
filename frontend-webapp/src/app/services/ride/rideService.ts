@@ -1,5 +1,5 @@
 /**
- * Ride service — connects to transport-service via API gateway.
+ * Ride service -- connects to transport-service via API gateway.
  * Falls back to local calculation when backend is unavailable.
  */
 
@@ -27,13 +27,14 @@ function authHeaders(): HeadersInit {
 }
 
 export interface CreateRideRequest {
-  pickup:       Location;
-  dropoff:      Location;
-  rideType:     VehicleType;
-  serviceTier:  ServiceTier;
-  passengers:   number;
-  passengerId:  string;
-  scheduledAt?: string; // ISO string for scheduled rides
+  pickup:        Location;
+  dropoff:       Location;
+  rideType:      VehicleType;
+  serviceTier:   ServiceTier;
+  passengers:    number;
+  passengerId:   string;
+  scheduledAt?:  string;
+  transportMode: 'privado' | 'compartido';
 }
 
 class RideService {
@@ -47,7 +48,6 @@ class RideService {
     const baseFare      = calculateFare(req.pickup, req.dropoff, req.rideType);
     const estimatedFare = Math.round((baseFare / vehicle.multiplierConfort) * tierMult * 100) / 100;
 
-    // Try the real backend
     if (getAuthToken()) {
       try {
         const response = await fetch(`${API_URL}/rides/request`, {
@@ -61,74 +61,55 @@ class RideService {
             serviceType:      `${req.rideType}_${req.serviceTier}`,
             passengers:       req.passengers,
             scheduledAt:      req.scheduledAt,
+            mode:             req.transportMode === 'compartido' ? 'shared' : 'private',
           }),
         });
 
         if (response.ok) {
           const data = await response.json();
           return {
-            tripId:       data.rideId || data.tripId || `trip-${Date.now()}`,
-            passengerId:  req.passengerId,
-            pickup:       req.pickup,
-            dropoff:      req.dropoff,
+            tripId:        data.rideId || data.tripId || `trip-${Date.now()}`,
+            passengerId:   req.passengerId,
+            pickup:        req.pickup,
+            dropoff:       req.dropoff,
             estimatedFare: data.fare?.estimatedTotal ?? estimatedFare,
             distance,
             duration,
-            status:    data.status || 'pending',
-            createdAt: new Date(data.requestedAt || Date.now()),
-            passengers: req.passengers,
-            vehicleType: req.rideType,
-            serviceTier: req.serviceTier,
-          };
+            status:        data.status || 'pending',
+            createdAt:     new Date(data.requestedAt || Date.now()),
+            passengers:    req.passengers,
+            vehicleType:   req.rideType,
+            transportMode: req.transportMode,
+          } as Ride;
         }
-
-        // Non-OK response — log and fall through to local
-        const errBody = await response.json().catch(() => ({}));
-        console.warn('[rideService] backend error', response.status, errBody);
-      } catch (err) {
-        console.warn('[rideService] backend unreachable, using local ride:', err);
+      } catch {
+        // fall through to local fallback
       }
     }
 
-    // Local fallback — ride works client-side while backend is being set up
     return {
-      tripId:       `trip-${Date.now()}`,
-      passengerId:  req.passengerId,
-      pickup:       req.pickup,
-      dropoff:      req.dropoff,
+      tripId:        `trip-${Date.now()}`,
+      passengerId:   req.passengerId,
+      pickup:        req.pickup,
+      dropoff:       req.dropoff,
       estimatedFare,
       distance,
       duration,
-      status:    'pending',
-      createdAt: new Date(),
-      passengers: req.passengers,
-      vehicleType: req.rideType,
-      serviceTier: req.serviceTier,
-    };
+      status:        'pending',
+      createdAt:     new Date(),
+      passengers:    req.passengers,
+      vehicleType:   req.rideType,
+      transportMode: req.transportMode,
+    } as Ride;
   }
 
-  /** Get ride details */
-  async getRide(tripId: string): Promise<Ride> {
-    const res = await fetch(`${API_URL}/rides/${tripId}`, { headers: authHeaders() });
-    if (!res.ok) throw new Error(`Viaje ${tripId} no encontrado`);
-    return res.json();
-  }
-
-  /** Get ride history for authenticated user */
-  async getRideHistory(limit = 20): Promise<Ride[]> {
-    const res = await fetch(`${API_URL}/rides/history/user?limit=${limit}`, { headers: authHeaders() });
-    if (!res.ok) throw new Error('No se pudo obtener el historial');
-    return res.json();
-  }
-
-  /** Cancel a ride */
-  async cancelRide(tripId: string): Promise<void> {
-    const res = await fetch(`${API_URL}/rides/${tripId}/cancel`, {
-      method:  'PUT',
+  /** Cancel an active ride */
+  async cancelRide(rideId: string): Promise<void> {
+    if (!getAuthToken()) return;
+    await fetch(`${API_URL}/rides/${rideId}/cancel`, {
+      method:  'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ reason: 'user_cancelled' }),
     });
-    if (!res.ok) throw new Error('No se pudo cancelar el viaje');
   }
 
   /** Get Twilio proxy number for ride communication */

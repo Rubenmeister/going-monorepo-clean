@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRideStore } from '@/stores/rideStore';
 import { useRideSocket } from '@/hooks/useWebSocket';
 import { rideService } from '@/services/ride';
@@ -91,16 +92,14 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
     if (activeRide?.status === 'completed') onCompleted();
   }, [activeRide?.status, onCompleted]);
 
-  /* ── Failsafe: si el backend no emite ride:no_driver_found,
-        el frontend detecta 130s sin conductor y notifica al pasajero ── */
+  /* ── Failsafe: 130s sin conductor ── */
   useEffect(() => {
     if (activeRide?.status !== 'pending') return;
     const timer = setTimeout(() => {
-      // Solo actuar si sigue en pending (el WebSocket no lo resolvió antes)
       if (useRideStore.getState().activeRide?.status === 'pending') {
         useRideStore.getState().updateRideStatus(activeRide.tripId, 'no_driver' as never);
       }
-    }, 130_000); // 130s = TTL Redis (120s) + 10s de margen
+    }, 130_000);
     return () => clearTimeout(timer);
   }, [activeRide?.tripId, activeRide?.status]);
 
@@ -117,7 +116,6 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
     setStopAddress('');
     setShowStopInput(false);
 
-    // Recalcular tarifa (client-side approximation)
     if (lastPoint.lat && lastPoint.lat !== 0) {
       const vehicleType = (activeRide.vehicleType as VehicleType) || 'suv';
       const tierMult = (activeRide.serviceTier as ServiceTier) === 'premium'
@@ -148,35 +146,69 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
   /* ── Estado: sin conductor disponible ── */
   if (status === 'no_driver') {
     return (
-      <div className="flex flex-col items-center justify-center gap-5 py-10 px-6 text-center">
-        <div className="text-6xl">😔</div>
-        <div>
+      <div className="space-y-4 py-4">
+        <div className="text-center px-6 pt-4">
+          <div className="text-5xl mb-3">😔</div>
           <p className="text-xl font-bold text-gray-800">Sin conductor disponible</p>
           <p className="text-sm text-gray-500 mt-1">
-            No encontramos un conductor en tu zona en este momento.
+            No hay conductores en tu zona para el horario solicitado.
           </p>
         </div>
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button
-            onClick={() => {
-              useRideStore.getState().clearRide();
-            }}
-            className="w-full py-3 rounded-2xl text-white font-bold text-base transition-all hover:opacity-90"
-            style={{ backgroundColor: '#ff4c41' }}
-          >
-            🔄 Intentar de nuevo
+
+        <div className="px-4 space-y-2">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">¿Qué quieres hacer?</p>
+
+          <button onClick={() => useRideStore.getState().clearRide()}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all"
+            style={{ borderColor: '#ff4c41', backgroundColor: '#fff2f2' }}>
+            <span className="text-2xl">🔄</span>
+            <div>
+              <p className="font-bold text-sm text-gray-900">Buscar conductor ahora</p>
+              <p className="text-xs text-gray-500">Reintenta la misma solicitud inmediatamente</p>
+            </div>
           </button>
-          <button
-            onClick={onCancelled}
-            className="w-full py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold text-sm"
-          >
-            Cancelar
+
+          <button onClick={onCancelled}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-gray-300 bg-white">
+            <span className="text-2xl">📅</span>
+            <div>
+              <p className="font-bold text-sm text-gray-900">Programar para más tarde</p>
+              <p className="text-xs text-gray-500">Vuelve al formulario y elige otra hora del día</p>
+            </div>
+          </button>
+
+          <button onClick={onCancelled}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-gray-300 bg-white">
+            <span className="text-2xl">🧑</span>
+            <div>
+              <p className="font-bold text-sm text-gray-900">Probar viaje compartido</p>
+              <p className="text-xs text-gray-500">Más opciones disponibles y tarifa reducida</p>
+            </div>
+          </button>
+        </div>
+
+        <div className="mx-4 bg-blue-50 border border-blue-100 rounded-2xl p-4">
+          <p className="text-xs font-bold text-blue-800 mb-2">💡 Horarios con mayor disponibilidad</p>
+          <div className="grid grid-cols-2 gap-2">
+            {['7:00 am', '9:00 am', '1:00 pm', '5:00 pm'].map(h => (
+              <button key={h} onClick={onCancelled}
+                className="py-2 rounded-xl text-xs font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 transition-colors">
+                {h}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-blue-500 mt-2">Vuelve al formulario y ajusta el horario</p>
+        </div>
+
+        <div className="px-4 pb-4">
+          <button onClick={onCancelled}
+            className="w-full py-3 rounded-2xl border border-gray-200 text-gray-500 font-medium text-sm hover:bg-gray-50 transition-colors">
+            Volver al inicio
           </button>
         </div>
       </div>
     );
   }
-
   return (
     <div className="space-y-3">
 
@@ -191,6 +223,11 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
         fare={currentFare}
         extraStops={extraStops.length}
       />
+
+      {/* ══ BOARDING PASS: QR + PIN (pending y accepted) ══ */}
+      {(status === 'pending' || status === 'accepted') && (
+        <BoardingPassCard rideId={rideId} />
+      )}
 
       {/* ══ NÚMERO PROXY (conductor asignado) ══ */}
       {proxyNumber && (status === 'accepted' || status === 'in_progress') && (
@@ -275,6 +312,17 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
         />
       )}
 
+      {/* ══ BOTÓN SOS ══ */}
+      {(status === 'accepted' || status === 'in_progress') && (
+        <Link
+          href="/sos"
+          className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90"
+          style={{ backgroundColor: '#7f1d1d', color: '#fff' }}
+        >
+          🆘 Emergencia / SOS
+        </Link>
+      )}
+
       {/* ══ BOTÓN CANCELAR (solo si pending) ══ */}
       {status === 'pending' && (
         <button
@@ -349,6 +397,82 @@ function StatusBanner({
   );
 }
 
+/* ── Boarding Pass: QR + PIN de seguridad ── */
+function BoardingPassCard({ rideId }: { rideId: string }) {
+  const [expanded, setExpanded] = useState(true);
+
+  // PIN determinístico de 4 dígitos basado en el rideId
+  const pin = rideId.replace(/\D/g, '').slice(-4).padStart(4, '0');
+
+  // QR codifica el tripId para que el conductor app lo escanee
+  const qrData = encodeURIComponent(`going://ride/${rideId}`);
+  const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=180x180&margin=10&bgcolor=ffffff`;
+
+  if (!expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 text-gray-500 text-sm font-medium hover:border-gray-300 transition-colors flex items-center justify-center gap-2"
+      >
+        🎫 Mostrar boarding pass
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between border-b border-gray-50" style={{ backgroundColor: '#011627' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🎫</span>
+          <p className="text-sm font-black text-white">Boarding Pass</p>
+        </div>
+        <button onClick={() => setExpanded(false)} className="text-white/40 hover:text-white/80 text-xs transition-colors">
+          Ocultar
+        </button>
+      </div>
+
+      <div className="p-4 flex gap-5 items-center">
+        {/* QR */}
+        <div className="flex-shrink-0">
+          <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100">
+            {rideId ? (
+              <img
+                src={qrSrc}
+                alt="QR boarding pass"
+                className="w-full h-full object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            ) : (
+              <span className="text-3xl">📷</span>
+            )}
+          </div>
+          <p className="text-center text-xs text-gray-400 mt-1">Escanea</p>
+        </div>
+
+        {/* PIN */}
+        <div className="flex-1">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">PIN de seguridad</p>
+          <div className="flex gap-2">
+            {pin.split('').map((d, i) => (
+              <div
+                key={i}
+                className="w-10 h-12 rounded-xl flex items-center justify-center text-xl font-black border-2"
+                style={{ borderColor: '#ff4c41', color: '#ff4c41', backgroundColor: '#fff2f2' }}
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+            Muestra el QR o dicta el PIN a tu conductor para confirmar el viaje.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Número proxy ── */
 function PhoneCard({ number }: { number: string }) {
   const [copied, setCopied] = useState(false);
@@ -407,7 +531,7 @@ function VerificationModal({
   const [step, setStep] = useState<'driver' | 'phone'>('driver');
   const [phoneConfirmed, setPhoneConfirmed] = useState(false);
 
-  // Generar código de 4 dígitos basado en el rideId (determinístico)
+  // PIN determinístico de 4 dígitos basado en el rideId
   const verifyCode = rideId.replace(/\D/g, '').slice(-4).padStart(4, '0');
 
   return (
@@ -455,7 +579,10 @@ function VerificationModal({
               <p className="text-sm text-gray-500 mb-1">El conductor ve los últimos dígitos de tu número</p>
               <p className="text-2xl font-black text-gray-900">···· ···· <span style={{ color: '#ff4c41' }}>confirmado</span></p>
             </div>
-            <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 cursor-pointer" onClick={() => setPhoneConfirmed(!phoneConfirmed)}>
+            <label
+              className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 cursor-pointer"
+              onClick={() => setPhoneConfirmed(!phoneConfirmed)}
+            >
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${phoneConfirmed ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
                 {phoneConfirmed && <span className="text-white text-xs font-bold">✓</span>}
               </div>

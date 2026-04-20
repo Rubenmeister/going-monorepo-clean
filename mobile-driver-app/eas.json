@@ -20,6 +20,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "credentialsSource": "remote",
       "prebuildCommand": "npx expo prebuild --clean",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.goingec.com"

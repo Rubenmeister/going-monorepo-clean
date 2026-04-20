@@ -1,14 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-
-/* ── Going SVG Logo ──────────────────────────────────────────── */
-const GoingIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-    <circle cx="72" cy="18" r="8" fill="#ff4c41" />
-    <path d="M68 26 C68 26 58 30 50 40 C38 54 34 68 38 80 C42 92 58 96 70 90 C82 84 86 70 82 58 C78 46 66 42 58 46 C50 50 48 60 52 68 C56 76 64 76 70 70"
-      stroke="#ff4c41" strokeWidth="7" strokeLinecap="round" fill="none" />
-  </svg>
-);
+import { BookingWidget } from './components/BookingWidget';
 
 /* ── Data ─────────────────────────────────────────────────────── */
 const SERVICES = [
@@ -116,47 +108,7 @@ export default function Home() {
           </div>
 
           {/* Booking widget */}
-          <div className="bg-white rounded-3xl p-7 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-            <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
-              {['🚍 Compartido', '🚗 Privado', '📦 Envío'].map((tab, i) => (
-                <button
-                  key={tab}
-                  className={`flex-1 py-2.5 rounded-lg text-[12px] font-black transition-all ${i === 0 ? 'bg-white text-[#ff4c41] shadow-sm' : 'text-gray-500'}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            {[
-              { label: '📍 Origen', placeholder: '¿Desde dónde sales?' },
-              { label: '🏁 Destino', placeholder: '¿A dónde vas?' },
-            ].map((f) => (
-              <div key={f.label} className="mb-4">
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-[1px] mb-1.5">{f.label}</div>
-                <input
-                  className="w-full px-3.5 py-3 border-[1.5px] border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-[#ff4c41] transition-colors"
-                  placeholder={f.placeholder}
-                />
-              </div>
-            ))}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-[1px] mb-1.5">📅 Fecha</div>
-                <input type="date" className="w-full px-3.5 py-3 border-[1.5px] border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-[#ff4c41] transition-colors" />
-              </div>
-              <div>
-                <div className="text-[11px] font-black text-gray-400 uppercase tracking-[1px] mb-1.5">👥 Pasajeros</div>
-                <input className="w-full px-3.5 py-3 border-[1.5px] border-gray-200 rounded-xl text-sm font-semibold outline-none focus:border-[#ff4c41] transition-colors" placeholder="1 pasajero" />
-              </div>
-            </div>
-            <Link
-              href="https://app.goingec.com/search"
-              className="block w-full py-3.5 rounded-xl bg-[#ff4c41] text-white text-center font-black text-[15px] shadow-[0_4px_16px_rgba(255,76,65,0.35)] hover:bg-[#e03d32] hover:-translate-y-0.5 transition-all"
-            >
-              Buscar viajes →
-            </Link>
-            <p className="text-center text-[11px] text-gray-400 font-semibold mt-3">🔒 Pago seguro · Sin comisiones ocultas</p>
-          </div>
+          <BookingWidget />
         </div>
       </section>
 
