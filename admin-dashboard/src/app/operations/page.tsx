@@ -581,12 +581,3 @@ export default function OperationsPage() {
     </AdminLayout>
   );
 }
-/live</code> con breakdown por servicio.
-              El feed de eventos ya está listo para recibir cualquier evento adicional que el backend emita via WebSocket.
-            </p>
-          </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-}
