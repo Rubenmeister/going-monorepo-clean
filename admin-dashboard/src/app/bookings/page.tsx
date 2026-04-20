@@ -26,14 +26,15 @@ export default function BookingsManagementPage() {
   const [error, setError] = useState(null as string | null);
 
   const loadBookings = useCallback(async () => {
-    if (!auth.user?.token) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!auth.user || !token) return;
     setLoading(true);
     setError(null);
     try {
       // Rides history + pending trips
       const [pending, stats] = await Promise.allSettled([
-        adminFetch<any[]>('/transport/pending', auth.user.token),
-        adminFetch<{ rides?: any[] }>('/auth/admin/stats', auth.user.token),
+        adminFetch<any[]>('/transport/pending', token),
+        adminFetch<{ rides?: any[] }>('/auth/admin/stats', token),
       ]);
 
       const pendingData = pending.status === 'fulfilled' ? pending.value ?? [] : [];

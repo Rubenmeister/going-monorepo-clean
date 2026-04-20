@@ -27,11 +27,12 @@ export default function CompaniesPage() {
   const [error, setError] = useState(null as string | null);
 
   const loadCompanies = useCallback(async () => {
-    if (!auth.user?.token) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!auth.user || !token) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await adminFetch<any>('/corporate/companies', auth.user.token);
+      const data = await adminFetch<any>('/corporate/companies', token);
       const list: any[] = Array.isArray(data) ? data : data?.companies ?? data?.data ?? [];
       setCompanies(list.map((c: any) => ({
         id: c.id ?? c._id ?? '—',

@@ -28,13 +28,14 @@ export default function IngresosPage() {
   const [error, setError] = useState(null as string | null);
 
   const load = useCallback(async () => {
-    if (!auth.user?.token) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!auth.user || !token) return;
     setLoading(true);
     setError(null);
     try {
       const [statsRes, invoicesRes] = await Promise.allSettled([
-        adminFetch<any>('/invoices/stats/summary', auth.user.token),
-        adminFetch<any>('/invoices', auth.user.token),
+        adminFetch<any>('/invoices/stats/summary', token),
+        adminFetch<any>('/invoices', token),
       ]);
 
       if (statsRes.status === 'fulfilled') setSummary(statsRes.value);

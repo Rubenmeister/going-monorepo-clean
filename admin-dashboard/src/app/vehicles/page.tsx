@@ -38,12 +38,13 @@ export default function VehiclesPage() {
   const [error, setError] = useState(null as string | null);
 
   const loadVehicles = useCallback(async () => {
-    if (!auth.user?.token) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!auth.user || !token) return;
     setLoading(true);
     setError(null);
     try {
       // Use admin users endpoint filtered by role=driver, extract vehicle data
-      const data = await adminFetch<any>('/auth/admin/users?role=driver&limit=100', auth.user.token);
+      const data = await adminFetch<any>('/auth/admin/users?role=driver&limit=100', token);
       const drivers: any[] = Array.isArray(data) ? data : data?.users ?? data?.data ?? [];
       setVehicles(drivers
         .filter((d: any) => d.vehicle || d.vehicleType)
