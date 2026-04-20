@@ -123,7 +123,7 @@ export default function Settings() {
         const list: any[] = e.employees ?? e.data ?? (Array.isArray(e) ? e : []);
         setEmployees(list.map((u: any) => ({
           id: u.id ?? u._id,
-          name: u.name ?? `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.email,
+          name: (u.name ?? `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim()) || u.email,
           email: u.email ?? '',
           role: u.role ?? 'employee',
           department: u.department ?? '—',
