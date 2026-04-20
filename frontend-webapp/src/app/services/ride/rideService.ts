@@ -112,6 +112,19 @@ class RideService {
     });
   }
 
+  /** Get ride history for the authenticated user */
+  async getRideHistory(limit = 50): Promise<any[]> {
+    if (!getAuthToken()) return [];
+    try {
+      const res = await fetch(`${API_URL}/rides?limit=${limit}`, { headers: authHeaders() });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : (data.rides ?? data.data ?? []);
+    } catch {
+      return [];
+    }
+  }
+
   /** Get Twilio proxy number for ride communication */
   async getProxyNumber(rideId: string): Promise<{ proxyNumber: string; masked: boolean }> {
     const res = await fetch(`${API_URL}/rides/${rideId}/proxy-number`, { headers: authHeaders() });
