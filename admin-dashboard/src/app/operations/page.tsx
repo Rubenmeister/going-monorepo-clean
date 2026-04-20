@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AdminLayout } from '../components/AdminLayout';
-import { adminFetch } from '@/lib/admin-api';
+import { adminFetch } from '../../lib/admin-api';
 
 export const dynamic = 'force-dynamic';
 
