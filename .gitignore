@@ -143,3 +143,9 @@ google-service-account.json
 *.jks
 *.pem
 .~lock.*#
+
+# Upload keys y certificados — NUNCA commitear
+android-keys/
+*.pem
+*.p12
+
