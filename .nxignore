@@ -6,3 +6,10 @@ node_modules
 coverage
 *.log
 mobile
+
+# Firebase DataConnect auto-generated code — sin 'name' en package.json, rompe el project graph de Nx
+**/dataconnect-generated/**
+**/dataconnect-generated
+
+# Archivos scratch
+_tmp_*
