@@ -7,13 +7,15 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+export const dynamic = "force-dynamic";
+
+import { useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TIPOS_CUENTA, INDUSTRY_OPTIONS } from "@/lib/empresas/constants";
 import { TipoCuenta } from "@/lib/empresas/types";
 import { crearSolicitudEmpresa } from "@/lib/empresas/api";
 
-export default function SolicitudPage() {
+function SolicitudContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tipoBuscado = (searchParams.get("tipo") ?? "negocio") as TipoCuenta;
@@ -340,5 +342,22 @@ export default function SolicitudPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function SolicitudPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center bg-slate-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+            <p className="text-slate-600 text-sm">Cargando formulario...</p>
+          </div>
+        </main>
+      }
+    >
+      <SolicitudContent />
+    </Suspense>
   );
 }

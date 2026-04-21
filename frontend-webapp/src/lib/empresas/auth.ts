@@ -21,6 +21,7 @@ import {
   Session,
   SessionStatus,
   SessionUser,
+  RolEmpresa,
 } from "./types";
 import {
   AUTH_TOKEN_KEY,
