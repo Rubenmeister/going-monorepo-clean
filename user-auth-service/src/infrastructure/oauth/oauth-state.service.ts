@@ -52,7 +52,7 @@ export class OauthStateService {
    * Devuelve la URL validada o `null` si no está permitida.
    *
    * La whitelist se define en la env `ALLOWED_RETURN_URLS`, separada por coma.
-   * Ejemplo: "https://app.goingec.com,https://admin.goingec.com,https://corporate.goingec.com"
+   * Ejemplo: "https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com"
    */
   validateReturnTo(returnTo: string | null | undefined): string | null {
     if (!returnTo) return null;
