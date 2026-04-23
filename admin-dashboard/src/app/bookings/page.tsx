@@ -238,7 +238,7 @@ function BookingDetail({ booking, token, onClose, onUpdate }: {
 
 export default function BookingsPage() {
   const { auth } = useMonorepoApp();
-  const token: string = auth?.token ?? (typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '');
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);

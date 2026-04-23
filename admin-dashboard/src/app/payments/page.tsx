@@ -194,7 +194,7 @@ function PaymentDetail({ payment, token, onClose, onUpdate }: {
 
 export default function PaymentsPage() {
   const { auth } = useMonorepoApp();
-  const token: string = auth?.token ?? (typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '');
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
