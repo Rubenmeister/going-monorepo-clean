@@ -611,26 +611,29 @@ export function getFareBreakdown(
     basePrice = tier === 'premium' ? privadoConfort + 10 : privadoConfort;
   }
 
-  const { rate: surchargeRate, label: surchargeLabel } = getDynamicSurcharge(dateTime, mode);
-  const { rate: discountRate,  label: discountLabel  } = getClientDiscount(segment);
+  const { rate: surchargeRate,       label: surchargeLabel       } = getDynamicSurcharge(dateTime, mode);
+  const { rate: clientSurchargeRate, label: clientSurchargeLabel } = getClientSurcharge(segment);
 
-  const adjustedPrice = Math.round(basePrice * (1 + surchargeRate) * (1 - discountRate));
+  // Fórmula: base × (1 + recargo_tiempo + recargo_cliente) + origen
+  // NOTA: clientSurchargeRate es POSITIVO (+0.25) → aumenta el precio
+  const adjustedPrice = Math.round(basePrice * (1 + surchargeRate + clientSurchargeRate));
   const totalFare     = adjustedPrice + originSurcharge;
 
   return {
-    sharedBase:     base,
+    sharedBase:          base,
     totalFare,
-    distanceKm:     roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
-    durationMin:    roadDistance?.durationMin ?? Math.round((dist / AVERAGE_SPEED_KMH) * 60),
-    isPriceFixed:   fixed,
+    distanceKm:          roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
+    durationMin:         roadDistance?.durationMin ?? Math.round((dist / AVERAGE_SPEED_KMH) * 60),
+    isPriceFixed:        fixed,
     mode,
     tier,
     originSurcharge,
     surchargeRate,
     surchargeLabel,
-    discountRate,
-    discountLabel,
-    clientSegment:  segment,
+    clientSurchargeRate,
+    clientSurchargeLabel,
+    discountRate:        0,  // solo por puntos de lealtad, gestionado por loyalty-service
+    clientSegment:       segment,
   };
 }
 
