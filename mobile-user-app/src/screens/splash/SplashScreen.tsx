@@ -47,10 +47,6 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
   const logoOp     = useRef(new Animated.Value(0)).current;
   const logoRot    = useRef(new Animated.Value(-10)).current;   // grados
 
-  // Glow pulse (continuo, atrás del logo)
-  const glowOp     = useRef(new Animated.Value(0.4)).current;
-  const glowScale  = useRef(new Animated.Value(0.8)).current;
-
   // Tagline "Nos movemos contigo" — delay 1.2s
   const tagOp      = useRef(new Animated.Value(0)).current;
   const tagY       = useRef(new Animated.Value(20)).current;
@@ -68,20 +64,6 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
   }, []);
 
   useEffect(() => {
-    // ── Pulse-glow continuo (4s ease-in-out infinite) ─────
-    Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(glowOp,    { toValue: 0.7,  duration: 2000, useNativeDriver: true }),
-          Animated.timing(glowScale, { toValue: 1.2,  duration: 2000, useNativeDriver: true }),
-        ]),
-        Animated.parallel([
-          Animated.timing(glowOp,    { toValue: 0.4,  duration: 2000, useNativeDriver: true }),
-          Animated.timing(glowScale, { toValue: 0.8,  duration: 2000, useNativeDriver: true }),
-        ]),
-      ])
-    ).start();
-
     // ── Secuencia principal ───────────────────────────────
     Animated.sequence([
 
@@ -147,18 +129,6 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
 
       {/* ─── Logo + tagline ─────────────────────────────── */}
       <View style={styles.center}>
-
-        {/* Glow pulsante detrás del logo */}
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.glow,
-            {
-              opacity: glowOp,
-              transform: [{ scale: glowScale }],
-            },
-          ]}
-        />
 
         {/* Logo born */}
         <Animated.View
@@ -285,20 +255,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  // Glow: bg-primary/20 blur-[80px] animate-pulse-glow
-  glow: {
-    position: 'absolute',
-    width: 300, height: 300,
-    borderRadius: 150,
-    backgroundColor: PRIMARY,
-    // Blur aproximado con sombra
-    shadowColor: VIBRANT_RED,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.55,
-    shadowRadius: 80,
-    elevation: 30,
   },
 
   // Logo horizontal blanco — sin fondo

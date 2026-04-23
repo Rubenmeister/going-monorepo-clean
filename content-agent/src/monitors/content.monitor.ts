@@ -41,7 +41,11 @@ export async function checkOverdueReviews(): Promise<void> {
   for (const item of items) {
     const horas = Math.round((Date.now() - new Date(item.createdAt).getTime()) / 3600000);
     await sendMessage(alertOverdueReview(item.title, item.type, horas));
-    await saveContentAlert({ type: 'overdue_review', severity: 'warning', message: `"${item.title}" lleva ${horas}h sin revisión`, itemId: item.id, createdAt: new Date().toISOString() });
+    try {
+      await saveContentAlert({ type: 'overdue_review', severity: 'warning', message: `"${item.title}" lleva ${horas}h sin revisión`, itemId: item.id, createdAt: new Date().toISOString() });
+    } catch (err) {
+      console.error('Failed to save overdue review alert:', err);
+    }
   }
   console.log(`[content] ${items.length} borradores vencidos`);
 }
@@ -66,7 +70,11 @@ export async function checkAcademyContent(): Promise<void> {
     const drafts  = lessons.filter(l => l.status === 'draft').length;
     if (drafts > 0) {
       await sendMessage(alertAcademyIncomplete(course.title, lessons.length, drafts));
-      await saveContentAlert({ type: 'academy_incomplete', severity: 'warning', message: `Curso "${course.title}": ${drafts} lecciones en borrador`, itemId: course.id, createdAt: new Date().toISOString() });
+      try {
+        await saveContentAlert({ type: 'academy_incomplete', severity: 'warning', message: `Curso "${course.title}": ${drafts} lecciones en borrador`, itemId: course.id, createdAt: new Date().toISOString() });
+      } catch (err) {
+        console.error('Failed to save academy incomplete alert:', err);
+      }
     }
   }
 }
@@ -110,30 +118,50 @@ Formato de respuesta (JSON):
       }],
     });
 
-    const text = (response.content[0] as { text: string }).text;
+    // FIX 1: Safe type cast with validation
+    const block = response.content?.[0];
+    const text = block && 'text' in block ? (block as { text: string }).text : '';
+    if (!text) {
+      console.warn('Content generation returned no text');
+      return;
+    }
+
     const data = JSON.parse(text) as { title: string; summary: string; body: string; tags: string[]; category: string };
 
-    const id = await saveContentItem({
-      type:      target.type,
-      title:     data.title,
-      body:      data.body,
-      summary:   data.summary,
-      author:    'Going Content Agent (IA)',
-      status:    'draft',
-      lang:      'es',
-      tags:      data.tags,
-      category:  data.category,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    // FIX 2: Error handling in save operations
+    let id: string;
+    try {
+      id = await saveContentItem({
+        type:      target.type,
+        title:     data.title,
+        body:      data.body,
+        summary:   data.summary,
+        author:    'Going Content Agent (IA)',
+        status:    'draft',
+        lang:      'es',
+        tags:      data.tags,
+        category:  data.category,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to save content item:', err);
+      return;
+    }
 
-    await sendMessage(
-      `✍️ <b>Nuevo borrador generado</b>\n\n` +
-      `📄 "${data.title}"\n` +
-      `🏷 Tipo: ${target.label}\n` +
-      `🆔 ID: <code>${id}</code>\n\n` +
-      `Revisar y aprobar antes de publicar.`
-    );
+    // FIX 2: Error handling for alert save
+    try {
+      await sendMessage(
+        `✍️ <b>Nuevo borrador generado</b>\n\n` +
+        `📄 "${data.title}"\n` +
+        `🏷 Tipo: ${target.label}\n` +
+        `🆔 ID: <code>${id}</code>\n\n` +
+        `Revisar y aprobar antes de publicar.`
+      );
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+
     console.log(`[content] Borrador generado: "${data.title}" (${target.type})`);
   } catch (e) {
     console.error('[content] Error generando borrador IA:', (e as Error).message);

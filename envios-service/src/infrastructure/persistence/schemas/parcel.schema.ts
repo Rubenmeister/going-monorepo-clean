@@ -58,6 +58,12 @@ export class ParcelModelSchema {
   })
   status: ParcelStatus;
 
+  @Prop({ required: true, index: true })
+  trackingCode: string;
+
+  @Prop({ required: true })
+  otpPin: string;
+
   @Prop()
   createdAt: Date;
 }

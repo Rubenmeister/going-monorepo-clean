@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
@@ -43,6 +44,7 @@ import { MulterModule } from '@nestjs/platform-express';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+    HttpModule,
     ThrottlerModule.forRoot([{
       name:  'default',
       ttl:   60_000, // ventana de 1 minuto

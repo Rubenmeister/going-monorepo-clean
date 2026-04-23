@@ -53,6 +53,20 @@ export class GitTool {
       throw new Error(`Blocked: cannot modify protected files: ${blocked.join(', ')}`);
     }
 
+    // Setup git token if available
+    const token = process.env.GIT_TOKEN;
+    if (token) {
+      try {
+        const remote = await this.git.remote(['get-url', 'origin']);
+        if (remote && !remote.includes('@') && !remote.includes('x-access-token')) {
+          const newUrl = remote.replace('https://', `https://x-access-token:${token}@`);
+          await this.git.remote(['set-url', 'origin', newUrl]);
+        }
+      } catch (e: any) {
+        console.warn(`[Git] Failed to configure token: ${e.message}`);
+      }
+    }
+
     await this.git.add(files);
     const commit = await this.git.commit(`[agent] ${message}`);
 

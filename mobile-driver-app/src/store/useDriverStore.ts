@@ -82,6 +82,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     try {
       const { data } = await api.post('/auth/login', { email, password });
       const token = data.token ?? data.access_token;
+      if (!token) throw new Error('No se recibió token de autenticación');
       const driverData = data.user ?? data;
 
       // Solo permitir acceso a conductores con rol 'driver'

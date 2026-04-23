@@ -13,10 +13,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../../utils/constants';
 
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com';
 
 // ── FAQ ──────────────────────────────────────────────────────────────────────
 interface FAQItem { q: string; a: string }
@@ -75,7 +75,7 @@ export function SupportScreen() {
     setSending(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      await axios.post(`${API_BASE}/support/ticket`, {
+      await axios.post(`${API_BASE_URL}/support/ticket`, {
         subject: subject.trim(),
         message: message.trim(),
         source: 'driver_app',

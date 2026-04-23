@@ -151,63 +151,136 @@ export function useAuthRedirect(redirectTo: string = "/empresas/auth/login") {
 }
 
 /**
- * Función: signIn() - Login
- * TODO: Integrar con backend real en Fase 2
+ * Función: signIn() - Login corporativo real
+ * Llama a POST /auth/corporate/login en el user-auth-service.
+ * Valida que el usuario tenga rol 'corporate' o 'admin'.
+ * Retorna un mensaje de error descriptivo si falla.
  */
-export async function signIn(email: string, password: string): Promise<boolean> {
+export async function signIn(
+  email: string,
+  password: string
+): Promise<{ success: boolean; error?: string }> {
   try {
-    // TODO: Llamar a endpoint real de autenticación
-    // const res = await fetch(`${API_BASE_URL}/api/v1/empresas/auth/login`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email, password }),
-    // });
+    const res = await fetch(`${API_BASE_URL}/auth/corporate/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-    // Mock para Fase 1
-    const mockToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwibm9tYnJlIjoiVGVzdCBVc2VyIiwicm9sZXMiOlsiYWRtaW4iXSwiY29tcGFueUlkIjoiY29tcDEiLCJjb21wYW55TmFtZSI6IkV4YW1wbGUgQ28iLCJ0aXBvQ3VlbnRhIjoiZ3JhbmRlIiwiZXhwIjo5OTk5OTk5OTk5fQ.mock";
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(AUTH_TOKEN_KEY, mockToken);
-      localStorage.setItem(
-        USER_INFO_KEY,
-        JSON.stringify({
-          email,
-          nombre: "Test User",
-          companyId: "comp1",
-          companyName: "Example Co",
-          roles: ["admin"],
-          tipoCuenta: "grande",
-        })
-      );
+    if (res.status === 429) {
+      const body = await res.json().catch(() => ({}));
+      return { success: false, error: body.message ?? "Cuenta bloqueada temporalmente. Intenta más tarde." };
     }
 
-    return true;
+    if (res.status === 401) {
+      return { success: false, error: "Email o contraseña incorrectos." };
+    }
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      return { success: false, error: body.message ?? "Error al iniciar sesión." };
+    }
+
+    const data = await res.json();
+    // data: { accessToken, refreshToken, expiresIn, user, companyId, companyName }
+
+    if (typeof window === "undefined") return { success: false, error: "Sin acceso a localStorage" };
+
+    localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+
+    if (data.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    }
+
+    // Guardamos info del usuario para readSession()
+    const user = data.user ?? {};
+    localStorage.setItem(
+      USER_INFO_KEY,
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+        nombre: user.firstName ?? user.nombre ?? "",
+        apellido: user.lastName ?? user.apellido ?? "",
+        companyId: data.companyId ?? user.companyId ?? "",
+        companyName: data.companyName ?? user.companyName ?? "",
+        roles: user.roles ?? [],
+        tipoCuenta: user.tipoCuenta ?? null,
+        activo: user.activo ?? true,
+      })
+    );
+
+    // Cookie para el middleware de Next.js
+    document.cookie = `${SESSION_COOKIE}=${data.accessToken}; Path=/; SameSite=Strict`;
+
+    return { success: true };
   } catch (error) {
     console.error("Sign in error:", error);
-    return false;
+    return { success: false, error: "No se pudo conectar con el servidor." };
   }
 }
 
 /**
- * Función: signOut() - Logout
+ * Función: signOut() - Logout real
+ * Llama a POST /auth/logout para revocar el token en el backend,
+ * luego limpia la sesión local.
  */
-export function signOut(): void {
+export async function signOut(): Promise<void> {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const rToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+    // Intentar revocar en backend (best-effort, no bloqueante)
+    if (token) {
+      fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(rToken ? { refreshToken: rToken } : {}),
+      }).catch(() => {/* ignora errores de red en logout */});
+    }
+  }
+
   clearSession();
+
   if (typeof window !== "undefined") {
     window.location.href = "/empresas";
   }
 }
 
 /**
- * Función: refreshToken() - Refresca el token
- * TODO: Implementar en Fase 2
+ * Función: refreshToken() - Refresca el access token
+ * Llama a POST /auth/refresh con el refreshToken guardado.
+ * Retorna true si se renovó con éxito.
  */
 export async function refreshToken(): Promise<boolean> {
-  // TODO: Implementar refresh token logic
-  return false;
+  if (typeof window === "undefined") return false;
+
+  const rToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!rToken) return false;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: rToken }),
+    });
+
+    if (!res.ok) {
+      clearSession();
+      return false;
+    }
+
+    const data = await res.json();
+    // data: { accessToken, expiresIn }
+    localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+    document.cookie = `${SESSION_COOKIE}=${data.accessToken}; Path=/; SameSite=Strict`;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-// TODO: Integración con sistema global de auth (Fase 2)
 // TODO: Soporte para SSO (Okta, Azure, Google) - Fase 2
 // TODO: MFA/2FA - Fase 2

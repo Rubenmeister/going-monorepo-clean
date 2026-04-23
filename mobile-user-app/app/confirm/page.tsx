@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 
 // ─── Trip Confirmation — QR Boarding Pass ────────────────────────────────────
 // Ticket de abordaje digital con código QR.

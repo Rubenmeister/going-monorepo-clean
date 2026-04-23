@@ -59,14 +59,6 @@ interface AvailableTrip {
   price:    number;
 }
 
-// ── Horarios demo (luego vendrán de la API) ───────────────────────────────────
-const DEMO_TRIPS: AvailableTrip[] = [
-  { id: 't1', time: '06:00', origin: 'Quito', dest: 'Destino', seatsLeft: 3, price: 10 },
-  { id: 't2', time: '08:30', origin: 'Quito', dest: 'Destino', seatsLeft: 2, price: 10 },
-  { id: 't3', time: '10:00', origin: 'Quito', dest: 'Destino', seatsLeft: 1, price: 10 },
-  { id: 't4', time: '13:00', origin: 'Quito', dest: 'Destino', seatsLeft: 3, price: 9  },
-];
-
 const RECENT_KEY = '@going:recent_routes_v1';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -104,6 +96,8 @@ export function SharedRideBookingScreen() {
   const [date,         setDate]         = useState(new Date());
   const [frontSeat,    setFrontSeat]    = useState(false);
   const [showTrips,    setShowTrips]    = useState(false);
+  const [availableTrips, setAvailableTrips] = useState<AvailableTrip[]>([]);
+  const [loadingTrips,  setLoadingTrips]  = useState(false);
   const [recentDests,  setRecentDests]  = useState<string[]>([]);
   const [showZonePicker, setShowZonePicker] = useState(false);
 
@@ -314,7 +308,7 @@ export function SharedRideBookingScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.tripsToggleTitle}>Ver otras salidas hoy</Text>
               <Text style={styles.tripsToggleSub}>
-                {showTrips ? 'Toca un horario para continuar' : `${DEMO_TRIPS.length} viajes disponibles`}
+                {showTrips ? 'Toca un horario para continuar' : `${availableTrips.length} viaje${availableTrips.length !== 1 ? 's' : ''} disponible${availableTrips.length !== 1 ? 's' : ''}`}
               </Text>
             </View>
             <Ionicons
@@ -326,7 +320,11 @@ export function SharedRideBookingScreen() {
 
           {showTrips && (
             <View style={styles.tripsList}>
-              {DEMO_TRIPS.map(trip => (
+              {loadingTrips ? (
+                <ActivityIndicator color={BLUE} style={{ margin: 16 }} />
+              ) : availableTrips.length === 0 ? (
+                <Text style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', padding: 16 }}>Sin horarios disponibles para esta ruta</Text>
+              ) : availableTrips.map(trip => (
                 <TouchableOpacity
                   key={trip.id}
                   style={styles.tripItem}

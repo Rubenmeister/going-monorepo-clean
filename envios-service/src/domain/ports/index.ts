@@ -1,13 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, SetMetadata } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+/**
+ * @Public decorator — marks routes that don't require JWT auth
+ */
+export const Public = () => SetMetadata('isPublic', true);
 
 /**
  * JWT Auth Guard
  */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any) {
+  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    const isPublic = context.getHandler().getMetadata?.('isPublic') || false;
+    if (isPublic) return null; // Allow unauthenticated access to public routes
     if (err) throw err;
     if (!user) return null;
     return user;

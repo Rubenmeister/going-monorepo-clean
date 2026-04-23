@@ -34,6 +34,11 @@ export class MongoRatingRepository implements IRatingRepository {
     return doc ? this.mapToEntity(doc) : null;
   }
 
+  async findOne(query: any): Promise<any> {
+    const doc = await this.ratingModel.findOne(query);
+    return doc ? this.mapToEntity(doc) : null;
+  }
+
   async findByTrip(tripId: string): Promise<any> {
     const doc = await this.ratingModel.findOne({ tripId });
     return doc ? this.mapToEntity(doc) : null;

@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 import { exportEarningsPDF } from '../../utils/earningsReport';
 import { analyticsEarningsReportExported } from '../../utils/analytics';
+import { API_BASE_URL } from '../../utils/constants';
 
 type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
 
@@ -44,9 +45,7 @@ export function EarningsScreen() {
     try {
       const token = await AsyncStorage.getItem('driver_token');
       const { data } = await axios.get(
-        `${
-          process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com'
-        }/api/payment/driver/earnings`,
+        `${API_BASE_URL}/api/payment/driver/earnings`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSummary(

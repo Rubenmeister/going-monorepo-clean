@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { fetchAlerts } from '../../lib/alerts';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -13,14 +14,18 @@ interface AdminLayoutProps {
 const NAV_SECTIONS = [
   {
     title: 'Principal',
-    items: [{ label: 'Dashboard', href: '/', icon: '📊' }],
+    items: [
+      { label: 'Dashboard', href: '/',       icon: '📊' },
+      { label: 'Alertas',   href: '/alerts', icon: '🔔' },
+    ],
   },
   {
     title: 'Operaciones',
     items: [
-      { label: 'Conductores',  href: '/drivers',   icon: '🚗' },
-      { label: 'Vehículos',    href: '/vehicles',  icon: '🚙' },
-      { label: 'Reservas',     href: '/bookings',  icon: '📅' },
+      { label: 'Conductores',  href: '/drivers',     icon: '🚗' },
+      { label: 'Onboarding',   href: '/onboarding',  icon: '🎓' },
+      { label: 'Vehículos',    href: '/vehicles',    icon: '🚙' },
+      { label: 'Reservas',     href: '/bookings',    icon: '📅' },
     ],
   },
   {
@@ -38,18 +43,39 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'Solicitudes',
+    items: [
+      { label: 'Solicitudes Corporativas', href: '/companies?tab=prospect', icon: '📋' },
+    ],
+  },
+  {
     title: 'Finanzas',
     items: [
-      { label: 'Ingresos', href: '/ingresos', icon: '💰' },
-      { label: 'Pagos',    href: '/payments', icon: '💳' },
+      { label: 'Ingresos',      href: '/ingresos',  icon: '💰' },
+      { label: 'Pagos',         href: '/payments',  icon: '💳' },
+      { label: 'Liquidaciones', href: '/payouts',   icon: '💸' },
+      { label: 'Promociones',   href: '/promos',    icon: '🎟️' },
     ],
   },
   {
     title: 'Análisis',
     items: [
       { label: 'Analítica',    href: '/analytics',   icon: '📈' },
+      { label: 'Calidad',      href: '/ratings',     icon: '⭐' },
+      { label: 'Mapa en Vivo', href: '/map',         icon: '🗺️' },
+      { label: 'Dashcam',      href: '/dashcam',     icon: '📹' },
+      { label: 'Zonas',        href: '/zonas',       icon: '📍' },
+      { label: 'NPS',          href: '/nps',         icon: '💬' },
+      { label: 'Surge',        href: '/surge',       icon: '⚡' },
       { label: 'Mercado',      href: '/market',      icon: '🌍' },
       { label: 'Operaciones',  href: '/operations',  icon: '📡' },
+    ],
+  },
+  {
+    title: 'Comunicación',
+    items: [
+      { label: 'Notif. Push', href: '/push',    icon: '📤' },
+      { label: 'Soporte',     href: '/support', icon: '🎫' },
     ],
   },
   {
@@ -64,7 +90,24 @@ export function AdminLayout({
   userName = 'Admin',
 }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [alertCount, setAlertCount]   = useState(0);
+  const [criticalCount, setCriticalCount] = useState(0);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+    if (!token) return;
+    const run = async () => {
+      const alerts = await fetchAlerts(token);
+      const dismissed: string[] = JSON.parse(localStorage.getItem('going_admin_dismissed_alerts') ?? '[]');
+      const active = alerts.filter(a => !dismissed.includes(a.id));
+      setAlertCount(active.length);
+      setCriticalCount(active.filter(a => a.severity === 'critical').length);
+    };
+    run();
+    const id = setInterval(run, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -163,6 +206,18 @@ export function AdminLayout({
             <h2 className="text-lg font-bold text-gray-900">Panel de Administración</h2>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            {/* Alert bell */}
+            <Link href="/alerts" className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors" title="Centro de Alertas">
+              <span className="text-xl">🔔</span>
+              {alertCount > 0 && (
+                <span
+                  className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[10px] font-black text-white flex items-center justify-center px-1 ${criticalCount > 0 ? 'animate-pulse' : ''}`}
+                  style={{ backgroundColor: criticalCount > 0 ? '#dc2626' : '#f59e0b' }}
+                >
+                  {alertCount > 99 ? '99+' : alertCount}
+                </span>
+              )}
+            </Link>
             <span className="text-sm text-gray-500">{userName}</span>
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"

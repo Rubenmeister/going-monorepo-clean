@@ -89,8 +89,12 @@ const tools: Anthropic.Tool[] = [
 async function executeTool(name: string, input: Record<string, any>): Promise<string> {
   try {
     switch (name) {
-      case 'read_file':
+      case 'read_file': {
+        if (!input.path || typeof input.path !== 'string') {
+          return `❌ Error: Missing required field: path`;
+        }
         return fs.readFile(input.path);
+      }
       case 'write_file':
         fs.writeFile(input.path, input.content);
         return `✅ Archivo escrito: ${input.path}`;
@@ -103,6 +107,12 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
       case 'get_git_log':
         return git.getRecentLog(input.lines || 10);
       case 'commit_fix': {
+        if (!input.message || typeof input.message !== 'string') {
+          return `❌ Error: Missing required field: message`;
+        }
+        if (!input.files || !Array.isArray(input.files)) {
+          return `❌ Error: Missing required field: files`;
+        }
         const branch = await git.getCurrentBranch();
         if (branch !== config.agentBranch) {
           await git.createAgentBranch();
@@ -183,7 +193,7 @@ Reporta todo lo que encuentres.`,
 
     const response = await callWithRetry(() =>
       client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+        model: process.env.AGENT_MODEL || 'claude-haiku-4-5-20251001',
         max_tokens: 4096,
         system: systemPrompt,
         tools,
@@ -217,6 +227,11 @@ Reporta todo lo que encuentres.`,
       }
 
       messages.push({ role: 'user', content: results });
+
+      // Keep message history under 40 messages, preserving the original user message
+      if (messages.length > 40) {
+        messages.splice(1, messages.length - 40);
+      }
     }
   }
 }

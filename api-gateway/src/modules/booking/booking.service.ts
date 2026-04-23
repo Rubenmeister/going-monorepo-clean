@@ -1,23 +1,29 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
 /**
  * Booking Service
- * Business logic for booking operations
- * This is a simplified example for demonstration
+ * Proxies booking operations to the real booking-service
  *
- * In production:
- * - Inject repositories for data access
- * - Implement actual business logic
- * - Handle transactions
- * - Validate business rules
+ * Delegates all CRUD operations to the booking-service backend
+ * instead of using in-memory storage.
  */
 @Injectable()
 export class BookingService {
   private readonly logger = new Logger(BookingService.name);
+  private readonly bookingServiceUrl: string;
 
-  // Mock data for demonstration
-  private bookings: Map<UUID, any> = new Map();
+  constructor(
+    private readonly httpService: HttpService,
+    configService: ConfigService,
+  ) {
+    this.bookingServiceUrl = configService.get<string>(
+      'BOOKING_SERVICE_URL',
+      'http://localhost:3006'
+    );
+  }
 
   /**
    * List bookings with role-based filtering
@@ -30,29 +36,26 @@ export class BookingService {
   ) {
     const isAdmin = roles.includes('admin');
 
-    // In production: Query database with role-based filters
-    if (isAdmin) {
-      // Admin sees all bookings
-      this.logger.debug(`Admin ${userId} listing all bookings`);
-      return {
-        items: Array.from(this.bookings.values()),
-        total: this.bookings.size,
-        page,
-        limit,
-      };
-    } else {
-      // User sees only their bookings
-      this.logger.debug(`User ${userId} listing their bookings`);
-      const userBookings = Array.from(this.bookings.values()).filter(
-        (b) => b.userId === userId,
-      );
+    try {
+      const endpoint = isAdmin ? '/bookings' : `/bookings/user/${userId}`;
+      const response = await this.httpService
+        .get(`${this.bookingServiceUrl}${endpoint}`, {
+          params: { page, limit },
+        })
+        .toPromise();
 
-      return {
-        items: userBookings,
-        total: userBookings.length,
-        page,
-        limit,
-      };
+      this.logger.debug(
+        `User ${userId} (admin: ${isAdmin}) listed bookings`,
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to list bookings for ${userId}: ${error?.message}`,
+      );
+      throw new HttpException(
+        'Failed to fetch bookings',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
   }
 
@@ -60,50 +63,77 @@ export class BookingService {
    * Get booking by ID
    */
   async getBooking(bookingId: UUID) {
-    return this.bookings.get(bookingId);
+    try {
+      const response = await this.httpService
+        .get(`${this.bookingServiceUrl}/bookings/${bookingId}`)
+        .toPromise();
+
+      this.logger.debug(`Retrieved booking ${bookingId}`);
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to get booking ${bookingId}: ${error?.message}`,
+      );
+      if (error?.response?.status === 404) {
+        return null;
+      }
+      throw new HttpException(
+        'Failed to fetch booking',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 
   /**
    * Create new booking
    */
   async createBooking(userId: UUID, createBookingDto: any) {
-    const bookingId = Math.random().toString(36).substring(7) as UUID;
+    try {
+      const response = await this.httpService
+        .post(`${this.bookingServiceUrl}/bookings`, {
+          userId,
+          ...createBookingDto,
+        })
+        .toPromise();
 
-    const booking = {
-      id: bookingId,
-      userId,
-      ...createBookingDto,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.bookings.set(bookingId, booking);
-
-    this.logger.log(`Created booking ${bookingId} for user ${userId}`);
-    return booking;
+      this.logger.log(
+        `Created booking ${response.data.id} for user ${userId}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to create booking for ${userId}: ${error?.message}`,
+      );
+      throw new HttpException(
+        'Failed to create booking',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 
   /**
    * Update booking
    */
   async updateBooking(bookingId: UUID, updateBookingDto: any) {
-    const booking = this.bookings.get(bookingId);
+    try {
+      const response = await this.httpService
+        .patch(`${this.bookingServiceUrl}/bookings/${bookingId}`, updateBookingDto)
+        .toPromise();
 
-    if (!booking) {
-      return null;
+      this.logger.log(`Updated booking ${bookingId}`);
+      return response.data;
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to update booking ${bookingId}: ${error?.message}`,
+      );
+      if (error?.response?.status === 404) {
+        return null;
+      }
+      throw new HttpException(
+        'Failed to update booking',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
-
-    const updated = {
-      ...booking,
-      ...updateBookingDto,
-      updatedAt: new Date(),
-    };
-
-    this.bookings.set(bookingId, updated);
-
-    this.logger.log(`Updated booking ${bookingId}`);
-    return updated;
   }
 
   /**

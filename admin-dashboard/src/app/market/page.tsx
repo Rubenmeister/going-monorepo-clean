@@ -23,42 +23,9 @@ interface DaySlot  { day: string;  volume: number; }
 interface UserGrowth { month: string; users: number; drivers: number; }
 
 /* ─── Demo data ──────────────────────────────────────────────────────── */
-const DEMO_HOURS: HourSlot[] = [
-  { hour: 0, volume: 12 }, { hour: 1, volume: 8  }, { hour: 2, volume: 5  }, { hour: 3, volume: 3  },
-  { hour: 4, volume: 7  }, { hour: 5, volume: 18 }, { hour: 6, volume: 45 }, { hour: 7, volume: 82 },
-  { hour: 8, volume: 96 }, { hour: 9, volume: 74 }, { hour: 10, volume: 58 }, { hour: 11, volume: 62 },
-  { hour: 12, volume: 78 }, { hour: 13, volume: 85 }, { hour: 14, volume: 70 }, { hour: 15, volume: 65 },
-  { hour: 16, volume: 72 }, { hour: 17, volume: 90 }, { hour: 18, volume: 100 }, { hour: 19, volume: 88 },
-  { hour: 20, volume: 68 }, { hour: 21, volume: 52 }, { hour: 22, volume: 38 }, { hour: 23, volume: 22 },
-];
 
-const DEMO_DAYS: DaySlot[] = [
-  { day: 'Lun', volume: 72 }, { day: 'Mar', volume: 68 }, { day: 'Mié', volume: 71 },
-  { day: 'Jue', volume: 75 }, { day: 'Vie', volume: 92 }, { day: 'Sáb', volume: 100 }, { day: 'Dom', volume: 58 },
-];
 
-const DEMO_GROWTH: UserGrowth[] = [
-  { month: 'Oct',  users: 1820, drivers: 48 },
-  { month: 'Nov',  users: 2140, drivers: 55 },
-  { month: 'Dic',  users: 2380, drivers: 61 },
-  { month: 'Ene',  users: 2590, drivers: 67 },
-  { month: 'Feb',  users: 2810, drivers: 72 },
-  { month: 'Mar',  users: 3050, drivers: 78 },
-  { month: 'Abr',  users: 3210, drivers: 84 },
-];
 
-const DEMO_CITIES: CityMarket[] = [
-  { city: 'Quito',          province: 'Pichincha',   trips: 680,  activeDrivers: 28, demand: 24.3, trend: 12,  services: ['transporte', 'envios', 'tours'] },
-  { city: 'Guayaquil',      province: 'Guayas',      trips: 410,  activeDrivers: 18, demand: 22.8, trend: 8,   services: ['transporte', 'envios'] },
-  { city: 'Santo Domingo',  province: 'Sto. Domingo', trips: 320, activeDrivers: 14, demand: 22.9, trend: 15,  services: ['transporte', 'envios'] },
-  { city: 'Cuenca',         province: 'Azuay',       trips: 210,  activeDrivers: 10, demand: 21.0, trend: 6,   services: ['transporte', 'tours', 'alojamientos'] },
-  { city: 'Ambato',         province: 'Tungurahua',  trips: 190,  activeDrivers: 9,  demand: 21.1, trend: 9,   services: ['transporte', 'experiencias'] },
-  { city: 'Ibarra',         province: 'Imbabura',    trips: 155,  activeDrivers: 8,  demand: 19.4, trend: 18,  services: ['transporte', 'tours'] },
-  { city: 'Loja',           province: 'Loja',        trips: 98,   activeDrivers: 5,  demand: 19.6, trend: 22,  services: ['transporte'] },
-  { city: 'Riobamba',       province: 'Chimborazo',  trips: 88,   activeDrivers: 4,  demand: 22.0, trend: 11,  services: ['transporte', 'tours'] },
-  { city: 'Baños',          province: 'Tungurahua',  trips: 74,   activeDrivers: 3,  demand: 24.7, trend: 28,  services: ['experiencias', 'tours'] },
-  { city: 'Montañita',      province: 'Santa Elena', trips: 52,   activeDrivers: 2,  demand: 26.0, trend: 35,  services: ['experiencias', 'alojamientos'] },
-];
 
 const SERVICE_ICONS: Record<string, string> = {
   transporte:   '🚗',
@@ -100,10 +67,10 @@ export default function MarketPage() {
   const { auth, domain } = useMonorepoApp();
   const router           = useRouter();
 
-  const [cities,    setCities]    = useState<CityMarket[]>(DEMO_CITIES);
-  const [hours,     setHours]     = useState<HourSlot[]>(DEMO_HOURS);
-  const [days,      setDays]      = useState<DaySlot[]>(DEMO_DAYS);
-  const [growth,    setGrowth]    = useState<UserGrowth[]>(DEMO_GROWTH);
+  const [cities,    setCities]    = useState<CityMarket[]>([]);
+  const [hours,     setHours]     = useState<HourSlot[]>([]);
+  const [days,      setDays]      = useState<DaySlot[]>([]);
+  const [growth,    setGrowth]    = useState<UserGrowth[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [sortBy,    setSortBy]    = useState('trips' as 'trips' | 'demand' | 'trend');
@@ -122,39 +89,34 @@ export default function MarketPage() {
         headers: { Authorization: `Bearer ${token}` },
       }).then(r => r.ok ? r.json() : null).catch(() => null);
 
-      if (Array.isArray(citiesRes) && citiesRes.length > 0) {
-        /* Merge real data into demo cities */
-        const merged = DEMO_CITIES.map(dc => {
-          const real = citiesRes.find((rc: any) => rc.city?.toLowerCase() === dc.city.toLowerCase());
-          return real
-            ? { ...dc, trips: real.trips ?? dc.trips, activeDrivers: real.active_drivers ?? dc.activeDrivers }
-            : dc;
-        });
-        /* Add cities from real data not in demo */
-        citiesRes.forEach((rc: any) => {
-          if (!merged.find(m => m.city.toLowerCase() === rc.city?.toLowerCase())) {
-            merged.push({
-              city: rc.city, province: '—', trips: rc.trips ?? 0,
-              activeDrivers: rc.active_drivers ?? 0,
-              demand: rc.active_drivers > 0 ? (rc.trips / rc.active_drivers) : 0,
-              trend: 0, services: ['transporte'],
-            });
-          }
-        });
-        setCities(merged);
+      if (Array.isArray(citiesRes)) {
+        setCities(citiesRes.map((rc: any) => ({
+          city: rc.city ?? rc.name ?? '—',
+          province: rc.province ?? '—',
+          trips: rc.trips ?? rc.totalTrips ?? 0,
+          activeDrivers: rc.active_drivers ?? rc.activeDrivers ?? 0,
+          demand: (rc.active_drivers ?? rc.activeDrivers ?? 0) > 0
+            ? (rc.trips ?? 0) / (rc.active_drivers ?? rc.activeDrivers)
+            : 0,
+          trend: rc.trend ?? rc.growth ?? 0,
+          services: rc.services ?? ['transporte'],
+        })));
       }
 
-      /* Real: user + driver counts for growth (single point) */
+      /* Real: user + driver growth over time */
       const statsRes = await domain.admin.getStats();
-      if (statsRes?.total) {
-        setGrowth(prev => {
-          const last = [...prev];
-          last[last.length - 1] = { ...last[last.length - 1], users: statsRes.total, drivers: statsRes.drivers ?? last[last.length - 1].drivers };
-          return last;
-        });
+      if (statsRes) {
+        const now = new Date();
+        const monthLabel = now.toLocaleString('es-EC', { month: 'short' });
+        setGrowth([{
+          month: monthLabel,
+          users: statsRes.total ?? statsRes.totalUsers ?? 0,
+          drivers: statsRes.drivers ?? statsRes.totalDrivers ?? 0,
+          trips: statsRes.trips ?? statsRes.totalTrips ?? 0,
+        }]);
       }
 
-    } catch { /* fallback demo */ }
+    } catch { /* stay empty */ }
     finally { setLoading(false); setLastUpdated(new Date()); }
   }, [domain.admin]);
 
@@ -445,3 +407,4 @@ export default function MarketPage() {
     </AdminLayout>
   );
 }
+                                                                                                                                                                                                                                                                                                                                          

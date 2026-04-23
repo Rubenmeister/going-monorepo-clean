@@ -27,9 +27,7 @@ const SLIDES = [
   {
     id: '1',
     bg: GOING_RED,
-    icon: 'car-sport' as const,
-    iconBg: 'rgba(255,255,255,0.2)',
-    emoji: '🚙',
+    photo: require('../../../assets/suv premium.jpg'),
     title: 'Viaja seguro\npor todo Ecuador',
     subtitle: 'Transporte compartido o privado entre ciudades. Precio fijo desde el inicio, sin sorpresas.',
     stat: '50+ ciudades conectadas',
@@ -38,9 +36,7 @@ const SLIDES = [
   {
     id: '2',
     bg: GOING_BLUE,
-    icon: 'people' as const,
-    iconBg: 'rgba(255,205,0,0.25)',
-    emoji: '👥',
+    photo: require('../../../assets/viajera.png'),
     title: 'Comparte el viaje,\ndivide el costo',
     subtitle: 'En modo compartido viajan hasta 5 personas y cada uno paga solo su asiento.',
     stat: 'Desde $3 por trayecto',
@@ -49,9 +45,7 @@ const SLIDES = [
   {
     id: '3',
     bg: '#1a1a2e',
-    icon: 'navigate' as const,
-    iconBg: `${GOING_RED}30`,
-    emoji: '📍',
+    photo: require('../../../assets/MANTA AEREA.jpg'),
     title: 'Tracking en\ntiempo real',
     subtitle: 'Sigue tu viaje en el mapa y comparte tu ruta con tus contactos de confianza.',
     stat: 'GPS en tiempo real',
@@ -60,9 +54,7 @@ const SLIDES = [
   {
     id: '4',
     bg: '#065f46',
-    icon: 'diamond' as const,
-    iconBg: 'rgba(255,255,255,0.15)',
-    emoji: '⭐',
+    photo: require('../../../assets/interior SUV.jpg'),
     title: 'Tu viaje,\ntu experiencia',
     subtitle: 'Elige entre Confort, Premium o tarifas Empresa. Conductores verificados y calificados.',
     stat: '4.9★ calificación promedio',
@@ -120,17 +112,18 @@ export function OnboardingScreen() {
   const renderSlide = ({ item }: { item: typeof SLIDES[0] }) => (
     <View style={[styles.slide, { backgroundColor: item.bg, width }]}>
 
-      {/* Círculo decorativo fondo */}
-      <View style={styles.bgCircle1} />
-      <View style={styles.bgCircle2} />
-
-      {/* Icono principal */}
+      {/* Foto hero */}
       <Animated.View style={[
-        styles.iconContainer,
-        { backgroundColor: item.iconBg },
+        styles.photoContainer,
         { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
       ]}>
-        <Text style={styles.iconEmoji}>{item.emoji}</Text>
+        <Image
+          source={item.photo}
+          style={styles.photo}
+          resizeMode="cover"
+        />
+        {/* Overlay suave en la parte inferior para fusionar con el fondo */}
+        <View style={[styles.photoOverlay, { backgroundColor: item.bg }]} />
       </Animated.View>
 
       {/* Textos */}
@@ -256,30 +249,37 @@ const styles = StyleSheet.create({
 
   // Slide
   slide: {
-    flex: 1, height, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 32, paddingTop: 80,
-  },
-  bgCircle1: {
-    position: 'absolute', width: 300, height: 300, borderRadius: 150,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    top: -80, right: -80,
-  },
-  bgCircle2: {
-    position: 'absolute', width: 200, height: 200, borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    bottom: 140, left: -60,
+    flex: 1, height, alignItems: 'center', justifyContent: 'flex-start',
+    paddingTop: 90,
   },
 
-  // Icon
-  iconContainer: {
-    width: 140, height: 140, borderRadius: 70,
-    justifyContent: 'center', alignItems: 'center',
-    marginBottom: 40,
+  // Foto hero
+  photoContainer: {
+    width: width - 48,
+    height: height * 0.38,
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 36,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 10,
   },
-  iconEmoji: { fontSize: 64 },
+  photo: {
+    width: '100%',
+    height: '100%',
+  },
+  // Degradado inferior para fusionar foto con fondo del slide
+  photoOverlay: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    height: 60,
+    opacity: 0.55,
+  },
 
   // Text block
-  textBlock: { alignItems: 'center', gap: 12 },
+  textBlock: { alignItems: 'center', gap: 12, paddingHorizontal: 32 },
   slideTitle: {
     fontSize: 30, fontWeight: '900', color: '#fff',
     textAlign: 'center', lineHeight: 36,

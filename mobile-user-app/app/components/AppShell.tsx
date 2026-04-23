@@ -104,7 +104,7 @@ export default function AppShell({
         }}
       >
         {BOTTOM_TABS.map((tab) => {
-          const active = pathname.startsWith(tab.href);
+          const active = pathname?.startsWith(tab.href) ?? false;
           return (
             <button
               key={tab.href}
@@ -205,7 +205,7 @@ export default function AppShell({
         {/* Nav items */}
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
           {NAV.map((item) => {
-            const active = pathname.startsWith(item.href);
+            const active = pathname?.startsWith(item.href) ?? false;
             const isDanger = (item as any).danger;
             return (
               <button

@@ -14,6 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RideModelSchema, RideDocument } from '../persistence/schemas/ride.schema';
 import { DriverRatingModel, DriverRatingDocument } from '../../api/driver.controller';
+import { MongooseRideRepository } from '../persistence/mongoose-ride.repository';
 
 /**
  * RideEventsGateway — Socket.io server para eventos en tiempo real del viaje.
@@ -78,7 +79,19 @@ export class RideEventsGateway
     private readonly rideModel: Model<RideDocument>,
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
+    private readonly rideRepository: MongooseRideRepository,
   ) {}
+
+  // ─── Push Notification Helper ──────────────────────────────────────────────
+
+  private sendPushNotification(userId: string, title: string, body: string, data?: Record<string, string>): void {
+    const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+    fetch(`${notifUrl}/api/notifications/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, title, body, data: data ?? {} }),
+    }).catch(e => this.logger.warn(`Push notification failed for ${userId}: ${e.message}`));
+  }
 
   // ─── Conexión ──────────────────────────────────────────────────────────────
 
@@ -100,7 +113,62 @@ export class RideEventsGateway
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
+    const driverId = client.data.userId;
+
+    if (driverId) {
+      try {
+        // Find active rides for this driver
+        const activeRides = await this.rideRepository.findActiveByDriverId(driverId);
+
+        if (activeRides && activeRides.length > 0) {
+          const activeRide = activeRides[0]; // Typically one active ride per driver
+
+          // Notify passenger immediately about driver disconnect
+          this.server.to(`ride:${activeRide.id}`).emit('ride:driver_disconnected', {
+            rideId: activeRide.id,
+            message: 'Tu conductor perdió la conexión. Estamos buscando una solución.',
+            timestamp: new Date().toISOString(),
+          });
+
+          this.logger.log(
+            `Driver ${driverId} disconnected with active ride ${activeRide.id}. Passenger notified.`
+          );
+
+          // Set 30-second timeout to check if driver reconnects
+          setTimeout(async () => {
+            try {
+              const ride = await this.rideRepository.findById(activeRide.id);
+              // Only emit offline event if ride is still active after 30s
+              if (
+                ride &&
+                ride.status !== 'completed' &&
+                ride.status !== 'cancelled'
+              ) {
+                this.server.to(`ride:${activeRide.id}`).emit('ride:driver_offline', {
+                  rideId: activeRide.id,
+                  message: 'El conductor no pudo reconectarse. Por favor contacta soporte.',
+                  timestamp: new Date().toISOString(),
+                });
+
+                this.logger.warn(
+                  `Driver ${driverId} did not reconnect within 30s. Ride ${activeRide.id} marked as offline.`
+                );
+              }
+            } catch (err) {
+              this.logger.error(
+                `Error checking ride status after driver timeout: ${err.message}`
+              );
+            }
+          }, 30000);
+        }
+      } catch (err) {
+        this.logger.error(
+          `Error handling driver disconnect for ${driverId}: ${err.message}`
+        );
+      }
+    }
+
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
@@ -215,7 +283,7 @@ export class RideEventsGateway
   // ─── Conductor llegó al punto de recogida ──────────────────────────────────
 
   @SubscribeMessage('driver:arrived')
-  handleDriverArrived(
+  async handleDriverArrived(
     @ConnectedSocket() _client: Socket,
     @MessageBody() data: { rideId: string },
   ) {
@@ -224,13 +292,27 @@ export class RideEventsGateway
       message: 'Tu conductor ha llegado al punto de recogida',
       arrivedAt: new Date(),
     });
+
+    // Push notification for offline users
+    try {
+      const ride = await this.rideModel.findById(data.rideId).select('passengerId').lean().exec();
+      if (ride?.passengerId) {
+        this.sendPushNotification(
+          String(ride.passengerId),
+          '🚗 Tu conductor ha llegado',
+          'El conductor está esperándote en el punto de recogida',
+          { rideId: data.rideId, actionUrl: '/transport' }
+        );
+      }
+    } catch {}
+
     this.logger.log(`Driver arrived for ride ${data.rideId}`);
   }
 
   // ─── Conductor inicia el viaje ─────────────────────────────────────────────
 
   @SubscribeMessage('driver:started')
-  handleRideStarted(
+  async handleRideStarted(
     @ConnectedSocket() _client: Socket,
     @MessageBody() data: { rideId: string },
   ) {
@@ -239,6 +321,19 @@ export class RideEventsGateway
       startedAt: new Date(),
       message:   '¡El viaje ha comenzado!',
     });
+
+    // Push notification for offline users
+    try {
+      const ride = await this.rideModel.findById(data.rideId).select('passengerId').lean().exec();
+      if (ride?.passengerId) {
+        this.sendPushNotification(
+          String(ride.passengerId),
+          '✅ ¡Tu viaje ha comenzado!',
+          'Estás en camino. Disfruta el viaje.',
+          { rideId: data.rideId, actionUrl: '/transport' }
+        );
+      }
+    } catch {}
   }
 
   // ─── Conductor completa el viaje ───────────────────────────────────────────
@@ -283,6 +378,19 @@ export class RideEventsGateway
       cashConfirmed:   data.cashConfirmed ?? false,
       completedAt,
     });
+
+    // Push notification for offline users
+    try {
+      const ride = await this.rideModel.findById(data.rideId).select('passengerId driverId').lean().exec();
+      if (ride?.passengerId) {
+        this.sendPushNotification(
+          String(ride.passengerId),
+          '🏁 ¡Viaje completado!',
+          `Llegaste a tu destino. Recorrido: ${data.distanceKm?.toFixed(1) ?? '?'} km`,
+          { rideId: data.rideId, actionUrl: '/bookings' }
+        );
+      }
+    } catch {}
   }
 
   // ─── Pasajero califica al conductor ───────────────────────────────────────

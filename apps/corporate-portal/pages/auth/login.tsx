@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { persistSession, useSession } from '../../lib/auth';
 
 const API_GW =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   'https://api-gateway-780842550857.us-central1.run.app';
 

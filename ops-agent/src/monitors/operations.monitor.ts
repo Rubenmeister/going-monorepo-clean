@@ -37,9 +37,11 @@ function isPrimaryRunOfHour(): boolean {
 }
 
 /** Timestamp de inicio del día actual en Ecuador */
-function todayStartTimestamp(): Timestamp {
-  const ecuadorDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guayaquil' }); // "YYYY-MM-DD"
-  return Timestamp.fromDate(new Date(`${ecuadorDate}T00:00:00-05:00`));
+function getStartOfTodayEcuador(): Timestamp {
+  const now = new Date();
+  const ecuadorStr = now.toLocaleDateString('en-CA', { timeZone: 'America/Guayaquil' });
+  const midnight = new Date(`${ecuadorStr}T00:00:00-05:00`);
+  return Timestamp.fromDate(midnight);
 }
 
 // ─── 1. Viajes sin conductor asignado ─────────────────────────
@@ -298,10 +300,11 @@ export async function enviarReporteDiario(): Promise<void> {
   if (!isPrimaryRunOfHour()) return; // evitar duplicado en la ejecución de las 20:30
   console.log('[Monitor] Generando reporte diario...');
   try {
+    const GOING_COMMISSION = parseFloat(process.env.GOING_COMMISSION_RATE || '0.15');
     const stats = await getDailyRevenueStats();
 
     // FIX: usar Firestore Timestamp para queries de fecha, no strings ISO
-    const todayStart = todayStartTimestamp();
+    const todayStart = getStartOfTodayEcuador();
 
     const ridesSnap = await db.collection('rides')
       .where('createdAt', '>=', todayStart)
@@ -311,7 +314,7 @@ export async function enviarReporteDiario(): Promise<void> {
     const cancelados  = ridesSnap.docs.filter(d => d.data().status === 'cancelled').length;
 
     const alertasSnap = await db.collection('ops_alerts')
-      .where('sentAt', '>=', new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guayaquil' }) + 'T00:00:00-05:00')
+      .where('sentAt', '>=', getStartOfTodayEcuador().toDate())
       .get();
 
     const msg = reporteDiario({
@@ -326,7 +329,7 @@ export async function enviarReporteDiario(): Promise<void> {
       viajesCancelados: cancelados,
       conductoresActivos: (await getActiveDrivers()).length,
       conductoresEnMeta: stats.driversAtTarget,
-      ingresoTotal: stats.totalRevenue * 0.15, // 15% comisión Going
+      ingresoTotal: stats.totalRevenue * GOING_COMMISSION,
       topConductor: stats.topDriver?.name || 'N/A',
       topIngreso: stats.topDriver?.revenue || 0,
       alertasDelDia: alertasSnap.size,

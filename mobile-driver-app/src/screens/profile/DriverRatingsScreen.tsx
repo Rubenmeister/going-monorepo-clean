@@ -10,10 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDriverStore } from '../../store/useDriverStore';
+import { API_BASE_URL } from '../../utils/constants';
 
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com';
 
 interface Rating {
   id: string;
@@ -55,8 +55,8 @@ export function DriverRatingsScreen() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [summaryRes, ratingsRes] = await Promise.all([
-        axios.get(`${API_BASE}/drivers/me/ratings/summary`, { headers }),
-        axios.get(`${API_BASE}/drivers/me/ratings`, { headers }),
+        axios.get(`${API_BASE_URL}/drivers/me/ratings/summary`, { headers }),
+        axios.get(`${API_BASE_URL}/drivers/me/ratings`, { headers }),
       ]);
 
       setSummary(summaryRes.data);

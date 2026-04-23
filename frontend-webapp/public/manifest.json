@@ -1,0 +1,77 @@
+{
+  "name": "Going Ecuador",
+  "short_name": "Going",
+  "description": "Transporte, tours, alojamiento y servicios corporativos en un solo lugar.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ff4c41",
+  "categories": ["travel", "business", "productivity"],
+  "lang": "es-EC",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Panel de Control Going Empresas"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Solicitar Viaje",
+      "short_name": "Nuevo Viaje",
+      "description": "Crea una nueva solicitud de transporte",
+      "url": "/empresas/solicitar",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Panel Empresas",
+      "short_name": "Panel",
+      "description": "Ir al panel de control corporativo",
+      "url": "/empresas/panel",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pedir un Viaje",
+      "short_name": "Transporte",
+      "description": "Solicita transporte ahora",
+      "url": "/ride",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

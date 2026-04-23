@@ -18,6 +18,8 @@ export interface ParcelProps {
   description: string;
   price: Money;
   status: ParcelStatus;
+  trackingCode: string;
+  otpPin: string;
   createdAt: Date;
 }
 
@@ -30,6 +32,8 @@ export class Parcel {
   readonly description: string;
   readonly price: Money;
   readonly status: ParcelStatus;
+  readonly trackingCode: string;
+  readonly otpPin: string;
   readonly createdAt: Date;
 
   private constructor(props: ParcelProps) {
@@ -41,6 +45,8 @@ export class Parcel {
     this.description = props.description;
     this.price = props.price;
     this.status = props.status;
+    this.trackingCode = props.trackingCode;
+    this.otpPin = props.otpPin;
     this.createdAt = props.createdAt;
   }
 
@@ -52,7 +58,7 @@ export class Parcel {
     description: string;
     price: Money;
   }): Result<Parcel, Error> {
-    
+
     if (props.description.length < 3) {
       return err(new Error('Description must be at least 3 characters'));
     }
@@ -60,10 +66,17 @@ export class Parcel {
       return err(new Error('Price must be positive'));
     }
 
+    // Generate tracking code (6-char alphanumeric)
+    const trackingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // Generate OTP PIN (4-digit)
+    const otpPin = String(Math.floor(1000 + Math.random() * 9000));
+
     const parcel = new Parcel({
       id: uuidv4(),
       ...props,
       status: 'pending',
+      trackingCode,
+      otpPin,
       createdAt: new Date(),
     });
 
@@ -81,6 +94,8 @@ export class Parcel {
       destination: this.destination.toPrimitives(),
       price: this.price.toPrimitives(),
       status: this.status,
+      trackingCode: this.trackingCode,
+      otpPin: this.otpPin,
       createdAt: this.createdAt,
     };
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
@@ -25,6 +25,15 @@ export class SubmitRatingUseCase {
     categories?: any;
     photos?: Array<{ url: string; caption?: string }>;
   }): Promise<any> {
+    // Check for duplicate rating from same user on same trip
+    const existing = await this.ratingRepository.findOne({
+      tripId: input.tripId,
+      raterId: input.raterId,
+    });
+    if (existing) {
+      throw new ConflictException('Ya calificaste este viaje');
+    }
+
     // Validate rating
     if (input.stars < 1 || input.stars > 5) {
       throw new Error('Rating must be between 1 and 5 stars');

@@ -409,6 +409,29 @@ export class InvoiceRepository {
   }
 
   /**
+   * Find invoice by trip ID
+   * Search by metadata.tripId OR invoiceNumber matching tripId
+   * @param tripId Trip ID to search
+   * @returns Invoice or null
+   */
+  async findByTripId(tripId: string): Promise<Invoice | null> {
+    try {
+      return await this.invoiceModel
+        .findOne({
+          $or: [
+            { 'metadata.tripId': tripId },
+            { invoiceNumber: tripId },
+          ],
+        })
+        .lean()
+        .exec();
+    } catch (error) {
+      this.logger.error(`Failed to find invoice by tripId: ${error}`);
+      return null;
+    }
+  }
+
+  /**
    * Generate next invoice number
    * @param companyId Company ID
    * @param year Year for numbering

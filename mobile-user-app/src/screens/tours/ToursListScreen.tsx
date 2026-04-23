@@ -31,80 +31,6 @@ interface Tour {
 }
 
 // ── Destinos Ecuador — datos demo ─────────────────────────────────────────────
-const DEMO_TOURS: Tour[] = [
-  {
-    id: 'd1',
-    title: 'Ruta del Tren Nariz del Diablo',
-    description: 'Icónico descenso en tren por el zigzag más famoso de los Andes. Vista al cañón del río Chanchán.',
-    location: { city: 'Alausí', country: 'Ecuador' },
-    price: { amount: 45, currency: 'USD' },
-    durationHours: 6,
-    category: 'Aventura',
-    maxParticipants: 20,
-    emoji: '🚂',
-    badge: 'Icónico',
-  },
-  {
-    id: 'd2',
-    title: 'Cotopaxi + Quilotoa Trek',
-    description: 'Sube al volcán nevado más alto del mundo en actividad. Visita la laguna esmeralda de Quilotoa.',
-    location: { city: 'Latacunga', country: 'Ecuador' },
-    price: { amount: 65, currency: 'USD' },
-    durationHours: 10,
-    category: 'Montaña',
-    maxParticipants: 12,
-    emoji: '🏔️',
-    badge: 'Popular',
-  },
-  {
-    id: 'd3',
-    title: 'Baños de Agua Santa Full Day',
-    description: 'La ciudad del néctar: cascadas, tirolesa, swing at the end of the world y aguas termales.',
-    location: { city: 'Baños', country: 'Ecuador' },
-    price: { amount: 35, currency: 'USD' },
-    durationHours: 8,
-    category: 'Naturaleza',
-    maxParticipants: 15,
-    emoji: '🌊',
-    badge: 'Favorito',
-  },
-  {
-    id: 'd4',
-    title: 'Otavalo & Laguna Cuicocha',
-    description: 'Mercado artesanal más grande de América. Ruta a la caldera volcánica de Cuicocha y Cascada de Peguche.',
-    location: { city: 'Otavalo', country: 'Ecuador' },
-    price: { amount: 40, currency: 'USD' },
-    durationHours: 9,
-    category: 'Cultural',
-    maxParticipants: 18,
-    emoji: '🎨',
-    badge: 'Cultural',
-  },
-  {
-    id: 'd5',
-    title: 'Papallacta Hot Springs & Cloud Forest',
-    description: 'Termas naturales en los Andes a 3.300 m. Bosque nublado con aves exóticas y helechos gigantes.',
-    location: { city: 'Papallacta', country: 'Ecuador' },
-    price: { amount: 28, currency: 'USD' },
-    durationHours: 5,
-    category: 'Relax',
-    maxParticipants: 25,
-    emoji: '♨️',
-    badge: 'Relajante',
-  },
-  {
-    id: 'd6',
-    title: 'Amazonia: Tena & Río Napo',
-    description: 'Rafting en el Napo, caminata amazónica, comunidad kichwa y observación de loros.',
-    location: { city: 'Tena', country: 'Ecuador' },
-    price: { amount: 85, currency: 'USD' },
-    durationHours: 2 * 24,
-    category: 'Selva',
-    maxParticipants: 10,
-    emoji: '🌿',
-    badge: 'Premium',
-  },
-];
 
 const BADGE_COLORS: Record<string, { bg: string; text: string }> = {
   Icónico:   { bg: '#FEF3C7', text: '#92400E' },
@@ -130,18 +56,9 @@ export function ToursListScreen() {
       );
       const apiItems: Tour[] = data || [];
       // Si la API devuelve datos, usarlos; si no, mostrar demo
-      setItems(apiItems.length > 0 ? apiItems : DEMO_TOURS);
+      setItems(apiItems);
     } catch {
-      // Fallback a demo con filtro local
-      if (cityFilter) {
-        const filtered = DEMO_TOURS.filter(t =>
-          t.location.city.toLowerCase().includes(cityFilter.toLowerCase()) ||
-          t.title.toLowerCase().includes(cityFilter.toLowerCase())
-        );
-        setItems(filtered.length > 0 ? filtered : DEMO_TOURS);
-      } else {
-        setItems(DEMO_TOURS);
-      }
+      setItems([]);
     } finally {
       setIsLoading(false);
     }

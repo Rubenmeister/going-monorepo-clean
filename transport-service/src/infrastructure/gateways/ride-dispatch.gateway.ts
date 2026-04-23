@@ -33,7 +33,7 @@ export class RideDispatchGateway {
       // Send one push notification per matched driver (fire-and-forget per driver)
       const sends = driverIds.map((driverId) => {
         const match = matches.find((m) => m.driverId === driverId);
-        return fetch(`${this.notificationsUrl}/notifications/push`, {
+        return fetch(`${this.notificationsUrl}/api/notifications/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -42,6 +42,7 @@ export class RideDispatchGateway {
             body: match
               ? `${match.distance?.toFixed(1) ?? '?'} km · ETA ${match.eta ?? '?'} min`
               : 'Hay un viaje disponible cerca de ti',
+            channel: 'PUSH',
             data: {
               type: 'RIDE_MATCH',
               rideId,
@@ -140,13 +141,14 @@ export class RideDispatchGateway {
       );
 
       const sends = driverIds.map(driverId =>
-        fetch(`${this.notificationsUrl}/notifications/push`, {
+        fetch(`${this.notificationsUrl}/api/notifications/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId:  driverId,
             title:   '⚡ Viaje oportunista disponible',
             body:    `${rideInfo.origin} → ${rideInfo.destination} · $${rideInfo.estimatedFare.toFixed(0)} · El primero en aceptar lo toma`,
+            channel: 'PUSH',
             data: {
               type:          'OPPORTUNISTIC_RIDE',
               rideId,
@@ -188,11 +190,12 @@ export class RideDispatchGateway {
         : `${tripInfo.route} · Salida a las ${tripInfo.departureTime}. Prepárate.`;
 
       const sends = userIds.map(userId =>
-        fetch(`${this.notificationsUrl}/notifications/push`, {
+        fetch(`${this.notificationsUrl}/api/notifications/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId, title, body,
+            channel: 'PUSH',
             data: { type: `TRIP_REMINDER_${type.toUpperCase()}`, rideId, ...tripInfo },
           }),
         }).catch(() => {})

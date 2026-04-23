@@ -31,14 +31,21 @@ if (missing.length > 0) {
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// FIX 6: Type-safe beta client access
+const betaClient = client.beta as typeof client.beta;
+
 // ── Mapa de agentes ────────────────────────────────────────────────────────────
-const AGENT_ID_MAP: Record<string, string> = {
-  content: process.env.MANAGED_AGENT_CONTENT_ID!,
-  financial: process.env.MANAGED_AGENT_FINANCIAL_ID!,
-  marketing: process.env.MANAGED_AGENT_MARKETING_ID!,
-  ops: process.env.MANAGED_AGENT_OPS_ID!,
-  code: process.env.MANAGED_AGENT_CODE_ID!,
-};
+// FIX 5: Safe lookup of agent IDs with fallback
+function getAgentId(agentName: string): string {
+  const envKey = `MANAGED_AGENT_${agentName.toUpperCase()}_ID`;
+  const agentId = process.env[envKey];
+  if (!agentId) {
+    console.error(`Agent ID not found for '${agentName}'. Check env var: ${envKey}`);
+    console.error('   Run setup.ts first to initialize all agent IDs');
+    process.exit(1);
+  }
+  return agentId;
+}
 
 // ── Tarea para cada agente ─────────────────────────────────────────────────────
 function buildTask(agentKey: string): string {
@@ -86,7 +93,7 @@ async function run(agentKey: string) {
     process.exit(1);
   }
 
-  const agentId = AGENT_ID_MAP[agentKey];
+  const agentId = getAgentId(agentKey);
   const environmentId = process.env.MANAGED_AGENTS_ENVIRONMENT_ID!;
   const startTime = Date.now();
 
@@ -95,7 +102,7 @@ async function run(agentKey: string) {
   console.log(`   Environment: ${environmentId}\n`);
 
   // ── Crear sesión ──────────────────────────────────────────────────────────
-  const session = await (client.beta as any).sessions.create({
+  const session = await betaClient.sessions.create({
     agent: agentId,
     environment_id: environmentId,
     title: `${def.name} — ${new Date().toISOString()}`,
@@ -105,10 +112,10 @@ async function run(agentKey: string) {
   console.log('─'.repeat(60));
 
   // ── Abrir stream ──────────────────────────────────────────────────────────
-  const stream = await (client.beta as any).sessions.events.stream(session.id);
+  const stream = await betaClient.sessions.events.stream(session.id);
 
   // ── Enviar tarea ──────────────────────────────────────────────────────────
-  await (client.beta as any).sessions.events.send(session.id, {
+  await betaClient.sessions.events.send(session.id, {
     events: [
       {
         type: 'user.message',

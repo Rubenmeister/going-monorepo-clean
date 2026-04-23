@@ -103,10 +103,11 @@ export class BookingService implements OnModuleInit {
     serviceType = 'standard',
     scheduledAt?: Date,
   ): Promise<BookingResult> {
-    const transportUrl = this.config.get<string>(
-      'TRANSPORT_SERVICE_URL',
-      'https://transport-service-lw44cnhdeq-uc.a.run.app',
-    );
+    // FIX 7: Use environment variable for transport service URL, no hardcoded Cloud Run URL
+    const transportUrl = process.env.TRANSPORT_SERVICE_URL || 'http://localhost:3002';
+    if (!transportUrl.includes('://')) {
+      this.logger.warn('TRANSPORT_SERVICE_URL should include protocol (http:// or https://)');
+    }
     const token = jwt.sign(
       {
         sub: `whatsapp-${phoneNumber}`,

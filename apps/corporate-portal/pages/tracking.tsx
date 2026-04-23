@@ -97,7 +97,7 @@ export default function Tracking() {
   const connect = useCallback(() => {
     const wsUrl =
       process.env.NEXT_PUBLIC_TRACKING_WS_URL ||
-      'ws://localhost:4005/corporate-tracking';
+      'wss://api.goingec.com/corporate-tracking';
     try {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;

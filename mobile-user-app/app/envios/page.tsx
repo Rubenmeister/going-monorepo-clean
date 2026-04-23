@@ -120,9 +120,10 @@ export default function EnviosPage() {
           userId:        user?.id,
         }),
       });
-      if (res && res.trackingCode) {
-        setTracking(res.trackingCode);
-        setOtpPin(res.otpPin || pin);
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setTracking((data as any).trackingCode || code);
+        setOtpPin((data as any).otpPin || pin);
       } else {
         setTracking(code);
         setOtpPin(pin);

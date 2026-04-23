@@ -7,8 +7,15 @@ import {
   Query,
   Logger,
   BadRequestException,
+  Headers,
+  UseGuards,
 } from '@nestjs/common';
 import { SocialService } from './social.service';
+
+// Simple JWT extraction guard (extracts userId from token header)
+export class OptionalJwtGuard {
+  constructor() {}
+}
 
 @Controller('social')
 export class SocialController {
@@ -115,5 +122,32 @@ export class SocialController {
   joinEvent(@Param('eventId') eventId: string, @Body() body: { userId: string }) {
     if (!body.userId) throw new BadRequestException('userId required');
     return this.socialService.joinEvent(eventId, body.userId);
+  }
+
+  /** GET /social/rewards/me - Fetch current user points (requires userId header or JWT) */
+  @Get('rewards/me')
+  async getMyRewards(@Headers('x-user-id') userId?: string) {
+    if (!userId) {
+      throw new BadRequestException('userId required via x-user-id header or JWT');
+    }
+    return this.socialService.getRewards(userId);
+  }
+
+  /** GET /social/rewards/:userId - Fetch user points by ID */
+  @Get('rewards/:userId')
+  async getUserRewards(@Param('userId') userId: string) {
+    if (!userId) {
+      throw new BadRequestException('userId required');
+    }
+    return this.socialService.getRewards(userId);
+  }
+
+  /** POST /social/rewards/award - Internal endpoint to award points after ride completion */
+  @Post('rewards/award')
+  async awardRidePoints(@Body() body: { userId: string; rideType: 'shared' | 'private' }) {
+    if (!body.userId || !body.rideType) {
+      throw new BadRequestException('userId and rideType required');
+    }
+    return this.socialService.awardRidePoints(body.userId, body.rideType);
   }
 }

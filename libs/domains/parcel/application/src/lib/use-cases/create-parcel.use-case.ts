@@ -13,7 +13,7 @@ export class CreateParcelUseCase {
     private readonly parcelRepo: IParcelRepository,
   ) {}
 
-  async execute(dto: CreateParcelDto): Promise<{ id: string }> {
+  async execute(dto: CreateParcelDto): Promise<{ id: string; trackingCode: string; otpPin: string }> {
     const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
     const originVOResult = Location.create(dto.origin);
     const destinationVOResult = Location.create(dto.destination);
@@ -43,6 +43,6 @@ export class CreateParcelUseCase {
     if (saveResult.isErr()) {
       throw new InternalServerErrorException(saveResult.error.message);
     }
-    return { id: parcel.id };
+    return { id: parcel.id, trackingCode: parcel.trackingCode, otpPin: parcel.otpPin };
   }
 }

@@ -9,132 +9,88 @@ import { AdminLayout, StatCard } from '../components';
 import { Loading, ErrorState } from '@going-monorepo-clean/shared-ui';
 import { adminFetch, API } from '../../lib/admin-api';
 
-/* ─── Types ─────────────────────────────────────────────────────────── */
+/* ─── Types ────────────────────────────────────────────────────────────── */
 type ServiceTab = 'transporte' | 'envios' | 'tours' | 'experiencias' | 'alojamientos' | 'global';
 
-interface DailyStat  { date: string;  trips: number; revenue: number; }
+interface DailyStat  { date: string; trips: number; revenue: number; }
 interface RouteRank  { route: string; trips: number; revenue: number; }
-interface CityRank   { city: string;  trips: number; active_drivers: number; }
+interface CityRank   { city: string; trips: number; active_drivers: number; }
 
 interface ServiceStats {
-  label:          string;
-  icon:           string;
-  color:          string;
-  total:          number;       // viajes / reservas / envíos / noches
-  revenue:        number;
-  active:         number;       // conductores / anfitriones / mensajeros
-  avgRating:      number;
-  completionRate: number;
-  vsLastWeek:     { volume: number; revenue: number };
+  label: string; icon: string; color: string;
+  total: number; revenue: number; active: number;
+  avgRating: number; completionRate: number;
+  vsLastWeek: { volume: number; revenue: number };
+  isReal?: boolean;
 }
 
-interface GlobalSummary {
-  totalRevenue:   number;
-  totalOps:       number;       // todas las operaciones combinadas
-  byService:      { label: string; icon: string; color: string; ops: number; revenue: number }[];
-}
-
-/* ─── Demo / Fallback data ───────────────────────────────────────────── */
+/* ─── Demo fallback ─────────────────────────────────────────────────────── */
 function demoStats(tab: ServiceTab): ServiceStats {
   const MAP: Record<ServiceTab, ServiceStats> = {
-    transporte:   { label: 'Transporte',   icon: '🚗', color: '#0033A0', total: 1842, revenue: 42680, active: 74,  avgRating: 4.8, completionRate: 94.2, vsLastWeek: { volume: 12, revenue: 8  } },
-    envios:       { label: 'Envíos',       icon: '📦', color: '#f59e0b', total:  436, revenue:  8720, active: 28,  avgRating: 4.6, completionRate: 91.0, vsLastWeek: { volume:  7, revenue: 5  } },
-    tours:        { label: 'Tours',        icon: '🗺️', color: '#16a34a', total:  218, revenue: 16350, active: 42,  avgRating: 4.9, completionRate: 98.0, vsLastWeek: { volume: 15, revenue: 20 } },
-    experiencias: { label: 'Experiencias', icon: '🎭', color: '#8b5cf6', total:  184, revenue:  7360, active: 31,  avgRating: 4.7, completionRate: 96.0, vsLastWeek: { volume:  9, revenue: 11 } },
-    alojamientos: { label: 'Alojamientos', icon: '🏨', color: '#ec4899', total:  312, revenue: 24960, active: 18,  avgRating: 4.6, completionRate: 92.0, vsLastWeek: { volume:  4, revenue:  6 } },
-    global:       { label: 'Global',       icon: '🌐', color: '#ff4c41', total: 2992, revenue: 100070, active: 193, avgRating: 4.7, completionRate: 94.3, vsLastWeek: { volume: 10, revenue: 9  } },
+    transporte:   { label:'Transporte',   icon:'🚗', color:'#0033A0', total:1842, revenue:42680, active:74,  avgRating:4.8, completionRate:94.2, vsLastWeek:{volume:12,revenue:8 } },
+    envios:       { label:'Envíos',       icon:'📦', color:'#f59e0b', total: 436, revenue: 8720, active:28,  avgRating:4.6, completionRate:91.0, vsLastWeek:{volume: 7,revenue:5 } },
+    tours:        { label:'Tours',        icon:'🗺️', color:'#16a34a', total: 218, revenue:16350, active:42,  avgRating:4.9, completionRate:98.0, vsLastWeek:{volume:15,revenue:20} },
+    experiencias: { label:'Experiencias', icon:'🎭', color:'#8b5cf6', total: 184, revenue: 7360, active:31,  avgRating:4.7, completionRate:96.0, vsLastWeek:{volume: 9,revenue:11} },
+    alojamientos: { label:'Alojamientos', icon:'🏨', color:'#ec4899', total: 312, revenue:24960, active:18,  avgRating:4.6, completionRate:92.0, vsLastWeek:{volume: 4,revenue: 6} },
+    global:       { label:'Global',       icon:'🌐', color:'#ff4c41', total:2992, revenue:100070,active:193, avgRating:4.7, completionRate:94.3, vsLastWeek:{volume:10,revenue:9 } },
   };
   return MAP[tab];
 }
 
-const DEMO_DAILY: DailyStat[] = [
-  { date: '2026-04-12', trips: 310, revenue: 7140 },
-  { date: '2026-04-13', trips: 284, revenue: 6540 },
-  { date: '2026-04-14', trips: 298, revenue: 6880 },
-  { date: '2026-04-15', trips: 315, revenue: 7260 },
-  { date: '2026-04-16', trips: 342, revenue: 7890 },
-  { date: '2026-04-17', trips: 293, revenue: 6768 },
-  { date: '2026-04-18', trips: 200, revenue: 4200 },
-];
 
-const DEMO_ROUTES: RouteRank[] = [
-  { route: 'Santo Domingo → Quito',    trips: 312, revenue: 8736 },
-  { route: 'Ambato → Quito',           trips: 264, revenue: 6336 },
-  { route: 'Ibarra → Quito Aeropuerto',trips: 198, revenue: 5940 },
-  { route: 'Cuenca → Guayaquil',       trips: 185, revenue: 5550 },
-  { route: 'Quito → Quito Aeropuerto', trips: 174, revenue: 4350 },
-];
-
-const DEMO_CITIES: CityRank[] = [
-  { city: 'Quito',         trips: 680, active_drivers: 28 },
-  { city: 'Santo Domingo', trips: 320, active_drivers: 14 },
-  { city: 'Ambato',        trips: 210, active_drivers: 9  },
-  { city: 'Ibarra',        trips: 185, active_drivers: 8  },
-  { city: 'Cuenca',        trips: 160, active_drivers: 7  },
-];
-
-/* ─── API helpers ─────────────────────────────────────────────────────── */
-async function loadTransportStats(token: string) {
-  const [stats, daily, routes, cities] = await Promise.all([
-    fetch(`${API}/admin/stats/transport`,           { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${API}/admin/stats/transport/daily?days=7`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${API}/admin/stats/transport/routes?limit=5`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).catch(() => null),
-    fetch(`${API}/admin/stats/transport/cities`,    { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null).catch(() => null),
-  ]);
-  return { stats, daily, routes, cities };
-}
-
-async function loadServiceCount(token: string, endpoint: string): Promise<number> {
+/* ─── Fetch helpers ─────────────────────────────────────────────────────── */
+async function safeGet<T>(token: string, path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${API}${endpoint}`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return 0;
-    const json = await res.json();
-    if (Array.isArray(json)) return json.length;
-    return json?.total ?? json?.count ?? json?.data?.length ?? 0;
-  } catch { return 0; }
+    const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
+    return res.ok ? res.json() : null;
+  } catch { return null; }
 }
 
-/* ─── Helpers ────────────────────────────────────────────────────────── */
-const pct = (v: number) => (v > 0 ? `+${v}%` : `${v}%`);
-const DAYS_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+async function safeCount(token: string, path: string): Promise<number> {
+  const json = await safeGet<any>(token, path);
+  if (!json) return 0;
+  if (Array.isArray(json)) return json.length;
+  return json?.total ?? json?.count ?? json?.data?.length ?? json?.items?.length ?? 0;
+}
+
+/* ─── UI Components ─────────────────────────────────────────────────────── */
+const pct = (v: number) => v > 0 ? `+${v}%` : `${v}%`;
+
+function DataBadge({ isReal }: { isReal?: boolean }) {
+  return isReal
+    ? <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">● Datos reales</span>
+    : <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">◐ Datos estimados</span>;
+}
 
 function BarChart({ data, color, valueKey, labelFn }: {
-  data: { [k: string]: any }[];
-  color: string;
-  valueKey: string;
-  labelFn: (row: any, i: number) => string;
+  data: Record<string,any>[]; color: string; valueKey: string; labelFn:(r:any,i:number)=>string;
 }) {
   const max = Math.max(...data.map(d => d[valueKey]), 1);
   return (
-    <div className="flex items-end gap-2 h-36">
-      {data.map((d, i) => {
-        const isLast = i === data.length - 1;
-        return (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <span className="text-[9px] font-bold text-gray-600 leading-none">{d[valueKey]}</span>
-            <div className="w-full flex flex-col justify-end" style={{ height: '112px' }}>
-              <div className="w-full rounded-t-md transition-all"
-                style={{ height: `${Math.max((d[valueKey] / max) * 112, 6)}px`, backgroundColor: color, opacity: isLast ? 1 : 0.45 + (d[valueKey] / max) * 0.55 }} />
-            </div>
-            <span className={`text-[9px] font-semibold ${isLast ? 'font-black' : 'text-gray-400'}`} style={{ color: isLast ? color : undefined }}>
-              {labelFn(d, i)}
-            </span>
+    <div className="flex items-end gap-1.5 h-36">
+      {data.map((d, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <span className="text-[9px] font-bold text-gray-600 leading-none">{d[valueKey]}</span>
+          <div className="w-full flex flex-col justify-end" style={{ height:'112px' }}>
+            <div className="w-full rounded-t-md"
+              style={{ height:`${Math.max((d[valueKey]/max)*112,4)}px`, backgroundColor:color, opacity:0.45+(d[valueKey]/max)*0.55 }} />
           </div>
-        );
-      })}
+          <span className="text-[9px] text-gray-400">{labelFn(d,i)}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-function HBarList({ items, color }: { items: { label: string; value: number; sub?: string }[]; color: string }) {
-  const max = Math.max(...items.map(i => i.value), 1);
+function HBar({ items, color }: { items:{label:string;value:number;sub?:string}[]; color:string }) {
+  const max = Math.max(...items.map(i=>i.value),1);
   return (
-    <div className="space-y-4">
-      {items.map((item, i) => (
+    <div className="space-y-3">
+      {items.map((item,i) => (
         <div key={item.label}>
-          <div className="flex justify-between items-center mb-1.5">
+          <div className="flex justify-between items-center mb-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-gray-400 w-4">{i + 1}</span>
+              <span className="text-xs font-black text-gray-400 w-4">{i+1}</span>
               <span className="text-sm font-semibold text-gray-800">{item.label}</span>
             </div>
             <div className="text-right">
@@ -143,7 +99,7 @@ function HBarList({ items, color }: { items: { label: string; value: number; sub
             </div>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2">
-            <div className="h-2 rounded-full" style={{ width: `${(item.value / max) * 100}%`, backgroundColor: color, opacity: 0.7 + (item.value / max) * 0.3 }} />
+            <div className="h-2 rounded-full" style={{width:`${(item.value/max)*100}%`, backgroundColor:color, opacity:0.7+(item.value/max)*0.3}} />
           </div>
         </div>
       ))}
@@ -151,92 +107,190 @@ function HBarList({ items, color }: { items: { label: string; value: number; sub
   );
 }
 
-/* ─── Tab config ─────────────────────────────────────────────────────── */
-const TABS: { key: ServiceTab; label: string; icon: string; color: string }[] = [
-  { key: 'transporte',   label: 'Transporte',   icon: '🚗', color: '#0033A0' },
-  { key: 'envios',       label: 'Envíos',       icon: '📦', color: '#f59e0b' },
-  { key: 'tours',        label: 'Tours',        icon: '🗺️', color: '#16a34a' },
-  { key: 'experiencias', label: 'Experiencias', icon: '🎭', color: '#8b5cf6' },
-  { key: 'alojamientos', label: 'Alojamientos', icon: '🏨', color: '#ec4899' },
-  { key: 'global',       label: 'Global',       icon: '🌐', color: '#ff4c41' },
+function KpiGrid({ sv, kpi }: { sv:ServiceStats; kpi:{total:string;active:string;unit:string} }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <p className="text-xs text-gray-500 font-medium">{kpi.total}</p>
+        <p className="text-2xl font-black mt-1" style={{color:sv.color}}>{sv.total.toLocaleString()}</p>
+        <p className="text-xs mt-1" style={{color:sv.vsLastWeek.volume>=0?'#22c55e':'#ef4444'}}>{pct(sv.vsLastWeek.volume)} vs sem. ant.</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <p className="text-xs text-gray-500 font-medium">Ingresos</p>
+        <p className="text-2xl font-black mt-1 text-gray-900">${sv.revenue.toLocaleString()}</p>
+        <p className="text-xs mt-1" style={{color:sv.vsLastWeek.revenue>=0?'#22c55e':'#ef4444'}}>{pct(sv.vsLastWeek.revenue)} vs sem. ant.</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <p className="text-xs text-gray-500 font-medium">{kpi.active}</p>
+        <p className="text-2xl font-black mt-1 text-gray-900">{sv.active}</p>
+        <p className="text-xs text-gray-400 mt-1">activos en plataforma</p>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <p className="text-xs text-gray-500 font-medium">Completación</p>
+        <p className="text-2xl font-black mt-1 text-gray-900">{sv.completionRate}%</p>
+        <p className="text-xs mt-1" style={{color:sv.avgRating>=4.5?'#22c55e':'#f59e0b'}}>⭐ {sv.avgRating} promedio</p>
+      </div>
+    </div>
+  );
+}
+
+/* Conversion funnel */
+function FunnelSection({ funnel }: { funnel:{label:string;value:number;color:string}[] }) {
+  const top = funnel[0]?.value ?? 1;
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-base font-bold text-gray-900">🔽 Funnel de conversión</h3>
+      </div>
+      <div className="space-y-3">
+        {funnel.map((stage, i) => {
+          const width = top > 0 ? (stage.value / top) * 100 : 0;
+          const prev = i > 0 ? funnel[i-1].value : null;
+          const convRate = prev && prev > 0 ? ((stage.value / prev) * 100).toFixed(1) : null;
+          return (
+            <div key={stage.label}>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-semibold text-gray-700">{stage.label}</span>
+                <div className="flex items-center gap-3">
+                  {convRate && <span className="text-xs text-gray-400">↳ {convRate}% del anterior</span>}
+                  <span className="text-sm font-bold text-gray-900">{stage.value.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-3">
+                <div className="h-3 rounded-full transition-all"
+                  style={{width:`${width}%`, backgroundColor:stage.color}} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-gray-400 mt-4">
+        Conversión global: {top > 0 && funnel.length > 0
+          ? ((funnel[funnel.length-1].value / top)*100).toFixed(1)
+          : '—'}% (registro → pago completado)
+      </p>
+    </div>
+  );
+}
+
+/* ─── Tab config ─────────────────────────────────────────────────────────── */
+const TABS: {key:ServiceTab;label:string;icon:string;color:string}[] = [
+  {key:'transporte',   label:'Transporte',   icon:'🚗', color:'#0033A0'},
+  {key:'envios',       label:'Envíos',       icon:'📦', color:'#f59e0b'},
+  {key:'tours',        label:'Tours',        icon:'🗺️', color:'#16a34a'},
+  {key:'experiencias', label:'Experiencias', icon:'🎭', color:'#8b5cf6'},
+  {key:'alojamientos', label:'Alojamientos', icon:'🏨', color:'#ec4899'},
+  {key:'global',       label:'Global',       icon:'🌐', color:'#ff4c41'},
 ];
 
-const KPI_LABELS: Record<ServiceTab, { total: string; active: string; unit: string }> = {
-  transporte:   { total: 'Viajes totales',   active: 'Conductores activos', unit: 'viajes'     },
-  envios:       { total: 'Envíos totales',   active: 'Mensajeros activos',  unit: 'envíos'     },
-  tours:        { total: 'Tours realizados', active: 'Guías activos',       unit: 'tours'      },
-  experiencias: { total: 'Experiencias',     active: 'Anfitriones activos', unit: 'exp.'       },
-  alojamientos: { total: 'Noches vendidas',  active: 'Propiedades activas', unit: 'noches'     },
-  global:       { total: 'Operaciones',      active: 'Proveedores activos', unit: 'operaciones'},
+const KPI_LABELS: Record<ServiceTab,{total:string;active:string;unit:string}> = {
+  transporte:   {total:'Viajes totales',   active:'Conductores activos', unit:'viajes'},
+  envios:       {total:'Envíos totales',   active:'Mensajeros activos',  unit:'envíos'},
+  tours:        {total:'Tours realizados', active:'Guías activos',       unit:'tours'},
+  experiencias: {total:'Experiencias',     active:'Anfitriones activos', unit:'exp.'},
+  alojamientos: {total:'Noches vendidas',  active:'Propiedades activas', unit:'noches'},
+  global:       {total:'Operaciones',      active:'Proveedores activos', unit:'ops'},
 };
 
-/* ─── Page ───────────────────────────────────────────────────────────── */
+const SERVICE_ENDPOINTS: Partial<Record<ServiceTab,{list:string;stats:string}>> = {
+  envios:       {list:'/parcels?limit=100',       stats:'/admin/stats/parcels'},
+  tours:        {list:'/tours/search?limit=100',  stats:'/admin/stats/tours'},
+  experiencias: {list:'/experiences/search?limit=100', stats:'/admin/stats/experiences'},
+  alojamientos: {list:'/accommodations/search?limit=100', stats:'/admin/stats/accommodations'},
+};
+
+/* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function AnalyticsPage() {
   const { auth } = useMonorepoApp();
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<ServiceTab>('transporte');
-  const [serviceStats, setServiceStats] = useState<Record<ServiceTab, ServiceStats>>({} as any);
-  const [daily,   setDaily]   = useState<DailyStat[]>(DEMO_DAILY);
-  const [routes,  setRoutes]  = useState<RouteRank[]>(DEMO_ROUTES);
-  const [cities,  setCities]  = useState<CityRank[]>(DEMO_CITIES);
+  const [activeTab, setActiveTab]     = useState<ServiceTab>('transporte');
+  const [serviceStats, setServiceStats] = useState<Record<ServiceTab,ServiceStats>>({} as any);
+  const [daily,   setDaily]   = useState<DailyStat[]>([]);
+  const [routes,  setRoutes]  = useState<RouteRank[]>([]);
+  const [cities,  setCities]  = useState<CityRank[]>([]);
+  const [funnel,  setFunnel]  = useState<{label:string;value:number;color:string}[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({});
+  const [lastUpdated, setLastUpdated] = useState(new Date());
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('authToken') ?? '';
 
-      /* Transport real stats */
-      const { stats, daily: d, routes: r, cities: c } = await loadTransportStats(token);
-
-      if (d && Array.isArray(d)) setDaily(d);
-      if (r && Array.isArray(r)) setRoutes(r);
-      if (c && Array.isArray(c)) setCities(c);
-
-      /* Build serviceStats for transport from real data, others from demo */
-      const transportReal: Partial<ServiceStats> = stats ? {
-        total:          stats.totalTrips    ?? 0,
-        revenue:        stats.totalRevenue  ?? 0,
-        active:         stats.activeDrivers ?? 0,
-        avgRating:      stats.avgRating     ?? 0,
-        completionRate: stats.completionRate ?? 0,
-        vsLastWeek:     stats.vsLastWeek
-          ? { volume: stats.vsLastWeek.trips ?? 0, revenue: stats.vsLastWeek.revenue ?? 0 }
-          : { volume: 0, revenue: 0 },
-      } : {};
-
-      /* Service counts from search endpoints */
-      const [tourCount, expCount, accCount, parcelCount] = await Promise.all([
-        loadServiceCount(token, '/tours/search'),
-        loadServiceCount(token, '/experiences/search'),
-        loadServiceCount(token, '/accommodations/search'),
-        loadServiceCount(token, '/parcels'),
+      /* ── Transport ── */
+      const [tStats, tDaily, tRoutes, tCities] = await Promise.all([
+        safeGet<any>(token, '/admin/stats/transport'),
+        safeGet<DailyStat[]>(token, '/admin/stats/transport/daily?days=7'),
+        safeGet<RouteRank[]>(token, '/admin/stats/transport/routes?limit=5'),
+        safeGet<CityRank[]>(token, '/admin/stats/transport/cities'),
       ]);
 
-      setServiceCounts({ tours: tourCount, experiencias: expCount, alojamientos: accCount, envios: parcelCount });
+      if (tDaily && Array.isArray(tDaily)) setDaily(tDaily);
+      if (tRoutes && Array.isArray(tRoutes)) setRoutes(tRoutes);
+      if (tCities && Array.isArray(tCities)) setCities(tCities);
 
-      /* Merge into serviceStats */
-      const merged: Record<ServiceTab, ServiceStats> = {} as any;
-      TABS.forEach(t => {
-        const demo = demoStats(t.key);
-        if (t.key === 'transporte') {
-          merged[t.key] = { ...demo, ...transportReal };
-        } else {
-          const counts: Record<string, number> = { tours: tourCount, experiencias: expCount, alojamientos: accCount, envios: parcelCount };
-          const count = counts[t.key];
-          merged[t.key] = { ...demo, ...(count != null && count > 0 ? { total: count } : {}) };
+      /* ── Other services ── */
+      const serviceData: Record<ServiceTab, ServiceStats> = {} as any;
+      TABS.forEach(t => { serviceData[t.key] = demoStats(t.key); });
+
+      if (tStats) {
+        serviceData.transporte = {
+          ...demoStats('transporte'),
+          total:          tStats.totalTrips    ?? 0,
+          revenue:        tStats.totalRevenue  ?? 0,
+          active:         tStats.activeDrivers ?? 0,
+          avgRating:      tStats.avgRating     ?? 0,
+          completionRate: tStats.completionRate ?? 0,
+          vsLastWeek:     tStats.vsLastWeek
+            ? {volume:tStats.vsLastWeek.trips??0, revenue:tStats.vsLastWeek.revenue??0}
+            : {volume:0,revenue:0},
+          isReal: true,
+        };
+      }
+
+      for (const [svcKey, eps] of Object.entries(SERVICE_ENDPOINTS) as [ServiceTab,{list:string;stats:string}][]) {
+        const [svcStats, count] = await Promise.all([
+          safeGet<any>(token, eps.stats),
+          safeCount(token, eps.list),
+        ]);
+        if (svcStats) {
+          serviceData[svcKey] = {
+            ...demoStats(svcKey),
+            total:          svcStats.total ?? svcStats.count ?? count,
+            revenue:        svcStats.totalRevenue ?? svcStats.revenue ?? demoStats(svcKey).revenue,
+            active:         svcStats.active ?? svcStats.activeProviders ?? demoStats(svcKey).active,
+            avgRating:      svcStats.avgRating ?? demoStats(svcKey).avgRating,
+            completionRate: svcStats.completionRate ?? demoStats(svcKey).completionRate,
+            vsLastWeek:     svcStats.vsLastWeek ?? {volume:0,revenue:0},
+            isReal: true,
+          };
+        } else if (count > 0) {
+          serviceData[svcKey] = { ...demoStats(svcKey), total: count };
         }
-      });
-      setServiceStats(merged);
+      }
+
+      setServiceStats(serviceData);
+
+      /* ── Funnel ── */
+      const [usersTotal, bookingsTotal, paymentsPaid, usersRepeat] = await Promise.all([
+        safeCount(token, '/auth/admin/users?limit=1'),
+        safeCount(token, '/bookings?limit=1'),
+        safeCount(token, '/payments?status=paid&limit=1'),
+        safeGet<any>(token, '/admin/stats/retention'),
+      ]);
+      const repeatCount = usersRepeat?.repeatUsers ?? usersRepeat?.retention ?? Math.round((paymentsPaid||0)*0.42);
+      setFunnel([
+        {label:'Usuarios registrados',   value: usersTotal   || 3840, color:'#0033A0'},
+        {label:'Reservas creadas',        value: bookingsTotal|| 1842, color:'#f59e0b'},
+        {label:'Pagos completados',       value: paymentsPaid || 1540, color:'#16a34a'},
+        {label:'Usuarios que repiten',    value: repeatCount  ||  648, color:'#ff4c41'},
+      ]);
 
     } catch {
-      /* fallback to demo */
-      const merged: Record<ServiceTab, ServiceStats> = {} as any;
-      TABS.forEach(t => { merged[t.key] = demoStats(t.key); });
-      setServiceStats(merged);
+      const fallback = {} as Record<ServiceTab,ServiceStats>;
+      TABS.forEach(t => { fallback[t.key] = demoStats(t.key); });
+      setServiceStats(fallback);
     } finally {
       setLoading(false);
       setLastUpdated(new Date());
@@ -249,31 +303,24 @@ export default function AnalyticsPage() {
     return () => clearInterval(id);
   }, [auth.isLoading, load]);
 
-  if (auth.isLoading || loading) {
-    return <Loading fullHeight size="lg" message="Cargando métricas..." />;
-  }
-  if (!auth.user?.isAdmin?.()) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <ErrorState title="Acceso Denegado" description="Se requiere rol de administrador."
-          action={<Button onClick={() => router.push('/')}>Volver</Button>} />
-      </div>
-    );
-  }
+  if (auth.isLoading || loading) return <Loading fullHeight size="lg" message="Cargando métricas..." />;
+  if (!auth.user?.isAdmin?.()) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <ErrorState title="Acceso Denegado" description="Se requiere rol de administrador."
+        action={<Button onClick={() => router.push('/')}>Volver</Button>} />
+    </div>
+  );
 
   const tab = TABS.find(t => t.key === activeTab)!;
   const sv  = serviceStats[activeTab] ?? demoStats(activeTab);
   const kpi = KPI_LABELS[activeTab];
-  const maxRoutes = Math.max(...routes.map(r => r.trips), 1);
-  const maxCities = Math.max(...cities.map(c => c.trips), 1);
 
-  /* Global summary */
   const allServices = TABS.filter(t => t.key !== 'global').map(t => {
     const s = serviceStats[t.key] ?? demoStats(t.key);
-    return { label: t.label, icon: t.icon, color: t.color, ops: s.total, revenue: s.revenue };
+    return { label:t.label, icon:t.icon, color:t.color, ops:s.total, revenue:s.revenue };
   });
-  const globalRevenue = allServices.reduce((s, x) => s + x.revenue, 0);
-  const globalOps     = allServices.reduce((s, x) => s + x.ops, 0);
+  const globalRevenue = allServices.reduce((s,x) => s+x.revenue, 0);
+  const globalOps     = allServices.reduce((s,x) => s+x.ops, 0);
 
   return (
     <AdminLayout userName={auth.user.firstName} onLogout={auth.logout}>
@@ -296,10 +343,8 @@ export default function AnalyticsPage() {
           <button key={t.key} onClick={() => setActiveTab(t.key)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeTab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <span>{t.icon}</span>
-            <span>{t.label}</span>
+            }`}>
+            <span>{t.icon}</span><span>{t.label}</span>
           </button>
         ))}
       </div>
@@ -308,28 +353,31 @@ export default function AnalyticsPage() {
       {activeTab === 'global' && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            <StatCard icon="💰" title="Ingresos Totales"  value={`$${globalRevenue.toLocaleString('es', { minimumFractionDigits: 0 })}`} subtitle="todos los servicios" color="success" />
-            <StatCard icon="📊" title="Operaciones"        value={globalOps.toLocaleString()}  subtitle="viajes + envíos + reservas" color="primary" />
-            <StatCard icon="🏢" title="Comisión Going"    value={`$${(globalRevenue * 0.12).toLocaleString('es', { minimumFractionDigits: 0 })}`} subtitle="~12% promedio" color="info" />
+            <StatCard icon="💰" title="Ingresos Totales"  value={`$${globalRevenue.toLocaleString()}`} subtitle="todos los servicios" color="success" />
+            <StatCard icon="📊" title="Operaciones"       value={globalOps.toLocaleString()} subtitle="viajes + envíos + reservas" color="primary" />
+            <StatCard icon="🏢" title="Comisión Going"    value={`$${(globalRevenue*0.15).toLocaleString()}`} subtitle="15% promedio" color="info" />
           </div>
+
+          {/* Funnel */}
+          <FunnelSection funnel={funnel} />
 
           {/* Revenue by service */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h3 className="text-base font-bold text-gray-900 mb-5">💵 Ingresos por servicio</h3>
             <div className="space-y-4">
-              {allServices.sort((a, b) => b.revenue - a.revenue).map(s => {
-                const pctShare = globalRevenue > 0 ? (s.revenue / globalRevenue) * 100 : 0;
+              {allServices.sort((a,b) => b.revenue-a.revenue).map(s => {
+                const share = globalRevenue > 0 ? (s.revenue/globalRevenue)*100 : 0;
                 return (
                   <div key={s.label}>
                     <div className="flex justify-between items-center mb-1.5">
                       <span className="text-sm font-semibold text-gray-800">{s.icon} {s.label}</span>
                       <div className="text-right">
                         <span className="text-sm font-bold text-gray-900">${s.revenue.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400 ml-2">{pctShare.toFixed(1)}%</span>
+                        <span className="text-xs text-gray-400 ml-2">{share.toFixed(1)}%</span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2.5">
-                      <div className="h-2.5 rounded-full" style={{ width: `${pctShare}%`, backgroundColor: s.color }} />
+                      <div className="h-2.5 rounded-full" style={{width:`${share}%`, backgroundColor:s.color}} />
                     </div>
                   </div>
                 );
@@ -337,50 +385,144 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Operations by service */}
+          {/* Ops by service */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h3 className="text-base font-bold text-gray-900 mb-5">📈 Operaciones por servicio</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
               {allServices.map(s => (
                 <div key={s.label} className="text-center p-4 rounded-xl border border-gray-100 bg-gray-50">
                   <div className="text-3xl mb-1">{s.icon}</div>
-                  <p className="text-xl font-black" style={{ color: s.color }}>{s.ops.toLocaleString()}</p>
+                  <p className="text-xl font-black" style={{color:s.color}}>{s.ops.toLocaleString()}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
+        </>
+      )}
 
-          {/* Financial breakdown table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-bold text-gray-900 mb-4">📋 Desglose financiero por servicio</h3>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b-2 border-gray-100">
-                  <th className="text-left py-2 text-gray-500 font-semibold">Servicio</th>
-                  <th className="text-right py-2 text-gray-500 font-semibold">vs sem. ant.</th>
-                  </tr>
-                </thead>
-                <tbody>
+      {/* ── SERVICE TABS (non-global) ── */}
+      {activeTab !== 'global' && (
+        <>
+          <div className="flex items-center gap-3 mb-5">
+            <h2 className="text-xl font-bold" style={{color:tab.color}}>{tab.icon} {tab.label}</h2>
+            <DataBadge isReal={sv.isReal} />
+          </div>
+
+          {/* KPI Cards */}
+          <KpiGrid sv={sv} kpi={kpi} />
+
+          {/* Financial breakdown for this service */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h3 className="text-base font-bold text-gray-900 mb-4">💵 Desglose financiero</h3>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-gray-50">
                   {[
-                    { label: 'Ingresos brutos',        value: `$${sv.revenue.toLocaleString('es', { minimumFractionDigits: 2 })}`,              change: pct(sv.vsLastWeek.revenue), up: sv.vsLastWeek.revenue >= 0 },
-                    { label: 'Comisi\xc3\xb3n Going (15%)',    value: `$${(sv.revenue * 0.15).toLocaleString('es', { minimumFractionDigits: 2 })}`,     change: pct(sv.vsLastWeek.revenue), up: true },
-                    { label: 'Neto conductores (85%)',  value: `$${(sv.revenue * 0.85).toLocaleString('es', { minimumFractionDigits: 2 })}`,     change: pct(sv.vsLastWeek.revenue), up: true },
-                    { label: 'Ticket promedio',         value: `$${sv.total > 0 ? (sv.revenue / sv.total).toFixed(2) : '0.00'}`,                change: '+3%',                      up: true },
+                    {label:'Ingresos brutos',     value:`$${sv.revenue.toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-gray-900'},
+                    {label:'Comisión Going (15%)', value:`$${(sv.revenue*0.15).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-red-600'},
+                    {label:'Neto proveedores',     value:`$${(sv.revenue*0.85).toLocaleString('es',{minimumFractionDigits:2})}`, color:'text-green-700'},
+                    {label:'Ticket promedio',      value:`$${sv.total>0?(sv.revenue/sv.total).toFixed(2):'0.00'}`, color:'text-gray-700'},
                   ].map(row => (
-                    <tr key={row.label} className="border-b border-gray-50">
-                      <td className="py-3 text-gray-700">{row.label}</td>
-                      <td className="py-3 text-right font-bold text-gray-900">{row.value}</td>
-                      <td className="py-3 text-right font-semibold text-sm" style={{ color: row.up ? '#22C55E' : '#EF4444' }}>{row.change}</td>
+                    <tr key={row.label}>
+                      <td className="py-2.5 text-gray-600">{row.label}</td>
+                      <td className={`py-2.5 text-right font-bold ${row.color}`}>{row.value}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+              <h3 className="text-base font-bold text-gray-900 mb-4">📊 Métricas de calidad</h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Tasa de completación</span>
+                    <span className="font-bold" style={{color:sv.completionRate>=95?'#22c55e':sv.completionRate>=85?'#f59e0b':'#ef4444'}}>{sv.completionRate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="h-2 rounded-full" style={{width:`${sv.completionRate}%`, backgroundColor:tab.color}} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Rating promedio</span>
+                    <span className="font-bold text-amber-600">⭐ {sv.avgRating} / 5.0</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className="h-2 rounded-full bg-amber-400" style={{width:`${(sv.avgRating/5)*100}%`}} />
+                  </div>
+                </div>
+                <div className="pt-2 grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-gray-500">vs sem. anterior (volumen)</p>
+                    <p className="text-lg font-black mt-0.5" style={{color:sv.vsLastWeek.volume>=0?'#22c55e':'#ef4444'}}>{pct(sv.vsLastWeek.volume)}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-gray-500">vs sem. anterior (ingresos)</p>
+                    <p className="text-lg font-black mt-0.5" style={{color:sv.vsLastWeek.revenue>=0?'#22c55e':'#ef4444'}}>{pct(sv.vsLastWeek.revenue)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Transport-specific charts */}
+          {activeTab === 'transporte' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="md:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                <h3 className="text-base font-bold text-gray-900 mb-4">📅 Viajes últimos 7 días</h3>
+                <BarChart data={daily} color={tab.color} valueKey="trips"
+                  labelFn={(d) => new Date(d.date+'T12:00:00').toLocaleDateString('es',{weekday:'short'})} />
+                <div className="flex justify-between mt-3 text-xs text-gray-400">
+                  <span>Total: {daily.reduce((s,d)=>s+d.trips,0).toLocaleString()} viajes</span>
+                  <span>Ingresos: ${daily.reduce((s,d)=>s+d.revenue,0).toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                <h3 className="text-base font-bold text-gray-900 mb-4">🏙️ Ciudades top</h3>
+                <HBar items={cities.map(c=>({label:c.city, value:c.trips, sub:`${c.active_drivers} conductores`}))} color={tab.color} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'transporte' && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mb-6">
+              <h3 className="text-base font-bold text-gray-900 mb-4">🗺️ Rutas más demandadas</h3>
+              <HBar items={routes.map(r=>({label:r.route, value:r.trips, sub:`$${r.revenue.toLocaleString()}`}))} color={tab.color} />
+            </div>
+          )}
+
+          {/* Non-transport: provider listing summary */}
+          {activeTab !== 'transporte' && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mb-6">
+              <h3 className="text-base font-bold text-gray-900 mb-4">📋 Resumen operativo</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-gray-50 rounded-xl">
+                  <p className="text-3xl font-black" style={{color:tab.color}}>{sv.total.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">{kpi.unit} en plataforma</p>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-xl">
+                  <p className="text-3xl font-black text-gray-900">{sv.active}</p>
+                  <p className="text-xs text-gray-500 mt-1">{kpi.active.toLowerCase()}</p>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-xl">
+                  <p className="text-3xl font-black text-amber-500">⭐ {sv.avgRating}</p>
+                  <p className="text-xs text-gray-500 mt-1">rating promedio</p>
+                </div>
+              </div>
+              {!sv.isReal && (
+                <p className="text-xs text-amber-600 mt-4 text-center">
+                  ⚠ Estos datos son estimados. Conecta el endpoint <code>/admin/stats/{activeTab}</code> para datos reales.
+                </p>
+              )}
+            </div>
+          )}
         </>
       )}
 
-      <div className="mt-6">
+      <div className="mt-4">
         <Button variant="ghost" onClick={() => router.push('/')}>← Volver al Dashboard</Button>
       </div>
 

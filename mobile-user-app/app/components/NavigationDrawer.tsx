@@ -1,5 +1,8 @@
 'use client';
 
+// NOTE: This component is currently unused and imported from 'next/link' which is incompatible with Expo.
+// It needs to be refactored for Expo before use.
+
 import { useEffect } from 'react';
 import Link from 'next/link';
 

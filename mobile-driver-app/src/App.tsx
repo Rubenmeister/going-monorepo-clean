@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, Text, StyleSheet, View, Alert } from 'react-native';
+import * as Location from 'expo-location';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
 const DRIVER_ID = 'b737f525-45c5-41e9-9136-1c2517830d99'; // ID de prueba
@@ -8,43 +9,45 @@ const AppDriverContent = () => {
   const { auth, domain } = useMonorepoApp();
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({ lat: 0, lng: 0 });
+  const locationSubRef = useRef<Location.LocationSubscription | null>(null);
 
-  // 1. Simulación de Envío de Ubicación
-  const handleBroadcastLocation = async () => {
-    if (!auth.user || !auth.user.isDriver()) {
-      Alert.alert("Error", "Debes ser conductor para transmitir tu ubicación.");
-      return;
-    }
-    
-    // Simulación de obtención de GPS real (que se haría con Expo/Geolocation API)
-    const lat = -0.1807 + Math.random() * 0.01;
-    const lng = -78.4678 + Math.random() * 0.01;
-    setCurrentLocation({ lat, lng });
-
-    const dto = {
-        driverId: DRIVER_ID,
-        latitude: lat,
-        longitude: lng,
-    };
-    
-    // Llamada al Caso de Uso de Tracking
-    const result = await domain.tracking.broadcastDriverLocation.execute(dto);
-
-    if (result.isErr()) {
-        Alert.alert("Error Tracking", result.error.message);
-    }
-  };
-
+  // Solicitar permisos y empezar/detener el tracking real
   useEffect(() => {
-    if (auth.user && auth.user.isDriver()) {
-        // Simular un intervalo de envío de GPS
-        const interval = setInterval(() => {
-            if (isBroadcasting) {
-                handleBroadcastLocation();
+    if (!auth.user || !auth.user.isDriver()) return;
+
+    if (isBroadcasting) {
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso denegado', 'Se requiere acceso a la ubicación para el tracking.');
+          setIsBroadcasting(false);
+          return;
+        }
+
+        locationSubRef.current = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 10 },
+          async (loc) => {
+            const lat = loc.coords.latitude;
+            const lng = loc.coords.longitude;
+            setCurrentLocation({ lat, lng });
+
+            const dto = { driverId: DRIVER_ID, latitude: lat, longitude: lng };
+            const result = await domain.tracking.broadcastDriverLocation.execute(dto);
+            if (result.isErr()) {
+              console.warn('Tracking error:', result.error.message);
             }
-        }, 5000); // Envía cada 5 segundos
-        return () => clearInterval(interval);
+          }
+        );
+      })();
+    } else {
+      locationSubRef.current?.remove();
+      locationSubRef.current = null;
     }
+
+    return () => {
+      locationSubRef.current?.remove();
+      locationSubRef.current = null;
+    };
   }, [auth.user, isBroadcasting]);
 
 

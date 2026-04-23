@@ -15,10 +15,11 @@ import {
   CreateParcelDto,
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
+  TrackParcelUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
 import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
-import { JwtAuthGuard, CurrentUser } from '../domain/ports';
+import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
 import { NearbyDriversService } from '../infrastructure/services/nearby-drivers.service';
 import { ParcelDispatchGateway } from '../infrastructure/gateways/parcel-dispatch.gateway';
 
@@ -34,6 +35,7 @@ export class ParcelController {
   constructor(
     private readonly createParcelUseCase: CreateParcelUseCase,
     private readonly findParcelsByUserUseCase: FindParcelsByUserUseCase,
+    private readonly trackParcelUseCase: TrackParcelUseCase,
     private readonly nearbyDrivers: NearbyDriversService,
     private readonly dispatchGateway: ParcelDispatchGateway,
     private readonly parcelRepository: IParcelRepository,
@@ -49,6 +51,26 @@ export class ParcelController {
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateParcelDto
   ): Promise<any> {
+    // Normalize mobile's flat format to nested format if needed
+    if (!dto.origin && dto.from) {
+      dto.origin = {
+        address: dto.from,
+        latitude: dto.fromLatitude,
+        longitude: dto.fromLongitude,
+        city: '',
+        country: '',
+      };
+    }
+    if (!dto.destination && dto.to) {
+      dto.destination = {
+        address: dto.to,
+        latitude: dto.toLatitude,
+        longitude: dto.toLongitude,
+        city: '',
+        country: '',
+      };
+    }
+
     // Always use the authenticated user's ID — never trust client-provided userId
     const result = await this.createParcelUseCase.execute({
       ...dto,
@@ -74,6 +96,16 @@ export class ParcelController {
       .catch(() => { /* non-fatal */ });
 
     return result;
+  }
+
+  /**
+   * Track a parcel by tracking code (public endpoint)
+   * GET /api/parcels/track/:trackingCode
+   */
+  @Get('track/:trackingCode')
+  @Public()
+  async trackParcel(@Param('trackingCode') trackingCode: string): Promise<any> {
+    return this.trackParcelUseCase.execute(trackingCode);
   }
 
   /**
