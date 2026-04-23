@@ -134,13 +134,13 @@ export function CorporateScreen() {
             {/* Abrir panel corporativo web */}
             <TouchableOpacity
               style={styles.portalBtn}
-              onPress={() => Linking.openURL('https://corporate.goingec.com')}
+              onPress={() => Linking.openURL('https://empresas.goingec.com')}
               activeOpacity={0.8}
             >
               <Ionicons name="desktop-outline" size={18} color="#374151" />
               <View style={styles.portalBtnInfo}>
                 <Text style={styles.portalBtnText}>Panel de administración</Text>
-                <Text style={styles.portalBtnSub}>corporate.goingec.com</Text>
+                <Text style={styles.portalBtnSub}>empresas.goingec.com</Text>
               </View>
               <Ionicons name="open-outline" size={16} color="#9ca3af" />
             </TouchableOpacity>
