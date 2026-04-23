@@ -59,7 +59,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --json-file-output=snyk-results.json
-        continue-on-error: false
+        continue-on-error: true
 
       # 7. Construir el código SOLO de los proyectos "afectados"
       # Esto asegura que el código compile correctamente

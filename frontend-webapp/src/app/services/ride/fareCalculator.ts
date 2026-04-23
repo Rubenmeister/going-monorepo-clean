@@ -25,7 +25,7 @@
 import type { Location, VehicleType } from '@/types';
 import { VEHICLE_TYPES } from '@/types';
 
-// ── Haversine ─────────────────────────────────────────────────
+// ── Haversine (línea recta) — solo se usa como último respaldo ────
 export function calculateDistance(pickup: Location, dropoff: Location): number {
   const R = 6371;
   const dLat = ((dropoff.lat - pickup.lat) * Math.PI) / 180;
@@ -42,6 +42,38 @@ const AVERAGE_SPEED_KMH = 75;
 
 export function calculateEstimatedDuration(pickup: Location, dropoff: Location): number {
   return Math.round((calculateDistance(pickup, dropoff) / AVERAGE_SPEED_KMH) * 60);
+}
+
+// ── Distancia real por carretera — Mapbox Directions API ──────────
+// Devuelve { distanceKm, durationMin } según la ruta de conducción real.
+// Usa Haversine como fallback si la API no responde.
+export async function getRoadDistance(
+  pickup:  Location,
+  dropoff: Location,
+  token:   string,
+): Promise<{ distanceKm: number; durationMin: number }> {
+  if (!token || pickup.lat === 0 || dropoff.lat === 0) {
+    const km = calculateDistance(pickup, dropoff);
+    return { distanceKm: km, durationMin: Math.round((km / AVERAGE_SPEED_KMH) * 60) };
+  }
+  try {
+    const url =
+      `https://api.mapbox.com/directions/v5/mapbox/driving/` +
+      `${pickup.lon},${pickup.lat};${dropoff.lon},${dropoff.lat}` +
+      `?overview=false&access_token=${token}`;
+    const res  = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error('mapbox_error');
+    const json = await res.json() as { routes?: { distance: number; duration: number }[] };
+    const route = json.routes?.[0];
+    if (!route) throw new Error('no_route');
+    return {
+      distanceKm:  Math.round(route.distance / 100) / 10,   // metros → km
+      durationMin: Math.round(route.duration / 60),          // segundos → min
+    };
+  } catch {
+    const km = calculateDistance(pickup, dropoff);
+    return { distanceKm: km, durationMin: Math.round((km / AVERAGE_SPEED_KMH) * 60) };
+  }
 }
 
 // ── Normalización de nombre ───────────────────────────────────
@@ -333,15 +365,19 @@ export interface FareBreakdown {
  *  · Privado Premium          → Privado Confort + $10 (+ recargo)
  *
  *  Rutas especiales (ej. Quito ↔ Aeropuerto) usan precios exactos predefinidos.
+ *
+ * @param roadDistance  Si se pasa, se usa para el fallback de distancia en lugar
+ *                      de Haversine (línea recta). Obtenido de getRoadDistance().
  */
 export function getFareBreakdown(
-  pickup:      Location,
-  dropoff:     Location,
-  vehicleType: VehicleType = 'suv',
-  tier:        'confort' | 'premium' = 'confort',
-  mode:        'privado' | 'compartido' = 'privado',
+  pickup:        Location,
+  dropoff:       Location,
+  vehicleType:   VehicleType = 'suv',
+  tier:          'confort' | 'premium' = 'confort',
+  mode:          'privado' | 'compartido' = 'privado',
+  roadDistance?: { distanceKm: number; durationMin: number },
 ): FareBreakdown {
-  const dist = calculateDistance(pickup, dropoff);
+  const dist = roadDistance?.distanceKm ?? calculateDistance(pickup, dropoff);
   const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
   const surcharge = getOriginSurcharge(pickup);
 
@@ -370,8 +406,8 @@ export function getFareBreakdown(
   return {
     sharedBase:     base,
     totalFare,
-    distanceKm:     Math.round(dist * 10) / 10,
-    durationMin:    Math.round((dist / AVERAGE_SPEED_KMH) * 60),
+    distanceKm:     roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
+    durationMin:    roadDistance?.durationMin ?? Math.round((dist / AVERAGE_SPEED_KMH) * 60),
     isPriceFixed:   fixed,
     mode,
     tier,
