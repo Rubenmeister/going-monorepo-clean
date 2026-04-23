@@ -156,7 +156,7 @@ async function bootstrap() {
   // ── CORS ──────────────────────────────────────────────────
   const corsOrigins = (
     process.env.CORS_ORIGINS ||
-    'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:4200'
+    'http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:4200,https://corporate.goingec.com,https://empresas.goingec.com'
   )
     .split(',')
     .map((o) => o.trim());
