@@ -17,7 +17,7 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.USER_DB_URL, {
+    MongooseModule.forRoot(process.env.USER_DB_URL || process.env.MONGO_URL || process.env.DATABASE_URL, {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,

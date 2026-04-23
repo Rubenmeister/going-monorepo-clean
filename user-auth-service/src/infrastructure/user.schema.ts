@@ -54,6 +54,12 @@ export class UserModelSchema {
 
   @Prop()
   profilePicture?: string;
+
+  @Prop({ index: true })
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpiry?: Date;
 }
 
 export type UserDocument = UserModelSchema & Document;

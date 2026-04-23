@@ -44,24 +44,16 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
 
-  # Step 3: Deploy to Cloud Run con secrets y env vars correctos
+  # Step 3: Deploy to Cloud Run
+  # NOTA: roles/secretmanager.secretAccessor NO permite "secrets describe",
+  # por eso los secrets se inyectan directamente sin verificación previa.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        # Inyectar secrets desde GCP Secret Manager si existen
-        SECRETS=""
-        jwt_exists=$$(gcloud secrets describe JWT_SECRET-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
-        db_exists=$$(gcloud secrets describe USER_DB_URL-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
-        redis_exists=$$(gcloud secrets describe redis-url --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
-
-        [ "$$jwt_exists" = "yes" ]   && SECRETS="$$SECRETS,JWT_SECRET=JWT_SECRET-prod:latest"
-        [ "$$db_exists" = "yes" ]    && SECRETS="$$SECRETS,USER_DB_URL=USER_DB_URL-prod:latest"
-        [ "$$redis_exists" = "yes" ] && SECRETS="$$SECRETS,REDIS_URL=redis-url:latest"
-        SECRETS=$${SECRETS#,}  # quitar coma inicial
-
-        DEPLOY_CMD="gcloud run deploy ${_SERVICE_NAME} \
+        echo "=== Deploying ${_SERVICE_NAME} ==="
+        gcloud run deploy ${_SERVICE_NAME} \
           --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
           --region us-central1 \
           --platform managed \
@@ -72,13 +64,8 @@ steps:
           --min-instances 1 \
           --max-instances 5 \
           --timeout 60 \
-          --set-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m"
-
-        [ -n "$$SECRETS" ] && DEPLOY_CMD="$$DEPLOY_CMD --update-secrets=$$SECRETS"
-
-        echo "=== Deploying ${_SERVICE_NAME} ==="
-        echo "  Secrets wired: $${SECRETS:-none}"
-        eval $$DEPLOY_CMD
+          --set-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m,FRONTEND_URL=https://goingec.com \
+          --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=USER_DB_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest
 
 images:
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'

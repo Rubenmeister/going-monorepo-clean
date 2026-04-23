@@ -18,7 +18,8 @@ import { Request, Response } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { randomUUID, timingSafeEqual } from 'crypto';
+import { randomUUID, timingSafeEqual, randomBytes } from 'crypto';
+import * as nodemailer from 'nodemailer';
 import {
   RegisterUserDto,
   RegisterUserUseCase,
@@ -671,5 +672,109 @@ export class AuthController {
     res.redirect(
       `${redirectBase}${separator}token=${encodeURIComponent(result.token)}&isNewUser=${result.isNewUser}`
     );
+  }
+
+  // ─── Forgot / Reset Password ────────────────────────────────────────────────
+
+  /**
+   * POST /auth/forgot-password
+   * Genera un token de reset y envía email con el enlace.
+   * Siempre responde 200 para no revelar si el correo existe.
+   */
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() body: { email: string }): Promise<{ message: string }> {
+    if (!body?.email) throw new BadRequestException('email is required');
+
+    try {
+      const normalizedEmail = body.email.toLowerCase().trim();
+      const doc = await this.userModel.findOne({ email: normalizedEmail }).exec();
+
+      if (doc) {
+        const resetToken = randomBytes(32).toString('hex');
+        const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1h
+
+        await this.userModel.updateOne(
+          { email: normalizedEmail },
+          { $set: { resetPasswordToken: resetToken, resetPasswordExpiry: resetExpiry } },
+        ).exec();
+
+        const frontendUrl = process.env.FRONTEND_URL || 'https://goingec.com';
+        const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+
+        await this.sendResetEmail(normalizedEmail, resetLink);
+        this.logger.log(`Password reset email sent to ${normalizedEmail}`);
+      }
+    } catch (err) {
+      this.logger.error(`forgot-password error: ${err instanceof Error ? err.message : err}`);
+    }
+
+    return { message: 'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.' };
+  }
+
+  /**
+   * POST /auth/reset-password
+   * Valida el token y actualiza la contraseña.
+   */
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() body: { token: string; password: string }): Promise<{ message: string }> {
+    if (!body?.token || !body?.password) {
+      throw new BadRequestException('token and password are required');
+    }
+    if (body.password.length < 8) {
+      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+    }
+
+    const doc = await this.userModel.findOne({
+      resetPasswordToken: body.token,
+      resetPasswordExpiry: { $gt: new Date() },
+    }).exec();
+
+    if (!doc) {
+      throw new BadRequestException('El enlace es inválido o ha expirado. Solicita uno nuevo.');
+    }
+
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    await this.userModel.updateOne(
+      { _id: doc._id },
+      {
+        $set: { passwordHash, status: 'active' },
+        $unset: { resetPasswordToken: '', resetPasswordExpiry: '' },
+      },
+    ).exec();
+
+    this.logger.log(`Password reset successfully for ${doc.email}`);
+    return { message: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' };
+  }
+
+  /** Envía el correo de recuperación vía Gmail SMTP */
+  private async sendResetEmail(to: string, resetLink: string): Promise<void> {
+    const gmailUser = process.env.GMAIL_USER || 'noreply@goingec.com';
+    const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+
+    await transporter.sendMail({
+      from: `"Going" <${gmailUser}>`,
+      to,
+      subject: 'Recupera tu contraseña — Going',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
+          <h2 style="color:#0033A0;margin-bottom:8px;">Recupera tu contraseña</h2>
+          <p style="color:#444;line-height:1.6;">Recibimos una solicitud para restablecer la contraseña de tu cuenta Going.</p>
+          <p style="color:#444;line-height:1.6;">Haz clic en el botón de abajo. El enlace es válido por <strong>1 hora</strong>.</p>
+          <a href="${resetLink}" style="display:inline-block;margin:24px 0;padding:14px 32px;background:#0033A0;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;">
+            Restablecer contraseña
+          </a>
+          <p style="color:#888;font-size:13px;">Si no solicitaste este cambio, ignora este correo.</p>
+          <hr style="border:none;border-top:1px solid #e0e0e0;margin:24px 0;" />
+          <p style="color:#aaa;font-size:12px;">Going · Ecuador · <a href="https://goingec.com" style="color:#0033A0;">goingec.com</a></p>
+        </div>
+      `,
+    });
   }
 }
