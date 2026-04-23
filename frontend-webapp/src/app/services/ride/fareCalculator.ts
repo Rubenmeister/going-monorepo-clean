@@ -6,8 +6,25 @@
  *  · Privado Confort  = round(compartido × 4 / 10) × 10
  *  · Privado Premium  = Privado Confort + $10
  *
- * Recargo de origen (+$5):
- *  Se suma a cualquier tarifa cuando el punto de RECOGIDA es:
+ * Recargos dinámicos (aumento sobre precio base):
+ *  · Hora pico mañana  06:00–09:00  → privado +15%  · compartido +8%
+ *  · Hora pico tarde   17:00–20:00  → privado +15%  · compartido +8%
+ *  · Noche             22:00–05:00  → privado +20%  · compartido +10%
+ *  · Fin de semana     sáb/dom      → privado +10%  · compartido +5%
+ *  · Feriado nacional  (lista EC)   → privado +25%  · compartido +12%
+ *  Los recargos de tiempo y de día se SUMAN (ej. feriado nocturno = +25% +20%)
+ *
+ * Recargo por segmento de cliente (aumento sobre precio base):
+ *  · Agencias    → +25%  (incluye comisión que Going paga al intermediario)
+ *  · Empresas    → +25%  (servicio premium: mejor vehículo, conductor top, espera sin extras, pago diferido)
+ *  · Público     → sin recargo adicional
+ *
+ * Descuentos (reducción sobre precio final):
+ *  · Solo por acumulación de puntos (pequeños negocios y público general)
+ *  · Gestionados por separado en loyalty-service; discountRate = 0 por defecto
+ *
+ * Recargo de origen (+$5, fijo — no se ve afectado por recargos ni descuentos):
+ *  Se suma cuando el punto de RECOGIDA es:
  *    Quito Sur · Valles (Cumbayá/Tumbaco · Los Chillos) · Aeropuerto Tababela
  *
  * Rutas con precio completo predefinido (no siguen la fórmula ×4):
@@ -24,6 +41,55 @@
 
 import type { Location, VehicleType } from '@/types';
 import { VEHICLE_TYPES } from '@/types';
+
+// ════════════════════════════════════════════════════════════════
+// TIPOS PÚBLICOS
+// ════════════════════════════════════════════════════════════════
+
+/** Segmento de cliente que afecta el descuento aplicado */
+export type ClientSegment = 'public' | 'agency' | 'corporate';
+
+/**
+ * Contexto de precio para recargos dinámicos.
+ * Todos los campos son opcionales; se usan valores por defecto si se omiten.
+ */
+export interface PricingContext {
+  /** Fecha y hora del servicio (default: ahora) */
+  dateTime?: Date;
+  /** Segmento del cliente (default: 'public') */
+  clientSegment?: ClientSegment;
+}
+
+export interface FareBreakdown {
+  /** Precio compartido (base de tabla o fórmula) — SUV, sin recargos */
+  sharedBase:        number;
+  /** Tarifa final mostrada al pasajero (base + recargos - descuento + recargo origen) */
+  totalFare:         number;
+  distanceKm:        number;
+  durationMin:       number;
+  /** true = precio de tabla fija · false = estimado por distancia */
+  isPriceFixed:      boolean;
+  mode:              'privado' | 'compartido';
+  tier:              'confort' | 'premium';
+  /** Recargo fijo por zona de origen (+$5) */
+  originSurcharge:   number;
+  /** Tasa de recargo dinámica aplicada (0–1), ej. 0.15 = +15% */
+  surchargeRate:     number;
+  /** Descripción del recargo, ej. "Hora pico" · "Noche" · "Feriado" · null si no hay */
+  surchargeLabel:    string | null;
+  /** Recargo por segmento de cliente (0–1), ej. 0.25 = +25% para agencias/empresas */
+  clientSurchargeRate:  number;
+  /** Descripción del recargo de segmento, ej. "Servicio agencia" · null si público */
+  clientSurchargeLabel: string | null;
+  /** Descuento por puntos (0–1) — 0 por defecto; loyalty-service lo calcula */
+  discountRate:         number;
+  /** Segmento de cliente aplicado */
+  clientSegment:     ClientSegment;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DISTANCIA Y DURACIÓN
+// ════════════════════════════════════════════════════════════════
 
 // ── Haversine (línea recta) — solo se usa como último respaldo ────
 export function calculateDistance(pickup: Location, dropoff: Location): number {
@@ -45,8 +111,6 @@ export function calculateEstimatedDuration(pickup: Location, dropoff: Location):
 }
 
 // ── Distancia real por carretera — Mapbox Directions API ──────────
-// Devuelve { distanceKm, durationMin } según la ruta de conducción real.
-// Usa Haversine como fallback si la API no responde.
 export async function getRoadDistance(
   pickup:  Location,
   dropoff: Location,
@@ -67,8 +131,8 @@ export async function getRoadDistance(
     const route = json.routes?.[0];
     if (!route) throw new Error('no_route');
     return {
-      distanceKm:  Math.round(route.distance / 100) / 10,   // metros → km
-      durationMin: Math.round(route.duration / 60),          // segundos → min
+      distanceKm:  Math.round(route.distance / 100) / 10,
+      durationMin: Math.round(route.duration / 60),
     };
   } catch {
     const km = calculateDistance(pickup, dropoff);
@@ -76,7 +140,184 @@ export async function getRoadDistance(
   }
 }
 
-// ── Normalización de nombre ───────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// FERIADOS NACIONALES — ECUADOR
+// ════════════════════════════════════════════════════════════════
+
+/**
+ * Algoritmo de Meeus/Jones/Butcher para calcular Pascua (Domingo de Resurrección).
+ * Retorna { month (1-based), day } para el año dado.
+ */
+function easterDate(year: number): { month: number; day: number } {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day   = ((h + l - 7 * m + 114) % 31) + 1;
+  return { month, day };
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+/**
+ * Genera el conjunto de feriados para un año dado.
+ * Formato: "MM-DD" (clave de acceso rápido).
+ */
+function buildHolidaySet(year: number): Set<string> {
+  const fmt = (m: number, d: number) =>
+    `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  // Feriados fijos
+  const fixed = [
+    fmt(1,  1),  // Año Nuevo
+    fmt(5,  1),  // Día del Trabajo
+    fmt(5,  24), // Batalla de Pichincha
+    fmt(8,  10), // Primer Grito de Independencia
+    fmt(10, 9),  // Independencia de Guayaquil
+    fmt(11, 1),  // Día de los Difuntos
+    fmt(11, 3),  // Independencia de Cuenca
+    fmt(12, 25), // Navidad
+  ];
+
+  // Feriados variables (basados en Pascua)
+  const { month, day } = easterDate(year);
+  const easter      = new Date(year, month - 1, day);
+  const carnivalMon = addDays(easter, -48);
+  const carnivalTue = addDays(easter, -47);
+  const goodFriday  = addDays(easter, -2);
+
+  const variable = [carnivalMon, carnivalTue, goodFriday].map(
+    (d) => fmt(d.getMonth() + 1, d.getDate()),
+  );
+
+  return new Set([...fixed, ...variable]);
+}
+
+// Cache de años ya calculados
+const _holidayCache: Record<number, Set<string>> = {};
+
+function getHolidaySet(year: number): Set<string> {
+  if (!_holidayCache[year]) _holidayCache[year] = buildHolidaySet(year);
+  return _holidayCache[year];
+}
+
+/** Comprueba si una fecha es feriado nacional en Ecuador */
+export function isEcuadorHoliday(date: Date): boolean {
+  const year  = date.getFullYear();
+  const key   = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return getHolidaySet(year).has(key);
+}
+
+// ════════════════════════════════════════════════════════════════
+// RECARGOS DINÁMICOS
+// ════════════════════════════════════════════════════════════════
+
+interface SurchargeResult {
+  rate:  number;
+  label: string | null;
+}
+
+/**
+ * Calcula el recargo dinámico total para una fecha/hora y modo de servicio.
+ *
+ * Reglas:
+ *  · Recargo de tiempo (hora pico / noche) y recargo de día (fin de semana / feriado)
+ *    se SUMAN si coinciden (ej. feriado de noche = +25% + +20% = +45% en privado).
+ *  · Dentro del recargo de día, se aplica el MAYOR (feriado > fin de semana).
+ */
+function getDynamicSurcharge(
+  date: Date,
+  mode: 'privado' | 'compartido',
+): SurchargeResult {
+  const hour    = date.getHours();
+  const isShared = mode === 'compartido';
+
+  // ── Recargo de tiempo ──────────────────────────────────────────
+  let timeRate  = 0;
+  let timeLabel: string | null = null;
+
+  const isPeakMorning  = hour >= 6  && hour < 9;
+  const isPeakEvening  = hour >= 17 && hour < 20;
+  const isNight        = hour >= 22 || hour < 5;
+
+  if (isNight) {
+    timeRate  = isShared ? 0.10 : 0.20;
+    timeLabel = 'Noche';
+  } else if (isPeakMorning || isPeakEvening) {
+    timeRate  = isShared ? 0.08 : 0.15;
+    timeLabel = 'Hora pico';
+  }
+
+  // ── Recargo de día ─────────────────────────────────────────────
+  let dayRate  = 0;
+  let dayLabel: string | null = null;
+
+  const dow = date.getDay(); // 0=domingo 6=sábado
+  const isWeekend = dow === 0 || dow === 6;
+  const isHoliday = isEcuadorHoliday(date);
+
+  if (isHoliday) {
+    dayRate  = isShared ? 0.12 : 0.25;
+    dayLabel = 'Feriado';
+  } else if (isWeekend) {
+    dayRate  = isShared ? 0.05 : 0.10;
+    dayLabel = 'Fin de semana';
+  }
+
+  const totalRate = timeRate + dayRate;
+
+  // Etiqueta combinada cuando hay dos factores activos
+  let label: string | null = null;
+  if (timeLabel && dayLabel) label = `${dayLabel} · ${timeLabel}`;
+  else if (timeLabel)        label = timeLabel;
+  else if (dayLabel)         label = dayLabel;
+
+  return { rate: totalRate, label };
+}
+
+// ════════════════════════════════════════════════════════════════
+// RECARGO POR SEGMENTO DE CLIENTE
+// ════════════════════════════════════════════════════════════════
+
+interface ClientSurchargeResult {
+  rate:  number;
+  label: string | null;
+}
+
+/**
+ * Recargo por segmento:
+ *  · Agencias  +25% — tarifa incluye la comisión que Going abona al intermediario
+ *  · Empresas  +25% — servicio premium (vehículo top, conductor mejor calificado,
+ *                       tiempo de espera sin cobro extra, facturación diferida)
+ *  · Público   0%   — precio estándar
+ *
+ * Los descuentos por puntos se aplican después y son independientes de este recargo.
+ */
+function getClientSurcharge(segment: ClientSegment): ClientSurchargeResult {
+  switch (segment) {
+    case 'agency':    return { rate: 0.25, label: 'Servicio agencia' };
+    case 'corporate': return { rate: 0.25, label: 'Servicio empresas' };
+    default:          return { rate: 0,    label: null };
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// NORMALIZACIÓN Y TABLAS DE PRECIOS
+// ════════════════════════════════════════════════════════════════
+
 function normalizeCity(address: string): string {
   return address
     .split(',')[0]
@@ -94,8 +335,7 @@ function pairKey(a: string, b: string): string {
   return na <= nb ? `${na}|${nb}` : `${nb}|${na}`;
 }
 
-// ── Recargo de origen (+$5) ───────────────────────────────────
-// Se aplica cuando el punto de RECOGIDA pertenece a estas zonas.
+// ── Recargo de origen (+$5, fijo) ─────────────────────────────
 const SURCHARGE_ORIGIN_CITIES = new Set([
   'quito sur',
   'cumbaya  tumbaco valle',
@@ -108,27 +348,18 @@ function getOriginSurcharge(pickup: Location): number {
   return SURCHARGE_ORIGIN_CITIES.has(normalizeCity(pickup.address)) ? 5 : 0;
 }
 
-// ── Rutas con precio COMPLETO predefinido (compartido / privado / premium) ──
-// Estas rutas no siguen la fórmula ×4; se usan los valores exactos.
-// El recargo de origen se aplica adicionalmente si el pickup lo requiere.
+// ── Rutas con precio COMPLETO predefinido ─────────────────────
 interface FullPriceEntry { compartido: number; privado: number; premium: number; }
 const FULL_PRICE_ROUTES: Record<string, FullPriceEntry> = {
-  // Quito Centro Norte ↔ Aeropuerto Tababela
   'aeropuerto quito tababela|quito centro norte': { compartido: 10, privado: 25, premium: 30 },
 };
 
 // ── Tabla de precios COMPARTIDO — SUV, un sentido, USD ────────
-//
-// Precio compartido ≈ 3 pasajeros.
-// Privado Confort = round(este valor × 4 / 10) × 10
-// Privado Premium = Privado Confort + $10
-//
 const CITY_PAIR_PRICES: Record<string, number> = {
 
   // ── Rutas hacia Quito Centro Norte ───────────────────────────
   'cayambe|quito centro norte':              7,
   'guayllabamba|quito centro norte':         6,
-  // Ibarra / Atuntaqui / Otavalo / Peguche — misma tarifa (zona norte)
   'ibarra|quito centro norte':               11,
   'atuntaqui|quito centro norte':            11,
   'otavalo|quito centro norte':              11,
@@ -164,7 +395,6 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'loja|quito centro norte':                 69,
 
   // ── Ruta Norte: Ibarra / Atuntaqui / Otavalo / Peguche ────────
-  // (todas con la misma tarifa — zona norte)
   'atuntaqui|cumbaya  tumbaco valle':        19,
   'atuntaqui|los chillos  sangolqui':        20,
   'atuntaqui|quito sur':                     14,
@@ -221,22 +451,20 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'cumbaya  tumbaco valle|cuenca':           47,
   'cumbaya  tumbaco valle|tena':             27,
 
-  // ── Rutas hacia Los Chillos / Sangolquí ─────────────────────
+  // Rutas hacia Los Chillos / Sangolqui
   'latacunga|los chillos  sangolqui':        14,
   'ambato|los chillos  sangolqui':           16,
   'banos|los chillos  sangolqui':            13,
   'los chillos  sangolqui|riobamba':         21,
   'cuenca|los chillos  sangolqui':           46,
 
-  // ── Aeropuerto Quito (Tababela) ──────────────────────────────
-  // (Quito Centro Norte ↔ Aeropuerto está en FULL_PRICE_ROUTES con precios especiales)
+  // Aeropuerto Quito (Tababela)
   'aeropuerto quito tababela|latacunga':     15,
   'aeropuerto quito tababela|ambato':        18,
   'aeropuerto quito tababela|banos':         18,
   'aeropuerto quito tababela|riobamba':      23,
   'aeropuerto quito tababela|guayllabamba':  5,
   'aeropuerto quito tababela|cayambe':       9,
-  // Ibarra / Atuntaqui / Otavalo / Peguche — misma tarifa desde aeropuerto
   'aeropuerto quito tababela|ibarra':        14,
   'aeropuerto quito tababela|atuntaqui':     14,
   'aeropuerto quito tababela|otavalo':       14,
@@ -250,7 +478,7 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'aeropuerto quito tababela|cumbaya  tumbaco valle': 8,
   'aeropuerto quito tababela|los chillos  sangolqui': 15,
 
-  // ── Desde / hacia Guayaquil ──────────────────────────────────
+  // Desde / hacia Guayaquil
   'guayaquil|naranjal':      10,
   'guayaquil|salinas':       14,
   'guayaquil|montanita':     17,
@@ -269,7 +497,7 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'esmeraldas|guayaquil':    54,
   'guayaquil|ibarra':        54,
 
-  // ── Desde / hacia Cuenca ─────────────────────────────────────
+  // Desde / hacia Cuenca
   'azogues|cuenca':          5,
   'alausi|cuenca':           17,
   'cuenca|machala':          19,
@@ -280,7 +508,7 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'cuenca|latacunga':        34,
   'cuenca|macas':            34,
 
-  // ── Sierra interna ───────────────────────────────────────────
+  // Sierra interna
   'ibarra|otavalo':          5,
   'ambato|banos':            5,
   'latacunga|ambato':        5,
@@ -294,44 +522,40 @@ const CITY_PAIR_PRICES: Record<string, number> = {
   'ambato|tena':             17,
   'ibarra|latacunga':        19,
 
-  // ── Costa interna ────────────────────────────────────────────
+  // Costa interna
   'manta|portoviejo':        4,
   'montanita|salinas':       9,
   'esmeraldas|manta':        44,
   'manta|salinas':           49,
 
-  // ── Sur del país ─────────────────────────────────────────────
+  // Sur del pais
   'loja|zaruma':             17,
   'machala|zaruma':          19,
   'loja|machala':            29,
 
-  // ── Amazonía ─────────────────────────────────────────────────
+  // Amazonia
   'puyo|tena':               11,
   'lago agrio|tena':         34,
   'macas|puyo':              34,
   'macas|tena':              44,
 };
 
-// ── Fórmula de respaldo ───────────────────────────────────────
-// Calibrada a: 90km→$13, 130km→$15, 190km→$20 (compartido)
+// Formula de respaldo
 function distanceBasedSharedPrice(km: number): number {
   if (km <= 15) return 4;
   if (km <= 40) return Math.round(3 + km * 0.20);
   return Math.max(7, Math.round(4.5 + km * 0.082));
 }
 
-// ── Lookup ────────────────────────────────────────────────────
+// Lookup base
 function sharedSuvBase(
-  pickup: Location,
+  pickup:  Location,
   dropoff: Location,
 ): { price: number; fixed: boolean; fullEntry?: FullPriceEntry } {
   if (pickup.address && dropoff.address) {
-    // 1. Primero revisar rutas con precio completo
-    const fullKey = pairKey(pickup.address, dropoff.address);
+    const fullKey  = pairKey(pickup.address, dropoff.address);
     const fullEntry = FULL_PRICE_ROUTES[fullKey];
     if (fullEntry !== undefined) return { price: fullEntry.compartido, fixed: true, fullEntry };
-
-    // 2. Luego tabla compartido estándar
     const p = CITY_PAIR_PRICES[fullKey];
     if (p !== undefined) return { price: p, fixed: true };
   }
@@ -341,33 +565,19 @@ function sharedSuvBase(
   };
 }
 
-// ── API pública ───────────────────────────────────────────────
-
-export interface FareBreakdown {
-  /** Precio compartido (base de tabla o fórmula) — SUV */
-  sharedBase:        number;
-  /** Tarifa final mostrada al pasajero */
-  totalFare:         number;
-  distanceKm:        number;
-  durationMin:       number;
-  /** true = precio de tabla fija · false = estimado por distancia */
-  isPriceFixed:      boolean;
-  mode:              'privado' | 'compartido';
-  tier:              'confort' | 'premium';
-  /** Recargo aplicado por zona de origen */
-  originSurcharge:   number;
-}
+// ================================================================
+// API PUBLICA
+// ================================================================
 
 /**
- * Calcula la tarifa final según:
- *  · Compartido               → sharedBase (+ recargo origen si aplica)
- *  · Privado Confort          → round(sharedBase × 4 / 10) × 10 (+ recargo)
- *  · Privado Premium          → Privado Confort + $10 (+ recargo)
+ * Calcula la tarifa final con todos los factores:
+ *  1. Precio base (tabla o formula por distancia)
+ *  2. Recargo dinamico por hora/dia/feriado (aumenta el precio base)
+ *  3. Descuento por segmento de cliente (reduce el precio ya recargado)
+ *  4. Recargo fijo de origen +$5 (se suma al final, no se descuenta)
  *
- *  Rutas especiales (ej. Quito ↔ Aeropuerto) usan precios exactos predefinidos.
- *
- * @param roadDistance  Si se pasa, se usa para el fallback de distancia en lugar
- *                      de Haversine (línea recta). Obtenido de getRoadDistance().
+ * Formula:
+ *   totalFare = round(basePrice x (1 + surchargeRate) x (1 - discountRate)) + originSurcharge
  */
 export function getFareBreakdown(
   pickup:        Location,
@@ -376,32 +586,36 @@ export function getFareBreakdown(
   tier:          'confort' | 'premium' = 'confort',
   mode:          'privado' | 'compartido' = 'privado',
   roadDistance?: { distanceKm: number; durationMin: number },
+  context?:      PricingContext,
 ): FareBreakdown {
-  const dist = roadDistance?.distanceKm ?? calculateDistance(pickup, dropoff);
-  const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
-  const surcharge = getOriginSurcharge(pickup);
+  const dist     = roadDistance?.distanceKm ?? calculateDistance(pickup, dropoff);
+  const dateTime = context?.dateTime ?? new Date();
+  const segment  = context?.clientSegment ?? 'public';
 
-  // Vehicle factor (VAN/Minibús/Bus amplían el precio privado)
-  const vehicle      = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
-  const isLargeVeh   = !['suv', 'suv_xl', 'other'].includes(vehicleType);
+  const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
+  const originSurcharge = getOriginSurcharge(pickup);
+
+  const vehicle       = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
+  const isLargeVeh    = !['suv', 'suv_xl', 'other'].includes(vehicleType);
   const vehicleFactor = isLargeVeh ? vehicle.multiplierConfort : 1;
 
-  let totalFare: number;
-
+  let basePrice: number;
   if (fullEntry) {
-    // Ruta con precio completo predefinido (ej. Quito ↔ Aeropuerto)
-    if (mode === 'compartido') {
-      totalFare = fullEntry.compartido + surcharge;
-    } else {
-      totalFare = (tier === 'premium' ? fullEntry.premium : fullEntry.privado) + surcharge;
-    }
+    basePrice = mode === 'compartido'
+      ? fullEntry.compartido
+      : (tier === 'premium' ? fullEntry.premium : fullEntry.privado);
   } else if (mode === 'compartido') {
-    totalFare = base + surcharge;
+    basePrice = base;
   } else {
-    // Redondeamos a la decena más cercana
     const privadoConfort = Math.round(base * 4 * vehicleFactor / 10) * 10;
-    totalFare = (tier === 'premium' ? privadoConfort + 10 : privadoConfort) + surcharge;
+    basePrice = tier === 'premium' ? privadoConfort + 10 : privadoConfort;
   }
+
+  const { rate: surchargeRate, label: surchargeLabel } = getDynamicSurcharge(dateTime, mode);
+  const { rate: discountRate,  label: discountLabel  } = getClientDiscount(segment);
+
+  const adjustedPrice = Math.round(basePrice * (1 + surchargeRate) * (1 - discountRate));
+  const totalFare     = adjustedPrice + originSurcharge;
 
   return {
     sharedBase:     base,
@@ -411,13 +625,17 @@ export function getFareBreakdown(
     isPriceFixed:   fixed,
     mode,
     tier,
-    originSurcharge: surcharge,
+    originSurcharge,
+    surchargeRate,
+    surchargeLabel,
+    discountRate,
+    discountLabel,
+    clientSegment:  segment,
   };
 }
 
 /**
- * Compat con código que solo llama calculateFare(pickup, dropoff, vehicleType).
- * Por defecto devuelve Privado Confort.
+ * Compat: devuelve Privado Confort sin contexto de precio.
  */
 export function calculateFare(
   pickup:      Location,
@@ -428,4 +646,9 @@ export function calculateFare(
 }
 
 export type { VehicleType as RideType };
-export function isPeakHour(): boolean { return false; }
+
+/** Comprueba si la hora dada es hora pico (compat) */
+export function isPeakHour(date: Date = new Date()): boolean {
+  const h = date.getHours();
+  return (h >= 6 && h < 9) || (h >= 17 && h < 20);
+}
