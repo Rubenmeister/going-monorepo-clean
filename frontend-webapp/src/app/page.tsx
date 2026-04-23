@@ -133,7 +133,9 @@ function LocationInput({ value, onChange, placeholder }: { value: string; onChan
 /* ── Main Page ──────────────────────────────────────────────── */
 export default function HomePage() {
   const { auth } = useMonorepoApp();
-
+  const isLoggedIn = typeof window !== 'undefined'
+    ? !!localStorage.getItem('authToken')
+    : !!auth?.user;
 
   // Carousel
   const [slide, setSlide] = useState(0);
@@ -150,13 +152,16 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const params = new URLSearchParams({ ...(origin && { from: origin }), ...(dest && { to: dest }), ...(date && { date }), ...(time && { time }) });
-    if (!token) {
-      window.location.href = `/auth/login?from=/ride${params.toString() ? '?' + params.toString() : ''}`;
-      return;
-    }
+    // Siempre ir a /ride — la confirmación del viaje pedirá login si es necesario
     window.location.href = `/ride${params.toString() ? '?' + params.toString() : ''}`;
+  };
+
+  const handleHeroCTA = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isLoggedIn) return; // deja que el href="/ride" navegue normalmente
+    e.preventDefault();
+    // Si no está logueado: scroll suave al formulario de búsqueda en la misma página
+    document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Destinos
@@ -193,7 +198,8 @@ export default function HomePage() {
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
           <Link
-            href="/auth/login?from=/ride"
+            href="/ride"
+            onClick={handleHeroCTA}
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-2xl transition-all hover:scale-105 hover:opacity-90"
             style={{ backgroundColor: '#ff4c41' }}
           >
@@ -594,7 +600,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Únete a Going (pasajeros) ─────────────────────── */}
-      {!auth?.user && (
+      {!isLoggedIn && (
         <>
           <section className="py-14 px-4 bg-white">
             <div className="max-w-6xl mx-auto">
