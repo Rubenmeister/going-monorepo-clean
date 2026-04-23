@@ -214,7 +214,10 @@ export class AuthController {
         );
       }
 
-      return { ...loginResult, userId };
+      // Normalizar: exponer tanto `token` como `accessToken` para todos los clientes
+      const normalized = loginResult as any;
+      const authToken = normalized.accessToken || normalized.token;
+      return { ...normalized, token: authToken, accessToken: authToken, userId };
     } catch (error) {
       this.auditLogService.recordFailure(
         'anonymous',
@@ -300,7 +303,11 @@ export class AuthController {
         { email: dto.email, roles: result.user.roles }
       );
 
-      return result;
+      // Normalizar respuesta: siempre exponer tanto `token` como `accessToken`
+      // para compatibilidad con clientes web (accessToken) y móvil (token)
+      const normalized = result as any;
+      const authToken = normalized.accessToken || normalized.token;
+      return { ...normalized, token: authToken, accessToken: authToken };
     } catch (error) {
       // LOGIN FAILED: Record failed attempt
       const tempUserId = `email:${dto.email}`;

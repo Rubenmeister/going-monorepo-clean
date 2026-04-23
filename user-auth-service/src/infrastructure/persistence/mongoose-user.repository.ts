@@ -16,8 +16,15 @@ export class MongooseUserRepository implements IUserRepository {
   async save(user: User): Promise<Result<void, Error>> {
     try {
       const primitives = user.toPrimitives();
-      const newDoc = new this.model({ ...primitives, _id: primitives.id });
-      await newDoc.save();
+      // Normalizar email a minúsculas para evitar duplicados case-sensitive
+      primitives.email = primitives.email.toLowerCase().trim();
+
+      // Upsert: si ya existe por id (ej. retry), actualizar en lugar de crear duplicado
+      await this.model.findOneAndUpdate(
+        { id: primitives.id },
+        { $setOnInsert: { _id: primitives.id, ...primitives } },
+        { upsert: true, new: true },
+      ).exec();
       return ok(undefined);
     } catch (error) {
       if (error.code === 11000) {
@@ -48,7 +55,9 @@ export class MongooseUserRepository implements IUserRepository {
 
   async findByEmail(email: string): Promise<Result<User | null, Error>> {
     try {
-      const doc = await this.model.findOne({ email }).exec();
+      // Siempre buscar en minúsculas — los emails se guardan normalizados
+      const normalizedEmail = email.toLowerCase().trim();
+      const doc = await this.model.findOne({ email: normalizedEmail }).exec();
       return ok(doc ? this.toDomain(doc) : null);
     } catch (error) {
       return err(new Error(error.message));
@@ -124,6 +133,15 @@ export class MongooseUserRepository implements IUserRepository {
   }
 
   private toDomain(doc: UserDocument): User {
-    return User.fromPrimitives(doc.toObject() as any);
+    const raw = doc.toObject() as any;
+    // Normalizar roles: pueden venir como strings o como objetos { value: '...' }
+    const roles: string[] = (raw.roles ?? []).map((r: any) =>
+      typeof r === 'string' ? r : (r?.value ?? 'user')
+    );
+    // Garantizar status válido (documentos viejos podrían carecer del campo)
+    const status = ['active', 'suspended', 'pending_verification'].includes(raw.status)
+      ? raw.status
+      : 'active';
+    return User.fromPrimitives({ ...raw, roles, status });
   }
 }
