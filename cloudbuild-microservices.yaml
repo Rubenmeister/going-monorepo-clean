@@ -54,11 +54,11 @@ steps:
         SECRETS=""
         jwt_exists=$$(gcloud secrets describe JWT_SECRET-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
         db_exists=$$(gcloud secrets describe USER_DB_URL-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
-        redis_exists=$$(gcloud secrets describe REDIS_URL-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
+        redis_exists=$$(gcloud secrets describe redis-url --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
 
         [ "$$jwt_exists" = "yes" ]   && SECRETS="$$SECRETS,JWT_SECRET=JWT_SECRET-prod:latest"
         [ "$$db_exists" = "yes" ]    && SECRETS="$$SECRETS,USER_DB_URL=USER_DB_URL-prod:latest"
-        [ "$$redis_exists" = "yes" ] && SECRETS="$$SECRETS,REDIS_URL=REDIS_URL-prod:latest"
+        [ "$$redis_exists" = "yes" ] && SECRETS="$$SECRETS,REDIS_URL=redis-url:latest"
         SECRETS=$${SECRETS#,}  # quitar coma inicial
 
         DEPLOY_CMD="gcloud run deploy ${_SERVICE_NAME} \
