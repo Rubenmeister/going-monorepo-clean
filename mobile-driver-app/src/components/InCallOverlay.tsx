@@ -121,9 +121,12 @@ export function InCallOverlay({ session, otherPersonName, onCallEnd }: InCallOve
     })();
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      engine?.leaveChannel?.();
-      engine?.release?.();
+      try {
+        if (timerRef.current) clearInterval(timerRef.current);
+        engine?.removeAllListeners?.();
+        engine?.leaveChannel?.();
+        engine?.release?.();
+      } catch { /* silencio */ }
     };
   }, []);
 

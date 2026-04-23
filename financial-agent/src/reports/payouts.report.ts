@@ -34,8 +34,8 @@ export async function generateDailyPayouts(date?: Date): Promise<DriverPayout[]>
   const payouts: DriverPayout[] = [];
 
   for (const [driverId, driverRides] of ridesByDriver) {
-    // Nombre del conductor (en producción vendría de Firestore drivers collection)
-    const driverName = `Conductor ${driverId.slice(-4)}`;
+    // TODO: fetch driver name from drivers collection
+    const driverName = `Conductor #${driverId.slice(-6)}`;
 
     const payout = await createDriverPayout(
       driverId,

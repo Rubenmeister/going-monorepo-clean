@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 
 // ─── Viaje Privado — Cotización ──────────────────────────────────────────────
 // Todo el vehículo es tuyo. No hay selección de asiento.

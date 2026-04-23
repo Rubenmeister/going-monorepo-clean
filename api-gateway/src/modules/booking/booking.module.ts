@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { AuthModule } from '../../auth/auth.module';
@@ -6,7 +7,7 @@ import { RbacModule } from '../../rbac/rbac.module';
 
 /**
  * Booking Module
- * Example module showing RBAC integration
+ * Proxies booking operations to the booking-service backend
  *
  * Protected Routes:
  * - GET /bookings - List bookings (authenticated)
@@ -17,7 +18,7 @@ import { RbacModule } from '../../rbac/rbac.module';
  * - POST /bookings/:id/confirm - Confirm booking (host only)
  */
 @Module({
-  imports: [AuthModule, RbacModule],
+  imports: [AuthModule, RbacModule, HttpModule],
   controllers: [BookingController],
   providers: [BookingService],
 })

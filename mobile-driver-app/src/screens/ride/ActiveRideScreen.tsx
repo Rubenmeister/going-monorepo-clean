@@ -117,8 +117,12 @@ export function ActiveRideScreen() {
       }
     );
     return () => {
-      mounted = false;
-      sub.then((s) => s.remove());
+      try {
+        mounted = false;
+        sub.then((s) => s.remove());
+      } catch {
+        // Silencio si la limpieza falla
+      }
     };
   }, []);
 
@@ -127,7 +131,7 @@ export function ActiveRideScreen() {
     // o el valor del parámetro si lo proveyó el backend al aceptar el viaje.
     // durationSeconds: tiempo real desde que se inició el viaje (step 1).
     const distKm  = (fare && fare > 0) ? fare / 2.5 : 5; // estimado provisional
-    const durSecs = Math.round((Date.now() - (rideStartTimestamp.current ?? Date.now())) / 1000) || 900;
+    const durSecs = Math.max(1, Math.round((Date.now() - (rideStartTimestamp.current ?? Date.now())) / 1000));
     socketRef.current?.emit('driver:completed', {
       rideId,
       distanceKm:      distKm,

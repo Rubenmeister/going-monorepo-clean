@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'expo-router';
+import { Linking } from 'react-native';
 
 // ─── Payment Screen ──────────────────────────────────────────────────────────
 // Conecta con el payment-service backend.
@@ -60,7 +61,7 @@ export default function PaymentPage() {
       if (!redirectUrl) throw new Error('No se recibió URL de pago.');
 
       // Redirigir al SDK de Datafast / DeUna en el browser
-      window.location.href = redirectUrl;
+      await Linking.openURL(redirectUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Intenta de nuevo.';
       setError(msg);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useRideStore } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
@@ -33,9 +33,10 @@ const ChatInterface = dynamic(
 );
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
-type Step = 'request' | 'tracking' | 'payment' | 'accounting' | 'rating';
+type ServiceMode = 'compartido' | 'privado' | null;
+type Step = 'request' | 'tracking' | 'confirmation' | 'payment' | 'accounting' | 'rating';
 
-const STEPS: Step[] = ['request', 'tracking', 'payment', 'accounting', 'rating'];
+const STEPS: Step[] = ['request', 'tracking', 'confirmation', 'payment', 'accounting', 'rating'];
 
 /* ─── Stepper component ─────────────────────────────────────────────── */
 function RideStepper({ step }: { step: Step }) {
@@ -60,6 +61,197 @@ function RideStepper({ step }: { step: Step }) {
   );
 }
 
+/* ─── Service Picker (entry cards, igual que móvil) ────────────────── */
+function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 'envios') => void }) {
+  return (
+    <div className="space-y-3">
+      {/* Bienvenida */}
+      <div className="pb-1">
+        <h2 className="text-2xl font-black text-gray-900">¿Cómo quieres viajar?</h2>
+        <p className="text-sm text-gray-500 mt-0.5">Elige el tipo de servicio que necesitas</p>
+      </div>
+
+      {/* Viaje Compartido */}
+      <button
+        onClick={() => onSelect('compartido')}
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#0033A0]/30 hover:bg-blue-50/50 active:scale-[0.98] transition-all text-left"
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EFF6FF' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0033A0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-base font-black text-gray-900">Viaje Compartido</span>
+            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-[#0033A0] text-white">★ MÁS POPULAR</span>
+          </div>
+          <p className="text-sm text-gray-500">Paga solo tu asiento · SUV entre ciudades</p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      {/* Viaje Privado */}
+      <button
+        onClick={() => onSelect('privado')}
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#ff4c41]/30 hover:bg-red-50/50 active:scale-[0.98] transition-all text-left"
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFF0EF' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4c41" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-base font-black text-gray-900 block mb-0.5">Viaje Privado</span>
+          <p className="text-sm text-gray-500">Vehículo exclusivo · SUV, VAN o BUS</p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      {/* Envíos */}
+      <button
+        onClick={() => onSelect('envios')}
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#059669]/30 hover:bg-green-50/50 active:scale-[0.98] transition-all text-left"
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F0FDF4' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L11 21.73a2 2 0 0 0 2 0L20 17.73A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-base font-black text-gray-900 block mb-0.5">Envíos</span>
+          <p className="text-sm text-gray-500">De punto a punto · Rastreo · Registro de entrega</p>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/* ─── Confirmation Panel (QR + token) ──────────────────────────────── */
+interface ConfirmationPanelProps {
+  rideToken: string;
+  driverName: string;
+  driverPlate?: string;
+  driverPhoto?: string;
+  origin: string;
+  destination: string;
+  estimatedFare: number;
+  onContinue: () => void;
+}
+
+function ConfirmationPanel({
+  rideToken, driverName, driverPlate, driverPhoto,
+  origin, destination, estimatedFare, onContinue,
+}: ConfirmationPanelProps) {
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(rideToken)}&size=200x200&margin=10&color=0033A0`;
+  const shortToken = rideToken.length > 8 ? rideToken.slice(-8).toUpperCase() : rideToken.toUpperCase();
+
+  return (
+    <div className="space-y-4">
+
+      {/* ── Conductor confirmado ── */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <div className="flex items-center gap-4">
+          {driverPhoto ? (
+            <img src={driverPhoto} alt={driverName}
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-[#0033A0]/20" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-[#0033A0]/10 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" fill="#0033A0" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#0033A0" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+          )}
+          <div className="flex-1">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">Conductor asignado</p>
+            <p className="text-lg font-bold text-gray-900">{driverName}</p>
+            {driverPlate && (
+              <span className="inline-block mt-1 bg-[#0033A0] text-white text-xs font-bold px-3 py-1 rounded-lg tracking-widest">
+                {driverPlate}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <span className="w-3 h-3 rounded-full bg-green-400" />
+            <span className="text-xs text-green-600 font-semibold">Viaje completado</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Ruta ── */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 w-3 h-3 rounded-full bg-[#0033A0] flex-shrink-0" />
+          <div>
+            <p className="text-xs text-gray-400 font-medium">Origen</p>
+            <p className="text-sm font-semibold text-gray-800">{origin}</p>
+          </div>
+        </div>
+        <div className="ml-1.5 border-l-2 border-dashed border-gray-200 h-4" />
+        <div className="flex items-start gap-3">
+          <div className="mt-1 w-3 h-3 rounded-full bg-[#ff4c41] flex-shrink-0" />
+          <div>
+            <p className="text-xs text-gray-400 font-medium">Destino</p>
+            <p className="text-sm font-semibold text-gray-800">{destination}</p>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-sm text-gray-500">Tarifa estimada</span>
+          <span className="text-lg font-bold text-gray-900">${estimatedFare.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* ── QR Code ── */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center gap-4">
+        <div>
+          <p className="text-center text-sm font-semibold text-gray-700 mb-1">¡Viaje completado!</p>
+          <p className="text-center text-xs text-gray-400">Este es el comprobante de tu viaje. Guárdalo como referencia antes de pagar.</p>
+        </div>
+
+        <div className="p-3 bg-white rounded-2xl border-2 border-[#0033A0]/20 shadow-inner">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrUrl}
+            alt="QR código viaje"
+            width={180}
+            height={180}
+            className="rounded-xl"
+          />
+        </div>
+
+        <div className="bg-gray-50 rounded-xl px-6 py-3 text-center border border-gray-200">
+          <p className="text-xs text-gray-400 font-medium mb-1">Token del viaje</p>
+          <p className="text-2xl font-black tracking-[0.3em] text-[#0033A0]">{shortToken}</p>
+        </div>
+
+        <p className="text-xs text-gray-400 text-center max-w-xs">
+          Conserva este token como comprobante. Puedes usarlo para cualquier reclamación posterior.
+        </p>
+      </div>
+
+      {/* ── Continuar a pago ── */}
+      <button
+        onClick={onContinue}
+        className="w-full bg-[#0033A0] text-white font-bold text-base py-4 rounded-2xl shadow-lg hover:bg-[#002280] active:scale-[0.98] transition-all"
+      >
+        Continuar al pago →
+      </button>
+    </div>
+  );
+}
+
 /* ─── Page ──────────────────────────────────────────────────────────── */
 function RidePageInner() {
   const router             = useRouter();
@@ -67,6 +259,7 @@ function RidePageInner() {
   const { activeRide, clearRide } = useRideStore();
 
   const [step, setStep]               = useState<Step>('request');
+  const [serviceMode, setServiceMode] = useState<ServiceMode>(null);
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
@@ -86,17 +279,18 @@ function RidePageInner() {
     }
   }, [activeRide, step, auth.user]);
 
-  /* Mover a pago cuando el viaje se completa */
+  /* Mover a confirmación (resumen + QR) cuando el viaje se completa */
   useEffect(() => {
     if (activeRide?.status === 'completed' && step === 'tracking') {
-      setStep('payment');
+      setStep('confirmation');
     }
   }, [activeRide?.status, step]);
 
-  const handleCancelRide      = () => { clearRide(); setStep('request'); };
-  const handlePaymentComplete = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
-  const handleAccountingDone  = () => setStep('rating');
-  const handleRatingComplete  = () => { clearRide(); setStep('request'); };
+  const handleCancelRide         = () => { clearRide(); setStep('request'); setServiceMode(null); };
+  const handleConfirmationContinue = () => setStep('payment');
+  const handlePaymentComplete    = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
+  const handleAccountingDone     = () => setStep('rating');
+  const handleRatingComplete     = () => { clearRide(); setStep('request'); };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,13 +306,19 @@ function RidePageInner() {
               ←
             </button>
             <h1 className="text-xl font-bold text-gray-900">
-              {step === 'request'    ? 'Solicitar viaje'   :
-               step === 'tracking'   ? 'Tu viaje'          :
-               step === 'payment'    ? 'Pago'              :
-               step === 'accounting' ? 'Resumen del viaje' :
-                                       'Califica tu viaje'  }
+              {step === 'request'      ? (serviceMode ? (serviceMode === 'compartido' ? 'Viaje Compartido' : 'Viaje Privado') : 'Solicitar viaje') :
+               step === 'tracking'     ? 'Tu viaje'           :
+               step === 'confirmation' ? 'Confirmación'       :
+               step === 'payment'      ? 'Pago'               :
+               step === 'accounting'   ? 'Resumen del viaje'  :
+                                         'Califica tu viaje'  }
             </h1>
           </div>
+          {step === 'request' && serviceMode !== null && (
+            <button onClick={() => setServiceMode(null)} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              ← Cambiar
+            </button>
+          )}
           {step !== 'request' && step !== 'tracking' && (
             <button onClick={() => setStep('request')} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
               ← Nuevo viaje
@@ -133,18 +333,42 @@ function RidePageInner() {
       {/* ── Contenido ── */}
       <div className="max-w-2xl mx-auto px-4 py-6">
 
-        {/* Paso 1: Solicitar viaje (incluye ruta + opciones completas) */}
-        {step === 'request' && <RideRequestForm />}
+        {/* Paso 1a: Elegir tipo de servicio */}
+        {step === 'request' && serviceMode === null && (
+          <ServicePicker onSelect={mode => {
+            if (mode === 'envios') { router.push('/envios/cotizar'); return; }
+            setServiceMode(mode);
+          }} />
+        )}
+
+        {/* Paso 1b: Formulario de viaje */}
+        {step === 'request' && serviceMode !== null && (
+          <RideRequestForm defaultMode={serviceMode} />
+        )}
 
         {/* Paso 2: Seguimiento en tiempo real */}
         {step === 'tracking' && (
           <RideTrackingPanel
-            onCompleted={() => setStep('payment')}
+            onCompleted={() => setStep('confirmation')}
             onCancelled={handleCancelRide}
           />
         )}
 
-        {/* Paso 3: Pago */}
+        {/* Paso 3: Confirmación con QR / token */}
+        {step === 'confirmation' && activeRide && (
+          <ConfirmationPanel
+            rideToken={activeRide.tripId}
+            driverName={activeRide.driverInfo?.name ?? 'Tu conductor'}
+            driverPlate={activeRide.driverInfo?.vehicle?.plate}
+            driverPhoto={activeRide.driverInfo?.photoUrl}
+            origin={activeRide.origin?.address ?? ''}
+            destination={activeRide.destination?.address ?? ''}
+            estimatedFare={activeRide.estimatedFare}
+            onContinue={handleConfirmationContinue}
+          />
+        )}
+
+        {/* Paso 4: Pago */}
         {step === 'payment' && (
           <PaymentForm
             amount={paymentAmount}

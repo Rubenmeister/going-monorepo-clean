@@ -149,10 +149,12 @@ export default function TransportPage() {
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
         setTripId((data as any).id ?? null);
+        setBooked(true);
+      } else {
+        setError('No se pudo reservar el viaje. Intenta de nuevo.');
       }
-      setBooked(true);
     } catch {
-      setBooked(true);
+      setError('Error de conexión. Verifica tu internet.');
     } finally {
       setLoading(false);
     }

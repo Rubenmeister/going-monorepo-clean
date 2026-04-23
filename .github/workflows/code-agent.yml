@@ -1,0 +1,91 @@
+name: Code Quality Agent
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:          # manual trigger from GitHub UI
+    inputs:
+      path:
+        description: 'Path to scan (e.g. user-auth-service/src)'
+        required: false
+        default: ''
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    name: AI Code Review
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # needed for git diff
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Code Agent (diff mode on PRs)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.path }}" ]; then
+            npx ts-node scripts/code-agent.ts --path=${{ github.event.inputs.path }}
+          else
+            npx ts-node scripts/code-agent.ts --diff
+          fi
+        continue-on-error: true   # don't block merge, only report
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-agent-report
+          path: code-agent-report.json
+          if-no-files-found: ignore
+
+      - name: Post summary to PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('code-agent-report.json')) return;
+            const report = JSON.parse(fs.readFileSync('code-agent-report.json', 'utf8'));
+            const critical = report.issues.filter(i => i.severity === 'critical').length;
+            const high = report.issues.filter(i => i.severity === 'high').length;
+            const total = report.issues.length;
+            const emoji = critical > 0 ? '🔴' : high > 0 ? '🟠' : total > 0 ? '🟡' : '✅';
+            let body = `## ${emoji} Code Agent Report\n\n`;
+            body += `**${report.scannedFiles}** files scanned · **${total}** issues found\n\n`;
+            if (total === 0) {
+              body += '✅ No issues found. Code looks great!\n';
+            } else {
+              const byFile = {};
+              for (const issue of report.issues) {
+                if (!byFile[issue.file]) byFile[issue.file] = [];
+                byFile[issue.file].push(issue);
+              }
+              const icons = { critical:'🔴', high:'🟠', medium:'🟡', low:'🔵' };
+              const typeIcons = { bug:'🐛', security:'🔐', performance:'⚡', quality:'✨', style:'🎨' };
+              for (const [file, issues] of Object.entries(byFile)) {
+                body += `\n**\`${file}\`**\n`;
+                for (const i of issues) {
+                  body += `- ${icons[i.severity]} ${typeIcons[i.type]} **${i.description}**\n`;
+                  body += `  → ${i.suggestion}\n`;
+                }
+              }
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

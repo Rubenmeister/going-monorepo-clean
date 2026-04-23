@@ -63,6 +63,7 @@ export class Rating {
 export const RatingSchema = SchemaFactory.createForClass(Rating);
 
 // Create indexes
+RatingSchema.index({ tripId: 1, raterId: 1 }, { unique: true }); // Prevent duplicate ratings from same user on same trip
 RatingSchema.index({ tripId: 1, createdAt: -1 });
 RatingSchema.index({ raterId: 1, createdAt: -1 });
 RatingSchema.index({ rateeId: 1, createdAt: -1 });

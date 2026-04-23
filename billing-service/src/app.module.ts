@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { InvoiceController } from './api/invoice.controller';
 import { HealthController } from './api/health.controller';
+import { InternalController } from './api/internal.controller';
 import { InvoiceService } from './application/services/invoice.service';
 import { InvoiceEmailService } from './application/services/invoice-email.service';
 import { PdfGeneratorService } from './application/services/pdf-generator.service';
@@ -34,7 +35,7 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
       }),
     }),
   ],
-  controllers: [InvoiceController, HealthController],
+  controllers: [InvoiceController, HealthController, InternalController],
   providers: [
     InvoiceService,
     InvoiceEmailService,

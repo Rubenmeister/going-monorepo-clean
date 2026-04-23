@@ -4,17 +4,15 @@
  * Chat ID: el grupo "Going Operaciones" — configurar como TELEGRAM_CHAT_ID
  */
 
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_CHAT_ID) {
+  throw new Error('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required');
+}
+
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const BASE_URL = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
 export async function sendMessage(text: string, parseMode: 'HTML' | 'Markdown' = 'HTML'): Promise<boolean> {
-  if (!TELEGRAM_TOKEN || !CHAT_ID) {
-    console.log('[Telegram] Token o Chat ID no configurado — mensaje omitido');
-    console.log('[Telegram] Mensaje:', text);
-    return false;
-  }
-
   try {
     const res = await fetch(`${BASE_URL}/sendMessage`, {
       method: 'POST',

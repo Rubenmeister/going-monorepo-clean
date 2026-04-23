@@ -67,6 +67,15 @@ export class MongooseParcelRepository implements IParcelRepository {
     }
   }
 
+  async findByTrackingCode(trackingCode: string): Promise<Result<Parcel | null, Error>> {
+    try {
+      const doc = await this.model.findOne({ trackingCode }).exec();
+      return ok(doc ? this.toDomain(doc) : null);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   private toDomain(doc: ParcelDocument): Parcel {
     return Parcel.fromPrimitives(doc.toObject() as any);
   }

@@ -34,7 +34,9 @@ interface LocationUpdatePayload {
 @WebSocketGateway({
   namespace: 'locations',
   cors: {
-    origin: ['http://localhost:3000', 'http://localhost:4200'],
+    origin: process.env.WEBSOCKET_ORIGINS
+      ? process.env.WEBSOCKET_ORIGINS.split(',')
+      : ['http://localhost:3000', 'http://localhost:4200', 'http://localhost:5173'],
     credentials: true,
   },
 })

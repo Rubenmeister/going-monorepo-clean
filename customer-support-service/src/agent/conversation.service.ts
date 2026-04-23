@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
 
 export type ConversationState = 'AI_ACTIVE' | 'HANDOFF_REQUESTED' | 'HUMAN_ACTIVE';
 export type Priority = 'RED' | 'ORANGE' | 'NORMAL';
@@ -44,39 +45,91 @@ const EMERGENCY_KEYWORDS = [
 
 @Injectable()
 export class ConversationService {
-  // In-memory store — replace with Redis for production
+  // In-memory cache for active conversations
   private conversations = new Map<string, Conversation>();
   private conversationCount = 0; // used to alternate gender
 
-  getOrCreate(userId: string, channel: 'whatsapp' | 'web' = 'whatsapp'): Conversation {
-    if (!this.conversations.has(userId)) {
-      // Alternate gender with each new conversation
-      const agentGender: AgentGender = this.conversationCount % 2 === 0 ? 'male' : 'female';
-      this.conversationCount++;
+  constructor(
+    @Optional() private mongoRepository?: MongoConversationRepository
+  ) {}
 
+  async getOrCreate(userId: string, channel: 'whatsapp' | 'web' = 'whatsapp'): Promise<Conversation> {
+    // Check cache first
+    if (this.conversations.has(userId)) {
+      return this.conversations.get(userId)!;
+    }
+
+    // Check MongoDB
+    let mongoConv = null;
+    if (this.mongoRepository) {
+      mongoConv = await this.mongoRepository.findOne(userId);
+    }
+
+    if (mongoConv) {
+      // Reconstruct as Conversation object
       const conv: Conversation = {
-        id: `${channel}-${userId}-${Date.now()}`,
-        channel,
+        id: `${channel}-${userId}-${mongoConv.createdAt.getTime()}`,
+        channel: (mongoConv as any).channel || channel,
         userId,
-        state: 'AI_ACTIVE',
-        priority: 'NORMAL',
-        messages: [],
-        agentGender,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        state: this.mapMongoStatusToState(mongoConv.status as any),
+        priority: (mongoConv.priority as Priority) || 'NORMAL',
+        messages: mongoConv.messages as Message[],
+        agentGender: (mongoConv as any).agentGender || (this.conversationCount % 2 === 0 ? 'male' : 'female'),
+        handoffReason: (mongoConv as any).handoffReason,
+        operatorId: (mongoConv as any).operatorId,
+        createdAt: mongoConv.createdAt,
+        updatedAt: mongoConv.updatedAt,
       };
       this.conversations.set(userId, conv);
+      return conv;
     }
-    return this.conversations.get(userId)!;
+
+    // Create new conversation
+    const agentGender: AgentGender = this.conversationCount % 2 === 0 ? 'male' : 'female';
+    this.conversationCount++;
+
+    const conv: Conversation = {
+      id: `${channel}-${userId}-${Date.now()}`,
+      channel,
+      userId,
+      state: 'AI_ACTIVE',
+      priority: 'NORMAL',
+      messages: [],
+      agentGender,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.conversations.set(userId, conv);
+
+    // Save to MongoDB
+    if (this.mongoRepository) {
+      await this.mongoRepository.save(userId, {
+        userId,
+        messages: [],
+        status: 'active',
+        priority: 'NORMAL',
+        channel,
+        agentGender,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+      });
+    }
+
+    return conv;
   }
 
-  addMessage(userId: string, role: 'user' | 'assistant', content: string): void {
-    const conv = this.getOrCreate(userId);
+  async addMessage(userId: string, role: 'user' | 'assistant', content: string): Promise<void> {
+    const conv = await this.getOrCreate(userId);
     conv.messages.push({ role, content, timestamp: new Date() });
     conv.updatedAt = new Date();
     // Keep last 20 messages to avoid exceeding context
     if (conv.messages.length > 20) {
       conv.messages = conv.messages.slice(-20);
+    }
+
+    // Persist to MongoDB
+    if (this.mongoRepository) {
+      await this.mongoRepository.addMessage(userId, role, content);
     }
   }
 
@@ -103,30 +156,72 @@ export class ConversationService {
     return { needed: false, priority: 'NORMAL' };
   }
 
-  requestHandoff(userId: string, reason: string, priority: Priority): void {
-    const conv = this.getOrCreate(userId);
+  async requestHandoff(userId: string, reason: string, priority: Priority): Promise<void> {
+    const conv = await this.getOrCreate(userId);
     conv.state = 'HANDOFF_REQUESTED';
     conv.priority = priority;
     conv.handoffReason = reason;
     conv.updatedAt = new Date();
+
+    // Persist to MongoDB
+    if (this.mongoRepository) {
+      await this.mongoRepository.updateStatus(userId, 'handoff');
+      await this.mongoRepository.save(userId, {
+        priority,
+        handoffReason: reason,
+        updatedAt: conv.updatedAt,
+      });
+    }
   }
 
-  acceptHandoff(userId: string, operatorId: string): void {
-    const conv = this.getOrCreate(userId);
+  async acceptHandoff(userId: string, operatorId: string): Promise<void> {
+    const conv = await this.getOrCreate(userId);
     conv.state = 'HUMAN_ACTIVE';
     conv.operatorId = operatorId;
     conv.updatedAt = new Date();
+
+    // Persist to MongoDB
+    if (this.mongoRepository) {
+      await this.mongoRepository.save(userId, {
+        operatorId,
+        updatedAt: conv.updatedAt,
+      });
+    }
   }
 
-  resolveHandoff(userId: string): void {
-    const conv = this.getOrCreate(userId);
+  async resolveHandoff(userId: string): Promise<void> {
+    const conv = await this.getOrCreate(userId);
     conv.state = 'AI_ACTIVE';
     conv.operatorId = undefined;
     conv.handoffReason = undefined;
     conv.updatedAt = new Date();
+
+    // Persist to MongoDB
+    if (this.mongoRepository) {
+      await this.mongoRepository.updateStatus(userId, 'resolved');
+    }
   }
 
-  getHandoffQueue(): Conversation[] {
+  async getHandoffQueue(status?: string): Promise<Conversation[]> {
+    // First check MongoDB if available
+    if (this.mongoRepository) {
+      const mongoConvs = await this.mongoRepository.getHandoffQueue(status);
+      return mongoConvs.map(mc => ({
+        id: `${(mc as any).channel || 'web'}-${mc.userId}-${mc.createdAt.getTime()}`,
+        channel: (mc as any).channel || 'web',
+        userId: mc.userId,
+        state: this.mapMongoStatusToState(mc.status as any),
+        priority: (mc.priority as Priority) || 'NORMAL',
+        messages: mc.messages as Message[],
+        agentGender: (mc as any).agentGender || 'male',
+        handoffReason: (mc as any).handoffReason,
+        operatorId: (mc as any).operatorId,
+        createdAt: mc.createdAt,
+        updatedAt: mc.updatedAt,
+      }));
+    }
+
+    // Fallback to in-memory
     return Array.from(this.conversations.values())
       .filter(c => c.state === 'HANDOFF_REQUESTED')
       .sort((a, b) => {
@@ -135,16 +230,69 @@ export class ConversationService {
       });
   }
 
-  getAll(): Conversation[] {
+  private mapMongoStatusToState(status: string): ConversationState {
+    if (status === 'handoff') return 'HANDOFF_REQUESTED';
+    if (status === 'resolved') return 'AI_ACTIVE';
+    return 'AI_ACTIVE';
+  }
+
+  async getAll(): Promise<Conversation[]> {
+    if (this.mongoRepository) {
+      const mongoConvs = await this.mongoRepository.getAllActive();
+      return mongoConvs.map(mc => ({
+        id: `${(mc as any).channel || 'web'}-${mc.userId}-${mc.createdAt.getTime()}`,
+        channel: (mc as any).channel || 'web',
+        userId: mc.userId,
+        state: this.mapMongoStatusToState(mc.status as any),
+        priority: (mc.priority as Priority) || 'NORMAL',
+        messages: mc.messages as Message[],
+        agentGender: (mc as any).agentGender || 'male',
+        handoffReason: (mc as any).handoffReason,
+        operatorId: (mc as any).operatorId,
+        createdAt: mc.createdAt,
+        updatedAt: mc.updatedAt,
+      }));
+    }
+
     return Array.from(this.conversations.values());
   }
 
-  buildOperatorContext(userId: string): string {
-    const conv = this.conversations.get(userId);
+  async buildOperatorContext(userId: string): Promise<string> {
+    const conv = this.conversations.get(userId) || (this.mongoRepository ? await this.mongoRepository.getConversation(userId) : null);
     if (!conv) return '';
-    const lastMessages = conv.messages.slice(-6)
-      .map(m => `[${m.role.toUpperCase()}]: ${m.content}`)
+
+    const msgs = (conv as any).messages || [];
+    const lastMessages = msgs.slice(-6)
+      .map((m: any) => `[${m.role.toUpperCase()}]: ${m.content}`)
       .join('\n');
-    return `Canal: ${conv.channel} | Prioridad: ${conv.priority}\nMotivo: ${conv.handoffReason || 'Solicitado por usuario'}\n\nÚltimos mensajes:\n${lastMessages}`;
+    const channel = (conv as any).channel || 'web';
+    const priority = (conv as any).priority || 'NORMAL';
+    const handoffReason = (conv as any).handoffReason || 'Solicitado por usuario';
+    return `Canal: ${channel} | Prioridad: ${priority}\nMotivo: ${handoffReason}\n\nÚltimos mensajes:\n${lastMessages}`;
+  }
+
+  // FIX 9: Clean up old conversations (older than 30 days)
+  async cleanupOldConversations(): Promise<void> {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+
+    // Clean in-memory cache
+    const deletedCount = Array.from(this.conversations.entries())
+      .filter(([_, conv]) => conv.updatedAt < cutoff)
+      .reduce((count, [userId]) => {
+        this.conversations.delete(userId);
+        return count + 1;
+      }, 0);
+
+    // Clean in MongoDB if available
+    if (this.mongoRepository) {
+      try {
+        await (this.mongoRepository as any).deleteOldConversations(cutoff);
+      } catch (err) {
+        console.error('Cleanup error:', err);
+      }
+    }
+
+    console.log(`[ConversationService] Cleaned up ${deletedCount} old conversations`);
   }
 }

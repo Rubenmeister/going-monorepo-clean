@@ -89,7 +89,7 @@ export async function detectDriverAnomalies(): Promise<{
   ).join('\n');
 
   const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+    model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
     max_tokens: 400,
     messages: [{
       role: 'user',

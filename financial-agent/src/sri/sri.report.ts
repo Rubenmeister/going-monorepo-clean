@@ -1,6 +1,4 @@
 import { Firestore, Timestamp } from '@google-cloud/firestore';
-import * as fs from 'fs';
-import * as path from 'path';
 
 // ============================================================
 // SRI Reports – Ecuador
@@ -168,13 +166,15 @@ export async function generateATS(year: number, month: number): Promise<string> 
   // Generar XML ATS
   const xml = buildATSXML(year, month, records);
 
-  // Guardar archivo
-  const fileName = `ATS_${year}_${String(month).padStart(2,'0')}.xml`;
-  const filePath = path.join('/tmp', fileName);
-  fs.writeFileSync(filePath, xml, 'utf-8');
+  // Guardar en Firestore en lugar de /tmp/
+  await db.collection('iva_reports').doc(`${year}-${String(month).padStart(2, '0')}`).update({
+    ats_xml: xml,
+    atsGeneratedAt: Timestamp.now(),
+  });
 
-  console.log(`[sri] ATS generated: ${records.length} records → ${filePath}`);
-  return filePath;
+  console.log(`[sri] ATS generated: ${records.length} records saved to Firestore`);
+  console.log(`[sri] ATS XML snippet: ${xml.substring(0, 200)}...`);
+  return xml;
 }
 
 function buildATSXML(year: number, month: number, records: ATSRecord[]): string {

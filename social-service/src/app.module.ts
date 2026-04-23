@@ -1,12 +1,27 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { SocialController } from './social.controller';
 import { HealthController } from './health.controller';
 import { SocialService } from './social.service';
+import { GamificationStatsSchema, GamificationStatsSchemaDefinition } from './infrastructure/schemas/gamification.schema';
+import { GamificationRepository } from './infrastructure/persistence/gamification.repository';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/social', {
+      lazyConnection: true,
+      connectionFactory: (conn) => {
+        conn.on('error', (e) => console.warn('MongoDB social:', e.message));
+        return conn;
+      },
+    }),
+    MongooseModule.forFeature([
+      { name: GamificationStatsSchema.name, schema: GamificationStatsSchemaDefinition },
+    ]),
+  ],
   controllers: [SocialController, HealthController],
-  providers: [SocialService],
+  providers: [SocialService, GamificationRepository],
 })
 export class AppModule {}

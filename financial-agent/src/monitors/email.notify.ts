@@ -69,6 +69,11 @@ export async function sendGmail(html: string): Promise<void> {
 
   const from    = process.env.GMAIL_FROM    || 'goingappecuador@gmail.com';
   const to      = process.env.NOTIFICATION_EMAIL || 'rubenmeister@gmail.com';
+
+  if (!process.env.NOTIFICATION_EMAIL) {
+    console.warn('[email-notify] NOTIFICATION_EMAIL not set, using default: rubenmeister@gmail.com');
+  }
+
   const subject = extractSubject(html);
 
   try {

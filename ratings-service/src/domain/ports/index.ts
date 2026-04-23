@@ -5,6 +5,7 @@ export const IRatingRepository = Symbol('IRatingRepository');
 export interface IRatingRepository {
   create(rating: any): Promise<any>;
   findById(id: string): Promise<any>;
+  findOne(query: any): Promise<any>;
   findByTrip(tripId: string): Promise<any>;
   findByRatee(rateeId: string, limit?: number, offset?: number): Promise<any[]>;
   findByRater(raterId: string, limit?: number, offset?: number): Promise<any[]>;

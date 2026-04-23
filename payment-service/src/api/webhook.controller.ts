@@ -6,12 +6,14 @@ import {
   RawBodyRequest,
   BadRequestException,
   Logger,
+  Inject,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { HandleStripeEventUseCase } from '@going-monorepo-clean/domains-payment-application';
 import { MercadoPagoGateway } from '../infrastructure/gateways/mercadopago.gateway';
 import { DatafastGateway } from '../infrastructure/gateways/datafast.gateway';
 import { DeunaGateway } from '../infrastructure/gateways/deuna.gateway';
+import { IPaymentRepository } from '../domain/ports';
 
 @Controller('webhooks')
 export class WebhookController {
@@ -22,6 +24,8 @@ export class WebhookController {
     private readonly mercadoPagoGateway: MercadoPagoGateway,
     private readonly datafastGateway: DatafastGateway,
     private readonly deunaGateway: DeunaGateway,
+    @Inject(IPaymentRepository)
+    private readonly paymentRepository: IPaymentRepository,
   ) {}
 
   /**
@@ -116,10 +120,10 @@ export class WebhookController {
       // Manejar resultado del pago
       if (event.status === 'approved' || event.status === 'paid') {
         this.logger.log(`Datafast pago aprobado: ${event.transactionId ?? event.sessionId}`);
-        // TODO: disparar use-case para marcar viaje como pagado
+        await this.handleDatafastPaymentApproved(event);
       } else if (event.status === 'rejected' || event.status === 'failed') {
         this.logger.warn(`Datafast pago rechazado: ${event.transactionId}`);
-        // TODO: disparar use-case para revertir reserva
+        await this.handleDatafastPaymentFailed(event);
       }
     } else {
       this.logger.log(`Datafast webhook (sin firma): ${JSON.stringify(req.body)}`);
@@ -153,15 +157,195 @@ export class WebhookController {
       // Estados DeUna: pending | paid | expired | cancelled
       if (event.status === 'paid') {
         this.logger.log(`DeUna pago confirmado: ${event.orderId}`);
-        // TODO: disparar use-case para marcar viaje como pagado
+        await this.handleDeunaPaymentApproved(event);
       } else if (event.status === 'expired' || event.status === 'cancelled') {
         this.logger.warn(`DeUna orden ${event.status}: ${event.orderId}`);
-        // TODO: disparar use-case para revertir reserva
+        await this.handleDeunaPaymentFailed(event);
       }
     } else {
       this.logger.log(`DeUna webhook (sin firma): ${JSON.stringify(req.body)}`);
     }
 
     return { received: true };
+  }
+
+  /**
+   * Handle approved Datafast payment
+   * Finds the payment record by tripId (from event metadata) and updates status to completed
+   */
+  private async handleDatafastPaymentApproved(event: any): Promise<void> {
+    try {
+      const tripId = event.metadata?.tripId || event.orderId;
+      if (!tripId) {
+        this.logger.warn('Datafast approved event missing tripId/orderId metadata');
+        return;
+      }
+
+      // Find payment by tripId
+      const payment = await this.paymentRepository.findByTrip(tripId);
+      if (!payment) {
+        this.logger.warn(`No payment found for Datafast tripId: ${tripId}`);
+        return;
+      }
+
+      // Update payment status to completed
+      await this.paymentRepository.update(payment.id, {
+        status: 'completed',
+        transactionId: event.transactionId || event.sessionId,
+        completedAt: new Date(),
+      });
+
+      this.logger.log(
+        `Payment ${payment.id} marked as completed for tripId ${tripId}`,
+      );
+
+      // Notify billing service to update invoice
+      const billingUrl = process.env.BILLING_SERVICE_URL || 'http://localhost:3008';
+      fetch(`${billingUrl}/internal/payment-completed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripId,
+          amount: payment.amount || 0,
+          method: payment.method || 'datafast',
+          transactionId: event.transactionId || event.sessionId,
+        }),
+      }).catch(e => this.logger.warn(`Billing notification failed: ${e.message}`));
+    } catch (error) {
+      this.logger.error(
+        `Error handling Datafast approved payment: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Handle failed/rejected Datafast payment
+   * Finds the payment record and updates status to failed
+   */
+  private async handleDatafastPaymentFailed(event: any): Promise<void> {
+    try {
+      const tripId = event.metadata?.tripId || event.orderId;
+      if (!tripId) {
+        this.logger.warn('Datafast failed event missing tripId/orderId metadata');
+        return;
+      }
+
+      // Find payment by tripId
+      const payment = await this.paymentRepository.findByTrip(tripId);
+      if (!payment) {
+        this.logger.warn(`No payment found for Datafast tripId: ${tripId}`);
+        return;
+      }
+
+      // Update payment status to failed
+      await this.paymentRepository.update(payment.id, {
+        status: 'failed',
+        failureReason:
+          event.errorMessage || event.reason || 'Payment declined by provider',
+      });
+
+      this.logger.warn(
+        `Payment ${payment.id} marked as failed for tripId ${tripId}. Reason: ${event.errorMessage}`,
+      );
+
+      // TODO: Call transport service HTTP endpoint to cancel/revert ride
+      // POST to TRANSPORT_SERVICE_URL/api/rides/{tripId}/payment-failed
+      // or implement event emission for async processing
+    } catch (error) {
+      this.logger.error(
+        `Error handling Datafast failed payment: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Handle approved DeUna payment
+   * Finds the payment record by orderId and updates status to completed
+   */
+  private async handleDeunaPaymentApproved(event: any): Promise<void> {
+    try {
+      const orderId = event.orderId;
+      if (!orderId) {
+        this.logger.warn('DeUna approved event missing orderId');
+        return;
+      }
+
+      // Find payment by tripId (orderId should match)
+      const payment = await this.paymentRepository.findByTrip(orderId);
+      if (!payment) {
+        this.logger.warn(`No payment found for DeUna orderId: ${orderId}`);
+        return;
+      }
+
+      // Update payment status to completed
+      await this.paymentRepository.update(payment.id, {
+        status: 'completed',
+        transactionId: event.transactionId || event.orderId,
+        completedAt: new Date(),
+      });
+
+      this.logger.log(
+        `Payment ${payment.id} marked as completed for DeUna orderId ${orderId}`,
+      );
+
+      // Notify billing service to update invoice
+      const billingUrl = process.env.BILLING_SERVICE_URL || 'http://localhost:3008';
+      fetch(`${billingUrl}/internal/payment-completed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripId: orderId,
+          amount: payment.amount || 0,
+          method: payment.method || 'deuna',
+          transactionId: event.transactionId || event.orderId,
+        }),
+      }).catch(e => this.logger.warn(`Billing notification failed: ${e.message}`));
+    } catch (error) {
+      this.logger.error(
+        `Error handling DeUna approved payment: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Handle failed/expired/cancelled DeUna payment
+   * Finds the payment record and updates status to failed
+   */
+  private async handleDeunaPaymentFailed(event: any): Promise<void> {
+    try {
+      const orderId = event.orderId;
+      if (!orderId) {
+        this.logger.warn('DeUna failed event missing orderId');
+        return;
+      }
+
+      // Find payment by tripId (orderId should match)
+      const payment = await this.paymentRepository.findByTrip(orderId);
+      if (!payment) {
+        this.logger.warn(`No payment found for DeUna orderId: ${orderId}`);
+        return;
+      }
+
+      // Update payment status to failed
+      await this.paymentRepository.update(payment.id, {
+        status: 'failed',
+        failureReason:
+          event.reason || event.status === 'cancelled'
+            ? 'Payment cancelled by user'
+            : 'Payment expired or declined',
+      });
+
+      this.logger.warn(
+        `Payment ${payment.id} marked as failed for DeUna orderId ${orderId}. Reason: ${event.status}`,
+      );
+
+      // TODO: Call transport service HTTP endpoint to cancel/revert ride
+      // POST to TRANSPORT_SERVICE_URL/api/rides/{orderId}/payment-failed
+      // or implement event emission for async processing
+    } catch (error) {
+      this.logger.error(
+        `Error handling DeUna failed payment: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 }

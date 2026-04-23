@@ -54,11 +54,15 @@ export async function sendEmailCampaign(campaign: EmailCampaign): Promise<void> 
 
   const created = await createRes.json() as { id?: string };
   const campaignId = created.id;
+  if (!campaignId) {
+    throw new Error('SendGrid campaign creation returned no ID');
+  }
   console.log(`[email] Campaign created: ${campaignId}`);
 
+  // FIX 4: Error handling and dispatch of email campaign
   // Step 2: Schedule or send now
   if (campaign.scheduledAt) {
-    await fetch(`${SENDGRID_API}/marketing/singlesends/${campaignId}/schedule`, {
+    const schedRes = await fetch(`${SENDGRID_API}/marketing/singlesends/${campaignId}/schedule`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -66,9 +70,12 @@ export async function sendEmailCampaign(campaign: EmailCampaign): Promise<void> 
       },
       body: JSON.stringify({ send_at: campaign.scheduledAt.toISOString() }),
     });
+    if (!schedRes.ok) {
+      throw new Error(`SendGrid schedule error: ${schedRes.status} ${await schedRes.text()}`);
+    }
     console.log(`[email] Campaign scheduled for ${campaign.scheduledAt.toISOString()}`);
   } else {
-    await fetch(`${SENDGRID_API}/marketing/singlesends/${campaignId}/schedule`, {
+    const sendRes = await fetch(`${SENDGRID_API}/marketing/singlesends/${campaignId}/schedule`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -76,6 +83,9 @@ export async function sendEmailCampaign(campaign: EmailCampaign): Promise<void> 
       },
       body: JSON.stringify({ send_at: 'now' }),
     });
+    if (!sendRes.ok) {
+      throw new Error(`SendGrid send error: ${sendRes.status} ${await sendRes.text()}`);
+    }
     console.log('[email] Campaign sent immediately');
   }
 }

@@ -87,7 +87,16 @@ export class AgentService {
     if (match) {
       const [, origen, destino, servicio, modalidad, horaStr] = match;
       const cleanMessage = assistantMessage.replace(BOOKING_TAG_RE, '').trim();
-      const scheduledAt = horaStr ? new Date(horaStr) : undefined;
+
+      // FIX 8: Date validation for scheduled rides
+      let scheduledAt: Date | undefined;
+      if (horaStr) {
+        scheduledAt = new Date(horaStr);
+        if (isNaN(scheduledAt.getTime())) {
+          this.logger.warn(`Invalid date string from AI: ${horaStr}, using current time + 30min`);
+          scheduledAt = new Date(Date.now() + 30 * 60 * 1000);
+        }
+      }
 
       const [originCoords, destCoords] = await Promise.all([
         this.bookingService.geocodeAddress(origen.trim()),

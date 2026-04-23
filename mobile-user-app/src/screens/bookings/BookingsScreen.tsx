@@ -58,55 +58,6 @@ const STATUS_CONFIG = {
 
 type TabKey = 'todos' | 'viajes' | 'envios' | 'tours';
 
-// ── Historial demo — Ecuador ───────────────────────────────────────────────────
-const DEMO_BOOKINGS: Booking[] = [
-  {
-    id: 'db1',
-    type: 'ride',
-    status: 'completed',
-    origin: 'Ambato, Terminal Terrestre',
-    destination: 'Aeropuerto Quito (Tababela)',
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 45,
-  },
-  {
-    id: 'db2',
-    type: 'ride',
-    status: 'completed',
-    origin: 'Latacunga, Parque Vicente León',
-    destination: 'Quito, La Mariscal',
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 18,
-  },
-  {
-    id: 'db3',
-    type: 'envio',
-    status: 'completed',
-    origin: 'Salcedo, Av. 24 de Mayo',
-    destination: 'Quito, Cumbayá',
-    date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 12,
-  },
-  {
-    id: 'db4',
-    type: 'ride',
-    status: 'cancelled',
-    origin: 'Otavalo, Mercado Artesanal',
-    destination: 'Ibarra, Terminal',
-    date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 0,
-  },
-  {
-    id: 'db5',
-    type: 'booking',
-    status: 'completed',
-    origin: undefined,
-    destination: 'Tren Nariz del Diablo — Alausí',
-    date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    amount: 45,
-  },
-];
-
 export function BookingsScreen() {
   const navigation = useNavigation<Nav>();
   const { user } = useAuthStore();
@@ -167,19 +118,16 @@ export function BookingsScreen() {
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      // Si la API no devuelve nada, mostrar historial demo
-      const finalList = all.length > 0 ? all : DEMO_BOOKINGS;
-      setBookings(finalList);
+      setBookings(all);
 
       // Stats
-      const spent = finalList.reduce((s, b) => s + (b.amount ?? 0), 0);
+      const spent = all.reduce((s, b) => s + (b.amount ?? 0), 0);
       setSpent(spent);
       setPoints(Math.round(spent * 10)); // 10 pts per $1
     } catch {
-      setBookings(DEMO_BOOKINGS);
-      const spent = DEMO_BOOKINGS.reduce((s, b) => s + (b.amount ?? 0), 0);
-      setSpent(spent);
-      setPoints(Math.round(spent * 10));
+      setBookings([]);
+      setSpent(0);
+      setPoints(0);
     } finally {
       setIsLoading(false);
       setRefreshing(false);

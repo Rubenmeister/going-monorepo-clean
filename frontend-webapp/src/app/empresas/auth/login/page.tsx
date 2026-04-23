@@ -1,8 +1,6 @@
 /**
  * Página de Login para Empresas
  * Ruta: /empresas/auth/login
- *
- * TODO: Integrar con sistema de autenticación real en Fase 2
  */
 
 "use client";
@@ -25,14 +23,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const success = await signIn(email, password);
-      if (success) {
+      const result = await signIn(email, password);
+      if (result.success) {
         router.push("/empresas/panel");
       } else {
-        setError("Email o contraseña incorrectos");
+        setError(result.error ?? "Email o contraseña incorrectos");
       }
     } catch (err) {
-      setError("Error al iniciar sesión");
+      setError("No se pudo conectar con el servidor");
     } finally {
       setLoading(false);
     }
@@ -103,14 +101,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Demo Info */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs font-semibold text-blue-900">Modo de Demostración</p>
-          <p className="text-xs text-blue-800 mt-2">
-            Usa cualquier email y contraseña para entrar (datos de demo).
-          </p>
-        </div>
-
         {/* Links */}
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-600">
@@ -129,9 +119,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* TODO: Integrar SSO (Okta, Azure, Google) en Fase 2 */}
-      {/* TODO: Implementar MFA en Fase 2 */}
-      {/* TODO: Integrar con backend real en Fase 1 */}
+      {/* TODO: SSO (Okta, Azure, Google) - Fase 2 */}
+      {/* TODO: MFA/2FA - Fase 2 */}
     </main>
   );
 }

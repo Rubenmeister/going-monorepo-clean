@@ -1,18 +1,31 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { IRideRepository } from '../../domain/ports';
 
 /**
  * Complete Ride Use Case
  * Finaliza el viaje y calcula la tarifa REAL según distancia/duración reales.
+ * También sincroniza el estado del booking en el servicio de bookings.
  *
  * Fórmula: baseFare + (distanceKm × perKmRate) + (durationMin × perMinRate) × surgeMultiplier
  */
 @Injectable()
 export class CompleteRideUseCase {
+  private readonly logger = new Logger(CompleteRideUseCase.name);
+  private readonly bookingServiceUrl: string;
+
   constructor(
     @Inject('IRideRepository')
     private readonly rideRepo: IRideRepository,
-  ) {}
+    private readonly httpService: HttpService,
+    configService: ConfigService,
+  ) {
+    this.bookingServiceUrl = configService.get<string>(
+      'BOOKING_SERVICE_URL',
+      'http://localhost:3006'
+    );
+  }
 
   async execute(input: {
     rideId: string;
@@ -52,6 +65,51 @@ export class CompleteRideUseCase {
       finalFare,
     });
 
+    // Sincronizar estado de booking en el servicio de bookings (no-blocking)
+    if (updated.bookingId) {
+      this.syncBookingStatus(updated.bookingId, 'completed').catch((err) => {
+        this.logger.warn(
+          `Could not sync booking ${updated.bookingId} status: ${err?.message}`,
+        );
+      });
+    }
+
+    // Registrar viaje en blockchain (no-blocking)
+    const blockchainUrl = process.env.BLOCKCHAIN_SERVICE_URL || 'http://localhost:3018';
+    fetch(`${blockchainUrl}/blockchain/trips`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rideId:          updated.id,
+        userId:          updated.passengerId,
+        driverId:        updated.driverId,
+        fromAddress:     updated.from || '',
+        toAddress:       updated.to || '',
+        distanceKm,
+        durationSeconds,
+        fare:            finalFare,
+        paymentMethod:   updated.paymentMethod || 'cash',
+        completedAt:     updated.completedAt,
+      }),
+    }).catch(e => this.logger.warn(`Blockchain record failed: ${e.message}`));
+
+    // Registrar viaje en recomendaciones (no-blocking)
+    const recommendationUrl = process.env.RECOMMENDATION_SERVICE_URL || 'http://localhost:3020';
+    fetch(`${recommendationUrl}/recommendations/history`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId:      updated.passengerId,
+        from:        updated.from || '',
+        to:          updated.to || '',
+        fromLat:     updated.fromLatitude,
+        fromLng:     updated.fromLongitude,
+        toLat:       updated.toLatitude,
+        toLng:       updated.toLongitude,
+        rideId:      updated.id,
+      }),
+    }).catch(e => this.logger.warn(`Recommendation history failed: ${e.message}`));
+
     return {
       rideId:          updated.id,
       status:          updated.status,
@@ -63,5 +121,20 @@ export class CompleteRideUseCase {
       paymentRef:      updated.paymentRef,
       paymentTxnId:    updated.paymentTxnId,
     };
+  }
+
+  /**
+   * Sincroniza el estado del booking con el servicio de bookings
+   */
+  private async syncBookingStatus(bookingId: string, status: string): Promise<void> {
+    try {
+      await this.httpService
+        .patch(`${this.bookingServiceUrl}/bookings/${bookingId}`, { status })
+        .toPromise();
+      this.logger.debug(`Booking ${bookingId} synced with status: ${status}`);
+    } catch (error: any) {
+      // Rethrow para que el caller maneje
+      throw error;
+    }
   }
 }

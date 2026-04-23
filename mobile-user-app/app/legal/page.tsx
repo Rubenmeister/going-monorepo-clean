@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 
 // ─── Legal — Términos, Privacidad, Cookies, Contrato conductor ──────────────
 // Accesible desde Perfil → Ajustes → Legal

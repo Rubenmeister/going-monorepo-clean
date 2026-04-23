@@ -41,8 +41,9 @@ export const CurrentUser = createParamDecorator(
 );
 
 /**
- * Message Repository Interface
+ * Message Repository Interface & DI Token
  */
+export const IMessageRepository = Symbol('IMessageRepository');
 export interface IMessageRepository {
   create(message: any): Promise<any>;
   findById(id: string): Promise<any | null>;

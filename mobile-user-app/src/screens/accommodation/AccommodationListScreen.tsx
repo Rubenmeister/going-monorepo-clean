@@ -30,74 +30,6 @@ interface Accommodation {
 }
 
 // ── Alojamientos demo — Ecuador ───────────────────────────────────────────────
-const DEMO_ACCOMMODATIONS: Accommodation[] = [
-  {
-    id: 'a1',
-    title: 'Casa Hacienda San Agustín del Callo',
-    location: { city: 'Latacunga', country: 'Ecuador' },
-    pricePerNight: { amount: 120, currency: 'USD' },
-    capacity: 4,
-    amenities: ['WiFi', 'Desayuno', 'Caballos', 'Jacuzzi'],
-    emoji: '🏛️',
-    rating: 4.9,
-    type: 'Hacienda',
-  },
-  {
-    id: 'a2',
-    title: 'Hostal Casa Gangotena — Centro Histórico',
-    location: { city: 'Quito', country: 'Ecuador' },
-    pricePerNight: { amount: 95, currency: 'USD' },
-    capacity: 2,
-    amenities: ['WiFi', 'Piscina', 'Spa', 'Restaurante'],
-    emoji: '🏨',
-    rating: 4.8,
-    type: 'Hotel boutique',
-  },
-  {
-    id: 'a3',
-    title: 'Glamping Volcánico frente al Cotopaxi',
-    location: { city: 'Machachi', country: 'Ecuador' },
-    pricePerNight: { amount: 75, currency: 'USD' },
-    capacity: 2,
-    amenities: ['Chimenea', 'Telescopio', 'Desayuno', 'Estacionamiento'],
-    emoji: '⛺',
-    rating: 5.0,
-    type: 'Glamping',
-  },
-  {
-    id: 'a4',
-    title: 'Cabaña en el Bosque Nublado de Mindo',
-    location: { city: 'Mindo', country: 'Ecuador' },
-    pricePerNight: { amount: 45, currency: 'USD' },
-    capacity: 3,
-    amenities: ['WiFi', 'Desayuno', 'Kayak', 'Tubing'],
-    emoji: '🌿',
-    rating: 4.7,
-    type: 'Cabaña',
-  },
-  {
-    id: 'a5',
-    title: 'Suite en Lodge Amazónico del Napo',
-    location: { city: 'Tena', country: 'Ecuador' },
-    pricePerNight: { amount: 85, currency: 'USD' },
-    capacity: 2,
-    amenities: ['Selva', 'Guía', 'Canoa', 'Wifi satelital'],
-    emoji: '🌴',
-    rating: 4.9,
-    type: 'Lodge',
-  },
-  {
-    id: 'a6',
-    title: 'Apartamento frente al Mar en Salinas',
-    location: { city: 'Salinas', country: 'Ecuador' },
-    pricePerNight: { amount: 60, currency: 'USD' },
-    capacity: 5,
-    amenities: ['WiFi', 'AC', 'Playa', 'Cocina'],
-    emoji: '🌊',
-    rating: 4.6,
-    type: 'Apartamento',
-  },
-];
 
 export function AccommodationListScreen() {
   const [items, setItems]         = useState<Accommodation[]>([]);
@@ -113,17 +45,9 @@ export function AccommodationListScreen() {
         cityFilter ? { city: cityFilter } : undefined
       );
       const apiItems: Accommodation[] = data || [];
-      setItems(apiItems.length > 0 ? apiItems : DEMO_ACCOMMODATIONS);
+      setItems(apiItems);
     } catch {
-      if (cityFilter) {
-        const filtered = DEMO_ACCOMMODATIONS.filter(a =>
-          a.location.city.toLowerCase().includes(cityFilter.toLowerCase()) ||
-          a.title.toLowerCase().includes(cityFilter.toLowerCase())
-        );
-        setItems(filtered.length > 0 ? filtered : DEMO_ACCOMMODATIONS);
-      } else {
-        setItems(DEMO_ACCOMMODATIONS);
-      }
+      setItems([]);
     } finally {
       setIsLoading(false);
     }

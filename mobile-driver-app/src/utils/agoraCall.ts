@@ -9,8 +9,9 @@
 import { Linking, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { API_BASE_URL } from './constants';
 
-const API = process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com';
+const API = API_BASE_URL;
 
 export interface CallSession {
   type:     'agora' | 'pstn';

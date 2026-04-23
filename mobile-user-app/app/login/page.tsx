@@ -11,8 +11,10 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    init();
-  }, [init]);
+    // init() ya fue llamado en SplashScreen, pero lo llamamos aquí como respaldo
+    // por si el usuario llega directamente a /login sin pasar por splash
+    if (!isReady) init();
+  }, [init, isReady]);
 
   useEffect(() => {
     if (isReady && token) router.replace('/home');
@@ -24,7 +26,7 @@ export default function LoginPage() {
     setError('');
     try {
       await login(email, password);
-      router.replace('/home');
+      // La navegación la maneja el useEffect cuando token cambia
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {

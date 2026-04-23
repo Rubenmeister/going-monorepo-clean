@@ -31,7 +31,7 @@ export class BookingModelSchema {
   @Prop({
     required: true,
     type: String,
-    enum: ['transport', 'accommodation', 'tour', 'experience'],
+    enum: ['transport', 'accommodation', 'tour', 'experience', 'parcel'],
   })
   serviceType: ServiceType;
 

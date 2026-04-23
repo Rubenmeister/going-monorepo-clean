@@ -16,6 +16,8 @@ export type LoginResponseDto = {
     id: string;
     email: string;
     firstName: string;
+    lastName: string;
+    phone?: string;
     roles: string[];
   };
 };
@@ -111,6 +113,8 @@ export class LoginUserUseCase {
           id: user.id,
           email: user.email,
           firstName: user.firstName,
+          lastName: user.lastName,
+          phone: user.phone,
           roles: roles,
         },
       };

@@ -13,10 +13,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../../utils/constants';
 
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com';
 
 interface Document {
   id: string;
@@ -54,7 +54,7 @@ export function DocumentsScreen() {
   const fetchDocuments = async () => {
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      const { data } = await axios.get(`${API_BASE}/drivers/me/documents`, {
+      const { data } = await axios.get(`${API_BASE_URL}/drivers/me/documents`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const docs: Document[] = Array.isArray(data) ? data : data?.documents ?? [];
@@ -106,7 +106,7 @@ export function DocumentsScreen() {
       } as any);
       formData.append('type', docType);
 
-      await axios.post(`${API_BASE}/drivers/me/documents`, formData, {
+      await axios.post(`${API_BASE_URL}/drivers/me/documents`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

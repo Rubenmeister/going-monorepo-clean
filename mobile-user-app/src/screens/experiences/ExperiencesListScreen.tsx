@@ -30,74 +30,6 @@ interface Experience {
 }
 
 // ── Experiencias demo — Ecuador ───────────────────────────────────────────────
-const DEMO_EXPERIENCES: Experience[] = [
-  {
-    id: 'e1',
-    title: 'Cocina ecuatoriana con abuela serrana',
-    description: 'Aprende a cocinar hornado, llapingachos y mote en la cocina de una familia ambateña. Incluye almuerzo.',
-    location: { city: 'Ambato', country: 'Ecuador' },
-    price: { amount: 25, currency: 'USD' },
-    durationHours: 4,
-    category: 'Gastronomía',
-    emoji: '🍲',
-    hostName: 'Mama Rosa',
-  },
-  {
-    id: 'e2',
-    title: 'Telar ancestral kichwa en Otavalo',
-    description: 'Artesano kichwa te enseña la técnica milenaria del telar de cintura. Te llevas tu tejido creado.',
-    location: { city: 'Otavalo', country: 'Ecuador' },
-    price: { amount: 30, currency: 'USD' },
-    durationHours: 3,
-    category: 'Artesanía',
-    emoji: '🧶',
-    hostName: 'Tupac Quispe',
-  },
-  {
-    id: 'e3',
-    title: 'Ciclismo volcánico: descenso del Chimborazo',
-    description: 'Descenso en mountain bike desde 4.800m. Vistas épicas, paja de páramo y vicuñas en libertad.',
-    location: { city: 'Riobamba', country: 'Ecuador' },
-    price: { amount: 55, currency: 'USD' },
-    durationHours: 5,
-    category: 'Aventura',
-    emoji: '🚵',
-    hostName: 'Andes Bike Ecuador',
-  },
-  {
-    id: 'e4',
-    title: 'Fotografía urbana en el Centro Histórico de Quito',
-    description: 'Paseo fotográfico por el centro UNESCO. Iglesias barrocas, miradores y vida cotidiana quiteña.',
-    location: { city: 'Quito', country: 'Ecuador' },
-    price: { amount: 20, currency: 'USD' },
-    durationHours: 3,
-    category: 'Fotografía',
-    emoji: '📸',
-    hostName: 'Diego Arcos',
-  },
-  {
-    id: 'e5',
-    title: 'Surf & yoga en Montañita',
-    description: 'Clase de surf al amanecer + sesión de yoga frente al Pacífico. Para principiantes y avanzados.',
-    location: { city: 'Montañita', country: 'Ecuador' },
-    price: { amount: 40, currency: 'USD' },
-    durationHours: 4,
-    category: 'Bienestar',
-    emoji: '🏄',
-    hostName: 'Pacific Soul',
-  },
-  {
-    id: 'e6',
-    title: 'Avistamiento de ballenas jorobadas',
-    description: 'Temporada julio-octubre. Tour en lancha a las islas de la Plata. Con guía naturalista certificado.',
-    location: { city: 'Puerto López', country: 'Ecuador' },
-    price: { amount: 50, currency: 'USD' },
-    durationHours: 6,
-    category: 'Naturaleza',
-    emoji: '🐋',
-    hostName: 'Machalilla Tours',
-  },
-];
 
 export function ExperiencesListScreen() {
   const [items, setItems]         = useState<Experience[]>([]);
@@ -113,17 +45,9 @@ export function ExperiencesListScreen() {
         cityFilter ? { city: cityFilter } : undefined
       );
       const apiItems: Experience[] = data || [];
-      setItems(apiItems.length > 0 ? apiItems : DEMO_EXPERIENCES);
+      setItems(apiItems);
     } catch {
-      if (cityFilter) {
-        const filtered = DEMO_EXPERIENCES.filter(e =>
-          e.location.city.toLowerCase().includes(cityFilter.toLowerCase()) ||
-          e.title.toLowerCase().includes(cityFilter.toLowerCase())
-        );
-        setItems(filtered.length > 0 ? filtered : DEMO_EXPERIENCES);
-      } else {
-        setItems(DEMO_EXPERIENCES);
-      }
+      setItems([]);
     } finally {
       setIsLoading(false);
     }

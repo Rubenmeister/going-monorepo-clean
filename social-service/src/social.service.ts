@@ -4,6 +4,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { GamificationRepository } from './infrastructure/persistence/gamification.repository';
 
 export interface UserReview {
   id?: string;
@@ -75,6 +76,7 @@ export interface UserAchievement {
 }
 
 export interface GamificationStats {
+  id?: string;
   userId: string;
   totalPoints: number;
   level: number;
@@ -87,6 +89,9 @@ export interface GamificationStats {
   };
   leaderboardRank?: number;
   tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+  nextTierPoints?: number; // points needed for next tier
+  badges: string[]; // badge IDs
+  updatedAt?: Date;
 }
 
 export interface CommunityEvent {
@@ -128,7 +133,9 @@ export class SocialService {
   private events: Map<string, CommunityEvent> = new Map();
   private eventParticipants: Map<string, EventParticipant> = new Map();
 
-  constructor() {
+  constructor(
+    private readonly gamificationRepository: GamificationRepository,
+  ) {
     this.initializeBadges();
   }
 
@@ -585,8 +592,20 @@ export class SocialService {
    */
   async addPoints(userId: string, points: number): Promise<GamificationStats> {
     try {
-      const stats = await this.getGamificationStats(userId);
-      stats.totalPoints += points;
+      let stats: GamificationStats | null = null;
+      try {
+        stats = await this.gamificationRepository.incrementPoints(userId, points);
+      } catch {
+        this.logger.warn(`Failed to persist to DB, falling back to in-memory`);
+      }
+
+      // Fall back to in-memory if DB fails
+      if (!stats) {
+        const memStats = this.gamificationStats.get(userId) ?? this.createDefaultStats(userId);
+        memStats.totalPoints += points;
+        this.gamificationStats.set(userId, memStats);
+        stats = memStats;
+      }
 
       this.logger.log(
         `⭐ Points added to ${userId}: +${points} (Total: ${stats.totalPoints})`
@@ -715,5 +734,107 @@ export class SocialService {
       this.logger.error(`Failed to get active events: ${error}`);
       throw error;
     }
+  }
+
+  /**
+   * Get user rewards/points (fetches gamification stats)
+   * Response includes: userId, points, tier, level, badges, nextTierPoints
+   */
+  async getRewards(userId: string): Promise<any> {
+    try {
+      // Try DB first
+      let stats: GamificationStats | null = null;
+      try {
+        stats = await this.gamificationRepository.findByUserId(userId);
+      } catch {
+        this.logger.warn(`Failed to fetch from DB, falling back to in-memory`);
+      }
+
+      // Fall back to in-memory
+      if (!stats) {
+        stats = this.gamificationStats.get(userId) ?? this.createDefaultStats(userId);
+      }
+
+      // Calculate next tier points
+      const tierThresholds = {
+        BRONZE: 0,
+        SILVER: 1000,
+        GOLD: 2000,
+        PLATINUM: 5000,
+        DIAMOND: 10000,
+      };
+
+      const currentTierThreshold = tierThresholds[stats.tier];
+      const nextTierName = stats.tier === 'DIAMOND' ? 'DIAMOND' :
+        Object.keys(tierThresholds).find(tier => tierThresholds[tier] > currentTierThreshold);
+      const nextTierPoints = nextTierName ? tierThresholds[nextTierName] : 10000;
+
+      return {
+        userId: stats.userId,
+        points: stats.totalPoints,
+        tier: stats.tier,
+        level: stats.level,
+        badges: stats.achievements.map((a) => a.badgeCode),
+        nextTierPoints: nextTierPoints - stats.totalPoints,
+        progress: {
+          currentLevel: stats.level,
+          levelProgress: stats.currentLevelProgress,
+          tier: stats.tier,
+        },
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get rewards: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Award points after ride completion
+   * shared rides: 50 points, private rides: 100 points
+   */
+  async awardRidePoints(
+    userId: string,
+    rideType: 'shared' | 'private'
+  ): Promise<GamificationStats> {
+    try {
+      const points = rideType === 'shared' ? 50 : 100;
+      const stats = await this.addPoints(userId, points);
+
+      // Optionally unlock achievement if criteria met
+      if (stats.totalPoints >= 100 && stats.totalPoints < 150) {
+        // First ride might unlock
+        const achievements = Array.from(this.achievements.values()).filter(
+          (a) => a.userId === userId && a.badgeCode === 'FIRST_DELIVERY'
+        );
+        if (achievements.length === 0) {
+          await this.unlockAchievement(userId, 'FIRST_DELIVERY');
+        }
+      }
+
+      this.logger.log(
+        `🚗 Ride points awarded to ${userId}: +${points} points (${rideType} ride)`
+      );
+
+      return stats;
+    } catch (error) {
+      this.logger.error(`Failed to award ride points: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Create default gamification stats for a new user
+   */
+  private createDefaultStats(userId: string): GamificationStats {
+    return {
+      userId,
+      totalPoints: 0,
+      level: 1,
+      currentLevelProgress: 0,
+      achievements: [],
+      streaks: { deliveryStreak: 0, reviewStreak: 0, referralStreak: 0 },
+      tier: 'BRONZE',
+      badges: [],
+    };
   }
 }

@@ -9,14 +9,16 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  Inject,
 } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
+import { JwtAuthGuard, CurrentUser, IMessageRepository } from '../../domain/ports';
 import {
   SendMessageDto,
   MessageResponseDto,
   MarkReadDto,
   ConversationDto,
 } from './dtos/send-message.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Chat Controller
@@ -25,6 +27,10 @@ import {
 @Controller('chats')
 @UseGuards(JwtAuthGuard)
 export class ChatController {
+  constructor(
+    @Inject(IMessageRepository)
+    private messageRepository: IMessageRepository
+  ) {}
   /**
    * Send a message
    * POST /api/chats/rides/:rideId/messages
@@ -36,15 +42,25 @@ export class ChatController {
     @Param('rideId') rideId: string,
     @Body() dto: SendMessageDto
   ): Promise<MessageResponseDto> {
-    // TODO: Save message and broadcast via WebSocket
-    return {
-      messageId: 'msg_123',
+    const messageId = uuidv4();
+    const message = await this.messageRepository.create({
+      id: messageId,
       rideId,
       senderId: user.id,
-      receiverId: 'other_user_id',
+      receiverId: dto.receiverId,
       content: dto.content,
-      isRead: false,
+      attachments: dto.attachments || [],
       createdAt: new Date(),
+    });
+
+    return {
+      messageId: message.id,
+      rideId: message.rideId,
+      senderId: message.senderId,
+      receiverId: message.receiverId,
+      content: message.content,
+      isRead: !message.readAt,
+      createdAt: message.createdAt,
     };
   }
 
@@ -55,10 +71,19 @@ export class ChatController {
   @Get('rides/:rideId/messages')
   async getMessages(
     @Param('rideId') rideId: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: string
   ): Promise<MessageResponseDto[]> {
-    // TODO: Fetch from repository
-    return [];
+    const numLimit = limit ? Number(limit) : 50;
+    const messages = await this.messageRepository.findByRideId(rideId, numLimit);
+    return messages.map(m => ({
+      messageId: m.id,
+      rideId: m.rideId,
+      senderId: m.senderId,
+      receiverId: m.receiverId,
+      content: m.content,
+      isRead: !!m.readAt,
+      createdAt: m.createdAt,
+    }));
   }
 
   /**
@@ -70,12 +95,29 @@ export class ChatController {
     @CurrentUser() user: any,
     @Param('rideId') rideId: string,
     @Query('otherUserId') otherUserId: string,
-    @Query('limit') limit?: number
+    @Query('limit') limit?: string
   ): Promise<ConversationDto> {
-    // TODO: Fetch conversation
+    const numLimit = limit ? Number(limit) : 50;
+    const messages = await this.messageRepository.findConversation(
+      rideId,
+      user.id,
+      otherUserId,
+      numLimit
+    );
+
+    const unreadCount = messages.filter(m => !m.readAt && m.receiverId === user.id).length;
+
     return {
-      messages: [],
-      unreadCount: 0,
+      messages: messages.map(m => ({
+        messageId: m.id,
+        rideId: m.rideId,
+        senderId: m.senderId,
+        receiverId: m.receiverId,
+        content: m.content,
+        isRead: !!m.readAt,
+        createdAt: m.createdAt,
+      })),
+      unreadCount,
     };
   }
 
@@ -87,8 +129,16 @@ export class ChatController {
   async markAsRead(
     @Param('messageId') messageId: string
   ): Promise<MessageResponseDto> {
-    // TODO: Mark as read
-    return {} as any;
+    const message = await this.messageRepository.markAsRead(messageId);
+    return {
+      messageId: message.id,
+      rideId: message.rideId,
+      senderId: message.senderId,
+      receiverId: message.receiverId,
+      content: message.content,
+      isRead: !!message.readAt,
+      createdAt: message.createdAt,
+    };
   }
 
   /**
@@ -99,8 +149,16 @@ export class ChatController {
   async getUnreadMessages(
     @CurrentUser() user: any
   ): Promise<MessageResponseDto[]> {
-    // TODO: Fetch unread messages
-    return [];
+    const messages = await this.messageRepository.findUnreadForUser(user.id);
+    return messages.map(m => ({
+      messageId: m.id,
+      rideId: m.rideId,
+      senderId: m.senderId,
+      receiverId: m.receiverId,
+      content: m.content,
+      isRead: !!m.readAt,
+      createdAt: m.createdAt,
+    }));
   }
 
   /**
@@ -109,6 +167,6 @@ export class ChatController {
    */
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteMessage(@Param('messageId') messageId: string): Promise<void> {
-    // TODO: Delete message
+    await this.messageRepository.delete(messageId);
   }
 }

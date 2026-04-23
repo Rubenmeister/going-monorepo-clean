@@ -4,562 +4,553 @@ import { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+// ── Constantes ────────────────────────────────────────────────────────────────
+const RED   = '#ff4c41';
+const GREEN = '#059669';
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-interface LocationSuggestion {
-  display_name: string;
-  lat: string;
-  lon: string;
-}
-
-interface FormData {
-  origin: { address: string; latitude: number | null; longitude: number | null };
-  destination: { address: string; latitude: number | null; longitude: number | null };
-  packageType: 'document' | 'small' | 'medium' | 'large' | null;
-  senderName: string;
-  recipientName: string;
-  recipientPhone: string;
-}
-
 const PACKAGE_TYPES = [
-  { id: 'document', label: 'Documento/Sobre', price: 3 },
-  { id: 'small', label: 'Paquete Pequeño', price: 5 },
-  { id: 'medium', label: 'Paquete Mediano', price: 8 },
-  { id: 'large', label: 'Paquete Grande', price: 12 },
-];
+  { id: 'small',    label: 'Pequeño',   desc: 'hasta 5 kg',  price: 5  },
+  { id: 'medium',   label: 'Mediano',   desc: '5–20 kg',     price: 8  },
+  { id: 'large',    label: 'Grande',    desc: '20+ kg',      price: 12 },
+  { id: 'document', label: 'Documento', desc: 'sobres/docs', price: 3  },
+] as const;
+type PkgId = typeof PACKAGE_TYPES[number]['id'];
+type ScreenView = 'form' | 'tracking' | 'delivered';
 
-const estimateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
+interface Suggestion { display_name: string; lat: string; lon: string; }
 
-const calculatePrice = (packageType: string | null, distance: number | null): { base: number; kmFee: number; insurance: number; total: number } => {
-  const basePrice = PACKAGE_TYPES.find((t) => t.id === packageType)?.price || 0;
-  const kmFee = (distance || 0) * 0.5;
-  const insurance = (basePrice + kmFee) * 0.1;
-  const total = basePrice + kmFee + insurance;
-  return { base: basePrice, kmFee, insurance, total };
-};
+// ── Inline SVGs ───────────────────────────────────────────────────────────────
+const IcoUp    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 16"/><polyline points="8 12 12 8 16 12"/></svg>;
+const IcoDown  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 12 8"/><polyline points="16 12 12 16 8 12"/></svg>;
+const IcoCube  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L11 21.73a2 2 0 0 0 2 0L20 17.73A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
+const IcoLock  = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+const IcoCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const IcoPin   = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>;
+const IcoPhone = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1.28h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+const IcoPerson = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+const IcoArrow = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
 
-export default function QuotePage() {
-  const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [trackingId, setTrackingId] = useState('');
-
-  const [formData, setFormData] = useState<FormData>({
-    origin: { address: '', latitude: null, longitude: null },
-    destination: { address: '', latitude: null, longitude: null },
-    packageType: null,
-    senderName: '',
-    recipientName: '',
-    recipientPhone: '',
-  });
-
-  const [originSuggestions, setOriginSuggestions] = useState<LocationSuggestion[]>([]);
-  const [destSuggestions, setDestSuggestions] = useState<LocationSuggestion[]>([]);
-  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
-  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
-  const originInputRef = useRef<HTMLInputElement>(null);
-  const destInputRef = useRef<HTMLInputElement>(null);
-
-  const fetchLocationSuggestions = useCallback(async (query: string): Promise<LocationSuggestion[]> => {
-    if (query.length < 2) return [];
-    try {
-      if (MAPBOX_TOKEN) {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
-          + `?country=ec&language=es&limit=5&types=place,locality,neighborhood,address,poi`
-          + `&access_token=${MAPBOX_TOKEN}`;
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        const json = await res.json();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (json.features as any[]).map((f: any) => ({
-          display_name: f.place_name,
-          lat: String(f.geometry.coordinates[1]),
-          lon: String(f.geometry.coordinates[0]),
-        }));
-      }
-      // Fallback: Nominatim
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=ec&format=json&addressdetails=1&limit=5`,
-        { headers: { 'Accept': 'application/json', 'User-Agent': 'GoingApp/1.0 (goingec.com)' } }
-      );
-      return await res.json();
-    } catch {
-      return [];
+// ── Geocoding ─────────────────────────────────────────────────────────────────
+async function fetchSuggestions(query: string): Promise<Suggestion[]> {
+  if (query.length < 2) return [];
+  try {
+    if (MAPBOX_TOKEN) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`
+        + `?country=ec&language=es&limit=5&types=place,locality,neighborhood,address,poi&access_token=${MAPBOX_TOKEN}`;
+      const res  = await fetch(url);
+      const json = await res.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (json.features as any[]).map((f: any) => ({
+        display_name: f.place_name,
+        lat: String(f.geometry.coordinates[1]),
+        lon: String(f.geometry.coordinates[0]),
+      }));
     }
-  }, []);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&countrycodes=ec&format=json&limit=5`,
+      { headers: { 'User-Agent': 'GoingApp/1.0' } }
+    );
+    return await res.json();
+  } catch { return []; }
+}
 
-  const handleOriginInput = async (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      origin: { ...prev.origin, address: value },
-    }));
-    const suggestions = await fetchLocationSuggestions(value);
-    setOriginSuggestions(suggestions);
-    setShowOriginSuggestions(true);
+function generateRef() {
+  return `ENV-${Date.now().toString(36).toUpperCase().slice(-6)}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+}
+
+// ── Location Input ────────────────────────────────────────────────────────────
+function LocationInput({
+  label, placeholder, value, onChange, onSelect, accent = RED,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+  onSelect: (s: Suggestion) => void;
+  accent?: string;
+}) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleChange = (v: string) => {
+    onChange(v);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      const s = await fetchSuggestions(v);
+      setSuggestions(s);
+      setOpen(s.length > 0);
+    }, 300);
   };
 
-  const handleDestinationInput = async (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      destination: { ...prev.destination, address: value },
-    }));
-    const suggestions = await fetchLocationSuggestions(value);
-    setDestSuggestions(suggestions);
-    setShowDestSuggestions(true);
+  return (
+    <div className="relative">
+      <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5"
+        style={{ color: accent }}>
+        {label}
+      </label>
+      <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-3 border-2 border-gray-100 focus-within:border-opacity-60"
+        style={{ '--tw-border-opacity': '1' } as React.CSSProperties}>
+        <span className="text-gray-400"><IcoPin /></span>
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={value}
+          onChange={e => handleChange(e.target.value)}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+        />
+        {value && (
+          <button type="button" onClick={() => { onChange(''); setSuggestions([]); }}
+            className="text-gray-300 hover:text-gray-500 text-xs font-bold">✕</button>
+        )}
+      </div>
+      {open && suggestions.length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          {suggestions.map((s, i) => (
+            <button key={i} type="button"
+              onMouseDown={() => { onSelect(s); setSuggestions([]); setOpen(false); }}
+              className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 border-b last:border-b-0">
+              {s.display_name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Card wrapper ──────────────────────────────────────────────────────────────
+function SectionCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-3"
+      style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+        {icon}
+        <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>{title}</span>
+      </div>
+      <div className="px-4 py-4 space-y-3">{children}</div>
+    </div>
+  );
+}
+
+// ── Field row ─────────────────────────────────────────────────────────────────
+function FieldRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5 bg-gray-50 rounded-xl px-3 py-3 border border-gray-100">
+      <span className="text-gray-400 flex-shrink-0">{icon}</span>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+export default function EnviosCotizarPage() {
+  const router = useRouter();
+
+  const [view,           setView]           = useState<ScreenView>('form');
+  const [pkgType,        setPkgType]        = useState<PkgId>('small');
+  const [pkgDesc,        setPkgDesc]        = useState('');
+  const [senderAddr,     setSenderAddr]     = useState('');
+  const [senderLat,      setSenderLat]      = useState<number | null>(null);
+  const [senderLon,      setSenderLon]      = useState<number | null>(null);
+  const [recipientName,  setRecipientName]  = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientAddr,  setRecipientAddr]  = useState('');
+  const [recipientLat,   setRecipientLat]   = useState<number | null>(null);
+  const [recipientLon,   setRecipientLon]   = useState<number | null>(null);
+  const [loading,        setLoading]        = useState(false);
+  const [otpCode,        setOtpCode]        = useState('');
+  const [trackingRef,    setTrackingRef]    = useState('');
+  const [errors,         setErrors]         = useState<string[]>([]);
+
+  const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
+  const totalPrice  = selectedPkg.price;
+
+  const validate = () => {
+    const errs: string[] = [];
+    if (!senderAddr)     errs.push('Dirección de recogida requerida');
+    if (!recipientName)  errs.push('Nombre del destinatario requerido');
+    if (!recipientPhone) errs.push('Teléfono del destinatario requerido');
+    if (!recipientAddr)  errs.push('Dirección de entrega requerida');
+    setErrors(errs);
+    return errs.length === 0;
   };
 
-  const selectOrigin = (suggestion: LocationSuggestion) => {
-    setFormData((prev) => ({
-      ...prev,
-      origin: { address: suggestion.display_name, latitude: parseFloat(suggestion.lat), longitude: parseFloat(suggestion.lon) },
-    }));
-    setShowOriginSuggestions(false);
-  };
-
-  const selectDestination = (suggestion: LocationSuggestion) => {
-    setFormData((prev) => ({
-      ...prev,
-      destination: { address: suggestion.display_name, latitude: parseFloat(suggestion.lat), longitude: parseFloat(suggestion.lon) },
-    }));
-    setShowDestSuggestions(false);
-  };
-
-  const distance =
-    formData.origin.latitude !== null &&
-    formData.origin.longitude !== null &&
-    formData.destination.latitude !== null &&
-    formData.destination.longitude !== null
-      ? estimateDistance(formData.origin.latitude, formData.origin.longitude, formData.destination.latitude, formData.destination.longitude)
-      : null;
-
-  const priceBreakdown = calculatePrice(formData.packageType, distance);
-
-  const canAdvanceStep1 = formData.origin.latitude !== null && formData.destination.latitude !== null;
-  const canAdvanceStep2 = formData.packageType && formData.senderName && formData.recipientName && formData.recipientPhone;
-  const canAdvanceStep3 = true;
-
-  // Genera un ID de seguimiento temporal cuando el backend no está disponible
-  const generateTempId = () => `GNG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-
-  const submitEnvio = async (paymentMethod: 'datafast' | 'cash') => {
+  const handleSolicitar = async () => {
+    if (!validate()) return;
     setLoading(true);
-    setError('');
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
-      const res = await fetch(`${apiUrl}/envios/parcels`, {
+      const API = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.goingec.com';
+      const res = await fetch(`${API}/envios/parcels`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          origin: { address: formData.origin.address, latitude: formData.origin.latitude, longitude: formData.origin.longitude },
-          destination: { address: formData.destination.address, latitude: formData.destination.latitude, longitude: formData.destination.longitude },
-          type: formData.packageType,
-          senderName: formData.senderName,
-          recipientName: formData.recipientName,
-          recipientPhone: formData.recipientPhone,
-          price: { amount: priceBreakdown.total, currency: 'USD' },
-          paymentMethod,
+          origin:      { address: senderAddr,    latitude: senderLat,    longitude: senderLon },
+          destination: { address: recipientAddr, latitude: recipientLat, longitude: recipientLon },
+          type:        pkgType,
+          description: pkgDesc,
+          recipientName, recipientPhone,
+          price: { amount: totalPrice, currency: 'USD' },
         }),
       });
-      if (!res.ok) throw new Error('backend_error');
-      const data = await res.json();
-      setTrackingId(data.id || data.trackingId || generateTempId());
-      setStep(4);
+      const data = res.ok ? await res.json() : null;
+      setTrackingRef(data?.id ?? data?.trackingId ?? generateRef());
+      setOtpCode(data?.otpCode ?? String(Math.floor(1000 + Math.random() * 9000)));
+      setView('tracking');
     } catch {
-      // Si el backend no está disponible, avanzamos igualmente con ID temporal
-      setTrackingId(generateTempId());
-      setStep(4);
+      setTrackingRef(generateRef());
+      setOtpCode(String(Math.floor(1000 + Math.random() * 9000)));
+      setView('tracking');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePaymentDatafast = () => submitEnvio('datafast');
-  const handlePaymentCash = () => submitEnvio('cash');
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+  // ── TRACKING VIEW ──────────────────────────────────────────────────────────
+  if (view === 'tracking') {
+    return (
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="mb-10">
-          <Link href="/envios" className="text-gray-500 hover:text-gray-700 text-sm font-medium mb-4 inline-flex items-center gap-1">
-            ← Volver
-          </Link>
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Cotizar envío</h1>
-          <p className="text-gray-600">Completa los detalles de tu paquete</p>
-          {/* Aviso para usuarios sin cuenta */}
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-sm">
-            <span className="text-amber-500 mt-0.5">📦</span>
-            <p className="text-amber-800">
-              Para enviar o recibir paquetes necesitas una cuenta de <strong>Usuario</strong>.{' '}
-              <Link href="/auth/register" className="font-bold underline hover:text-amber-900">Regístrate gratis</Link>
-              {' '}o{' '}
-              <Link href="/auth/login" className="font-bold underline hover:text-amber-900">inicia sesión</Link>.
-            </p>
-          </div>
+        <div className="bg-white border-b-4 sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ borderBottomColor: RED }}>
+          <button onClick={() => setView('form')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+            style={{ backgroundColor: '#FFF0EF', color: RED }}>
+            ←
+          </button>
+          <span className="font-black text-gray-900">Seguimiento del envío</span>
+          <span className="ml-auto text-xs text-gray-400 font-mono">#{trackingRef}</span>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex items-center flex-1">
-                <div
-                  className="w-10 h-10 rounded-full font-black text-sm flex items-center justify-center transition-all"
-                  style={{
-                    backgroundColor: s <= step ? '#ff4c41' : '#e5e7eb',
-                    color: s <= step ? 'white' : '#9ca3af',
-                  }}
-                >
-                  {s < step ? '✓' : s}
-                </div>
-                {s < 4 && <div className="flex-1 h-1 mx-2" style={{ backgroundColor: s < step ? '#ff4c41' : '#e5e7eb' }} />}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between text-xs font-medium text-gray-600">
-            <span>Origen/Destino</span>
-            <span>Detalles</span>
-            <span>Cotización</span>
-            <span>Confirmación</span>
-          </div>
-        </div>
-
-        {/* Step 1: Origin and Destination */}
-        {step === 1 && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-black text-gray-900 mb-6">Paso 1: Origen y Destino</h2>
-
-            <div className="space-y-6">
-              {/* Origin */}
-              <div className="relative">
-                <label className="block text-sm font-black text-gray-900 mb-2">🟢 Dirección de origen</label>
-                <input
-                  ref={originInputRef}
-                  type="text"
-                  placeholder="Ej: Quito, Centro Comercial"
-                  value={formData.origin.address}
-                  onChange={(e) => handleOriginInput(e.target.value)}
-                  onFocus={() => setShowOriginSuggestions(true)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  
-                />
-                {showOriginSuggestions && originSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg z-10">
-                    {originSuggestions.map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => selectOrigin(suggestion)}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 text-sm text-gray-700"
-                      >
-                        {suggestion.display_name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Destination */}
-              <div className="relative">
-                <label className="block text-sm font-black text-gray-900 mb-2">🔴 Dirección de destino</label>
-                <input
-                  ref={destInputRef}
-                  type="text"
-                  placeholder="Ej: Guayaquil, Centro"
-                  value={formData.destination.address}
-                  onChange={(e) => handleDestinationInput(e.target.value)}
-                  onFocus={() => setShowDestSuggestions(true)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                  
-                />
-                {showDestSuggestions && destSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg z-10">
-                    {destSuggestions.map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => selectDestination(suggestion)}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 text-sm text-gray-700"
-                      >
-                        {suggestion.display_name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {distance !== null && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <p className="text-sm text-blue-900">
-                    <span className="font-black">Distancia estimada:</span> {distance.toFixed(1)} km
-                  </p>
-                </div>
-              )}
+        <div className="max-w-2xl mx-auto px-4 py-5 space-y-3">
+          {/* Status banner */}
+          <div className="flex items-center gap-3 rounded-2xl px-4 py-3.5 border"
+            style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
+            <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: RED }} />
+            <div className="flex-1">
+              <p className="text-sm font-black" style={{ color: RED }}>Conductor recogiendo el paquete</p>
+              <p className="text-xs text-amber-700 mt-0.5">Estimado: ~15 minutos</p>
             </div>
+            <span className="text-gray-400 text-xs">›</span>
+          </div>
 
-            <div className="flex gap-3 mt-8">
-              <button
-                onClick={() => {
-                  setStep(1);
-                }}
-                className="flex-1 px-6 py-3 rounded-xl border border-gray-300 font-black text-gray-900 hover:bg-gray-50 transition-all disabled:opacity-50"
-                disabled
-              >
-                Atrás
-              </button>
-              <button
-                onClick={() => setStep(2)}
-                disabled={!canAdvanceStep1}
-                className="flex-1 px-6 py-3 rounded-xl font-black text-white transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                style={{ backgroundColor: canAdvanceStep1 ? '#ff4c41' : '#cccccc' }}
-              >
-                Siguiente
-              </button>
+          {/* Remitente / Destinatario */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
+            {/* Remitente */}
+            <div className="flex items-start gap-3 p-4">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFF0EF' }}>
+                <IcoUp />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Remitente</p>
+                <p className="text-sm font-black text-gray-900">Remitente</p>
+                <p className="text-xs text-gray-500 truncate">{senderAddr}</p>
+              </div>
+            </div>
+            <div className="h-px bg-gray-50 mx-4" />
+            {/* Destinatario */}
+            <div className="flex items-start gap-3 p-4">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F0FDF4' }}>
+                <IcoDown />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Destinatario</p>
+                <p className="text-sm font-black text-gray-900">{recipientName}</p>
+                <p className="text-xs text-gray-500 truncate">{recipientAddr}</p>
+                <p className="text-xs font-bold" style={{ color: RED }}>{recipientPhone}</p>
+              </div>
+              {/* OTP Box */}
+              <div className="flex-shrink-0 rounded-xl px-3 py-2 border text-center"
+                style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
+                <p className="text-xs font-black" style={{ color: RED }}>CÓDIGO OTP</p>
+                <p className="text-2xl font-black" style={{ color: RED }}>{otpCode}</p>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Step 2: Package Details */}
-        {step === 2 && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-black text-gray-900 mb-6">Paso 2: Detalles del paquete</h2>
-
-            <div className="space-y-6">
-              {/* Package Type */}
-              <div>
-                <label className="block text-sm font-black text-gray-900 mb-3">Tipo de paquete</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {PACKAGE_TYPES.map((type) => (
-                    <button
-                      key={type.id}
-                      onClick={() => setFormData((prev) => ({ ...prev, packageType: type.id as any }))}
-                      className="p-4 rounded-xl border-2 transition-all text-sm font-black"
-                      style={{
-                        borderColor: formData.packageType === type.id ? '#ff4c41' : '#e5e7eb',
-                        backgroundColor: formData.packageType === type.id ? '#fff5f3' : 'white',
-                        color: formData.packageType === type.id ? '#ff4c41' : '#374151',
-                      }}
-                    >
-                      <div>{type.label}</div>
-                      <div className="text-xs mt-1 opacity-70">${type.price}</div>
-                    </button>
-                  ))}
+          {/* Ruta */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+              <IcoPin />
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>Ruta del envío</span>
+            </div>
+            <div className="px-4 py-4 space-y-2">
+              <div className="flex items-start gap-3">
+                <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: RED }} />
+                <div>
+                  <p className="text-sm font-bold text-gray-900 truncate">{senderAddr || 'Origen'}</p>
+                  <p className="text-xs text-gray-500">Recogida · Ahora</p>
                 </div>
               </div>
-
-              {/* Sender Name */}
-              <div>
-                <label className="block text-sm font-black text-gray-900 mb-2">Nombre del remitente</label>
-                <input
-                  type="text"
-                  placeholder="Tu nombre completo"
-                  value={formData.senderName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, senderName: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2"
-                  
-                />
+              <div className="w-px h-4 ml-1" style={{ backgroundColor: '#FEE2E2' }} />
+              <div className="flex items-start gap-3">
+                <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: GREEN }} />
+                <div>
+                  <p className="text-sm font-bold text-gray-900 truncate">{recipientAddr || 'Destino'}</p>
+                  <p className="text-xs text-gray-500">Entrega estimada · ~2h 30min</p>
+                </div>
               </div>
-
-              {/* Recipient Name */}
-              <div>
-                <label className="block text-sm font-black text-gray-900 mb-2">Nombre del destinatario</label>
-                <input
-                  type="text"
-                  placeholder="Nombre completo del receptor"
-                  value={formData.recipientName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, recipientName: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2"
-                  
-                />
-              </div>
-
-              {/* Recipient Phone */}
-              <div>
-                <label className="block text-sm font-black text-gray-900 mb-2">Teléfono del destinatario</label>
-                <input
-                  type="tel"
-                  placeholder="+593 99 1234567"
-                  value={formData.recipientPhone}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, recipientPhone: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2"
-                  
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-8">
-              <button
-                onClick={() => setStep(1)}
-                className="flex-1 px-6 py-3 rounded-xl border border-gray-300 font-black text-gray-900 hover:bg-gray-50 transition-all"
-              >
-                Atrás
-              </button>
-              <button
-                onClick={() => setStep(3)}
-                disabled={!canAdvanceStep2}
-                className="flex-1 px-6 py-3 rounded-xl font-black text-white transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                style={{ backgroundColor: canAdvanceStep2 ? '#ff4c41' : '#cccccc' }}
-              >
-                Siguiente
-              </button>
             </div>
           </div>
-        )}
 
-        {/* Step 3: Quote */}
-        {step === 3 && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-xl font-black text-gray-900 mb-6">Paso 3: Cotización</h2>
-
-            <div className="space-y-6">
-              {/* Summary */}
-              <div className="bg-gray-50 rounded-xl p-6">
-                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                  <div>
-                    <p className="text-gray-600 text-xs font-bold uppercase mb-1">Origen</p>
-                    <p className="font-black text-gray-900">{formData.origin.address.split(',')[0]}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 text-xs font-bold uppercase mb-1">Destino</p>
-                    <p className="font-black text-gray-900">{formData.destination.address.split(',')[0]}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 text-xs font-bold uppercase mb-1">Tipo</p>
-                    <p className="font-black text-gray-900">{PACKAGE_TYPES.find((t) => t.id === formData.packageType)?.label}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 text-xs font-bold uppercase mb-1">Distancia</p>
-                    <p className="font-black text-gray-900">{distance?.toFixed(1)} km</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="border-t border-gray-200 pt-4">
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tarifa base</span>
-                    <span className="font-black text-gray-900">${priceBreakdown.base.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Por distancia ({distance?.toFixed(1)} km × $0.50)</span>
-                    <span className="font-black text-gray-900">${priceBreakdown.kmFee.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Seguro (10%)</span>
-                    <span className="font-black text-gray-900">${priceBreakdown.insurance.toFixed(2)}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between text-lg border-t border-gray-200 pt-4">
-                  <span className="font-black text-gray-900">Total</span>
-                  <span className="font-black" style={{ color: '#ff4c41', fontSize: '28px' }}>
-                    ${priceBreakdown.total.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Features */}
-              <div className="bg-green-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-green-900">
-                  <span>✓</span>
-                  <span className="font-medium">Recogida en tu dirección</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-green-900">
-                  <span>✓</span>
-                  <span className="font-medium">Tracking en tiempo real</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-green-900">
-                  <span>✓</span>
-                  <span className="font-medium">Seguro incluido</span>
-                </div>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <p className="text-sm text-red-900 font-medium">{error}</p>
-                </div>
-              )}
+          {/* Paquete */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+              <IcoCube />
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>
+                Paquete · {selectedPkg.label.toUpperCase()}
+              </span>
             </div>
-
-            <div className="flex gap-3 mt-8">
-              <button
-                onClick={() => setStep(2)}
-                className="flex-1 px-6 py-3 rounded-xl border border-gray-300 font-black text-gray-900 hover:bg-gray-50 transition-all"
-                disabled={loading}
-              >
-                Atrás
-              </button>
-              <button
-                onClick={handlePaymentDatafast}
-                disabled={loading}
-                className="flex-1 px-6 py-3 rounded-xl font-black text-white transition-all hover:scale-105"
-                style={{ backgroundColor: '#ff4c41', opacity: loading ? 0.7 : 1 }}
-              >
-                {loading ? 'Procesando...' : 'Pagar con DATAFAST'}
-              </button>
+            <div className="flex items-center gap-3 px-4 py-4">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-gray-50">📦</div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-gray-900">{selectedPkg.label} · {selectedPkg.desc}</p>
+                <p className="text-xs text-gray-500">${totalPrice.toFixed(2)}</p>
+              </div>
+              <div className="flex items-center gap-1 rounded-full px-3 py-1" style={{ backgroundColor: '#ECFDF5' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill={GREEN} stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                <span className="text-xs font-bold" style={{ color: GREEN }}>Pagado</span>
+              </div>
             </div>
+          </div>
 
-            <button
-              onClick={handlePaymentCash}
-              disabled={loading}
-              className="w-full mt-3 px-6 py-3 rounded-xl border-2 border-gray-300 font-black text-gray-900 hover:bg-gray-50 transition-all"
-              style={{ opacity: loading ? 0.7 : 1 }}
-            >
-              {loading ? 'Procesando...' : 'Pagar en efectivo'}
+          {/* Botones */}
+          <div className="flex gap-2 pt-2">
+            <button className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm"
+              style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA', color: RED }}>
+              <IcoPhone /> Llamar
+            </button>
+            <button className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm border-gray-200 text-gray-700 bg-gray-50">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Compartir
+            </button>
+            <button onClick={() => setView('delivered')}
+              className="flex-2 flex items-center justify-center gap-1.5 rounded-xl py-3 px-4 font-bold text-sm text-white shadow-md"
+              style={{ backgroundColor: RED, flex: 2 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Confirmar entrega
             </button>
           </div>
-        )}
+        </div>
+      </div>
+    );
+  }
 
-        {/* Step 4: Confirmation */}
-        {step === 4 && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: '#d1fae5' }}>
-                <span className="text-3xl">✓</span>
-              </div>
+  // ── DELIVERED VIEW ─────────────────────────────────────────────────────────
+  if (view === 'delivered') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b-4 sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ borderBottomColor: RED }}>
+          <button onClick={() => router.push('/envios')}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+            style={{ backgroundColor: '#FFF0EF', color: RED }}>
+            ←
+          </button>
+          <span className="font-black text-gray-900">Entrega confirmada</span>
+        </div>
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
+          {/* Success */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col items-center text-center"
+            style={{ borderLeftWidth: 4, borderLeftColor: GREEN }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#ECFDF5' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill={GREEN} stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/><polyline fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points="20 6 9 17 4 12"/></svg>
             </div>
+            <p className="text-2xl font-black text-gray-900 mb-1">¡Paquete entregado!</p>
+            <p className="text-sm text-gray-500">Entregado a <strong>{recipientName}</strong> · Confirmado con código OTP</p>
+          </div>
 
-            <h2 className="text-3xl font-black text-gray-900 mb-2">¡Envío confirmado!</h2>
-            <p className="text-gray-600 mb-8">Tu paquete ha sido registrado en el sistema. Pronto un conductor vendrá por él.</p>
-
-            <div className="bg-gray-50 rounded-xl p-6 mb-8">
-              <p className="text-xs text-gray-600 font-bold uppercase mb-2">Código de seguimiento</p>
-              <p className="text-3xl font-black text-gray-900 font-mono">{trackingId}</p>
+          {/* Resumen */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>Resumen</span>
             </div>
-
-            <div className="space-y-3 mb-8">
-              <p className="text-sm text-gray-600">
-                <span className="font-bold">Destinatario:</span> {formData.recipientName}
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-bold">Monto:</span> ${priceBreakdown.total.toFixed(2)} USD
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Link
-                href={`/envios/tracking/${trackingId}`}
-                className="w-full px-6 py-3 rounded-xl font-black text-white transition-all hover:scale-105"
-                style={{ backgroundColor: '#ff4c41' }}
-              >
-                Ver seguimiento →
-              </Link>
-              <Link
-                href="/envios"
-                className="w-full px-6 py-3 rounded-xl border border-gray-300 font-black text-gray-900 hover:bg-gray-50 transition-all"
-              >
-                Volver al inicio
-              </Link>
+            <div className="px-4 py-2 divide-y divide-gray-50">
+              {[
+                { label: 'Estado',        value: '✓ Entregado',             color: GREEN },
+                { label: 'Destinatario',  value: recipientName,              color: undefined },
+                { label: 'Referencia',    value: trackingRef,                color: undefined },
+                { label: 'Hora',          value: new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }), color: undefined },
+                { label: 'OTP',           value: '✓ Verificado',             color: GREEN },
+              ].map(row => (
+                <div key={row.label} className="flex items-center justify-between py-2.5">
+                  <span className="text-sm text-gray-500">{row.label}</span>
+                  <span className="text-sm font-bold" style={{ color: row.color ?? '#111827' }}>{row.value}</span>
+                </div>
+              ))}
             </div>
           </div>
+
+          <button onClick={() => { setView('form'); setPkgDesc(''); setSenderAddr(''); setRecipientName(''); setRecipientPhone(''); setRecipientAddr(''); }}
+            className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-2 shadow-md"
+            style={{ backgroundColor: RED }}>
+            Nuevo envío <IcoArrow />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── FORM VIEW ──────────────────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-gray-50 pb-28">
+
+      {/* Header */}
+      <div className="bg-white border-b-4 sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ borderBottomColor: RED }}>
+        <Link href="/envios"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+          style={{ backgroundColor: '#FFF0EF', color: RED }}>
+          ←
+        </Link>
+        <span className="font-black text-gray-900 flex-1">Envíos Going</span>
+        <span className="flex items-center gap-1 rounded-full px-2.5 py-1 border text-xs font-black"
+          style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA', color: RED }}>
+          <IcoCube /> ENVÍOS
+        </span>
+      </div>
+      <p className="text-xs text-gray-400 text-center py-1.5 bg-white border-b border-gray-50">
+        De punto a punto · Rastreo en tiempo real · Registro de entrega
+      </p>
+
+      <div className="max-w-2xl mx-auto px-4 pt-4 space-y-0">
+
+        {/* Errors */}
+        {errors.length > 0 && (
+          <div className="mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 space-y-1">
+            {errors.map(e => <p key={e} className="text-sm text-red-600 font-medium">· {e}</p>)}
+          </div>
         )}
+
+        {/* QUIÉN ENVÍA */}
+        <SectionCard icon={<IcoUp />} title="Quién envía">
+          <FieldRow icon={<IcoPerson />}>
+            <span className="text-sm font-semibold text-gray-700">Tú (sesión activa)</span>
+          </FieldRow>
+          <LocationInput
+            label="Dirección de recogida"
+            placeholder="Ej: Quito, La Y, Amazonas 2406..."
+            value={senderAddr}
+            onChange={setSenderAddr}
+            onSelect={s => { setSenderAddr(s.display_name); setSenderLat(parseFloat(s.lat)); setSenderLon(parseFloat(s.lon)); }}
+            accent={RED}
+          />
+        </SectionCard>
+
+        {/* QUIÉN RECIBE */}
+        <SectionCard icon={<IcoDown />} title="Quién recibe">
+          <FieldRow icon={<IcoPerson />}>
+            <input
+              type="text"
+              placeholder="Nombre del destinatario"
+              value={recipientName}
+              onChange={e => setRecipientName(e.target.value)}
+              className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+            />
+          </FieldRow>
+          <FieldRow icon={<IcoPhone />}>
+            <input
+              type="tel"
+              placeholder="Teléfono del destinatario"
+              value={recipientPhone}
+              onChange={e => setRecipientPhone(e.target.value)}
+              className="w-full bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
+            />
+          </FieldRow>
+          <LocationInput
+            label="Dirección de entrega"
+            placeholder="Ej: Guayaquil, Urdesa..."
+            value={recipientAddr}
+            onChange={setRecipientAddr}
+            onSelect={s => { setRecipientAddr(s.display_name); setRecipientLat(parseFloat(s.lat)); setRecipientLon(parseFloat(s.lon)); }}
+            accent={GREEN}
+          />
+          {/* OTP note */}
+          <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border"
+            style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
+            <IcoLock />
+            <p className="text-xs font-semibold" style={{ color: RED }}>
+              El destinatario confirmará con código OTP al recibir
+            </p>
+          </div>
+        </SectionCard>
+
+        {/* EL PAQUETE */}
+        <SectionCard icon={<IcoCube />} title="El paquete">
+          {/* Tipo */}
+          <div className="grid grid-cols-4 gap-2">
+            {PACKAGE_TYPES.map(p => (
+              <button key={p.id} type="button"
+                onClick={() => setPkgType(p.id)}
+                className="rounded-xl p-2.5 text-center border-2 transition-all"
+                style={{
+                  borderColor:      pkgType === p.id ? RED : '#F3F4F6',
+                  backgroundColor:  pkgType === p.id ? '#FFF0EF' : '#F9FAFB',
+                }}>
+                <div className="text-xl mb-1">
+                  {p.id === 'small' ? '📦' : p.id === 'medium' ? '🗃️' : p.id === 'large' ? '📫' : '📄'}
+                </div>
+                <p className="text-xs font-black" style={{ color: pkgType === p.id ? RED : '#374151' }}>{p.label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{p.desc}</p>
+                <p className="text-xs font-black mt-1" style={{ color: pkgType === p.id ? RED : '#374151' }}>${p.price}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* Descripción */}
+          <textarea
+            placeholder="Descripción del contenido (ej: documentos, ropa, electrónicos...)"
+            value={pkgDesc}
+            onChange={e => setPkgDesc(e.target.value)}
+            maxLength={120}
+            rows={2}
+            className="w-full bg-gray-50 rounded-xl px-3 py-3 border border-gray-100 text-sm text-gray-800 placeholder-gray-400 outline-none resize-none focus:border-red-200"
+          />
+
+          {/* Foto opcional */}
+          <div className="flex items-center gap-2 rounded-xl px-3 py-3 border-2 border-dashed text-center justify-center cursor-pointer hover:bg-red-50 transition-colors"
+            style={{ borderColor: '#FECACA' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <div>
+              <p className="text-xs font-bold" style={{ color: RED }}>Foto del paquete</p>
+              <p className="text-xs text-gray-400">Opcional · recomendado para reclamaciones</p>
+            </div>
+          </div>
+        </SectionCard>
+
+      </div>
+
+      {/* ── FOOTER FIJO ────────────────────────────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 px-4 py-4 z-20 shadow-xl"
+        style={{ borderTopColor: '#FEE2E2' }}>
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <div>
+            <p className="text-xs text-gray-400 font-semibold">Estimado</p>
+            <p className="text-2xl font-black text-gray-900">${totalPrice.toFixed(2)}</p>
+          </div>
+          <button
+            onClick={handleSolicitar}
+            disabled={loading}
+            className="flex-1 flex items-center justify-between rounded-2xl py-4 px-5 font-black text-white text-base shadow-lg transition-all active:scale-95 disabled:opacity-60"
+            style={{ backgroundColor: RED }}>
+            {loading ? (
+              <span className="flex items-center gap-2 mx-auto">
+                <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Procesando…
+              </span>
+            ) : (
+              <>
+                <span>Solicitar envío</span>
+                <IcoArrow />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

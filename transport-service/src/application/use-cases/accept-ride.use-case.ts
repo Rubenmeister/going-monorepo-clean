@@ -32,6 +32,19 @@ export class AcceptRideUseCase {
       acceptedAt: new Date(),
     });
 
+    // Push notification to passenger that driver was assigned
+    const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+    fetch(`${notifUrl}/api/notifications/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: ride.passengerId,
+        title: '🚗 ¡Conductor asignado!',
+        body: 'Un conductor aceptó tu viaje y está en camino',
+        data: { rideId: ride.id, actionUrl: '/transport' }
+      }),
+    }).catch(() => {}); // non-blocking
+
     return {
       rideId: updated.id,
       status: updated.status,

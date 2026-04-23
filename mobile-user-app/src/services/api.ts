@@ -155,6 +155,13 @@ export const ridesAPI = {
     distanceKm?:    number;
     durationMinutes?: number;
   }) => api.post('/payments/estimate', data),
+
+  /** Horarios de viaje compartido disponibles */
+  getSharedSchedules: (params: {
+    origin:       string;
+    destination?: string;
+    date?:        string;
+  }) => api.get('/transport/shared/schedules', { params }),
 };
 
 // ── Payments ─────────────────────────────────────────────────────────────────

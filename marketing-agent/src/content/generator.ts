@@ -29,7 +29,13 @@ export async function generateContent(request: ContentRequest): Promise<Generate
     messages: [{ role: 'user', content: fullUserPrompt }],
   });
 
-  const rawCaption = (response.content[0] as { text: string }).text.trim();
+  // FIX 3: Safe type cast for response content
+  const block = response.content?.[0];
+  const text = block && 'text' in block ? (block as { text: string }).text : '';
+  if (!text) {
+    throw new Error('Content generation returned no text');
+  }
+  const rawCaption = text.trim();
 
   // Trim to platform limit
   const caption = rawCaption.length > maxLen
@@ -101,7 +107,13 @@ Extensión: 300-500 palabras. Tono cercano y motivador.`;
     messages: [{ role: 'user', content: prompt }],
   });
 
-  return (response.content[0] as { text: string }).text;
+  // Safe type cast
+  const block = response.content?.[0];
+  const text = block && 'text' in block ? (block as { text: string }).text : '';
+  if (!text) {
+    throw new Error('Newsletter generation returned no text');
+  }
+  return text;
 }
 
 // ─── Generate press release ──────────────────────────────────
@@ -126,7 +138,13 @@ Formato estándar de comunicado de prensa. Extensión: 400-600 palabras. Estilo 
     messages: [{ role: 'user', content: prompt }],
   });
 
-  return (response.content[0] as { text: string }).text;
+  // Safe type cast
+  const block = response.content?.[0];
+  const text = block && 'text' in block ? (block as { text: string }).text : '';
+  if (!text) {
+    throw new Error('Press release generation returned no text');
+  }
+  return text;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────

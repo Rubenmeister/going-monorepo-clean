@@ -11,4 +11,5 @@ export interface IParcelRepository {
   findById(id: UUID): Promise<Result<Parcel | null, Error>>;
   findByUserId(userId: UUID): Promise<Result<Parcel[], Error>>;
   findByDriverId(driverId: UUID): Promise<Result<Parcel[], Error>>;
+  findByTrackingCode(trackingCode: string): Promise<Result<Parcel | null, Error>>;
 }

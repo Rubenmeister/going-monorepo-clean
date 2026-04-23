@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 export class RideModelSchema {
   @Prop({ required: true }) userId: string;
   @Prop() driverId: string;
+  @Prop() bookingId: string;            // Link to booking-service for status sync
   @Prop({ type: Object }) pickupLocation: any;
   @Prop({ type: Object }) dropoffLocation: any;
   @Prop({ type: Object }) fare: any;
@@ -19,6 +20,7 @@ export class RideModelSchema {
   @Prop() distanceKm: number;
   @Prop() totalDistanceKm: number;     // distancia total de la ruta (para % progreso)
   @Prop() cancellationReason: string;
+  @Prop() cancellationTime: Date;
   @Prop() serviceType: string;          // suv | suv_xl | van | van_xl | minibus | bus
   @Prop() modalidad: string;            // compartido | privado
   @Prop() scheduledAt: Date;

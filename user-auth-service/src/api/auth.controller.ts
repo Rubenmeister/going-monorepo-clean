@@ -173,6 +173,19 @@ export class AuthController {
         loginResult = await this.loginUserUseCase.execute({ email: dto.email, password: dto.password });
       } catch (loginError) {
         this.logger.warn(`Auto-login after register failed: ${loginError instanceof Error ? loginError.message : loginError}`);
+
+        // If auto-login fails, attempt explicit login
+        try {
+          loginResult = await this.loginUserUseCase.execute({ email: dto.email, password: dto.password });
+        } catch (secondLoginError) {
+          throw new HttpException(
+            {
+              message: 'User registered successfully but authentication failed. Please log in manually.',
+              error: secondLoginError instanceof Error ? secondLoginError.message : 'Login failed',
+            },
+            HttpStatus.CREATED
+          );
+        }
       }
 
       try {
@@ -191,8 +204,17 @@ export class AuthController {
         this.logger.warn(`Audit log failed (non-critical): ${auditError instanceof Error ? auditError.message : auditError}`);
       }
 
-      // Devolver resultado del login (con token) si fue exitoso, o solo el id si falló
-      return loginResult ? { ...loginResult, userId } : { id: userId };
+      // Devolver resultado del login (con token) - debe siempre tener token
+      if (!loginResult) {
+        throw new HttpException(
+          {
+            message: 'Registration successful but automatic login failed. Please log in manually.',
+          },
+          HttpStatus.CREATED
+        );
+      }
+
+      return { ...loginResult, userId };
     } catch (error) {
       this.auditLogService.recordFailure(
         'anonymous',

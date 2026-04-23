@@ -11,57 +11,94 @@ export class FilesystemTool {
   }
 
   readFile(filePath: string): string {
-    const full = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(config.repoPath, filePath);
-    return fs.readFileSync(full, 'utf8');
+    try {
+      const full = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(config.repoPath, filePath);
+      const resolved = path.resolve(config.repoPath, full);
+      if (!resolved.startsWith(path.resolve(config.repoPath))) {
+        return `error: Path traversal not allowed`;
+      }
+      return fs.readFileSync(resolved, 'utf8');
+    } catch (e: any) {
+      return `error: ${e.message}`;
+    }
   }
 
   writeFile(filePath: string, content: string): void {
     if (this.isBlacklisted(filePath)) {
       throw new Error(`Blocked: ${filePath} is protected`);
     }
-    const full = path.isAbsolute(filePath)
-      ? filePath
-      : path.join(config.repoPath, filePath);
-    fs.writeFileSync(full, content, 'utf8');
+    try {
+      const full = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(config.repoPath, filePath);
+      const resolved = path.resolve(config.repoPath, full);
+      if (!resolved.startsWith(path.resolve(config.repoPath))) {
+        throw new Error('Path traversal not allowed');
+      }
+      fs.writeFileSync(resolved, content, 'utf8');
+    } catch (e: any) {
+      throw new Error(`Write failed: ${e.message}`);
+    }
   }
 
   // FIX: indentación correcta en recursión — usar prefix en lugar de re-indentar strings ya procesados
   listDir(dirPath: string, depth = 1, prefix = ''): string[] {
-    const full = path.join(config.repoPath, dirPath);
-    if (!fs.existsSync(full)) return [`❌ Directorio no encontrado: ${dirPath}`];
-
-    const entries = fs.readdirSync(full, { withFileTypes: true });
-    const result: string[] = [];
-
-    for (const e of entries) {
-      if (IGNORED_DIRS.includes(e.name)) continue;
-
-      const label = e.isDirectory() ? `${e.name}/` : e.name;
-      result.push(`${prefix}${label}`);
-
-      if (e.isDirectory() && depth > 1) {
-        const subPath = path.join(dirPath, e.name);
-        const subEntries = this.listDir(subPath, depth - 1, `${prefix}  `);
-        result.push(...subEntries);
+    try {
+      const full = path.join(config.repoPath, dirPath);
+      const resolved = path.resolve(config.repoPath, full);
+      if (!resolved.startsWith(path.resolve(config.repoPath))) {
+        return [`❌ Path traversal not allowed: ${dirPath}`];
       }
+      if (!fs.existsSync(resolved)) return [`❌ Directorio no encontrado: ${dirPath}`];
+
+      const entries = fs.readdirSync(resolved, { withFileTypes: true });
+      const result: string[] = [];
+
+      for (const e of entries) {
+        if (IGNORED_DIRS.includes(e.name)) continue;
+
+        const label = e.isDirectory() ? `${e.name}/` : e.name;
+        result.push(`${prefix}${label}`);
+
+        if (e.isDirectory() && depth > 1) {
+          const subPath = path.join(dirPath, e.name);
+          const subEntries = this.listDir(subPath, depth - 1, `${prefix}  `);
+          result.push(...subEntries);
+        }
+      }
+      return result;
+    } catch (e: any) {
+      return [`❌ Error: ${e.message}`];
     }
-    return result;
   }
 
   findFiles(pattern: RegExp, baseDir = ''): string[] {
-    const full = path.join(config.repoPath, baseDir);
-    const results: string[] = [];
-    const walk = (dir: string) => {
-      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (IGNORED_DIRS.includes(e.name)) continue;
-        const p = path.join(dir, e.name);
-        if (e.isDirectory()) walk(p);
-        else if (pattern.test(e.name)) results.push(p.replace(config.repoPath, ''));
+    try {
+      const full = path.join(config.repoPath, baseDir);
+      const resolved = path.resolve(config.repoPath, full);
+      if (!resolved.startsWith(path.resolve(config.repoPath))) {
+        return [];
       }
-    };
-    walk(full);
-    return results;
+      const results: string[] = [];
+      const walk = (dir: string) => {
+        try {
+          for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (IGNORED_DIRS.includes(e.name)) continue;
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) walk(p);
+            else if (pattern.test(e.name)) results.push(p.replace(config.repoPath, ''));
+          }
+        } catch (e: any) {
+          console.error(`Error scanning ${dir}: ${e.message}`);
+        }
+      };
+      walk(resolved);
+      return results;
+    } catch (e: any) {
+      console.error(`findFiles error: ${e.message}`);
+      return [];
+    }
   }
 }

@@ -16,6 +16,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Storage } from '@google-cloud/storage';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
@@ -74,6 +75,7 @@ export class RideController {
     private readonly eventsGateway: RideEventsGateway,
     private readonly paymentService: PaymentGatewayService,
     private readonly tokenService: TokenService,
+    private readonly httpService: HttpService,
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
   ) {}
@@ -300,6 +302,7 @@ export class RideController {
    * GET /api/rides/history/driver/:driverId
    */
   @Get('history/driver/:driverId')
+  @UseGuards(JwtAuthGuard)
   async getDriverRideHistory(
     @Param('driverId') driverId: string,
     @Query('limit') limit?: number
@@ -382,13 +385,39 @@ export class RideController {
     if (ride.status === 'completed')
       throw new BadRequestException('No se puede cancelar un viaje completado');
 
-    await this.rideRepo.update(rideId, {
+    const updated = await this.rideRepo.update(rideId, {
       status:             'cancelled',
       cancellationReason: reason || 'user_cancelled',
       cancellationTime:   new Date(),
     });
 
+    // Sincronizar estado de booking en el servicio de bookings (no-blocking)
+    if (updated.bookingId) {
+      this.syncBookingStatusAsync(updated.bookingId, 'cancelled');
+    }
+
     return { rideId, status: 'cancelled', reason, cancelledAt: new Date() };
+  }
+
+  /**
+   * Sincroniza el estado del booking con el servicio de bookings (sin bloquear)
+   */
+  private async syncBookingStatusAsync(bookingId: string, status: string): Promise<void> {
+    try {
+      const bookingServiceUrl = process.env.BOOKING_SERVICE_URL || 'http://localhost:3006';
+      await this.httpService
+        .patch(`${bookingServiceUrl}/bookings/${bookingId}`, { status })
+        .toPromise()
+        .catch((err) => {
+          this.logger.warn(
+            `Could not sync booking ${bookingId} status: ${err?.message}`,
+          );
+        });
+    } catch (err: any) {
+      this.logger.warn(
+        `Could not sync booking ${bookingId} status: ${err?.message}`,
+      );
+    }
   }
 
   /**

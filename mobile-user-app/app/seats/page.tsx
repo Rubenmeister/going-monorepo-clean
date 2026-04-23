@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'expo-router';
 
 // ─── Seat Selection ─────────────────────────────────────────────────────────
 // Permite elegir asiento antes de confirmar el viaje.

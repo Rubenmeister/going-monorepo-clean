@@ -180,6 +180,21 @@ export function DriverHomeScreen() {
         );
         return;
       }
+      // Start background location tracking
+      try {
+        await Location.startLocationUpdatesAsync(BG_LOCATION_TASK, {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 10,
+        });
+      } catch (err) {
+        console.warn('[DriverHomeScreen] startLocationUpdatesAsync error:', err);
+      }
+    } else {
+      // Stop background location tracking
+      try {
+        await Location.stopLocationUpdatesAsync(BG_LOCATION_TASK);
+      } catch { /* silencio */ }
     }
     if (!isOnline) {
       onlineStartRef.current = Date.now();

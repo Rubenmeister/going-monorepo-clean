@@ -94,7 +94,8 @@ export class MatchAvailableDriversUseCase {
       return err(new Error('No available drivers found nearby'));
     }
 
-    // Step 2: Load availability data and filter
+    // Step 2: Load availability data and filter by rating + vehicle type
+    const minRating = 4.0; // Minimum acceptable driver rating
     const filteredDrivers: DriverInfo[] = [];
 
     for (const [driverId, distStr] of nearbyRaw) {
@@ -106,6 +107,15 @@ export class MatchAvailableDriversUseCase {
 
       // Skip drivers that are not online
       if (!availability || availability.status !== 'online') continue;
+
+      // Extract and validate driver rating (filter by minimum rating)
+      const driverRating = parseFloat(availability.rating || '4.5');
+      if (driverRating < minRating) {
+        this.logger.debug(
+          `Skipping driver ${driverId}: rating ${driverRating} below minimum ${minRating}`
+        );
+        continue;
+      }
 
       // Filter by vehicle type (skip if mismatch and vehicleType is not ANY)
       const driverServiceTypes: string[] = JSON.parse(
@@ -124,7 +134,7 @@ export class MatchAvailableDriversUseCase {
         name: availability.firstName
           ? `${availability.firstName} ${availability.lastName || ''}`.trim()
           : `Conductor ${driverId.slice(-4)}`,
-        rating: parseFloat(availability.rating || '4.5'),
+        rating: driverRating,
         acceptanceRate: parseFloat(availability.acceptanceRate || '0.9'),
         vehicleType: availability.vehicleType || dto.vehicleType,
         vehicleNumber: availability.vehiclePlate,
@@ -136,10 +146,17 @@ export class MatchAvailableDriversUseCase {
 
     if (filteredDrivers.length === 0) {
       this.logger.warn(
-        `No online drivers match criteria for ride ${dto.rideId}`
+        `No online drivers match criteria (rating >= ${minRating}) for ride ${dto.rideId}`
       );
       return err(new Error('No available drivers match the criteria'));
     }
+
+    // Step 2b: Sort drivers by rating (DESC) then distance (ASC)
+    // This ensures higher-rated drivers are offered first
+    filteredDrivers.sort((a, b) => {
+      const ratingDiff = b.rating - a.rating; // Higher rating first
+      return ratingDiff !== 0 ? ratingDiff : a.distance - b.distance; // Then closer driver
+    });
 
     // Step 3: Create RideMatch entities and persist
     const matches: RideMatch[] = [];
