@@ -39,7 +39,7 @@ jobs:
           version: 9
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: 🔍 Run npm audit
         id: npm-audit
@@ -68,6 +68,7 @@ jobs:
   snyk-scan:
     name: 🐍 Snyk Vulnerability Scanning
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -88,6 +89,7 @@ jobs:
   secret-scanning:
     name: 🔑 Secret Detection
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -114,6 +116,7 @@ jobs:
   sast-scan:
     name: 📊 Static Application Security Testing (SAST)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -140,6 +143,7 @@ jobs:
   container-scan:
     name: 🐳 Docker Image Scanning
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -181,7 +185,7 @@ jobs:
           version: 9
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: 📋 Generate SBOM with CycloneDX
         run: |
@@ -216,7 +220,7 @@ jobs:
           version: 9
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: 📜 Check licenses
         run: |

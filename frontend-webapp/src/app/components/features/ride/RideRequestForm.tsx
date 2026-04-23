@@ -11,6 +11,7 @@ import {
   calculateDistance,
   calculateEstimatedDuration,
   getFareBreakdown,
+  getRoadDistance,
 } from '@/services/ride/fareCalculator';
 
 // ── Inline SVG icons — sin emojis ─────────────────────────────────────────
@@ -174,6 +175,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const [scheduledTime, setScheduledTime] = useState('');
   const [localFare, setLocalFare]         = useState<number | null>(null);
   const [fareFixed, setFareFixed]         = useState(false);
+  const [roadDistKm,  setRoadDistKm]      = useState<number | null>(null);
+  const [roadDurMin,  setRoadDurMin]      = useState<number | null>(null);
 
   // ── Acordeón de horarios alternativos (Compartido) ────────────────────
   const [showSlots,    setShowSlots]    = useState(false);
@@ -207,26 +210,57 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── FIX: `mode` incluido en dependencias — recalcula al cambiar Privado/Compartido
+  // ── Tarifa: calcula síncronamente, luego refina con distancia real de carretera ──
   useEffect(() => {
-    if (
+    const validRoute =
       pickupLocation && dropoffLocation &&
       pickupLocation.lat !== 0 && dropoffLocation.lat !== 0 &&
-      pickupLocation.lat !== dropoffLocation.lat
-    ) {
-      try {
-        const breakdown = getFareBreakdown(pickupLocation, dropoffLocation, vehicleType, tier, mode);
-        const fare = breakdown.totalFare;
-        setLocalFare(isNaN(fare) || !isFinite(fare) ? null : fare);
-        setFareFixed(breakdown.isPriceFixed);
-      } catch {
-        setLocalFare(null);
-        setFareFixed(false);
-      }
-    } else {
+      pickupLocation.lat !== dropoffLocation.lat;
+
+    if (!validRoute) {
       setLocalFare(null);
       setFareFixed(false);
+      setRoadDistKm(null);
+      setRoadDurMin(null);
+      return;
     }
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        // 1️⃣ Cálculo inmediato con Haversine (tabla fija o estimado rápido)
+        const quick = getFareBreakdown(pickupLocation!, dropoffLocation!, vehicleType, tier, mode);
+        if (!cancelled) {
+          setLocalFare(isNaN(quick.totalFare) || !isFinite(quick.totalFare) ? null : quick.totalFare);
+          setFareFixed(quick.isPriceFixed);
+        }
+
+        // 2️⃣ Si el precio NO es fijo, mejoramos con distancia real de carretera
+        if (!quick.isPriceFixed) {
+          const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
+          const rd = await getRoadDistance(pickupLocation!, dropoffLocation!, token);
+          if (cancelled) return;
+
+          setRoadDistKm(rd.distanceKm);
+          setRoadDurMin(rd.durationMin);
+
+          const refined = getFareBreakdown(pickupLocation!, dropoffLocation!, vehicleType, tier, mode, rd);
+          if (!cancelled) {
+            setLocalFare(isNaN(refined.totalFare) || !isFinite(refined.totalFare) ? null : refined.totalFare);
+            setFareFixed(refined.isPriceFixed);
+          }
+        } else {
+          // Ruta con precio fijo → no necesitamos distancia de carretera
+          if (!cancelled) { setRoadDistKm(null); setRoadDurMin(null); }
+        }
+      } catch {
+        if (!cancelled) { setLocalFare(null); setFareFixed(false); }
+      }
+    };
+
+    run();
+    return () => { cancelled = true; };
   }, [pickupLocation, dropoffLocation, vehicleType, tier, mode]);
 
   // Carga horarios cuando: modo compartido + ruta válida + fecha seleccionada
@@ -598,8 +632,12 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           <MapboxMap
             pickup={{ lat: pickupLocation!.lat, lon: pickupLocation!.lon, label: pickupLocation!.address }}
             dropoff={{ lat: dropoffLocation!.lat, lon: dropoffLocation!.lon, label: dropoffLocation!.address }}
-            distance={Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10}
-            duration={calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)}
+            distance={roadDistKm !== null
+              ? Math.round(roadDistKm * 10) / 10
+              : Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10}
+            duration={roadDurMin !== null
+              ? Math.round(roadDurMin)
+              : calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)}
           />
         </div>
       )}
@@ -627,8 +665,14 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
-                  {Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10} km ·
-                  ~{calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)} min
+                  {roadDistKm !== null
+                    ? `${Math.round(roadDistKm * 10) / 10} km`
+                    : `${Math.round(calculateDistance(pickupLocation as any, dropoffLocation as any) * 10) / 10} km`
+                  } ·
+                  ~{roadDurMin !== null
+                    ? Math.round(roadDurMin)
+                    : calculateEstimatedDuration(pickupLocation as any, dropoffLocation as any)
+                  } min
                 </p>
                 <p className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
                   {mode === 'compartido'
