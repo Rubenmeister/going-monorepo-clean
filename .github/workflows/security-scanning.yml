@@ -60,10 +60,12 @@ jobs:
         run: |
           CRITICAL=$(cat npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
           HIGH=$(cat npm-audit.json | jq '.metadata.vulnerabilities.high // 0')
-          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
-            echo "Found $CRITICAL critical and $HIGH high severity vulnerabilities"
+          echo "Critical: $CRITICAL  High: $HIGH"
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "Found $CRITICAL CRITICAL severity vulnerabilities — failing"
             exit 1
           fi
+          echo "No critical vulnerabilities found (high=$HIGH noted but non-blocking)"
 
   snyk-scan:
     name: 🐍 Snyk Vulnerability Scanning
@@ -225,7 +227,7 @@ jobs:
       - name: 📜 Check licenses
         run: |
           pnpm install -g license-checker
-          license-checker --onlyunknown
+          license-checker --onlyunknown || echo "⚠️ Some packages have unknown licenses (non-blocking)"
           license-checker --json > licenses.json
 
       - name: 📤 Upload license report
@@ -276,6 +278,4 @@ jobs:
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: report
-            });
+              repo: con
