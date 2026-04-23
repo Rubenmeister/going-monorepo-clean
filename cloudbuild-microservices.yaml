@@ -1,8 +1,17 @@
 # Parameterized Cloud Build for Going platform microservices
 # Usage (always quote the --substitutions value to avoid shell parsing issues with & and = in URLs):
 #   gcloud builds submit --config=cloudbuild-microservices.yaml \
-#     --substitutions='_SERVICE_NAME=user-auth-service,_DB_VAR_NAME=USER_DB_URL,_MONGODB_URL=mongodb+srv://...' \
+#     --substitutions='_SERVICE_NAME=user-auth-service' \
 #     --project=going-5d1ae .
+#
+# SECRETS requeridos en GCP Secret Manager (proyecto going-5d1ae):
+#   JWT_SECRET-prod     → el JWT secret compartido
+#   USER_DB_URL-prod    → mongodb+srv://... para user-auth-service
+#   REDIS_URL-prod      → redis://... (opcional, si usas Redis)
+#
+# Para crear un secret:
+#   echo -n "valor" | gcloud secrets create JWT_SECRET-prod --data-file=- --project=going-5d1ae
+#   echo -n "valor" | gcloud secrets create USER_DB_URL-prod --data-file=- --project=going-5d1ae
 
 substitutions:
   _SERVICE_NAME: user-auth-service
@@ -35,34 +44,41 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
 
-  # Step 3: Deploy to Cloud Run
+  # Step 3: Deploy to Cloud Run con secrets y env vars correctos
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - 'deploy'
-      - '${_SERVICE_NAME}'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
-      - '--region'
-      - 'us-central1'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--port'
-      - '3000'
-      - '--memory'
-      - '512Mi'
-      - '--cpu'
-      - '1'
-      - '--min-instances'
-      - '0'
-      - '--max-instances'
-      - '5'
-      - '--timeout'
-      - '60'
-      - '--update-env-vars'
-      - 'NODE_ENV=production'
+      - '-c'
+      - |
+        # Inyectar secrets desde GCP Secret Manager si existen
+        SECRETS=""
+        jwt_exists=$$(gcloud secrets describe JWT_SECRET-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
+        db_exists=$$(gcloud secrets describe USER_DB_URL-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
+        redis_exists=$$(gcloud secrets describe REDIS_URL-prod --project=$PROJECT_ID 2>/dev/null && echo yes || echo no)
+
+        [ "$$jwt_exists" = "yes" ]   && SECRETS="$$SECRETS,JWT_SECRET=JWT_SECRET-prod:latest"
+        [ "$$db_exists" = "yes" ]    && SECRETS="$$SECRETS,USER_DB_URL=USER_DB_URL-prod:latest"
+        [ "$$redis_exists" = "yes" ] && SECRETS="$$SECRETS,REDIS_URL=REDIS_URL-prod:latest"
+        SECRETS=$${SECRETS#,}  # quitar coma inicial
+
+        DEPLOY_CMD="gcloud run deploy ${_SERVICE_NAME} \
+          --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --memory 512Mi \
+          --cpu 1 \
+          --min-instances 1 \
+          --max-instances 5 \
+          --timeout 60 \
+          --set-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m"
+
+        [ -n "$$SECRETS" ] && DEPLOY_CMD="$$DEPLOY_CMD --update-secrets=$$SECRETS"
+
+        echo "=== Deploying ${_SERVICE_NAME} ==="
+        echo "  Secrets wired: $${SECRETS:-none}"
+        eval $$DEPLOY_CMD
 
 images:
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
