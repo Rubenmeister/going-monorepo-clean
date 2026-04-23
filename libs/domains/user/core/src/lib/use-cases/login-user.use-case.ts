@@ -15,6 +15,8 @@ export type LoginResponseDto = {
     id: string;
     email: string;
     firstName: string;
+    lastName: string;
+    phone?: string;
     roles: string[];
   };
 };
@@ -31,6 +33,9 @@ export class LoginUserUseCase {
   ) {}
 
   async execute(dto: LoginUserDto): Promise<LoginResponseDto> {
+    // Normalizar email — los emails se guardan en minúsculas
+    dto.email = dto.email.toLowerCase().trim();
+
     const userResult = await this.userRepo.findByEmail(dto.email);
     if (userResult.isErr()) {
       throw new InternalServerErrorException(userResult.error.message);
@@ -69,6 +74,8 @@ export class LoginUserUseCase {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
         roles: roles,
       },
     };

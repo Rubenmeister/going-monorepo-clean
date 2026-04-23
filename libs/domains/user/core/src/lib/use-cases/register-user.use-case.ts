@@ -20,6 +20,9 @@ export class RegisterUserUseCase {
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<{ id: string }> {
+    // Normalizar email siempre antes de cualquier operación
+    dto.email = dto.email.toLowerCase().trim();
+
     const existingUserResult = await this.userRepo.findByEmail(dto.email);
     if (existingUserResult.isErr()) {
       throw new InternalServerErrorException(existingUserResult.error.message);

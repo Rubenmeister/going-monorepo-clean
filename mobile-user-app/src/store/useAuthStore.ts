@@ -29,6 +29,7 @@ interface AuthState {
   loadToken: () => Promise<void>;
   clearError: () => void;
   setUser: (user: User) => Promise<void>;
+  loginWithOAuthToken: (token: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -62,12 +63,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { data } = await authAPI.login(email, password);
-      await AsyncStorage.setItem('auth_token', data.token);
+      // El backend puede devolver accessToken (core) o token (application layer)
+      const authToken = data.accessToken || data.token;
+      if (!authToken) throw new Error('No se recibió token de autenticación');
+      await AsyncStorage.setItem('auth_token', authToken);
       await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
-      set({ token: data.token, user: data.user, isLoading: false });
+      set({ token: authToken, user: data.user, isLoading: false });
     } catch (e: any) {
       set({
-        error: e.response?.data?.message || 'Error al iniciar sesión',
+        error: e.response?.data?.message || e.message || 'Error al iniciar sesión',
         isLoading: false,
       });
     }
@@ -77,9 +81,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { data } = await authAPI.register(formData);
-      await AsyncStorage.setItem('auth_token', data.token);
+      // El backend puede devolver accessToken (core) o token (application layer)
+      const authToken = data.accessToken || data.token;
+      if (!authToken) throw new Error('No se recibió token de autenticación');
+      await AsyncStorage.setItem('auth_token', authToken);
       await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
-      set({ token: data.token, user: data.user, isLoading: false });
+      set({ token: authToken, user: data.user, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || 'Error al registrarse',
@@ -94,6 +101,35 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  loginWithOAuthToken: async (token: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await AsyncStorage.setItem('auth_token', token);
+      // Fetch user profile with the received OAuth token
+      const { data } = await authAPI.me();
+      const user: User = {
+        id:        data.userId || data.id,
+        firstName: data.firstName || '',
+        lastName:  data.lastName  || '',
+        email:     data.email     || '',
+        phone:     data.phone     || '',
+        roles:     data.roles     || ['user'],
+        avatar:    data.avatar,
+      };
+      await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+      set({ token, user, isLoading: false });
+    } catch (e: any) {
+      await AsyncStorage.removeItem('auth_token');
+      set({
+        token: null,
+        user: null,
+        error: 'Error al completar el inicio de sesión con red social.',
+        isLoading: false,
+      });
+      throw e;
+    }
+  },
 
   setUser: async (user: User) => {
     await AsyncStorage.setItem('auth_user', JSON.stringify(user));
