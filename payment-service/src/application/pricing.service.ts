@@ -1,5 +1,151 @@
 import { Injectable } from '@nestjs/common';
 
+// ════════════════════════════════════════════════════════════════
+// FERIADOS NACIONALES — ECUADOR
+// ════════════════════════════════════════════════════════════════
+
+/** Meeus/Jones/Butcher — fecha de Pascua para el año dado */
+function easterDate(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day   = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function buildHolidaySet(year: number): Set<string> {
+  const fmt = (m: number, d: number) =>
+    `${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const fixed = [
+    fmt(1, 1), fmt(5, 1), fmt(5, 24), fmt(8, 10),
+    fmt(10, 9), fmt(11, 1), fmt(11, 3), fmt(12, 25),
+  ];
+  const easter      = easterDate(year);
+  const carnivalMon = addDays(easter, -48);
+  const carnivalTue = addDays(easter, -47);
+  const goodFriday  = addDays(easter, -2);
+  const variable    = [carnivalMon, carnivalTue, goodFriday].map(
+    (d) => fmt(d.getMonth() + 1, d.getDate()),
+  );
+  return new Set([...fixed, ...variable]);
+}
+
+const _holidayCache: Record<number, Set<string>> = {};
+function getHolidaySet(year: number): Set<string> {
+  if (!_holidayCache[year]) _holidayCache[year] = buildHolidaySet(year);
+  return _holidayCache[year];
+}
+
+export function isEcuadorHoliday(date: Date): boolean {
+  const key = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return getHolidaySet(date.getFullYear()).has(key);
+}
+
+// ════════════════════════════════════════════════════════════════
+// RECARGOS Y DESCUENTOS DINÁMICOS
+// ════════════════════════════════════════════════════════════════
+
+export type RideMode     = 'privado' | 'compartido';
+export type ClientSegment = 'public' | 'agency' | 'corporate';
+
+/**
+ * Tasa de recargo dinámico (0–1) para una fecha/hora y modo.
+ *
+ * Hora pico mañana  06–09  → privado 0.15 / compartido 0.08
+ * Hora pico tarde   17–20  → privado 0.15 / compartido 0.08
+ * Noche             22–05  → privado 0.20 / compartido 0.10
+ * Fin de semana            → privado 0.10 / compartido 0.05
+ * Feriado nacional         → privado 0.25 / compartido 0.12
+ *
+ * El recargo de tiempo y el recargo de día se SUMAN si coinciden.
+ * Dentro del recargo de día se toma el MAYOR (feriado > fin de semana).
+ */
+export function getDynamicSurchargeRate(
+  date: Date,
+  mode: RideMode,
+): number {
+  const hour     = date.getHours();
+  const isShared = mode === 'compartido';
+  const dow      = date.getDay();
+
+  // Tiempo
+  let timeRate = 0;
+  if (hour >= 22 || hour < 5)        timeRate = isShared ? 0.10 : 0.20;
+  else if ((hour >= 6 && hour < 9) || (hour >= 17 && hour < 20))
+                                     timeRate = isShared ? 0.08 : 0.15;
+
+  // Día
+  let dayRate = 0;
+  if (isEcuadorHoliday(date))         dayRate = isShared ? 0.12 : 0.25;
+  else if (dow === 0 || dow === 6)    dayRate = isShared ? 0.05 : 0.10;
+
+  return timeRate + dayRate;
+}
+
+/**
+ * Recargo por segmento de cliente (0–1):
+ *  · Agencias  +25% — Going abona la comisión al intermediario desde este recargo
+ *  · Empresas  +25% — servicio premium (vehículo top, conductor mejor calificado,
+ *                      espera sin cobro extra, facturación diferida)
+ *  · Público   0%
+ *
+ * Los descuentos por puntos son independientes y los gestiona loyalty-service.
+ */
+export function getClientSurchargeRate(segment: ClientSegment): number {
+  if (segment === 'agency' || segment === 'corporate') return 0.25;
+  return 0;
+}
+
+/**
+ * Aplica todos los recargos al precio base y devuelve la tarifa final.
+ * El recargo de origen (+$5 fijo) se suma al final.
+ *
+ * Fórmula:
+ *   total = round(base × (1 + surchargeTime + surchargeClient) × (1 − discountPoints))
+ *           + originSurcharge
+ *
+ * discountPoints = 0 por defecto (loyalty-service lo calcula si aplica)
+ */
+export function applyDynamicPricing(params: {
+  basePrice:        number;
+  mode:             RideMode;
+  dateTime:         Date;
+  clientSegment:    ClientSegment;
+  originSurcharge?: number;
+  discountRate?:    number;  // puntos acumulados, 0 por defecto
+}): {
+  adjustedPrice:       number;
+  timeSurchargeRate:   number;
+  clientSurchargeRate: number;
+  discountRate:        number;
+  originSurcharge:     number;
+} {
+  const timeSurchargeRate   = getDynamicSurchargeRate(params.dateTime, params.mode);
+  const clientSurchargeRate = getClientSurchargeRate(params.clientSegment);
+  const discountRate        = params.discountRate ?? 0;
+  const originSurcharge     = params.originSurcharge ?? 0;
+  const adjustedPrice       = Math.round(
+    params.basePrice * (1 + timeSurchargeRate + clientSurchargeRate) * (1 - discountRate)
+  ) + originSurcharge;
+  return { adjustedPrice, timeSurchargeRate, clientSurchargeRate, discountRate, originSurcharge };
+}
+
 // ── Zonas de destino dentro de Quito ──────────────────────────────────────────
 // Recargo adicional al precio base según la zona de llegada
 export type QuitoZone =
@@ -248,6 +394,62 @@ export class PricingService {
         baseFare: r.baseFare,
         distanceCost: round(distanceCost),
         weightCost: round(weightCost),
+      },
+    };
+  }
+
+  /**
+   * Valida y recalcula una tarifa intercity en confirmación de reserva.
+   * El frontend envía el precio base de la tabla; el backend aplica los factores
+   * dinámicos de forma independiente para evitar manipulación del precio.
+   *
+   * @param basePrice     Precio de tabla (compartido o privado) sin ajustes
+   * @param mode          'privado' | 'compartido'
+   * @param serviceDateTime  Fecha/hora del servicio
+   * @param clientSegment Segmento del cliente
+   * @param originSurcharge Recargo fijo de origen ($5 o $0)
+   */
+  calcIntercityFare(params: {
+    basePrice:        number;
+    mode:             RideMode;
+    serviceDateTime:  Date;
+    clientSegment:    ClientSegment;
+    originSurcharge?: number;
+  }): FareBreakdown & {
+    timeSurchargeRate:   number;
+    clientSurchargeRate: number;
+    discountRate:        number;
+    originSurcharge:     number;
+  } {
+    const { adjustedPrice, timeSurchargeRate, clientSurchargeRate, discountRate, originSurcharge } =
+      applyDynamicPricing({
+        basePrice:       params.basePrice,
+        mode:            params.mode,
+        dateTime:        params.serviceDateTime,
+        clientSegment:   params.clientSegment,
+        originSurcharge: params.originSurcharge ?? 0,
+      });
+
+    const platformFeePct = RATES.shared.platformFeePct; // 20%
+    const platformFee    = round(adjustedPrice * platformFeePct);
+    const providerAmount = round(adjustedPrice - platformFee);
+
+    return {
+      subtotal:            adjustedPrice,
+      platformFee,
+      providerAmount,
+      total:               adjustedPrice,
+      currency:            'USD',
+      timeSurchargeRate,
+      clientSurchargeRate,
+      discountRate,
+      originSurcharge,
+      breakdown: {
+        basePrice:           params.basePrice,
+        timeSurchargeRate,
+        clientSurchargeRate,
+        discountRate,
+        originSurcharge,
       },
     };
   }
