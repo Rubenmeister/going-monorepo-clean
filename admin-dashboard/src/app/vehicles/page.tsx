@@ -272,7 +272,7 @@ function VehicleDetail({ vehicle, token, onClose, onUpdate }: {
 
 export default function VehiclesPage() {
   const { auth } = useMonorepoApp();
-  const token: string = auth?.token ?? (typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '');
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
