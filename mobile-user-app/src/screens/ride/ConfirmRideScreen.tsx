@@ -12,8 +12,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, ActivityIndicator, Linking,
+  Alert, ActivityIndicator,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,7 +35,11 @@ export type ConfirmRideParams = {
   type:           'compartido' | 'privado';
   tripId?:        string;
   origin:         string;
+  /** Coordenadas de origen. Si falta, se toma del GPS al reservar. */
+  originCoords?:  { lat: number; lng: number };
   destination:    string;
+  /** Coordenadas del destino seleccionado en LocationPicker. */
+  destCoords?:    { lat: number; lng: number };
   departureTime?: string;
   date?:          string;
   vehicle:        string;
@@ -120,91 +125,103 @@ export function ConfirmRideScreen() {
     }
   };
 
-  // Pago con tarjeta — Datafast Dataweb (WebView)
+  // Pago con tarjeta — Datafast Dataweb.
+  // Backend aún no expone POST /payments/session para Datafast; dejamos el UI
+  // intacto pero mostramos aviso para que el usuario pague en efectivo hoy.
   const handleCardPayment = async () => {
-    setLoading(true);
-    try {
-      const txnId = `going_${Date.now()}_${user?.id?.slice(-6) ?? 'anon'}`;
-
-      const { data } = await transportAPI.post('/payments/initiate', {
-        paymentMethod:    'card',
-        amountUsd:        totalAmount,
-        transactionId:    txnId,
-        description:      `Viaje ${params.type} · ${params.origin} → ${params.destination}`,
-        returnUrl:        'goingapp://payment/result',
-        userId:           user?.id,
-        customerFirstName: user?.firstName,
-        customerLastName:  user?.lastName,
-        customerEmail:     user?.email,
-      });
-
-      // Abrir Datafast en el navegador del sistema (más seguro, sin dependencia WebView)
-      const url = data?.redirectUrl ?? data?.checkoutUrl;
-      if (url) {
-        await Linking.openURL(url);
-      } else {
-        throw new Error('No se recibió URL de pago');
-      }
-    } catch (err: any) {
-      hapticError();
-      Alert.alert('Error', `No se pudo iniciar el pago: ${err.message ?? 'Intenta de nuevo'}`);
-    } finally {
-      setLoading(false);
-    }
+    hapticError();
+    Alert.alert(
+      'Pago con tarjeta — próximamente',
+      'Estamos activando Datafast en los próximos días. Por ahora reserva con pago en efectivo al conductor.',
+      [{ text: 'Entendido' }],
+    );
   };
 
-  // Pago QR — De Una
+  // Pago QR — DeUna. Igual que Datafast, falta el endpoint de sesión.
   const handleQrPayment = async () => {
-    setLoading(true);
-    try {
-      const txnId = `going_${Date.now()}`;
-      const { data } = await transportAPI.post('/payments/initiate', {
-        paymentMethod: 'transfer',
-        amountUsd:     totalAmount,
-        transactionId: txnId,
-        description:   `Viaje Going · ${params.origin} → ${params.destination}`,
-        returnUrl:     'goingapp://payment/result',
-        userId:        user?.id,
-      });
+    hapticError();
+    Alert.alert(
+      'Pago con DeUna — próximamente',
+      'El pago por DeUna se habilita muy pronto. Por ahora reserva con pago en efectivo al conductor.',
+      [{ text: 'Entendido' }],
+    );
+  };
 
-      if (data?.qrUrl || data?.redirectUrl) {
-        await Linking.openURL(data.qrUrl ?? data.redirectUrl);
-      } else {
-        Alert.alert('QR generado', 'Escanea el código QR de tu app De Una para pagar.');
-      }
+  /**
+   * Obtiene las coordenadas de origen para crear la solicitud:
+   *   1. Si el booking screen las pasó (params.originCoords) → usar esas.
+   *   2. Si no, solicitar GPS en foreground con permiso.
+   */
+  const getOriginCoords = async (): Promise<{ lat: number; lng: number } | null> => {
+    if (params.originCoords) return params.originCoords;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return null;
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      return { lat: loc.coords.latitude, lng: loc.coords.longitude };
     } catch {
-      hapticError();
-      Alert.alert('Error', 'No se pudo generar el QR. Intenta con otro método.');
-    } finally {
-      setLoading(false);
+      return null;
     }
   };
 
-  // Reserva en efectivo — no pasa por pasarela
+  // Reserva en efectivo — crea el trip real en transport-service.
   const handleCashBooking = async () => {
+    if (!user?.id) {
+      hapticError();
+      Alert.alert('Sesión expirada', 'Vuelve a iniciar sesión para reservar.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await transportAPI.post('/rides/request', {
-        userId:       user?.id,
-        origin:       { address: params.origin },
-        destination:  { address: params.destination },
-        vehicleType:  params.vehicleId ?? 'suv',
-        tripMode:     params.type,
-        price:        { amount: totalAmount, currency: 'USD' },
-        paymentMethod: 'cash',
-        scheduledAt:  params.date,
-        departureTime: params.departureTime,
+      // 1. Coordenadas. Si falta alguna, bloqueamos con mensaje claro —
+      //    nunca enviamos request inválido al backend.
+      const destCoords = params.destCoords;
+      if (!destCoords) {
+        Alert.alert(
+          'Destino sin ubicación',
+          'Vuelve atrás y selecciona el destino en el mapa para continuar.',
+        );
+        return;
+      }
+
+      const originCoords = await getOriginCoords();
+      if (!originCoords) {
+        Alert.alert(
+          'Ubicación requerida',
+          'Necesitamos tu ubicación actual para asignar un conductor. Concede permiso de ubicación e intenta de nuevo.',
+        );
+        return;
+      }
+
+      // 2. Crear viaje real vía transportAPI (POST /transport/request).
+      await transportAPI.requestRide({
+        userId: user.id,
+        origin: {
+          address:   params.origin,
+          latitude:  originCoords.lat,
+          longitude: originCoords.lng,
+        },
+        destination: {
+          address:   params.destination,
+          latitude:  destCoords.lat,
+          longitude: destCoords.lng,
+        },
+        price: { amount: totalAmount, currency: 'USD' },
       });
 
       hapticSuccess();
       Alert.alert(
-        '¡Reserva confirmada! 🎉',
+        '¡Reserva confirmada!',
         `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} en efectivo al conductor.`,
-        [{ text: 'Ver mis viajes', onPress: () => navigation.navigate('Historial' as any) }]
+        [{ text: 'Ver mis viajes', onPress: () => navigation.navigate('Historial' as any) }],
       );
-    } catch {
+    } catch (err: any) {
       hapticError();
-      Alert.alert('Error', 'No se pudo completar la reserva. Intenta de nuevo.');
+      const msg = err?.response?.data?.message || err?.message || 'Intenta de nuevo.';
+      Alert.alert('Error', `No se pudo completar la reserva: ${msg}`);
     } finally {
       setLoading(false);
     }

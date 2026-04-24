@@ -15,6 +15,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import MapboxGL from '@rnmapbox/maps';
 import { useAuthStore } from '../../store/useAuthStore';
+import { parcelsAPI } from '../../services/api';
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../utils/haptics';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
@@ -84,12 +85,42 @@ export function EnviosScreen() {
     if (!validate()) return;
     hapticMedium(); setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 1200));
-      setTrackingRef(`ENV-${Date.now().toString().slice(-8).toUpperCase()}`);
-      setOtpCode(Math.floor(1000 + Math.random() * 9000).toString());
+      // Empaquetamos metadata no-soportada por el DTO (destinatario, tipo, notas,
+      // foto) dentro de `description` para no perder información hasta que el
+      // backend extienda el contrato.
+      const pickup  = route.params?.selectedPickup;
+      const dropoff = route.params?.selectedDelivery;
+      const descriptionPayload = JSON.stringify({
+        packageType: selectedPkg.id,
+        packageLabel: selectedPkg.label,
+        recipient: { name: recipientName, phone: recipientPhone },
+        notes: pkgDesc || undefined,
+        hasPhoto: !!pkgPhoto,
+      });
+
+      const { data } = await parcelsAPI.create({
+        origin: {
+          address:   senderAddr,
+          latitude:  pickup?.latitude,
+          longitude: pickup?.longitude,
+        },
+        destination: {
+          address:   recipientAddr,
+          latitude:  dropoff?.latitude,
+          longitude: dropoff?.longitude,
+        },
+        description: descriptionPayload,
+        price: { amount: totalPrice, currency: 'USD' },
+      });
+
+      setTrackingRef(data.trackingCode);
+      setOtpCode(data.otpPin);
       hapticSuccess(); setView('tracking');
-    } catch { hapticError(); Alert.alert('Error', 'No se pudo procesar el envío.'); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      hapticError();
+      const msg = err?.response?.data?.message || err?.message || 'Intenta de nuevo';
+      Alert.alert('Error', `No se pudo procesar el envío: ${msg}`);
+    } finally { setLoading(false); }
   };
 
   if (view === 'tracking') return (
