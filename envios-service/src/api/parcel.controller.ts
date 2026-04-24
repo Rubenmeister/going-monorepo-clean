@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Inject,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -41,6 +42,7 @@ export class ParcelController {
     private readonly assignParcelUseCase: AssignParcelUseCase,
     private readonly cancelParcelUseCase: CancelParcelUseCase,
     private readonly orchestrator: ParcelMatchingOrchestrator,
+    @Inject(IParcelRepository)
     private readonly parcelRepository: IParcelRepository,
   ) {}
 
