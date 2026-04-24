@@ -9,10 +9,14 @@ import { HealthController } from './api/health.controller';
 import {
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
+  TrackParcelUseCase,
+  AssignParcelUseCase,
+  CancelParcelUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { NearbyDriversService } from './infrastructure/services/nearby-drivers.service';
 import { ParcelDispatchGateway } from './infrastructure/gateways/parcel-dispatch.gateway';
+import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-matching-orchestrator.service';
 
 @Module({
   imports: [
@@ -39,9 +43,13 @@ import { ParcelDispatchGateway } from './infrastructure/gateways/parcel-dispatch
   providers: [
     CreateParcelUseCase,
     FindParcelsByUserUseCase,
+    TrackParcelUseCase,
+    AssignParcelUseCase,
+    CancelParcelUseCase,
     JwtStrategy,
     NearbyDriversService,
     ParcelDispatchGateway,
+    ParcelMatchingOrchestrator,
   ],
 })
 export class AppModule {}

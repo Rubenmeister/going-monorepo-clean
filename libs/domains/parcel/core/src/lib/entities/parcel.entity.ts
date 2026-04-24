@@ -135,4 +135,25 @@ export class Parcel {
     (this as any).status = 'delivered';
     return ok(undefined);
   }
+
+  /**
+   * Cancelar el envío cuando aún no hay conductor asignado o justo antes
+   * del pickup. Prohibido una vez en tránsito o entregado.
+   *
+   * El `reason` opcional se anexa al description para dejar traza
+   * (no requiere cambio de schema). Patrón: "[CANCEL:<reason>] <desc>".
+   */
+  public cancel(reason?: string): Result<void, Error> {
+    if (this.status === 'in_transit' || this.status === 'delivered') {
+      return err(
+        new Error('Parcel cannot be cancelled after pickup or delivery'),
+      );
+    }
+    if (this.status === 'cancelled') return ok(undefined); // idempotente
+    (this as any).status = 'cancelled';
+    if (reason && !this.description.startsWith('[CANCEL:')) {
+      (this as any).description = `[CANCEL:${reason}] ${this.description}`;
+    }
+    return ok(undefined);
+  }
 }

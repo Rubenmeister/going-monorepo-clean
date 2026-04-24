@@ -16,17 +16,19 @@ import {
   CreateParcelUseCase,
   FindParcelsByUserUseCase,
   TrackParcelUseCase,
+  AssignParcelUseCase,
+  CancelParcelUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
 import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
-import { NearbyDriversService } from '../infrastructure/services/nearby-drivers.service';
-import { ParcelDispatchGateway } from '../infrastructure/gateways/parcel-dispatch.gateway';
+import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
 
 interface AuthUser {
   id: string;
   email: string;
   role: 'user' | 'driver' | 'admin';
+  roles?: string[];
 }
 
 @Controller('parcels')
@@ -36,20 +38,24 @@ export class ParcelController {
     private readonly createParcelUseCase: CreateParcelUseCase,
     private readonly findParcelsByUserUseCase: FindParcelsByUserUseCase,
     private readonly trackParcelUseCase: TrackParcelUseCase,
-    private readonly nearbyDrivers: NearbyDriversService,
-    private readonly dispatchGateway: ParcelDispatchGateway,
+    private readonly assignParcelUseCase: AssignParcelUseCase,
+    private readonly cancelParcelUseCase: CancelParcelUseCase,
+    private readonly orchestrator: ParcelMatchingOrchestrator,
     private readonly parcelRepository: IParcelRepository,
   ) {}
 
   /**
-   * Create a new parcel delivery request
+   * Create a new parcel delivery request.
    * POST /api/parcels
+   *
+   * Tras crear el parcel, arranca el ciclo de matching con reintentos +
+   * fallback. No bloquea al caller.
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createParcel(
     @CurrentUser() user: AuthUser,
-    @Body() dto: CreateParcelDto
+    @Body() dto: CreateParcelDto,
   ): Promise<any> {
     // Normalize mobile's flat format to nested format if needed
     if (!dto.origin && dto.from) {
@@ -77,23 +83,25 @@ export class ParcelController {
       userId: user.id,
     });
 
-    // Fire-and-forget: find nearby drivers and dispatch push notifications
-    this.nearbyDrivers
-      .findNearbyOnlineDrivers(
-        dto.origin.latitude,
-        dto.origin.longitude,
-        10 // 10 km radius
-      )
-      .then((driverIds) => {
-        if (driverIds.length > 0) {
-          this.dispatchGateway.broadcastParcelToDrivers(result.id, driverIds, {
-            originAddress: dto.origin.address,
-            destinationAddress: dto.destination.address,
-            price: dto.price.amount,
-          });
-        }
-      })
-      .catch(() => { /* non-fatal */ });
+    // Arrancar ciclo de matching (fire-and-forget, no bloquea response).
+    // El orchestrator maneja retries + fallback internamente.
+    if (
+      typeof dto.origin.latitude === 'number' &&
+      typeof dto.origin.longitude === 'number'
+    ) {
+      this.orchestrator.start({
+        parcelId: result.id,
+        userId: user.id,
+        origin: {
+          lat: dto.origin.latitude,
+          lng: dto.origin.longitude,
+          address: dto.origin.address,
+        },
+        destination: { address: dto.destination.address },
+        price: dto.price.amount,
+        // vehicleTypes se puede derivar del tipo de paquete en el futuro.
+      });
+    }
 
     return result;
   }
@@ -139,16 +147,48 @@ export class ParcelController {
     if (result.isErr()) throw new NotFoundException('Envío no encontrado');
     const parcel = result.value;
     if (!parcel) throw new NotFoundException('Envío no encontrado');
-    // Only the owner or admin can see the parcel
-    if (parcel.toPrimitives().userId !== user.id && user.role !== 'admin') {
+    const primitives = parcel.toPrimitives();
+    const roles = user.roles ?? (user.role ? [user.role] : []);
+    const isOwner = primitives.userId === user.id;
+    const isDriver = primitives.driverId === user.id;
+    const isAdmin = roles.includes('admin');
+    if (!isOwner && !isDriver && !isAdmin) {
       throw new ForbiddenException('Sin permiso para ver este envío');
     }
-    return parcel.toPrimitives();
+    return primitives;
   }
 
   /**
-   * Cancel a parcel (user can cancel if not yet picked up)
+   * Accept a parcel (driver takes the delivery).
+   * PATCH /api/parcels/:id/accept
+   *
+   * Requires role 'driver'. First-accept wins: si ya fue tomado,
+   * devuelve 409 Conflict. Tras éxito, cancela el ciclo del orchestrator
+   * para que no siga mandando notificaciones a otros conductores.
+   */
+  @Patch(':id/accept')
+  @HttpCode(HttpStatus.OK)
+  async acceptParcel(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+  ): Promise<any> {
+    const roles = user.roles ?? (user.role ? [user.role] : []);
+    if (!roles.includes('driver') && !roles.includes('admin')) {
+      throw new ForbiddenException('Sólo conductores pueden aceptar envíos');
+    }
+    const result = await this.assignParcelUseCase.execute(id, user.id as UUID);
+    // Parar el ciclo — otros drivers no deben seguir recibiendo pushes.
+    this.orchestrator.cancel(id);
+    return result;
+  }
+
+  /**
+   * Cancel a parcel (user can cancel if not yet picked up).
    * PATCH /api/parcels/:id/cancel
+   *
+   * Allowed for: owner (reason='user_cancel'), admin ('admin').
+   * Blocked if the parcel is already in_transit or delivered.
+   * Cancela también el ciclo del orchestrator por si estaba activo.
    */
   @Patch(':id/cancel')
   @HttpCode(HttpStatus.OK)
@@ -156,22 +196,22 @@ export class ParcelController {
     @CurrentUser() user: AuthUser,
     @Param('id') id: UUID,
   ): Promise<any> {
-    const result = await this.parcelRepository.findById(id);
-    if (result.isErr() || !result.value) throw new NotFoundException('Envío no encontrado');
-    const parcel = result.value;
-    const primitives = parcel.toPrimitives();
-    if (primitives.userId !== user.id && user.role !== 'admin') {
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const primitives = findRes.value.toPrimitives();
+    const roles = user.roles ?? (user.role ? [user.role] : []);
+    const isOwner = primitives.userId === user.id;
+    const isAdmin = roles.includes('admin');
+    if (!isOwner && !isAdmin) {
       throw new ForbiddenException('Sin permiso para cancelar este envío');
     }
-    if (['delivered', 'cancelled'].includes(primitives.status)) {
-      throw new ForbiddenException('El envío ya fue entregado o cancelado');
-    }
-    if (primitives.status === 'picked_up' || primitives.status === 'in_transit') {
-      throw new ForbiddenException('No se puede cancelar: el envío ya fue recogido');
-    }
-    // Update status to cancelled
-    (parcel as any).status = 'cancelled';
-    await this.parcelRepository.update(parcel);
-    return { message: 'Envío cancelado', id };
+    const result = await this.cancelParcelUseCase.execute(
+      id,
+      isAdmin ? 'admin' : 'user_cancel',
+    );
+    this.orchestrator.cancel(id);
+    return result;
   }
 }
