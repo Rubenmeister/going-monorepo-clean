@@ -37,25 +37,48 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
       : `/${stripPrefix}${rawPath === '/' ? '' : rawPath}${queryString}`; // Express: prefix stripped
     logger.debug(`→ ${req.method} ${proxiedPath} to ${targetBase}`);
 
-    // NestJS body-parser already consumed the request stream before middleware runs.
-    // Must re-serialize from req.body instead of piping the raw stream.
-    const bodyStr =
-      req.body && Object.keys(req.body).length > 0
-        ? JSON.stringify(req.body)
-        : '';
-    const bodyBuf = Buffer.from(bodyStr, 'utf8');
+    // Este middleware se registra en la etapa `onRequest` de Fastify (vía
+    // middie), que corre ANTES de que Fastify parsee el JSON. Por eso
+    // `req.body` está indefinido en la mayoría de peticiones. Además nunca
+    // llamamos `next()` — respondemos directo al cliente — así que el hook
+    // `preHandler` que copia request.body → raw.body tampoco dispara.
+    //
+    // Solución: pipear el stream crudo (IncomingMessage) al upstream.
+    //
+    // Retrocompat: si por algún camino NestJS ya parseó `req.body` (ej. tests
+    // con Express adapter), re-serializamos esa estructura.
+
+    const hasPreParsedBody =
+      req.body !== undefined &&
+      req.body !== null &&
+      (typeof req.body !== 'object' || Object.keys(req.body).length > 0);
+
+    const headers: Record<string, any> = {
+      ...req.headers,
+      host: hostname,
+    };
+
+    // Si pre-parseado, fijamos content-length y content-type; si no, dejamos
+    // que Node reenvíe los headers originales + chunked transfer del stream.
+    let bodyBuf: Buffer | null = null;
+    if (hasPreParsedBody) {
+      const bodyStr =
+        typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+      bodyBuf = Buffer.from(bodyStr, 'utf8');
+      headers['content-type'] = 'application/json';
+      headers['content-length'] = bodyBuf.length;
+    } else {
+      // Fastify/middie puede dejar content-length stale; lo quitamos para que
+      // Node use transfer-encoding: chunked al pipear.
+      delete headers['content-length'];
+    }
 
     const options: https.RequestOptions = {
       hostname,
       port,
       path: proxiedPath,
       method: req.method,
-      headers: {
-        ...req.headers,
-        host: hostname,
-        'content-type': 'application/json',
-        'content-length': bodyBuf.length,
-      },
+      headers,
       rejectUnauthorized: false,
     };
 
@@ -80,8 +103,19 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
       proxyReq.destroy();
     });
 
-    if (bodyBuf.length > 0) proxyReq.write(bodyBuf);
-    proxyReq.end();
+    if (bodyBuf) {
+      proxyReq.write(bodyBuf);
+      proxyReq.end();
+    } else if (req.readable) {
+      // Pipe directo del IncomingMessage al upstream.
+      req.pipe(proxyReq);
+      req.on('error', (err: Error) => {
+        logger.error(`Upstream pipe error: ${err.message}`);
+        proxyReq.destroy(err);
+      });
+    } else {
+      proxyReq.end();
+    }
   };
 }
 
