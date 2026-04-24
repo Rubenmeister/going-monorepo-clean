@@ -13,11 +13,16 @@ import {
   HandleStripeEventUseCase,
 } from '@going-monorepo-clean/domains-payment-application';
 import { PricingService } from './application/pricing.service';
+import { FareEngine } from './application/fare-engine.service';
 import { ProcessPaymentUseCase } from './application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from './application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-case';
 import { DriverEarningsController } from './api/driver-earnings.controller';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
+import {
+  IRoutingProvider,
+  OsrmRoutingProvider,
+} from '@going-monorepo-clean/shared-infrastructure';
 
 @Module({
   imports: [
@@ -53,10 +58,17 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
     HandleStripeEventUseCase,
     // Service-level use cases (use IPaymentRepository + IPayoutRepository + StripeGateway)
     PricingService,
+    FareEngine,
     ProcessPaymentUseCase,
     CompleteRideUseCase,
     CreatePayoutUseCase,
     JwtStrategy,
+    // Routing provider (OSRM por default). Cambiar a GraphHopper/Mapbox
+    // reemplazando el useClass.
+    {
+      provide: IRoutingProvider,
+      useClass: OsrmRoutingProvider,
+    },
   ],
 })
 export class AppModule {}
