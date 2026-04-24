@@ -66,11 +66,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Token revoked');
       }
 
-      // Return user object — available as req.user in controllers
+      // Return user object — shape aligned with BaseJwtStrategy so all
+      // services share the same req.user contract. `id` is a backward-compat
+      // alias for `userId`; `role` is the first role as a shorthand.
+      const userId = payload.sub ?? payload.userId;
+      const roles = payload.roles ?? (payload.role ? [payload.role] : ['user']);
       return {
-        userId: payload.sub ?? payload.userId,
+        userId,
+        id: userId,
         email: payload.email,
-        roles: payload.roles ?? [],
+        roles,
+        role: roles[0] ?? 'user',
         accessToken: token,
         iat: payload.iat,
         exp: payload.exp,

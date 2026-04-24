@@ -88,9 +88,15 @@ export const authService = {
         ? Date.now() + expiresIn * 1000
         : jwtExpiry(accessToken);
 
+    // OAuth flows no entregan refreshToken upfront: evitar escribir "" en
+    // SecureStore (Android puede lanzar y iOS guardaría vacío).
+    const refreshOp = refreshToken
+      ? SecureStore.setItemAsync(KEYS.REFRESH, refreshToken)
+      : SecureStore.deleteItemAsync(KEYS.REFRESH).catch(() => {});
+
     await Promise.all([
       SecureStore.setItemAsync(KEYS.ACCESS, accessToken),
-      SecureStore.setItemAsync(KEYS.REFRESH, refreshToken),
+      refreshOp,
       expiry != null
         ? AsyncStorage.setItem(KEYS.EXPIRY, String(expiry))
         : AsyncStorage.removeItem(KEYS.EXPIRY),

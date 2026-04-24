@@ -597,8 +597,14 @@ export class AuthController {
         { email: dto.email, companyId: result.user.companyId }
       );
 
+      // Normalizar contrato: incluir `accessToken` además de `token` para
+      // compatibilidad con clientes web (frontend-webapp/empresas/auth.ts).
+      const normalized = result as any;
+      const authToken = normalized.accessToken || normalized.token;
       return {
-        ...result,
+        ...normalized,
+        token: authToken,
+        accessToken: authToken,
         companyId: (result.user as any).companyId ?? null,
         companyName: (result.user as any).companyName ?? null,
       };
@@ -718,7 +724,10 @@ export class AuthController {
         this.logger.log(`Password reset email sent to ${normalizedEmail}`);
       }
     } catch (err) {
-      this.logger.error(`forgot-password error: ${err instanceof Error ? err.message : err}`);
+      this.logger.error(
+        `forgot-password error: ${err instanceof Error ? err.message : err}`,
+        err instanceof Error ? err.stack : undefined,
+      );
     }
 
     return { message: 'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.' };
@@ -760,20 +769,40 @@ export class AuthController {
     return { message: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.' };
   }
 
-  /** Envía el correo de recuperación vía Gmail SMTP */
+  /**
+   * Envía el correo de recuperación vía Gmail SMTP.
+   * - Default de remitente: goingappecuador@gmail.com (cuenta real de Going).
+   * - Falla ruidosamente si falta GMAIL_APP_PASSWORD (antes fallaba en silencio).
+   * - Usa SMTP explícito + verify() para diagnosticar credenciales en logs.
+   */
   private async sendResetEmail(to: string, resetLink: string): Promise<void> {
-    const gmailUser = process.env.GMAIL_USER || 'noreply@goingec.com';
+    const gmailUser = process.env.GMAIL_USER || 'goingappecuador@gmail.com';
     const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
+    if (!gmailPass) {
+      this.logger.error('GMAIL_APP_PASSWORD no está configurada. No se puede enviar reset-email.');
+      throw new Error('GMAIL_APP_PASSWORD missing');
+    }
+
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: { user: gmailUser, pass: gmailPass },
     });
 
-    await transporter.sendMail({
+    try {
+      await transporter.verify();
+    } catch (e) {
+      this.logger.error(`SMTP verify falló para ${gmailUser}: ${(e as Error).message}`);
+      throw e;
+    }
+
+    const info = await transporter.sendMail({
       from: `"Going" <${gmailUser}>`,
+      replyTo: 'soporte@goingec.com',
       to,
-      subject: 'Recupera tu contraseña — Going',
+      subject: 'Recupera tu contraseña – Going',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f9f9f9;border-radius:12px;">
           <h2 style="color:#0033A0;margin-bottom:8px;">Recupera tu contraseña</h2>
@@ -783,10 +812,12 @@ export class AuthController {
             Restablecer contraseña
           </a>
           <p style="color:#888;font-size:13px;">Si no solicitaste este cambio, ignora este correo.</p>
-          <hr style="border:none;border-top:1px solid #e0e0e0;margin:24px 0;" />
-          <p style="color:#aaa;font-size:12px;">Going · Ecuador · <a href="https://goingec.com" style="color:#0033A0;">goingec.com</a></p>
+          <hr style="border:none;border-top:1px solid #e0e0e0;margin:24px 0;"/>
+          <p style="color:#aaa;font-size:12px;">Going Ecuador · <a href="https://goingec.com" style="color:#0033A0;">goingec.com</a></p>
         </div>
       `,
     });
+
+    this.logger.log(`Reset email enviado a ${to} (messageId=${info.messageId})`);
   }
 }
