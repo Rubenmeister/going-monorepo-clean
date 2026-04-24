@@ -119,7 +119,9 @@ export default function SurgePage() {
     setModal(false); setActivating(false);
   }
 
-  if (auth.isLoading || loading) return <Loading fullHeight size="lg" message="Cargando precios dinámicos…" />;
+  if (auth.isLoading || loading) {
+    return <Loading fullHeight size="lg" message="Cargando precios dinamicos..." />;
+  }
 
   const activeRules = rules.filter(r => r.active);
   const maxMultActive = activeRules.reduce((m, r) => Math.max(m, r.multiplier), 1);
@@ -293,4 +295,15 @@ export default function SurgePage() {
           {/* Legend */}
           <div className="mt-4 flex gap-4 text-xs flex-wrap">
             {[['×1.0–1.3','#f59e0b','Normal'],['×1.4–1.6','#ea580c','Alto'],['×1.7+','#dc2626','Muy alto']].map(([r,c,l]) => (
-              <span key={r} className="flex items-center gap-1.5 te
+              <span key={r} className="flex items-center gap-1.5 text-gray-700">
+                <span className="w-3 h-3 rounded-full" style={{ background: c }} />
+                <span className="font-medium">{r}</span>
+                <span className="text-gray-500">· {l}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}

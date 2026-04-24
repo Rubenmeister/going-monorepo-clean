@@ -86,7 +86,7 @@ function demoRatings(): RatingEntry[] {
 
 export default function RatingsPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [ratings, setRatings]     = useState<RatingEntry[]>([]);
   const [loading, setLoading]     = useState(true);
@@ -112,8 +112,8 @@ export default function RatingsPage() {
   useEffect(() => { load(); }, [load]);
 
   const filtered = ratings.filter(r => {
-    const matchSvc = \!filterSvc || r.serviceType === filterSvc;
-    const matchScore = \!filterScore || (
+    const matchSvc = !filterSvc || r.serviceType === filterSvc;
+    const matchScore = !filterScore || (
       filterScore === 'low'  && r.score <= 3 ||
       filterScore === 'mid'  && r.score === 4 ||
       filterScore === 'high' && r.score === 5
@@ -129,7 +129,7 @@ export default function RatingsPage() {
   /* Driver rankings */
   const driverMap = new Map<string, DriverRank>();
   filtered.forEach(r => {
-    if (\!r.driverId) return;
+    if (!r.driverId) return;
     const entry = driverMap.get(r.driverId) ?? { driverId: r.driverId, driverName: r.driverName ?? r.driverId, avg: 0, count: 0, scores: [] };
     entry.scores.push(r.score);
     entry.count++;

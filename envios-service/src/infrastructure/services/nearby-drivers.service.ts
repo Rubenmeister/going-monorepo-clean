@@ -5,16 +5,50 @@ import Redis from 'ioredis';
 const DRIVERS_GEO_KEY = 'going:drivers:locations';
 const DRIVER_AVAILABILITY_PREFIX = 'going:driver_availability:';
 
+/**
+ * Velocidad promedio para estimar ETA. 40 km/h alinea con transport-service.
+ */
+const AVERAGE_SPEED_KMH = 40;
+
+export interface RankedDriver {
+  driverId: string;
+  name: string;
+  rating: number;
+  acceptanceRate: number;
+  vehicleType: string;
+  vehiclePlate?: string;
+  photoUrl?: string;
+  distanceKm: number;
+  etaMinutes: number;
+}
+
+export interface FindRankedDriversOptions {
+  radiusKm?: number;
+  maxResults?: number;
+  minRating?: number;
+  /**
+   * Filtra por tipos de vehículo aceptables.
+   * Ej: ['moto','car'] para envío pequeño/mediano.
+   * Si se omite o incluye 'any', no se filtra por tipo.
+   */
+  vehicleTypes?: string[];
+}
+
 @Injectable()
 export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NearbyDriversService.name);
-  private redis: Redis;
+  private redis!: Redis;
 
   constructor(private readonly config: ConfigService) {}
 
   onModuleInit() {
     const url = this.config.get<string>('REDIS_URL') || 'redis://localhost:6379';
-    this.redis = new Redis(url);
+    this.redis = new Redis(url, {
+      lazyConnect: true,
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 0,
+      connectTimeout: 3000,
+    });
     this.redis.on('error', (e) =>
       this.logger.warn(`Redis error: ${e.message}`)
     );
@@ -25,8 +59,8 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Find nearby online drivers using Redis GEO.
-   * Reuses the same key populated by the tracking-service.
+   * Lista plana de IDs de conductores online dentro del radio.
+   * Mantenida por compatibilidad con callers viejos.
    */
   async findNearbyOnlineDrivers(
     latitude: number,
@@ -34,37 +68,111 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
     radiusKm = 10,
     maxResults = 10
   ): Promise<string[]> {
+    const ranked = await this.findRankedDrivers(latitude, longitude, {
+      radiusKm,
+      maxResults,
+      minRating: 0, // backwards compat: sin filtro
+    });
+    return ranked.map((d) => d.driverId);
+  }
+
+  /**
+   * Consulta Redis GEO + availability hashes, filtra por rating + tipo de
+   * vehículo y devuelve conductores ordenados por rating (desc) y distancia
+   * (asc). Usa el mismo contrato que transport-service para mantener paridad.
+   */
+  async findRankedDrivers(
+    latitude: number,
+    longitude: number,
+    opts: FindRankedDriversOptions = {}
+  ): Promise<RankedDriver[]> {
+    const {
+      radiusKm = 10,
+      maxResults = 10,
+      minRating = 4.0,
+      vehicleTypes,
+    } = opts;
+
     try {
-      // georadius returns [[member, distance], ...] with WITHCOORD/WITHDIST
-      // Using basic form: GEORADIUS key lng lat radius unit COUNT max ASC
-      const results = await (this.redis as any).georadius(
+      // Sobre-fetcheamos 3× para tener margen al filtrar por rating y tipo.
+      const results = (await (this.redis as any).georadius(
         DRIVERS_GEO_KEY,
         longitude,
         latitude,
         radiusKm,
         'km',
+        'WITHDIST',
+        'ASC',
         'COUNT',
-        maxResults,
-        'ASC'
-      ) as string[];
+        maxResults * 3
+      )) as Array<[string, string]>;
 
       if (!results || results.length === 0) return [];
 
-      // Filter by online status
-      const onlineDrivers: string[] = [];
-      for (const driverId of results) {
-        const availability = await this.redis.hget(
-          `${DRIVER_AVAILABILITY_PREFIX}${driverId}`,
-          'status'
+      const vehicleFilter = (vehicleTypes ?? []).map((v) => v.toLowerCase());
+      const filterAnyVehicle =
+        vehicleFilter.length === 0 || vehicleFilter.includes('any');
+
+      const ranked: RankedDriver[] = [];
+      for (const [driverId, distStr] of results) {
+        if (ranked.length >= maxResults) break;
+
+        const availability = await this.redis.hgetall(
+          `${DRIVER_AVAILABILITY_PREFIX}${driverId}`
         );
-        if (availability === 'online') {
-          onlineDrivers.push(driverId);
+
+        // Sin availability = no sabemos si está online → skip por seguridad.
+        if (!availability || availability.status !== 'online') continue;
+
+        const rating = parseFloat(availability.rating || '4.5');
+        if (rating < minRating) continue;
+
+        // serviceTypes = JSON array con tipos que el conductor acepta
+        const driverServiceTypes: string[] = (() => {
+          try {
+            return JSON.parse(availability.serviceTypes || '["standard"]');
+          } catch {
+            return ['standard'];
+          }
+        })();
+
+        if (!filterAnyVehicle) {
+          const match = driverServiceTypes.some((t) =>
+            vehicleFilter.includes(t.toLowerCase())
+          );
+          if (!match) continue;
         }
+
+        const distanceKm = parseFloat(distStr);
+        const etaMinutes = Math.max(
+          1,
+          Math.ceil((distanceKm / AVERAGE_SPEED_KMH) * 60)
+        );
+
+        ranked.push({
+          driverId,
+          name: availability.firstName
+            ? `${availability.firstName} ${availability.lastName || ''}`.trim()
+            : `Conductor ${driverId.slice(-4)}`,
+          rating,
+          acceptanceRate: parseFloat(availability.acceptanceRate || '0.9'),
+          vehicleType: availability.vehicleType || 'standard',
+          vehiclePlate: availability.vehiclePlate,
+          photoUrl: availability.photoUrl,
+          distanceKm,
+          etaMinutes,
+        });
       }
 
-      return onlineDrivers;
+      // Orden final: mejor rating primero, a igualdad de rating el más cercano.
+      ranked.sort((a, b) => {
+        const d = b.rating - a.rating;
+        return d !== 0 ? d : a.distanceKm - b.distanceKm;
+      });
+
+      return ranked;
     } catch (e) {
-      this.logger.warn(`Redis GEO query failed: ${e.message}`);
+      this.logger.warn(`Redis GEO query failed: ${(e as Error).message}`);
       return [];
     }
   }

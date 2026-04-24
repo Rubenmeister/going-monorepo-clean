@@ -138,13 +138,13 @@ export default function ReportesPage() {
     if (!session?.accessToken) return;
 
     // Cargar KPIs
-    corpFetch<KPIs>("/analytics/kpis/current", session.accessToken)
+    corpFetch<KPIs>("/analytics/kpis/current", session!.accessToken)
       .then(setKpis)
       .catch(() => {/* silencioso, mostramos "—" */})
       .finally(() => setKpisLoading(false));
 
     // Cargar reportes existentes
-    corpFetch<{ reports: Report[] }>("/analytics/reports?limit=20", session.accessToken)
+    corpFetch<{ reports: Report[] }>("/analytics/reports?limit=20", session!.accessToken)
       .then((res) => setReports(res?.reports ?? []))
       .catch(() => {})
       .finally(() => setReportsLoading(false));
@@ -158,7 +158,7 @@ export default function ReportesPage() {
     setGenError(null);
     setGenOk(false);
     try {
-      const report = await corpFetch<Report>("/analytics/reports", session.accessToken!, {
+      const report = await corpFetch<Report>("/analytics/reports", session!.accessToken!, {
         method: "POST",
         body: JSON.stringify(form),
       });

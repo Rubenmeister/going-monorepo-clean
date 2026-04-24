@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!session?.accessToken) return;
-    fetchDashboardStats(session.accessToken)
+    fetchDashboardStats(session!.accessToken)
       .then(setStats)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
   if (!session) return null;
 
-  const tipoCuenta = session.user.tipoCuenta as string | undefined;
+  const tipoCuenta = session!.user.tipoCuenta as string | undefined;
   const kpis = getKPIConfig(tipoCuenta);
   const ctx = getContexto(tipoCuenta);
 
@@ -49,7 +49,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-900">
-          Bienvenido, {session.user.nombre || session.user.email}
+          Bienvenido, {session!.user.nombre || session!.user.email}
         </h1>
         <p className="text-slate-600 mt-1">{ctx.descripcionPanel}</p>
       </div>
@@ -118,7 +118,7 @@ export default function DashboardPage() {
             </Link>
             {/* Aprobaciones: solo para grande y si es aprobador/admin */}
             {tipoCuenta === "grande" &&
-              (session.user.roles.includes("aprobador") || session.user.roles.includes("admin")) && (
+              (session!.user.roles.includes("aprobador") || session!.user.roles.includes("admin")) && (
                 <Link
                   href="/empresas/aprobaciones"
                   className="block px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg font-medium transition-colors text-sm"

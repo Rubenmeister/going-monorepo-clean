@@ -68,7 +68,7 @@ function corpIcon(active: boolean) {
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function MapPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const mapRef   = useRef<HTMLDivElement>(null);
   const mapInst  = useRef<any>(null);
@@ -101,7 +101,7 @@ export default function MapPage() {
 
   /* Init map */
   useEffect(() => {
-    if (\!leafletReady || \!mapRef.current || mapInst.current) return;
+    if (!leafletReady || !mapRef.current || mapInst.current) return;
     mapInst.current = L.map(mapRef.current, { zoomControl: true }).setView([-0.2299, -78.5249], 11);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap', maxZoom: 18,
@@ -161,7 +161,7 @@ export default function MapPage() {
 
   /* Redraw markers */
   useEffect(() => {
-    if (\!mapInst.current || \!leafletReady || loading) return;
+    if (!mapInst.current || !leafletReady || loading) return;
     mapItems.current.forEach(item => item.remove());
     mapItems.current = [];
 
@@ -284,7 +284,7 @@ export default function MapPage() {
             </div>
             <p className="text-sm font-bold text-gray-900">{l.label}</p>
             <p className="text-xs text-gray-500 mt-0.5">
-              <span className="font-semibold" style={{color: l.color}}>{l.activeCount} activo{l.activeCount\!==1?'s':''}</span>
+              <span className="font-semibold" style={{color: l.color}}>{l.activeCount} activo{l.activeCount!==1?'s':''}</span>
               {' '}/ {l.totalCount} total
             </p>
           </button>
@@ -316,7 +316,7 @@ export default function MapPage() {
 
       {/* Map */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" style={{ height:'520px' }}>
-        {\!leafletReady && (
+        {!leafletReady && (
           <div className="h-full flex items-center justify-center text-gray-400">
             <div className="text-center animate-pulse">
               <div className="text-5xl mb-3">🗺️</div>
@@ -341,4 +341,3 @@ export default function MapPage() {
     </AdminLayout>
   );
 }
-                                                                                                                                                                                                                               

@@ -272,7 +272,7 @@ export default function CondicionesPage() {
 
   if (!session) return null;
 
-  const tipoCuenta = (session.user.tipoCuenta ?? "negocio") as TipoCuenta;
+  const tipoCuenta = (session!.user.tipoCuenta ?? "negocio") as TipoCuenta;
   const data = CONDICIONES[tipoCuenta] ?? CONDICIONES.negocio;
 
   const TIPO_COLORS: Record<TipoCuenta, string> = {

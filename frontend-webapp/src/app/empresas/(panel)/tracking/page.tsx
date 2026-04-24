@@ -83,7 +83,7 @@ export default function TrackingPage() {
 
   // ── Cargar viajes activos del día ──────────────────────────────────────────
   useEffect(() => {
-    fetchBookings(session.accessToken)
+    fetchBookings(session!.accessToken)
       .then((all) => {
         const active = (all as ActiveBooking[]).filter((b) => b.status === "in_progress");
         setBookings(active);
@@ -91,13 +91,13 @@ export default function TrackingPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [session.accessToken]);
+  }, [session!.accessToken]);
 
   // ── Polling de ubicación por viaje seleccionado ────────────────────────────
   const fetchLocation = useCallback(async (bookingId: string) => {
     try {
       const loc = await corpFetch<DriverLocation>(
-        `/tracking/booking/${bookingId}`, session.accessToken
+        `/tracking/booking/${bookingId}`, session!.accessToken
       );
       setLocations((prev) => ({ ...prev, [bookingId]: loc }));
       setLastUpdate((prev) => ({ ...prev, [bookingId]: new Date().toISOString() }));
@@ -105,7 +105,7 @@ export default function TrackingPage() {
     } catch {
       setLocError((prev) => ({ ...prev, [bookingId]: "Sin datos de ubicación" }));
     }
-  }, [session.accessToken]);
+  }, [session!.accessToken]);
 
   useEffect(() => {
     if (!selected) return;

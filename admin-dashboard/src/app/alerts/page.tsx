@@ -86,7 +86,7 @@ function EmptyState() {
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 export default function AlertsPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [alerts,    setAlerts]    = useState<Alert[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
@@ -134,12 +134,12 @@ export default function AlertsPage() {
     localStorage.removeItem(DISMISS_KEY);
   }
 
-  const visible   = alerts.filter(a => \!dismissed.has(a.id));
+  const visible   = alerts.filter(a => !dismissed.has(a.id));
   const discarded = alerts.filter(a => dismissed.has(a.id));
 
   const filtered = visible.filter(a =>
-    (\!filterSev || a.severity === filterSev) &&
-    (\!filterCat || a.category === filterCat)
+    (!filterSev || a.severity === filterSev) &&
+    (!filterCat || a.category === filterCat)
   );
 
   const criticals = visible.filter(a => a.severity === 'critical');
@@ -219,7 +219,7 @@ export default function AlertsPage() {
               className="text-sm text-gray-400 hover:text-gray-600 px-2">✕ Limpiar</button>
           )}
           <span className="ml-auto text-xs text-gray-400 self-center">
-            {filtered.length} de {visible.length} alerta{visible.length \!== 1 ? 's' : ''}
+            {filtered.length} de {visible.length} alerta{visible.length !== 1 ? 's' : ''}
           </span>
         </div>
       )}
@@ -256,7 +256,7 @@ export default function AlertsPage() {
       {/* Dismissed section */}
       {discarded.length > 0 && (
         <div className="mt-8">
-          <button onClick={() => setShowDismissed(p => \!p)}
+          <button onClick={() => setShowDismissed(p => !p)}
             className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 font-medium">
             {showDismissed ? '▼' : '▶'} {discarded.length} alerta{discarded.length>1?'s':''} descartada{discarded.length>1?'s':''}
             <span className="text-xs underline ml-2" onClick={e => { e.stopPropagation(); restoreAll(); }}>Restaurar todas</span>

@@ -88,7 +88,7 @@ type Period = '7d' | '30d' | '90d' | 'all';
 
 export default function IngresosPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [invoices,  setInvoices]  = useState<Invoice[]>([]);
   const [payments,  setPayments]  = useState<Payment[]>([]);
@@ -127,11 +127,11 @@ export default function IngresosPage() {
 
   const filteredInv = invoices.filter(inv =>
     inPeriod(inv.createdAt) &&
-    (\!filterSvc || inv.serviceType === filterSvc) &&
-    (\!search || (inv.companyName??'').toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase()))
+    (!filterSvc || inv.serviceType === filterSvc) &&
+    (!search || (inv.companyName??'').toLowerCase().includes(search.toLowerCase()) || inv.id.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const filteredPay = payments.filter(p => inPeriod(p.createdAt) && (\!filterSvc || p.serviceType === filterSvc));
+  const filteredPay = payments.filter(p => inPeriod(p.createdAt) && (!filterSvc || p.serviceType === filterSvc));
 
   /* ── KPIs ── */
   const totalRevenue   = filteredInv.filter(i=>i.status==='paid').reduce((s,i)=>s+i.amount,0);
@@ -162,8 +162,8 @@ export default function IngresosPage() {
   /* ── Monthly trend (from invoices) ── */
   const monthMap: Record<string,{paid:number;pending:number}> = {};
   filteredInv.forEach(inv => {
-    const k = (inv.createdAt??'').slice(0,7); if (\!k) return;
-    if (\!monthMap[k]) monthMap[k] = {paid:0,pending:0};
+    const k = (inv.createdAt??'').slice(0,7); if (!k) return;
+    if (!monthMap[k]) monthMap[k] = {paid:0,pending:0};
     if (inv.status==='paid') monthMap[k].paid += inv.amount;
     else monthMap[k].pending += inv.amount;
   });
@@ -361,7 +361,7 @@ export default function IngresosPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500">
                     {inv.dueDate
-                      ? <span className={new Date(inv.dueDate)<new Date()&&inv.status\!=='paid'?'text-red-600 font-semibold':''}>{inv.dueDate.slice(0,10)}</span>
+                      ? <span className={new Date(inv.dueDate)<new Date()&&inv.status!=='paid'?'text-red-600 font-semibold':''}>{inv.dueDate.slice(0,10)}</span>
                       : '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-500">{inv.paidAt?.slice(0,10) ?? '—'}</td>

@@ -96,15 +96,15 @@ export default function SostenibilidadPage() {
   const [loading, setLoading] = useState(true);
   const [period,  setPeriod]  = useState<'month' | 'quarter' | 'year'>('month');
 
-  if (\!session) return null;
+  if (!session) return null;
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session.accessToken);
+      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session!.accessToken);
       if (res?.totalTrips) setData(res);
     } catch {}
     setLoading(false);
-  }, [session.accessToken, period]);
+  }, [session!.accessToken, period]);
 
   useEffect(() => { setLoading(true); fetchData(); }, [fetchData]);
 

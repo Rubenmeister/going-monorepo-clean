@@ -198,7 +198,7 @@ function RejectModal({ company, token, onClose, onRejected }: {
   const [error, setError] = useState('');
 
   async function handleReject() {
-    if (\!motivo.trim()) { setError('El motivo es obligatorio.'); return; }
+    if (!motivo.trim()) { setError('El motivo es obligatorio.'); return; }
     setLoading(true); setError('');
     try {
       await adminFetch(`/corporate/companies/${company.id}/reject`, token, {
@@ -254,7 +254,7 @@ export default function CompaniesPage() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const load = useCallback(async () => {
-    if (\!auth.user || \!token) return;
+    if (!auth.user || !token) return;
     setLoading(true); setError(null);
     try {
       const data = await adminFetch<any>('/corporate/companies?limit=200', token);
@@ -273,12 +273,12 @@ export default function CompaniesPage() {
   }, [auth.user, token]);
 
   useEffect(() => {
-    if (\!auth.user) { router.push('/login'); return; }
+    if (!auth.user) { router.push('/login'); return; }
     load();
   }, [auth.user, router, load]);
 
   if (auth.isLoading) return <Loading fullHeight size="lg" message="Verificando sesión..." />;
-  if (\!auth.user?.isAdmin?.()) {
+  if (!auth.user?.isAdmin?.()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <ErrorState title="Acceso Denegado" description="Se requiere rol de administrador"
@@ -363,7 +363,7 @@ export default function CompaniesPage() {
       {approving  && <ApproveModal  company={approving}  token={token} onClose={() => setApproving(null)}
         onApproved={id => { setCompanies(p => p.map(c => c.id === id ? { ...c, status: 'active' } : c)); showToast('Empresa aprobada y activada.', true); }} />}
       {rejecting  && <RejectModal   company={rejecting}  token={token} onClose={() => setRejecting(null)}
-        onRejected={id => { setCompanies(p => p.filter(c => c.id \!== id)); showToast('Solicitud rechazada. Se notificó a la empresa.', true); }} />}
+        onRejected={id => { setCompanies(p => p.filter(c => c.id !== id)); showToast('Solicitud rechazada. Se notificó a la empresa.', true); }} />}
 
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.ok ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>

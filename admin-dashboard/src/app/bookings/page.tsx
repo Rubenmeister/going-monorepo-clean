@@ -10,7 +10,7 @@ async function adminFetch<T>(token: string, path: string, opts?: RequestInit): P
     ...opts,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts?.headers ?? {}) },
   });
-  if (\!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
 
@@ -86,7 +86,7 @@ function BookingDetail({ booking, token, onClose, onUpdate }: {
   }
 
   async function cancel() {
-    if (\!cancelReason.trim()) return;
+    if (!cancelReason.trim()) return;
     setLoading(true);
     try {
       await adminFetch(token, `/bookings/${booking.id}/cancel`, {
@@ -184,7 +184,7 @@ function BookingDetail({ booking, token, onClose, onUpdate }: {
         </div>
 
         <div className="p-6 border-t space-y-3">
-          {booking.status === 'pending' && \!showCancel && (
+          {booking.status === 'pending' && !showCancel && (
             <div className="flex gap-3">
               <button
                 onClick={confirm} disabled={loading}
@@ -201,7 +201,7 @@ function BookingDetail({ booking, token, onClose, onUpdate }: {
               </button>
             </div>
           )}
-          {(booking.status === 'confirmed' || booking.status === 'in_progress') && \!showCancel && (
+          {(booking.status === 'confirmed' || booking.status === 'in_progress') && !showCancel && (
             <button
               onClick={() => setShowCancel(true)}
               className="w-full py-2.5 rounded-xl border border-red-300 text-red-600 text-sm font-semibold hover:bg-red-50"
@@ -219,7 +219,7 @@ function BookingDetail({ booking, token, onClose, onUpdate }: {
               />
               <div className="flex gap-2">
                 <button
-                  onClick={cancel} disabled={loading || \!cancelReason.trim()}
+                  onClick={cancel} disabled={loading || !cancelReason.trim()}
                   className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold disabled:opacity-50"
                 >
                   {loading ? 'Cancelando…' : 'Confirmar Cancelación'}
@@ -270,9 +270,9 @@ export default function BookingsPage() {
 
   const filtered = bookings.filter(b => {
     const q = search.toLowerCase();
-    const matchQ = \!q || (b.userName ?? '').toLowerCase().includes(q) || (b.userEmail ?? '').toLowerCase().includes(q) || b.id.toLowerCase().includes(q);
-    const matchS = \!filterStatus || b.status === filterStatus;
-    const matchT = \!filterType || b.serviceType === filterType;
+    const matchQ = !q || (b.userName ?? '').toLowerCase().includes(q) || (b.userEmail ?? '').toLowerCase().includes(q) || b.id.toLowerCase().includes(q);
+    const matchS = !filterStatus || b.status === filterStatus;
+    const matchT = !filterType || b.serviceType === filterType;
     return matchQ && matchS && matchT;
   });
 

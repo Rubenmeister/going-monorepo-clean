@@ -15,7 +15,7 @@ export default function ConfiguracionPage() {
 
   if (!session) return null;
 
-  if (!session.user.roles.includes("admin")) {
+  if (!session!.user.roles.includes("admin")) {
     return (
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Acceso Denegado</h1>
@@ -24,7 +24,7 @@ export default function ConfiguracionPage() {
     );
   }
 
-  const tipoCuenta = session.user.tipoCuenta as keyof typeof TIPOS_CUENTA | undefined;
+  const tipoCuenta = session!.user.tipoCuenta as keyof typeof TIPOS_CUENTA | undefined;
   const tipoCuentaInfo = tipoCuenta ? TIPOS_CUENTA[tipoCuenta] : null;
 
   return (
@@ -42,11 +42,11 @@ export default function ConfiguracionPage() {
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-slate-500">Empresa</dt>
-              <dd className="font-semibold text-slate-900">{session.user.companyName ?? "—"}</dd>
+              <dd className="font-semibold text-slate-900">{session!.user.companyName ?? "—"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">ID de Empresa</dt>
-              <dd className="font-mono text-xs text-slate-600">{session.user.companyId ?? "—"}</dd>
+              <dd className="font-mono text-xs text-slate-600">{session!.user.companyId ?? "—"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Tipo de Cuenta</dt>
@@ -87,17 +87,17 @@ export default function ConfiguracionPage() {
             <div className="flex justify-between">
               <dt className="text-slate-500">Nombre</dt>
               <dd className="font-semibold text-slate-900">
-                {[session.user.nombre, session.user.apellido].filter(Boolean).join(" ") || "—"}
+                {[session!.user.nombre, session!.user.apellido].filter(Boolean).join(" ") || "—"}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-slate-500">Email</dt>
-              <dd className="text-slate-700">{session.user.email ?? "—"}</dd>
+              <dd className="text-slate-700">{session!.user.email ?? "—"}</dd>
             </div>
             <div className="flex justify-between items-start gap-2">
               <dt className="text-slate-500 shrink-0">Roles</dt>
               <dd className="flex flex-wrap gap-1 justify-end">
-                {(session.user.roles ?? []).map((r) => (
+                {(session!.user.roles ?? []).map((r) => (
                   <span key={r} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
                     {ROLES[r as keyof typeof ROLES]?.label ?? r}
                   </span>

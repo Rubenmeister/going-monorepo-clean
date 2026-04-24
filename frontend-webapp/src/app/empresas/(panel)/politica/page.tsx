@@ -67,22 +67,22 @@ export default function PoliticaPage() {
   const [saved,    setSaved]    = useState(false);
   const [tab,      setTab]      = useState<'gasto' | 'horarios' | 'aprobaciones' | 'servicios'>('gasto');
 
-  if (\!session) return null;
+  if (!session) return null;
 
   const fetchPolicy = useCallback(async () => {
     try {
-      const data = await corpFetch<TravelPolicy>('/corporate/policy', session.accessToken);
+      const data = await corpFetch<TravelPolicy>('/corporate/policy', session!.accessToken);
       if (data) setPolicy({ ...DEFAULT_POLICY, ...data });
     } catch {}
     setLoading(false);
-  }, [session.accessToken]);
+  }, [session!.accessToken]);
 
   useEffect(() => { fetchPolicy(); }, [fetchPolicy]);
 
   async function savePolicy() {
     setSaving(true);
     try {
-      await corpFetch('/corporate/policy', session.accessToken, {
+      await corpFetch('/corporate/policy', session!.accessToken, {
         method: 'PUT', body: JSON.stringify(policy),
       });
     } catch {}
@@ -95,7 +95,7 @@ export default function PoliticaPage() {
     setPolicy(prev => ({
       ...prev,
       allowedDays: prev.allowedDays.includes(d)
-        ? prev.allowedDays.filter(x => x \!== d)
+        ? prev.allowedDays.filter(x => x !== d)
         : [...prev.allowedDays, d],
     }));
   }
@@ -104,7 +104,7 @@ export default function PoliticaPage() {
     setPolicy(prev => ({
       ...prev,
       allowedServices: prev.allowedServices.includes(s)
-        ? prev.allowedServices.filter(x => x \!== s)
+        ? prev.allowedServices.filter(x => x !== s)
         : [...prev.allowedServices, s],
     }));
   }
@@ -162,7 +162,7 @@ export default function PoliticaPage() {
               : 'Empleados pueden reservar sin restricciones de política.'}
           </p>
         </div>
-        <Toggle checked={policy.enabled} onChange={() => setPolicy(p => ({...p, enabled:\!p.enabled}))} />
+        <Toggle checked={policy.enabled} onChange={() => setPolicy(p => ({...p, enabled:!p.enabled}))} />
       </div>
 
       {/* Policy preview pill */}
@@ -206,10 +206,10 @@ export default function PoliticaPage() {
               <MoneyInput value={policy.requireJustificationAbove} onChange={v => setPolicy(p => ({...p, requireJustificationAbove:v}))} />
             </Field>
             <Field label="Uso personal permitido" sub="Empleados pueden usar Going para viajes personales fuera de horario laboral">
-              <Toggle checked={policy.allowPersonalUse} onChange={() => setPolicy(p => ({...p, allowPersonalUse:\!p.allowPersonalUse}))} />
+              <Toggle checked={policy.allowPersonalUse} onChange={() => setPolicy(p => ({...p, allowPersonalUse:!p.allowPersonalUse}))} />
             </Field>
             <Field label="Servicios internacionales" sub="Permite reservar tours y alojamiento fuera del país">
-              <Toggle checked={policy.allowInternational} onChange={() => setPolicy(p => ({...p, allowInternational:\!p.allowInternational}))} />
+              <Toggle checked={policy.allowInternational} onChange={() => setPolicy(p => ({...p, allowInternational:!p.allowInternational}))} />
             </Field>
           </>
         )}

@@ -103,15 +103,15 @@ export default function SeguridadEmpresaPage() {
   const [requesting, setRequesting] = useState<string | null>(null);
   const [toast,      setToast]      = useState('');
 
-  if (\!session) return null;
+  if (!session) return null;
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const fetchData = useCallback(async () => {
     try {
       const [tripsData, incData] = await Promise.all([
-        corpFetch<any>('/corporate/trips/safety', session.accessToken),
-        corpFetch<any>('/corporate/dashcam/incidents', session.accessToken),
+        corpFetch<any>('/corporate/trips/safety', session!.accessToken),
+        corpFetch<any>('/corporate/dashcam/incidents', session!.accessToken),
       ]);
       const tRaw: any[] = Array.isArray(tripsData) ? tripsData : tripsData?.data ?? [];
       const iRaw: any[] = Array.isArray(incData) ? incData : incData?.data ?? [];
@@ -122,14 +122,14 @@ export default function SeguridadEmpresaPage() {
       setIncidents(DEMO_INCIDENTS);
     }
     setLoading(false);
-  }, [session.accessToken]);
+  }, [session!.accessToken]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   async function requestClip(tripId: string) {
     setRequesting(tripId);
     try {
-      await corpFetch<any>('/corporate/dashcam/clip-request', session.accessToken, {
+      await corpFetch<any>('/corporate/dashcam/clip-request', session!.accessToken, {
         method: 'POST',
         body: JSON.stringify({ tripId }),
       });
@@ -265,7 +265,7 @@ export default function SeguridadEmpresaPage() {
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
           <p className="text-xs font-medium text-slate-500 mb-1">Incidentes totales</p>
           <p className="text-3xl font-black" style={{ color: criticals > 0 ? '#dc2626' : '#d97706' }}>{totalInc}</p>
-          {criticals > 0 && <p className="text-xs text-red-600 font-semibold mt-1">⚠ {criticals} crítico{criticals \!== 1 ? 's' : ''}</p>}
+          {criticals > 0 && <p className="text-xs text-red-600 font-semibold mt-1">⚠ {criticals} crítico{criticals !== 1 ? 's' : ''}</p>}
         </div>
       </div>
 
@@ -283,7 +283,7 @@ export default function SeguridadEmpresaPage() {
       {tab === 'overview' && (
         <div className="space-y-3">
           {loading && [1,2,3].map(i => <div key={i} className="h-20 bg-slate-100 rounded-xl animate-pulse" />)}
-          {\!loading && trips.map(t => {
+          {!loading && trips.map(t => {
             const sc2 = scoreColor(t.safetyScore);
             return (
               <div key={t.id}
@@ -308,7 +308,7 @@ export default function SeguridadEmpresaPage() {
                       {t.incidents} incid.
                     </span>
                   )}
-                  {t.clipAvailable && \!t.recordingRequested && (
+                  {t.clipAvailable && !t.recordingRequested && (
                     <span className="text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full border border-blue-200">
                       📹 Clip disponible
                     </span>
@@ -359,9 +359,9 @@ export default function SeguridadEmpresaPage() {
                   {inc.reviewed && <span className="text-xs text-green-600 font-medium">✓ Revisado</span>}
                 </div>
               </div>
-              {(inc.speed \!= null || inc.clipDuration \!= null) && (
+              {(inc.speed != null || inc.clipDuration != null) && (
                 <div className="flex gap-4 mt-2 text-xs text-slate-400">
-                  {inc.speed \!= null && <span>⚡ {inc.speed} km/h{inc.maxSpeed ? ` (límite ${inc.maxSpeed})` : ''}</span>}
+                  {inc.speed != null && <span>⚡ {inc.speed} km/h{inc.maxSpeed ? ` (límite ${inc.maxSpeed})` : ''}</span>}
                   {inc.clipDuration && <span>📹 {inc.clipDuration}s de clip</span>}
                 </div>
               )}

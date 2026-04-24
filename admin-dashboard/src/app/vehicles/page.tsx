@@ -10,7 +10,7 @@ async function adminFetch<T>(token: string, path: string, opts?: RequestInit): P
     ...opts,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts?.headers ?? {}) },
   });
-  if (\!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
 
@@ -41,7 +41,7 @@ interface Vehicle {
 type DocState = 'ok' | 'expiring' | 'expired' | 'missing';
 
 function getDocState(expiry?: string): DocState {
-  if (\!expiry) return 'missing';
+  if (!expiry) return 'missing';
   const diff = (new Date(expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
   if (diff < 0) return 'expired';
   if (diff < 30) return 'expiring';
@@ -119,7 +119,7 @@ function VehicleDetail({ vehicle, token, onClose, onUpdate }: {
     finally { setLoading(false); }
   }
 
-  const field = (label: string, value?: string | number) => value \!= null ? (
+  const field = (label: string, value?: string | number) => value != null ? (
     <div>
       <p className="text-xs text-gray-500">{label}</p>
       <p className="text-sm font-medium text-gray-900">{value}</p>
@@ -239,7 +239,7 @@ function VehicleDetail({ vehicle, token, onClose, onUpdate }: {
         </div>
 
         <div className="p-6 border-t space-y-3">
-          {\!vehicle.approved && (
+          {!vehicle.approved && (
             <button
               onClick={approve} disabled={loading}
               className="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity disabled:opacity-50"
@@ -248,7 +248,7 @@ function VehicleDetail({ vehicle, token, onClose, onUpdate }: {
               {loading ? 'Aprobando…' : '✓ Aprobar Vehículo'}
             </button>
           )}
-          {vehicle.status \!== 'suspended' && vehicle.approved && (
+          {vehicle.status !== 'suspended' && vehicle.approved && (
             <button
               onClick={suspend} disabled={loading}
               className="w-full py-2.5 rounded-xl border border-red-300 text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50"
@@ -296,9 +296,9 @@ export default function VehiclesPage() {
 
   const filtered = vehicles.filter(v => {
     const q = search.toLowerCase();
-    const matchQ = \!q || (v.plate ?? '').toLowerCase().includes(q) || (v.driverName ?? '').toLowerCase().includes(q) || (v.brand ?? '').toLowerCase().includes(q);
-    const matchS = \!filterStatus || v.status === filterStatus;
-    const matchDoc = \!filterDoc || (
+    const matchQ = !q || (v.plate ?? '').toLowerCase().includes(q) || (v.driverName ?? '').toLowerCase().includes(q) || (v.brand ?? '').toLowerCase().includes(q);
+    const matchS = !filterStatus || v.status === filterStatus;
+    const matchDoc = !filterDoc || (
       filterDoc === 'expired' && (getDocState(v.soatExpiry) === 'expired' || getDocState(v.matriculaExpiry) === 'expired') ||
       filterDoc === 'expiring' && (getDocState(v.soatExpiry) === 'expiring' || getDocState(v.matriculaExpiry) === 'expiring') ||
       filterDoc === 'missing' && (getDocState(v.soatExpiry) === 'missing' || getDocState(v.matriculaExpiry) === 'missing')
@@ -307,7 +307,7 @@ export default function VehiclesPage() {
   });
 
   const expiredDocs = vehicles.filter(v => getDocState(v.soatExpiry) === 'expired' || getDocState(v.matriculaExpiry) === 'expired');
-  const pendingApproval = vehicles.filter(v => \!v.approved);
+  const pendingApproval = vehicles.filter(v => !v.approved);
 
   const stats = {
     total: vehicles.length,

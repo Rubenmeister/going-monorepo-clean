@@ -97,7 +97,7 @@ export default function MapaEmpresaPage() {
   const [deptFilter,   setDeptFilter]   = useState<string>('all');
   const [selected,     setSelected]     = useState<string | null>(null);
 
-  if (\!session) return null;
+  if (!session) return null;
 
   // ── Cargar Leaflet ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function MapaEmpresaPage() {
 
   // ── Init mapa ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (\!leafletReady || \!mapRef.current || mapInst.current) return;
+    if (!leafletReady || !mapRef.current || mapInst.current) return;
     mapInst.current = L.map(mapRef.current, { zoomControl: true }).setView([-0.2299, -78.5249], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap', maxZoom: 18,
@@ -124,7 +124,7 @@ export default function MapaEmpresaPage() {
 
   // ── Fetch viajes + ubicaciones ────────────────────────────────────────────
   const fetchData = useCallback(async () => {
-    const data = await safeGet<any>('/corporate/bookings/active', session.accessToken);
+    const data = await safeGet<any>('/corporate/bookings/active', session!.accessToken);
     let list: ActiveTrip[] = [];
 
     if (data) {
@@ -134,7 +134,7 @@ export default function MapaEmpresaPage() {
       // Obtener ubicaciones en paralelo
       const withLoc = await Promise.all(
         consented.map(async (t: any) => {
-          const loc = await safeGet<DriverLocation>(`/tracking/booking/${t.id}`, session.accessToken);
+          const loc = await safeGet<DriverLocation>(`/tracking/booking/${t.id}`, session!.accessToken);
           return {
             id:            t.id,
             employeeName:  t.employeeName ?? t.employee?.name ?? 'Empleado',
@@ -159,11 +159,11 @@ export default function MapaEmpresaPage() {
     setTrips(list.length > 0 ? list : DEMO_TRIPS);
     setLoading(false);
     setLastUpd(new Date());
-  }, [session.accessToken]);
+  }, [session!.accessToken]);
 
   // ── Redibujar marcadores ──────────────────────────────────────────────────
   useEffect(() => {
-    if (\!mapInst.current || \!leafletReady || loading) return;
+    if (!mapInst.current || !leafletReady || loading) return;
 
     mapItems.current.forEach(m => m.remove());
     mapItems.current = [];
@@ -173,7 +173,7 @@ export default function MapaEmpresaPage() {
       : trips.filter(t => t.department === deptFilter);
 
     visible.forEach(t => {
-      if (\!t.lat || \!t.lng) return;
+      if (!t.lat || !t.lng) return;
       const cfg = employeeIcon(t.status, t.serviceType);
       const icon = L.divIcon({
         className: '',
@@ -230,7 +230,7 @@ export default function MapaEmpresaPage() {
             {activeCount > 0 && (
               <span className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                {activeCount} empleado{activeCount \!== 1 ? 's' : ''} en tránsito
+                {activeCount} empleado{activeCount !== 1 ? 's' : ''} en tránsito
               </span>
             )}
           </div>
@@ -294,7 +294,7 @@ export default function MapaEmpresaPage() {
 
       {/* Mapa */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4" style={{ height: '460px' }}>
-        {\!leafletReady && (
+        {!leafletReady && (
           <div className="h-full flex items-center justify-center text-slate-400">
             <div className="text-center animate-pulse">
               <div className="text-5xl mb-3">🗺️</div>
@@ -306,10 +306,10 @@ export default function MapaEmpresaPage() {
       </div>
 
       {/* Lista de empleados */}
-      {\!loading && visibleTrips.length > 0 && (
+      {!loading && visibleTrips.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-            Detalle de viajes · {visibleTrips.length} empleado{visibleTrips.length \!== 1 ? 's' : ''}
+            Detalle de viajes · {visibleTrips.length} empleado{visibleTrips.length !== 1 ? 's' : ''}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {visibleTrips.map(t => {
@@ -352,7 +352,7 @@ export default function MapaEmpresaPage() {
         </div>
       )}
 
-      {\!loading && trips.length === 0 && (
+      {!loading && trips.length === 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
           <p className="text-4xl mb-3">🗺️</p>
           <p className="font-semibold text-slate-700 mb-1">No hay viajes activos con consentimiento</p>

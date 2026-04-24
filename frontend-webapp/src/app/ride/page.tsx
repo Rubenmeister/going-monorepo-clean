@@ -359,10 +359,10 @@ function RidePageInner() {
           <ConfirmationPanel
             rideToken={activeRide.tripId}
             driverName={activeRide.driverInfo?.name ?? 'Tu conductor'}
-            driverPlate={activeRide.driverInfo?.vehicle?.plate}
-            driverPhoto={activeRide.driverInfo?.photoUrl}
-            origin={activeRide.origin?.address ?? ''}
-            destination={activeRide.destination?.address ?? ''}
+            driverPlate={activeRide.driverInfo?.licensePlate}
+            driverPhoto={activeRide.driverInfo?.photo}
+            origin={activeRide.pickup?.address ?? ''}
+            destination={activeRide.dropoff?.address ?? ''}
             estimatedFare={activeRide.estimatedFare}
             onContinue={handleConfirmationContinue}
           />
