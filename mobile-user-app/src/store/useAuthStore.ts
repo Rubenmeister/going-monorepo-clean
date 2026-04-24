@@ -1,74 +1,99 @@
+/**
+ * useAuthStore — Zustand auth state for mobile-user-app.
+ *
+ * Token storage is fully delegated to authService (SecureStore for tokens,
+ * AsyncStorage for user profile). The store only tracks in-memory UI state.
+ */
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '@services/api';
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  roles: string[];
-  avatar?: string;
-}
+import { authService, StoredUser } from '@services/authService';
 
 interface AuthState {
-  token: string | null;
-  user: User | null;
+  token:    string | null;
+  user:     StoredUser | null;
   isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  error:    string | null;
+
+  /** Called once at app startup — restores session from SecureStore. */
+  loadToken: () => Promise<void>;
+
+  login:    (email: string, password: string) => Promise<void>;
   register: (data: {
     firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    phone: string;
+    lastName:  string;
+    email:     string;
+    password:  string;
+    phone:     string;
   }) => Promise<void>;
-  logout: () => Promise<void>;
-  loadToken: () => Promise<void>;
-  clearError: () => void;
-  setUser: (user: User) => Promise<void>;
+  logout:   () => Promise<void>;
+
+  /** OAuth deep-link: store a raw token and fetch the user profile. */
   loginWithOAuthToken: (token: string) => Promise<void>;
+
+  clearError: () => void;
+  setUser:    (user: StoredUser) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
-  user: null,
+  token:     null,
+  user:      null,
   isLoading: false,
-  error: null,
+  error:     null,
+
+  // ── Bootstrap ───────────────────────────────────────────────────────────
 
   loadToken: async () => {
     set({ isLoading: true });
     try {
-      const token = await AsyncStorage.getItem('auth_token');
-      const raw   = await AsyncStorage.getItem('auth_user');
-      if (token && raw) {
-        // Restaurar usuario desde storage (incluye firstName, lastName, etc.)
-        set({ token, user: JSON.parse(raw), isLoading: false });
-      } else if (token) {
-        // Fallback: limpiar si no hay user guardado
-        await AsyncStorage.removeItem('auth_token');
+      const token = await authService.bootstrap();
+      if (!token) {
+        // Ensure storage is clean if no valid session
+        await authService.clearAll();
         set({ token: null, user: null, isLoading: false });
+        return;
+      }
+      const user = await authService.getUser();
+      if (!user) {
+        // Token exists but no user metadata — fetch it
+        try {
+          const { data } = await authAPI.me();
+          const resolved: StoredUser = {
+            id:        data.userId || data.id,
+            firstName: data.firstName || '',
+            lastName:  data.lastName  || '',
+            email:     data.email     || '',
+            phone:     data.phone     || '',
+            roles:     data.roles     || ['user'],
+            avatar:    data.avatar,
+          };
+          await authService.saveUser(resolved);
+          set({ token, user: resolved, isLoading: false });
+        } catch {
+          await authService.clearAll();
+          set({ token: null, user: null, isLoading: false });
+        }
       } else {
-        set({ isLoading: false });
+        set({ token, user, isLoading: false });
       }
     } catch {
-      await AsyncStorage.multiRemove(['auth_token', 'auth_user']);
+      await authService.clearAll();
       set({ token: null, user: null, isLoading: false });
     }
   },
+
+  // ── Login / Register ─────────────────────────────────────────────────────
 
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
       const { data } = await authAPI.login(email, password);
-      // El backend puede devolver accessToken (core) o token (application layer)
-      const authToken = data.accessToken || data.token;
-      if (!authToken) throw new Error('No se recibió token de autenticación');
-      await AsyncStorage.setItem('auth_token', authToken);
-      await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
-      set({ token: authToken, user: data.user, isLoading: false });
+      const accessToken  = data.accessToken  || data.token;
+      const refreshToken = data.refreshToken || '';
+      if (!accessToken) throw new Error('No se recibió token de autenticación');
+
+      await authService.saveTokens({ accessToken, refreshToken, expiresIn: data.expiresIn });
+      await authService.saveUser(data.user);
+      set({ token: accessToken, user: data.user, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || e.message || 'Error al iniciar sesión',
@@ -81,12 +106,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const { data } = await authAPI.register(formData);
-      // El backend puede devolver accessToken (core) o token (application layer)
-      const authToken = data.accessToken || data.token;
-      if (!authToken) throw new Error('No se recibió token de autenticación');
-      await AsyncStorage.setItem('auth_token', authToken);
-      await AsyncStorage.setItem('auth_user', JSON.stringify(data.user));
-      set({ token: authToken, user: data.user, isLoading: false });
+      const accessToken  = data.accessToken  || data.token;
+      const refreshToken = data.refreshToken || '';
+      if (!accessToken) throw new Error('No se recibió token de autenticación');
+
+      await authService.saveTokens({ accessToken, refreshToken, expiresIn: data.expiresIn });
+      await authService.saveUser(data.user);
+      set({ token: accessToken, user: data.user, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || 'Error al registrarse',
@@ -95,20 +121,25 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  // ── Logout ───────────────────────────────────────────────────────────────
+
   logout: async () => {
-    await AsyncStorage.multiRemove(['auth_token', 'auth_user']);
+    // Fire-and-forget backend logout (adds token to Redis blacklist)
+    authAPI.logout().catch(() => {});
+    // Clear local state immediately
+    await authService.clearAll();
     set({ token: null, user: null });
   },
 
-  clearError: () => set({ error: null }),
+  // ── OAuth ─────────────────────────────────────────────────────────────────
 
   loginWithOAuthToken: async (token: string) => {
     set({ isLoading: true, error: null });
     try {
-      await AsyncStorage.setItem('auth_token', token);
-      // Fetch user profile with the received OAuth token
+      // OAuth flows typically don't provide a refresh token upfront
+      await authService.saveTokens({ accessToken: token, refreshToken: '' });
       const { data } = await authAPI.me();
-      const user: User = {
+      const user: StoredUser = {
         id:        data.userId || data.id,
         firstName: data.firstName || '',
         lastName:  data.lastName  || '',
@@ -117,13 +148,13 @@ export const useAuthStore = create<AuthState>((set) => ({
         roles:     data.roles     || ['user'],
         avatar:    data.avatar,
       };
-      await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+      await authService.saveUser(user);
       set({ token, user, isLoading: false });
     } catch (e: any) {
-      await AsyncStorage.removeItem('auth_token');
+      await authService.clearAll();
       set({
         token: null,
-        user: null,
+        user:  null,
         error: 'Error al completar el inicio de sesión con red social.',
         isLoading: false,
       });
@@ -131,8 +162,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  setUser: async (user: User) => {
-    await AsyncStorage.setItem('auth_user', JSON.stringify(user));
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  clearError: () => set({ error: null }),
+
+  setUser: async (user: StoredUser) => {
+    await authService.saveUser(user);
     set({ user });
   },
 }));

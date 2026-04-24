@@ -34,6 +34,7 @@ export interface AuthState {
   clearAuth: () => void;
   hydrate: () => void;
   isAuthenticated: () => boolean;
+  refreshIfNeeded: () => Promise<boolean>;
 }
 
 const initialState = {
@@ -89,6 +90,66 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: () => {
         const { token } = get();
         return token !== null && token !== '';
+      },
+
+      /**
+       * Refresh the access token if it is expired or near expiration.
+       * Returns true if the session is now valid, false if refresh failed.
+       */
+      refreshIfNeeded: async (): Promise<boolean> => {
+        const { token, refreshToken } = get();
+
+        if (!refreshToken) return false;
+
+        // Check if token is still valid (not expired within next 60s)
+        if (token) {
+          try {
+            const parts = token.split('.');
+            if (parts.length === 3) {
+              const payload = JSON.parse(
+                typeof window !== 'undefined'
+                  ? atob(parts[1])
+                  : Buffer.from(parts[1], 'base64').toString('utf-8')
+              );
+              const expiresAt = payload.exp * 1000;
+              if (expiresAt - Date.now() > 60_000) {
+                return true; // token still valid for > 60s
+              }
+            }
+          } catch {
+            // ignore decode errors — try refresh anyway
+          }
+        }
+
+        // Token expired or near expiry — attempt refresh
+        try {
+          const res = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+            cache: 'no-store',
+          });
+
+          if (!res.ok) {
+            set({ ...initialState });
+            return false;
+          }
+
+          const data = await res.json();
+          const newToken = data.accessToken ?? data.token;
+          const newRefresh = data.refreshToken ?? refreshToken;
+
+          if (!newToken) {
+            set({ ...initialState });
+            return false;
+          }
+
+          set({ token: newToken, refreshToken: newRefresh });
+          return true;
+        } catch {
+          set({ ...initialState });
+          return false;
+        }
       },
     }),
     {

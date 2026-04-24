@@ -15,8 +15,8 @@ import MapboxGL from '@rnmapbox/maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { io, Socket } from 'socket.io-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { authService } from '@services/authService';
 
 const TRANSPORT_WS =
   process.env.EXPO_PUBLIC_TRANSPORT_WS_URL ||
@@ -135,7 +135,7 @@ export function ActiveRideScreen() {
   useEffect(() => {
     let socket: Socket | null = null;
 
-    AsyncStorage.getItem('auth_token').then((token) => {
+    authService.getAccessToken().then((token) => {
       socket = io(`${TRANSPORT_WS}/rides`, {
         transports: ['websocket', 'polling'],
         auth: token ? { token } : undefined,

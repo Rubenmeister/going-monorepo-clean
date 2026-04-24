@@ -5,26 +5,28 @@
 #     --project=going-5d1ae .
 #
 # SECRETS requeridos en GCP Secret Manager (proyecto going-5d1ae):
-#   JWT_SECRET-prod     → el JWT secret compartido
-#   USER_DB_URL-prod    → mongodb+srv://... para user-auth-service
-#   REDIS_URL-prod      → redis://... (opcional, si usas Redis)
+#   JWT_SECRET-prod          → el JWT secret compartido
+#   MONGO_URL-prod           → mongodb+srv://... conexión principal
+#   redis-url                → redis://...
+#   GMAIL_APP_PASSWORD       → contraseña de app Gmail para emails
 #
-# Para crear un secret:
+# Para crear/actualizar un secret:
 #   echo -n "valor" | gcloud secrets create JWT_SECRET-prod --data-file=- --project=going-5d1ae
-#   echo -n "valor" | gcloud secrets create USER_DB_URL-prod --data-file=- --project=going-5d1ae
+#   echo -n "valor" | gcloud secrets versions add JWT_SECRET-prod --data-file=- --project=going-5d1ae
 
 substitutions:
   _SERVICE_NAME: user-auth-service
+  _IMAGE_TAG: latest  # overridden by CI/CD with github.sha
 
 steps:
-  # Step 0: Build Docker image
+  # Step 0: Build Docker image with both SHA tag and latest
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '--build-arg'
       - 'SERVICE_NAME=${_SERVICE_NAME}'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
       - '-t'
       - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
       - '-f'
@@ -32,11 +34,11 @@ steps:
       - '.'
     timeout: '1800s'
 
-  # Step 1: Push versioned tag
+  # Step 1: Push SHA-tagged image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
 
   # Step 2: Push latest tag
   - name: 'gcr.io/cloud-builders/docker'
@@ -52,9 +54,9 @@ steps:
     args:
       - '-c'
       - |
-        echo "=== Deploying ${_SERVICE_NAME} ==="
+        echo "=== Deploying ${_SERVICE_NAME} (tag: ${_IMAGE_TAG}) ==="
         gcloud run deploy ${_SERVICE_NAME} \
-          --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
+          --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG} \
           --region us-central1 \
           --platform managed \
           --allow-unauthenticated \
@@ -66,9 +68,10 @@ steps:
           --timeout 60 \
           --set-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m,FRONTEND_URL=https://goingec.com \
           --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest
+        echo "=== Deploy complete for ${_SERVICE_NAME} ==="
 
 images:
-  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
   - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
 
 options:

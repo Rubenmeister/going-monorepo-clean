@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -6,96 +6,81 @@ import { ITokenManager } from '@going-monorepo-clean/shared-domain';
 
 /**
  * JWT Strategy for API Gateway
- * Validates incoming JWTs and checks if they're revoked
  *
- * Extracts JWT from:
- * - Authorization header: "Bearer <token>"
- * - Cookies: "accessToken"
+ * Validates incoming JWTs and checks token revocation against Redis blacklist.
  *
- * Validates:
- * - JWT signature (using JWT_SECRET)
- * - JWT expiration
- * - Token not in blacklist (revoked)
+ * Token sources (in priority order):
+ * 1. Authorization header: "Bearer <token>"
+ * 2. Cookie: "accessToken"
+ *
+ * Validation steps:
+ * 1. Signature verification (passport-jwt)
+ * 2. Expiration check (passport-jwt)
+ * 3. Blacklist check (GatewayTokenManagerService → Redis)
+ *
+ * On Redis failure: fail-closed in production, fail-open in development.
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     @Inject('ITokenManager')
-    private tokenManager: ITokenManager,
+    private readonly tokenManager: ITokenManager,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        ExtractJwt.fromExtractors([
-          (req) => {
-            if (req && req.cookies) {
-              return req.cookies['accessToken'];
-            }
-            return null;
-          },
-        ]),
+        (req: any) => req?.cookies?.accessToken ?? null,
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get('JWT_SECRET'),
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
       passReqToCallback: true,
     });
   }
 
-  /**
-   * Validate JWT payload
-   * Called after JWT signature verification
-   * Additional checks:
-   * - Check if token is blacklisted (revoked)
-   */
   async validate(req: any, payload: any) {
     try {
-      // Extract the token from request
       const token =
-        ExtractJwt.fromAuthHeaderAsBearerToken()(req) ||
-        (req.cookies && req.cookies['accessToken']);
+        ExtractJwt.fromAuthHeaderAsBearerToken()(req) ??
+        req?.cookies?.accessToken;
 
-      if (token) {
-        // Check if token is revoked/blacklisted
-        const isBlacklistedResult = await this.tokenManager.isAccessTokenRevoked(
-          token,
-        );
-
-        if (isBlacklistedResult.isErr()) {
-          this.logger.error(
-            `Error checking token blacklist: ${isBlacklistedResult.error.message}`,
-          );
-          // On error, deny access (fail secure)
-          return null;
-        }
-
-        if (isBlacklistedResult.value) {
-          this.logger.warn(
-            `Access denied: Token revoked for user ${payload.userId}`,
-          );
-          return null;
-        }
+      if (!token) {
+        throw new UnauthorizedException('Missing bearer token');
       }
 
-      // Store original token for logout/revocation
-      const user = {
-        userId: payload.userId,
+      // Blacklist check — uses jti from payload (extracted internally by GatewayTokenManagerService)
+      const revokedResult = await this.tokenManager.isAccessTokenRevoked(token);
+
+      if (revokedResult.isErr()) {
+        this.logger.error(`Blacklist check failed: ${revokedResult.error.message}`);
+        // GatewayTokenManagerService already applies fail-closed/open policy;
+        // we re-throw here so the guard receives an error (not null user).
+        throw new UnauthorizedException('Token validation unavailable');
+      }
+
+      if (revokedResult.value) {
+        const userId = payload?.sub ?? payload?.userId;
+        this.logger.warn(`Rejected revoked token for user ${userId}`);
+        throw new UnauthorizedException('Token revoked');
+      }
+
+      // Return user object — available as req.user in controllers
+      return {
+        userId: payload.sub ?? payload.userId,
         email: payload.email,
-        roles: payload.roles || [],
-        accessToken: token, // Store token for logout operations
+        roles: payload.roles ?? [],
+        accessToken: token,
         iat: payload.iat,
         exp: payload.exp,
       };
-
-      this.logger.debug(`JWT validated for user ${payload.userId}`);
-      return user;
     } catch (error) {
+      if (error instanceof UnauthorizedException) throw error;
       this.logger.error(
         `Error validating JWT: ${error instanceof Error ? error.message : String(error)}`,
       );
-      return null;
+      throw new UnauthorizedException('Token validation failed');
     }
   }
 }

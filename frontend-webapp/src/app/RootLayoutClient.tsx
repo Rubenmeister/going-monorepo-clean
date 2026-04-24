@@ -1,8 +1,9 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@going-monorepo-clean/frontend-providers';
+import { hydrateAuthStore } from '@going-monorepo-clean/frontend-stores';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -76,6 +77,12 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
+  // Hydrate Zustand store from localStorage on first client render.
+  // Safe to call multiple times — no-ops if already hydrated.
+  useEffect(() => {
+    hydrateAuthStore();
+  }, []);
+
   return (
     <ErrorBoundary>
       <LanguageProvider>

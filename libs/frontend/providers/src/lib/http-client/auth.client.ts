@@ -5,16 +5,21 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    roles: string[];
-  };
+export interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
 }
+
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+export type LoginResponse = AuthTokens & { user: AuthUser };
 
 export interface RegisterRequest {
   email: string;
@@ -22,19 +27,10 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   phone?: string;
-  roles: string[];
+  roles?: string[]; // optional — backend assigns default role
 }
 
-export interface RegisterResponse {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    roles: string[];
-  };
-}
+export type RegisterResponse = AuthTokens & { user: AuthUser };
 
 export class AuthClient {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -52,6 +48,17 @@ export class AuthClient {
     const result = await httpClient.post<RegisterResponse>(
       '/auth/register',
       data
+    );
+    if (result.isOk()) {
+      return result.value;
+    }
+    throw result.error;
+  }
+
+  async refresh(refreshToken: string): Promise<AuthTokens> {
+    const result = await httpClient.post<AuthTokens>(
+      '/auth/refresh',
+      { refreshToken }
     );
     if (result.isOk()) {
       return result.value;
