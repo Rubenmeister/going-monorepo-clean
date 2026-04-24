@@ -9,7 +9,10 @@ export interface UserProfile {
   email: string;
   name: string;
   avatar?: string;
-  role: 'user' | 'admin' | 'driver';
+  /** Full roles array from JWT — drives role-based UI (admin, driver, corporate, user). */
+  roles: string[];
+  /** First role — convenience shorthand. Kept for backward compat with older callers. */
+  role: 'user' | 'admin' | 'driver' | 'corporate';
   isAdmin: () => boolean;
 }
 
@@ -121,9 +124,19 @@ export const useAuthStore = create<AuthState>()(
           }
         }
 
-        // Token expired or near expiry — attempt refresh
+        // Token expired or near expiry — attempt refresh.
+        // Endpoint: prefer `NEXT_PUBLIC_API_URL`; fall back to same-origin
+        // `/auth/refresh` for local dev setups using a Next.js proxy.
+        const apiBase =
+          (typeof process !== 'undefined' &&
+            process.env?.['NEXT_PUBLIC_API_URL']) ||
+          '';
+        const refreshUrl = apiBase
+          ? `${apiBase.replace(/\/$/, '')}/auth/refresh`
+          : '/auth/refresh';
+
         try {
-          const res = await fetch('/api/auth/refresh', {
+          const res = await fetch(refreshUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
@@ -136,6 +149,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const data = await res.json();
+          // Backend devuelve `{ accessToken, token, refreshToken }` — ambos alias.
           const newToken = data.accessToken ?? data.token;
           const newRefresh = data.refreshToken ?? refreshToken;
 

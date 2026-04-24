@@ -36,6 +36,7 @@ export const useMonorepoApp = () => {
         login: async (credentials: { email: string; password: string }) => {
           try {
             const response = await authClient.login(credentials);
+            const roles = response.user.roles ?? ['user'];
             useAuthStore.getState().setAuth(
               response.accessToken,
               response.refreshToken,
@@ -43,8 +44,9 @@ export const useMonorepoApp = () => {
                 id: response.user.id,
                 email: response.user.email,
                 name: `${response.user.firstName} ${response.user.lastName ?? ''}`.trim(),
-                role: (response.user.roles?.[0] ?? 'user') as 'user' | 'admin' | 'driver',
-                isAdmin: () => response.user.roles?.includes('admin') ?? false,
+                roles,
+                role: (roles[0] ?? 'user') as 'user' | 'admin' | 'driver' | 'corporate',
+                isAdmin: () => roles.includes('admin'),
               }
             );
             return response;
@@ -63,6 +65,7 @@ export const useMonorepoApp = () => {
         }) => {
           try {
             const response = await authClient.register(data);
+            const roles = response.user.roles ?? ['user'];
             useAuthStore.getState().setAuth(
               response.accessToken,
               response.refreshToken,
@@ -70,8 +73,9 @@ export const useMonorepoApp = () => {
                 id: response.user.id,
                 email: response.user.email,
                 name: `${response.user.firstName} ${response.user.lastName ?? ''}`.trim(),
-                role: (response.user.roles?.[0] ?? 'user') as 'user' | 'admin' | 'driver',
-                isAdmin: () => response.user.roles?.includes('admin') ?? false,
+                roles,
+                role: (roles[0] ?? 'user') as 'user' | 'admin' | 'driver' | 'corporate',
+                isAdmin: () => roles.includes('admin'),
               }
             );
             return response;

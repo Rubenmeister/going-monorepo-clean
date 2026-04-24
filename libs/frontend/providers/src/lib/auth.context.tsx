@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         firstName: storeUser.name?.split(' ')[0] ?? '',
         lastName: storeUser.name?.split(' ').slice(1).join(' ') || undefined,
         email: storeUser.email,
-        roles: [],
+        roles: storeUser.roles ?? (storeUser.role ? [storeUser.role] : []),
         isAdmin: storeUser.isAdmin,
       }
     : null;
