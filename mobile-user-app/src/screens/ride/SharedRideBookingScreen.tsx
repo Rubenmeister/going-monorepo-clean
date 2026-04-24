@@ -131,6 +131,7 @@ export function SharedRideBookingScreen() {
       tripId:        trip.id,
       origin:        originCity,
       destination,
+      destCoords:    destCoords ?? undefined,
       departureTime: trip.time,
       date:          date.toISOString(),
       vehicle:       'SUV',

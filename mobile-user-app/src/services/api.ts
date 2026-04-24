@@ -67,7 +67,12 @@ export const transportAPI = {
     userId: string;
     origin: { latitude: number; longitude: number; address: string };
     destination: { latitude: number; longitude: number; address: string };
-    price?: { amount: number; currency: 'USD' };
+    price: { amount: number; currency: 'USD' };
+    /** Metadatos opcionales que el backend hoy ignora pero son útiles para telemetry/logs. */
+    vehicleType?: string;
+    tripMode?: string;
+    category?: string;
+    originCity?: string;
   }) =>
     api.post('/transport/request', {
       userId: data.userId,
@@ -81,7 +86,11 @@ export const transportAPI = {
         latitude: data.destination.latitude,
         longitude: data.destination.longitude,
       },
-      price: data.price ?? { amount: 8.5, currency: 'USD' },
+      price: data.price,
+      ...(data.vehicleType ? { vehicleType: data.vehicleType } : {}),
+      ...(data.tripMode ? { tripMode: data.tripMode } : {}),
+      ...(data.category ? { category: data.category } : {}),
+      ...(data.originCity ? { originCity: data.originCity } : {}),
     }),
 
   /** Get pending trips (drivers nearby / available trips) */
@@ -115,23 +124,31 @@ export const searchAPI = {
 };
 
 // ── Parcels / Envíos ─────────────────────────────────────────────────────────
+// Backend DTO (libs/domains/parcel/.../create-parcel.dto.ts):
+//   { origin: Location, destination: Location, description, price: { amount, currency } }
+// Alternativa flat: { from, to, fromLatitude, fromLongitude, toLatitude, toLongitude }
+// Respuesta: { id, trackingCode, otpPin }
 export const parcelsAPI = {
   /** Crear nuevo envío */
   create: (data: {
-    userId?:         string;
-    type:            'sobre' | 'paquete' | 'maleta';
-    origin:          { address: string; latitude?: number; longitude?: number };
-    destination:     { address: string; latitude?: number; longitude?: number };
-    recipientName:   string;
-    recipientPhone:  string;
-    notes?:          string;
-  }) => api.post('/parcels', data),
+    origin: { address: string; latitude?: number; longitude?: number };
+    destination: { address: string; latitude?: number; longitude?: number };
+    description: string;
+    price: { amount: number; currency: 'USD' };
+  }) => api.post<{ id: string; trackingCode: string; otpPin: string }>(
+    '/parcels',
+    data,
+  ),
 
   /** Mis envíos */
   getMine: () => api.get('/parcels/my'),
 
   /** Detalle de un envío */
   getById: (id: string) => api.get(`/parcels/${id}`),
+
+  /** Tracking público por código */
+  trackByCode: (trackingCode: string) =>
+    api.get(`/parcels/track/${trackingCode}`),
 
   /** Cancelar envío */
   cancel: (id: string) => api.patch(`/parcels/${id}/cancel`),

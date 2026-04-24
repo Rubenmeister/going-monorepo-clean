@@ -24,6 +24,7 @@ import { QUITO_ZONES, type QuitoZone } from '../home/HomeScreen';
 
 // ── Colores — Privado usa paleta NEGRO + DORADO ───────────────────────────────
 const NAVY   = '#0033A0';    // acento secundario (categorías)
+const YELLOW = '#FFCD00';    // acento marca para puntos de ruta
 const BLACK  = '#111827';    // negro principal
 const GOLD   = '#FFCD00';    // dorado Going
 const GOLD_DARK = '#D97706'; // dorado oscuro para textos
@@ -96,11 +97,17 @@ export function PrivateRideBookingScreen() {
 
   const [originCity,    setOriginCity]    = useState(route.params?.originCity ?? 'Quito');
   const [destination,   setDestination]   = useState('');
+  const [destCoords,    setDestCoords]    = useState<{ lat: number; lng: number } | null>(null);
 
-  // Recibir ubicación del LocationPicker
+  // Recibir ubicación del LocationPicker (address + coords)
   React.useEffect(() => {
     const loc = (route.params as any)?.selectedDestination;
-    if (loc) setDestination(loc.address);
+    if (loc) {
+      setDestination(loc.address);
+      if (typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
+        setDestCoords({ lat: loc.latitude, lng: loc.longitude });
+      }
+    }
   }, [(route.params as any)?.selectedDestination]);
   const [selectedZone,  setSelectedZone]  = useState<QuitoZone>('quito_norte');
   const [selectedVeh,   setSelectedVeh]   = useState<VehicleId>('suv');
@@ -122,6 +129,7 @@ export function PrivateRideBookingScreen() {
       type:        'privado',
       origin:      originCity,
       destination,
+      destCoords:  destCoords ?? undefined,
       vehicle:     vehicle.label,
       vehicleId:   vehicle.id,
       capacity:    vehicle.capacity,
