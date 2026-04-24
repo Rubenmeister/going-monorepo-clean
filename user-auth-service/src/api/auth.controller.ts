@@ -662,9 +662,8 @@ export class AuthController {
   }
 
   /**
-   * POST /auth/me/points/award — interno. Lo llama payment-service tras
-   * completar un viaje/envío. Requiere rol 'admin' o 'service' (aún no
-   * modelado — por ahora sólo admin para no exponer desde mobile).
+   * POST /auth/me/points/award — admin via JWT.
+   * Útil desde el panel admin para corregir saldos.
    */
   @Post('me/points/award')
   @UseGuards(AuthGuard('jwt'))
@@ -676,6 +675,38 @@ export class AuthController {
   ) {
     if (!roles?.includes('admin')) {
       throw new UnauthorizedException('Sólo admin puede acreditar puntos');
+    }
+    if (!body?.userId || !body?.points) {
+      throw new BadRequestException('userId y points son requeridos');
+    }
+    const awarded = await this.loyaltyPointsService.award(
+      body.userId,
+      body.points,
+      body.referenceId,
+    );
+    return { awarded, userId: body.userId };
+  }
+
+  /**
+   * POST /auth/internal/points/award — service-to-service.
+   *
+   * Lo llama payment-service tras completar un viaje. Autenticación por
+   * shared secret (header X-Internal-Token = INTERNAL_SERVICE_TOKEN).
+   * No usa JWT porque el caller es otro microservicio, no un usuario.
+   *
+   * Si INTERNAL_SERVICE_TOKEN no está set, el endpoint está deshabilitado
+   * (devuelve 401 siempre — fail-closed).
+   */
+  @Post('internal/points/award')
+  @HttpCode(200)
+  async internalAwardPoints(
+    @Req() req: Request,
+    @Body() body: { userId: string; points: number; referenceId?: string },
+  ) {
+    const expected = process.env.INTERNAL_SERVICE_TOKEN;
+    const provided = req.headers['x-internal-token'] as string | undefined;
+    if (!expected || !provided || provided !== expected) {
+      throw new UnauthorizedException('Internal token inválido');
     }
     if (!body?.userId || !body?.points) {
       throw new BadRequestException('userId y points son requeridos');

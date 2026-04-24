@@ -1,18 +1,23 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from './process-payment.use-case';
+import { LoyaltyClient } from '../loyalty-client.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Complete Ride Use Case
- * Completes a ride and processes associated payment
+ * Completes a ride and processes associated payment.
+ * Tras éxito, dispara award de puntos de fidelidad (Tipo B).
  */
 @Injectable()
 export class CompleteRideUseCase {
+  private readonly logger = new Logger(CompleteRideUseCase.name);
+
   constructor(
     @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
     @Inject(IPayoutRepository) private payoutRepository: IPayoutRepository,
-    private processPaymentUseCase: ProcessPaymentUseCase
+    private processPaymentUseCase: ProcessPaymentUseCase,
+    private readonly loyaltyClient: LoyaltyClient,
   ) {}
 
   async execute(input: {
@@ -50,6 +55,18 @@ export class CompleteRideUseCase {
 
     // Create or update driver payout entry
     await this.recordDriverPayout(input.driverId, payment);
+
+    // Award puntos de fidelidad al pasajero (fire-and-forget).
+    // El cliente HTTP filtra solo Tipo B implícitamente: el endpoint
+    // recibe userId + USD pagado; user-auth no diferencia segmento aquí
+    // (asumimos que sólo Tipo B llega a Award; Tipo A no se llama).
+    // FUTURO: filtrar aquí pasando clientSegment al input para no
+    // acreditar a corporates/agencies.
+    void this.loyaltyClient.awardPointsForRide({
+      userId: input.passengerId,
+      amountUsd: input.finalFare,
+      tripId: input.tripId,
+    });
 
     return {
       payment,
