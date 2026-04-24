@@ -11,7 +11,7 @@ async function req<T>(token: string, path: string, opts?: RequestInit): Promise<
   const res = await fetch(`${API}${path}`, {
     ...opts, headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}`, ...(opts?.headers??{}) },
   });
-  if (\!res.ok) throw new Error(`${res.status}`);
+  if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }
 
@@ -62,7 +62,7 @@ function TicketPanel({ ticket, token, onClose, onUpdate }: {
   }, [ticket.id, token]);
 
   async function sendReply() {
-    if (\!reply.trim()) return;
+    if (!reply.trim()) return;
     setLoading(true);
     try {
       const msg = await req<TicketMessage>(token, `/support/tickets/${ticket.id}/reply`, {
@@ -129,12 +129,12 @@ function TicketPanel({ ticket, token, onClose, onUpdate }: {
         </div>
 
         {/* Reply box */}
-        {ticket.status \!== 'closed' && (
+        {ticket.status !== 'closed' && (
           <div className="p-4 border-t">
             <textarea value={reply} onChange={e => setReply(e.target.value)} rows={3}
               placeholder="Escribe una respuesta…"
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none mb-2" />
-            <button onClick={sendReply} disabled={loading || \!reply.trim()}
+            <button onClick={sendReply} disabled={loading || !reply.trim()}
               className="w-full py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-40"
               style={{backgroundColor:'#ff4c41'}}>
               {loading ? 'Enviando…' : '📤 Enviar respuesta'}
@@ -162,7 +162,7 @@ function TicketPanel({ ticket, token, onClose, onUpdate }: {
 
 export default function SupportPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [tickets, setTickets]   = useState<Ticket[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -184,9 +184,9 @@ export default function SupportPage() {
 
   const filtered = tickets.filter(t => {
     const q = search.toLowerCase();
-    return (\!q || t.subject.toLowerCase().includes(q) || t.userName.toLowerCase().includes(q) || t.userEmail.toLowerCase().includes(q)) &&
-           (\!filterStatus || t.status === filterStatus) &&
-           (\!filterPri    || t.priority === filterPri);
+    return (!q || t.subject.toLowerCase().includes(q) || t.userName.toLowerCase().includes(q) || t.userEmail.toLowerCase().includes(q)) &&
+           (!filterStatus || t.status === filterStatus) &&
+           (!filterPri    || t.priority === filterPri);
   });
 
   const counts = { open:0, in_progress:0, resolved:0, closed:0 } as Record<string,number>;

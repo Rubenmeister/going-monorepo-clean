@@ -163,18 +163,18 @@ export default function SolicitarViajePage() {
     try {
       let results: CatalogItem[] = [];
       if (serviceType === "tour") {
-        results = await searchTours(session.accessToken, {
+        results = await searchTours(session!.accessToken, {
           locationCity: searchCity || undefined,
           category:     searchCategory || undefined,
           maxPrice:     searchMaxPrice ? parseFloat(searchMaxPrice) : undefined,
         });
       } else if (serviceType === "accommodation") {
-        results = await searchAccommodations(session.accessToken, {
+        results = await searchAccommodations(session!.accessToken, {
           city:     searchCity || undefined,
           capacity: searchCapacity ? parseInt(searchCapacity) : undefined,
         });
       } else if (serviceType === "experience") {
-        results = await searchExperiences(session.accessToken, {
+        results = await searchExperiences(session!.accessToken, {
           locationCity: searchCity || undefined,
           maxPrice:     searchMaxPrice ? parseFloat(searchMaxPrice) : undefined,
         });
@@ -202,8 +202,8 @@ export default function SolicitarViajePage() {
     const isoEnd = endDate ? `${endDate}T12:00:00` : undefined;
 
     try {
-      await crearBooking(session.accessToken, {
-        userId:      session.user.id,
+      await crearBooking(session!.accessToken, {
+        userId:      session!.user.id ?? session!.user._id ?? '',
         serviceId:   selectedItem.id,
         serviceType: serviceType as any,
         totalPrice:  { amount: price, currency: "USD" },
@@ -211,7 +211,7 @@ export default function SolicitarViajePage() {
         endDate:     isoEnd,
         notes:       notes || undefined,
         metadata: {
-          requesterName:    requesterName || session.user.nombre,
+          requesterName:    requesterName || session!.user.nombre,
           department,
           requiresApproval,
           ...(isAgencia && { passengerName }),
@@ -241,7 +241,7 @@ export default function SolicitarViajePage() {
       : undefined;
 
     const meta: Record<string, unknown> = {
-      requesterName: requesterName || session.user.nombre,
+      requesterName: requesterName || session!.user.nombre,
       department,
       requiresApproval,
       ...(isAgencia && { passengerName }),
@@ -253,8 +253,8 @@ export default function SolicitarViajePage() {
     }
 
     try {
-      await crearBooking(session.accessToken, {
-        userId:     session.user.id,
+      await crearBooking(session!.accessToken, {
+        userId:      session!.user.id ?? session!.user._id ?? '',
         serviceId:  crypto.randomUUID(), // asignado por Going al procesar
         serviceType: serviceType as any,
         totalPrice: { amount: parseFloat(estimatedAmount) || 0, currency: "USD" },
@@ -587,13 +587,13 @@ export default function SolicitarViajePage() {
               <input className={INPUT}
                 value={isAgencia ? passengerName : requesterName}
                 onChange={(e) => isAgencia ? setPassengerName(e.target.value) : setRequesterName(e.target.value)}
-                placeholder={session.user.nombre || "Nombre completo"} required />
+                placeholder={session!.user.nombre || "Nombre completo"} required />
             </Field>
             <Field label={isAgencia ? "Agente responsable" : "Departamento"}>
               <input className={INPUT}
                 value={isAgencia ? requesterName : department}
                 onChange={(e) => isAgencia ? setRequesterName(e.target.value) : setDepartment(e.target.value)}
-                placeholder={isAgencia ? session.user.nombre || "" : "Ej: Ventas, RRHH…"} />
+                placeholder={isAgencia ? session!.user.nombre || "" : "Ej: Ventas, RRHH…"} />
             </Field>
           </div>
 

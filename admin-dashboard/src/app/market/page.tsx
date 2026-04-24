@@ -20,7 +20,7 @@ interface CityMarket {
 
 interface HourSlot { hour: number; volume: number; }
 interface DaySlot  { day: string;  volume: number; }
-interface UserGrowth { month: string; users: number; drivers: number; }
+interface UserGrowth { month: string; users: number; drivers: number; trips?: number; }
 
 /* ─── Demo data ──────────────────────────────────────────────────────── */
 
@@ -407,4 +407,3 @@ export default function MarketPage() {
     </AdminLayout>
   );
 }
-                                                                                                                                                                                                                                                                                                                                          

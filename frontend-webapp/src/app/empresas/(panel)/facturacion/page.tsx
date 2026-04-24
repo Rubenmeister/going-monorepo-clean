@@ -91,7 +91,7 @@ export default function FacturacionPage() {
     if (!session?.accessToken) return;
     setLoading(true);
     setError(null);
-    fetchInvoices(session.accessToken, {
+    fetchInvoices(session!.accessToken, {
       status: filter === "ALL" ? undefined : filter,
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
@@ -113,7 +113,7 @@ export default function FacturacionPage() {
   if (!session) return null;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
-  const tipoCuenta = session.user.tipoCuenta as string | undefined;
+  const tipoCuenta = session!.user.tipoCuenta as string | undefined;
   const ctx = getContexto(tipoCuenta);
 
   // Labels contextuales

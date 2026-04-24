@@ -344,8 +344,8 @@ export default function EquipoPage() {
   const [memberForRole, setMemberForRole] = useState<TeamMember | null>(null);
 
   useEffect(() => {
-    if (!session?.accessToken || !session.user.companyId) return;
-    fetchTeamMembers(session.accessToken, session.user.companyId)
+    if (!session?.accessToken || !session!.user.companyId) return;
+    fetchTeamMembers(session!.accessToken, session!.user.companyId)
       .then(setMembers)
       .catch(() => setError("No se pudo cargar el equipo."))
       .finally(() => setLoading(false));
@@ -353,7 +353,7 @@ export default function EquipoPage() {
 
   if (!session) return null;
 
-  if (!session.user.roles.includes("admin")) {
+  if (!session!.user.roles.includes("admin")) {
     return (
       <div>
         <h1 className="text-3xl font-bold text-slate-900">Acceso Denegado</h1>
@@ -372,7 +372,7 @@ export default function EquipoPage() {
     const newStatus = m.status === "active" ? "suspended" : "active";
     setToggling(m.id);
     try {
-      await updateUserStatus(session.accessToken!, m.id, newStatus);
+      await updateUserStatus(session!.accessToken!, m.id, newStatus);
       setMembers((prev) => prev.map((u) => u.id === m.id ? { ...u, status: newStatus } : u));
       showToast(newStatus === "active" ? `${m.email} reactivado.` : `${m.email} suspendido.`, true);
     } catch {
@@ -412,9 +412,9 @@ export default function EquipoPage() {
       {/* Modales */}
       {showInvite && (
         <InviteModal
-          companyId={session.user.companyId!}
-          token={session.accessToken!}
-          tipoCuenta={session.user.tipoCuenta}
+          companyId={session!.user.companyId!}
+          token={session!.accessToken!}
+          tipoCuenta={session!.user.tipoCuenta}
           onClose={() => setShowInvite(false)}
           onSuccess={handleInviteSuccess}
         />
@@ -422,8 +422,8 @@ export default function EquipoPage() {
       {memberForRole && (
         <RoleModal
           member={memberForRole}
-          token={session.accessToken!}
-          tipoCuenta={session.user.tipoCuenta}
+          token={session!.accessToken!}
+          tipoCuenta={session!.user.tipoCuenta}
           onClose={() => setMemberForRole(null)}
           onSuccess={handleRoleSuccess}
         />
@@ -554,7 +554,7 @@ export default function EquipoPage() {
 
               {/* Acciones */}
               <div className="col-span-2 flex items-center justify-end gap-1.5">
-                {m.id !== session.user.id && (
+                {m.id !== session!.user.id && (
                   <>
                     {/* Cambiar rol */}
                     <button
@@ -582,7 +582,7 @@ export default function EquipoPage() {
                     </button>
                   </>
                 )}
-                {m.id === session.user.id && (
+                {m.id === session!.user.id && (
                   <span className="text-xs text-slate-400 italic">Tú</span>
                 )}
               </div>

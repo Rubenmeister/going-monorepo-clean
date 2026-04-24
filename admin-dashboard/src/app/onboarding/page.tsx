@@ -65,7 +65,7 @@ function timeAgo(iso: string) {
 
 export default function OnboardingPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [drivers,   setDrivers]   = useState<DriverOnboarding[]>([]);
   const [loading,   setLoading]   = useState(true);
@@ -105,12 +105,12 @@ export default function OnboardingPage() {
 
   const completed  = drivers.filter(d => d.completionPct === 100).length;
   const blocked    = drivers.filter(d => d.steps.some(s => s.status === 'failed')).length;
-  const inProgress = drivers.filter(d => d.completionPct > 0 && d.completionPct < 100 && \!d.steps.some(s => s.status === 'failed')).length;
+  const inProgress = drivers.filter(d => d.completionPct > 0 && d.completionPct < 100 && !d.steps.some(s => s.status === 'failed')).length;
 
   const filtered = drivers.filter(d => {
     if (filter === 'completed') return d.completionPct === 100;
     if (filter === 'blocked')   return d.steps.some(s => s.status === 'failed');
-    if (filter === 'active')    return d.completionPct > 0 && d.completionPct < 100 && \!d.steps.some(s => s.status === 'failed');
+    if (filter === 'active')    return d.completionPct > 0 && d.completionPct < 100 && !d.steps.some(s => s.status === 'failed');
     return true;
   });
 

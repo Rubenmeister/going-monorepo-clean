@@ -42,7 +42,7 @@ async function adminFetch(token: string, path: string, opts?: RequestInit) {
   const r = await fetch(`${API}${path}`, {
     ...opts, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts?.headers ?? {}) },
   });
-  if (\!r.ok) throw new Error(await r.text());
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 
@@ -90,7 +90,7 @@ function scoreColor(s: number) {
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function DashcamPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [vehicles,   setVehicles]   = useState<CamVehicle[]>([]);
   const [incidents,  setIncidents]  = useState<Incident[]>([]);
@@ -152,9 +152,9 @@ export default function DashcamPage() {
 
   if (auth.isLoading || loading) return <Loading fullHeight size="lg" message="Cargando dashcam…" />;
 
-  const online    = vehicles.filter(v => v.status \!== 'offline').length;
+  const online    = vehicles.filter(v => v.status !== 'offline').length;
   const recording = vehicles.filter(v => v.status === 'recording').length;
-  const incidents_active = incidents.filter(i => \!i.dismissed);
+  const incidents_active = incidents.filter(i => !i.dismissed);
   const criticals = incidents_active.filter(i => i.severity === 'critical').length;
   const avgScore  = Math.round(vehicles.reduce((s, v) => s + v.safetyScore, 0) / (vehicles.length || 1));
 
@@ -212,7 +212,7 @@ export default function DashcamPage() {
                   <span className="text-gray-500">Hora</span>
                   <span className="font-semibold">{new Date(panel.timestamp).toLocaleString('es-EC')}</span>
                 </div>
-                {panel.speed \!= null && (
+                {panel.speed != null && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Velocidad</span>
                     <span className="font-semibold text-red-600">{panel.speed} km/h{panel.maxSpeed ? ` (límite: ${panel.maxSpeed})` : ''}</span>
@@ -264,7 +264,7 @@ export default function DashcamPage() {
               )}
             </div>
             <div className="p-6 border-t flex gap-3">
-              {\!panel.reviewed && (
+              {!panel.reviewed && (
                 <button onClick={() => markReviewed(panel)}
                   className="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold transition-colors"
                   style={{ backgroundColor: '#011627' }}>
@@ -408,7 +408,7 @@ export default function DashcamPage() {
               Incidentes
               {criticals > 0 && (
                 <span className="text-xs bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
-                  {criticals} crítico{criticals \!== 1 ? 's' : ''}
+                  {criticals} crítico{criticals !== 1 ? 's' : ''}
                 </span>
               )}
             </h2>
@@ -451,7 +451,7 @@ export default function DashcamPage() {
                   </div>
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                     <span>🕐 {timeAgo(inc.timestamp)}</span>
-                    {inc.speed \!= null && <span>⚡ {inc.speed} km/h</span>}
+                    {inc.speed != null && <span>⚡ {inc.speed} km/h</span>}
                     {inc.clipDuration && <span>📹 {inc.clipDuration}s de clip</span>}
                     <span className="ml-auto text-blue-500 font-medium">Ver →</span>
                   </div>
@@ -489,4 +489,3 @@ export default function DashcamPage() {
     </AdminLayout>
   );
 }
-                                                                                                                 

@@ -29,7 +29,7 @@ export interface Alert {
 }
 
 function daysDiff(dateStr?: string): number {
-  if (\!dateStr) return -9999;
+  if (!dateStr) return -9999;
   return Math.round((new Date(dateStr).getTime() - Date.now()) / 86400000);
 }
 
@@ -75,7 +75,7 @@ export async function fetchAlerts(token: string): Promise<Alert[]> {
         link:'/vehicles', entityId:v.id, detectedAt:now });
     }
 
-    if (\!v.approved) {
+    if (!v.approved) {
       alerts.push({ id:`veh-pending-${v.id}`, severity:'info', category:'vehiculos',
         title:`Vehículo pendiente de aprobación`, description:`${name} — ${driver}. Requiere revisión documental.`,
         link:'/vehicles', entityId:v.id, detectedAt:now });
@@ -131,8 +131,8 @@ export async function fetchAlerts(token: string): Promise<Alert[]> {
     : ratings?.data ?? ratings?.items ?? [];
   const driverMap = new Map<string, { name: string; scores: number[] }>();
   ratingList.forEach((r: any) => {
-    if (\!r.driverId) return;
-    const e = driverMap.get(r.driverId) ?? { name: r.driverName ?? r.driverId, scores: [] };
+    if (!r.driverId) return;
+    const e = driverMap.get(r.driverId) ?? { name: r.driverName ?? r.driverId, scores: [] as number[] };
     e.scores.push(r.score);
     driverMap.set(r.driverId, e);
   });

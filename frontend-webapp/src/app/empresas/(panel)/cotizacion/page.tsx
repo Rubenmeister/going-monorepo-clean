@@ -96,14 +96,17 @@ export default function CotizacionPage() {
   const [contactPhone,  setContactPhone]  = useState("");
 
   if (!session) return null;
+  // Alias no-nullable para callbacks async (TS no puede estrechar dentro de
+  // closures async tras el early-return de arriba).
+  const accessToken = session!.accessToken;
 
   // Cargar historial
   useEffect(() => {
-    corpFetch<Quote[] | { quotes: Quote[] }>("/corporate/quotes", session.accessToken)
+    corpFetch<Quote[] | { quotes: Quote[] }>("/corporate/quotes", accessToken)
       .then((res) => setQuotes(Array.isArray(res) ? res : (res as any).quotes ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [session.accessToken]);
+  }, [accessToken]);
 
   // Enviar cotización
   async function handleSubmit(e: React.FormEvent) {
@@ -111,7 +114,7 @@ export default function CotizacionPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const newQuote = await corpFetch<Quote>("/corporate/quotes", session.accessToken, {
+      const newQuote = await corpFetch<Quote>("/corporate/quotes", accessToken, {
         method: "POST",
         body: JSON.stringify({
           serviceType,
@@ -125,8 +128,8 @@ export default function CotizacionPage() {
           notes:         notes.trim() || undefined,
           contactName:   contactName.trim(),
           contactPhone:  contactPhone.trim() || undefined,
-          companyId:     session.user.companyId,
-          requestedBy:   session.user.id,
+          companyId:     session!.user?.companyId,
+          requestedBy:   session!.user?.id,
         }),
       });
       setQuotes((prev) => [newQuote, ...prev]);

@@ -52,7 +52,7 @@ export default function AprobacionesPage() {
 
   useEffect(() => {
     if (!session?.accessToken) return;
-    fetchApprovals(session.accessToken)
+    fetchApprovals(session!.accessToken)
       .then(setPendientes)
       .catch(() => setError("No se pudieron cargar las aprobaciones."))
       .finally(() => setLoading(false));
@@ -61,8 +61,8 @@ export default function AprobacionesPage() {
   if (!session) return null;
 
   const puedeAprobar =
-    session.user.roles.includes("aprobador") ||
-    session.user.roles.includes("admin");
+    session!.user.roles.includes("aprobador") ||
+    session!.user.roles.includes("admin");
 
   if (!puedeAprobar) {
     return (
@@ -83,7 +83,7 @@ export default function AprobacionesPage() {
   const handleApprove = async (b: Booking) => {
     setActing({ id: b.id, type: "approve" });
     try {
-      await approveBooking(session.accessToken!, b.id);
+      await approveBooking(session!.accessToken!, b.id);
       setPendientes((prev) => prev.filter((x) => x.id !== b.id));
       showToast("Viaje aprobado correctamente.", true);
     } catch {
@@ -97,7 +97,7 @@ export default function AprobacionesPage() {
     if (!confirm("¿Seguro que deseas rechazar este viaje?")) return;
     setActing({ id: b.id, type: "reject" });
     try {
-      await rejectBooking(session.accessToken!, b.id);
+      await rejectBooking(session!.accessToken!, b.id);
       setPendientes((prev) => prev.filter((x) => x.id !== b.id));
       showToast("Viaje rechazado.", true);
     } catch {

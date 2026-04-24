@@ -80,7 +80,7 @@ export default function ViajesPage() {
 
   useEffect(() => {
     if (!session?.accessToken || !session?.user?.companyId) return;
-    fetchBookings(session.accessToken, session.user.companyId)
+    fetchBookings(session!.accessToken, session!.user.companyId)
       .then((data) => setBookings(data as Booking[]))
       .catch(() => setError("No se pudieron cargar los viajes."))
       .finally(() => setLoading(false));

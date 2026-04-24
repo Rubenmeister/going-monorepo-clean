@@ -11,7 +11,7 @@ async function req<T>(token: string, path: string, opts?: RequestInit): Promise<
   const res = await fetch(`${API}${path}`, {
     ...opts, headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}`, ...(opts?.headers??{}) },
   });
-  if (\!res.ok) throw new Error(`${res.status}`);
+  if (!res.ok) throw new Error(`${res.status}`);
   return res.json();
 }
 
@@ -41,7 +41,7 @@ function PromoModal({ promo, token, onClose, onSaved }: {
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
 
   async function save() {
-    if (\!form.code.trim()) { setError('El código es obligatorio'); return; }
+    if (!form.code.trim()) { setError('El código es obligatorio'); return; }
     setLoading(true); setError('');
     try {
       const body = { ...form, value: Number(form.value), minAmount: Number(form.minAmount), maxUses: Number(form.maxUses) };
@@ -120,7 +120,7 @@ function PromoModal({ promo, token, onClose, onSaved }: {
 
 export default function PromosPage() {
   const { auth } = useMonorepoApp();
-  const token: string = typeof window \!== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
+  const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
   const [promos,   setPromos]   = useState<Promo[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [editing,  setEditing]  = useState<Promo | undefined>();
@@ -142,23 +142,23 @@ export default function PromosPage() {
 
   async function toggle(promo: Promo) {
     try {
-      await req(token, `/promotions/${promo.id}`, { method:'PATCH', body: JSON.stringify({ active: \!promo.active }) });
-      setPromos(p => p.map(pr => pr.id === promo.id ? { ...pr, active: \!pr.active } : pr));
+      await req(token, `/promotions/${promo.id}`, { method:'PATCH', body: JSON.stringify({ active: !promo.active }) });
+      setPromos(p => p.map(pr => pr.id === promo.id ? { ...pr, active: !pr.active } : pr));
       notify(promo.active ? 'Código desactivado' : 'Código activado');
     } catch { notify('Error al actualizar'); }
   }
 
   async function remove(promo: Promo) {
-    if (\!confirm(`¿Eliminar el código "${promo.code}"?`)) return;
+    if (!confirm(`¿Eliminar el código "${promo.code}"?`)) return;
     try {
       await req(token, `/promotions/${promo.id}`, { method:'DELETE' });
-      setPromos(p => p.filter(pr => pr.id \!== promo.id));
+      setPromos(p => p.filter(pr => pr.id !== promo.id));
       notify('Código eliminado');
     } catch { notify('Error al eliminar'); }
   }
 
   const active   = promos.filter(p => p.active);
-  const inactive = promos.filter(p => \!p.active);
+  const inactive = promos.filter(p => !p.active);
   const totalUses = promos.reduce((s, p) => s + (p.usedCount ?? 0), 0);
 
   if (auth.isLoading || loading) return <Loading fullHeight size="lg" message="Cargando promociones…" />;

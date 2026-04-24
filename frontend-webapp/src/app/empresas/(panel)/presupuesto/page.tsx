@@ -133,11 +133,11 @@ export default function PresupuestoPage() {
 
   if (!session) return null;
 
-  const isAdmin = session.user.roles.includes("admin");
-  const isFinanciero = session.user.roles.includes("financiero");
+  const isAdmin = session!.user.roles.includes("admin");
+  const isFinanciero = session!.user.roles.includes("financiero");
   const canEdit = isAdmin;
 
-  const companyId = session.user.companyId;
+  const companyId = session!.user.companyId;
 
   // ── Carga datos ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -146,8 +146,8 @@ export default function PresupuestoPage() {
     setError(null);
 
     Promise.allSettled([
-      fetchSpendingLimits(session.accessToken, companyId),
-      fetchSpendingReport(session.accessToken, companyId, month),
+      fetchSpendingLimits(session!.accessToken, companyId),
+      fetchSpendingReport(session!.accessToken, companyId, month),
     ]).then(([limitsRes, reportRes]) => {
       if (limitsRes.status === "fulfilled") setLimits(limitsRes.value);
       if (reportRes.status === "fulfilled") {
@@ -158,7 +158,7 @@ export default function PresupuestoPage() {
         setError("No se pudo cargar la información de presupuestos.");
       }
     }).finally(() => setLoading(false));
-  }, [session.accessToken, companyId, month]);
+  }, [session!.accessToken, companyId, month]);
 
   // ── Combinamos límites + gastos reales ────────────────────────────────────
   const departments: DepartmentSpending[] = (() => {
@@ -192,7 +192,7 @@ export default function PresupuestoPage() {
     setSaving(true);
     setSaveError(null);
     try {
-      const saved = await setDepartmentLimit(session.accessToken, companyId, {
+      const saved = await setDepartmentLimit(session!.accessToken, companyId, {
         department: dept, monthlyLimit: monthly, dailyLimit: daily,
       });
       setLimits((prev) => {
