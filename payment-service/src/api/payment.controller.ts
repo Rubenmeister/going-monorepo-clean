@@ -8,6 +8,7 @@ import {
   FareEngine,
   FareQuoteInput,
 } from '../application/fare-engine.service';
+import { QuoteStore } from '../application/quote-store.service';
 
 @Controller('payments')
 export class PaymentController {
@@ -15,6 +16,7 @@ export class PaymentController {
     private readonly createPaymentIntentUseCase: CreatePaymentIntentUseCase,
     private readonly pricingService: PricingService,
     private readonly fareEngine: FareEngine,
+    private readonly quoteStore: QuoteStore,
   ) {}
 
   @Post('intent')
@@ -88,9 +90,55 @@ export class PaymentController {
           ? new Date(body.serviceDateTime as any)
           : undefined,
       };
-      return await this.fareEngine.quote(dto);
+      const quote = await this.fareEngine.quote(dto);
+      // Guardamos el quote firmado en Redis (TTL 5 min) para que la
+      // confirmación posterior pueda validar que el precio no fue
+      // manipulado en el cliente.
+      const userId = (body as any).userId; // opcional — el caller protegido lo pasa
+      const stored = await this.quoteStore.save(quote, dto, userId);
+      return {
+        ...quote,
+        quoteId: stored?.quoteId ?? null,
+        quoteExpiresAt: stored?.expiresAt ?? null,
+      };
     } catch (error) {
       throw new BadRequestException((error as Error).message);
     }
+  }
+
+  /**
+   * Confirmar quote previamente generado.
+   * POST /payments/quote/confirm
+   *
+   * Body: { quoteId: "<uuid>", userId?: "<uuid>" }
+   *
+   * Recupera el quote del store, valida firma + ownership, y lo
+   * invalida (single-use). Retorna el FareQuote original que el caller
+   * debe usar como precio definitivo de la transacción.
+   */
+  @Post('quote/confirm')
+  async confirmQuote(@Body() body: { quoteId: string; userId?: string }) {
+    if (!body?.quoteId) {
+      throw new BadRequestException('quoteId requerido');
+    }
+    const stored = await this.quoteStore.claim(body.quoteId, body.userId);
+    if (!stored) {
+      throw new BadRequestException(
+        'Quote inválido o expirado. Re-cotiza el viaje antes de confirmar.',
+      );
+    }
+    // Single-use: borrarlo evita confirms duplicados.
+    await this.quoteStore.invalidate(stored.quoteId);
+    return {
+      quoteId: stored.quoteId,
+      total: stored.total,
+      currency: stored.currency,
+      distanceKm: stored.distanceKm,
+      durationMinutes: stored.durationMinutes,
+      pointsRedeemed: stored.pointsRedeemed,
+      pointsEarned: stored.pointsEarned,
+      input: stored.input,
+      lockedAt: stored.createdAt,
+    };
   }
 }

@@ -14,6 +14,8 @@ import {
 } from '@going-monorepo-clean/domains-payment-application';
 import { PricingService } from './application/pricing.service';
 import { FareEngine } from './application/fare-engine.service';
+import { QuoteStore } from './application/quote-store.service';
+import { LoyaltyClient } from './application/loyalty-client.service';
 import { ProcessPaymentUseCase } from './application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from './application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-case';
@@ -59,6 +61,8 @@ import {
     // Service-level use cases (use IPaymentRepository + IPayoutRepository + StripeGateway)
     PricingService,
     FareEngine,
+    QuoteStore,
+    LoyaltyClient,
     ProcessPaymentUseCase,
     CompleteRideUseCase,
     CreatePayoutUseCase,
