@@ -33,6 +33,7 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
 import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
 import { AccountLockoutService } from '../application/account-lockout.service';
+import { AuthGuard } from '@nestjs/passport';
 import { GoogleOauthGuard } from '../infrastructure/oauth/google-oauth.guard';
 import { FacebookOauthGuard } from '../infrastructure/oauth/facebook-oauth.guard';
 import { OauthStateService } from '../infrastructure/oauth/oauth-state.service';
@@ -624,9 +625,14 @@ export class AuthController {
   /**
    * Get Current User Info
    * GET /auth/me
-   * Requires valid JWT token
+   * Requires valid JWT token.
+   *
+   * Sin `@UseGuards(AuthGuard('jwt'))`, Nest jamás llama a la JwtStrategy
+   * y req.user queda undefined → el endpoint devolvía siempre
+   * { authenticated: false } aunque el token fuera válido.
    */
   @Get('me')
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
   async getCurrentUser(
     @CurrentUser('userId') userId: UUID,
