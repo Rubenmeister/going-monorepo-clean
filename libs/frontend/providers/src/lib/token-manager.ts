@@ -14,7 +14,7 @@ interface JWTPayload {
  * Token refresh response
  */
 export interface TokenRefreshResponse {
-  token: string;
+  accessToken: string;
   refreshToken?: string;
 }
 
@@ -161,7 +161,7 @@ export class TokenManager {
         const data = (await response.json()) as TokenRefreshResponse;
 
         // Update tokens in store
-        this.setToken(data.token, data.refreshToken);
+        this.setToken(data.accessToken, data.refreshToken);
 
         return ok(data);
       } catch (error) {

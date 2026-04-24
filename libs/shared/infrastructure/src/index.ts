@@ -12,6 +12,13 @@ export { RequestSignatureMiddleware } from './middlewares/request-signature.midd
 export { AuditInterceptor } from './interceptors/audit.interceptor';
 export { SentryInterceptor } from './interceptors/sentry.interceptor';
 
+// Strategies
+export {
+  BaseJwtStrategy,
+  JwtPayload,
+  AuthenticatedUser,
+} from './strategies/base-jwt.strategy';
+
 // Re-export existing services
 export { CircuitBreakerService } from './services/circuit-breaker.service';
 export { RedisPoolService } from './services/redis-pool.service';

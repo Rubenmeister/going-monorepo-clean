@@ -1,5 +1,5 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authService } from './authService';
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
@@ -11,19 +11,26 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token to every request
+// Attach JWT token to every request (reads from SecureStore)
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('auth_token');
+  const token = await authService.getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Auto-logout on 401
+// On 401: attempt one token refresh, then retry. On second 401 → clear session.
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      await AsyncStorage.removeItem('auth_token');
+    const original = error.config as typeof error.config & { _retry?: boolean };
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      const refreshed = await authService.refresh();
+      if (refreshed) {
+        original.headers.Authorization = `Bearer ${refreshed.accessToken}`;
+        return api(original);
+      }
+      // Refresh failed — session is gone; let callers (store) react to the 401
     }
     return Promise.reject(error);
   }
@@ -43,7 +50,7 @@ export const authAPI = {
   }) => api.post('/auth/register', { ...data, roles: ['user'] }),
 
   me: () => api.get('/auth/me'),
-  logout: () => Promise.resolve(), // handled locally via store
+  logout: () => api.post('/auth/logout').catch(() => {}), // fire-and-forget; clears server-side blacklist
   forgotPassword: (email: string) =>
     api.post('/auth/forgot-password', { email }),
   updateProfile: (data: { firstName: string; lastName: string; phone?: string }) =>

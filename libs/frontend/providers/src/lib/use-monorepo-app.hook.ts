@@ -13,6 +13,7 @@ import {
   notificationClient,
   trackingClient,
 } from './http-client';
+import { useAuthStore } from '@going-monorepo-clean/frontend-stores';
 
 /**
  * Hook principal de la webapp.
@@ -35,8 +36,17 @@ export const useMonorepoApp = () => {
         login: async (credentials: { email: string; password: string }) => {
           try {
             const response = await authClient.login(credentials);
-            localStorage.setItem('authToken', response.token);
-            window.location.reload();
+            useAuthStore.getState().setAuth(
+              response.accessToken,
+              response.refreshToken,
+              {
+                id: response.user.id,
+                email: response.user.email,
+                name: `${response.user.firstName} ${response.user.lastName ?? ''}`.trim(),
+                role: (response.user.roles?.[0] ?? 'user') as 'user' | 'admin' | 'driver',
+                isAdmin: () => response.user.roles?.includes('admin') ?? false,
+              }
+            );
             return response;
           } catch (error) {
             console.error('[auth.login] Error:', error);
@@ -49,16 +59,29 @@ export const useMonorepoApp = () => {
           firstName: string;
           lastName: string;
           phone?: string;
-          roles: string[];
+          roles?: string[];
         }) => {
           try {
             const response = await authClient.register(data);
-            localStorage.setItem('authToken', response.token);
+            useAuthStore.getState().setAuth(
+              response.accessToken,
+              response.refreshToken,
+              {
+                id: response.user.id,
+                email: response.user.email,
+                name: `${response.user.firstName} ${response.user.lastName ?? ''}`.trim(),
+                role: (response.user.roles?.[0] ?? 'user') as 'user' | 'admin' | 'driver',
+                isAdmin: () => response.user.roles?.includes('admin') ?? false,
+              }
+            );
             return response;
           } catch (error) {
             console.error('[auth.register] Error:', error);
             throw error;
           }
+        },
+        logout: async () => {
+          useAuthStore.getState().clearAuth();
         },
       },
 

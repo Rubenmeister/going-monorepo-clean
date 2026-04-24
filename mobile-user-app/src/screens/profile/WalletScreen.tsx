@@ -4,8 +4,8 @@ import {
   TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { authService } from '@services/authService';
 import { hapticMedium, hapticSuccess, hapticError, hapticLight } from '@utils/haptics';
 
 const GOING_RED    = '#ff4c41';
@@ -41,7 +41,7 @@ export function WalletScreen() {
   const load = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('auth_token');
+      const token = await authService.getAccessToken();
       const { data } = await axios.get(`${API_BASE}/users/me/wallet`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -87,7 +87,7 @@ export function WalletScreen() {
     setPromoLoading(true);
     hapticMedium();
     try {
-      const token = await AsyncStorage.getItem('auth_token');
+      const token = await authService.getAccessToken();
       const { data } = await axios.post(
         `${API_BASE}/users/me/promo`,
         { code: promoCode.trim().toUpperCase() },

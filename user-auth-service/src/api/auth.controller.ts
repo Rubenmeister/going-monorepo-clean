@@ -251,46 +251,66 @@ export class AuthController {
   async login(@Body() dto: LoginUserDto, @Req() req: Request): Promise<any> {
     const startTime = Date.now();
     const ip = this.extractIp(req);
+    const normalizedEmail = dto.email.toLowerCase().trim();
+
+    // 1. Resolve real userId before any lockout check.
+    //    If the email doesn't exist we skip account lockout (no account to lock)
+    //    but still track by IP to prevent enumeration.
+    const existingUser = await this.userModel
+      .findOne({ email: normalizedEmail })
+      .select('id')
+      .lean()
+      .exec();
+    const resolvedUserId: string | null = (existingUser as any)?.id ?? null;
+
+    // 2. IP-based rate limit (prefix avoids colliding with account keys)
+    const ipKey = `ip:${ip}`;
+    const ipLocked = await this.accountLockoutService.isAccountLocked(ipKey);
+    if (ipLocked) {
+      this.logger.warn(`🔐 Login rate-limited by IP: ${ip}`);
+      throw new HttpException(
+        { message: 'Too many attempts from this address. Try again later.' },
+        429
+      );
+    }
 
     try {
-      // TODO: In production, fetch real userId from database first
-      // For now, we'll extract from login attempt below
-      const tempUserId = `email:${dto.email}`;
-
-      // SECURITY CHECK: Is account locked?
-      const isLocked = await this.accountLockoutService.isAccountLocked(
-        tempUserId
-      );
-      if (isLocked) {
-        const lockoutUntil =
-          await this.accountLockoutService.getLockoutExpiration(tempUserId);
-        this.logger.warn(
-          `🔐 Login attempt on locked account: email=${dto.email}, ip=${ip}`
-        );
-        this.auditLogService.recordFailure(
-          'anonymous',
-          'user-auth-service',
-          ip,
-          'LOGIN',
-          'auth',
-          dto.email,
-          Date.now() - startTime,
-          `Account is locked until ${lockoutUntil?.toISOString()}`,
-          { email: dto.email, locked: true }
-        );
-        throw new HttpException(
-          {
-            message: `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}`,
-          },
-          429
-        );
+      // 3. Account-level lockout (only when user exists)
+      if (resolvedUserId) {
+        const isLocked = await this.accountLockoutService.isAccountLocked(resolvedUserId);
+        if (isLocked) {
+          const lockoutUntil =
+            await this.accountLockoutService.getLockoutExpiration(resolvedUserId);
+          this.logger.warn(
+            `🔐 Login attempt on locked account: userId=${resolvedUserId}, ip=${ip}`
+          );
+          this.auditLogService.recordFailure(
+            resolvedUserId,
+            'user-auth-service',
+            ip,
+            'LOGIN',
+            'auth',
+            resolvedUserId,
+            Date.now() - startTime,
+            `Account locked until ${lockoutUntil?.toISOString()}`,
+            { locked: true }
+          );
+          // Generic message — do not reveal whether the email exists
+          throw new HttpException(
+            { message: `Account is temporarily locked. Try again after ${lockoutUntil?.toLocaleTimeString()}` },
+            429
+          );
+        }
       }
 
-      // Attempt login
-      const result = await this.loginUserUseCase.execute(dto);
+      // 4. Attempt login
+      const result = await this.loginUserUseCase.execute({ ...dto, email: normalizedEmail });
 
-      // LOGIN SUCCESSFUL: Reset lockout counter
-      await this.accountLockoutService.recordSuccessfulLogin(tempUserId);
+      // 5. Success — reset lockout counters
+      if (resolvedUserId) {
+        await this.accountLockoutService.recordSuccessfulLogin(resolvedUserId);
+      }
+      await this.accountLockoutService.recordSuccessfulLogin(ipKey);
 
       this.auditLogService.recordSuccess(
         result.user.id,
@@ -301,56 +321,48 @@ export class AuthController {
         result.user.id,
         Date.now() - startTime,
         undefined,
-        { email: dto.email, roles: result.user.roles }
+        { roles: result.user.roles }
       );
 
-      // Normalizar respuesta: siempre exponer tanto `token` como `accessToken`
-      // para compatibilidad con clientes web (accessToken) y móvil (token)
       const normalized = result as any;
       const authToken = normalized.accessToken || normalized.token;
       return { ...normalized, token: authToken, accessToken: authToken };
+
     } catch (error) {
-      // LOGIN FAILED: Record failed attempt
-      const tempUserId = `email:${dto.email}`;
-      const failedAttempt =
-        await this.accountLockoutService.recordFailedAttempt(
-          tempUserId,
-          dto.email,
+      if (error instanceof HttpException && error.getStatus() === 429) throw error;
+
+      // 6. Failed attempt — increment by userId (if exists) and by IP
+      if (resolvedUserId) {
+        const failedAttempt = await this.accountLockoutService.recordFailedAttempt(
+          resolvedUserId,
+          normalizedEmail,
           ip
         );
+        if (failedAttempt.isLocked) {
+          this.logger.warn(`🔐 Account locked: userId=${resolvedUserId}`);
+          throw new HttpException(
+            { message: `Too many failed login attempts. Account locked until ${failedAttempt.lockoutUntil?.toLocaleTimeString()}` },
+            429
+          );
+        }
+      }
+      // Always track IP failures to prevent enumeration
+      await this.accountLockoutService.recordFailedAttempt(ipKey, normalizedEmail, ip);
 
-      // Log the failure with lockout information
       this.auditLogService.recordFailure(
-        'anonymous',
+        resolvedUserId ?? 'unknown',
         'user-auth-service',
         ip,
         'LOGIN',
         'auth',
-        dto.email,
+        resolvedUserId ?? 'unknown',
         Date.now() - startTime,
-        error instanceof Error ? error.message : String(error),
-        {
-          email: dto.email,
-          attemptCount: failedAttempt.attemptCount,
-          isLocked: failedAttempt.isLocked,
-          lockoutUntil: failedAttempt.lockoutUntil?.toISOString(),
-        }
+        'Invalid credentials',
+        {}
       );
 
-      // If account was just locked, inform user
-      if (failedAttempt.isLocked) {
-        this.logger.warn(
-          `🔐 Account locked after ${failedAttempt.attemptCount} failed attempts: email=${dto.email}`
-        );
-        throw new HttpException(
-          {
-            message: `Too many failed login attempts. Account locked until ${failedAttempt.lockoutUntil?.toLocaleTimeString()}`,
-          },
-          429
-        );
-      }
-
-      throw error;
+      // Generic error — never reveal whether the email exists
+      throw new HttpException({ message: 'Invalid credentials' }, 401);
     }
   }
 
