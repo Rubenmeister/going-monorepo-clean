@@ -60,6 +60,19 @@ export class UserModelSchema {
 
   @Prop()
   resetPasswordExpiry?: Date;
+
+  /**
+   * Puntos de fidelidad (tipo B del motor de precios).
+   *   - Gana 1 punto por USD pagado (viajes + envíos).
+   *   - 100 puntos = 1 USD de descuento, tope 50% del total.
+   *   - Sólo aplica a clientes Tipo B (público + pequeños negocios).
+   */
+  @Prop({ type: Number, default: 0, index: true })
+  loyaltyPoints: number;
+
+  /** Timestamp del último movimiento de puntos (para auditoría). */
+  @Prop()
+  loyaltyPointsUpdatedAt?: Date;
 }
 
 export type UserDocument = UserModelSchema & Document;

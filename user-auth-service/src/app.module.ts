@@ -12,6 +12,7 @@ import {
 } from '@going-monorepo-clean/domains-user-application';
 import { AuditModule } from './audit/audit.module';
 import { AccountLockoutService } from './application/account-lockout.service';
+import { LoyaltyPointsService } from './application/loyalty-points.service';
 import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
 
 @Module({
@@ -36,6 +37,6 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
     AuditModule,
   ],
   controllers: [AuthController, HealthController, AdminController],
-  providers: [RegisterUserUseCase, LoginUserUseCase, OAuthLoginUseCase, AccountLockoutService],
+  providers: [RegisterUserUseCase, LoginUserUseCase, OAuthLoginUseCase, AccountLockoutService, LoyaltyPointsService],
 })
 export class AppModule {}

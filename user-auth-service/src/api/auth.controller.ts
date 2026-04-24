@@ -38,6 +38,7 @@ import { GoogleOauthGuard } from '../infrastructure/oauth/google-oauth.guard';
 import { FacebookOauthGuard } from '../infrastructure/oauth/facebook-oauth.guard';
 import { OauthStateService } from '../infrastructure/oauth/oauth-state.service';
 import { UserDocument, UserModelSchema } from '../infrastructure/user.schema';
+import { LoyaltyPointsService } from '../application/loyalty-points.service';
 
 /**
  * Auth Controller
@@ -67,6 +68,7 @@ export class AuthController {
     private readonly oauthStateService: OauthStateService,
     @InjectModel(UserModelSchema.name)
     private readonly userModel: Model<UserDocument>,
+    private readonly loyaltyPointsService: LoyaltyPointsService,
   ) {}
 
   // ────────────────────────────────────────────────
@@ -645,6 +647,66 @@ export class AuthController {
       roles,
       authenticated: !!userId,
     };
+  }
+
+  // ─── Loyalty Points (Tipo B) ───────────────────────────────────────────────
+
+  /**
+   * GET /auth/me/points — saldo actual de puntos de fidelidad.
+   */
+  @Get('me/points')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async getMyPoints(@CurrentUser('userId') userId: UUID) {
+    return this.loyaltyPointsService.getBalance(userId);
+  }
+
+  /**
+   * POST /auth/me/points/award — interno. Lo llama payment-service tras
+   * completar un viaje/envío. Requiere rol 'admin' o 'service' (aún no
+   * modelado — por ahora sólo admin para no exponer desde mobile).
+   */
+  @Post('me/points/award')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async awardMyPoints(
+    @CurrentUser('userId') userId: UUID,
+    @CurrentUser('roles') roles: string[],
+    @Body() body: { userId: string; points: number; referenceId?: string },
+  ) {
+    if (!roles?.includes('admin')) {
+      throw new UnauthorizedException('Sólo admin puede acreditar puntos');
+    }
+    if (!body?.userId || !body?.points) {
+      throw new BadRequestException('userId y points son requeridos');
+    }
+    const awarded = await this.loyaltyPointsService.award(
+      body.userId,
+      body.points,
+      body.referenceId,
+    );
+    return { awarded, userId: body.userId };
+  }
+
+  /**
+   * POST /auth/me/points/redeem — el usuario canjea puntos para un viaje.
+   * FareEngine valida el tope del 50%; aquí sólo descontamos.
+   */
+  @Post('me/points/redeem')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async redeemMyPoints(
+    @CurrentUser('userId') userId: UUID,
+    @Body() body: { points: number; referenceId?: string },
+  ) {
+    if (!body?.points || body.points <= 0) {
+      throw new BadRequestException('points > 0 requerido');
+    }
+    return this.loyaltyPointsService.redeem(
+      userId,
+      body.points,
+      body.referenceId,
+    );
   }
 
   // ─── Google OAuth ───────────────────────────────────────────────────────────

@@ -32,3 +32,12 @@ export {
 // Audit log (shared persistence)
 export { AuditLogDocument, AuditLogSchema } from './schemas/audit-log.schema';
 export { MongoAuditLogRepository } from './persistence/mongo-audit-log.repository';
+
+// Routing (distancia real por carretera)
+export {
+  IRoutingProvider,
+  GeoPoint,
+  RouteResult,
+  haversineKm,
+} from './routing/routing-provider.port';
+export { OsrmRoutingProvider } from './routing/osrm-routing.provider';
