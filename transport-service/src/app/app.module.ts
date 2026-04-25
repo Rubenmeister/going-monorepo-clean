@@ -13,7 +13,19 @@ import {
   RequestTripUseCase,
   AcceptTripUseCase,
   MatchAvailableDriversUseCase,
+  CreateZoneUseCase,
+  UpdateZoneUseCase,
+  DeleteZoneUseCase,
+  ListZonesUseCase,
+  FindZonesContainingPointUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
+import { IZoneRepository } from '@going-monorepo-clean/domains-transport-core';
+import { MongooseZoneRepository } from '../infrastructure/persistence/mongoose-zone.repository';
+import {
+  ZoneModelSchema,
+  ZoneSchema,
+} from '../infrastructure/persistence/schemas/zone.schema';
+import { ZoneController } from '../api/zone.controller';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
 import { HealthController } from '../api/health.controller';
@@ -74,9 +86,21 @@ import { MulterModule } from '@nestjs/platform-express';
       }),
     }),
     InfrastructureModule,
+    MongooseModule.forFeature([
+      { name: ZoneModelSchema.name, schema: ZoneSchema },
+    ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
   ],
-  controllers: [AppController, TransportController, RideController, HealthController, PaymentController, DriverController, DriverScheduleController],
+  controllers: [
+    AppController,
+    TransportController,
+    RideController,
+    HealthController,
+    PaymentController,
+    DriverController,
+    DriverScheduleController,
+    ZoneController,
+  ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     AppService,
@@ -97,6 +121,13 @@ import { MulterModule } from '@nestjs/platform-express';
     PaymentGatewayService,
     DistanceCalculatorService,
     TokenService,
+    // Zone (geocercas) — Fase 1 asignación de conductores
+    { provide: IZoneRepository, useClass: MongooseZoneRepository },
+    CreateZoneUseCase,
+    UpdateZoneUseCase,
+    DeleteZoneUseCase,
+    ListZonesUseCase,
+    FindZonesContainingPointUseCase,
   ],
 })
 export class AppModule {}

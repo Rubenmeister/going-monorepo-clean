@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import {
   RideMatch,
@@ -6,6 +6,7 @@ import {
 } from '@going-monorepo-clean/domains-transport-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Redis } from 'ioredis';
+import { FindZonesContainingPointUseCase } from './zone/find-zones-containing-point.use-case';
 
 export interface DriverInfo {
   driverId: UUID;
@@ -62,7 +63,13 @@ export class MatchAvailableDriversUseCase {
     @Inject(IRideMatchRepository)
     private readonly rideMatchRepo: IRideMatchRepository,
     @Inject('REDIS_CLIENT')
-    private readonly redis: Redis
+    private readonly redis: Redis,
+    /**
+     * Opcional — si el servicio aún no configura zonas, el matching
+     * funciona igual que antes (sin gating por geocercas).
+     */
+    @Optional()
+    private readonly findZonesContainingPoint?: FindZonesContainingPointUseCase,
   ) {}
 
   async execute(
@@ -75,6 +82,38 @@ export class MatchAvailableDriversUseCase {
     this.logger.log(
       `Matching ride ${dto.rideId} — vehicle: ${dto.vehicleType}, radius: ${maxRadius}km`
     );
+
+    // Step 0: (opcional) gating por geocercas — rechazar pickup en
+    // zonas `no_service` ANTES de consultar Redis. No gateamos por
+    // service_area para no bloquear mientras el admin configura zonas
+    // iniciales; el admin puede crear no_service zones para excluir
+    // áreas específicas.
+    if (this.findZonesContainingPoint) {
+      try {
+        const zoneCheck = await this.findZonesContainingPoint.execute(
+          dto.pickupLongitude,
+          dto.pickupLatitude,
+        );
+        if (zoneCheck.blockedByNoService) {
+          this.logger.warn(
+            `Ride ${dto.rideId} rechazado — pickup en zona no_service`,
+          );
+          return err(new Error('El pickup está en una zona sin servicio'));
+        }
+        // Log priority zones para trazabilidad (FareEngine aplica el
+        // surcharge por separado leyendo zoneCheck.totalSurchargePct).
+        if (zoneCheck.totalSurchargePct > 0) {
+          this.logger.log(
+            `Ride ${dto.rideId} pickup en zona priority +${(zoneCheck.totalSurchargePct * 100).toFixed(0)}%`,
+          );
+        }
+      } catch (e) {
+        // Si el check falla, no bloqueamos el matching (degradación gentil).
+        this.logger.warn(
+          `Zone pre-check falló para ride ${dto.rideId}: ${(e as Error).message}`,
+        );
+      }
+    }
 
     // Step 1: Query Redis GEO for drivers within radius
     const nearbyRaw = (await this.redis.georadius(

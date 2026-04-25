@@ -195,6 +195,8 @@ export class ProxyModule implements NestModule {
     };
 
     guard('transport', svc.transport);
+    // /zones/* — geocercas (administradas por transport-service)
+    guard('zones', svc.transport);
     guard('payments', svc.payments);
     guard('tours', svc.tours);
     guard('accommodations', svc.accommodations);
