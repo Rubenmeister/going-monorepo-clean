@@ -49,11 +49,14 @@ export class QuoteStore implements OnModuleDestroy {
   private getRedis(): Redis {
     if (this.redis) return this.redis;
     const url = this.config.get<string>('REDIS_URL') || 'redis://localhost:6379';
+    // Permitir offline queue para que la PRIMERA llamada no falle mientras
+    // se establece el socket TLS (Upstash). Mantenemos lazyConnect:true
+    // para no bloquear el boot del service si Redis cae.
     this.redis = new Redis(url, {
       lazyConnect: true,
-      enableOfflineQueue: false,
-      maxRetriesPerRequest: 0,
-      connectTimeout: 3000,
+      enableOfflineQueue: true,
+      maxRetriesPerRequest: 2,
+      connectTimeout: 5000,
     });
     this.redis.on('error', (e) =>
       this.logger.warn(`Redis error: ${e.message}`),
