@@ -26,15 +26,15 @@ import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-mat
         process.env.MONGO_URL ||
         process.env.MONGODB_URI,
       {
-        // Timeouts alineados con user-auth-service (que conecta OK al
-        // mismo Atlas). `lazyConnection: true` no es opción válida de
-        // Mongoose — quedaba ignorado y sin timeouts las conexiones
-        // fallaban en silencio causando "buffering timed out" en cada
-        // query.
-        serverSelectionTimeoutMS: 30000,
-        connectTimeoutMS: 30000,
+        // Timeouts generosos. bufferCommands DEFAULT (true): las queries
+        // esperan a que el connect termine. Sin eso + con timeouts altos
+        // el startup probe de Cloud Run (4 min) expira antes de que
+        // Mongoose resuelva el primer connect.
+        serverSelectionTimeoutMS: 15000,
+        connectTimeoutMS: 15000,
         socketTimeoutMS: 45000,
-        bufferCommands: false,
+        // bufferCommands queda en true (default) — permite requests
+        // durante el connect inicial sin throw.
         connectionFactory: (conn) => {
           conn.on('connected', () => console.log('MongoDB connected (envios)'));
           conn.on('error', (e) => console.error('MongoDB error:', e.message));
