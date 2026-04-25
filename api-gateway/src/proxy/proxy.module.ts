@@ -199,12 +199,13 @@ export class ProxyModule implements NestModule {
     guard('zones', svc.transport);
     // /drivers/* — bases de conductor + perfil (transport-service)
     guard('drivers', svc.transport);
+    // /driver-bases/* — bases priorizadas (FASE 2)
+    guard('driver-bases', svc.transport);
     guard('payments', svc.payments);
     guard('tours', svc.tours);
     guard('accommodations', svc.accommodations);
     guard('experiences', svc.experiences);
     guard('parcels', svc.parcels);
-    guardExact('parcels', svc.parcels, [RequestMethod.POST, RequestMethod.GET]);
     guard('notifications', svc.notifications);
     guard('tracking', svc.tracking);
     guard('bookings', svc.bookings);
@@ -216,6 +217,34 @@ export class ProxyModule implements NestModule {
     guard('recommendations', svc.recommendations);
     guard('subscriptions', svc.subscriptions);
     guard('corporate', svc.corporate);
+
+    // --- Exact-collection roots ---
+    // NestJS 11 + Fastify 5: el patrón `prefix/*path` NO matchea la raíz
+    // exacta `/prefix` (porque `*path` requiere ≥1 segmento). Para rutas
+    // de colección como GET /zones, POST /parcels, GET /bookings, los
+    // registramos explícitamente con `guardExact`. Sin esto el caller
+    // recibe 404 desde el gateway aunque el endpoint exista río abajo.
+    const allMethods = [
+      RequestMethod.GET,
+      RequestMethod.POST,
+      RequestMethod.PUT,
+      RequestMethod.PATCH,
+      RequestMethod.DELETE,
+    ];
+    guardExact('zones', svc.transport, allMethods);
+    guardExact('drivers', svc.transport, allMethods);
+    guardExact('driver-bases', svc.transport, allMethods);
+    guardExact('parcels', svc.parcels, allMethods);
+    guardExact('bookings', svc.bookings, allMethods);
+    guardExact('payments', svc.payments, allMethods);
+    guardExact('tours', svc.tours, allMethods);
+    guardExact('accommodations', svc.accommodations, allMethods);
+    guardExact('experiences', svc.experiences, allMethods);
+    guardExact('tracking', svc.tracking, allMethods);
+    guardExact('notifications', svc.notifications, allMethods);
+    guardExact('invoices', svc.invoices, allMethods);
+    guardExact('analytics', svc.analytics, allMethods);
+    guardExact('social', svc.social, allMethods);
 
     // --- PUBLIC: /support/* → customer-support-service (WhatsApp webhook + web chat, no JWT) ---
     if (svc.support) {
