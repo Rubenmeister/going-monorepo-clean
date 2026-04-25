@@ -92,6 +92,7 @@ export class Parcel {
       driverId: this.driverId,
       origin: this.origin.toPrimitives(),
       destination: this.destination.toPrimitives(),
+      description: this.description,
       price: this.price.toPrimitives(),
       status: this.status,
       trackingCode: this.trackingCode,
