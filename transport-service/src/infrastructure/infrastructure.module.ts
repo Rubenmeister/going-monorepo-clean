@@ -67,6 +67,7 @@ import { DriverScheduleModel, DriverScheduleSchema } from '../api/driver-schedul
     ITripRepository,
     'IRideRepository',
     IRideMatchRepository,
+    MongooseRideRepository,
     DistanceCalculatorService,
     'GeolocationService',
     'REDIS_CLIENT',
