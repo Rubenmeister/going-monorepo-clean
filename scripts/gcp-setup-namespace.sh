@@ -4,7 +4,7 @@
 # Sets up GCP authentication and creates the staging namespace for Going Platform
 # Phase 2: GCP Authentication & Staging Namespace Setup
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'

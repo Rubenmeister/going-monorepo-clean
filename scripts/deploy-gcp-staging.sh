@@ -4,7 +4,7 @@
 # Deploys Going Platform to Google Kubernetes Engine (GKE)
 # Uses Google Container Registry (GCR) for images
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
