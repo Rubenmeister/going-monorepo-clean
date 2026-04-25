@@ -21,13 +21,30 @@ import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-mat
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.PARCEL_DB_URL, {
-      lazyConnection: true,
-      connectionFactory: (conn) => {
-        conn.on('error', (e) => console.warn('MongoDB:', e.message));
-        return conn;
+    MongooseModule.forRoot(
+      process.env.PARCEL_DB_URL ||
+        process.env.MONGO_URL ||
+        process.env.MONGODB_URI,
+      {
+        // Timeouts alineados con user-auth-service (que conecta OK al
+        // mismo Atlas). `lazyConnection: true` no es opción válida de
+        // Mongoose — quedaba ignorado y sin timeouts las conexiones
+        // fallaban en silencio causando "buffering timed out" en cada
+        // query.
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+        connectionFactory: (conn) => {
+          conn.on('connected', () => console.log('MongoDB connected (envios)'));
+          conn.on('error', (e) => console.error('MongoDB error:', e.message));
+          conn.on('disconnected', () =>
+            console.warn('MongoDB disconnected (envios)'),
+          );
+          return conn;
+        },
       },
-    }),
+    ),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
