@@ -99,19 +99,19 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Acciones Rápidas</h2>
           <div className="space-y-3">
             <Link
-              href="/empresas/solicitar"
+              href="/empresas/panel/solicitar"
               className="block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-medium transition-colors text-sm"
             >
               + {tipoCuenta === "agencia" ? "Reservar Viaje para Cliente" : "Solicitar Nuevo Viaje"}
             </Link>
             <Link
-              href="/empresas/viajes"
+              href="/empresas/panel/viajes"
               className="block px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg font-medium transition-colors text-sm"
             >
               {tipoCuenta === "agencia" ? "Ver Reservas Gestionadas" : "Ver Mis Viajes"}
             </Link>
             <Link
-              href="/empresas/facturacion"
+              href="/empresas/panel/facturacion"
               className="block px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg font-medium transition-colors text-sm"
             >
               {ctx.labelFacturacion}
@@ -120,7 +120,7 @@ export default function DashboardPage() {
             {tipoCuenta === "grande" &&
               (session!.user.roles.includes("aprobador") || session!.user.roles.includes("admin")) && (
                 <Link
-                  href="/empresas/aprobaciones"
+                  href="/empresas/panel/aprobaciones"
                   className="block px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg font-medium transition-colors text-sm"
                 >
                   Revisar Aprobaciones

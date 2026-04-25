@@ -115,7 +115,7 @@ export default function ConfiguracionPage() {
           <p className="text-sm text-slate-500 mb-4">
             Límites de gasto por departamento, montos máximos sin aprobación y flujos multinivel.
           </p>
-          <Link href="/empresas/presupuesto"
+          <Link href="/empresas/panel/presupuesto"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline">
             Ir a Presupuesto →
           </Link>

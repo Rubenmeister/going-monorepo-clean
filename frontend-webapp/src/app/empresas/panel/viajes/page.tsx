@@ -124,7 +124,7 @@ export default function ViajesPage() {
           <p className="text-slate-600 mt-1">Gestión de tus viajes corporativos</p>
         </div>
         <a
-          href="/empresas/solicitar"
+          href="/empresas/panel/solicitar"
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           + Solicitar Viaje

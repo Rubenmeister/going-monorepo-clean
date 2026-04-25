@@ -120,7 +120,7 @@ export default function EmpresasLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             {/* Solicitar viaje rápido */}
             <Link
-              href="/empresas/solicitar"
+              href="/empresas/panel/solicitar"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
