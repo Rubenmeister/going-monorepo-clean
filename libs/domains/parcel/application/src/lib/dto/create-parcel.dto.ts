@@ -14,9 +14,15 @@ import {
 import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain'; // Asumiendo DTOs compartidos
 
 export class CreateParcelDto {
-  @IsNotEmpty()
+  /**
+   * userId — opcional en el body. El controller lo SOBRE-ESCRIBE con
+   * el id del JWT (`req.user.id`); nunca confiamos en lo que mande el
+   * cliente. Lo dejamos opcional para que ValidationPipe no rechace
+   * la request.
+   */
+  @IsOptional()
   @IsUUID()
-  userId: string;
+  userId?: string;
 
   @IsOptional()
   @ValidateNested()

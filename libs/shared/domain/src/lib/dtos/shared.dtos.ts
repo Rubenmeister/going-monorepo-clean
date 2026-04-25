@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsNumber,
   Min,
@@ -22,19 +23,25 @@ export class MoneyDto {
   currency: 'USD';
 }
 
-// DTO para el Value Object 'Location'
+// DTO para el Value Object 'Location'.
+//
+// `city` y `country` se marcan opcionales porque las apps móviles no
+// siempre tienen reverse-geocoding disponible — sólo address + lat/lng.
+// El backend asume "Ecuador" cuando country falta, y deriva city desde
+// Mapbox/OSRM si necesita persistirla. Los DTOs requieren address +
+// lat/lng para poder rutear y persistir.
 export class LocationDto {
   @IsNotEmpty()
   @IsString()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  city: string;
-  
-  @IsNotEmpty()
+  city?: string;
+
+  @IsOptional()
   @IsString()
-  country: string;
+  country?: string;
 
   @IsNotEmpty()
   @IsLatitude()

@@ -167,14 +167,22 @@ export class ProxyModule implements NestModule {
     }
 
     // --- PROTECTED: JWT guard + forward ---
+    // Registramos DOS routes:
+    //   - `${prefix}/*path` → sub-rutas (ej. POST /parcels/123/cancel)
+    //   - `${prefix}`        → ruta exacta sin sufijo (ej. POST /parcels)
+    // NestJS no matchea `/parcels` con el patrón `parcels/*path`, por eso
+    // los POST a la colección sin id daban 404.
     const guard = (prefix: string, target: string) => {
       if (!target) return;
       consumer
         .apply(
           passport.authenticate('jwt', { session: false }),
-          makeForwardMiddleware(target, prefix)
+          makeForwardMiddleware(target, prefix),
         )
-        .forRoutes({ path: `${prefix}/*path`, method: RequestMethod.ALL });
+        .forRoutes(
+          { path: `${prefix}/*path`, method: RequestMethod.ALL },
+          { path: prefix, method: RequestMethod.ALL },
+        );
     };
 
     guard('transport', svc.transport);

@@ -87,28 +87,45 @@ const PTS_PER_USD = 100; // 100 puntos = 1 USD
 const POINTS_MAX_DISCOUNT_FRACTION = 0.5; // 50% tope
 
 /**
- * RATES — alineados con la propuesta del motor:
- *   - transport: $0.50/km (tu spec)
- *   - envio:     $0.50/km (mismo formula, + peso)
- *   - shared:    $0.35/km (mantenemos discount para carpooling)
+ * Transport rates — sigue spec original:
+ *   - $0.50/km + $0.10/min + $2.5 base
  *
- * Los perMinute y baseFare permanecen del PricingService original
- * para no romper los tests que dependen del desglose.
+ * Envíos rates — modelo nuevo: precio FIJO por tier de peso.
+ * Servicio puerta-a-puerta same-day; el costo no depende de
+ * distancia/duración (eso se absorbe en el precio fijo del tier).
+ *
+ *   Tier A:  0–10 kg → $10 USD
+ *   Tier B:  10–20 kg → $15 USD
+ *   > 20 kg → rechazado (error 422 — cotización manual)
+ *
+ * Sobre cuesta lo mismo que paquete pequeño (ambos en Tier A).
  */
 const FARE_RATES = {
   transport: {
     baseFare: 2.5,
-    perKm: 0.5,       // ← ajustado a spec del motor
+    perKm: 0.5,
     perMinute: 0.1,
     platformFeePct: 0.2,
   },
   envio: {
-    baseFare: 3.0,
-    perKm: 0.5,       // ← ajustado a spec del motor
-    perKg: 0.5,
     platformFeePct: 0.18,
   },
 } as const;
+
+/**
+ * Devuelve precio fijo en USD según el peso. Tira si excede 20kg.
+ */
+function envioFixedPriceByWeight(weightKg: number): number {
+  if (weightKg < 0) {
+    throw new Error('weightKg no puede ser negativo');
+  }
+  if (weightKg > 20) {
+    throw new Error(
+      'weightKg excede el límite de 20 kg — solicita cotización manual',
+    );
+  }
+  return weightKg <= 10 ? 10 : 15;
+}
 
 @Injectable()
 export class FareEngine {
@@ -121,24 +138,34 @@ export class FareEngine {
   ) {}
 
   async quote(input: FareQuoteInput): Promise<FareQuote> {
-    // 1. Distancia real por carretera.
+    // 1. Distancia real por carretera (informativa para envíos, base de
+    //    cálculo para transport).
     const route = await this.routingProvider.route(input.origin, input.destination);
 
-    // 2. Componentes base.
-    const rates =
-      input.category === 'envio' ? FARE_RATES.envio : FARE_RATES.transport;
-    const baseFare = rates.baseFare;
-    const distanceCost = round(route.distanceKm * rates.perKm);
-    const durationCost =
-      input.category === 'transport'
-        ? round(route.durationMinutes * (rates as typeof FARE_RATES.transport).perMinute)
-        : 0;
-    const weightCost =
-      input.category === 'envio' && input.weightKg != null
-        ? round(input.weightKg * (rates as typeof FARE_RATES.envio).perKg)
-        : 0;
+    // 2. Componentes base — calculamos según categoría.
+    let baseFare = 0;
+    let distanceCost = 0;
+    let durationCost = 0;
+    let weightCost = 0;
+    let subtotal = 0;
 
-    const subtotal = round(baseFare + distanceCost + durationCost + weightCost);
+    if (input.category === 'envio') {
+      // Envíos: precio FIJO por tier de peso. Distancia/duración no
+      // afectan el precio (es servicio same-day puerta a puerta).
+      const weightKg = input.weightKg ?? 0;
+      const fixedPrice = envioFixedPriceByWeight(weightKg);
+      // Mapeamos el desglose al modelo existente: weightCost lleva el
+      // total fijo del tier para que el response siga siendo legible.
+      weightCost = fixedPrice;
+      subtotal = fixedPrice;
+    } else {
+      // Transport (privado/compartido): base + km + min.
+      const rates = FARE_RATES.transport;
+      baseFare = rates.baseFare;
+      distanceCost = round(route.distanceKm * rates.perKm);
+      durationCost = round(route.durationMinutes * rates.perMinute);
+      subtotal = round(baseFare + distanceCost + durationCost);
+    }
 
     // 3. Recargos dinámicos (hora/día/feriado) + tipo de cliente (+25% A).
     const serviceDateTime = input.serviceDateTime ?? new Date();
@@ -187,7 +214,10 @@ export class FareEngine {
     const total = Math.max(0, round(priceBeforePoints - pointsDiscount));
 
     // 5. Comisión plataforma.
-    const platformFeePct = rates.platformFeePct;
+    const platformFeePct =
+      input.category === 'envio'
+        ? FARE_RATES.envio.platformFeePct
+        : FARE_RATES.transport.platformFeePct;
     const platformFee = round(total * platformFeePct);
     const providerAmount = round(total - platformFee);
 
@@ -223,10 +253,18 @@ export class FareEngine {
       pointsEarned,
 
       explain: {
-        formula: 'total = (base + km*rate + min*rate [+ kg*rate]) * (1 + timeSurcharge + clientSurcharge) * surge - pointsDiscount',
-        perKm: rates.perKm,
-        perMinute: 'perMinute' in rates ? rates.perMinute : 0,
-        perKg: 'perKg' in rates ? rates.perKg : 0,
+        formula:
+          input.category === 'envio'
+            ? 'total = fixedTier(weightKg) * (1 + timeSurcharge + clientSurcharge) * surge - pointsDiscount'
+            : 'total = (base + km*rate + min*rate) * (1 + timeSurcharge + clientSurcharge) * surge - pointsDiscount',
+        perKm: input.category === 'envio' ? 0 : FARE_RATES.transport.perKm,
+        perMinute: input.category === 'envio' ? 0 : FARE_RATES.transport.perMinute,
+        envioTier:
+          input.category === 'envio'
+            ? (input.weightKg ?? 0) <= 10
+              ? 'A (0-10kg, $10)'
+              : 'B (10-20kg, $15)'
+            : 'n/a',
         clientSegment: input.clientSegment,
         routingFallback: route.fallback ?? false,
       },
