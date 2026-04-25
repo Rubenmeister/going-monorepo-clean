@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RequestSignatureMiddleware } from '@going-monorepo-clean/shared-infrastructure';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
 import { HealthController } from './api/health.controller';
@@ -39,4 +40,15 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
   controllers: [AuthController, HealthController, AdminController],
   providers: [RegisterUserUseCase, LoginUserUseCase, OAuthLoginUseCase, AccountLockoutService, LoyaltyPointsService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Middleware HMAC para endpoints inter-servicio. Sólo afecta a paths
+    // `/auth/internal/*` y `/internal/*`. Si INTERNAL_SERVICE_TOKEN no está
+    // set, el middleware fail-closed (401). El endpoint legacy
+    // `/auth/internal/points/award` sigue validando X-Internal-Token de
+    // forma manual como retro-compat (cinturón + tirantes).
+    consumer
+      .apply(RequestSignatureMiddleware)
+      .forRoutes('auth/internal/*', 'internal/*');
+  }
+}
