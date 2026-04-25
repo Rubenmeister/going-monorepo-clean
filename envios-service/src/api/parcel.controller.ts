@@ -79,6 +79,18 @@ export class ParcelController {
       };
     }
 
+    // Default city/country si las apps los omiten (city y country son
+    // opcionales en el DTO desde el move a 2-tier pricing). Asumimos
+    // Ecuador y dejamos city derivable luego.
+    if (dto.origin) {
+      dto.origin.city = dto.origin.city ?? '';
+      dto.origin.country = dto.origin.country ?? 'Ecuador';
+    }
+    if (dto.destination) {
+      dto.destination.city = dto.destination.city ?? '';
+      dto.destination.country = dto.destination.country ?? 'Ecuador';
+    }
+
     // Always use the authenticated user's ID — never trust client-provided userId
     const result = await this.createParcelUseCase.execute({
       ...dto,
