@@ -166,14 +166,21 @@ export class ProxyModule implements NestModule {
         .forRoutes({ path: 'auth/*path', method: RequestMethod.ALL });
     }
 
+    // OPTIONS (CORS preflight) NUNCA debe pasar por passport.authenticate:
+    // los preflights NO llevan Authorization header. Wrapper que delega al
+    // siguiente middleware sin auth si es OPTIONS, y aplica passport en
+    // cualquier otro caso. Sin este wrapper el navegador recibe 401 en el
+    // preflight y la petición real (POST/PUT/etc.) ni se envía.
+    const jwtAuthSkipOptions = (req: any, res: any, next: any) => {
+      if (req.method === 'OPTIONS') return next();
+      return passport.authenticate('jwt', { session: false })(req, res, next);
+    };
+
     // --- PROTECTED: JWT guard + forward ---
     const guard = (prefix: string, target: string) => {
       if (!target) return;
       consumer
-        .apply(
-          passport.authenticate('jwt', { session: false }),
-          makeForwardMiddleware(target, prefix),
-        )
+        .apply(jwtAuthSkipOptions, makeForwardMiddleware(target, prefix))
         .forRoutes({ path: `${prefix}/*path`, method: RequestMethod.ALL });
     };
 
@@ -187,10 +194,7 @@ export class ProxyModule implements NestModule {
       if (!target) return;
       const routes = methods.map((method) => ({ path: prefix, method }));
       consumer
-        .apply(
-          passport.authenticate('jwt', { session: false }),
-          makeForwardMiddleware(target, prefix),
-        )
+        .apply(jwtAuthSkipOptions, makeForwardMiddleware(target, prefix))
         .forRoutes(...routes);
     };
 
