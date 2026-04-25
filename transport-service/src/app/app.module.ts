@@ -18,14 +18,28 @@ import {
   DeleteZoneUseCase,
   ListZonesUseCase,
   FindZonesContainingPointUseCase,
+  AssignDriverBaseUseCase,
+  UpdateDriverBaseUseCase,
+  DeleteDriverBaseUseCase,
+  ListDriverBasesUseCase,
+  FindDriversNearBaseUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
-import { IZoneRepository } from '@going-monorepo-clean/domains-transport-core';
+import {
+  IZoneRepository,
+  IDriverBaseRepository,
+} from '@going-monorepo-clean/domains-transport-core';
 import { MongooseZoneRepository } from '../infrastructure/persistence/mongoose-zone.repository';
+import { MongooseDriverBaseRepository } from '../infrastructure/persistence/mongoose-driver-base.repository';
 import {
   ZoneModelSchema,
   ZoneSchema,
 } from '../infrastructure/persistence/schemas/zone.schema';
+import {
+  DriverBaseModelSchema,
+  DriverBaseSchema,
+} from '../infrastructure/persistence/schemas/driver-base.schema';
 import { ZoneController } from '../api/zone.controller';
+import { DriverBaseController } from '../api/driver-base.controller';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
 import { HealthController } from '../api/health.controller';
@@ -88,6 +102,7 @@ import { MulterModule } from '@nestjs/platform-express';
     InfrastructureModule,
     MongooseModule.forFeature([
       { name: ZoneModelSchema.name, schema: ZoneSchema },
+      { name: DriverBaseModelSchema.name, schema: DriverBaseSchema },
     ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
   ],
@@ -100,6 +115,7 @@ import { MulterModule } from '@nestjs/platform-express';
     DriverController,
     DriverScheduleController,
     ZoneController,
+    DriverBaseController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
@@ -128,6 +144,13 @@ import { MulterModule } from '@nestjs/platform-express';
     DeleteZoneUseCase,
     ListZonesUseCase,
     FindZonesContainingPointUseCase,
+    // DriverBase — Fase 2 asignación de conductores
+    { provide: IDriverBaseRepository, useClass: MongooseDriverBaseRepository },
+    AssignDriverBaseUseCase,
+    UpdateDriverBaseUseCase,
+    DeleteDriverBaseUseCase,
+    ListDriverBasesUseCase,
+    FindDriversNearBaseUseCase,
   ],
 })
 export class AppModule {}
