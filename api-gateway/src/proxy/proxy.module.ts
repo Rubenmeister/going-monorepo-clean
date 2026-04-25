@@ -27,6 +27,39 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
   const transport = isHttps ? https : http;
 
   return (req: any, res: any, next: () => void) => {
+    // CORS preflight (OPTIONS): respondemos local sin reenviar al upstream.
+    // Fastify-cors no intercepta wildcards registrados sólo vía middleware,
+    // y los upstreams no necesariamente tienen un handler OPTIONS — eso
+    // resultaría en 404. Aquí emitimos 204 con headers CORS desde el
+    // origin solicitante (que ya fue validado por enableCors() arriba en
+    // la cadena, su onRequest hook deja `access-control-*` en res; si no
+    // están, los añadimos defensivamente desde CORS_ORIGINS).
+    if (req.method === 'OPTIONS') {
+      const origin = req.headers?.origin;
+      const allowed = (process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+      if (origin && allowed.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader(
+          'Access-Control-Allow-Methods',
+          'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        );
+        res.setHeader(
+          'Access-Control-Allow-Headers',
+          req.headers['access-control-request-headers'] ||
+            'Content-Type,Authorization,X-Requested-With,X-Request-ID',
+        );
+        res.setHeader('Access-Control-Max-Age', '3600');
+      }
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     // originalUrl is stored by the Fastify onRequest hook (main.ts) before middie strips it.
     // req.raw.url works for Express. req.url is the fallback (may be prefix-stripped by middie).
     const originalUrl: string = req.originalUrl || req.raw?.url || req.url || '/';
