@@ -79,12 +79,25 @@ import { MulterModule } from '@nestjs/platform-express';
     MongooseModule.forRoot(
       process.env.TRANSPORT_DB_URL ||
         process.env.MONGO_URL ||
+        process.env.MONGODB_URI ||
         'mongodb://localhost:27017/transport-db',
       {
-        lazyConnection: true,
+        // `lazyConnection: true` no era opción válida de Mongoose y
+        // quedaba ignorada — sin timeouts, las queries se buffereaban
+        // hasta el default 10s y devolvían 500. Misma configuración
+        // que user-auth-service que conecta OK.
+        serverSelectionTimeoutMS: 15000,
+        connectTimeoutMS: 15000,
+        socketTimeoutMS: 45000,
         connectionFactory: (conn) => {
+          conn.on('connected', () =>
+            console.log('MongoDB connected (transport)'),
+          );
           conn.on('error', (e) =>
-            console.warn('MongoDB transport:', e.message)
+            console.error('MongoDB transport error:', e.message),
+          );
+          conn.on('disconnected', () =>
+            console.warn('MongoDB transport disconnected'),
           );
           return conn;
         },
