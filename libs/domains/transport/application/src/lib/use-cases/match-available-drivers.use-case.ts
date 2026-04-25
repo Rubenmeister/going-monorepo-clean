@@ -11,6 +11,7 @@ import {
   FindDriversNearBaseUseCase,
   DriverWithBaseProximity,
 } from './driver-base/find-drivers-near-base.use-case';
+import { GetDriverFairnessUseCase } from './fairness/get-driver-fairness.use-case';
 
 export interface DriverInfo {
   driverId: UUID;
@@ -80,6 +81,13 @@ export class MatchAvailableDriversUseCase {
      */
     @Optional()
     private readonly findDriversNearBase?: FindDriversNearBaseUseCase,
+    /**
+     * Opcional — fairness tie-break (Fase 3). Si está disponible y
+     * Redis responde, drivers con menor count del periodo ganan al
+     * empate de rating + base proximity.
+     */
+    @Optional()
+    private readonly getDriverFairness?: GetDriverFairnessUseCase,
   ) {}
 
   async execute(
@@ -233,16 +241,38 @@ export class MatchAvailableDriversUseCase {
       }
     }
 
-    // Step 2c: Sort drivers
+    // Step 2c: Fairness — leer counters de los drivers candidatos en
+    // un solo round-trip a Redis. Drivers con MENOR count del periodo
+    // ganan en empates (distribución más justa de carga).
+    const fairnessByDriver = new Map<string, number>();
+    if (this.getDriverFairness && filteredDrivers.length > 1) {
+      try {
+        const snapshots = await this.getDriverFairness.execute({
+          driverIds: filteredDrivers.map((d) => d.driverId),
+        });
+        for (const s of snapshots) {
+          fairnessByDriver.set(s.driverId, s.count);
+        }
+      } catch {
+        // Si fairness falla, sigue funcionando sin tie-break.
+      }
+    }
+
+    // Step 2d: Sort drivers
     //   1) Drivers con base cercana van PRIMERO (independientemente de
     //      su GPS actual — la base define la zona de operación).
-    //   2) Dentro de cada grupo: rating DESC, luego distance GPS ASC.
+    //   2) Dentro de cada grupo: rating DESC, luego fairness count ASC,
+    //      luego distance GPS ASC.
     filteredDrivers.sort((a, b) => {
       const aHasBase = baseNearbyDriverIds.has(a.driverId);
       const bHasBase = baseNearbyDriverIds.has(b.driverId);
       if (aHasBase !== bHasBase) return aHasBase ? -1 : 1;
       const ratingDiff = b.rating - a.rating;
-      return ratingDiff !== 0 ? ratingDiff : a.distance - b.distance;
+      if (ratingDiff !== 0) return ratingDiff;
+      const aFair = fairnessByDriver.get(a.driverId) ?? 0;
+      const bFair = fairnessByDriver.get(b.driverId) ?? 0;
+      if (aFair !== bFair) return aFair - bFair; // menor count gana
+      return a.distance - b.distance;
     });
 
     // Step 3: Create RideMatch entities and persist
