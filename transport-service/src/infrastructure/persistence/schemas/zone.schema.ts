@@ -16,6 +16,7 @@ export class ZoneModelSchema {
   name: string;
 
   @Prop({
+    type: String,
     required: true,
     enum: ['service_area', 'no_service', 'priority', 'restricted'],
     index: true,
