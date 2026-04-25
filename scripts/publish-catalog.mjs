@@ -29,8 +29,14 @@ async function patch(svc, path, body) {
 
 import { MongoClient } from 'mongodb';
 
-const MONGO_URL = process.env.MONGO_URL ||
-  'mongodb+srv://rubenmeister_db_user:***REMOVED-CREDENTIAL***@going-cluster.vy28mpj.mongodb.net/?retryWrites=true&w=majority&appName=GOING-CLUSTER';
+const MONGO_URL = process.env.MONGO_URL;
+if (!MONGO_URL) {
+  console.error(
+    'Error: MONGO_URL env var requerida.\n' +
+    'Uso: MONGO_URL="mongodb+srv://..." node scripts/publish-catalog.mjs',
+  );
+  process.exit(1);
+}
 
 async function publishAll() {
   const client = new MongoClient(MONGO_URL);

@@ -140,11 +140,16 @@ google-service-account.json
 # Temporary secret staging (created for Secret Manager migration; contents never go to git)
 .secrets-tmp/
 
+# Archivos huérfanos / output local (no son código)
+/app.json
+/health-reports/
+/tmp/
+
 *.jks
 *.pem
 .~lock.*#
 
-# Upload keys y certificados � NUNCA commitear
+# Upload keys y certificados � NUNCA commitear
 android-keys/
 *.pem
 *.p12
