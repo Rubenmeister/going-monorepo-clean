@@ -14,7 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RideModelSchema, RideDocument } from '../persistence/schemas/ride.schema';
 import { DriverRatingModel, DriverRatingDocument } from '../../api/driver.controller';
-import { MongooseRideRepository } from '../persistence/mongoose-ride.repository';
+import { IRideRepository } from '../../domain/ports';
 
 /**
  * RideEventsGateway — Socket.io server para eventos en tiempo real del viaje.
@@ -79,7 +79,13 @@ export class RideEventsGateway
     private readonly rideModel: Model<RideDocument>,
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
-    private readonly rideRepository: MongooseRideRepository,
+    // Inyección por string token — evita el problema de class-identity
+    // cuando @Global() InfrastructureModule exporta la clase pero AppModule
+    // no resuelve la referencia (visto en NestJS con compilación ts-loader
+    // + barrels). El token 'IRideRepository' está siempre registrado en
+    // InfrastructureModule con useClass: MongooseRideRepository.
+    @Inject('IRideRepository')
+    private readonly rideRepository: IRideRepository,
   ) {}
 
   // ─── Push Notification Helper ──────────────────────────────────────────────
