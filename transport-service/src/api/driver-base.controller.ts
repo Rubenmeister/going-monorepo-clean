@@ -21,6 +21,7 @@ import {
   DeleteDriverBaseUseCase,
   ListDriverBasesUseCase,
   FindDriversNearBaseUseCase,
+  GetDriverFairnessUseCase,
   AssignDriverBaseInput,
   UpdateDriverBaseInput,
 } from '@going-monorepo-clean/domains-transport-application';
@@ -47,6 +48,7 @@ export class DriverBaseController {
     private readonly deleteBase: DeleteDriverBaseUseCase,
     private readonly listBases: ListDriverBasesUseCase,
     private readonly findNearBase: FindDriversNearBaseUseCase,
+    private readonly getFairness: GetDriverFairnessUseCase,
   ) {}
 
   // ── Driver self-service ──────────────────────────────────────────────
@@ -143,5 +145,30 @@ export class DriverBaseController {
     }
     const base = await this.assignBase.execute({ ...body, driverId });
     return base.toPrimitives();
+  }
+
+  /**
+   * GET /drivers/bases/fairness?driverIds=a,b,c[&periodKey=YYYY-MM-DD]
+   *
+   * Snapshot del contador de aceptaciones del periodo. Útil para el
+   * dashboard admin de distribución de carga.
+   */
+  @Get('bases/fairness')
+  async fairness(
+    @CurrentUser('roles') roles: string[],
+    @Query('driverIds') driverIdsCsv: string,
+    @Query('periodKey') periodKey?: string,
+  ) {
+    if (!roles?.includes('admin')) {
+      throw new ForbiddenException('Admin role required');
+    }
+    if (!driverIdsCsv) {
+      throw new BadRequestException('driverIds=<csv> is required');
+    }
+    const driverIds = driverIdsCsv
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean) as UUID[];
+    return this.getFairness.execute({ driverIds, periodKey });
   }
 }

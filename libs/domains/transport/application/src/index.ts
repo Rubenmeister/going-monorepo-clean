@@ -16,3 +16,7 @@ export * from './lib/use-cases/driver-base/update-driver-base.use-case';
 export * from './lib/use-cases/driver-base/delete-driver-base.use-case';
 export * from './lib/use-cases/driver-base/list-driver-bases.use-case';
 export * from './lib/use-cases/driver-base/find-drivers-near-base.use-case';
+
+// Fairness counter (Fase 3) use cases
+export * from './lib/use-cases/fairness/record-driver-acceptance.use-case';
+export * from './lib/use-cases/fairness/get-driver-fairness.use-case';

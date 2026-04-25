@@ -23,13 +23,17 @@ import {
   DeleteDriverBaseUseCase,
   ListDriverBasesUseCase,
   FindDriversNearBaseUseCase,
+  RecordDriverAcceptanceUseCase,
+  GetDriverFairnessUseCase,
 } from '@going-monorepo-clean/domains-transport-application';
 import {
   IZoneRepository,
   IDriverBaseRepository,
+  IFairnessCounterRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { MongooseZoneRepository } from '../infrastructure/persistence/mongoose-zone.repository';
 import { MongooseDriverBaseRepository } from '../infrastructure/persistence/mongoose-driver-base.repository';
+import { RedisFairnessCounterRepository } from '../infrastructure/persistence/redis-fairness-counter.repository';
 import {
   ZoneModelSchema,
   ZoneSchema,
@@ -164,6 +168,13 @@ import { MulterModule } from '@nestjs/platform-express';
     DeleteDriverBaseUseCase,
     ListDriverBasesUseCase,
     FindDriversNearBaseUseCase,
+    // Fairness counter — Fase 3 (tie-break por carga distribuida)
+    {
+      provide: IFairnessCounterRepository,
+      useClass: RedisFairnessCounterRepository,
+    },
+    RecordDriverAcceptanceUseCase,
+    GetDriverFairnessUseCase,
   ],
 })
 export class AppModule {}
