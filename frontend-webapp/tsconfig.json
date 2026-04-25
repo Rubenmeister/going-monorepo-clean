@@ -21,7 +21,7 @@
       "@going-monorepo-clean/frontend-providers": ["./src/lib/providers"],
       "@going-monorepo-clean/frontend-stores": ["./src/lib/stores"],
       "@going-monorepo-clean/shared-ui": ["./src/lib/shared-ui"],
-      "@/components/*": ["./src/app/components/*"],
+      "@/components/*": ["./src/app/components/*", "./src/components/*"],
       "@/services/*": ["./src/app/services/*"],
       "@/hooks/*": ["./src/app/hooks/*"],
       "@/utils/*": ["./src/app/utils/*"],
