@@ -14,7 +14,14 @@ export class CreateParcelUseCase {
   ) {}
 
   async execute(dto: CreateParcelDto): Promise<{ id: string; trackingCode: string; otpPin: string }> {
-    const priceVO = new Money(dto.price.amount, dto.price.currency as 'USD');
+    // Money tiene constructor privado: usar el factory create() y validar.
+    const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
+    if (priceVOResult.isErr()) {
+      throw new InternalServerErrorException(
+        `Invalid price: ${priceVOResult.error.message}`,
+      );
+    }
+    const priceVO = priceVOResult.value;
     const originVOResult = Location.create(dto.origin);
     const destinationVOResult = Location.create(dto.destination);
 
