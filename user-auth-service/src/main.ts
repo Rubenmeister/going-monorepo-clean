@@ -14,14 +14,24 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // CORS — allow web + admin frontends
-  const allowedOrigins = [
+  // Defaults cubren todos los subdominios productivos. La env var
+  // CORS_ORIGINS (CSV) los puede override sin redeploy.
+  const defaultOrigins = [
     'https://goingec.com',
+    'https://www.goingec.com',
+    'https://app.goingec.com',
     'https://admin.goingec.com',
     'https://empresas.goingec.com',
+    'https://corporate.goingec.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
   ];
+  const envOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const allowedOrigins = envOrigins.length ? envOrigins : defaultOrigins;
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
