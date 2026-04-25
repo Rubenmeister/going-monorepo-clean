@@ -7,6 +7,10 @@ import {
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Redis } from 'ioredis';
 import { FindZonesContainingPointUseCase } from './zone/find-zones-containing-point.use-case';
+import {
+  FindDriversNearBaseUseCase,
+  DriverWithBaseProximity,
+} from './driver-base/find-drivers-near-base.use-case';
 
 export interface DriverInfo {
   driverId: UUID;
@@ -70,6 +74,12 @@ export class MatchAvailableDriversUseCase {
      */
     @Optional()
     private readonly findZonesContainingPoint?: FindZonesContainingPointUseCase,
+    /**
+     * Opcional — si el servicio aún no configura bases, el matching
+     * cae al GEORADIUS clásico por GPS actual.
+     */
+    @Optional()
+    private readonly findDriversNearBase?: FindDriversNearBaseUseCase,
   ) {}
 
   async execute(
@@ -190,11 +200,49 @@ export class MatchAvailableDriversUseCase {
       return err(new Error('No available drivers match the criteria'));
     }
 
-    // Step 2b: Sort drivers by rating (DESC) then distance (ASC)
-    // This ensures higher-rated drivers are offered first
+    // Step 2b: si tenemos sistema de bases configurado, OBTENEMOS qué
+    // drivers tienen su base ≤ N km del pickup → reciben prioridad
+    // sobre drivers que sólo están cerca por GPS actual.
+    let baseNearbyDriverIds = new Set<string>();
+    let baseDistanceByDriver = new Map<string, number>();
+    if (this.findDriversNearBase) {
+      try {
+        const nearBase: DriverWithBaseProximity[] =
+          await this.findDriversNearBase.execute({
+            lat: dto.pickupLatitude,
+            lng: dto.pickupLongitude,
+            maxKm: 10,
+            maxResults: 30,
+            onlyInShift: true, // sólo prioriza si está en su turno
+          });
+        for (const d of nearBase) {
+          baseNearbyDriverIds.add(d.driverId);
+          // Si un driver tiene varias bases, quedamos con la más cercana.
+          const prev = baseDistanceByDriver.get(d.driverId) ?? Infinity;
+          if (d.distanceKm < prev) {
+            baseDistanceByDriver.set(d.driverId, d.distanceKm);
+          }
+        }
+        this.logger.log(
+          `Ride ${dto.rideId}: ${baseNearbyDriverIds.size} drivers con base ≤10km del pickup (priorizan)`,
+        );
+      } catch (e) {
+        this.logger.warn(
+          `findDriversNearBase falló para ride ${dto.rideId}: ${(e as Error).message}`,
+        );
+      }
+    }
+
+    // Step 2c: Sort drivers
+    //   1) Drivers con base cercana van PRIMERO (independientemente de
+    //      su GPS actual — la base define la zona de operación).
+    //   2) Dentro de cada grupo: rating DESC, luego distance GPS ASC.
     filteredDrivers.sort((a, b) => {
-      const ratingDiff = b.rating - a.rating; // Higher rating first
-      return ratingDiff !== 0 ? ratingDiff : a.distance - b.distance; // Then closer driver
+      const aHasBase = baseNearbyDriverIds.has(a.driverId);
+      const bHasBase = baseNearbyDriverIds.has(b.driverId);
+      if (aHasBase !== bHasBase) return aHasBase ? -1 : 1;
+      const ratingDiff = b.rating - a.rating;
+      return ratingDiff !== 0 ? ratingDiff : a.distance - b.distance;
     });
 
     // Step 3: Create RideMatch entities and persist
