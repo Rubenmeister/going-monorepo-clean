@@ -22,6 +22,7 @@ import { TokenManagerService } from './services/token-manager.service';
 import { AccountLockoutService } from './services/account-lockout.service';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { FacebookStrategy } from './strategies/facebook.strategy';
+import { JwtStrategy } from './auth/jwt.strategy';
 import { OauthStateService } from './oauth/oauth-state.service';
 import { GoogleOauthGuard } from './oauth/google-oauth.guard';
 import { FacebookOauthGuard } from './oauth/facebook-oauth.guard';
@@ -85,6 +86,8 @@ import { FacebookOauthGuard } from './oauth/facebook-oauth.guard';
     // OAuth Strategies
     GoogleStrategy,
     FacebookStrategy,
+    // JWT strategy para @UseGuards(AuthGuard('jwt')) en /auth/me etc.
+    JwtStrategy,
     // OAuth multi-app (state firmado + whitelist)
     OauthStateService,
     GoogleOauthGuard,
