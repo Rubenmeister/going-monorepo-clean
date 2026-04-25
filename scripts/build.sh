@@ -3,7 +3,7 @@
 # Convenience wrapper for building and pushing containers
 # Automatically detects best build method and handles common tasks
 
-set -e
+set -euo pipefail
 
 # Configuration from environment or defaults
 REGISTRY="${REGISTRY:-docker.io}"

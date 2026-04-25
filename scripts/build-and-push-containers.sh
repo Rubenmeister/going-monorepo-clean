@@ -3,7 +3,7 @@
 # Build and Push Containers in Parallel
 # This script builds and pushes all Docker containers for the Going Platform in parallel
 
-set -e
+set -euo pipefail
 
 # Configuration
 REGISTRY="${REGISTRY:-docker.io}"

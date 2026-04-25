@@ -3,7 +3,7 @@
 # Build and Push Containers using Docker Buildx (Multi-platform)
 # Enables parallel builds with push to registry
 
-set -e
+set -euo pipefail
 
 # Configuration
 REGISTRY="${REGISTRY:-docker.io}"

@@ -22,7 +22,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           # Necesario para que Nx pueda comparar los cambios
-          fetch-depth: 0 
+          fetch-depth: 0
+
+      # 1.5 Verificar que no haya CR (Carriage Return) en scripts shell.
+      # Defensa frente a clones desde Windows con autocrlf=true que dejan
+      # CRLF en archivos *.sh / gradlew. En Linux esto rompe `bash` con
+      # "$'\r': command not found". Falla CI si encuentra alguno.
+      - name: Reject CR in shell scripts
+        run: |
+          set -euo pipefail
+          BAD=$(git ls-files '*.sh' 'gradlew' | xargs -r grep -lU $'\r' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::CRLF detected in shell scripts (must be LF):"
+            echo "$BAD" | sed 's/^/  - /'
+            echo "Fix with: git add --renormalize \$(git ls-files '*.sh' 'gradlew')"
+            exit 1
+          fi
+          echo "✓ No CR found in shell scripts"
+
+      # 1.6 ShellCheck — análisis estático de scripts bash.
+      # SC1091 (sourced files) suele dar falsos positivos en monorepo.
+      - name: Run ShellCheck on shell scripts
+        uses: ludeeus/action-shellcheck@master
+        env:
+          SHELLCHECK_OPTS: -e SC1091 -e SC2155
+        with:
+          severity: warning
+          ignore_paths: node_modules dist .nx .next mobile-user-app/android mobile-driver-app/android
+        continue-on-error: false
 
       # 2. Configurar las SHAs de Nx para detección de cambios
       - name: Set Nx SHAs (Configurar SHAs de Nx)

@@ -10,7 +10,7 @@
 #
 # Requiere: gcloud CLI autenticado con permisos de Cloud Run Admin
 
-set -e
+set -euo pipefail
 
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
 REGION="us-central1"

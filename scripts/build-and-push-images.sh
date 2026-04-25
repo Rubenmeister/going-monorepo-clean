@@ -4,7 +4,7 @@
 # Builds Docker images and pushes them to Google Container Registry
 # Part of Phase 2: GCP Setup
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'

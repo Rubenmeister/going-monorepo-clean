@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "🚀 Configurando Going Platform Design System..."
 echo ""

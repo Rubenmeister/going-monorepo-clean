@@ -3,7 +3,7 @@
 # Docker Registry Authentication Helper
 # Supports Docker Hub, GCR, ECR, and custom registries
 
-set -e
+set -euo pipefail
 
 # Color codes
 RED='\033[0;31m'

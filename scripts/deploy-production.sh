@@ -3,7 +3,7 @@
 # Going Platform - Production Deployment Script
 # Automated canary → gradual rollout strategy with safety checks
 
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
