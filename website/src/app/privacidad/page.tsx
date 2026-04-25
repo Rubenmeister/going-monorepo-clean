@@ -1,23 +1,23 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidad — Going Ecuador',
+  title: 'Política de Privacidad — Going',
   description:
-    'Política de Privacidad de Going Ecuador S.A.S. conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
+    'Política de Privacidad de Thorn Ai Technologies S.A.S. (titular de la marca Going) conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
 };
 
-const LAST_UPDATE = '14 de abril de 2026';
+const LAST_UPDATE = '25 de abril de 2026';
 
 const SECTIONS = [
   {
     id: 'responsable',
     icon: '🏢',
     title: '1. Responsable del Tratamiento',
-    content: `Going Ecuador S.A.S. (en adelante "Going"), con RUC: 1793XXXXXXX001, domicilio en Av. Amazonas N23-45, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales.
+    content: `Thorn Ai Technologies S.A.S., titular de la marca Going (en adelante "Going" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going Pasajero y Going Conductor.
 
 Contacto del Delegado de Protección de Datos (DPD):
-• Correo: privacidad@goingec.com
-• Teléfono: +593 2 XXX-XXXX
+• Correo: rubenmeister@gmail.com
+• Teléfono: +593 992 781 751
 • Horario: lunes a viernes, 09h00 – 17h00
 
 Esta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.`,
@@ -116,7 +116,7 @@ Going NO vende datos personales a terceros ni los usa para publicidad de tercero
 • Revocación del consentimiento: retirar cualquier consentimiento previamente otorgado.
 
 Cómo ejercer tus derechos:
-Escribe a privacidad@goingec.com con asunto "SOLICITUD DERECHOS LOPDP" indicando tu nombre completo, número de cédula y el derecho que deseas ejercer. Responderemos en un plazo máximo de 15 días hábiles.`,
+Escribe a rubenmeister@gmail.com con asunto "SOLICITUD DERECHOS LOPDP" indicando tu nombre completo, número de cédula y el derecho que deseas ejercer. Responderemos en un plazo máximo de 15 días hábiles.`,
   },
   {
     id: 'seguridad',
@@ -141,7 +141,7 @@ En caso de incidente de seguridad que afecte tus datos, te notificaremos en un p
 
 No recopilamos intencionalmente datos de menores de 18 años. Si descubrimos que hemos recopilado datos de un menor sin el consentimiento verificable de sus padres o tutores, procederemos a eliminar dicha información inmediatamente.
 
-Si eres padre, madre o tutor y crees que tu hijo/a ha proporcionado datos a Going sin tu consentimiento, contáctanos en privacidad@goingec.com.
+Si eres padre, madre o tutor y crees que tu hijo/a ha proporcionado datos a Going sin tu consentimiento, contáctanos en rubenmeister@gmail.com.
 
 Conforme al Art. 15 de la LOPDP, el tratamiento de datos de menores de 18 años requiere el consentimiento expreso y verificable de sus representantes legales.`,
   },
@@ -158,7 +158,7 @@ Conforme al Art. 15 de la LOPDP, el tratamiento de datos de menores de 18 años 
 
 Todas estas transferencias se realizan con las garantías adecuadas exigidas por el Art. 54 de la LOPDP, incluyendo: Decisiones de adecuación, Cláusulas contractuales tipo, o certificaciones de privacidad reconocidas.
 
-Puedes obtener información detallada sobre las transferencias internacionales y las garantías aplicables escribiendo a privacidad@goingec.com.`,
+Puedes obtener información detallada sobre las transferencias internacionales y las garantías aplicables escribiendo a rubenmeister@gmail.com.`,
   },
   {
     id: 'actualizaciones',
@@ -185,7 +185,7 @@ Autoridad de Protección de Datos Personales del Ecuador
 • Web: www.protecciondatos.gob.ec
 • Correo: info@protecciondatos.gob.ec
 
-Antes de acudir a la autoridad de control, te invitamos a contactarnos directamente en privacidad@goingec.com, ya que nos comprometemos a resolver cualquier inquietud de manera rápida y satisfactoria.`,
+Antes de acudir a la autoridad de control, te invitamos a contactarnos directamente en rubenmeister@gmail.com, ya que nos comprometemos a resolver cualquier inquietud de manera rápida y satisfactoria.`,
   },
 ];
 
@@ -256,11 +256,11 @@ export default function PrivacidadPage() {
         {/* Contacto */}
         <div className="mt-14 bg-[#0033A0] rounded-2xl p-8 text-center">
           <p className="text-white/70 text-sm mb-2">Contacto de privacidad</p>
-          <a href="mailto:privacidad@goingec.com" className="text-[#FFCD00] font-black text-lg hover:underline">
-            privacidad@goingec.com
+          <a href="mailto:rubenmeister@gmail.com" className="text-[#FFCD00] font-black text-lg hover:underline">
+            rubenmeister@gmail.com
           </a>
           <p className="text-white/40 text-xs mt-4">
-            Going Ecuador S.A.S. · Av. Amazonas N23-45, Quito, Ecuador<br />
+            Thorn Ai Technologies S.A.S. (titular de la marca Going) · RUC 1793176925001 · Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
             Última actualización: {LAST_UPDATE}
           </p>
           <div className="mt-6 flex justify-center gap-4">

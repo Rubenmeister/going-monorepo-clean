@@ -12,14 +12,17 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">1. Identificación del Responsable</h2>
             <p>
-              <strong>Going Ecuador S.A.S.</strong> (en adelante, &quot;Going&quot; o &quot;la Empresa&quot;), con domicilio en
-              Av. República de El Salvador N35-88, Torre Atiria Piso 10, Quito, Ecuador, es el responsable
-              del tratamiento de los datos personales recopilados a través de la plataforma
-              <strong> app.goingec.com</strong> y la aplicación móvil Going.
+              <strong>Thorn Ai Technologies S.A.S.</strong>, titular de la marca&nbsp;
+              <strong>Going</strong> (en adelante, &quot;Thorn Ai&quot; o &quot;la Empresa&quot;), con
+              RUC <strong>1793176925001</strong> y domicilio en Calle Echeverría N2-170 y
+              Crespo Toral, Quito, Ecuador, es el responsable del tratamiento de los datos
+              personales recopilados a través de la plataforma <strong>app.goingec.com</strong> y
+              las aplicaciones móviles Going Pasajero y Going Conductor.
             </p>
             <p className="mt-2">
-              Para consultas relacionadas con privacidad y protección de datos puede contactarnos en:
-              <strong> privacidad@goingec.com</strong> o llamar al <strong>+593 2 600-1234</strong>.
+              Para consultas relacionadas con privacidad y protección de datos puede contactarnos
+              al correo <strong>rubenmeister@gmail.com</strong> o al teléfono&nbsp;
+              <strong>+593 992 781 751</strong>.
             </p>
           </section>
 
@@ -160,7 +163,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-3">
               Para ejercer estos derechos, el usuario debe enviar una solicitud escrita a
-              <strong> privacidad@goingec.com</strong>. Going responderá en un plazo máximo de
+              <strong> rubenmeister@gmail.com</strong>. Going responderá en un plazo máximo de
               <strong> 15 días hábiles</strong>.
             </p>
           </section>
@@ -217,10 +220,11 @@ export default function PrivacyPage() {
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 italic">
               Esta Política de Privacidad rige el tratamiento de datos personales por parte de
-              Going Ecuador S.A.S. de conformidad con la Ley Orgánica de Protección de Datos
-              Personales (LOPDP) y demás normativa aplicable en la República del Ecuador.
+              Thorn Ai Technologies S.A.S., titular de la marca Going, de conformidad con la
+              Ley Orgánica de Protección de Datos Personales (LOPDP) y demás normativa aplicable
+              en la República del Ecuador.
             </p>
-            <p className="text-sm text-gray-500 mt-2">Última actualización: 23 de marzo de 2026</p>
+            <p className="text-sm text-gray-500 mt-2">Última actualización: 25 de abril de 2026</p>
           </div>
 
         </div>
