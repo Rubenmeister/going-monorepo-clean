@@ -703,9 +703,19 @@ export class AuthController {
     @Req() req: Request,
     @Body() body: { userId: string; points: number; referenceId?: string },
   ) {
+    // Doble cinturón: el RequestSignatureMiddleware ya validó HMAC en
+    // `/auth/internal/*`; aquí seguimos validando X-Internal-Token (legacy)
+    // para retro-compat con callers que aún no firman. Cuando todos los
+    // callers tengan HMAC, este bloque manual se puede borrar.
     const expected = process.env.INTERNAL_SERVICE_TOKEN;
     const provided = req.headers['x-internal-token'] as string | undefined;
-    if (!expected || !provided || provided !== expected) {
+    if (!expected || !provided) {
+      throw new UnauthorizedException('Internal token inválido');
+    }
+    // Comparación constant-time — evita timing attacks contra el secret.
+    const a = Buffer.from(provided, 'utf8');
+    const b = Buffer.from(expected, 'utf8');
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
       throw new UnauthorizedException('Internal token inválido');
     }
     if (!body?.userId || !body?.points) {
