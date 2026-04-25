@@ -20,23 +20,23 @@ export interface NavItem {
 }
 
 const NAV_PANEL:        NavItem = { href: "/empresas/panel",        label: "Panel de Control" };
-const NAV_VIAJES:       NavItem = { href: "/empresas/viajes",       label: "Viajes" };
-const NAV_SOLICITAR:    NavItem = { href: "/empresas/solicitar",    label: "Solicitar Viaje" };
-const NAV_APROBACIONES: NavItem = { href: "/empresas/aprobaciones", label: "Aprobaciones" };
-const NAV_EQUIPO:       NavItem = { href: "/empresas/equipo",       label: "Equipo" };
-const NAV_FACTURACION:  NavItem = { href: "/empresas/facturacion",  label: "Facturación" };
-const NAV_REPORTES:     NavItem = { href: "/empresas/reportes",     label: "Reportes" };
-const NAV_CONFIG:       NavItem = { href: "/empresas/configuracion", label: "Configuración" };
-const NAV_CONDICIONES:  NavItem = { href: "/empresas/condiciones",   label: "Mis Condiciones" };
-const NAV_PRESUPUESTO:  NavItem = { href: "/empresas/presupuesto",   label: "Presupuesto" };
-const NAV_FAVORITOS:    NavItem = { href: "/empresas/favoritos",     label: "Favoritos" };
-const NAV_TRACKING:     NavItem = { href: "/empresas/tracking",      label: "Tracking en Vivo" };
-const NAV_MAPA:         NavItem = { href: "/empresas/mapa",          label: "Mapa en Vivo" };
-const NAV_SEGURIDAD:    NavItem = { href: "/empresas/seguridad",      label: "Seguridad" };
-const NAV_POLITICA:     NavItem = { href: "/empresas/politica",       label: "Política de Viajes" };
-const NAV_SOSTENIB:     NavItem = { href: "/empresas/sostenibilidad",  label: "Sostenibilidad" };
-const NAV_RECURRENTES:  NavItem = { href: "/empresas/recurrentes",   label: "Recurrentes" };
-const NAV_COTIZACION:   NavItem = { href: "/empresas/cotizacion",    label: "Cotización Grupos" };
+const NAV_VIAJES:       NavItem = { href: "/empresas/panel/viajes",       label: "Viajes" };
+const NAV_SOLICITAR:    NavItem = { href: "/empresas/panel/solicitar",    label: "Solicitar Viaje" };
+const NAV_APROBACIONES: NavItem = { href: "/empresas/panel/aprobaciones", label: "Aprobaciones" };
+const NAV_EQUIPO:       NavItem = { href: "/empresas/panel/equipo",       label: "Equipo" };
+const NAV_FACTURACION:  NavItem = { href: "/empresas/panel/facturacion",  label: "Facturación" };
+const NAV_REPORTES:     NavItem = { href: "/empresas/panel/reportes",     label: "Reportes" };
+const NAV_CONFIG:       NavItem = { href: "/empresas/panel/configuracion", label: "Configuración" };
+const NAV_CONDICIONES:  NavItem = { href: "/empresas/panel/condiciones",   label: "Mis Condiciones" };
+const NAV_PRESUPUESTO:  NavItem = { href: "/empresas/panel/presupuesto",   label: "Presupuesto" };
+const NAV_FAVORITOS:    NavItem = { href: "/empresas/panel/favoritos",     label: "Favoritos" };
+const NAV_TRACKING:     NavItem = { href: "/empresas/panel/tracking",      label: "Tracking en Vivo" };
+const NAV_MAPA:         NavItem = { href: "/empresas/panel/mapa",          label: "Mapa en Vivo" };
+const NAV_SEGURIDAD:    NavItem = { href: "/empresas/panel/seguridad",      label: "Seguridad" };
+const NAV_POLITICA:     NavItem = { href: "/empresas/panel/politica",       label: "Política de Viajes" };
+const NAV_SOSTENIB:     NavItem = { href: "/empresas/panel/sostenibilidad",  label: "Sostenibilidad" };
+const NAV_RECURRENTES:  NavItem = { href: "/empresas/panel/recurrentes",   label: "Recurrentes" };
+const NAV_COTIZACION:   NavItem = { href: "/empresas/panel/cotizacion",    label: "Cotización Grupos" };
 
 export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
   grande: [
@@ -85,7 +85,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_RECURRENTES,
     // ❌ sin aprobaciones
     NAV_EQUIPO,
-    { href: "/empresas/facturacion", label: "Comisiones" }, // mismo endpoint, label distinto
+    { href: "/empresas/panel/facturacion", label: "Comisiones" }, // mismo endpoint, label distinto
     NAV_REPORTES,
     NAV_TRACKING,
     NAV_MAPA,

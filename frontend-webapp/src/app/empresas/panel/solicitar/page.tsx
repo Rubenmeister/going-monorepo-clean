@@ -297,7 +297,7 @@ export default function SolicitarViajePage() {
               Nueva solicitud
             </button>
             <button
-              onClick={() => router.push("/empresas/viajes")}
+              onClick={() => router.push("/empresas/panel/viajes")}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
             >
               Ver mis viajes
@@ -781,7 +781,7 @@ export default function SolicitarViajePage() {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => router.push("/empresas/viajes")}
+            onClick={() => router.push("/empresas/panel/viajes")}
             className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Cancelar
