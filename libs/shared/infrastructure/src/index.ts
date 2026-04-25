@@ -6,7 +6,10 @@ export { AllExceptionsFilter } from './filters/all-exceptions.filter';
 
 // Middlewares
 export { HttpsMiddleware } from './middlewares/https.middleware';
-export { RequestSignatureMiddleware } from './middlewares/request-signature.middleware';
+export {
+  RequestSignatureMiddleware,
+  buildInternalServiceHeaders,
+} from './middlewares/request-signature.middleware';
 
 // Interceptors
 export { AuditInterceptor } from './interceptors/audit.interceptor';

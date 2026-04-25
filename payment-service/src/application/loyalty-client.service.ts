@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { buildInternalServiceHeaders } from '@going-monorepo-clean/shared-infrastructure';
 
 /**
  * LoyaltyClient — cliente HTTP para acreditar puntos al completar un
@@ -40,18 +41,32 @@ export class LoyaltyClient {
     if (points <= 0) return;
 
     try {
-      const url = `${this.baseUrl.replace(/\/$/, '')}/auth/internal/points/award`;
+      const path = '/auth/internal/points/award';
+      const url = `${this.baseUrl.replace(/\/$/, '')}${path}`;
+      const body = {
+        userId: args.userId,
+        points,
+        referenceId: `ride:${args.tripId}`,
+      };
+      // Firma HMAC-SHA256 sobre method+path+bodyHash con el shared
+      // secret. El middleware en user-auth la valida con timing-safe
+      // compare. Mantengo X-Internal-Token por retro-compat hasta que
+      // el middleware se aplique en todos los servicios.
+      const hmacHeaders = buildInternalServiceHeaders({
+        secret: this.token,
+        method: 'POST',
+        path,
+        body,
+        caller: 'payment-service',
+      });
       const res = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Internal-Token': this.token,
+          ...hmacHeaders,
         },
-        body: JSON.stringify({
-          userId: args.userId,
-          points,
-          referenceId: `ride:${args.tripId}`,
-        }),
+        body: JSON.stringify(body),
         // Timeout vía AbortController.
         signal: AbortSignal.timeout(5000),
       });
