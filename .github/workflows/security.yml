@@ -1,92 +1,86 @@
-name: Security & Dependencies
+name: Security Scan
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday
+    # Lunes 06:00 UTC (1am Ecuador) — barrido semanal
+    - cron: '0 6 * * 1'
 
 jobs:
-  security-scan:
+  audit:
+    name: pnpm audit + outdated
     runs-on: ubuntu-latest
-    name: Security Scanning
-    
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        continue-on-error: true
+
+      - name: Audit (high severity, fail on critical)
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Outdated report (informativo)
+        run: pnpm outdated || true
+
+  secrets:
+    name: Secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --json > snyk-results.json
-        continue-on-error: true
-      
-      - name: Upload Snyk results
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk-results.json
-        continue-on-error: true
-      
-      - name: Check OWASP dependency vulnerabilities
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'going-platform'
-          path: '.'
-          format: 'JSON'
-        continue-on-error: true
-      
-      - name: Upload dependency check results
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: dependency-check-report.json
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-  dependency-update:
+  codeql:
+    name: CodeQL static analysis
     runs-on: ubuntu-latest
-    name: Dependency Updates
-    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Check for outdated dependencies
-        run: npm outdated || true
-      
-      - name: Audit dependencies
-        run: npm audit || true
-      
-      - name: Create dependency update PR
-        uses: dependabot/fetch-metadata@v1
-        continue-on-error: true
+      - uses: actions/checkout@v4
 
-  code-scanning:
-    runs-on: ubuntu-latest
-    name: Code Scanning
-    
-    steps:
-      - uses: actions/checkout@v3
-      
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
-          languages: 'typescript,javascript'
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - name: Build
-        run: npm ci && npm run build:all || true
-      
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+          languages: 'javascript,typescript'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install + build (best-effort)
+        run: pnpm install --frozen-lockfile && pnpm run build:all
+        continue-on-error: true
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

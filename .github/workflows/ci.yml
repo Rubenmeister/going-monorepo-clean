@@ -30,16 +30,22 @@ jobs:
         with:
           main-branch-name: main
 
-      # 3. Configurar Node.js
+      # 3. Configurar pnpm (package manager oficial del monorepo)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # 4. Configurar Node.js con cache pnpm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Usar Node 20
-          cache: 'npm' # Usar el caché de npm
+          node-version: '20'
+          cache: 'pnpm'
 
-      # 4. Instalar todas las dependencias
-      - name: Install dependencies (Instalar dependencias)
-        run: npm install
+      # 5. Instalar dependencias (frozen-lockfile en CI)
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # 5. Ejecutar las pruebas SOLO de los proyectos "afectados"
       # Nx compara tu rama con 'main' y encuentra qué cambió
