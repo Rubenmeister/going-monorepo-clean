@@ -2,8 +2,41 @@
 
 > A production-ready, fully-integrated ride-sharing platform with 100% mobile and web app coverage. Built with modern technologies, comprehensive testing, and enterprise-grade security.
 
-[![CI/CD](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/ci.yml/badge.svg)](https://github.com/Rubenmeister/going-monorepo-clean/actions)
-[![Security Scanning](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/security-scanning.yml/badge.svg)](https://github.com/Rubenmeister/going-monorepo-clean/actions)
+[![CI](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/ci.yml/badge.svg)](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/ci.yml)
+[![Security](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/security.yml/badge.svg)](https://github.com/Rubenmeister/going-monorepo-clean/actions/workflows/security.yml)
+
+---
+
+## ✅ Estado verificado (2026-04-25)
+
+Comandos confirmados funcionales en este commit. Package manager
+oficial: **pnpm 10** (definido en `.npmrc`).
+
+| Comando | Qué hace |
+|---|---|
+| `pnpm install --frozen-lockfile` | Instalar dependencias del workspace |
+| `pnpm dev:webapp` | Levantar `frontend-webapp` (Next.js) en `:3000` |
+| `pnpm dev:admin` | Levantar `admin-dashboard` en `:3001` |
+| `pnpm build:webapp` | Production build de la webapp |
+| `pnpm build:all` | Build de webapp + admin |
+| `pnpm test` | Jest tests del workspace |
+| `pnpm test:security` | `pnpm audit --audit-level=high` (no rompe el job) |
+| `pnpm test:security:strict` | `pnpm audit --audit-level=critical` (bloquea) |
+| `pnpm test:e2e` | Cypress headless |
+
+**Mobile:**
+- `cd mobile-user-app && pnpm run android` — pasajero
+- `cd mobile-driver-app && pnpm run android` — conductor
+- AABs producción vía EAS: `eas build --platform android --profile production`
+
+**Backend microservicios** (10): cada uno con `nx serve <service>` o
+deploy a Cloud Run vía `cloudbuild-microservices.yaml`.
+
+**Workflows CI activos:**
+- `.github/workflows/ci.yml` — build/test/lint via `nx affected`
+- `.github/workflows/security.yml` — pnpm audit + gitleaks + CodeQL
+- `.github/workflows/build-android-user-app.yml` — AAB build manual
+- `.github/workflows/code-agent.yml` — herramientas internas
 
 ---
 
