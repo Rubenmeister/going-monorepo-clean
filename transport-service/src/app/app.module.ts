@@ -86,14 +86,15 @@ import { MulterModule } from '@nestjs/platform-express';
         process.env.MONGODB_URI ||
         'mongodb://localhost:27017/transport-db',
       {
-        // Mismo set de opciones que user-auth-service que conecta OK
-        // al mismo Atlas. 15s no era suficiente con cold-start de
-        // Cloud Run + SRV lookup de Atlas — el primer connect podía
-        // tardar 18-25s.
+        // bufferCommands DEFAULT (true) permite que la module init
+        // retorne inmediatamente — las queries se encolan hasta que
+        // Mongoose abra la conexión. Sin esto + serverSelectionTimeoutMS
+        // bajo, el container muere antes de listen-on-port.
+        // Cold-start Cloud Run + SRV lookup Atlas tarda 20-25s.
         serverSelectionTimeoutMS: 30000,
         connectTimeoutMS: 30000,
         socketTimeoutMS: 45000,
-        bufferCommands: false,
+        // bufferCommands: undefined → default true (queue durante connect).
         connectionFactory: (conn) => {
           conn.on('connected', () =>
             console.log('MongoDB connected (transport)'),
