@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useRideStore } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { getStoredToken } from '@/lib/providers/auth-client';
 
 /* ─── Lazy-loaded heavy components ─────────────────────────────────── */
 const RideRequestForm = dynamic(
@@ -266,7 +267,7 @@ function RidePageInner() {
   /* Auth guard INICIAL — redirige antes de mostrar el formulario */
   useEffect(() => {
     if (auth.isLoading) return;
-    if (!auth.user) {
+    if (!auth.user && !getStoredToken()) {
       router.replace(`/auth/login?from=/ride`);
     }
   }, [auth.isLoading, auth.user, router]);
