@@ -223,7 +223,7 @@
     "@opentelemetry/sdk-node": "^0.51.0",
     "@sentry/node": "^10.39.0",
     "@sentry/react": "^10.39.0",
-    "axios": "^1.6.0",
+    "axios": "^1.15.2",
     "bcrypt": "^5.1.1",
     "bull": "^4.14.0",
     "cache-manager": "^5.7.0",
@@ -260,6 +260,6 @@
     "winston-daily-rotate-file": "^4.7.1",
     "winston-elasticsearch": "^0.17.4",
     "zustand": "^4.5.7",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^8.0.5"
   }
 }
