@@ -1,11 +1,17 @@
 name: Build Android User App
 
+# IMPORTANTE: este workflow NO es la fuente oficial de las AABs.
+# La build oficial se hace con EAS (eas build --profile production --platform android)
+# desde la PC del developer. El workflow local Gradle queda disponible
+# como SOLO MANUAL para debug ocasional o si se quiere build interno
+# sin pasar por EAS.
+#
+# Triggers automatic (push) deshabilitados — fallaba en cada push a main
+# que tocaba mobile-user-app/* porque los secrets ANDROID_KEYSTORE_*
+# no están sincronizados con el keystore actual de Play Console.
+# EAS gestiona su propio keystore remoto y firma sin estos secrets.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'mobile-user-app/**'
 
 jobs:
   build:
