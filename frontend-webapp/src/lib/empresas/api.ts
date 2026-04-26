@@ -3,7 +3,8 @@
  * Adaptado de apps/corporate-portal/lib/api.ts
  */
 
-import { API_BASE_URL } from "./constants";
+import { API_BASE_URL, AUTH_TOKEN_KEY } from "./constants";
+import { clearSession, refreshToken } from "./auth";
 
 export function authHeaders(token: string) {
   return {
@@ -13,12 +14,23 @@ export function authHeaders(token: string) {
 }
 
 /**
- * Fetch tipado con autenticación
+ * Fetch tipado con autenticación + manejo automático de 401.
+ *
+ * Si el backend responde 401 (token expirado/inválido):
+ *   1. Intenta refrescar el token con refreshToken().
+ *   2. Si el refresh es exitoso, reintenta la request original con el
+ *      nuevo token leído de localStorage.
+ *   3. Si el refresh falla, limpia la sesión local y redirige a
+ *      /empresas/auth/login preservando la ruta actual como ?from=.
+ *
+ * Esto evita el "logout sorpresivo" donde el usuario veía datos vacíos sin
+ * entender que la sesión expiró.
  */
 export async function corpFetch<T>(
   path: string,
   token: string,
-  options?: RequestInit
+  options?: RequestInit,
+  _retried = false
 ): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
   const res = await fetch(url, {
@@ -28,6 +40,23 @@ export async function corpFetch<T>(
       ...(options?.headers ?? {}),
     },
   });
+
+  if (res.status === 401 && !_retried && typeof window !== "undefined") {
+    // Sesión expirada — intentamos refresh transparente y reintentamos una vez
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      const newToken = localStorage.getItem(AUTH_TOKEN_KEY) ?? "";
+      return corpFetch<T>(path, newToken, options, true);
+    }
+
+    // Refresh falló: limpiamos sesión local y redirigimos a login preservando
+    // la ruta actual para volver tras el re-login.
+    clearSession();
+    const from = window.location.pathname + window.location.search;
+    window.location.href = `/empresas/auth/login?from=${encodeURIComponent(from)}`;
+    // Tiramos un error para que el caller no siga procesando datos viejos
+    throw new Error("Sesión expirada. Redirigiendo a login.");
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);

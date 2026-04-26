@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthRedirect } from "@/lib/empresas/auth";
-import { fetchBookings } from "@/lib/empresas/api";
+import { fetchBookings, rejectBooking } from "@/lib/empresas/api";
 import { ESTADOS_BOOKING } from "@/lib/empresas/constants";
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -88,16 +88,11 @@ export default function ViajesPage() {
 
   const handleCancel = async (bookingId: string) => {
     if (!confirm("¿Seguro que deseas cancelar este viaje?")) return;
+    if (!session?.accessToken) return;
     setCancelling(bookingId);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/bookings/${bookingId}/cancel`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${session?.accessToken}` },
-        }
-      );
-      if (!res.ok) throw new Error();
+      // rejectBooking usa corpFetch que maneja 401 + refresh automáticamente
+      await rejectBooking(session.accessToken, bookingId);
       setBookings((prev) =>
         prev.map((b) =>
           b.id === bookingId ? { ...b, status: "cancelled" } : b
