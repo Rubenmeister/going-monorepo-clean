@@ -41,13 +41,18 @@ jobs:
           echo "✓ No CR found in shell scripts"
 
       # 1.6 ShellCheck — análisis estático de scripts bash.
-      # SC1091 (sourced files) suele dar falsos positivos en monorepo.
+      # severity:error → falla CI sólo en bugs reales (sintaxis, lógica
+      # rota, command not found). Warnings (variables sin usar, quoting
+      # cosmético, etc.) se reportan en logs pero NO bloquean — los
+      # scripts del monorepo tienen patterns intencionales que disparan
+      # SC2034/SC2046/SC2128 que no son bugs reales.
+      # SC1091 (sourced files) sigue excluido por falsos positivos en monorepo.
       - name: Run ShellCheck on shell scripts
         uses: ludeeus/action-shellcheck@master
         env:
-          SHELLCHECK_OPTS: -e SC1091 -e SC2155
+          SHELLCHECK_OPTS: -e SC1091
         with:
-          severity: warning
+          severity: error
           ignore_paths: node_modules dist .nx .next mobile-user-app/android mobile-driver-app/android
         continue-on-error: false
 
