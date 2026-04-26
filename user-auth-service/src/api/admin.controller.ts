@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Patch,
+  Post,
   Param,
   Body,
   Query,
@@ -14,6 +15,7 @@ import {
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { IUserRepository } from '@going-monorepo-clean/domains-user-core';
+import { AccountLockoutService } from '../application/account-lockout.service';
 
 /**
  * Admin Controller — serves internal dashboard endpoints.
@@ -29,7 +31,8 @@ export class AdminController {
   constructor(
     @Inject(IUserRepository)
     private readonly userRepository: IUserRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly accountLockoutService: AccountLockoutService
   ) {}
 
   // ────────────────────────────────────────────────
@@ -157,5 +160,78 @@ export class AdminController {
 
     this.logger.log(`Admin updated user ${id} status → ${body.status}`);
     return { success: true, id, status: body.status };
+  }
+
+  // ────────────────────────────────────────────────
+  // Account lockout management
+  // ────────────────────────────────────────────────
+
+  /**
+   * GET /auth/admin/users/:id/lockout-stats
+   * Devuelve el estado actual del lock de la cuenta:
+   * { attemptCount, isLocked, lockoutUntil, lastAttempt }
+   */
+  @Get('users/:id/lockout-stats')
+  async getLockoutStats(@Param('id') id: string, @Req() req: Request) {
+    this.getAdminPayload(req);
+    const stats = await this.accountLockoutService.getLockoutStats(id);
+    return { userId: id, ...stats };
+  }
+
+  /**
+   * POST /auth/admin/users/:id/unlock
+   * Desbloquea manualmente una cuenta lockeada por intentos fallidos de login.
+   * Limpia las keys lockout:locked:{id} y lockout:attempts:{id} en Redis y deja
+   * traza en el audit log lockout:audit:{id}.
+   */
+  @Post('users/:id/unlock')
+  async unlockUserById(@Param('id') id: string, @Req() req: Request) {
+    const adminPayload = this.getAdminPayload(req);
+    const adminId = (adminPayload.sub as string) ?? 'unknown';
+
+    const ok = await this.accountLockoutService.unlockAccount(id, adminId);
+    if (!ok) {
+      throw new HttpException(
+        'Failed to unlock account. Redis no disponible o error interno.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    this.logger.warn(`Admin ${adminId} unlocked user ${id}`);
+    return { success: true, userId: id, unlockedBy: adminId };
+  }
+
+  /**
+   * POST /auth/admin/users/by-email/:email/unlock
+   * Igual que el anterior pero busca al usuario por email primero. Útil cuando
+   * el admin solo tiene el correo de la persona bloqueada (caso típico de
+   * soporte) sin tener que buscar el userId a mano.
+   */
+  @Post('users/by-email/:email/unlock')
+  async unlockUserByEmail(@Param('email') email: string, @Req() req: Request) {
+    const adminPayload = this.getAdminPayload(req);
+    const adminId = (adminPayload.sub as string) ?? 'unknown';
+
+    const userResult = await this.userRepository.findByEmail(email);
+    if (userResult.isErr() || !userResult.value) {
+      throw new HttpException(
+        `User with email ${email} not found`,
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    const user = userResult.value;
+    const userId = user.toPrimitives().id;
+
+    const ok = await this.accountLockoutService.unlockAccount(userId, adminId);
+    if (!ok) {
+      throw new HttpException(
+        'Failed to unlock account. Redis no disponible o error interno.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    this.logger.warn(`Admin ${adminId} unlocked user ${userId} (email=${email})`);
+    return { success: true, userId, email, unlockedBy: adminId };
   }
 }
