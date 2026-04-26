@@ -368,3 +368,8 @@ export default function TripDetailPage() {
               </Link>
             </div>
           </>
+        )}
+      </div>
+    </div>
+  );
+}
