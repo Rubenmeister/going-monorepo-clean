@@ -279,4 +279,8 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <RegisterForm />
+    </Suspense>
+  );
+}

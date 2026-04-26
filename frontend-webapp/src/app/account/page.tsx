@@ -9,9 +9,7 @@ import Link from 'next/link';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
 
 async function authHeaders(): Promise<HeadersInit> {
-  // getStoredToken lee del store (fuente de verdad) y cae a localStorage
-  // legacy si el store no está hidratado. Tolerante a las keys 'authToken'
-  // y 'auth_token'.
+  // getStoredToken lee del store (fuente de verdad) y cae a localStorage legacy si el store no está hidratado.
   const token = getStoredToken();
   return {
     'Content-Type': 'application/json',
@@ -573,3 +571,8 @@ export default function AccountPage() {
               </button>
             </div>
           </div>
+        )}
+      </div>
+    </div>
+  );
+}
