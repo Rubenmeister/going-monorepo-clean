@@ -7,6 +7,16 @@ coverage
 *.log
 mobile
 
+# Apps móviles Expo — son STANDALONE (su propio package.json, sus propios
+# node_modules con `expo` para resolver tsconfig.base.json).
+# La build oficial se hace con EAS (`eas build --profile production`),
+# NO con `nx run mobile-user-app:build`. Excluirlas del graph evita que
+# `nx affected -t test/lint/build` intente compilarlas en CI sin sus
+# dependencias instaladas (rompía con "Cannot find base config file
+# expo/tsconfig.base.json").
+mobile-user-app
+mobile-driver-app
+
 # Firebase DataConnect auto-generated code — sin 'name' en package.json, rompe el project graph de Nx
 **/dataconnect-generated/**
 **/dataconnect-generated
