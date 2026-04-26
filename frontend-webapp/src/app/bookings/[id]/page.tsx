@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { rideService } from '@/services/ride/rideService';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { authFetch } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
 
@@ -64,17 +65,17 @@ export default function TripDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token') || '';
 
     async function load() {
       setLoading(true);
       setError(null);
 
-      // Intentar como ride primero, luego como booking, luego como parcel
+      // authFetch añade Bearer token desde el store y maneja 401 limpiando
+      // la sesión y redirigiendo a /auth/login.
       const [rideRes, bkgRes, parcelRes] = await Promise.allSettled([
-        fetch(`${API_URL}/transport/rides/${id}`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-        fetch(`${API_URL}/bookings/${id}`,         { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-        fetch(`${API_URL}/envios/parcels/${id}`,   { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+        authFetch(`${API_URL}/transport/rides/${id}`).then(r => r.ok ? r.json() : null),
+        authFetch(`${API_URL}/bookings/${id}`).then(r => r.ok ? r.json() : null),
+        authFetch(`${API_URL}/envios/parcels/${id}`).then(r => r.ok ? r.json() : null),
       ]);
 
       const ride    = rideRes.status    === 'fulfilled' ? rideRes.value    : null;
@@ -367,8 +368,3 @@ export default function TripDetailPage() {
               </Link>
             </div>
           </>
-        )}
-      </div>
-    </div>
-  );
-}

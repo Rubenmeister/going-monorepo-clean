@@ -10,21 +10,9 @@ import {
   calculateEstimatedDuration,
   calculateFare,
 } from './fareCalculator';
+import { authFetch, getStoredToken } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('authToken') || localStorage.getItem('auth_token');
-}
-
-function authHeaders(): HeadersInit {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
 
 export interface CreateRideRequest {
   pickup:        Location;
@@ -48,11 +36,11 @@ class RideService {
     const baseFare      = calculateFare(req.pickup, req.dropoff, req.rideType);
     const estimatedFare = Math.round((baseFare / vehicle.multiplierConfort) * tierMult * 100) / 100;
 
-    if (getAuthToken()) {
+    if (getStoredToken()) {
       try {
-        const response = await fetch(`${API_URL}/rides/request`, {
+        const response = await authFetch(`${API_URL}/rides/request`, {
           method:  'POST',
-          headers: authHeaders(),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             pickupLatitude:   req.pickup.lat,
             pickupLongitude:  req.pickup.lon,
@@ -105,18 +93,18 @@ class RideService {
 
   /** Cancel an active ride */
   async cancelRide(rideId: string): Promise<void> {
-    if (!getAuthToken()) return;
-    await fetch(`${API_URL}/rides/${rideId}/cancel`, {
-      method:  'POST',
-      headers: authHeaders(),
+    if (!getStoredToken()) return;
+    await authFetch(`${API_URL}/rides/${rideId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
   /** Get ride history for the authenticated user */
   async getRideHistory(limit = 50): Promise<any[]> {
-    if (!getAuthToken()) return [];
+    if (!getStoredToken()) return [];
     try {
-      const res = await fetch(`${API_URL}/rides?limit=${limit}`, { headers: authHeaders() });
+      const res = await authFetch(`${API_URL}/rides?limit=${limit}`);
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : (data.rides ?? data.data ?? []);
@@ -127,14 +115,14 @@ class RideService {
 
   /** Get Twilio proxy number for ride communication */
   async getProxyNumber(rideId: string): Promise<{ proxyNumber: string; masked: boolean }> {
-    const res = await fetch(`${API_URL}/rides/${rideId}/proxy-number`, { headers: authHeaders() });
+    const res = await authFetch(`${API_URL}/rides/${rideId}/proxy-number`);
     if (!res.ok) throw new Error('Número de contacto no disponible');
     return res.json();
   }
 
   /** Get Agora call token for in-app voice */
   async getCallToken(rideId: string): Promise<{ token: string; channel: string; enabled: boolean }> {
-    const res = await fetch(`${API_URL}/rides/${rideId}/call-token`, { headers: authHeaders() });
+    const res = await authFetch(`${API_URL}/rides/${rideId}/call-token`);
     if (!res.ok) return { token: '', channel: rideId, enabled: false };
     return res.json();
   }

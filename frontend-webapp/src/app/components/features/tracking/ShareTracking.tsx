@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { authFetch } from '@/lib/providers/auth-client';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -75,13 +76,10 @@ export function ShareTracking({ rideId, origin, destination }: ShareTrackingProp
     if (!shareLink) setShareLink(link);
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-      const res = await fetch(`${API_BASE}/transport/${rideId}/share`, {
+      // authFetch añade el Bearer automáticamente desde el store
+      const res = await authFetch(`${API_BASE}/transport/${rideId}/share`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contacts: validContacts,
           trackingLink: link,

@@ -5,6 +5,7 @@ import { useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { setStoredAuth } from '@/lib/providers/auth-client';
 
 const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -88,11 +89,10 @@ function RegisterForm() {
       // user-auth-service returns { accessToken, refreshToken, ... }
       const token = data.accessToken || data.token;
       if (token) {
-        localStorage.setItem('authToken', token);
-        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-        // Set session cookie so middleware allows protected routes (/ride, /payment, etc.)
-        const maxAge = 60 * 60 * 24 * 7; // 7 días
-        document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
+        // setStoredAuth actualiza el Zustand store (fuente de verdad) y
+        // espeja en localStorage. La cookie httpOnly going_webapp_session ya
+        // fue seteada por /api/auth/register server-side.
+        setStoredAuth(token, data.refreshToken ?? null, data.user ?? null);
       }
 
       // Onboarding solo para nuevos usuarios tipo 'user' que no vienen de una ruta específica
@@ -279,8 +279,4 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white" />}>
-      <RegisterForm />
-    </Suspense>
-  );
-}
+    <Suspense fallback={<div className="

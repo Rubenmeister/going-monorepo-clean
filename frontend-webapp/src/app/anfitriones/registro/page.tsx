@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getStoredToken } from '@/lib/providers/auth-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
@@ -82,7 +83,7 @@ export default function AnfitrionesRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const token = getStoredToken();
       const formData = new FormData();
       Object.entries(property).forEach(([k, v]) => formData.append(k, v));
       formData.append('amenities', JSON.stringify([...amenities]));

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { authFetch, clearStoredAuth, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -70,26 +71,22 @@ export default function DriverDashboard() {
   const [tripsCount] = useState({ today: 4, week: 23, total: 312 });
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/services/conductores'; return; }
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/services/conductores'); return; }
     const decoded = parseJwt(token);
-    if (!decoded) { window.location.href = '/auth/login'; return; }
+    if (!decoded) { redirectToLogin('/services/conductores'); return; }
     setDriver(decoded);
 
-    // Load recent trips
-    fetch(`${API_URL}/rides/driver/history?limit=5`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // Load recent trips — authFetch añade Bearer y maneja 401
+    authFetch(`${API_URL}/rides/driver/history?limit=5`)
       .then(r => r.ok ? r.json() : { rides: [] })
       .then(d => setTrips(Array.isArray(d.rides) ? d.rides : []))
       .catch(() => setTrips([]))
       .finally(() => setLoadingTrips(false));
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    document.cookie = 'going_webapp_session=; path=/; max-age=0';
+  const handleLogout = async () => {
+    await clearStoredAuth();
     window.location.href = '/';
   };
 
