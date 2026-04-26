@@ -2,20 +2,26 @@
  * Hooks y utilidades de autenticación para Empresas
  *
  * Adaptado de apps/corporate-portal/lib/auth.ts
- * Capa de compatibilidad que puede integrarse con el sistema global en Fase 2
  *
  * El flujo es:
- *   1. Usuario hace login (email/password u OAuth) vía user-auth-service
- *   2. Recibimos JWT (accessToken) + info de usuario
- *   3. Guardamos en localStorage + cookie (para middleware)
- *   4. useSession() lee token y decodifica JWT para exponer user info
+ *   1. Usuario hace login (email/password) → POST a /api/empresas/auth/login
+ *      (proxy server-side). El proxy llama al user-auth-service y, si OK,
+ *      setea la cookie httpOnly going_empresas_session=1.
+ *   2. El cliente recibe { accessToken, refreshToken, user, ... } y los
+ *      guarda en localStorage para Authorization headers.
+ *   3. useSession() lee token de localStorage y decodifica JWT para exponer
+ *      user info (consistencia eventual con el cookie del middleware).
+ *   4. Logout: POST a /api/empresas/auth/logout (limpia cookie httpOnly) +
+ *      clearSession() limpia localStorage + redirect.
+ *   5. Refresh: POST a /api/empresas/auth/refresh (renueva token + cookie).
  *
- * API pensada para ser compatible con next-auth patterns
+ * NOTA IMPORTANTE: la cookie de sesión la maneja exclusivamente el server
+ * (proxies en /api/empresas/auth/*). Este módulo no toca document.cookie.
  */
 
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Session,
@@ -27,8 +33,6 @@ import {
   AUTH_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   USER_INFO_KEY,
-  SESSION_COOKIE,
-  API_BASE_URL,
 } from "./constants";
 
 /**
@@ -108,14 +112,18 @@ function readSession(): Session | null {
 }
 
 /**
- * Limpia la sesión
+ * Limpia la sesión local (localStorage). La cookie httpOnly se limpia
+ * exclusivamente desde el server vía /api/empresas/auth/logout — esta
+ * función no la toca porque httpOnly impide acceder desde JS.
+ *
+ * Para un logout completo (localStorage + cookie + revocación remota),
+ * usar signOut().
  */
 export function clearSession(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_INFO_KEY);
-  document.cookie = `${SESSION_COOKIE}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
 }
 
 /**
@@ -151,17 +159,23 @@ export function useAuthRedirect(redirectTo: string = "/empresas/auth/login") {
 }
 
 /**
- * Función: signIn() - Login corporativo real
- * Llama a POST /auth/corporate/login en el user-auth-service.
- * Valida que el usuario tenga rol 'corporate' o 'admin'.
- * Retorna un mensaje de error descriptivo si falla.
+ * Función: signIn() - Login corporativo.
+ *
+ * Llama al proxy server-side /api/empresas/auth/login que internamente:
+ *   1. Reenvía credenciales al user-auth-service /auth/corporate/login.
+ *   2. Si el backend devuelve token válido, setea la cookie httpOnly
+ *      going_empresas_session=1 (Set-Cookie header) para que el middleware
+ *      permita el acceso a /empresas/panel/*.
+ *
+ * Este cliente solo guarda token + user info en localStorage para usar en
+ * Authorization headers de subsiguientes requests al backend.
  */
 export async function signIn(
   email: string,
   password: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/corporate/login`, {
+    const res = await fetch(`/api/empresas/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -209,8 +223,9 @@ export async function signIn(
       })
     );
 
-    // Cookie para el middleware de Next.js
-    document.cookie = `${SESSION_COOKIE}=${data.accessToken}; Path=/; SameSite=Strict`;
+    // La cookie httpOnly going_empresas_session ya fue seteada por el proxy
+    // /api/empresas/auth/login server-side. No tocar document.cookie acá
+    // (httpOnly la oculta de JS).
 
     return { success: true };
   } catch (error) {
@@ -220,39 +235,52 @@ export async function signIn(
 }
 
 /**
- * Función: signOut() - Logout real
- * Llama a POST /auth/logout para revocar el token en el backend,
- * luego limpia la sesión local.
+ * Función: signOut() - Logout corporate.
+ *
+ * Llama al proxy server-side /api/empresas/auth/logout que limpia la cookie
+ * httpOnly y (best-effort) revoca el token en el backend. Después limpia
+ * el localStorage local y redirige al landing.
  */
 export async function signOut(): Promise<void> {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    const rToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (typeof window === "undefined") return;
 
-    // Intentar revocar en backend (best-effort, no bloqueante)
-    if (token) {
-      fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(rToken ? { refreshToken: rToken } : {}),
-      }).catch(() => {/* ignora errores de red en logout */});
-    }
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  const rToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+  // El endpoint server-side limpia la cookie httpOnly Y revoca el token en
+  // el backend (cuando recibe el Authorization header). Es atómico desde
+  // la perspectiva del cliente.
+  try {
+    await fetch(`/api/empresas/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(rToken ? { refreshToken: rToken } : {}),
+    });
+  } catch {
+    // Si la red falla, igual seguimos limpiando local — el middleware ya no
+    // dejará pasar al usuario porque su localStorage queda vacío.
   }
 
   clearSession();
 
-  if (typeof window !== "undefined") {
-    window.location.href = "/empresas";
-  }
+  // window.location en lugar de router.push para forzar un request fresco
+  // que confirme que la cookie httpOnly ya no está y para limpiar todo el
+  // estado React colgado de la sesión anterior.
+  window.location.href = "/empresas";
 }
 
 /**
- * Función: refreshToken() - Refresca el access token
- * Llama a POST /auth/refresh con el refreshToken guardado.
- * Retorna true si se renovó con éxito.
+ * Función: refreshToken() - Renueva el access token corporativo.
+ *
+ * Llama al proxy server-side /api/empresas/auth/refresh que reenvía al
+ * backend y, si el refresh es exitoso, extiende la cookie httpOnly de
+ * sesión.
+ *
+ * Retorna true si se renovó con éxito; false si el refresh token ya no
+ * es válido (en cuyo caso la sesión local se limpia).
  */
 export async function refreshToken(): Promise<boolean> {
   if (typeof window === "undefined") return false;
@@ -261,7 +289,7 @@ export async function refreshToken(): Promise<boolean> {
   if (!rToken) return false;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    const res = await fetch(`/api/empresas/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken: rToken }),
@@ -273,9 +301,18 @@ export async function refreshToken(): Promise<boolean> {
     }
 
     const data = await res.json();
-    // data: { accessToken, expiresIn }
-    localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
-    document.cookie = `${SESSION_COOKIE}=${data.accessToken}; Path=/; SameSite=Strict`;
+    // data: { accessToken, expiresIn, refreshToken? }
+    const newToken = data.accessToken ?? data.token;
+    if (!newToken) {
+      clearSession();
+      return false;
+    }
+
+    localStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    if (data.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    }
+    // Cookie httpOnly going_empresas_session ya fue renovada por el proxy.
     return true;
   } catch {
     return false;

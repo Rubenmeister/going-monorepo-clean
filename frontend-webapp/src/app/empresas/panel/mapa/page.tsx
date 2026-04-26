@@ -12,7 +12,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuthRedirect } from "@/lib/empresas/auth";
 import { corpFetch } from "@/lib/empresas/api";
-import { API_BASE_URL } from "@/lib/empresas/constants";
 
 declare const L: any;
 
@@ -62,12 +61,14 @@ const SERVICE_LABELS: Record<string, string> = {
 };
 
 async function safeGet<T>(path: string, token: string): Promise<T | null> {
+  // Usamos corpFetch para que aproveche el manejo automático de 401 +
+  // refresh token. Si el refresh falla, corpFetch redirige a login y tira
+  // un error que capturamos para devolver null y no romper la UI del mapa.
   try {
-    const r = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return r.ok ? r.json() : null;
-  } catch { return null; }
+    return await corpFetch<T>(path, token);
+  } catch {
+    return null;
+  }
 }
 
 function employeeIcon(status: string, serviceType: string) {
