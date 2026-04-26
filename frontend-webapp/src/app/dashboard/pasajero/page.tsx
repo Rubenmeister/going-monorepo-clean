@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { authFetch, clearStoredAuth, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -77,32 +78,27 @@ export default function PassengerDashboard() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/dashboard/pasajero'; return; }
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/dashboard/pasajero'); return; }
     const decoded = parseJwt(token);
-    if (!decoded) { window.location.href = '/auth/login'; return; }
+    if (!decoded) { redirectToLogin('/dashboard/pasajero'); return; }
     setUser(decoded);
 
-    fetch(`${API_URL}/transport/user/${decoded.id}/history`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // authFetch añade el Bearer y maneja 401 (limpia sesión + redirige a login)
+    authFetch(`${API_URL}/transport/user/${decoded.id}/history`)
       .then(r => r.ok ? r.json() : [])
       .then(data => setRides(Array.isArray(data) ? data.slice(0, 5) : []))
       .catch(() => setRides([]))
       .finally(() => setLoadingRides(false));
 
-    fetch(`${API_URL}/payment/wallet/${decoded.id}/balance`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    authFetch(`${API_URL}/payment/wallet/${decoded.id}/balance`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setWalletBalance(data.balance ?? data.amount ?? 0); })
       .catch(() => {});
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    document.cookie = 'going_webapp_session=; path=/; max-age=0';
+  const logout = async () => {
+    await clearStoredAuth();
     window.location.href = '/';
   };
 

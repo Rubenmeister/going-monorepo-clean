@@ -2,15 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { authFetch, getStoredToken, parseJwtPayload, redirectToLogin } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
-
-function parseJwt(token: string) {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch { return null; }
-}
 
 interface Transaction {
   id: string;
@@ -27,15 +21,15 @@ export default function WalletPage() {
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
-    if (!token) { window.location.href = '/auth/login?from=/payment/wallet'; return; }
-    const p = parseJwt(token);
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/payment/wallet'); return; }
+    const p = parseJwtPayload<{ firstName?: string; name?: string; id?: string; sub?: string; userId?: string }>(token);
     if (p) setName(p.firstName || p.name || 'Usuario');
 
-    const userId = p?.id || p?.sub || p?.userId || '';
+    const userId = (p?.id || p?.sub || p?.userId || '') as string;
     Promise.allSettled([
-      fetch(`${API_URL}/payment/wallet/${userId}/balance`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/payment/wallet/${userId}/transactions?limit=10`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.ok ? r.json() : null),
+      authFetch(`${API_URL}/payment/wallet/${userId}/balance`).then(r => r.ok ? r.json() : null),
+      authFetch(`${API_URL}/payment/wallet/${userId}/transactions?limit=10`).then(r => r.ok ? r.json() : null),
     ]).then(([balRes, txRes]) => {
       if (balRes.status === 'fulfilled' && balRes.value) {
         setBalance(balRes.value.balance ?? balRes.value.amount ?? 0);

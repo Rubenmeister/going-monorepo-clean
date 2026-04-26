@@ -2,15 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { authFetch, getStoredToken, parseJwtPayload, redirectToLogin } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
-
-function parseJwt(token: string) {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch { return null; }
-}
 
 interface PointsData {
   balance: number;
@@ -40,10 +34,10 @@ export default function PuntosPage() {
   const [userId, setUserId]   = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
-    if (!token) { window.location.href = '/auth/login?from=/puntos'; return; }
-    const p = parseJwt(token);
-    const uid = p?.id || p?.sub || p?.userId || '';
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/puntos'); return; }
+    const p = parseJwtPayload<{ id?: string; sub?: string; userId?: string }>(token);
+    const uid = (p?.id || p?.sub || p?.userId || '') as string;
     if (uid) setUserId(uid);
 
     if (!uid) {
@@ -52,9 +46,7 @@ export default function PuntosPage() {
       return;
     }
 
-    fetch(`${API_URL}/users/${uid}/points`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    authFetch(`${API_URL}/users/${uid}/points`)
       .then(r => r.ok ? r.json() : null)
       .then(json => {
         if (json) {

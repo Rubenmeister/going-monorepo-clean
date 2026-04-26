@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getStoredToken } from '@/lib/providers/auth-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
@@ -108,7 +109,7 @@ export default function DriverRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = typeof window !== 'undefined' ? (localStorage.getItem('authToken') || localStorage.getItem('auth_token')) : null;
+      const token = getStoredToken();
       const formData = new FormData();
       Object.entries(vehicle).forEach(([k, v]) => formData.append(k, v));
       REQUIRED_DOCS.forEach(d => {

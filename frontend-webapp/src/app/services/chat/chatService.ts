@@ -4,6 +4,7 @@
 
 import type { ChatMessage, WebSocketChatMessage } from '@/types';
 import { wsService } from '../websocket';
+import { authFetch } from '@/lib/providers/auth-client';
 
 export interface SendMessageRequest {
   rideId: string;
@@ -63,14 +64,9 @@ class ChatService {
       ? (process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api')
       : 'https://api.goingec.com/api';
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
     try {
-      const res = await fetch(`${API_BASE}/chat/rides/${rideId}/messages`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
+      const res = await authFetch(`${API_BASE}/chat/rides/${rideId}/messages`, {
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!res.ok) return [];
@@ -97,15 +93,10 @@ class ChatService {
       ? (process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api')
       : 'https://api.goingec.com/api';
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
     try {
-      await fetch(`${API_BASE}/chat/rides/${rideId}/read`, {
+      await authFetch(`${API_BASE}/chat/rides/${rideId}/read`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
+        headers: { 'Content-Type': 'application/json' },
       });
     } catch {
       // Non-fatal error

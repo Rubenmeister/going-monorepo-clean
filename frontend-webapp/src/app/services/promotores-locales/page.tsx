@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { authFetch, clearStoredAuth, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
 
 interface PromoterInfo {
   id: string;
@@ -67,23 +68,21 @@ export default function PromotoresLocalesPanel() {
   const [active, setActive] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/services/promotores-locales'; return; }
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/services/promotores-locales'); return; }
     const decoded = parseJwt(token);
-    if (!decoded) { window.location.href = '/auth/login'; return; }
+    if (!decoded) { redirectToLogin('/services/promotores-locales'); return; }
     setUser(decoded);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) return;
 
-    const headers = { Authorization: `Bearer ${token}` };
-
-    fetch(`${apiUrl}/tours/promoter/stats`, { headers })
+    authFetch(`${apiUrl}/tours/promoter/stats`)
       .then(r => r.ok ? r.json() : {})
       .then((d: PromoterStats) => setStats(d))
       .catch(() => {});
 
-    fetch(`${apiUrl}/tours/promoter/reservations?limit=5`, { headers })
+    authFetch(`${apiUrl}/tours/promoter/reservations?limit=5`)
       .then(r => r.ok ? r.json() : [])
       .then((d: any) => {
         const list = Array.isArray(d) ? d : (d.data ?? []);
@@ -92,10 +91,8 @@ export default function PromotoresLocalesPanel() {
       .catch(() => {});
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    document.cookie = 'going_webapp_session=; path=/; max-age=0';
+  const logout = async () => {
+    await clearStoredAuth();
     window.location.href = '/';
   };
 

@@ -13,6 +13,7 @@ import type {
   PaymentStatusResult,
 } from '@/types';
 import { PLATFORM_FEE_PERCENTAGE } from '@/types';
+import { authFetch } from '@/lib/providers/auth-client';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -47,16 +48,10 @@ class PaymentService {
       holderName:  string;
     };
   }): Promise<InitiatePaymentResult> {
-    const token = typeof window !== 'undefined'
-      ? localStorage.getItem('authToken')
-      : null;
-
-    const res = await fetch(`${API_BASE}/payments/initiate`, {
+    // authFetch añade Bearer token desde el store y maneja 401 limpiando sesión
+    const res = await authFetch(`${API_BASE}/payments/initiate`, {
       method:  'POST',
-      headers: {
-        'Content-Type':  'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
     });
 
@@ -71,13 +66,7 @@ class PaymentService {
   // ─── Consultar estado (para polling tras redirect) ────────────────────────────
 
   async getPaymentStatus(transactionId: string): Promise<PaymentStatusResult> {
-    const token = typeof window !== 'undefined'
-      ? localStorage.getItem('authToken')
-      : null;
-
-    const res = await fetch(`${API_BASE}/payments/${transactionId}/status`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    const res = await authFetch(`${API_BASE}/payments/${transactionId}/status`);
 
     if (!res.ok) {
       throw new Error(`No se pudo obtener el estado del pago (HTTP ${res.status})`);

@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getStoredToken, setStoredAuth } from '@/lib/providers/auth-client';
 
 const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
 
@@ -17,7 +18,7 @@ function LoginForm() {
 
   // Si el usuario ya está autenticado, redirigir directamente
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = getStoredToken();
     const from  = searchParams.get('from');
     if (token) {
       window.location.replace(from || '/dashboard/pasajero');
@@ -70,12 +71,12 @@ function LoginForm() {
         return;
       }
 
-      localStorage.setItem('authToken', token);
-      if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-
-      // Set session cookie so middleware allows access to protected routes (/ride, /payment, etc.)
-      const maxAge = 60 * 60 * 24 * 7; // 7 días
-      document.cookie = `going_webapp_session=1; path=/; max-age=${maxAge}; SameSite=Lax`;
+      // setStoredAuth actualiza el Zustand store (fuente de verdad para el
+      // Navbar y demás componentes reactivos) y espeja en localStorage para
+      // código legacy. La cookie httpOnly going_webapp_session ya viene del
+      // proxy /api/auth/login en el Set-Cookie header — el middleware la usa
+      // para permitir el acceso a rutas protegidas.
+      setStoredAuth(token, data.refreshToken ?? null, data.user ?? null);
 
       // Redirect based on role
       const roles: string[] = data.user?.roles || data.roles || [];
@@ -219,10 +220,3 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-white" />}>
-      <LoginForm />
-    </Suspense>
-  );
-}

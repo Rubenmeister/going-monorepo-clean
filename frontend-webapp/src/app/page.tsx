@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
 
 /* ── useInView ──────────────────────────────────────────────── */
@@ -132,10 +132,9 @@ function LocationInput({ value, onChange, placeholder }: { value: string; onChan
 
 /* ── Main Page ──────────────────────────────────────────────── */
 export default function HomePage() {
-  const { auth } = useMonorepoApp();
-  const isLoggedIn = typeof window !== 'undefined'
-    ? !!localStorage.getItem('authToken')
-    : !!auth?.user;
+  // Fuente de verdad: el store de auth (vía useIsAuthenticated). Devuelve
+  // false durante SSR y antes de hidratar para evitar mismatch.
+  const isLoggedIn = useIsAuthenticated();
 
   // Carousel
   const [slide, setSlide] = useState(0);

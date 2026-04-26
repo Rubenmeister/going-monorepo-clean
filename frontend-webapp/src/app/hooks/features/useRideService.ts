@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { useRideStore } from '@/stores/rideStore';
 import { rideService } from '@/services/ride';
 import type { Ride, Location, VehicleType, ServiceTier } from '@/types';
+import { getStoredToken, parseJwtPayload } from '@/lib/providers/auth-client';
 
 export interface UseRideServiceReturn {
   activeRide:       Ride | null;
@@ -29,19 +30,12 @@ export interface UseRideServiceReturn {
   clearLocations: () => void;
 }
 
-/** Decode user ID from JWT stored in localStorage */
+/** Decode user ID del JWT (a través del helper de auth-client) */
 function getUserIdFromToken(): string {
-  try {
-    const token =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('authToken') || localStorage.getItem('auth_token')
-        : null;
-    if (!token) return 'guest';
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || payload.id || payload.userId || 'guest';
-  } catch {
-    return 'guest';
-  }
+  const token = getStoredToken();
+  if (!token) return 'guest';
+  const payload = parseJwtPayload<{ sub?: string; id?: string; userId?: string }>(token);
+  return payload?.sub || payload?.id || payload?.userId || 'guest';
 }
 
 export function useRideService(): UseRideServiceReturn {

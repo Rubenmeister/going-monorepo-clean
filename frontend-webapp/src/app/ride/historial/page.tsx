@@ -2,15 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { authFetch, getStoredToken, parseJwtPayload, redirectToLogin } from '@/lib/providers/auth-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
-
-function parseJwt(token: string) {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(base64));
-  } catch { return null; }
-}
 
 interface Ride {
   _id: string;
@@ -34,14 +28,13 @@ export default function HistorialPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/ride/historial'; return; }
-    const p = parseJwt(token);
-    if (!p) { window.location.href = '/auth/login'; return; }
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/ride/historial'); return; }
+    const p = parseJwtPayload<{ sub?: string; userId?: string; id?: string }>(token);
+    if (!p) { redirectToLogin('/ride/historial'); return; }
 
-    fetch(`${API_URL}/transport/user/${p.sub || p.userId}/history`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const uid = p.sub || p.userId || p.id;
+    authFetch(`${API_URL}/transport/user/${uid}/history`)
       .then(r => r.ok ? r.json() : [])
       .then(data => setRides(Array.isArray(data) ? data : []))
       .catch(() => setRides([]))

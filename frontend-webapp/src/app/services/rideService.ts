@@ -1,4 +1,6 @@
 // Ride API Service - connects to Transport microservice
+import { authFetch } from '@/lib/providers/auth-client';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 export interface CreateRideRequest {
@@ -15,19 +17,13 @@ export interface RideEstimate {
   surgeMultiplier: number
 }
 
-async function authHeaders(): Promise<HeadersInit> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  }
-}
+const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
 export const rideService = {
   async getEstimate(pickup: { lat: number; lng: number }, dropoff: { lat: number; lng: number }): Promise<RideEstimate> {
-    const res = await fetch(`${API_BASE}/transport/estimate`, {
+    const res = await authFetch(`${API_BASE}/transport/estimate`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify({ pickup, dropoff }),
     })
     if (!res.ok) throw new Error('Failed to get ride estimate')
@@ -35,9 +31,9 @@ export const rideService = {
   },
 
   async createRide(data: CreateRideRequest) {
-    const res = await fetch(`${API_BASE}/transport/rides`, {
+    const res = await authFetch(`${API_BASE}/transport/rides`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('Failed to create ride')
@@ -45,17 +41,15 @@ export const rideService = {
   },
 
   async getRide(rideId: string) {
-    const res = await fetch(`${API_BASE}/transport/rides/${rideId}`, {
-      headers: await authHeaders(),
-    })
+    const res = await authFetch(`${API_BASE}/transport/rides/${rideId}`)
     if (!res.ok) throw new Error('Failed to get ride')
     return res.json()
   },
 
   async cancelRide(rideId: string, reason?: string) {
-    const res = await fetch(`${API_BASE}/transport/rides/${rideId}/cancel`, {
+    const res = await authFetch(`${API_BASE}/transport/rides/${rideId}/cancel`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify({ reason }),
     })
     if (!res.ok) throw new Error('Failed to cancel ride')
@@ -63,17 +57,13 @@ export const rideService = {
   },
 
   async getRideHistory(page = 1, limit = 10) {
-    const res = await fetch(`${API_BASE}/transport/rides?page=${page}&limit=${limit}`, {
-      headers: await authHeaders(),
-    })
+    const res = await authFetch(`${API_BASE}/transport/rides?page=${page}&limit=${limit}`)
     if (!res.ok) throw new Error('Failed to get ride history')
     return res.json()
   },
 
   async trackDriver(rideId: string) {
-    const res = await fetch(`${API_BASE}/tracking/rides/${rideId}/location`, {
-      headers: await authHeaders(),
-    })
+    const res = await authFetch(`${API_BASE}/tracking/rides/${rideId}/location`)
     if (!res.ok) throw new Error('Failed to get driver location')
     return res.json()
   },
@@ -81,9 +71,9 @@ export const rideService = {
 
 export const paymentService = {
   async processPayment(rideId: string, method: string, amount: number) {
-    const res = await fetch(`${API_BASE}/payment/process`, {
+    const res = await authFetch(`${API_BASE}/payment/process`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify({ rideId, method, amount }),
     })
     if (!res.ok) throw new Error('Payment failed')
@@ -91,17 +81,15 @@ export const paymentService = {
   },
 
   async getPaymentHistory(page = 1, limit = 10) {
-    const res = await fetch(`${API_BASE}/payment/history?page=${page}&limit=${limit}`, {
-      headers: await authHeaders(),
-    })
+    const res = await authFetch(`${API_BASE}/payment/history?page=${page}&limit=${limit}`)
     if (!res.ok) throw new Error('Failed to get payment history')
     return res.json()
   },
 
   async addPaymentMethod(data: { type: string; token: string }) {
-    const res = await fetch(`${API_BASE}/payment/methods`, {
+    const res = await authFetch(`${API_BASE}/payment/methods`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('Failed to add payment method')
@@ -117,9 +105,9 @@ export const ratingService = {
     review?: string
     categories?: Record<string, number>
   }) {
-    const res = await fetch(`${API_BASE}/ratings`, {
+    const res = await authFetch(`${API_BASE}/ratings`, {
       method: 'POST',
-      headers: await authHeaders(),
+      headers: JSON_HEADERS,
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error('Failed to submit rating')
@@ -127,9 +115,7 @@ export const ratingService = {
   },
 
   async getDriverRatings(driverId: string) {
-    const res = await fetch(`${API_BASE}/ratings/driver/${driverId}`, {
-      headers: await authHeaders(),
-    })
+    const res = await authFetch(`${API_BASE}/ratings/driver/${driverId}`)
     if (!res.ok) throw new Error('Failed to get driver ratings')
     return res.json()
   },

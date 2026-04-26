@@ -3,12 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+import { getStoredToken } from '@/lib/providers/auth-client';
 import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
 
 async function authHeaders(): Promise<HeadersInit> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  // getStoredToken lee del store (fuente de verdad) y cae a localStorage
+  // legacy si el store no está hidratado. Tolerante a las keys 'authToken'
+  // y 'auth_token'.
+  const token = getStoredToken();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -569,8 +573,3 @@ export default function AccountPage() {
               </button>
             </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}

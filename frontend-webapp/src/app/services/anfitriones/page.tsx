@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { authFetch, clearStoredAuth, getStoredToken, redirectToLogin } from '@/lib/providers/auth-client';
 
 interface HostInfo {
   id: string;
@@ -68,23 +69,21 @@ export default function AnfitrionesPanel() {
   const [available, setAvailable] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) { window.location.href = '/auth/login?from=/services/anfitriones'; return; }
+    const token = getStoredToken();
+    if (!token) { redirectToLogin('/services/anfitriones'); return; }
     const decoded = parseJwt(token);
-    if (!decoded) { window.location.href = '/auth/login'; return; }
+    if (!decoded) { redirectToLogin('/services/anfitriones'); return; }
     setUser(decoded);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) return;
 
-    const headers = { Authorization: `Bearer ${token}` };
-
-    fetch(`${apiUrl}/accommodations/host/stats`, { headers })
+    authFetch(`${apiUrl}/accommodations/host/stats`)
       .then(r => r.ok ? r.json() : {})
       .then((d: HostStats) => setStats(d))
       .catch(() => {});
 
-    fetch(`${apiUrl}/accommodations/host/reservations?limit=5`, { headers })
+    authFetch(`${apiUrl}/accommodations/host/reservations?limit=5`)
       .then(r => r.ok ? r.json() : [])
       .then((d: any) => {
         const list = Array.isArray(d) ? d : (d.data ?? []);
@@ -93,10 +92,8 @@ export default function AnfitrionesPanel() {
       .catch(() => {});
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    document.cookie = 'going_webapp_session=; path=/; max-age=0';
+  const logout = async () => {
+    await clearStoredAuth();
     window.location.href = '/';
   };
 

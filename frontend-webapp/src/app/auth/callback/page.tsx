@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { setStoredAuth, clearStoredAuth } from '@/lib/providers/auth-client';
 
 function CallbackHandler() {
   const router = useRouter();
@@ -13,14 +14,50 @@ function CallbackHandler() {
     const token = searchParams.get('token');
     const isNewUser = searchParams.get('isNewUser') === 'true';
 
-    if (token) {
-      localStorage.setItem('authToken', token);
-      // Redirect new users to complete their profile, existing users to home
-      router.replace(isNewUser ? '/auth/register?step=profile' : '/');
-    } else {
-      // No token — send back to login
+    if (!token) {
       router.replace('/auth/login?error=oauth_failed');
+      return;
     }
+
+    let cancelled = false;
+
+    (async () => {
+      // Persistir token: actualiza store + localStorage. El user lo derivamos
+      // del JWT (campo `user` no viene en el callback OAuth).
+      setStoredAuth(token, null, null);
+
+      // Pedir al server que setee la cookie httpOnly de sesión. Sin este paso
+      // el middleware bloquearía rutas protegidas aunque el token esté en
+      // store/localStorage.
+      try {
+        const res = await fetch('/api/auth/oauth-session', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: token }),
+        });
+
+        if (!res.ok) {
+          await clearStoredAuth();
+          if (!cancelled) router.replace('/auth/login?error=oauth_failed');
+          return;
+        }
+      } catch (err) {
+        console.error('[oauth callback] no se pudo establecer sesión', err);
+        await clearStoredAuth();
+        if (!cancelled) router.replace('/auth/login?error=oauth_failed');
+        return;
+      }
+
+      if (cancelled) return;
+
+      // window.location en lugar de router.replace: garantiza un request
+      // fresco que incluye la cookie recién seteada.
+      window.location.href = isNewUser ? '/auth/register?step=profile' : '/';
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, searchParams]);
 
   return (
