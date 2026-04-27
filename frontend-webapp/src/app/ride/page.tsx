@@ -257,7 +257,7 @@ function ConfirmationPanel({
 function RidePageInner() {
   const router             = useRouter();
   const { auth }           = useMonorepoApp();
-  const { activeRide, clearRide } = useRideStore();
+  const { activeRide, clearRide, resetForRetry } = useRideStore();
 
   const [step, setStep]               = useState<Step>('request');
   const [serviceMode, setServiceMode] = useState<ServiceMode>(null);
@@ -311,6 +311,30 @@ function RidePageInner() {
   const handlePaymentComplete    = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
   const handleAccountingDone     = () => setStep('rating');
   const handleRatingComplete     = () => { clearRide(); setStep('request'); };
+
+  // Tras no_driver: descarta el ride fallido pero conserva pickup/dropoff
+  // (ya viven en el store) y vuelve al form en el mismo modo. El form remonta
+  // y reusa los locations del store.
+  const handleRetrySame = () => {
+    resetForRetry();
+    setStep('request');
+  };
+
+  // Tras no_driver: fuerza modo compartido y vuelve al form. Si el usuario
+  // tocó un slot, pre-rellena fecha+hora vía URL para que el form los lea
+  // en su useEffect de mount.
+  const handleSwitchToShared = (time?: string) => {
+    resetForRetry();
+    setServiceMode('compartido');
+    if (time) {
+      const today = new Date().toISOString().slice(0, 10);
+      const params = new URLSearchParams({ date: today, time });
+      router.replace(`/ride?${params.toString()}`);
+    } else {
+      router.replace('/ride');
+    }
+    setStep('request');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -371,6 +395,8 @@ function RidePageInner() {
           <RideTrackingPanel
             onCompleted={() => setStep('confirmation')}
             onCancelled={handleCancelRide}
+            onRetrySame={handleRetrySame}
+            onSwitchToShared={handleSwitchToShared}
           />
         )}
 

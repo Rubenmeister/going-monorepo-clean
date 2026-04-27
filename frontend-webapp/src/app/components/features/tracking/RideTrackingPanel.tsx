@@ -7,6 +7,7 @@ import { useRideStore } from '@/stores/rideStore';
 import { useRideSocket } from '@/hooks/useWebSocket';
 import { rideService } from '@/services/ride';
 import { calculateFare, calculateDistance } from '@/services/ride/fareCalculator';
+import { fetchSharedSlots, type TimeSlot } from '@/services/ride/sharedSlots';
 import { VEHICLE_TYPES } from '@/types';
 import type { Location, VehicleType, ServiceTier } from '@/types';
 
@@ -23,6 +24,10 @@ const ShareTracking = dynamic(
 interface RideTrackingPanelProps {
   onCompleted: () => void;
   onCancelled: () => void;
+  /** Reintentar el viaje conservando origen/destino/modo (sin pasar por el ServicePicker). */
+  onRetrySame: () => void;
+  /** Forzar modo compartido y volver al form, opcionalmente con hora pre-elegida (HH:mm). */
+  onSwitchToShared: (time?: string) => void;
 }
 
 /* ── Stars helper ── */
@@ -35,8 +40,8 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPanelProps) {
-  const { activeRide, updateRideStatus, updateFinalFare } = useRideStore();
+export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwitchToShared }: RideTrackingPanelProps) {
+  const { activeRide, updateRideStatus, updateFinalFare, updateDriverInfo } = useRideStore();
 
   const [proxyNumber,   setProxyNumber]   = useState<string | null>(null);
   const [driverArrived, setDriverArrived] = useState(false);
@@ -47,11 +52,33 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
   const [extraStops,    setExtraStops]    = useState<Location[]>([]);
   const [currentFare,   setCurrentFare]   = useState(activeRide?.estimatedFare ?? 0);
   const [showVerify,    setShowVerify]    = useState(false);
+  const [noDriverSlots,        setNoDriverSlots]        = useState<TimeSlot[]>([]);
+  const [loadingNoDriverSlots, setLoadingNoDriverSlots] = useState(false);
 
   const rideId = activeRide?.tripId ?? '';
 
   /* ── WebSocket eventos del viaje ── */
   useRideSocket(rideId, {
+    'ride:driver_accepted': useCallback((data: unknown) => {
+      const d = data as {
+        rideId: string;
+        driver?: { name: string; vehicle: string; plate: string; rating: number; photoUrl?: string };
+      };
+      if (!activeRide) return;
+      updateRideStatus(activeRide.tripId, 'accepted');
+      if (d?.driver) {
+        updateDriverInfo(activeRide.tripId, {
+          name:         d.driver.name,
+          vehicle:      d.driver.vehicle,
+          licensePlate: d.driver.plate,
+          rating:       d.driver.rating,
+          photo:        d.driver.photoUrl ?? '',
+        });
+      }
+    }, [activeRide, updateRideStatus, updateDriverInfo]),
+    'ride:started': useCallback(() => {
+      if (activeRide) updateRideStatus(activeRide.tripId, 'in_progress');
+    }, [activeRide, updateRideStatus]),
     'ride:driver_arrived': useCallback(() => {
       setDriverArrived(true);
       setShowVerify(true);
@@ -103,6 +130,21 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
     return () => clearTimeout(timer);
   }, [activeRide?.tripId, activeRide?.status]);
 
+  /* ── Slots compartidos reales como fallback en no_driver ── */
+  useEffect(() => {
+    if (activeRide?.status !== 'no_driver') return;
+    const origin = activeRide.pickup?.address;
+    const destination = activeRide.dropoff?.address;
+    if (!origin || !destination) return;
+    let cancelled = false;
+    setLoadingNoDriverSlots(true);
+    const today = new Date().toISOString().slice(0, 10);
+    fetchSharedSlots(origin, destination, today, activeRide.estimatedFare ?? 15)
+      .then(s => { if (!cancelled) setNoDriverSlots(s); })
+      .finally(() => { if (!cancelled) setLoadingNoDriverSlots(false); });
+    return () => { cancelled = true; };
+  }, [activeRide?.status, activeRide?.pickup?.address, activeRide?.dropoff?.address, activeRide?.estimatedFare]);
+
   /* ── Agregar parada extra ── */
   const handleAddStop = () => {
     if (!stopAddress.trim() || !activeRide) return;
@@ -145,6 +187,8 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
 
   /* ── Estado: sin conductor disponible ── */
   if (status === 'no_driver') {
+    const availableSlots = noDriverSlots.filter(s => s.seatsLeft > 0).slice(0, 4);
+
     return (
       <div className="space-y-4 py-4">
         <div className="text-center px-6 pt-4">
@@ -158,7 +202,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
         <div className="px-4 space-y-2">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">¿Qué quieres hacer?</p>
 
-          <button onClick={() => useRideStore.getState().clearRide()}
+          <button onClick={onRetrySame}
             className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all"
             style={{ borderColor: '#ff4c41', backgroundColor: '#fff2f2' }}>
             <span className="text-2xl">🔄</span>
@@ -168,7 +212,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
             </div>
           </button>
 
-          <button onClick={onCancelled}
+          <button onClick={onRetrySame}
             className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-gray-300 bg-white">
             <span className="text-2xl">📅</span>
             <div>
@@ -177,7 +221,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
             </div>
           </button>
 
-          <button onClick={onCancelled}
+          <button onClick={() => onSwitchToShared()}
             className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-gray-300 bg-white">
             <span className="text-2xl">🧑</span>
             <div>
@@ -188,16 +232,29 @@ export function RideTrackingPanel({ onCompleted, onCancelled }: RideTrackingPane
         </div>
 
         <div className="mx-4 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-          <p className="text-xs font-bold text-blue-800 mb-2">💡 Horarios con mayor disponibilidad</p>
-          <div className="grid grid-cols-2 gap-2">
-            {['7:00 am', '9:00 am', '1:00 pm', '5:00 pm'].map(h => (
-              <button key={h} onClick={onCancelled}
-                className="py-2 rounded-xl text-xs font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 transition-colors">
-                {h}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-blue-500 mt-2">Vuelve al formulario y ajusta el horario</p>
+          <p className="text-xs font-bold text-blue-800 mb-2">💡 Próximas salidas compartidas hoy</p>
+          {loadingNoDriverSlots ? (
+            <div className="flex items-center justify-center py-3">
+              <div className="w-4 h-4 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+            </div>
+          ) : availableSlots.length === 0 ? (
+            <p className="text-xs text-blue-500 py-2">
+              Sin salidas compartidas hoy en esta ruta. Programa para mañana o vuelve al inicio.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {availableSlots.map(slot => (
+                <button key={slot.id} onClick={() => onSwitchToShared(slot.time)}
+                  className="py-2 px-3 rounded-xl text-xs font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-between gap-2">
+                  <span>{slot.time}</span>
+                  <span className="text-blue-500">${slot.price}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {availableSlots.length > 0 && (
+            <p className="text-xs text-blue-500 mt-2">Toca un horario para reservar tu cupo compartido</p>
+          )}
         </div>
 
         <div className="px-4 pb-4">
