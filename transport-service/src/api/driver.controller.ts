@@ -285,6 +285,52 @@ export class DriverController {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  //  GET /drivers/me/stats — KPIs de carreras y ganancias por período.
+  //  Hoy / 7 días / 30 días + lifetime totals. Una query Mongo cubre todo.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  @Get('me/stats')
+  @UseGuards(JwtAuthGuard)
+  async getStats(@CurrentUser('id') driverId: string) {
+    const now           = new Date();
+    const startOfDay    = new Date(now); startOfDay.setHours(0, 0, 0, 0);
+    const startOfWeek   = new Date(now); startOfWeek.setDate(now.getDate() - 7);
+    const startOfMonth  = new Date(now); startOfMonth.setDate(now.getDate() - 30);
+
+    const [rides, totalCompleted] = await Promise.all([
+      this.rideModel
+        .find({ driverId, status: 'completed', completedAt: { $gte: startOfMonth } })
+        .select('completedAt finalFare fare')
+        .lean(),
+      this.rideModel.countDocuments({ driverId, status: 'completed' }),
+    ]);
+
+    const amount = (r: any) => r.finalFare?.total ?? r.fare?.total ?? 0;
+    const since  = (from: Date) => rides.filter(r => r.completedAt && new Date(r.completedAt as any) >= from);
+
+    const today = since(startOfDay);
+    const week  = since(startOfWeek);
+
+    const sum = (arr: any[]) => arr.reduce((s, r) => s + amount(r), 0);
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+
+    return {
+      today: { trips: today.length, earnings: round2(sum(today)) },
+      week:  { trips: week.length,  earnings: round2(sum(week)) },
+      month: { trips: rides.length, earnings: round2(sum(rides)) },
+      lifetime: { trips: totalCompleted },
+    };
+  }
+
+  // Legacy alias usado por mobile-driver-app — devuelve sólo el bloque "today".
+  @Get('me/stats/today')
+  @UseGuards(JwtAuthGuard)
+  async getStatsToday(@CurrentUser('id') driverId: string) {
+    const stats = await this.getStats(driverId);
+    return stats.today;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   //  GET /drivers/me/ratings/summary
   // ──────────────────────────────────────────────────────────────────────────
 
