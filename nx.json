@@ -3,7 +3,7 @@
     "version": "22.0.3"
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "nxCloudId": "6917d377bd06835f3b2d7464",
+  "// nxCloudId": "Removido — workspace no se conectó dentro de 3 días y bloqueaba el CI con 'Workspace is unable to be authorized'. Si querés re-habilitar Nx Cloud, registrá el workspace en https://cloud.nx.app y poné el ID nuevo aquí.",
   "targetDefaults": {
     "test": {
       "cache": true
