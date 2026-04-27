@@ -321,7 +321,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   };
 
   const today         = new Date().toISOString().split('T')[0];
-  const maxPax        = mode === 'compartido' ? 4 : SIMPLE_VEHICLES[simpleVehicle].maxPax;
+  const maxPax        = mode === 'compartido' ? 3 : SIMPLE_VEHICLES[simpleVehicle].maxPax;
   const hasRoute      = !!(pickupLocation && dropoffLocation);
   const hasValidRoute = hasRoute && pickupLocation!.lat !== 0 && dropoffLocation!.lat !== 0;
   const showSlotsSection = mode === 'compartido' && hasValidRoute && scheduledDate;
@@ -380,7 +380,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                 <button key={opt.key} type="button"
                   onClick={() => {
                     setMode(opt.key);
-                    if (opt.key === 'compartido') setPassengers(p => Math.min(p, 4));
+                    if (opt.key === 'compartido') setPassengers(p => Math.min(p, 3));
                   }}
                   className={`px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-1.5 ${
                     mode === opt.key
@@ -459,7 +459,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
               </div>
               <div className="py-3 pr-3">
                 <p className="text-sm font-black text-[#0033A0]">SUV Compartida</p>
-                <p className="text-xs text-gray-500">Hasta 4 pasajeros · precio por asiento</p>
+                <p className="text-xs text-gray-500">Hasta 3 pasajeros · precio por asiento</p>
                 <p className="text-xs text-[#059669] font-semibold mt-0.5">Más económico que el privado</p>
               </div>
             </div>
