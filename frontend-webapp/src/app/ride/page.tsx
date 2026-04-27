@@ -287,13 +287,17 @@ function RidePageInner() {
     }
   }, [auth.isLoading, auth.user, router]);
 
-  /* Avanzar a tracking cuando el viaje se crea */
+  /* Avanzar a tracking cuando el viaje se crea.
+   * NO requerimos auth.user del store porque puede ser null por race con
+   * la hidratación. El guard previo ya validó que hay sesión via
+   * localStorage; si llegamos acá con activeRide es porque el viaje se
+   * creó OK. */
   useEffect(() => {
-    if (activeRide && step === 'request' && auth.user) {
+    if (activeRide && step === 'request') {
       setPaymentAmount(activeRide.estimatedFare);
       setStep('tracking');
     }
-  }, [activeRide, step, auth.user]);
+  }, [activeRide, step]);
 
   /* Mover a confirmación (resumen + QR) cuando el viaje se completa */
   useEffect(() => {

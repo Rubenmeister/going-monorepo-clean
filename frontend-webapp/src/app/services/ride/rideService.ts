@@ -36,55 +36,60 @@ class RideService {
     const baseFare      = calculateFare(req.pickup, req.dropoff, req.rideType);
     const estimatedFare = Math.round((baseFare / vehicle.multiplierConfort) * tierMult * 100) / 100;
 
-    if (getStoredToken()) {
-      try {
-        const response = await authFetch(`${API_URL}/rides/request`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pickupLatitude:   req.pickup.lat,
-            pickupLongitude:  req.pickup.lon,
-            dropoffLatitude:  req.dropoff.lat,
-            dropoffLongitude: req.dropoff.lon,
-            serviceType:      `${req.rideType}_${req.serviceTier}`,
-            passengers:       req.passengers,
-            scheduledAt:      req.scheduledAt,
-            mode:             req.transportMode === 'compartido' ? 'shared' : 'private',
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          return {
-            tripId:        data.rideId || data.tripId || `trip-${Date.now()}`,
-            passengerId:   req.passengerId,
-            pickup:        req.pickup,
-            dropoff:       req.dropoff,
-            estimatedFare: data.fare?.estimatedTotal ?? estimatedFare,
-            distance,
-            duration,
-            status:        data.status || 'pending',
-            createdAt:     new Date(data.requestedAt || Date.now()),
-            passengers:    req.passengers,
-            vehicleType:   req.rideType,
-            transportMode: req.transportMode,
-          } as Ride;
-        }
-      } catch {
-        // fall through to local fallback
-      }
+    if (!getStoredToken()) {
+      throw new Error('Necesitas iniciar sesión para solicitar un viaje.');
     }
 
+    let response: Response;
+    try {
+      response = await authFetch(`${API_URL}/rides/request`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pickupLatitude:   req.pickup.lat,
+          pickupLongitude:  req.pickup.lon,
+          dropoffLatitude:  req.dropoff.lat,
+          dropoffLongitude: req.dropoff.lon,
+          serviceType:      `${req.rideType}_${req.serviceTier}`,
+          passengers:       req.passengers,
+          scheduledAt:      req.scheduledAt,
+          mode:             req.transportMode === 'compartido' ? 'shared' : 'private',
+        }),
+      });
+    } catch (err) {
+      // Error de red real (no de status code)
+      console.error('[rideService.createRide] network error:', err);
+      throw new Error(
+        'No se pudo conectar con el servidor. Verifica tu conexión e intenta de nuevo.'
+      );
+    }
+
+    if (!response.ok) {
+      // Backend rechazó la solicitud — extraer mensaje y propagarlo al UI.
+      // ANTES: este código fallback-eaba con un mock local que dejaba al
+      // usuario "atrapado" sin saber que el backend no había procesado nada.
+      // Ahora propagamos el error para que el form muestre feedback real.
+      let serverMsg = `Error ${response.status} al crear el viaje`;
+      try {
+        const errBody = await response.json();
+        if (errBody?.message) serverMsg = errBody.message;
+      } catch {
+        // body no es JSON, usamos el msg por defecto
+      }
+      throw new Error(serverMsg);
+    }
+
+    const data = await response.json();
     return {
-      tripId:        `trip-${Date.now()}`,
+      tripId:        data.rideId || data.tripId || `trip-${Date.now()}`,
       passengerId:   req.passengerId,
       pickup:        req.pickup,
       dropoff:       req.dropoff,
-      estimatedFare,
+      estimatedFare: data.fare?.estimatedTotal ?? estimatedFare,
       distance,
       duration,
-      status:        'pending',
-      createdAt:     new Date(),
+      status:        data.status || 'pending',
+      createdAt:     new Date(data.requestedAt || Date.now()),
       passengers:    req.passengers,
       vehicleType:   req.rideType,
       transportMode: req.transportMode,
