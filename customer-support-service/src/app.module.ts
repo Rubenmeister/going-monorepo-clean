@@ -17,7 +17,17 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/going-support'
+      process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017',
+      {
+        dbName:                   'going-support',
+        // Patrón estable usado por user-auth-service: timeouts cortos
+        // y bufferCommands:false para que el container no quede colgado
+        // si Mongo está caído al startup. NestJS bootstrap continúa.
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS:         30000,
+        socketTimeoutMS:          45000,
+        bufferCommands:           false,
+      },
     ),
     MongooseModule.forFeature([
       { name: 'Conversation', schema: ConversationSchema },
