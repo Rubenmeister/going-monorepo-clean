@@ -232,6 +232,10 @@ export class ProxyModule implements NestModule {
     };
 
     guard('transport', svc.transport);
+    // /rides/* — pedido de viajes (RideController del transport-service).
+    // Diferente de /transport/* que usa el TransportController/Trip más simple.
+    // Esta es la ruta que usa el frontend webapp para crear viajes con matching.
+    guard('rides', svc.transport);
     // /zones/* — geocercas (administradas por transport-service)
     guard('zones', svc.transport);
     // /drivers/* — bases de conductor + perfil (transport-service)
