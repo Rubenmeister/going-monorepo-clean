@@ -14,8 +14,8 @@ export type AgentGender = 'male' | 'female';
 
 export interface Conversation {
   id: string;
-  channel: 'whatsapp' | 'web';
-  userId: string;       // phone number or user ID
+  channel: 'whatsapp' | 'telegram' | 'web';
+  userId: string;       // phone number, telegram chat ID, or web user ID
   state: ConversationState;
   priority: Priority;
   messages: Message[];
@@ -53,7 +53,7 @@ export class ConversationService {
     @Optional() private mongoRepository?: MongoConversationRepository
   ) {}
 
-  async getOrCreate(userId: string, channel: 'whatsapp' | 'web' = 'whatsapp'): Promise<Conversation> {
+  async getOrCreate(userId: string, channel: 'whatsapp' | 'telegram' | 'web' = 'whatsapp'): Promise<Conversation> {
     // Check cache first
     if (this.conversations.has(userId)) {
       return this.conversations.get(userId)!;

@@ -2,11 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { WhatsAppController } from './api/whatsapp.controller';
+import { TelegramController } from './api/telegram.controller';
 import { ChatController } from './api/chat.controller';
 import { HealthController } from './api/health.controller';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
 import { BookingService } from './booking/booking.service';
+import { VoiceService } from './infrastructure/voice.service';
+import { TelegramService } from './infrastructure/telegram.service';
 import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
 import { MongoConversationRepository } from './infrastructure/persistence/mongo-conversation.repository';
 
@@ -22,6 +25,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
   ],
   controllers: [
     WhatsAppController,
+    TelegramController,
     ChatController,
     HealthController,
   ],
@@ -29,6 +33,8 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     AgentService,
     ConversationService,
     BookingService,
+    VoiceService,
+    TelegramService,
     MongoConversationRepository,
   ],
 })

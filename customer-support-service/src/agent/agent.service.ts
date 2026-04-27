@@ -38,7 +38,7 @@ export class AgentService {
         : '🙋 Te estoy conectando con un miembro del equipo Going. Por favor espera un momento...';
     }
 
-    const conv = this.conversationService.getOrCreate(userId);
+    const conv = await this.conversationService.getOrCreate(userId);
     const lang = detectLanguage(userMessage);
     const canton = detectCanton(userMessage);
     const systemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
