@@ -205,12 +205,9 @@ function RightActions({ auth, t, onLoginClick }: { auth: any; t: (k: string) => 
         </svg>
       </Link>
 
-      {/* CTA principal */}
-      <Link href="/ride"
-        className="px-4 py-2 rounded-xl text-white font-semibold text-sm transition-colors hover:opacity-90"
-        style={{ backgroundColor: '#ff4c41' }}>
-        Reservar viaje
-      </Link>
+      {/* CTA "Reservar viaje" eliminado: el flujo de búsqueda vive
+          exclusivamente en el form del home (#search-card) para evitar
+          duplicación. El icono de buscar arriba sigue disponible. */}
 
       {/* User dropdown o login */}
       {auth.user ? <UserMenu user={auth.user} auth={auth} /> : (

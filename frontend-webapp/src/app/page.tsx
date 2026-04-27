@@ -156,12 +156,8 @@ export default function HomePage() {
     window.location.href = `/ride${params.toString() ? '?' + params.toString() : ''}`;
   };
 
-  const handleHeroCTA = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isLoggedIn) return; // deja que el href="/ride" navegue normalmente
-    e.preventDefault();
-    // Si no está logueado: scroll suave al formulario de búsqueda en la misma página
-    document.getElementById('search-card')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // (handleHeroCTA eliminado: el botón hero "Buscar viaje" se quitó porque
+  // duplicaba al form de búsqueda que está justo debajo en #search-card)
 
   // Destinos
   const [activeRegion, setActiveRegion] = useState<keyof typeof REGIONS>('Sierra');
@@ -196,14 +192,9 @@ export default function HomePage() {
             {SLIDES[slide].region}
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
-          <Link
-            href="/ride"
-            onClick={handleHeroCTA}
-            className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-2xl transition-all hover:scale-105 hover:opacity-90"
-            style={{ backgroundColor: '#ff4c41' }}
-          >
-            Buscar viaje →
-          </Link>
+          {/* Botón hero eliminado: era redundante con el form de búsqueda
+              que está más abajo en la sección #search-card. El usuario tiene
+              el form completo a la vista directa al hacer scroll. */}
 
           {/* Slide dots */}
           <div className="absolute bottom-10 flex gap-3">

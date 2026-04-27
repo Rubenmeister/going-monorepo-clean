@@ -264,10 +264,25 @@ function RidePageInner() {
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
-  /* Auth guard INICIAL — redirige antes de mostrar el formulario */
+  /* Auth guard INICIAL — redirige antes de mostrar el formulario.
+   *
+   * Lectura DIRECTA de localStorage para evitar race conditions con la
+   * hidratación del Zustand store (que es async via useEffect en
+   * RootLayoutClient). En el primer render post-navegación hard, el store
+   * puede estar vacío aunque haya token persistido. Leyendo localStorage
+   * directamente garantizamos que no haya falsos negativos que causen el
+   * loop /ride <-> /auth/login.
+   */
   useEffect(() => {
     if (auth.isLoading) return;
-    if (!auth.user && !getStoredToken()) {
+    if (typeof window === 'undefined') return;
+
+    const hasLocalToken =
+      !!localStorage.getItem('authToken') ||
+      !!localStorage.getItem('auth_token') ||
+      !!getStoredToken();
+
+    if (!auth.user && !hasLocalToken) {
       router.replace(`/auth/login?from=/ride`);
     }
   }, [auth.isLoading, auth.user, router]);
