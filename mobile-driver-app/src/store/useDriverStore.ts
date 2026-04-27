@@ -130,11 +130,18 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     if (!newStatus) set({ pendingTrip: null });
   },
 
-  /** Poll GET /transport/pending for new trip requests */
+  /**
+   * Poll GET /rides/pending for new ride requests (Sistema B unificado).
+   * Sustituye el polling viejo a /transport/pending; los viajes pedidos
+   * desde web (que ahora usa /rides/request) y desde mobile-user-app
+   * (también migrada) viven en RideRepository, no en TripRepository.
+   * El backend devuelve el mismo shape PendingTrip — sin cambio en
+   * call sites.
+   */
   pollPendingTrips: async () => {
     if (!get().isOnline) return;
     try {
-      const { data } = await api.get('/transport/pending');
+      const { data } = await api.get('/rides/pending');
       const trips: PendingTrip[] = Array.isArray(data) ? data : [];
       set({ pendingTrip: trips.length > 0 ? trips[0] : null });
     } catch {
@@ -142,12 +149,21 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     }
   },
 
-  /** PATCH /transport/:tripId/accept */
+  /**
+   * PUT /rides/:rideId/accept con info completa del conductor.
+   * El RideController la propaga al pasajero vía notifyDriverAccepted
+   * para que vea nombre/vehículo/placa/rating en su panel de tracking.
+   */
   acceptTrip: async (tripId: string) => {
     const { driver } = get();
     if (!driver) return;
     try {
-      await api.patch(`/transport/${tripId}/accept`, { driverId: driver.id });
+      await api.put(`/rides/${tripId}/accept`, {
+        driverId:     driver.id,
+        driverName:   `${driver.firstName ?? ''} ${driver.lastName ?? ''}`.trim() || 'Conductor',
+        vehiclePlate: driver.vehiclePlate ?? '',
+        driverRating: driver.rating ?? 5.0,
+      });
       set({ currentRideId: tripId, pendingTrip: null });
     } catch (e: any) {
       set({ error: e.response?.data?.message || 'Error al aceptar viaje' });

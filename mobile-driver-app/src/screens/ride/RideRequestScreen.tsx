@@ -82,10 +82,17 @@ export function RideRequestScreen() {
         process.env.EXPO_PUBLIC_API_URL ||
         'https://api.goingec.com';
       if (accept) {
-        // PATCH /transport/:tripId/accept
-        await axios.patch(
-          `${base}/transport/${rideId}/accept`,
-          { driverId: driver?.id ?? '' },
+        // PUT /rides/:rideId/accept (Sistema B). El body incluye los datos
+        // del conductor para que el RideController los propague al pasajero
+        // vía notifyDriverAccepted; sin esto el pasajero ve placeholders.
+        await axios.put(
+          `${base}/rides/${rideId}/accept`,
+          {
+            driverId:     driver?.id ?? '',
+            driverName:   `${driver?.firstName ?? ''} ${driver?.lastName ?? ''}`.trim() || 'Conductor',
+            vehiclePlate: driver?.vehiclePlate ?? '',
+            driverRating: driver?.rating ?? 5.0,
+          },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         navigation.replace('ActiveRide', {
