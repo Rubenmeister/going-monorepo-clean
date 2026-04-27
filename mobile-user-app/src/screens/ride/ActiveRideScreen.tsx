@@ -23,7 +23,7 @@ const TRANSPORT_WS =
   'https://transport-service-780842550857.us-central1.run.app';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
-import { api } from '../../services/api';
+import { transportAPI } from '../../services/api';
 import { hapticMedium, hapticHeavy, hapticSuccess, hapticWarning } from '../../utils/haptics';
 import { analyticsShareTracking, analyticsRideCompleted, analyticsScreen } from '../../utils/analytics';
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
@@ -388,7 +388,7 @@ export function ActiveRideScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.patch(`/transport/${rideId}/cancel`);
+              await transportAPI.cancelRide(rideId);
               navigation.goBack();
             } catch {
               Alert.alert('Error', 'No se pudo cancelar el viaje');

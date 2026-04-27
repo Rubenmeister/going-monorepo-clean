@@ -60,41 +60,44 @@ export const authAPI = {
 // ── Transport ────────────────────────────────────────────────────────────────
 export const transportAPI = {
   /**
-   * Request a ride. Matches backend RequestTripDto:
-   * { userId, origin: {address,latitude,longitude}, destination: {...}, price: {amount, currency} }
+   * Crear viaje. Migrado del legacy POST /transport/request al sistema
+   * unificado POST /rides/request, que dispara MatchAvailableDriversUseCase
+   * (matching geográfico real) y RideEventsGateway (eventos WebSocket) —
+   * sin estos, el pasajero quedaba en spinner eterno aunque hubiera
+   * conductor.
+   *
+   * Mantiene la firma de input antigua (origin/destination con address+lat+lng)
+   * para no tocar los call sites; internamente mapea al RequestRideDto plano.
+   * Response: RideResponseDto con `rideId` (HomeScreen ya tiene fallback a
+   * `data?.id ?? data?.rideId`).
    */
   requestRide: (data: {
     userId: string;
     origin: { latitude: number; longitude: number; address: string };
     destination: { latitude: number; longitude: number; address: string };
     price: { amount: number; currency: 'USD' };
-    /** Metadatos opcionales que el backend hoy ignora pero son útiles para telemetry/logs. */
     vehicleType?: string;
     tripMode?: string;
     category?: string;
     originCity?: string;
   }) =>
-    api.post('/transport/request', {
-      userId: data.userId,
-      origin: {
-        address: data.origin.address,
-        latitude: data.origin.latitude,
-        longitude: data.origin.longitude,
-      },
-      destination: {
-        address: data.destination.address,
-        latitude: data.destination.latitude,
-        longitude: data.destination.longitude,
-      },
-      price: data.price,
-      ...(data.vehicleType ? { vehicleType: data.vehicleType } : {}),
-      ...(data.tripMode ? { tripMode: data.tripMode } : {}),
-      ...(data.category ? { category: data.category } : {}),
-      ...(data.originCity ? { originCity: data.originCity } : {}),
+    api.post('/rides/request', {
+      pickupLatitude:   data.origin.latitude,
+      pickupLongitude:  data.origin.longitude,
+      dropoffLatitude:  data.destination.latitude,
+      dropoffLongitude: data.destination.longitude,
+      // serviceType formato `<vehicleType>_<category>` igual que web
+      serviceType: data.vehicleType && data.category
+        ? `${data.vehicleType}_${data.category}`
+        : (data.vehicleType ?? 'standard'),
     }),
 
-  /** Get pending trips (drivers nearby / available trips) */
-  getPendingTrips: () => api.get('/transport/pending'),
+  /** Cancelar viaje activo */
+  cancelRide: (rideId: string, reason?: string) =>
+    api.put(`/rides/${rideId}/cancel`, reason ? { reason } : {}),
+
+  /** Get pending rides (Sistema B) — usado por driver-app polling */
+  getPendingRides: () => api.get('/rides/pending'),
 
   /** User trip history */
   getUserHistory: (userId: string) =>

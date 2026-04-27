@@ -127,6 +127,38 @@ export class RideController {
   }
 
   /**
+   * Listado de rides pendientes para que el driver-app haga polling.
+   * Sustituye al `GET /transport/pending` legacy: cuando mobile-driver-app
+   * migra al Sistema B, llama acá para descubrir viajes que aún no tienen
+   * conductor asignado. Usa el mismo shape que mobile espera (PendingTrip).
+   * GET /api/rides/pending
+   */
+  @Get('pending')
+  async getPendingRides(@Query('limit') limit?: string): Promise<any[]> {
+    const max = limit ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 50) : 20;
+    const rides = await this.rideRepo.findByStatus('pending', max);
+    return rides.map((r: any) => ({
+      id:     r.rideId ?? r.id,
+      userId: r.userId,
+      origin: {
+        address:   r.pickupLocation?.address ?? '',
+        latitude:  r.pickupLocation?.latitude  ?? r.pickupLatitude  ?? 0,
+        longitude: r.pickupLocation?.longitude ?? r.pickupLongitude ?? 0,
+      },
+      destination: {
+        address:   r.dropoffLocation?.address ?? '',
+        latitude:  r.dropoffLocation?.latitude  ?? r.dropoffLatitude  ?? 0,
+        longitude: r.dropoffLocation?.longitude ?? r.dropoffLongitude ?? 0,
+      },
+      price: {
+        amount:   r.fare?.estimatedTotal ?? r.fare?.total ?? 0,
+        currency: 'USD',
+      },
+      status: r.status,
+    }));
+  }
+
+  /**
    * Get ride details
    * GET /api/rides/:rideId
    */
