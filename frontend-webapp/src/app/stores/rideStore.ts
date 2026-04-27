@@ -52,9 +52,11 @@ interface RideStore {
   setActiveRide: (ride: Ride | null) => void;
   updateRideStatus: (tripId: string, status: Ride['status']) => void;
   updateDriverLocation: (location: Location) => void;
+  updateDriverInfo: (tripId: string, driverInfo: NonNullable<Ride['driverInfo']>) => void;
   updateFinalFare: (tripId: string, fare: number) => void;
   addToHistory: (ride: Ride) => void;
   clearRide: () => void;
+  resetForRetry: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -102,6 +104,13 @@ export const useRideStore = create<RideStore>((set) => ({
         : null,
     })),
 
+  updateDriverInfo: (tripId: string, driverInfo: NonNullable<Ride['driverInfo']>) =>
+    set((state) => ({
+      activeRide: state.activeRide
+        ? { ...state.activeRide, driverInfo }
+        : null,
+    })),
+
   updateFinalFare: (tripId: string, fare: number) =>
     set((state) => ({
       activeRide: state.activeRide
@@ -121,6 +130,12 @@ export const useRideStore = create<RideStore>((set) => ({
       dropoffLocation: null,
       estimatedFare: null,
     }),
+
+  // Reset suave para "reintentar" tras no_driver: descarta el ride fallido
+  // pero conserva pickup/dropoff/estimatedFare en el store para que el form
+  // los muestre pre-rellenados al remontar.
+  resetForRetry: () =>
+    set({ activeRide: null, error: null }),
 
   setLoading: (loading: boolean) =>
     set({ loading }),
