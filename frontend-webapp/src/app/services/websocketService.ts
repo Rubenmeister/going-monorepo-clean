@@ -22,6 +22,10 @@ class WebSocketService {
   private url: string
   private isConnecting = false
   private builtInBound = false
+  // Rooms del backend (`ride:${rideId}`) a los que el cliente debe estar
+  // suscrito. Se persiste para re-emitir el join en cada reconexión: socket.io
+  // entrega un nuevo socket.id al reconectar y los rooms se pierden server-side.
+  private joinedRides = new Set<string>()
 
   constructor(url: string) {
     this.url = url
@@ -54,6 +58,11 @@ class WebSocketService {
           if (!this.builtInBound) {
             this.bindBuiltInHandlers()
             this.builtInBound = true
+          }
+          // Re-emitir join:ride para todos los rideIds suscritos. Necesario en
+          // cada connect (incluyendo reconexiones), no sólo el primero.
+          for (const rideId of this.joinedRides) {
+            this.socket?.emit('join:ride', { rideId })
           }
           resolve()
         })
@@ -180,6 +189,27 @@ class WebSocketService {
   }
 
   /**
+   * Suscribe al cliente al room `ride:${rideId}` del RideEventsGateway. Sin
+   * esto el server no entrega ningún evento porque todos van a `to('ride:${id}')`.
+   * Idempotente: re-emite en cada reconexión via la lista joinedRides.
+   */
+  joinRide(rideId: string): void {
+    if (!rideId) return
+    this.joinedRides.add(rideId)
+    if (this.socket?.connected) {
+      this.socket.emit('join:ride', { rideId })
+    }
+  }
+
+  /**
+   * Quita el rideId de la lista de re-join. No emite leave al server porque
+   * el gateway no expone handler de leave; al disconnect el room se limpia solo.
+   */
+  leaveRide(rideId: string): void {
+    this.joinedRides.delete(rideId)
+  }
+
+  /**
    * Emite un evento al server. Mantiene la firma anterior `send(type, payload)`.
    */
   send(type: string, payload: unknown): boolean {
@@ -195,6 +225,7 @@ class WebSocketService {
     this.socket?.disconnect()
     this.socket = null
     this.builtInBound = false
+    this.joinedRides.clear()
   }
 
   get isConnected(): boolean {
