@@ -26,6 +26,128 @@ export class WhatsAppController {
     private config: ConfigService,
   ) {}
 
+  // ─── Diagnóstico del estado de la integración WhatsApp ───────
+  //
+  // GET /whatsapp/diagnose
+  // Verifica que cada credencial Meta funcione antes de empezar a
+  // recibir mensajes en producción. Útil tras renovar el token o
+  // cambiar de número.
+  @Get('diagnose')
+  async diagnose() {
+    const token       = this.config.get<string>('META_WA_ACCESS_TOKEN');
+    const phoneId     = this.config.get<string>('WHATSAPP_PHONE_NUMBER_ID');
+    const verifyToken = this.config.get<string>('WHATSAPP_VERIFY_TOKEN');
+
+    const result: Record<string, any> = {
+      timestamp: new Date().toISOString(),
+      secrets: {
+        META_WA_ACCESS_TOKEN: token ? `set (${token.length} chars)` : 'MISSING',
+        WHATSAPP_PHONE_NUMBER_ID: phoneId || 'MISSING',
+        WHATSAPP_VERIFY_TOKEN: verifyToken ? 'set' : 'MISSING',
+      },
+    };
+
+    if (!token || !phoneId) {
+      result.status = 'FAIL';
+      result.next_step = 'Configura los secrets faltantes en GCP Secret Manager.';
+      return result;
+    }
+
+    // Probe 1: validar token contra Meta /me
+    try {
+      const meRes = await fetch(`${META_GRAPH}/me?access_token=${token}`);
+      const meData = await meRes.json() as any;
+      if (meData.error) {
+        result.status = 'FAIL';
+        result.error_code = meData.error.code;
+        result.error_message = meData.error.message;
+        if (String(meData.error.message).includes('Session has expired')) {
+          result.next_step = 'Tu token expiró. Sigue las instrucciones en /whatsapp/setup-help para generar un token permanente vía System User.';
+        } else if (String(meData.error.message).includes('Application has been deleted')) {
+          result.next_step = 'La app de Meta fue eliminada. Crea una nueva en https://developers.facebook.com/apps/ y conecta WhatsApp Business.';
+        } else {
+          result.next_step = 'Revisa permisos del token: necesita whatsapp_business_messaging + whatsapp_business_management.';
+        }
+        return result;
+      }
+      result.token_valid_for = meData.name || meData.id || 'unknown';
+    } catch (err) {
+      result.status = 'FAIL';
+      result.error_message = (err as Error).message;
+      return result;
+    }
+
+    // Probe 2: phone number metadata
+    try {
+      const phoneRes = await fetch(`${META_GRAPH}/${phoneId}?access_token=${token}`);
+      const phoneData = await phoneRes.json() as any;
+      if (phoneData.error) {
+        result.status = 'PARTIAL';
+        result.phone_error = phoneData.error.message;
+        result.next_step = `El token funciona pero no tiene acceso al phone number ${phoneId}. Verifica en Meta Business Manager que el System User tenga acceso a este WABA.`;
+        return result;
+      }
+      result.phone_number = {
+        display_number: phoneData.display_phone_number,
+        verified_name:  phoneData.verified_name,
+        quality_rating: phoneData.quality_rating,
+        status:         phoneData.status,
+      };
+    } catch (err) {
+      result.status = 'PARTIAL';
+      result.phone_error = (err as Error).message;
+      return result;
+    }
+
+    // Probe 3: webhook configuration
+    const webhookInfo = await this.checkWebhookConfig();
+    result.webhook = webhookInfo;
+
+    result.status = 'OK';
+    result.next_step = webhookInfo.registered
+      ? 'Todo listo. Envía un mensaje al número WhatsApp para probar end-to-end.'
+      : `Webhook no registrado en Meta. Configúralo en Meta Business Suite → tu app → WhatsApp → Configuration con URL https://customer-support-service-lw44cnhdeq-uc.a.run.app/whatsapp/webhook y verify token "${verifyToken}".`;
+
+    return result;
+  }
+
+  private async checkWebhookConfig(): Promise<Record<string, any>> {
+    const token = this.config.get<string>('META_WA_ACCESS_TOKEN');
+    const wabaId = this.config.get<string>('WHATSAPP_BUSINESS_ACCOUNT_ID');
+    if (!token || !wabaId) {
+      return { registered: 'unknown', note: 'Sin WHATSAPP_BUSINESS_ACCOUNT_ID no se puede consultar el webhook desde Meta API.' };
+    }
+    try {
+      const res = await fetch(`${META_GRAPH}/${wabaId}/subscribed_apps?access_token=${token}`);
+      const data = await res.json() as any;
+      return { registered: !!data?.data?.length, raw: data };
+    } catch (err) {
+      return { registered: 'unknown', error: (err as Error).message };
+    }
+  }
+
+  // ─── Guía paso a paso de setup ───────────────────────────────
+  @Get('setup-help')
+  setupHelp() {
+    return {
+      passos: [
+        '1. Ir a https://developers.facebook.com/apps/ y abrir tu app de Going (o crear una nueva tipo Business)',
+        '2. WhatsApp Business → Setup → conectar tu cuenta de WhatsApp Business (WABA)',
+        '3. Confirmar que tu número (593984037949 u otro) está en API Setup, sección "From"',
+        '4. Para token permanente: Meta Business Suite → Settings → Business Settings → System Users → Add → Admin',
+        '5. Al System User → Add Assets → tu WABA + tu App → permiso "Manage WhatsApp Business Account"',
+        '6. Generate Token → seleccionar "whatsapp_business_messaging" + "whatsapp_business_management" → Never expires',
+        '7. Actualizar secret en GCP: gcloud secrets versions add META_WA_ACCESS_TOKEN --project=going-5d1ae --data-file=- (pegar token y Ctrl+D)',
+        '8. Re-deploy customer-support-service (o esperar al próximo redeploy)',
+        '9. Webhook URL: https://customer-support-service-lw44cnhdeq-uc.a.run.app/whatsapp/webhook',
+        '10. Verify Token: usar el valor del secret WHATSAPP_VERIFY_TOKEN (going_webhook_verify_2024)',
+        '11. Suscribirse a "messages" en webhook configuration',
+        '12. Enviar mensaje al número desde otro WhatsApp y verificar que el bot responde',
+      ],
+      verificar_estado: 'GET /whatsapp/diagnose',
+    };
+  }
+
   // ─── Webhook verification (Meta GET challenge) ────────────────
   @Get('webhook')
   verifyWebhook(@Query() query: any, @Res() res: any) {
