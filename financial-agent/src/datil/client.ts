@@ -69,8 +69,8 @@ export interface InvoiceInput {
   rideId: string;
   passengerName: string;
   passengerEmail: string;
-  passengerIdentification: string;  // cédula o RUC
-  identificationType: '04' | '05' | '06' | '08'; // 04=RUC, 05=cédula, 06=pasaporte
+  passengerIdentification: string;  // cédula, RUC o consumidor final (9999999999999)
+  identificationType: '04' | '05' | '06' | '07' | '08'; // 04=RUC, 05=cédula, 06=pasaporte, 07=consumidor final
   fareSubtotal: number;             // Sin IVA
   ivaAmount: number;                // IVA 15%
   fareTotal: number;                // Total con IVA
