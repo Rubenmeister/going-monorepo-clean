@@ -1,6 +1,6 @@
 import { FinancialAlert, DAILY_REVENUE_TARGET } from '../types/financial.types';
 import { generateDailyReport, generateWeeklyReport } from '../reports/revenue.report';
-import { generateDailyPayouts, getPendingPayoutsSummary } from '../reports/payouts.report';
+import { generateDailyPayouts, generateWeeklyPayouts, getPendingPayoutsSummary } from '../reports/payouts.report';
 import { getPaymentErrorStats, getChargebacks, saveFinancialAlert } from '../firestore/financial.service';
 import { reconcileDay } from '../reconciliation/bank.reconciliation';
 import { retryFailedInvoices, checkPendingAuthorization } from '../datil/invoice.retry';
@@ -234,6 +234,59 @@ export async function processDailyPayouts(): Promise<void> {
   console.log(`[financial-monitor] ${payouts.length} payouts created, total: $${total.toFixed(2)}`);
 }
 
+// ─── 6b. Liquidaciones SEMANALES (Día 4) ──────────────────────
+//
+// Se dispara los lunes 9am Ecuador. Cubre la semana ANTERIOR (lunes
+// pasado a domingo pasado) para que el pago salga al inicio de la
+// semana siguiente. Notifica a Telegram/Email con breakdown por
+// conductor para que ops procese las transferencias bancarias.
+export async function processWeeklyPayouts(): Promise<void> {
+  console.log('[financial-monitor] Processing weekly payouts...');
+
+  const payouts = await generateWeeklyPayouts();
+  if (payouts.length === 0) {
+    await sendTelegram([
+      `💸 <b>Liquidaciones semanales</b>`,
+      `Sin viajes en la semana anterior — nada que liquidar.`,
+    ].join('\n'));
+    return;
+  }
+
+  const total      = payouts.reduce((s, p) => s + p.driverEarningsNet, 0);
+  const totalRides = payouts.reduce((s, p) => s + p.totalRides, 0);
+  const period     = payouts[0]; // todos comparten periodStart/periodEnd
+
+  // Top 5 ganadores
+  const top = [...payouts]
+    .sort((a, b) => b.driverEarningsNet - a.driverEarningsNet)
+    .slice(0, 5);
+
+  const msg = [
+    `💸 <b>Liquidaciones semanales generadas</b>`,
+    `Periodo: ${period.periodStart.toLocaleDateString('es-EC')} — ${period.periodEnd.toLocaleDateString('es-EC')}`,
+    ``,
+    `<b>${payouts.length} conductores</b> | ${totalRides} viajes`,
+    `<b>Total a transferir:</b> ${fmt(total)}`,
+    ``,
+    `<b>Top 5 conductores de la semana:</b>`,
+    ...top.map((p, i) => `  ${i + 1}. ${p.driverName}: ${fmt(p.driverEarningsNet)} (${p.totalRides} viajes)`),
+    ``,
+    `Estado: <b>Pendiente de transferencia bancaria</b>`,
+    `Cada payout queda en Firestore <code>driver_payouts</code> con status=pending.`,
+  ].join('\n');
+
+  await sendTelegram(msg);
+  await logAlert({
+    type:     'pending_payouts',
+    severity: 'info',
+    message:  `${payouts.length} liquidaciones semanales por $${total.toFixed(2)}`,
+    data:     { count: payouts.length, total },
+    createdAt: new Date(),
+  });
+
+  console.log(`[financial-monitor] ${payouts.length} weekly payouts, total $${total.toFixed(2)}`);
+}
+
 // ─── 7. Conciliación bancaria ─────────────────────────────────
 export async function runBankReconciliation(): Promise<void> {
   const result = await reconcileDay();
@@ -448,8 +501,10 @@ export async function runFinancialMonitor(): Promise<void> {
     await runBankReconciliation();
   }
 
-  // ── Lunes 9am: reporte semanal + análisis comparativo ─────
+  // ── Lunes 9am: payouts semanales + reporte + análisis ─────
+  // Días 4 (payouts) + reporte semanal + análisis IA comparativo
   if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
+    await processWeeklyPayouts();        // Día 4: liquida la semana pasada
     await sendWeeklyFinancialReport();
     try {
       const comparison = await compareWeeklyPerformance();

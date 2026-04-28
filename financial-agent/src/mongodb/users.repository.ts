@@ -35,6 +35,26 @@ const CONSUMIDOR_FINAL: PassengerData = {
   identificationType: '07',
 };
 
+/**
+ * Lookup de nombre de conductor para reportes y payouts.
+ * Igual que el pasajero, va a `going-users.users` por _id o id.
+ * Si no se encuentra, devuelve un placeholder humano-legible.
+ */
+export async function mongoGetDriverName(driverId: string): Promise<string> {
+  if (!driverId) return 'Conductor desconocido';
+  try {
+    const db = await getUsersDb();
+    const doc = await db.collection<MongoUser>('users').findOne({
+      $or: [{ _id: driverId }, { id: driverId }],
+    });
+    if (!doc) return `Conductor #${driverId.slice(-6)}`;
+    const name = [doc.firstName, doc.lastName].filter(Boolean).join(' ').trim();
+    return name || `Conductor #${driverId.slice(-6)}`;
+  } catch {
+    return `Conductor #${driverId.slice(-6)}`;
+  }
+}
+
 export async function mongoGetPassenger(userId: string): Promise<PassengerData> {
   if (!userId) return CONSUMIDOR_FINAL;
 

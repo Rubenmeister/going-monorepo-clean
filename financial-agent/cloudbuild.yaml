@@ -18,7 +18,7 @@ steps:
       - --memory=512Mi
       - --task-timeout=300s
       - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,DATIL_API_KEY=DATIL_API_KEY:latest,DATIL_CERT_PASSWORD=DATIL_CERT_PASSWORD:latest,GOING_RUC=GOING_RUC:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,MONGO_URL=MONGO_URL-prod:latest
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,DATIL_ENV=2,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,DATIL_ENV=1,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com
       - --vpc-connector=going-connector
       - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
@@ -28,18 +28,26 @@ steps:
     args:
       - -c
       - |
+        # Schedule en hora Ecuador (America/Guayaquil = UTC-5).
+        # Dispara en las horas que el monitor evalúa internamente:
+        #   08:00 conciliación día anterior + invoicing loop
+        #   09:00 lunes payouts semanales / día 1 mes reporte SRI / invoicing
+        #   12:00 análisis IA + invoicing
+        #   20:00 reporte diario + payouts diarios + reconciliation
         gcloud scheduler jobs describe financial-agent-monitor \
           --location=us-central1 --project=$PROJECT_ID 2>/dev/null && \
         gcloud scheduler jobs update http financial-agent-monitor \
           --location=us-central1 \
-          --schedule="0 */6 * * *" \
+          --schedule="0 8,9,12,20 * * *" \
+          --time-zone="America/Guayaquil" \
           --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/financial-agent:run" \
           --message-body='{}' \
           --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \
           --project=$PROJECT_ID || \
         gcloud scheduler jobs create http financial-agent-monitor \
           --location=us-central1 \
-          --schedule="0 */6 * * *" \
+          --schedule="0 8,9,12,20 * * *" \
+          --time-zone="America/Guayaquil" \
           --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/financial-agent:run" \
           --message-body='{}' \
           --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \

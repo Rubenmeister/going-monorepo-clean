@@ -4,6 +4,7 @@ import {
   getPendingPayouts,
   createDriverPayout,
 } from '../firestore/financial.service';
+import { mongoGetDriverName } from '../mongodb/users.repository';
 
 // ============================================================
 // Driver Payouts – Liquidaciones a conductores
@@ -34,9 +35,7 @@ export async function generateDailyPayouts(date?: Date): Promise<DriverPayout[]>
   const payouts: DriverPayout[] = [];
 
   for (const [driverId, driverRides] of ridesByDriver) {
-    // TODO: fetch driver name from drivers collection
-    const driverName = `Conductor #${driverId.slice(-6)}`;
-
+    const driverName = await mongoGetDriverName(driverId);
     const payout = await createDriverPayout(
       driverId,
       driverName,
@@ -47,27 +46,41 @@ export async function generateDailyPayouts(date?: Date): Promise<DriverPayout[]>
     );
 
     payouts.push(payout);
-    console.log(`[payouts] Driver ${driverId}: ${driverRides.length} rides → $${payout.driverEarningsNet}`);
+    console.log(`[payouts] ${driverName}: ${driverRides.length} rides → $${payout.driverEarningsNet}`);
   }
 
   return payouts;
 }
 
-// Generar liquidaciones semanales
+// Generar liquidaciones semanales (Lunes 9am Ecuador)
+//
+// Calcula la semana ANTERIOR (lunes 00:00 a domingo 23:59 previos),
+// no la actual — para que cuando corra el lunes 9am ya cubra los 7
+// días completos del periodo de pago.
 export async function generateWeeklyPayouts(): Promise<DriverPayout[]> {
-  const now  = new Date();
+  const now = new Date();
+  // Lunes ISO: día - dayOfWeek (0=dom, 1=lun) — ajustado a lunes-base
   const day  = now.getDay();
-  const diff = day === 0 ? 6 : day - 1;
-  const from = new Date(now.getTime() - diff * 86400 * 1000);
+  const diff = day === 0 ? 7 : day; // si hoy es lunes diff=1, lunes pasado = -7
+
+  // Lunes pasado 00:00
+  const from = new Date(now);
+  from.setDate(now.getDate() - diff - 6); // retrocede al LUNES de la semana anterior
   from.setHours(0, 0, 0, 0);
-  const to = new Date();
+
+  // Domingo pasado 23:59
+  const to = new Date(from);
+  to.setDate(from.getDate() + 6);
   to.setHours(23, 59, 59, 999);
 
-  // Una sola consulta para todos los viajes de la semana
-  const allRides = await getCompletedRides(from, to);
-  if (allRides.length === 0) return [];
+  console.log(`[payouts-weekly] periodo ${from.toISOString().slice(0, 10)} → ${to.toISOString().slice(0, 10)}`);
 
-  // Agrupar por conductor
+  const allRides = await getCompletedRides(from, to);
+  if (allRides.length === 0) {
+    console.log('[payouts-weekly] sin viajes en la semana — nada que liquidar');
+    return [];
+  }
+
   const ridesByDriver = new Map<string, typeof allRides>();
   for (const ride of allRides) {
     const existing = ridesByDriver.get(ride.driverId) || [];
@@ -76,11 +89,12 @@ export async function generateWeeklyPayouts(): Promise<DriverPayout[]> {
   }
 
   const payouts: DriverPayout[] = [];
-
   for (const [driverId, driverRides] of ridesByDriver) {
-    const driverName = `Conductor ${driverId.slice(-4)}`;
+    if (!driverId) continue; // ignorar rides sin conductor
+    const driverName = await mongoGetDriverName(driverId);
     const payout = await createDriverPayout(driverId, driverName, driverRides, 'weekly', from, to);
     payouts.push(payout);
+    console.log(`[payouts-weekly] ${driverName}: ${driverRides.length} viajes → $${payout.driverEarningsNet}`);
   }
 
   return payouts;
