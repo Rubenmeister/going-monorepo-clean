@@ -1,11 +1,18 @@
 import { Firestore, Timestamp } from '@google-cloud/firestore';
 import { createInvoice, getInvoiceStatus } from './client';
-import { updateRideInvoice } from '../firestore/financial.service';
+import { getRidesPendingInvoice, updateRideInvoice } from '../firestore/financial.service';
+import { mongoGetPassenger } from '../mongodb/users.repository';
+import { Ride } from '../types/financial.types';
 
 // ============================================================
-// Invoice Retry – Reintento automático de facturas fallidas
-// Detecta viajes completados sin factura → reintenta emisión
-// Máx 3 intentos por viaje, espera 1h entre intentos
+// Invoice Loop – Día 2
+// Detecta rides completados con pago capturado y aún sin facturar
+// (lectura desde MongoDB Atlas vía financial.service), llama a Datil,
+// persiste el comprobante en Firestore y marca el ride en Mongo.
+//
+// Política de reintentos: máx 3 intentos por ride, espera 1h entre
+// intentos. El estado de fallos vive en Firestore `invoice_failures`
+// (estado interno del agente, no datos de negocio).
 // ============================================================
 
 const db = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
@@ -19,20 +26,8 @@ interface InvoiceFailure {
   lastError: string;
 }
 
-// ─── Obtener viajes sin factura ───────────────────────────────
-async function getRidesWithoutInvoice(limit = 50): Promise<Array<Record<string, unknown>>> {
-  const snap = await db.collection('rides')
-    .where('status', '==', 'completed')
-    .where('invoiceId', '==', null)
-    .where('paymentStatus', '==', 'captured')
-    .orderBy('completedAt', 'desc')
-    .limit(limit)
-    .get();
+// ─── Tracking de fallos previos ───────────────────────────────
 
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-// ─── Obtener intentos fallidos previos ────────────────────────
 async function getInvoiceAttempts(rideId: string): Promise<InvoiceFailure | null> {
   const snap = await db.collection('invoice_failures')
     .where('rideId', '==', rideId)
@@ -64,44 +59,94 @@ async function clearFailure(rideId: string): Promise<void> {
   if (!snap.empty) await snap.docs[0].ref.delete();
 }
 
+// ─── Persistencia de comprobantes ─────────────────────────────
+
+async function saveInvoiceRecord(input: {
+  rideId: string;
+  passengerId: string;
+  passengerName: string;
+  passengerEmail: string;
+  identification: string;
+  identificationType: string;
+  fareSubtotal: number;
+  ivaAmount: number;
+  fareTotal: number;
+  datilId: string;
+  secuencial?: string;
+  claveAcceso?: string;
+  pdfUrl?: string;
+  xmlUrl?: string;
+}): Promise<void> {
+  await db.collection('invoices').add({
+    datilId:            input.datilId,
+    rideId:             input.rideId,
+    passengerId:        input.passengerId,
+    passengerName:      input.passengerName,
+    passengerEmail:     input.passengerEmail,
+    identification:     input.identification,
+    identificationType: input.identificationType,
+    subtotal:           input.fareSubtotal,
+    iva:                input.ivaAmount,
+    total:              input.fareTotal,
+    currency:           'USD',
+    status:             'draft', // pasa a 'authorized' cuando el SRI confirma (checkPendingAuthorization)
+    secuencial:         input.secuencial || null,
+    claveAcceso:        input.claveAcceso || null,
+    pdfUrl:             input.pdfUrl || null,
+    xmlUrl:             input.xmlUrl || null,
+    createdAt:          Timestamp.now(),
+  });
+}
+
 // ─── Runner principal ─────────────────────────────────────────
+
 export interface RetryResult {
   processed: number;
   succeeded: number;
   failed: number;
-  skipped: number;    // Max intentos alcanzado
-  errors: Array<{ rideId: string; error: string }>;
+  skipped: number;
+  succeededDetails: Array<{ rideId: string; total: number; secuencial?: string }>;
+  errors:           Array<{ rideId: string; error: string }>;
 }
 
 export async function retryFailedInvoices(): Promise<RetryResult> {
-  console.log('[invoice-retry] Checking for rides without invoices...');
+  console.log('[invoice-loop] Buscando rides pendientes de facturar...');
 
-  const rides = await getRidesWithoutInvoice();
-  const result: RetryResult = { processed: 0, succeeded: 0, failed: 0, skipped: 0, errors: [] };
+  const rides = await getRidesPendingInvoice(50);
+  const result: RetryResult = {
+    processed:        0,
+    succeeded:        0,
+    failed:           0,
+    skipped:          0,
+    succeededDetails: [],
+    errors:           [],
+  };
 
   if (rides.length === 0) {
-    console.log('[invoice-retry] All rides are invoiced ✅');
+    console.log('[invoice-loop] Sin rides pendientes — todos facturados ✅');
     return result;
   }
 
-  console.log(`[invoice-retry] Found ${rides.length} rides without invoice`);
+  console.log(`[invoice-loop] ${rides.length} rides candidatos a facturación`);
 
   for (const ride of rides) {
-    const r = ride as Record<string, unknown>;
     result.processed++;
 
-    // Verificar intentos previos
-    const prevFailure = await getInvoiceAttempts(r.id as string);
+    // Validación temprana: necesitamos un fareTotal positivo
+    if (!ride.fareTotal || ride.fareTotal <= 0) {
+      console.log(`[invoice-loop] ⏭️  ride ${ride.id} sin fareTotal válido (${ride.fareTotal}) — skip`);
+      result.skipped++;
+      continue;
+    }
+
+    const prevFailure = await getInvoiceAttempts(ride.id);
 
     if (prevFailure) {
-      // Saltar si excedió intentos máximos
       if (prevFailure.attempts >= MAX_ATTEMPTS) {
-        console.log(`[invoice-retry] Ride ${r.id} skipped — max attempts reached`);
+        console.log(`[invoice-loop] ⏭️  ride ${ride.id} skipped — max attempts (${prevFailure.attempts})`);
         result.skipped++;
         continue;
       }
-
-      // Esperar 1h entre intentos
       const hoursSinceLast = (Date.now() - new Date(prevFailure.lastAttempt).getTime()) / 3600000;
       if (hoursSinceLast < RETRY_HOURS) {
         result.skipped++;
@@ -109,47 +154,88 @@ export async function retryFailedInvoices(): Promise<RetryResult> {
       }
     }
 
-    // Intentar emitir factura
     try {
-      const passengerData = await getPassengerData(r.passengerId as string);
-
-      const fareTotal    = r.fareTotal as number || 0;
-      const ivaRate      = 0.15;
-      const fareSubtotal = round2(fareTotal / (1 + ivaRate));
-      const ivaAmount    = round2(fareTotal - fareSubtotal);
-
-      const invoice = await createInvoice({
-        rideId:                r.id as string,
-        passengerName:         passengerData.name,
-        passengerEmail:        passengerData.email,
-        passengerIdentification: passengerData.identification || '9999999999999',
-        identificationType:    passengerData.ruc ? '04' : '05',
-        fareSubtotal,
-        ivaAmount,
-        fareTotal,
-        description: `Servicio de transporte: ${r.origin || 'Origen'} → ${r.destination || 'Destino'}`,
-      });
-
-      await updateRideInvoice(r.id as string, invoice.id);
-      await clearFailure(r.id as string);
-
+      const success = await invoiceSingleRide(ride);
       result.succeeded++;
-      console.log(`[invoice-retry] ✅ Ride ${r.id} invoiced: ${invoice.id}`);
-
+      result.succeededDetails.push({
+        rideId:     ride.id,
+        total:      ride.fareTotal,
+        secuencial: success.secuencial,
+      });
+      await clearFailure(ride.id);
+      console.log(`[invoice-loop] ✅ ride ${ride.id} facturado: ${success.datilId} (sec ${success.secuencial})`);
     } catch (err) {
       const errMsg = (err as Error).message;
-      await recordFailure(r.id as string, errMsg, prevFailure);
+      await recordFailure(ride.id, errMsg, prevFailure);
       result.failed++;
-      result.errors.push({ rideId: r.id as string, error: errMsg });
-      console.error(`[invoice-retry] ❌ Ride ${r.id} failed: ${errMsg}`);
+      result.errors.push({ rideId: ride.id, error: errMsg });
+      console.error(`[invoice-loop] ❌ ride ${ride.id} falló: ${errMsg}`);
     }
   }
 
-  console.log(`[invoice-retry] Done: ${result.succeeded} OK, ${result.failed} failed, ${result.skipped} skipped`);
+  console.log(`[invoice-loop] Done: ${result.succeeded} OK, ${result.failed} failed, ${result.skipped} skipped`);
   return result;
 }
 
+/**
+ * Factura un solo ride. Lanza si Datil rechaza la emisión.
+ * En éxito: persiste en Firestore `invoices` + marca el ride en Mongo
+ * con el invoiceId para que el siguiente run no lo re-procese.
+ */
+async function invoiceSingleRide(ride: Ride): Promise<{
+  datilId: string;
+  secuencial?: string;
+}> {
+  const passenger = await mongoGetPassenger(ride.passengerId);
+
+  const invoice = await createInvoice({
+    rideId:                  ride.id,
+    passengerName:           passenger.name,
+    passengerEmail:          passenger.email,
+    passengerIdentification: passenger.identification,
+    identificationType:      passenger.identificationType,
+    fareSubtotal:            ride.fareSubtotal,
+    ivaAmount:               ride.ivaAmount,
+    fareTotal:               ride.fareTotal,
+    description:             buildDescription(ride),
+  });
+
+  // Persistir el comprobante para auditoría y para checkPendingAuthorization
+  await saveInvoiceRecord({
+    rideId:             ride.id,
+    passengerId:        ride.passengerId,
+    passengerName:      passenger.name,
+    passengerEmail:     passenger.email,
+    identification:     passenger.identification,
+    identificationType: passenger.identificationType,
+    fareSubtotal:       ride.fareSubtotal,
+    ivaAmount:          ride.ivaAmount,
+    fareTotal:          ride.fareTotal,
+    datilId:            invoice.id,
+    secuencial:         invoice.secuencial,
+    claveAcceso:        invoice.clave_acceso,
+    pdfUrl:             invoice.pdf,
+    xmlUrl:             invoice.xml,
+  });
+
+  // Marcar el ride en Mongo para que no se re-facture
+  await updateRideInvoice(ride.id, invoice.id);
+
+  return { datilId: invoice.id, secuencial: invoice.secuencial };
+}
+
+function buildDescription(ride: Ride): string {
+  const origin = ride.origin || 'Origen';
+  const dest   = ride.destination || 'Destino';
+  return `Servicio de transporte: ${origin} -> ${dest}`;
+}
+
 // ─── Verificar facturas emitidas pero no autorizadas por SRI ──
+//
+// Datil emite el comprobante inmediatamente pero la autorización del SRI
+// puede tardar segundos a minutos. Cada run del agente revisa los `draft`
+// de las últimas 2 horas y pregunta a Datil su estado actual.
+
 export async function checkPendingAuthorization(): Promise<number> {
   const snap = await db.collection('invoices')
     .where('status', '==', 'draft')
@@ -164,37 +250,18 @@ export async function checkPendingAuthorization(): Promise<number> {
     try {
       const status = await getInvoiceStatus(invoiceId);
       if (status.estado === 'AUTORIZADO') {
-        await doc.ref.update({ status: 'authorized', authorizedAt: Timestamp.now() });
+        await doc.ref.update({
+          status:        'authorized',
+          authorizedAt:  Timestamp.now(),
+          claveAcceso:   status.clave_acceso || doc.data().claveAcceso,
+        });
         authorized++;
       }
     } catch (e) {
-      console.error(`[invoice-retry] Status check failed for ${invoiceId}:`, e);
+      console.error(`[invoice-loop] status check failed para ${invoiceId}:`, (e as Error).message);
     }
   }
 
-  if (authorized > 0) console.log(`[invoice-retry] ${authorized} invoices authorized by SRI`);
+  if (authorized > 0) console.log(`[invoice-loop] ${authorized} facturas autorizadas por el SRI`);
   return authorized;
 }
-
-// ─── Helper: obtener datos del pasajero ───────────────────────
-async function getPassengerData(passengerId: string): Promise<{
-  name: string; email: string; identification?: string; ruc?: string;
-}> {
-  try {
-    const snap = await db.collection('users').doc(passengerId).get();
-    if (snap.exists) {
-      const data = snap.data() || {};
-      return {
-        name:           data.displayName || data.name || 'Consumidor Final',
-        email:          data.email || 'consumidor@final.com',
-        identification: data.cedula || data.identification,
-        ruc:            data.ruc,
-      };
-    }
-  } catch (e) {
-    console.error(`[invoice-retry] Could not fetch passenger ${passengerId}`);
-  }
-  return { name: 'Consumidor Final', email: 'consumidor@final.com' };
-}
-
-function round2(n: number): number { return Math.round(n * 100) / 100; }

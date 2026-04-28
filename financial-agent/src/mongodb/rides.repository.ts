@@ -80,10 +80,9 @@ function toRide(doc: MongoRide): Ride {
     paymentStatus:    derivePaymentStatus(doc) as Ride['paymentStatus'],
     paymentGateway:   undefined,
     transactionId:    doc.paymentTxnId,
-    requestedAt:      doc.requestedAt?.toISOString() || new Date(0).toISOString(),
-    completedAt:      doc.completedAt?.toISOString(),
+    requestedAt:      doc.requestedAt ? new Date(doc.requestedAt) : new Date(0),
+    completedAt:      doc.completedAt ? new Date(doc.completedAt) : undefined,
     invoiceId:        undefined,
-    invoicedAt:       undefined,
   };
 }
 
