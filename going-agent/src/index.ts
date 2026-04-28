@@ -301,10 +301,13 @@ Reporta todo lo que encuentres.`,
 
       messages.push({ role: 'user', content: results });
 
-      // Keep message history bounded — solo los últimos 16 mensajes
-      // (8 turnos asistente+tool_results) + el primer user message.
-      if (messages.length > 16) {
-        messages.splice(1, messages.length - 16);
+      // Keep message history bounded. CRÍTICO: splice debe remover en pares
+      // (assistant + tool_results) porque Anthropic API exige que cada
+      // tool_result tenga el tool_use correspondiente en el mensaje previo.
+      // Splicear 1 sin par dejaría tool_results "huérfanos" → 400.
+      while (messages.length > 16) {
+        // Remueve oldest pair (asst + tool_results) preservando messages[0]
+        messages.splice(1, 2);
       }
     }
   }
@@ -314,12 +317,12 @@ Reporta todo lo que encuentres.`,
   if (!finalReport) {
     console.log(`\n⏰ Iteraciones máximas (${MAX_ITERATIONS}) alcanzadas — forzando reporte final`);
 
-    // Para evitar context overflow, mandamos solo los ÚLTIMOS 4 mensajes
-    // (assistant + tool_results más recientes) — suficiente contexto para
-    // resumir lo investigado sin reventar el límite de tokens.
+    // Para evitar context overflow Y errores de pares tool_use/tool_result,
+    // pasamos el messages completo (ya está acotado a ≤16 + último turno)
+    // y pedimos un cierre sin tools. Si todavía es demasiado grande,
+    // el catch de abajo cae al fallback genérico.
     const closingMessages: Anthropic.MessageParam[] = [
-      messages[0], // primer user message original (instrucciones)
-      ...messages.slice(-4),
+      ...messages,
       {
         role: 'user',
         content:
