@@ -73,6 +73,43 @@ export class TelegramController {
       // ── Tipo: texto ─────────────────────────────────────────────
       if (typeof message.text === 'string') {
         messageText = message.text;
+
+        // Comandos rápidos (no pasan por Gemini, ahorran latencia + tokens).
+        const cmd = messageText.trim().toLowerCase();
+        if (cmd === '/start') {
+          await this.telegramService.sendMessage(
+            chatId,
+            '¡Bienvenido a Going Ecuador! 🚗\n\n' +
+            'Soy el asistente oficial. Puedes pedirme:\n' +
+            '• Un viaje (ej. "Quito a Cumbayá")\n' +
+            '• Un envío de paquete\n' +
+            '• Información de tours, alojamiento o servicios\n' +
+            '• Hablar con una persona si lo prefieres\n\n' +
+            'O simplemente mándame una nota de voz 🎤 — entiendo audio en español e inglés.\n\n' +
+            'Comandos: /help · /chat-id',
+          );
+          return;
+        }
+        if (cmd === '/help') {
+          await this.telegramService.sendMessage(
+            chatId,
+            '*Comandos disponibles*\n\n' +
+            '/start - mensaje de bienvenida\n' +
+            '/chat-id - tu ID de chat (para operadores)\n' +
+            '/help - esta ayuda\n\n' +
+            'Para todo lo demás, escríbeme en lenguaje natural — texto o audio.',
+          );
+          return;
+        }
+        if (cmd === '/chat-id') {
+          await this.telegramService.sendMessage(
+            chatId,
+            `Tu Telegram chat ID es: \`${chatId}\`\n\n` +
+            'Si eres operador de Going, pasa este ID al admin para activarte ' +
+            'como receptor de escalamientos.',
+          );
+          return;
+        }
       }
       // ── Tipo: ubicación ─────────────────────────────────────────
       else if (message.location) {

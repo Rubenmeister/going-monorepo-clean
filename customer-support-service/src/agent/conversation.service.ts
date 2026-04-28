@@ -1,5 +1,6 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
+import { HandoffNotifierService } from '../infrastructure/handoff-notifier.service';
 
 export type ConversationState = 'AI_ACTIVE' | 'HANDOFF_REQUESTED' | 'HUMAN_ACTIVE';
 export type Priority = 'RED' | 'ORANGE' | 'NORMAL';
@@ -45,12 +46,14 @@ const EMERGENCY_KEYWORDS = [
 
 @Injectable()
 export class ConversationService {
+  private readonly logger = new Logger(ConversationService.name);
   // In-memory cache for active conversations
   private conversations = new Map<string, Conversation>();
   private conversationCount = 0; // used to alternate gender
 
   constructor(
-    @Optional() private mongoRepository?: MongoConversationRepository
+    @Optional() private mongoRepository?: MongoConversationRepository,
+    @Optional() private handoffNotifier?: HandoffNotifierService,
   ) {}
 
   async getOrCreate(userId: string, channel: 'whatsapp' | 'telegram' | 'web' = 'whatsapp'): Promise<Conversation> {
@@ -171,6 +174,18 @@ export class ConversationService {
         handoffReason: reason,
         updatedAt: conv.updatedAt,
       });
+    }
+
+    // Notificar a operadores via Telegram (fire-and-forget — no bloquea
+    // la respuesta al cliente si Telegram tarda).
+    if (this.handoffNotifier) {
+      this.handoffNotifier.notify({
+        userId,
+        channel:      conv.channel,
+        priority,
+        reason,
+        lastMessages: conv.messages.slice(-5),
+      }).catch(err => this.logger.warn(`Handoff notification failed: ${err.message}`));
     }
   }
 
