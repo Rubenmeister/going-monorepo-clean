@@ -143,6 +143,16 @@ const tools: Anthropic.Tool[] = [
   },
 ];
 
+// Cap de tamaño en resultados de tools — los reads de archivos grandes
+// disparan context overflow (200k tokens) tras 5-10 iteraciones.
+// 4000 chars ≈ 1000 tokens; con 15 iteraciones máx = ~15k tokens en results.
+const TOOL_RESULT_MAX_CHARS = 4000;
+
+function trimToolResult(result: string): string {
+  if (result.length <= TOOL_RESULT_MAX_CHARS) return result;
+  return result.slice(0, TOOL_RESULT_MAX_CHARS) + `\n\n…(truncado, ${result.length - TOOL_RESULT_MAX_CHARS} chars omitidos)`;
+}
+
 // ── Ejecutor de herramientas ────────────────────────────────────────────────
 async function executeTool(name: string, input: Record<string, any>): Promise<string> {
   try {
@@ -283,16 +293,18 @@ Reporta todo lo que encuentres.`,
       for (const tool of toolUses) {
         if (tool.type !== 'tool_use') continue;
         console.log(`  🔧 ${tool.name}(${JSON.stringify(tool.input).slice(0, 80)})`);
-        const result = await executeTool(tool.name, tool.input as Record<string, any>);
-        console.log(`     → ${result.slice(0, 100)}`);
+        const rawResult = await executeTool(tool.name, tool.input as Record<string, any>);
+        const result    = trimToolResult(rawResult);
+        console.log(`     → ${result.slice(0, 100)}${rawResult.length > TOOL_RESULT_MAX_CHARS ? ' [trimmed]' : ''}`);
         results.push({ type: 'tool_result', tool_use_id: tool.id, content: result });
       }
 
       messages.push({ role: 'user', content: results });
 
-      // Keep message history under 40 messages, preserving the original user message
-      if (messages.length > 40) {
-        messages.splice(1, messages.length - 40);
+      // Keep message history bounded — solo los últimos 16 mensajes
+      // (8 turnos asistente+tool_results) + el primer user message.
+      if (messages.length > 16) {
+        messages.splice(1, messages.length - 16);
       }
     }
   }
@@ -301,28 +313,44 @@ Reporta todo lo que encuentres.`,
   // un cierre con una request final sin tools que solo pida el reporte.
   if (!finalReport) {
     console.log(`\n⏰ Iteraciones máximas (${MAX_ITERATIONS}) alcanzadas — forzando reporte final`);
-    messages.push({
-      role: 'user',
-      content:
-        'Tu tiempo de exploración terminó. Genera AHORA el reporte final del ciclo en máximo 1500 caracteres ' +
-        'siguiendo el formato Markdown indicado. NO uses más herramientas. NO hagas preguntas. ' +
-        'Solo el reporte basado en lo que ya investigaste.',
-    });
 
-    const closing = await callWithRetry(() =>
-      client.messages.create({
-        model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
-        max_tokens: 2000,
-        system: systemPrompt,
-        // Sin tools en esta llamada para que no pueda escapar
-        messages,
-      })
-    );
+    // Para evitar context overflow, mandamos solo los ÚLTIMOS 4 mensajes
+    // (assistant + tool_results más recientes) — suficiente contexto para
+    // resumir lo investigado sin reventar el límite de tokens.
+    const closingMessages: Anthropic.MessageParam[] = [
+      messages[0], // primer user message original (instrucciones)
+      ...messages.slice(-4),
+      {
+        role: 'user',
+        content:
+          'Tu tiempo de exploración terminó. Genera AHORA el reporte final del ciclo en máximo 1500 caracteres ' +
+          'siguiendo el formato Markdown indicado. NO uses más herramientas. NO hagas preguntas. ' +
+          'Solo el reporte basado en lo que ya investigaste.',
+      },
+    ];
 
-    finalReport = closing.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as any).text)
-      .join('\n');
+    try {
+      const closing = await callWithRetry(() =>
+        client.messages.create({
+          model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
+          max_tokens: 2000,
+          system: systemPrompt,
+          // Sin tools en esta llamada para que no pueda escapar
+          messages: closingMessages,
+        })
+      );
+
+      finalReport = closing.content
+        .filter(b => b.type === 'text')
+        .map(b => (b as any).text)
+        .join('\n');
+    } catch (e) {
+      console.error('[going-agent] No se pudo generar reporte forzado:', (e as Error).message);
+      finalReport = `⚠️ *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n` +
+        `El agente exploró ${MAX_ITERATIONS} iteraciones sin llegar a una conclusión y la generación ` +
+        `forzada del reporte falló (${(e as Error).message.slice(0, 200)}).\n\n` +
+        `Revisa los logs de Cloud Run Job \`going-agent\` para ver qué se investigó.`;
+    }
   }
 
   console.log('\n📋 Reporte del agente:\n', finalReport);
