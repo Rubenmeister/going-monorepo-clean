@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { VertexAI, Content } from '@google-cloud/vertexai';
 import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton } from '../knowledge-base/system-prompt';
+import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
 
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
@@ -21,6 +22,7 @@ export class AgentService {
     private config: ConfigService,
     private conversationService: ConversationService,
     private bookingService: BookingService,
+    private locationService: LocationService,
   ) {
     this.vertexAI = new VertexAI({
       project: this.config.get<string>('GCP_PROJECT') || 'going-5d1ae',
@@ -43,7 +45,41 @@ export class AgentService {
     const conv = await this.conversationService.getOrCreate(userId);
     const lang = detectLanguage(userMessage);
     const canton = detectCanton(userMessage);
-    const systemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
+    const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
+
+    // Augmentation: detectar parroquias/cantones/provincias mencionados en
+    // el mensaje y agregar su info geográfica al system prompt. Esto hace
+    // que Gemini conozca coords exactas (para tarifa) y atractivos turísticos
+    // sin tener que adivinar.
+    const mentions = this.locationService.extractMentions(userMessage);
+    let geoContext = '';
+    if (mentions.length > 0) {
+      const lines: string[] = ['', '[Contexto geográfico de Ecuador — usa estos datos al responder]'];
+      const ambig: string[] = [];
+      for (const m of mentions) {
+        if (m.parishes.length === 1) {
+          lines.push(`• ${m.query} → ${this.locationService.describe(m.parishes[0])}`);
+        } else if (m.level === 'parroquia' && m.parishes.length > 1) {
+          // Ambigüedad real: misma parroquia en distintas provincias
+          const opciones = m.parishes
+            .map(p => `${p.parroquia} (${p.canton}, ${p.provincia})`)
+            .join(' / ');
+          ambig.push(`"${m.query}" es ambigua — opciones: ${opciones}. Pregunta al cliente cuál es.`);
+        } else {
+          // Cantón/provincia que abarca varias parroquias: mostrar resumen
+          const sample = m.parishes.slice(0, 3).map(p => p.parroquia).join(', ');
+          const more = m.parishes.length > 3 ? ` y ${m.parishes.length - 3} más` : '';
+          lines.push(`• ${m.query} es un ${m.level} con parroquias: ${sample}${more}`);
+        }
+      }
+      if (ambig.length > 0) {
+        lines.push('', '[Importante]');
+        lines.push(...ambig);
+      }
+      geoContext = lines.join('\n');
+    }
+
+    const systemPrompt = baseSystemPrompt + geoContext;
 
     const allMessages = conv.messages.slice(-10)
       .filter(m => m.content && m.content.trim().length > 0);
