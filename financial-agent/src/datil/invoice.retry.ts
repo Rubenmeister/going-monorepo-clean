@@ -198,6 +198,7 @@ async function invoiceSingleRide(ride: Ride): Promise<{
     ivaAmount:               ride.ivaAmount,
     fareTotal:               ride.fareTotal,
     description:             buildDescription(ride),
+    paymentMedio:            ride.paymentMethod,
   });
 
   // Persistir el comprobante para auditoría y para checkPendingAuthorization
