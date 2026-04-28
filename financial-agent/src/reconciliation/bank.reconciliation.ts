@@ -1,29 +1,38 @@
 import { Firestore, Timestamp } from '@google-cloud/firestore';
+import { getCompletedRides } from '../firestore/financial.service';
+import { mongoGetCapturedTransactions } from '../mongodb/transactions.repository';
 
 // ============================================================
-// Bank Reconciliation – Conciliación bancaria
-// Compara pagos capturados en Datafast vs Firestore
-// Detecta: pagos sin viaje, viajes sin pago, diferencias de monto
+// Bank Reconciliation – Conciliación bancaria (Día 5)
+//
+// Cruza transacciones reales (going-payments.transactions con status
+// succeeded) vs rides completados (going-bookings.rides con paymentRef
+// presente). Detecta:
+//   - Pagos sin viaje asociado
+//   - Viajes en tarjeta sin pago capturado
+//   - Diferencias de monto > $0.01
+//   - Pagos duplicados (mismo gateway txn id en 2+ rides)
+//
+// Persiste el resultado en Firestore `reconciliation_reports` para
+// auditoría y para que el dashboard pueda mostrarlo histórico.
 // ============================================================
 
-const db = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
+const fs = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
 
 export interface ReconciliationResult {
   date: Date;
   totalTransactions: number;
   totalAmount: number;
 
-  // Diferencias encontradas
-  paymentsWithoutRide: ReconciliationIssue[];   // Pago en Datafast sin viaje en Firestore
-  ridesWithoutPayment: ReconciliationIssue[];   // Viaje completado sin pago capturado
-  amountMismatches: ReconciliationIssue[];      // Monto diferente entre Datafast y Firestore
-  duplicatePayments: ReconciliationIssue[];     // Mismo transactionId en 2 viajes
+  paymentsWithoutRide: ReconciliationIssue[];
+  ridesWithoutPayment: ReconciliationIssue[];
+  amountMismatches:    ReconciliationIssue[];
+  duplicatePayments:   ReconciliationIssue[];
 
-  // Resumen
-  issueCount: number;
-  isBalanced: boolean;
-  expectedBalance: number;   // Lo que debería estar en banco
-  variance: number;          // Diferencia encontrada
+  issueCount:      number;
+  isBalanced:      boolean;
+  expectedBalance: number;
+  variance:        number;
 }
 
 export interface ReconciliationIssue {
@@ -36,127 +45,110 @@ export interface ReconciliationIssue {
   description: string;
 }
 
-// ─── Conciliación diaria ──────────────────────────────────────
 export async function reconcileDay(date?: Date): Promise<ReconciliationResult> {
   const d    = date || new Date();
   const from = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
   const to   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
 
-  console.log(`[reconciliation] Reconciling ${from.toLocaleDateString('es-EC')}`);
+  console.log(`[reconciliation] Conciliando ${from.toLocaleDateString('es-EC')}`);
 
-  // Obtener viajes completados del día
-  const ridesSnap = await db.collection('rides')
-    .where('status', '==', 'completed')
-    .where('completedAt', '>=', Timestamp.fromDate(from))
-    .where('completedAt', '<=', Timestamp.fromDate(to))
-    .get();
-
-  // Obtener transacciones de pago del día
-  const txSnap = await db.collection('payment_transactions')
-    .where('status', '==', 'captured')
-    .where('createdAt', '>=', Timestamp.fromDate(from))
-    .where('createdAt', '<=', Timestamp.fromDate(to))
-    .get();
-
-  const rides = ridesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-  const transactions = txSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Lectura paralela: Mongo rides (Día 1) + Mongo transactions (Día 5)
+  const [rides, transactions] = await Promise.all([
+    getCompletedRides(from, to),
+    mongoGetCapturedTransactions(from, to),
+  ]);
 
   const issues: ReconciliationIssue[] = [];
 
   // ── 1. Pagos sin viaje asociado ───────────────────────────
-  const rideIds = new Set(rides.map((r: Record<string, unknown>) => r.id));
+  const rideIds = new Set(rides.map(r => r.id));
   for (const tx of transactions) {
-    const t = tx as Record<string, unknown>;
-    if (t.rideId && !rideIds.has(t.rideId)) {
+    if (tx.rideId && !rideIds.has(tx.rideId)) {
       issues.push({
-        type: 'payment_without_ride',
-        severity: 'critical',
-        transactionId: t.id as string,
-        rideId: t.rideId as string,
-        actualAmount: t.amount as number,
-        description: `Pago ${t.id} de $${t.amount} no tiene viaje asociado (rideId: ${t.rideId})`,
+        type:           'payment_without_ride',
+        severity:       'critical',
+        transactionId:  tx.id,
+        rideId:         tx.rideId,
+        actualAmount:   tx.amount,
+        description:    `Pago ${tx.id} de $${tx.amount} sin viaje asociado (rideId: ${tx.rideId})`,
       });
     }
   }
 
-  // ── 2. Viajes sin pago capturado ──────────────────────────
-  const txRideIds = new Set(transactions.map((t: Record<string, unknown>) => t.rideId));
+  // ── 2. Viajes en tarjeta sin pago capturado ───────────────
+  const txRideIds = new Set(transactions.map(t => t.rideId).filter(Boolean));
   for (const ride of rides) {
-    const r = ride as Record<string, unknown>;
-    if (r.paymentMethod === 'card' && r.paymentStatus !== 'captured' && !txRideIds.has(r.id)) {
+    if (ride.paymentMethod === 'card' && ride.paymentStatus !== 'captured' && !txRideIds.has(ride.id)) {
       issues.push({
-        type: 'ride_without_payment',
-        severity: 'critical',
-        rideId: r.id as string,
-        expectedAmount: r.fareTotal as number,
-        description: `Viaje ${r.id} completado ($${r.fareTotal}) sin pago capturado`,
+        type:           'ride_without_payment',
+        severity:       'critical',
+        rideId:         ride.id,
+        expectedAmount: ride.fareTotal,
+        description:    `Viaje ${ride.id.slice(-6)} completado ($${ride.fareTotal}) sin pago capturado`,
       });
     }
   }
 
   // ── 3. Diferencias de monto ───────────────────────────────
-  const txByRide = new Map<string, Record<string, unknown>>();
-  transactions.forEach((t: Record<string, unknown>) => {
-    if (t.rideId) txByRide.set(t.rideId as string, t);
-  });
+  const txByRide = new Map<string, typeof transactions[number]>();
+  transactions.forEach(t => { if (t.rideId) txByRide.set(t.rideId, t); });
 
   for (const ride of rides) {
-    const r = ride as Record<string, unknown>;
-    const tx = txByRide.get(r.id as string);
-    if (tx && Math.abs((tx.amount as number) - (r.fareTotal as number)) > 0.01) {
+    const tx = txByRide.get(ride.id);
+    if (tx && Math.abs(tx.amount - ride.fareTotal) > 0.01) {
       issues.push({
-        type: 'amount_mismatch',
-        severity: 'critical',
-        rideId: r.id as string,
-        transactionId: tx.id as string,
-        expectedAmount: r.fareTotal as number,
-        actualAmount: tx.amount as number,
-        description: `Monto diferente en viaje ${r.id}: Firestore $${r.fareTotal} vs Datafast $${tx.amount}`,
+        type:           'amount_mismatch',
+        severity:       'critical',
+        rideId:         ride.id,
+        transactionId:  tx.id,
+        expectedAmount: ride.fareTotal,
+        actualAmount:   tx.amount,
+        description:    `Monto diferente en viaje ${ride.id.slice(-6)}: ride $${ride.fareTotal} vs txn $${tx.amount}`,
       });
     }
   }
 
   // ── 4. Pagos duplicados ───────────────────────────────────
   const txIdCount = new Map<string, number>();
-  transactions.forEach((t: Record<string, unknown>) => {
-    const gatewayId = t.gatewayTransactionId as string;
-    if (gatewayId) txIdCount.set(gatewayId, (txIdCount.get(gatewayId) || 0) + 1);
+  transactions.forEach(t => {
+    const gw = t.gatewayTransactionId;
+    if (gw) txIdCount.set(gw, (txIdCount.get(gw) || 0) + 1);
   });
   txIdCount.forEach((count, gatewayId) => {
     if (count > 1) {
       issues.push({
-        type: 'duplicate',
-        severity: 'critical',
+        type:          'duplicate',
+        severity:      'critical',
         transactionId: gatewayId,
-        description: `Transacción duplicada ${gatewayId} aparece ${count} veces`,
+        description:   `Transacción duplicada ${gatewayId} aparece ${count} veces`,
       });
     }
   });
 
-  const totalAmount = transactions.reduce((s: number, t: Record<string, unknown>) => s + (t.amount as number || 0), 0);
+  const totalAmount     = transactions.reduce((s, t) => s + (t.amount || 0), 0);
   const expectedBalance = rides
-    .filter((r: Record<string, unknown>) => r.paymentMethod === 'card')
-    .reduce((s: number, r: Record<string, unknown>) => s + (r.fareTotal as number || 0), 0);
-  const variance = totalAmount - expectedBalance;
+    .filter(r => r.paymentMethod === 'card')
+    .reduce((s, r) => s + (r.fareTotal || 0), 0);
+  const variance        = totalAmount - expectedBalance;
 
   const result: ReconciliationResult = {
     date: from,
-    totalTransactions: transactions.length,
-    totalAmount: round2(totalAmount),
+    totalTransactions:   transactions.length,
+    totalAmount:         round2(totalAmount),
     paymentsWithoutRide: issues.filter(i => i.type === 'payment_without_ride'),
     ridesWithoutPayment: issues.filter(i => i.type === 'ride_without_payment'),
-    amountMismatches:   issues.filter(i => i.type === 'amount_mismatch'),
-    duplicatePayments:  issues.filter(i => i.type === 'duplicate'),
-    issueCount: issues.length,
-    isBalanced: issues.length === 0 && Math.abs(variance) < 0.01,
-    expectedBalance: round2(expectedBalance),
-    variance: round2(variance),
+    amountMismatches:    issues.filter(i => i.type === 'amount_mismatch'),
+    duplicatePayments:   issues.filter(i => i.type === 'duplicate'),
+    issueCount:          issues.length,
+    isBalanced:          issues.length === 0 && Math.abs(variance) < 0.01,
+    expectedBalance:     round2(expectedBalance),
+    variance:            round2(variance),
   };
 
-  // Guardar resultado en Firestore
-  await db.collection('reconciliation_reports').add({
+  // Persistir el reporte en Firestore para histórico/auditoría
+  await fs.collection('reconciliation_reports').add({
     ...result,
-    date: Timestamp.fromDate(from),
+    date:      Timestamp.fromDate(from),
     issues,
     createdAt: Timestamp.now(),
   });
