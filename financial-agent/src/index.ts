@@ -1,5 +1,6 @@
 import { runFinancialMonitor } from './monitors/financial.monitor';
 import { closeMongoClient, getRidesDb } from './mongodb/connection';
+import { seedTestRide, cleanupTestRides, showTestRideStatus } from './test/seed-test-ride';
 
 // ============================================================
 // Going – Financial Agent Entry Point
@@ -46,10 +47,35 @@ async function main(): Promise<void> {
   try {
     // Día 1: smoke test de la conexión MongoDB antes del monitor
     await smokeTestMongoDB();
+
+    // Modo de prueba E2E (Día 2): inserta un ride, deja que el loop
+    // lo facture, verifica el resultado, limpia. Solo activable
+    // explícitamente con TEST_SEED=1 — DATIL_ENV debe ser '1' (sandbox).
+    let seededRideId: string | null = null;
+    if (process.env.TEST_SEED === '1') {
+      if (process.env.DATIL_ENV !== '1') {
+        throw new Error('TEST_SEED solo permitido cuando DATIL_ENV=1 (sandbox)');
+      }
+      console.log('🧪 [test-mode] TEST_SEED=1 — corriendo prueba E2E de facturación');
+      const seeded = await seedTestRide();
+      seededRideId = seeded._id;
+    }
+
     await runFinancialMonitor();
+
+    if (seededRideId) {
+      await showTestRideStatus(seededRideId);
+      const deleted = await cleanupTestRides();
+      console.log(`🧹 [test-mode] limpieza: ${deleted} ride(s) eliminados`);
+    }
+
     console.log('✅ Financial Agent completed successfully');
   } catch (error) {
     console.error('❌ Financial Agent failed:', error);
+    if (process.env.TEST_SEED === '1') {
+      // Intentar limpiar incluso si hubo error
+      await cleanupTestRides().catch(() => {});
+    }
     await closeMongoClient().catch(() => {});
     process.exit(1);
   }
