@@ -154,16 +154,27 @@ export class TelegramController {
 
       this.logger.log(`Incoming TG message from ${chatId}: "${messageText.slice(0, 50)}"`);
 
+      // ─── Comandos de operador (solo si chat_id está en OPERATOR_TELEGRAM_CHAT_IDS) ─
+      const operatorIds = this.getOperatorChatIds();
+      const isOperator  = operatorIds.includes(String(chatId));
+      if (isOperator && messageText.startsWith('/')) {
+        const handled = await this.handleOperatorCommand(chatId, messageText);
+        if (handled) return;
+      }
+
       // userId persistente por chat de Telegram. Prefijo `tg:` para no
       // colisionar con números de WhatsApp (que son numéricos también).
       const userId = `tg:${chatId}`;
 
       const conv = await this.conversationService.getOrCreate(userId, 'telegram');
-      if (conv.state === 'HUMAN_ACTIVE') return;
+      if (conv.state === 'HUMAN_ACTIVE') return; // operador respondiendo manual
 
       await this.telegramService.sendChatAction(chatId, wasVoice ? 'record_voice' : 'typing');
 
       const reply = await this.agentService.respond(userId, messageText);
+
+      // null = bot silenciado (handoff en curso). Mensaje ya quedó guardado.
+      if (!reply) return;
 
       if (wasVoice) {
         const lang = detectLanguage(messageText);
@@ -213,5 +224,118 @@ export class TelegramController {
     });
     const data = await res.json();
     return { ok: res.ok, data, webhookUrl };
+  }
+
+  // ─── Comandos de operador (chat_id ∈ OPERATOR_TELEGRAM_CHAT_IDS) ──
+  //
+  //   /queue                  → lista conversaciones esperando handoff
+  //   /take <user_id>         → toma una conversación (state → HUMAN_ACTIVE)
+  //   /reply <user_id> <text> → envía mensaje al cliente como operador
+  //   /resolve <user_id>      → cierra el handoff (bot vuelve a responder)
+  //
+  // Ejemplo: /reply tg:5934567890 Hola Juan, soy María de Going.
+
+  private getOperatorChatIds(): string[] {
+    const raw = this.config.get<string>('OPERATOR_TELEGRAM_CHAT_IDS') ?? '';
+    return raw.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  /** Devuelve true si el comando fue manejado (no debe seguir como mensaje normal). */
+  private async handleOperatorCommand(operatorChatId: number, text: string): Promise<boolean> {
+    const trimmed = text.trim();
+
+    // /queue
+    if (trimmed === '/queue') {
+      const queue = await this.conversationService.getHandoffQueue();
+      if (queue.length === 0) {
+        await this.telegramService.sendMessage(operatorChatId,
+          '📋 *Cola de handoff*\n\nNo hay conversaciones esperando 🟢');
+        return true;
+      }
+      const lines = ['📋 *Cola de handoff*', ''];
+      for (const c of queue.slice(0, 10)) {
+        const emoji = c.priority === 'RED' ? '🔴' : c.priority === 'ORANGE' ? '🟠' : '🟡';
+        const userIdShort = c.userId.length > 30 ? c.userId.slice(0, 30) + '…' : c.userId;
+        const reason = (c.handoffReason || '').slice(0, 80);
+        lines.push(`${emoji} \`${userIdShort}\``);
+        lines.push(`   _${reason}_`);
+        lines.push(`   /take ${c.userId}`);
+        lines.push('');
+      }
+      if (queue.length > 10) lines.push(`...y ${queue.length - 10} más`);
+      await this.telegramService.sendMessage(operatorChatId, lines.join('\n'));
+      return true;
+    }
+
+    // /take <user_id>
+    if (trimmed.startsWith('/take ')) {
+      const userId = trimmed.slice(6).trim();
+      if (!userId) {
+        await this.telegramService.sendMessage(operatorChatId, 'Uso: /take <user_id>');
+        return true;
+      }
+      await this.conversationService.acceptHandoff(userId, `tg:${operatorChatId}`);
+      const ctx = await this.conversationService.buildOperatorContext(userId);
+      await this.telegramService.sendMessage(operatorChatId,
+        `✅ Tomaste la conversación \`${userId}\`.\n\n` +
+        `${ctx}\n\n` +
+        `Para responder: /reply ${userId} <mensaje>\n` +
+        `Para cerrar: /resolve ${userId}`);
+      return true;
+    }
+
+    // /reply <user_id> <text>
+    if (trimmed.startsWith('/reply ')) {
+      const rest = trimmed.slice(7).trim();
+      const spaceIdx = rest.indexOf(' ');
+      if (spaceIdx === -1) {
+        await this.telegramService.sendMessage(operatorChatId, 'Uso: /reply <user_id> <mensaje>');
+        return true;
+      }
+      const userId      = rest.slice(0, spaceIdx);
+      const replyText   = rest.slice(spaceIdx + 1);
+      const targetChatId = userId.startsWith('tg:') ? Number(userId.slice(3)) : null;
+      if (!targetChatId) {
+        await this.telegramService.sendMessage(operatorChatId,
+          `❌ user_id \`${userId}\` no parece Telegram (debe empezar con tg:).\n` +
+          `Para WhatsApp usa POST /whatsapp/operator-message.`);
+        return true;
+      }
+      const sent = await this.telegramService.sendMessage(targetChatId, replyText);
+      if (sent) {
+        await this.conversationService.addMessage(userId, 'assistant', `[OPERADOR] ${replyText}`);
+        await this.telegramService.sendMessage(operatorChatId, '✅ enviado');
+      } else {
+        await this.telegramService.sendMessage(operatorChatId, '❌ no se pudo enviar — verifica el user_id');
+      }
+      return true;
+    }
+
+    // /resolve <user_id>
+    if (trimmed.startsWith('/resolve ')) {
+      const userId = trimmed.slice(9).trim();
+      if (!userId) {
+        await this.telegramService.sendMessage(operatorChatId, 'Uso: /resolve <user_id>');
+        return true;
+      }
+      await this.conversationService.resolveHandoff(userId);
+      await this.telegramService.sendMessage(operatorChatId,
+        `✅ Conversación \`${userId}\` cerrada. El bot vuelve a responder.`);
+      return true;
+    }
+
+    // /ops-help
+    if (trimmed === '/ops-help' || trimmed === '/operator') {
+      await this.telegramService.sendMessage(operatorChatId,
+        '*Comandos de operador*\n\n' +
+        '/queue - cola de handoff\n' +
+        '/take <user_id> - tomar conversación\n' +
+        '/reply <user_id> <texto> - responder como operador\n' +
+        '/resolve <user_id> - cerrar handoff (bot vuelve a responder)\n\n' +
+        'Para comandos normales (cliente): /start /help /chat-id');
+      return true;
+    }
+
+    return false; // No fue comando de operador, dejar que pase como mensaje normal
   }
 }

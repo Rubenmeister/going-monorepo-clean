@@ -30,12 +30,12 @@ export class AgentService {
     });
   }
 
-  async respond(userId: string, userMessage: string): Promise<string> {
+  async respond(userId: string, userMessage: string): Promise<string | null> {
     this.conversationService.addMessage(userId, 'user', userMessage);
 
     const { needed, priority } = this.conversationService.detectHandoffTrigger(userMessage);
     if (needed) {
-      this.conversationService.requestHandoff(userId, userMessage, priority);
+      await this.conversationService.requestHandoff(userId, userMessage, priority);
       const lang = detectLanguage(userMessage);
       return lang === 'en'
         ? "🙋 I'm connecting you with a Going team member. Please wait a moment..."
@@ -43,6 +43,15 @@ export class AgentService {
     }
 
     const conv = await this.conversationService.getOrCreate(userId);
+
+    // Si la conversación ya está en escalación o un humano la atiende,
+    // el bot se calla. El mensaje queda guardado para que el operador
+    // tenga contexto cuando entre. Devolvemos null para que el caller
+    // sepa que no hay respuesta.
+    if (conv.state === 'HANDOFF_REQUESTED' || conv.state === 'HUMAN_ACTIVE') {
+      this.logger.log(`Bot silenciado para ${userId} (state=${conv.state}) — mensaje guardado`);
+      return null;
+    }
     const lang = detectLanguage(userMessage);
     const canton = detectCanton(userMessage);
     const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
