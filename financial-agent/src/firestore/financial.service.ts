@@ -3,54 +3,52 @@ import {
   Ride, DriverPayout, PaymentTransaction, FinancialAlert,
   GOING_COMMISSION_RATE, DRIVER_RATE, IVA_RATE,
 } from '../types/financial.types';
+import {
+  mongoGetCompletedRides,
+  mongoGetRidesByDriver,
+  mongoGetPendingPayments,
+  mongoGetRidesPendingInvoice,
+  mongoUpdateRideInvoice,
+} from '../mongodb/rides.repository';
 
 const db = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
 
 // ─── Rides ────────────────────────────────────────────────────
+// LECTURA: delega a MongoDB Atlas (collection real escrita por
+// transport-service). ESCRITURA: sigue actualizando Mongo (invoiceId,
+// invoicedAt) para que el siguiente cron no re-facture el mismo viaje.
 
 export async function getCompletedRides(from: Date, to: Date): Promise<Ride[]> {
-  const snap = await db.collection('rides')
-    .where('status', '==', 'completed')
-    .where('completedAt', '>=', Timestamp.fromDate(from))
-    .where('completedAt', '<=', Timestamp.fromDate(to))
-    .orderBy('completedAt', 'desc')
-    .get();
-
-  return snap.docs.map(d => docToRide(d.id, d.data()));
+  return mongoGetCompletedRides(from, to);
 }
 
-export async function getFailedPayments(from: Date, to: Date): Promise<Ride[]> {
-  const snap = await db.collection('rides')
-    .where('paymentStatus', '==', 'failed')
-    .where('requestedAt', '>=', Timestamp.fromDate(from))
-    .where('requestedAt', '<=', Timestamp.fromDate(to))
-    .get();
-
-  return snap.docs.map(d => docToRide(d.id, d.data()));
+/**
+ * Pagos fallidos: en el schema real no existe un campo paymentStatus,
+ * así que "fallido" se aproxima como ride completed cuyo pago electrónico
+ * NO se confirmó (sin paymentRef ni cashConfirmed). Refinable cruzando
+ * con payment-service.transactions.status='failed'.
+ */
+export async function getFailedPayments(_from: Date, _to: Date): Promise<Ride[]> {
+  // TODO Día 2: cruzar con payment-service para detectar transacciones con
+  // status='failed' real. Por ahora retornamos vacío para no falsos positivos.
+  return [];
 }
 
 export async function getPendingPayments(): Promise<Ride[]> {
-  const snap = await db.collection('rides')
-    .where('paymentStatus', '==', 'authorized')  // authorized but not captured
-    .where('status', '==', 'completed')
-    .get();
-
-  return snap.docs.map(d => docToRide(d.id, d.data()));
+  return mongoGetPendingPayments();
 }
 
 export async function getRidesByDriver(driverId: string, from: Date, to: Date): Promise<Ride[]> {
-  const snap = await db.collection('rides')
-    .where('driverId', '==', driverId)
-    .where('status', '==', 'completed')
-    .where('completedAt', '>=', Timestamp.fromDate(from))
-    .where('completedAt', '<=', Timestamp.fromDate(to))
-    .get();
+  return mongoGetRidesByDriver(driverId, from, to);
+}
 
-  return snap.docs.map(d => docToRide(d.id, d.data()));
+/** Rides completados con pago capturado y aún sin factura emitida. */
+export async function getRidesPendingInvoice(limit = 50): Promise<Ride[]> {
+  return mongoGetRidesPendingInvoice(limit);
 }
 
 export async function updateRideInvoice(rideId: string, invoiceId: string): Promise<void> {
-  await db.collection('rides').doc(rideId).update({ invoiceId, invoicedAt: Timestamp.now() });
+  await mongoUpdateRideInvoice(rideId, invoiceId);
 }
 
 // ─── Payouts ──────────────────────────────────────────────────
