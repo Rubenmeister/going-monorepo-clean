@@ -32,11 +32,11 @@ export async function seedTestRide(): Promise<SeededRide> {
     pickupLocation:  { address: 'Av. Amazonas y Naciones Unidas, Quito (TEST)' },
     dropoffLocation: { address: 'Aeropuerto Mariscal Sucre, Tababela (TEST)' },
     fare: {
-      total:    25.00,
-      subtotal: 21.74,    // 25 / 1.15
-      iva:       3.26,    // 25 - 21.74
+      total:    1.00,
+      subtotal: 0.87,    // 25 / 1.15
+      iva:       0.13,    // 25 - 0.87
     },
-    finalFare:     { total: 25.00 },
+    finalFare:     { total: 1.00 },
     distanceKm:    18.4,
     paymentMethod: 'cash',
     cashConfirmed: true,
