@@ -21,8 +21,8 @@ steps:
       - going-agent
       - --image=gcr.io/$PROJECT_ID/going-agent:latest
       - --region=us-central1
-      - --memory=512Mi
-      - --cpu=1
+      - --memory=2Gi
+      - --cpu=2
       - --max-retries=1
       - --task-timeout=300s
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git
