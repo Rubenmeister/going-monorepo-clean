@@ -1,6 +1,6 @@
 import { runFinancialMonitor } from './monitors/financial.monitor';
 import { closeMongoClient, getRidesDb } from './mongodb/connection';
-import { seedTestRide, cleanupTestRides, showTestRideStatus } from './test/seed-test-ride';
+import { seedTestRide, cleanupTestRides, showTestRideStatus, cancelTestInvoice } from './test/seed-test-ride';
 
 // ============================================================
 // Going – Financial Agent Entry Point
@@ -48,15 +48,13 @@ async function main(): Promise<void> {
     // Día 1: smoke test de la conexión MongoDB antes del monitor
     await smokeTestMongoDB();
 
-    // Modo de prueba E2E (Día 2): inserta un ride, deja que el loop
-    // lo facture, verifica el resultado, limpia. Solo activable
-    // explícitamente con TEST_SEED=1 — DATIL_ENV debe ser '1' (sandbox).
+    // Modo de prueba E2E (Día 2/3): inserta un ride, deja que el loop
+    // lo facture, verifica el resultado, limpia. Si DATIL_ENV=2 (prod),
+    // anula también la factura emitida para no contaminar el SRI.
     let seededRideId: string | null = null;
     if (process.env.TEST_SEED === '1') {
-      if (process.env.DATIL_ENV !== '1') {
-        throw new Error('TEST_SEED solo permitido cuando DATIL_ENV=1 (sandbox)');
-      }
-      console.log('🧪 [test-mode] TEST_SEED=1 — corriendo prueba E2E de facturación');
+      const env = process.env.DATIL_ENV === '2' ? 'PRODUCCIÓN SRI' : 'SANDBOX';
+      console.log(`🧪 [test-mode] TEST_SEED=1 — corriendo prueba E2E (${env})`);
       const seeded = await seedTestRide();
       seededRideId = seeded._id;
     }
@@ -64,7 +62,11 @@ async function main(): Promise<void> {
     await runFinancialMonitor();
 
     if (seededRideId) {
-      await showTestRideStatus(seededRideId);
+      const issuedInvoiceId = await showTestRideStatus(seededRideId);
+      // En producción: anular la factura emitida para no contaminar SRI
+      if (issuedInvoiceId && process.env.DATIL_ENV === '2') {
+        await cancelTestInvoice(issuedInvoiceId);
+      }
       const deleted = await cleanupTestRides();
       console.log(`🧹 [test-mode] limpieza: ${deleted} ride(s) eliminados`);
     }
