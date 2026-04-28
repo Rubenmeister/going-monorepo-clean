@@ -8,7 +8,9 @@ import { BookingService } from '../booking/booking.service';
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
 
-const GEMINI_MODEL = 'gemini-2.5-flash-preview-04-17';
+// Modelo estable (sin sufijo -preview-XX-XX). El preview que se usaba antes
+// fue deprecado por Vertex (403 PERMISSION_DENIED con "or it may not exist").
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 @Injectable()
 export class AgentService {
