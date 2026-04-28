@@ -153,7 +153,9 @@ export async function getDailyRevenueStats(): Promise<{
 }> {
   const drivers = await getActiveDrivers();
   const totalRevenue = drivers.reduce((sum, d) => sum + (d.revenue?.today || 0), 0);
-  const driversAtTarget = drivers.filter(d => (d.revenue?.today || 0) >= 100).length;
+  // Meta diaria calibrada a $70 — driversAtTarget = los que alcanzaron meta;
+  // driversBelow50 mantenido para detectar conductores con desempeño crítico.
+  const driversAtTarget = drivers.filter(d => (d.revenue?.today || 0) >= 70).length;
   const driversBelow50 = drivers.filter(d => (d.revenue?.today || 0) < 50).length;
 
   const top = drivers.sort((a, b) => (b.revenue?.today || 0) - (a.revenue?.today || 0))[0];

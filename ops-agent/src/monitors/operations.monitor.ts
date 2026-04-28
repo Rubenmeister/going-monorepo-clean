@@ -49,7 +49,8 @@ export async function checkRidesSinConductor(): Promise<void> {
   console.log('[Monitor] Verificando viajes sin conductor...');
   try {
     // FIX: usar Firestore Timestamp, no ISO string
-    const cutoff = Timestamp.fromDate(new Date(Date.now() - 10 * 60 * 1000));
+    // Calibrado: alerta tras 2 minutos sin conductor asignado (era 10).
+    const cutoff = Timestamp.fromDate(new Date(Date.now() - 2 * 60 * 1000));
     const snap = await db.collection('rides')
       .where('status', '==', 'pending')
       .where('createdAt', '<=', cutoff)
@@ -131,7 +132,7 @@ export async function checkConductoresInactivos(): Promise<void> {
   }
 }
 
-// ─── 3. Control de ingresos vs meta $100 ──────────────────────
+// ─── 3. Control de ingresos vs meta diaria $70 ─────────────────
 export async function checkIngresos(): Promise<void> {
   console.log('[Monitor] Verificando ingresos del día...');
   try {
@@ -142,7 +143,9 @@ export async function checkIngresos(): Promise<void> {
     if (hora !== 12 && hora !== 18) return;
     if (!isPrimaryRunOfHour()) return;
 
-    const threshold = hora === 12 ? 30 : 60; // $30 al mediodía, $60 a las 6pm
+    // Meta diaria $70 — proporcional según hora del día
+    //   12:00 (mitad jornada) → $35   |   18:00 (final jornada) → $60
+    const threshold = hora === 12 ? 35 : 60;
     const horaStr = hora === 12 ? '12:00' : '18:00';
 
     const conductoresBajos = await getDriversBelowRevenueTarget(threshold);
@@ -160,14 +163,13 @@ export async function checkIngresos(): Promise<void> {
       }
     }
 
-    // Felicitar a los que alcanzaron $100
-    // FIX: usar campo booleano goalCelebratedToday en lugar de .includes() sobre un Date
+    // Felicitar a los que alcanzaron meta diaria $70
     const conductoresActivos = await getActiveDrivers();
     for (const conductor of conductoresActivos) {
       try {
         const revenue = conductor.revenue?.today || 0;
         const yaCelebrado = conductor.revenue?.goalCelebratedToday === true;
-        if (revenue >= 100 && !yaCelebrado) {
+        if (revenue >= 70 && !yaCelebrado) {
           const msg = alertMetaAlcanzada(
             `${conductor.personal.nombre} ${conductor.personal.apellido}`,
             revenue
@@ -294,10 +296,10 @@ export async function checkCalificaciones(): Promise<void> {
   }
 }
 
-// ─── 6. Reporte diario (8pm Ecuador) ──────────────────────────
+// ─── 6. Reporte diario (21:00 Ecuador) ─────────────────────────
 export async function enviarReporteDiario(): Promise<void> {
-  if (currentHour() !== 20) return;
-  if (!isPrimaryRunOfHour()) return; // evitar duplicado en la ejecución de las 20:30
+  if (currentHour() !== 21) return;
+  if (!isPrimaryRunOfHour()) return; // evitar duplicado en la ejecución de las 21:30
   console.log('[Monitor] Generando reporte diario...');
   try {
     const GOING_COMMISSION = parseFloat(process.env.GOING_COMMISSION_RATE || '0.15');

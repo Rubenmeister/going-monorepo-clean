@@ -66,9 +66,9 @@ export interface RevenueData {
   today: number;
   thisWeek: number;
   thisMonth: number;
-  dailyTarget: number;          // $100 default
+  dailyTarget: number;          // $70 default
   lastRideAt?: string;
-  goalCelebratedToday?: boolean; // true si ya se envió alerta de meta $100 alcanzada hoy
+  goalCelebratedToday?: boolean; // true si ya se envió alerta de meta $70 alcanzada hoy
 }
 
 export interface AcademyData {
@@ -233,7 +233,7 @@ export type AlertType =
   | 'low_rating'             // calificación bajo 4.0
   | 'academy_inactive'       // sin capacitación +30 días
   | 'driver_offline_peak'    // offline en hora pico
-  | 'daily_target_achieved'; // alcanzó $100 del día 🎉
+  | 'daily_target_achieved'; // alcanzó $70 del día 🎉
 
 export interface Alert {
   id: string;
