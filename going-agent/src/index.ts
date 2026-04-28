@@ -7,6 +7,34 @@ import { FilesystemTool } from './tools/filesystem';
 import { CloudRunTool } from './tools/cloudrun';
 import { MemoryStore } from './memory/context';
 
+// ── Notificación al canal Telegram (para que el reporte se vea) ────────────
+async function sendTelegramReport(text: string): Promise<void> {
+  const token  = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) {
+    console.warn('[going-agent] sin TELEGRAM_BOT_TOKEN/CHAT_ID — reporte solo a logs');
+    return;
+  }
+  // Telegram tope: 4096 chars. Cortamos con margen.
+  const body = text.length > 3800 ? text.slice(0, 3800) + '\n\n…(truncado)' : text;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: body,
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      }),
+    });
+    const data = await res.json() as { ok: boolean; description?: string };
+    if (!data.ok) console.error('[going-agent] Telegram error:', data.description);
+  } catch (e) {
+    console.error('[going-agent] Excepción Telegram:', (e as Error).message);
+  }
+}
+
 // ── Asegurar que tenemos el repo clonado en este contenedor ───────────────
 // El going-agent es un autonomous code agent que necesita acceso al repo
 // (vía git diff, log, write_file, commit, push). Como Cloud Run Jobs no
@@ -196,14 +224,18 @@ Tu función es mantener el monorepo en buen estado. En cada ciclo debes:
 2. Revisar builds fallidos
 3. Si encuentras un problema, leer el código relevante y proponer/aplicar el fix
 4. Hacer commit del fix en la rama "${config.agentBranch}" (NUNCA en main)
-5. Reportar qué hiciste
+5. Reportar concisamente qué encontraste y qué hiciste
 
 Reglas estrictas:
 - NUNCA modificar archivos en: ${config.blacklist.join(', ')}
 - NUNCA hacer commit directo a main
 - NUNCA borrar archivos
 - Si no estás seguro de un fix, solo reporta el problema sin modificar código
-- Siempre explicar qué encontraste y qué hiciste
+- NUNCA termines con preguntas al usuario tipo "¿Quieres que profundice en X?"
+  — el reporte va a un canal Telegram automático, nadie va a responder.
+- Sé conciso: el reporte final debe caber en 1500 caracteres (Telegram).
+  Usa Markdown: títulos con \`*Título*\`, listas con \`-\`, código con \`\\\`comando\\\`\`.
+  Empieza con un emoji de status: ✅ todo OK, ⚠️ problemas detectados, 🚨 crítico.
 
 El stack es: NestJS 11 + Fastify 5 (api-gateway), NestJS + Express (servicios), Next.js 14 (frontend), MongoDB Atlas, Cloud Run, Cloud Build.`;
 
@@ -223,7 +255,7 @@ Reporta todo lo que encuentres.`,
 
     const response = await callWithRetry(() =>
       client.messages.create({
-        model: process.env.AGENT_MODEL || 'claude-haiku-4-5-20251001',
+        model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
         max_tokens: 4096,
         system: systemPrompt,
         tools,
@@ -241,6 +273,16 @@ Reporta todo lo que encuentres.`,
         .map(b => (b as any).text)
         .join('\n');
       console.log('\n📋 Reporte del agente:\n', text);
+
+      // Enviar al Telegram solo si hay contenido sustancial
+      // (evita spam si el agente terminó sin nada interesante)
+      const trimmed = text.trim();
+      if (trimmed.length > 50) {
+        const header = `🤖 *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n`;
+        await sendTelegramReport(header + trimmed);
+      } else {
+        console.log('[going-agent] reporte muy corto, no se envía a Telegram');
+      }
       break;
     }
 
