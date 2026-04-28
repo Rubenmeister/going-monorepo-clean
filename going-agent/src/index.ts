@@ -249,8 +249,11 @@ Reporta todo lo que encuentres.`,
   ];
 
   // Agentic loop
+  const MAX_ITERATIONS = 15;
   let iterations = 0;
-  while (iterations < 10) {
+  let finalReport = '';
+
+  while (iterations < MAX_ITERATIONS) {
     iterations++;
 
     const response = await callWithRetry(() =>
@@ -263,26 +266,13 @@ Reporta todo lo que encuentres.`,
       })
     );
 
-    // Agregar respuesta del asistente
     messages.push({ role: 'assistant', content: response.content });
 
     if (response.stop_reason === 'end_turn') {
-      // El agente terminó — mostrar reporte final
-      const text = response.content
+      finalReport = response.content
         .filter(b => b.type === 'text')
         .map(b => (b as any).text)
         .join('\n');
-      console.log('\n📋 Reporte del agente:\n', text);
-
-      // Enviar al Telegram solo si hay contenido sustancial
-      // (evita spam si el agente terminó sin nada interesante)
-      const trimmed = text.trim();
-      if (trimmed.length > 50) {
-        const header = `🤖 *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n`;
-        await sendTelegramReport(header + trimmed);
-      } else {
-        console.log('[going-agent] reporte muy corto, no se envía a Telegram');
-      }
       break;
     }
 
@@ -305,6 +295,44 @@ Reporta todo lo que encuentres.`,
         messages.splice(1, messages.length - 40);
       }
     }
+  }
+
+  // Si nunca hubo end_turn (el agente siguió tirando tools), forzar
+  // un cierre con una request final sin tools que solo pida el reporte.
+  if (!finalReport) {
+    console.log(`\n⏰ Iteraciones máximas (${MAX_ITERATIONS}) alcanzadas — forzando reporte final`);
+    messages.push({
+      role: 'user',
+      content:
+        'Tu tiempo de exploración terminó. Genera AHORA el reporte final del ciclo en máximo 1500 caracteres ' +
+        'siguiendo el formato Markdown indicado. NO uses más herramientas. NO hagas preguntas. ' +
+        'Solo el reporte basado en lo que ya investigaste.',
+    });
+
+    const closing = await callWithRetry(() =>
+      client.messages.create({
+        model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
+        max_tokens: 2000,
+        system: systemPrompt,
+        // Sin tools en esta llamada para que no pueda escapar
+        messages,
+      })
+    );
+
+    finalReport = closing.content
+      .filter(b => b.type === 'text')
+      .map(b => (b as any).text)
+      .join('\n');
+  }
+
+  console.log('\n📋 Reporte del agente:\n', finalReport);
+
+  const trimmed = finalReport.trim();
+  if (trimmed.length > 50) {
+    const header = `🤖 *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n`;
+    await sendTelegramReport(header + trimmed);
+  } else {
+    console.log('[going-agent] reporte muy corto, no se envía a Telegram');
   }
 }
 
