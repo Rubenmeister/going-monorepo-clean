@@ -1,15 +1,18 @@
 /**
  * Modo de prueba E2E: inserta un ride en MongoDB Atlas, espera a que el
- * loop de facturación lo procese, y limpia. Se activa con TEST_SEED=1.
+ * loop de facturación lo procese, y limpia.
  *
- * Solo se debe usar mientras DATIL_ENV=1 (sandbox) — emite una factura
- * REAL en Datil pero en su entorno de pruebas, así no contamina el SRI.
+ * Activación:
+ *   TEST_SEED=1                           → seed + run + cleanup ride
+ *   TEST_SEED=1 + DATIL_ENV=2 (producción) → además anula la factura
+ *     emitida vía Datil (cancelInvoice) para que no contamine el SRI
  *
  * Por defecto el seed crea un ride completed con pago en efectivo
  * confirmado, valor $25 USD, ruta de prueba, modalidad privado.
  */
 import { ObjectId } from 'mongodb';
 import { getRidesDb } from '../mongodb/connection';
+import { cancelInvoice } from '../datil/client';
 
 export interface SeededRide {
   _id:       string;
@@ -62,15 +65,32 @@ export async function cleanupTestRides(): Promise<number> {
   return result.deletedCount || 0;
 }
 
-export async function showTestRideStatus(rideId: string): Promise<void> {
+export async function showTestRideStatus(rideId: string): Promise<string | null> {
   const db = await getRidesDb();
   const _id = ObjectId.isValid(rideId) ? new ObjectId(rideId) : rideId;
   const ride = await db.collection('rides').findOne({ _id: _id as any });
   if (!ride) {
     console.log(`[test-seed] ride ${rideId} no encontrado tras facturar`);
-    return;
+    return null;
   }
   console.log(`[test-seed] ride post-facturación:`);
   console.log(`  invoiceId:   ${ride.invoiceId || '(NO ASIGNADO)'}`);
   console.log(`  invoicedAt:  ${ride.invoicedAt || '(NO ASIGNADO)'}`);
+  return ride.invoiceId || null;
+}
+
+/**
+ * Anula la factura emitida en Datil. Solo se llama cuando estamos en
+ * producción (DATIL_ENV=2) y el TEST_SEED produjo un invoiceId — así
+ * la factura nunca contamina el SRI real.
+ */
+export async function cancelTestInvoice(invoiceId: string): Promise<void> {
+  console.log(`[test-seed] anulando factura de prueba en Datil: ${invoiceId}`);
+  try {
+    await cancelInvoice(invoiceId);
+    console.log(`[test-seed] ✅ factura ${invoiceId} anulada`);
+  } catch (e) {
+    console.error(`[test-seed] ❌ falló anular factura ${invoiceId}: ${(e as Error).message}`);
+    console.error(`[test-seed] ⚠️  REVISAR MANUALMENTE en panel Datil — la factura puede haber sido autorizada por SRI`);
+  }
 }
