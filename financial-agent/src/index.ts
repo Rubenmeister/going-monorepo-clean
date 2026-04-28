@@ -1,4 +1,8 @@
-import { runFinancialMonitor } from './monitors/financial.monitor';
+import {
+  runFinancialMonitor,
+  processWeeklyPayouts,
+  runBankReconciliation,
+} from './monitors/financial.monitor';
 import { closeMongoClient, getRidesDb } from './mongodb/connection';
 import { seedTestRide, cleanupTestRides, showTestRideStatus, cancelTestInvoice } from './test/seed-test-ride';
 
@@ -59,7 +63,24 @@ async function main(): Promise<void> {
       seededRideId = seeded._id;
     }
 
+    // Triggers manuales (Días 4 y 5) — útiles para validar sin esperar
+    // a lunes 9am o el run diario de 8am. Activan los flujos AL FINAL
+    // del run normal para que la corrida quede completa.
+    if (process.env.FORCE_WEEKLY_PAYOUTS === '1') {
+      console.log('🧪 [test-mode] FORCE_WEEKLY_PAYOUTS=1 — disparando payouts semanales');
+    }
+    if (process.env.FORCE_RECONCILIATION === '1') {
+      console.log('🧪 [test-mode] FORCE_RECONCILIATION=1 — disparando conciliación');
+    }
+
     await runFinancialMonitor();
+
+    if (process.env.FORCE_WEEKLY_PAYOUTS === '1') {
+      await processWeeklyPayouts();
+    }
+    if (process.env.FORCE_RECONCILIATION === '1') {
+      await runBankReconciliation();
+    }
 
     if (seededRideId) {
       const issuedInvoiceId = await showTestRideStatus(seededRideId);
