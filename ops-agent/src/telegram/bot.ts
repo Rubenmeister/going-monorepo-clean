@@ -54,7 +54,7 @@ export function alertConductorInactivo(nombre: string, placa: string, horas: num
 export function alertBajoIngreso(nombre: string, placa: string, ingresoHoy: number, hora: string): string {
   return `💰 <b>INGRESO BAJO</b>\n\n` +
     `👤 ${nombre} | 🚗 ${placa}\n` +
-    `💵 Ingreso hoy: <b>$${ingresoHoy.toFixed(2)}</b> (meta: $100)\n` +
+    `💵 Ingreso hoy: <b>$${ingresoHoy.toFixed(2)}</b> (meta: $70)\n` +
     `🕐 Hora: ${hora}\n\n` +
     `Considera enviarle notificación de incentivo.`;
 }
@@ -63,7 +63,7 @@ export function alertMetaAlcanzada(nombre: string, ingresoHoy: number): string {
   return `🎉 <b>META DEL DÍA ALCANZADA</b>\n\n` +
     `👤 ${nombre}\n` +
     `💵 <b>$${ingresoHoy.toFixed(2)}</b> ✅\n\n` +
-    `¡Felicitaciones al conductor por superar la meta de $100!`;
+    `¡Felicitaciones al conductor por superar la meta de $70!`;
 }
 
 export function alertDocumentoVence(nombre: string, tipo: string, placa: string, diasRestantes: number, fechaVencimiento: string): string {
@@ -100,7 +100,7 @@ export function reporteDiario(stats: {
     `  ❌ Cancelados: ${stats.viajesCancelados}\n\n` +
     `👥 <b>Conductores</b>\n` +
     `  🟢 Activos hoy: ${stats.conductoresActivos}\n` +
-    `  🎯 En meta ($100): ${stats.conductoresEnMeta}\n\n` +
+    `  🎯 En meta ($70): ${stats.conductoresEnMeta}\n\n` +
     `💰 <b>Ingresos</b>\n` +
     `  Total Going: $${stats.ingresoTotal.toFixed(2)}\n` +
     `  🏆 Top conductor: ${stats.topConductor} ($${stats.topIngreso.toFixed(2)})\n\n` +
