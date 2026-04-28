@@ -10,6 +10,7 @@ import { ConversationService } from './agent/conversation.service';
 import { BookingService } from './booking/booking.service';
 import { VoiceService } from './infrastructure/voice.service';
 import { TelegramService } from './infrastructure/telegram.service';
+import { HandoffNotifierService } from './infrastructure/handoff-notifier.service';
 import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
 import { MongoConversationRepository } from './infrastructure/persistence/mongo-conversation.repository';
 
@@ -45,6 +46,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     BookingService,
     VoiceService,
     TelegramService,
+    HandoffNotifierService,
     MongoConversationRepository,
   ],
 })
