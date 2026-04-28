@@ -44,17 +44,19 @@ export function alertNoConductor(rideId: string, minutos: number, origen: string
 }
 
 export function alertConductorInactivo(nombre: string, placa: string, horas: number, provincia: string): string {
+  const lineaConductor = placa && placa !== '—' ? `👤 ${nombre} | 🚗 ${placa}` : `👤 ${nombre}`;
+  const lineaUbicacion = provincia && provincia !== '—' ? `\n📍 ${provincia}` : '';
   return `⚠️ <b>CONDUCTOR INACTIVO</b>\n\n` +
-    `👤 ${nombre} | 🚗 ${placa}\n` +
-    `📍 ${provincia}\n` +
-    `⏱ Conectado <b>${horas.toFixed(1)} horas</b> sin viajes\n\n` +
-    `Este conductor tendrá prioridad en las próximas asignaciones.`;
+    `${lineaConductor}${lineaUbicacion}\n` +
+    `⏱ Lleva <b>${horas.toFixed(1)} horas</b> sin completar viajes\n\n` +
+    `Considera enviarle un incentivo o revisar su estado.`;
 }
 
 export function alertBajoIngreso(nombre: string, placa: string, ingresoHoy: number, hora: string): string {
+  const lineaConductor = placa && placa !== '—' ? `👤 ${nombre} | 🚗 ${placa}` : `👤 ${nombre}`;
   return `💰 <b>INGRESO BAJO</b>\n\n` +
-    `👤 ${nombre} | 🚗 ${placa}\n` +
-    `💵 Ingreso hoy: <b>$${ingresoHoy.toFixed(2)}</b> (meta: $70)\n` +
+    `${lineaConductor}\n` +
+    `💵 Ingreso hoy: <b>$${ingresoHoy.toFixed(2)}</b> (meta diaria: $70)\n` +
     `🕐 Hora: ${hora}\n\n` +
     `Considera enviarle notificación de incentivo.`;
 }
