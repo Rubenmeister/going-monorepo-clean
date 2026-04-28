@@ -315,6 +315,64 @@ export async function sendAIFinancialInsights(): Promise<void> {
   }
 }
 
+// ─── 9b. Loop de facturación (Día 2) ──────────────────────────
+//
+// Cada run del agente busca rides completados con pago capturado y
+// sin factura, los emite vía Datil, y manda un resumen al canal solo
+// si hubo movimiento (≥1 emitida o ≥1 fallida). Silencio = todo OK.
+//
+// Mientras DATIL_ENV=1 (sandbox) las facturas son de prueba y NO
+// llegan al SRI. Cuando se cambie a DATIL_ENV=2 (Día 3) este mismo
+// loop empezará a emitir facturas reales con clave de acceso del SRI.
+export async function runInvoicingLoop(): Promise<void> {
+  const result = await retryFailedInvoices();
+
+  // Sin emisión y sin fallos = silencio
+  if (result.succeeded === 0 && result.failed === 0) return;
+
+  const env = process.env.DATIL_ENV === '2' ? 'PRODUCCIÓN SRI' : 'SANDBOX (pruebas)';
+  const lines: string[] = [
+    `🧾 <b>Loop de facturación — ${env}</b>`,
+    `Procesados: ${result.processed} | Emitidos: ${result.succeeded} | Fallos: ${result.failed} | Skip: ${result.skipped}`,
+  ];
+
+  if (result.succeeded > 0) {
+    const totalFacturado = result.succeededDetails.reduce((s, d) => s + d.total, 0);
+    lines.push('');
+    lines.push(`✅ <b>Emitidos (${result.succeeded})</b> — total ${fmt(totalFacturado)}`);
+    for (const d of result.succeededDetails.slice(0, 10)) {
+      const sec = d.secuencial ? ` [sec ${d.secuencial}]` : '';
+      lines.push(`  • ride ${d.rideId.slice(-6)}${sec}: ${fmt(d.total)}`);
+    }
+    if (result.succeededDetails.length > 10) {
+      lines.push(`  … +${result.succeededDetails.length - 10} más`);
+    }
+  }
+
+  if (result.failed > 0) {
+    lines.push('');
+    lines.push(`❌ <b>Fallaron (${result.failed})</b>`);
+    for (const e of result.errors.slice(0, 5)) {
+      lines.push(`  • ride ${e.rideId.slice(-6)}: ${e.error.slice(0, 120)}`);
+    }
+    if (result.errors.length > 5) {
+      lines.push(`  … +${result.errors.length - 5} más`);
+    }
+  }
+
+  await sendTelegram(lines.join('\n'));
+
+  if (result.failed > 0) {
+    await logAlert({
+      type:      'invoice_error',
+      severity:  result.failed >= 5 ? 'critical' : 'warning',
+      message:   `${result.failed} factura(s) fallaron en el loop de facturación`,
+      data:      { failed: result.failed, succeeded: result.succeeded, processed: result.processed },
+      createdAt: new Date(),
+    });
+  }
+}
+
 // ─── 10. Reporte SRI mensual ──────────────────────────────────
 export async function runMonthlySRIReport(): Promise<void> {
   const now   = new Date();
@@ -367,7 +425,7 @@ export async function runFinancialMonitor(): Promise<void> {
   await checkPaymentErrors();
   await checkChargebacks();
   await checkPendingPayouts();
-  await retryFailedInvoices();        // Reintentar facturas fallidas
+  await runInvoicingLoop();           // Día 2: emite facturas Datil pendientes
   await checkPendingAuthorization();  // Verificar autorización SRI
   await checkSRIDeadlines();          // Alertar si vence declaración
 
