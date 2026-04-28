@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Firestore, Timestamp } from '@google-cloud/firestore';
 import {
   getItemsPendingReview,
   getScheduledItems,
@@ -16,8 +17,10 @@ import {
   alertAcademyIncomplete,
   weeklyContentReport,
 } from '../publishers/telegram.publisher';
+import { sendTelegramTip } from '../publishers/telegram.bot';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const fsdb   = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
 
 // ── Timezone helpers ──────────────────────────────────────────
 function currentHourEcuador(): number {
@@ -34,7 +37,11 @@ function isPrimaryRunOfHour(): boolean {
   }), 10) < 30;
 }
 
-// ─── 1. Revisar borradores sin revisar (+48h) ─────────────────
+// ─── 1. Borradores sin revisar (+48h) ─────────────────────────
+//
+// Solo dispara si el equipo está usando el CMS (escribiendo a
+// content_items). Si la collection está vacía, el monitor no hace nada.
+
 export async function checkOverdueReviews(): Promise<void> {
   console.log('[content] Verificando borradores sin revisar...');
   const items = await getItemsPendingReview(48);
@@ -42,15 +49,21 @@ export async function checkOverdueReviews(): Promise<void> {
     const horas = Math.round((Date.now() - new Date(item.createdAt).getTime()) / 3600000);
     await sendMessage(alertOverdueReview(item.title, item.type, horas));
     try {
-      await saveContentAlert({ type: 'overdue_review', severity: 'warning', message: `"${item.title}" lleva ${horas}h sin revisión`, itemId: item.id, createdAt: new Date().toISOString() });
+      await saveContentAlert({
+        type:      'overdue_review',
+        severity:  'warning',
+        message:   `"${item.title}" lleva ${horas}h sin revisión`,
+        itemId:    item.id,
+        createdAt: new Date().toISOString(),
+      });
     } catch (err) {
-      console.error('Failed to save overdue review alert:', err);
+      console.error('[content] save alert failed:', err);
     }
   }
   console.log(`[content] ${items.length} borradores vencidos`);
 }
 
-// ─── 2. Alertar publicaciones programadas próximas (+1h) ──────
+// ─── 2. Publicaciones programadas próximas (+1h) ──────────────
 export async function checkScheduledPublications(): Promise<void> {
   console.log('[content] Verificando publicaciones próximas...');
   const items = await getScheduledItems(1);
@@ -61,7 +74,7 @@ export async function checkScheduledPublications(): Promise<void> {
   }
 }
 
-// ─── 3. Verificar cursos incompletos de la Academia ───────────
+// ─── 3. Cursos de Academia incompletos ────────────────────────
 export async function checkAcademyContent(): Promise<void> {
   console.log('[content] Verificando cursos de la Academia...');
   const courses = await getIncompleteCourses();
@@ -71,107 +84,137 @@ export async function checkAcademyContent(): Promise<void> {
     if (drafts > 0) {
       await sendMessage(alertAcademyIncomplete(course.title, lessons.length, drafts));
       try {
-        await saveContentAlert({ type: 'academy_incomplete', severity: 'warning', message: `Curso "${course.title}": ${drafts} lecciones en borrador`, itemId: course.id, createdAt: new Date().toISOString() });
+        await saveContentAlert({
+          type:      'academy_incomplete',
+          severity:  'warning',
+          message:   `Curso "${course.title}": ${drafts} lecciones en borrador`,
+          itemId:    course.id,
+          createdAt: new Date().toISOString(),
+        });
       } catch (err) {
-        console.error('Failed to save academy incomplete alert:', err);
+        console.error('[content] save academy alert failed:', err);
       }
     }
   }
 }
 
-// ─── 4. Generar borrador de artículo con IA (8am diario) ──────
-export async function generateDailyContentDraft(): Promise<void> {
-  console.log('[content] Generando borrador diario con IA...');
+// ─── 4. TIP SEMANAL — el loop útil principal (Lunes 9am) ──────
+//
+// Cada lunes el agente genera un tip corto y lo PUBLICA al canal de
+// Telegram (CONTENT_TELEGRAM_CHAT_ID o el operador). Tópicos rotan
+// para no repetir; el último topic se guarda en Firestore.
 
-  // Detectar qué tipo de contenido tiene menos borradores disponibles
-  const [noticias, blog, revista] = await Promise.all([
-    getContentByType('news'),
-    getContentByType('blog_post'),
-    getContentByType('article'),
-  ]);
+const TOPIC_POOL = [
+  {
+    key: 'seguridad_vial',
+    prompt: `Genera un tip de seguridad vial corto (200-280 caracteres) en español ecuatoriano para conductores de transporte privado en Going. Algo que les sirva esta semana. Sin saludos formales, directo. Termina con un emoji relevante.`,
+  },
+  {
+    key: 'destino_ecuador',
+    prompt: `Genera una recomendación corta (220-280 caracteres) de un destino turístico de Ecuador, no obvio, ideal para un viajero que toma un servicio Going. Menciona la provincia y un dato curioso. Termina con un emoji.`,
+  },
+  {
+    key: 'consejo_pasajero',
+    prompt: `Genera un consejo práctico (200-280 caracteres) en español ecuatoriano para pasajeros de Going (cómo aprovechar la app, ahorrar, viajar seguro, etc). Tono amigable, no corporativo. Termina con un emoji.`,
+  },
+  {
+    key: 'dato_ecuador',
+    prompt: `Genera un dato curioso o efeméride de Ecuador (200-280 caracteres), relevante para esta época del año si aplica. Algo que un conductor podría comentar con sus pasajeros. Termina con un emoji.`,
+  },
+  {
+    key: 'manejo_economico',
+    prompt: `Genera un tip de manejo económico para conductores Going (ahorro de combustible, mantenimiento preventivo, rutas eficientes), 200-280 caracteres en español ecuatoriano. Termina con un emoji.`,
+  },
+  {
+    key: 'feature_app',
+    prompt: `Genera un tip corto (200-280 caracteres) sobre cómo aprovechar mejor la app Going (sistema de pago, viajes compartidos al 35% de descuento, ratings, suscripciones, frecuencia). Tono cercano. Termina con un emoji.`,
+  },
+  {
+    key: 'gastronomia',
+    prompt: `Genera un dato breve (220-280 caracteres) sobre un plato típico ecuatoriano que un viajero debería probar, mencionando dónde encontrarlo (provincia o ciudad). Tono cercano. Termina con un emoji.`,
+  },
+];
 
-  const counts = [
-    { type: 'news'      as const, label: 'Noticia',         count: noticias.length },
-    { type: 'blog_post' as const, label: 'Post de Blog',    count: blog.length     },
-    { type: 'article'   as const, label: 'Artículo Revista', count: revista.length  },
-  ];
+async function getNextTopic(): Promise<typeof TOPIC_POOL[number]> {
+  const ref = fsdb.collection('content_state').doc('weekly_tip_cursor');
+  const snap = await ref.get();
+  const lastIndex = snap.exists ? (snap.data()?.index ?? -1) : -1;
+  const nextIndex = (lastIndex + 1) % TOPIC_POOL.length;
+  await ref.set({ index: nextIndex, updatedAt: Timestamp.now() }, { merge: true });
+  return TOPIC_POOL[nextIndex];
+}
 
-  // Prioriza el tipo con menos contenido en cola
-  const target = counts.sort((a, b) => a.count - b.count)[0];
-
+export async function generateWeeklyTip(): Promise<void> {
+  console.log('[content] Generando tip semanal...');
   try {
+    const topic = await getNextTopic();
+    console.log(`[content] tópico esta semana: ${topic.key}`);
+
     const response = await client.messages.create({
-      model: 'claude-opus-4-6',
-      max_tokens: 1000,
+      model:      'claude-sonnet-4-5',
+      max_tokens: 400,
       messages: [{
-        role: 'user',
-        content: `Eres editor de contenido de Going Ecuador (plataforma de transporte y turismo).
-Genera un borrador de ${target.label} en español sobre un tema relevante para conductores, viajeros o turismo en Ecuador.
+        role:    'user',
+        content: topic.prompt + `
+
 Formato de respuesta (JSON):
 {
-  "title": "...",
-  "summary": "... (2-3 oraciones)",
-  "body": "... (400-600 palabras)",
-  "tags": ["tag1", "tag2", "tag3"],
-  "category": "..."
+  "title": "Título corto y atractivo (sin emojis), máx 60 caracteres",
+  "body":  "El tip listo para Telegram (200-280 caracteres, puede llevar 1-2 emojis)"
 }`,
       }],
     });
 
-    // FIX 1: Safe type cast with validation
     const block = response.content?.[0];
-    const text = block && 'text' in block ? (block as { text: string }).text : '';
+    const text  = block && 'text' in block ? (block as { text: string }).text : '';
     if (!text) {
-      console.warn('Content generation returned no text');
+      console.warn('[content] respuesta vacía del modelo');
       return;
     }
 
-    const data = JSON.parse(text) as { title: string; summary: string; body: string; tags: string[]; category: string };
+    // Soportar respuestas con ```json ... ``` o JSON raw
+    const cleaned = text.replace(/```json\s*|\s*```/g, '').trim();
+    const data = JSON.parse(cleaned) as { title: string; body: string };
 
-    // FIX 2: Error handling in save operations
-    let id: string;
+    // Componer mensaje Telegram (negrita en el título)
+    const message = `💡 <b>${data.title}</b>\n\n${data.body}\n\n<i>— Going Ecuador</i>`;
+
+    const ok = await sendTelegramTip(message);
+    if (!ok) {
+      console.warn('[content] Telegram no aceptó el tip');
+      // Fallback: intentamos por email también para que ops lo vea
+      await sendMessage(`📰 <b>Tip semanal generado pero NO enviado a Telegram</b>\n\n${message}\n\nRevisar config CONTENT_TELEGRAM_CHAT_ID.`);
+      return;
+    }
+
+    // Persistir como published para tener registro y evitar tópicos repetidos
     try {
-      id = await saveContentItem({
-        type:      target.type,
-        title:     data.title,
-        body:      data.body,
-        summary:   data.summary,
-        author:    'Going Content Agent (IA)',
-        status:    'draft',
-        lang:      'es',
-        tags:      data.tags,
-        category:  data.category,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      await saveContentItem({
+        type:        'news',
+        title:       data.title,
+        body:        data.body,
+        summary:     data.body.slice(0, 140),
+        author:      'Going Content Agent (IA)',
+        status:      'published',
+        lang:        'es',
+        tags:        [topic.key, 'tip_semanal', 'telegram'],
+        category:    topic.key,
+        publishedAt: new Date().toISOString(),
+        createdAt:   new Date().toISOString(),
+        updatedAt:   new Date().toISOString(),
       });
+      console.log(`[content] tip publicado: "${data.title}"`);
     } catch (err) {
-      console.error('Failed to save content item:', err);
-      return;
+      console.error('[content] guardar tip falló (pero ya se publicó):', err);
     }
-
-    // FIX 2: Error handling for alert save
-    try {
-      await sendMessage(
-        `✍️ <b>Nuevo borrador generado</b>\n\n` +
-        `📄 "${data.title}"\n` +
-        `🏷 Tipo: ${target.label}\n` +
-        `🆔 ID: <code>${id}</code>\n\n` +
-        `Revisar y aprobar antes de publicar.`
-      );
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    }
-
-    console.log(`[content] Borrador generado: "${data.title}" (${target.type})`);
   } catch (e) {
-    console.error('[content] Error generando borrador IA:', (e as Error).message);
+    console.error('[content] error generando tip semanal:', (e as Error).message);
   }
 }
 
-// ─── 5. Reporte semanal (lunes 9am) ───────────────────────────
+// ─── 5. Reporte semanal interno (lunes 9am, después del tip) ──
 export async function sendWeeklyContentReport(): Promise<void> {
   console.log('[content] Generando reporte semanal...');
-
   const published = await getPublishedThisWeek();
   const [noticias, blog, revista, lecciones] = await Promise.all([
     getContentByType('news'),
@@ -180,19 +223,21 @@ export async function sendWeeklyContentReport(): Promise<void> {
     getContentByType('academy_lesson'),
   ]);
 
-  const borradores = [...noticias, ...blog, ...revista, ...lecciones].filter(i => i.status === 'draft').length;
-  const enRevision = [...noticias, ...blog, ...revista, ...lecciones].filter(i => i.status === 'review').length;
+  const all = [...noticias, ...blog, ...revista, ...lecciones];
+  const borradores = all.filter(i => i.status === 'draft').length;
+  const enRevision = all.filter(i => i.status === 'review').length;
 
   const msg = weeklyContentReport({
     fecha: new Date().toLocaleDateString('es-EC', {
-      timeZone: 'America/Guayaquil', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      timeZone: 'America/Guayaquil',
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     }),
-    publicados:       published.length,
+    publicados:        published.length,
     borradores,
     enRevision,
-    articulosRevista: published.filter(i => i.type === 'article').length,
-    blogPosts:        published.filter(i => i.type === 'blog_post').length,
-    noticias:         published.filter(i => i.type === 'news').length,
+    articulosRevista:  published.filter(i => i.type === 'article').length,
+    blogPosts:         published.filter(i => i.type === 'blog_post').length,
+    noticias:          published.filter(i => i.type === 'news').length,
     leccionesAcademia: published.filter(i => i.type === 'academy_lesson').length,
   });
 
@@ -203,21 +248,24 @@ export async function sendWeeklyContentReport(): Promise<void> {
 export async function runContentMonitor(): Promise<void> {
   const hour      = currentHourEcuador();
   const dayOfWeek = currentDayOfWeekEcuador();
-  console.log(`[content-agent] Corriendo a las ${hour}h Ecuador`);
+  console.log(`[content-agent] Corriendo a las ${hour}h Ecuador, día ${dayOfWeek}`);
 
   // Cada corrida: alertas de revisión y publicaciones próximas
+  // (silenciosas si content_items está vacío)
   await checkOverdueReviews();
   await checkScheduledPublications();
   await checkAcademyContent();
 
-  // 8am diario: generar borrador con IA
-  if (hour === 8 && isPrimaryRunOfHour()) {
-    await generateDailyContentDraft();
+  // Lunes 9am: tip semanal + reporte interno
+  if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
+    await generateWeeklyTip();
+    await sendWeeklyContentReport();
   }
 
-  // Lunes 9am: reporte semanal
-  if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
-    await sendWeeklyContentReport();
+  // Triggers manuales (testing)
+  if (process.env.FORCE_WEEKLY_TIP === '1') {
+    console.log('[content-agent] FORCE_WEEKLY_TIP=1 — disparando tip manual');
+    await generateWeeklyTip();
   }
 
   console.log('[content-agent] Ciclo completado ✅');
