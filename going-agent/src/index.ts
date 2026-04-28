@@ -1,9 +1,39 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { execSync } from 'child_process';
+import * as fsSync from 'fs';
 import { config } from './config';
 import { GitTool } from './tools/git';
 import { FilesystemTool } from './tools/filesystem';
 import { CloudRunTool } from './tools/cloudrun';
 import { MemoryStore } from './memory/context';
+
+// ── Asegurar que tenemos el repo clonado en este contenedor ───────────────
+// El going-agent es un autonomous code agent que necesita acceso al repo
+// (vía git diff, log, write_file, commit, push). Como Cloud Run Jobs no
+// montan el repo, lo clonamos al inicio de cada ejecución. Si REPO_PATH ya
+// tiene un .git/, hacemos pull para traer cambios recientes.
+function ensureRepo() {
+  const REPO_PATH = process.env.REPO_PATH || '/tmp/going-repo';
+  const GIT_TOKEN = process.env.GIT_TOKEN;
+  const REPO_URL  = process.env.REPO_URL || 'github.com/Rubenmeister/going-monorepo-clean.git';
+
+  if (!GIT_TOKEN) {
+    throw new Error('GIT_TOKEN no configurado — going-agent necesita el secret para clonar el repo');
+  }
+
+  if (fsSync.existsSync(`${REPO_PATH}/.git`)) {
+    console.log(`[going-agent] repo existe en ${REPO_PATH}, pulling latest...`);
+    execSync(`git -C ${REPO_PATH} pull --quiet --rebase`, { stdio: 'inherit' });
+  } else {
+    console.log(`[going-agent] clonando repo a ${REPO_PATH}...`);
+    const url = `https://x-access-token:${GIT_TOKEN}@${REPO_URL}`;
+    execSync(`git clone --depth=50 ${url} ${REPO_PATH}`, { stdio: 'pipe' });
+  }
+  // Override config.repoPath con la ubicación real
+  (config as any).repoPath = REPO_PATH;
+}
+
+ensureRepo();
 
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
 const git = new GitTool();
