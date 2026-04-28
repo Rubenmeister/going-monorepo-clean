@@ -277,7 +277,7 @@ async function generateInsights(metrics: PlatformMetrics[]): Promise<string[]> {
 
   try {
     const response = await client.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-sonnet-4-5',
       max_tokens: 400,
       messages: [{
         role: 'user',
@@ -329,21 +329,29 @@ export async function generateAndSendWeeklyReport(): Promise<void> {
 }
 
 // ─── Main runner ──────────────────────────────────────────────
-// Nota: la generación de contenido (posts, blog, revista, academia)
-// fue movida al content-agent para mantener este agente enfocado en métricas.
+//
+// Después de la calibración: el único loop útil es el reporte semanal
+// con métricas de todas las plataformas. La generación de contenido
+// vive en content-agent. La publicación a redes sociales requiere
+// aprobación manual y todavía no es loop automático.
+//
+// Plataformas con secret faltante fallan silenciosamente (try/catch
+// por plataforma) — el reporte sale igual con las que sí tienen token.
 export async function runMarketingMonitor(): Promise<void> {
   const hour      = currentHourEcuador();
   const dayOfWeek = currentDayOfWeekEcuador();
-  console.log(`[marketing-monitor] Running at Ecuador hour ${hour}`);
+  console.log(`[marketing-monitor] Running at Ecuador hour ${hour}, day ${dayOfWeek}`);
 
-  // Cada corrida: recolectar métricas y detectar hitos/viral
-  const metrics = await collectAllMetrics();
-  await checkFollowerMilestones(metrics);
-  await checkViralPosts(metrics);
+  // Lunes 9am Ecuador o trigger manual: reporte semanal con métricas
+  // de todas las plataformas + insights IA.
+  const isWeeklySlot = dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour();
+  const isForced     = process.env.FORCE_WEEKLY_REPORT === '1';
 
-  // Lunes 9am: reporte semanal (solo primera ejecución de la hora)
-  if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
+  if (isWeeklySlot || isForced) {
+    if (isForced) console.log('[marketing-monitor] FORCE_WEEKLY_REPORT=1 — disparando manual');
     await generateAndSendWeeklyReport();
+  } else {
+    console.log('[marketing-monitor] fuera de ventana semanal (lunes 9am Ecuador) — nada que hacer');
   }
 
   console.log('[marketing-monitor] Done ✅');
