@@ -352,6 +352,33 @@ export class DatafastProvider implements IPaymentGateway {
     };
   }
 
+  async voidAuthorization(input: { gatewayRef: string; transactionId: string }): Promise<{ status: PaymentStatus; error?: string }> {
+    const body = new URLSearchParams({
+      'entityId':              this.entityId,
+      'paymentType':           'RV',
+      'merchantTransactionId': `${input.transactionId}_void`,
+    });
+
+    try {
+      const res  = await this._postForm(`/v1/payments/${input.gatewayRef}`, body);
+      const data = await res.json() as Record<string, any>;
+
+      if (!res.ok || !this._isApproved(data)) {
+        this.logger.warn(`DATAFAST RV fallido: ${JSON.stringify(data?.result)}`);
+        return {
+          status: 'rejected',
+          error:  data?.result?.description ?? 'Reversal fallido',
+        };
+      }
+
+      this.logger.log(`DATAFAST RV exitoso: ref=${input.gatewayRef}`);
+      return { status: 'approved' };
+    } catch (err: any) {
+      this.logger.error(`DATAFAST RV error: ${err?.message}`);
+      return { status: 'error', error: err?.message };
+    }
+  }
+
   // ─── Status ───────────────────────────────────────────────────────────────────
 
   async getStatus(transactionId: string): Promise<PaymentStatusResult> {

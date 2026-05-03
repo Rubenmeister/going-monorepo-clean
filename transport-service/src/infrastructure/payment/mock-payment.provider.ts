@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type {
   IPaymentGateway,
+  PaymentStatus,
   InitiatePaymentInput,
   InitiatePaymentResult,
   AuthorizeInput,
@@ -102,6 +103,13 @@ export class MockPaymentProvider implements IPaymentGateway {
       status:        'approved',
       chargedAmount: input.amountUsd,
     };
+  }
+
+  async voidAuthorization(input: { gatewayRef: string; transactionId: string }): Promise<{ status: PaymentStatus }> {
+    this.logger.log(`[MOCK] Void authorization ${input.transactionId} (ref: ${input.gatewayRef})`);
+    const entry = this.store.get(input.transactionId);
+    if (entry) { entry.status = 'voided'; }
+    return { status: 'approved' };
   }
 
   /** Llamado desde el mock checkout para aprobar manualmente */

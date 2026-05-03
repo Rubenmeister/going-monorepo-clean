@@ -38,7 +38,7 @@ export class AcceptRideUseCase {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: ride.passengerId,
+        userId: ride.userId,
         title: '🚗 ¡Conductor asignado!',
         body: 'Un conductor aceptó tu viaje y está en camino',
         data: { rideId: ride.id, actionUrl: '/transport' }

@@ -293,6 +293,16 @@ export class RideEventsGateway
     @ConnectedSocket() _client: Socket,
     @MessageBody() data: { rideId: string },
   ) {
+    // Persist status change (driver may call via WebSocket only, not REST)
+    try {
+      await this.rideModel.findOneAndUpdate(
+        { _id: data.rideId, status: 'accepted' },
+        { $set: { status: 'arriving', arrivedAt: new Date() } },
+      ).exec();
+    } catch (err) {
+      this.logger.warn(`Could not persist ride:arriving for ${data.rideId}: ${err}`);
+    }
+
     this.server.to(`ride:${data.rideId}`).emit('ride:driver_arrived', {
       rideId:  data.rideId,
       message: 'Tu conductor ha llegado al punto de recogida',
@@ -301,10 +311,10 @@ export class RideEventsGateway
 
     // Push notification for offline users
     try {
-      const ride = await this.rideModel.findById(data.rideId).select('passengerId').lean().exec();
-      if (ride?.passengerId) {
+      const ride = await this.rideModel.findById(data.rideId).select('userId').lean().exec();
+      if (ride?.userId) {
         this.sendPushNotification(
-          String(ride.passengerId),
+          String(ride.userId),
           '🚗 Tu conductor ha llegado',
           'El conductor está esperándote en el punto de recogida',
           { rideId: data.rideId, actionUrl: '/transport' }
@@ -330,10 +340,10 @@ export class RideEventsGateway
 
     // Push notification for offline users
     try {
-      const ride = await this.rideModel.findById(data.rideId).select('passengerId').lean().exec();
-      if (ride?.passengerId) {
+      const ride = await this.rideModel.findById(data.rideId).select('userId').lean().exec();
+      if (ride?.userId) {
         this.sendPushNotification(
-          String(ride.passengerId),
+          String(ride.userId),
           '✅ ¡Tu viaje ha comenzado!',
           'Estás en camino. Disfruta el viaje.',
           { rideId: data.rideId, actionUrl: '/transport' }
@@ -359,23 +369,9 @@ export class RideEventsGateway
 
     const completedAt = new Date();
 
-    // Persist completion data + cashConfirmed flag on the Ride document
-    try {
-      await this.rideModel.findOneAndUpdate(
-        { _id: data.rideId },
-        {
-          $set: {
-            status:          'completed',
-            completedAt,
-            distanceKm:      data.distanceKm,
-            durationSeconds: data.durationSeconds,
-            ...(data.cashConfirmed != null && { cashConfirmed: data.cashConfirmed }),
-          },
-        },
-      ).exec();
-    } catch (err) {
-      this.logger.warn(`Could not persist ride:completed for ${data.rideId}: ${err}`);
-    }
+    // NOTE: Do NOT persist status here — the REST endpoint PUT /rides/:rideId/complete
+    // handles persistence + payment capture via CompleteRideUseCase.
+    // This handler only emits real-time events and push notifications.
 
     this.server.to(`ride:${data.rideId}`).emit('ride:completed', {
       rideId:          data.rideId,
@@ -387,10 +383,10 @@ export class RideEventsGateway
 
     // Push notification for offline users
     try {
-      const ride = await this.rideModel.findById(data.rideId).select('passengerId driverId').lean().exec();
-      if (ride?.passengerId) {
+      const ride = await this.rideModel.findById(data.rideId).select('userId driverId').lean().exec();
+      if (ride?.userId) {
         this.sendPushNotification(
-          String(ride.passengerId),
+          String(ride.userId),
           '🏁 ¡Viaje completado!',
           `Llegaste a tu destino. Recorrido: ${data.distanceKm?.toFixed(1) ?? '?'} km`,
           { rideId: data.rideId, actionUrl: '/bookings' }
