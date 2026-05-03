@@ -81,7 +81,7 @@ export class CompleteRideUseCase {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         rideId:          updated.id,
-        userId:          updated.passengerId,
+        userId:          updated.userId,
         driverId:        updated.driverId,
         fromAddress:     updated.from || '',
         toAddress:       updated.to || '',
@@ -99,7 +99,7 @@ export class CompleteRideUseCase {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId:      updated.passengerId,
+        userId:      updated.userId,
         from:        updated.from || '',
         to:          updated.to || '',
         fromLat:     updated.fromLatitude,

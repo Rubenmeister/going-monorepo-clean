@@ -198,6 +198,48 @@ export class RideController {
   }
 
   /**
+   * Mark driver as arrived at pickup point
+   * PUT /api/rides/:rideId/arrive
+   *
+   * Transición: accepted → arriving
+   * Notifica al pasajero en tiempo real que el conductor llegó.
+   */
+  @Put(':rideId/arrive')
+  async driverArrived(
+    @CurrentUser() user: AuthUser,
+    @Param('rideId') rideId: string,
+  ): Promise<any> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    if (ride.status !== 'accepted') {
+      throw new BadRequestException(
+        `Can only mark arriving from accepted status (current: ${ride.status})`,
+      );
+    }
+
+    const updated = await this.rideRepo.update(rideId, {
+      status: 'arriving',
+      arrivedAt: new Date(),
+    });
+
+    // Notificar al pasajero via WebSocket
+    this.eventsGateway['server']?.to(`ride:${rideId}`).emit('ride:driver_arrived', {
+      rideId,
+      message: 'Tu conductor ha llegado al punto de recogida',
+      arrivedAt: new Date(),
+    });
+
+    this.logger.log(`Driver ${user.id} arrived for ride ${rideId}`);
+
+    return {
+      rideId: updated.id,
+      status: updated.status,
+      arrivedAt: updated.arrivedAt,
+    };
+  }
+
+  /**
    * Start a ride — pre-autoriza el pago antes de iniciar
    * PUT /api/rides/:rideId/start
    *
@@ -218,6 +260,12 @@ export class RideController {
   ): Promise<any> {
     const trip = await this.rideRepo.findById(rideId);
     if (!trip) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    if (trip.status !== 'accepted' && trip.status !== 'arriving') {
+      throw new BadRequestException(
+        `Can only start rides in accepted or arriving status (current: ${trip.status})`,
+      );
+    }
 
     const estimatedAmt = parseFloat(String(trip?.fare?.estimatedTotal ?? trip?.fare?.total ?? 5));
     const transactionId = uuidv4();
@@ -423,10 +471,30 @@ export class RideController {
       cancellationTime:   new Date(),
     });
 
+    // Anular pre-autorización de pago si existía
+    if (updated.paymentRef && updated.paymentTxnId) {
+      try {
+        await this.paymentService.voidAuthorization({
+          gatewayRef:    updated.paymentRef,
+          transactionId: updated.paymentTxnId,
+        });
+        this.logger.log(`Pre-auth anulada para ride ${rideId} (ref: ${updated.paymentRef})`);
+      } catch (err: any) {
+        this.logger.warn(`No se pudo anular pre-auth de ride ${rideId}: ${err?.message}`);
+      }
+    }
+
     // Sincronizar estado de booking en el servicio de bookings (no-blocking)
     if (updated.bookingId) {
       this.syncBookingStatusAsync(updated.bookingId, 'cancelled');
     }
+
+    // Notificar al conductor y pasajero via WebSocket
+    this.eventsGateway['server']?.to(`ride:${rideId}`).emit('ride:cancelled', {
+      rideId,
+      reason: reason || 'user_cancelled',
+      cancelledAt: new Date(),
+    });
 
     return { rideId, status: 'cancelled', reason, cancelledAt: new Date() };
   }

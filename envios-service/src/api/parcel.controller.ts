@@ -11,6 +11,9 @@ import {
   Inject,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import {
   CreateParcelDto,
@@ -35,6 +38,8 @@ interface AuthUser {
 @Controller('parcels')
 @UseGuards(JwtAuthGuard)
 export class ParcelController {
+  private readonly logger = new Logger(ParcelController.name);
+
   constructor(
     private readonly createParcelUseCase: CreateParcelUseCase,
     private readonly findParcelsByUserUseCase: FindParcelsByUserUseCase,
@@ -194,6 +199,105 @@ export class ParcelController {
     // Parar el ciclo — otros drivers no deben seguir recibiendo pushes.
     this.orchestrator.cancel(id);
     return result;
+  }
+
+  /**
+   * Mark parcel as picked up (driver confirms recogida).
+   * PATCH /api/parcels/:id/mark-in-transit
+   *
+   * Transición: pickup_assigned → in_transit
+   * Solo el conductor asignado puede marcar la recogida.
+   */
+  @Patch(':id/mark-in-transit')
+  @HttpCode(HttpStatus.OK)
+  async markInTransit(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+  ): Promise<any> {
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const parcel = findRes.value;
+    const primitives = parcel.toPrimitives();
+
+    if (primitives.driverId !== user.id) {
+      throw new ForbiddenException('Solo el conductor asignado puede marcar la recogida');
+    }
+
+    const transitionResult = parcel.markAsInTransit();
+    if (transitionResult.isErr()) {
+      throw new ConflictException(transitionResult.error.message);
+    }
+
+    const updateResult = await this.parcelRepository.update(parcel);
+    if (updateResult.isErr()) {
+      throw new ConflictException(updateResult.error.message);
+    }
+
+    this.logger.log(`Parcel ${id} → in_transit (driver ${user.id})`);
+
+    return {
+      id: parcel.id,
+      status: parcel.status,
+      trackingCode: primitives.trackingCode,
+    };
+  }
+
+  /**
+   * Confirm delivery with OTP verification.
+   * PATCH /api/parcels/:id/deliver
+   *
+   * Transición: in_transit → delivered
+   * El conductor debe proporcionar el OTP PIN que tiene el destinatario.
+   * Opcionalmente puede incluir una foto de evidencia (URL).
+   */
+  @Patch(':id/deliver')
+  @HttpCode(HttpStatus.OK)
+  async confirmDelivery(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+    @Body() body: { otpPin: string; photoUrl?: string },
+  ): Promise<any> {
+    if (!body.otpPin) {
+      throw new BadRequestException('El código OTP es requerido');
+    }
+
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const parcel = findRes.value;
+    const primitives = parcel.toPrimitives();
+
+    if (primitives.driverId !== user.id) {
+      throw new ForbiddenException('Solo el conductor asignado puede confirmar la entrega');
+    }
+
+    // Verify OTP
+    if (primitives.otpPin !== body.otpPin) {
+      throw new BadRequestException('Código OTP incorrecto');
+    }
+
+    const deliverResult = parcel.deliver();
+    if (deliverResult.isErr()) {
+      throw new ConflictException(deliverResult.error.message);
+    }
+
+    const updateResult = await this.parcelRepository.update(parcel);
+    if (updateResult.isErr()) {
+      throw new ConflictException(updateResult.error.message);
+    }
+
+    this.logger.log(`Parcel ${id} → delivered (driver ${user.id}, trackingCode=${primitives.trackingCode})`);
+
+    return {
+      id: parcel.id,
+      status: parcel.status,
+      trackingCode: primitives.trackingCode,
+      deliveredAt: new Date(),
+      photoUrl: body.photoUrl ?? null,
+    };
   }
 
   /**

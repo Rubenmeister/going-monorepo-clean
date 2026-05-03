@@ -17,12 +17,17 @@ packages:
   - 'envios-service'
   - 'payment-service'
   - 'transport-service'
-  - 'notification-service'
   - 'notifications-service'
   - 'tracking-service'
   - 'billing-service'
   - 'analytics-service'
   - 'customer-support-service'
+  - 'ratings-service'
+  - 'ar-service'
+  - 'blockchain-service'
+  - 'corporate-service'
+  - 'recommendation-service'
+  - 'subscription-service'
 
   # Libraries
   - 'libs/**'

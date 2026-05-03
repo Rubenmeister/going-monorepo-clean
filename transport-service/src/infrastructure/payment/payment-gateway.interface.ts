@@ -150,6 +150,14 @@ export interface IPaymentGateway {
   /** Consulta el estado de una transacción por referencia interna */
   getStatus(transactionId: string): Promise<PaymentStatusResult>;
 
+  /**
+   * Anula una pre-autorización (libera el bloqueo en tarjeta).
+   * Datafast: tipo RV (Reversal) de la pre-auth.
+   * DeUna: no aplica si el QR no fue confirmado.
+   * Mock: no-op.
+   */
+  voidAuthorization(input: { gatewayRef: string; transactionId: string }): Promise<{ status: PaymentStatus; error?: string }>;
+
   /** Procesa el webhook/callback que envía el proveedor a nuestro backend */
   handleWebhook(
     headers: Record<string, string>,

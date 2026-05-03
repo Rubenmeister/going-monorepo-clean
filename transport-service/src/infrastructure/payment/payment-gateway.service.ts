@@ -6,6 +6,7 @@ import { MockPaymentProvider } from './mock-payment.provider';
 import type {
   IPaymentGateway,
   PaymentMethod,
+  PaymentStatus,
   InitiatePaymentInput,
   InitiatePaymentResult,
   AuthorizeInput,
@@ -110,6 +111,10 @@ export class PaymentGatewayService {
 
   getStatus(transactionId: string, method?: PaymentMethod): Promise<PaymentStatusResult> {
     return this.resolve(method).getStatus(transactionId);
+  }
+
+  voidAuthorization(input: { gatewayRef: string; transactionId: string }, method?: PaymentMethod): Promise<{ status: PaymentStatus; error?: string }> {
+    return this.resolve(method).voidAuthorization(input);
   }
 
   // ─── Webhooks — enrutados por proveedor ──────────────────────────────────────
