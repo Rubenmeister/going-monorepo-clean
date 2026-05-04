@@ -43,7 +43,7 @@ export class QuoteStore implements OnModuleDestroy {
   private readonly secret: string;
 
   constructor(private readonly config: ConfigService) {
-    this.secret = config.get<string>(SIG_SECRET_ENV, 'default-secret');
+    this.secret = config.getOrThrow<string>(SIG_SECRET_ENV);
   }
 
   private getRedis(): Redis {

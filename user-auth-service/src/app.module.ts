@@ -23,7 +23,7 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,
-      bufferCommands: false,
+      lazyConnection: true,
       connectionFactory: (conn) => {
         conn.on('connected', () => console.log('MongoDB connected'));
         conn.on('error', (e) => console.error('MongoDB error:', e.message));
