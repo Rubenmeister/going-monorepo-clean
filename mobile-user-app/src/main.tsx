@@ -1,4 +1,19 @@
-import { AppRegistry } from 'react-native';
-import App from './app/App';
+import 'react-native-gesture-handler';
+import { registerRootComponent } from 'expo';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { RootNavigator } from './navigation/RootNavigator';
 
-AppRegistry.registerComponent('MobileUserApp', () => App);
+function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <RootNavigator />
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+registerRootComponent(App);
