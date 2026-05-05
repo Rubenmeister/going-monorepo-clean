@@ -1,25 +1,119 @@
-# Exclude node_modules - EAS will run npm ci on Linux with fixed package-lock.json
+# EAS upload exclusions — mantener el archive bajo 2 GB.
+# Sintaxis estilo .gitignore. Paths relativos a mobile-driver-app/.
+
+# === Web/Next.js artifacts dentro de mobile-driver-app ===
+.next/
+.expo/
+.cache/
+public/
+index.html
+next.config.js
+next-env.d.ts
+driver-screens-preview.html
+driver-screens-slideshow.html
+
+# === Build artifacts ===
 node_modules/
-# Exclude everything outside mobile-driver-app from EAS upload
+ios/Pods/
+ios/build/
+android/build/
+android/.gradle/
+android/app/build/
+android/.idea/
+
+# === Logs & test ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+__tests__/
+coverage/
+.nyc_output/
+dist/
+
+# === Monorepo siblings ===
 ../node_modules
+../.git
+../.github
+../.claude
+../dist
+../tmp
+../screenshots
+../health-reports
+../api-docs
+../docs
+../config
+../scripts
+../argocd
+../k8s
+../kong
+../observability
+../shared-infrastructure
+../migrations
+../dataconnect
+../cypress
+../__tests__
+../android-keys
+../apps
+../website
+../going-vanguard
+../managed-agents
+
+# Apps (no mobile-driver-app)
 ../mobile-user-app
 ../frontend-webapp
 ../admin-dashboard
-../apps
+../corporate-service
+
+# E2E test dirs
+../admin-dashboard-e2e
+../api-gateway-e2e
+../anfitriones-service-e2e
+../booking-service-e2e
+../envios-service-e2e
+../experiencias-service-e2e
+../frontend-webapp-e2e
+../notifications-service-e2e
+../payment-service-e2e
+../tours-service-e2e
+../tracking-service-e2e
+../transport-service-e2e
+../user-auth-service-e2e
+
+# Backend services
+../api-gateway
+../user-auth-service
 ../transport-service
-../billing-service
+../tracking-service
 ../booking-service
+../payment-service
+../envios-service
+../notifications-service
+../notification-service
+../tours-service
+../experiencias-service
+../anfitriones-service
+../billing-service
+../analytics-service
 ../customer-support-service
 ../iot-service
 ../ml-service
-../notification-service
 ../security-service
 ../social-service
 ../supply-chain-service
 ../voice-service
-../.git
-../.claude
-.expo/
-dist/
-*.log
-coverage/
+../ar-service
+../blockchain-service
+../recommendation-service
+../subscription-service
+../ratings-service
+
+# Agents
+../going-agent
+../content-agent
+../marketing-agent
+../financial-agent
+../ops-agent
+
+# Shared libs
+../libs
