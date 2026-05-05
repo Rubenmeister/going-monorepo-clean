@@ -77,7 +77,7 @@ steps:
           --min-instances 0 \
           --max-instances 5 \
           --timeout 60 \
-          --set-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m,FRONTEND_URL=https://goingec.com \
+          --update-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m,FRONTEND_URL=https://goingec.com \
           --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest
         echo "=== Deploy complete for ${_SERVICE_NAME} ==="
 
