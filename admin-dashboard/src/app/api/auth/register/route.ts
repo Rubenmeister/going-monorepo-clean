@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND =
-  process.env.AUTH_SERVICE_URL ||
-  'https://user-auth-service-780842550857.us-central1.run.app';
+const BACKEND = process.env.AUTH_SERVICE_URL;
 
 export async function POST(req: NextRequest) {
   try {
