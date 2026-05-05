@@ -37,8 +37,8 @@ import { FacebookOauthGuard } from './oauth/facebook-oauth.guard';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
-        signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN') },
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN') },
       }),
     }),
   ],

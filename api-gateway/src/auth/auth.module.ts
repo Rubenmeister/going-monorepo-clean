@@ -25,7 +25,7 @@ import { GatewayTokenManagerService } from './gateway-token-manager.service';
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') ?? '15m',
+          expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN'),
         },
       }),
     }),
