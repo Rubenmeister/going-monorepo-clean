@@ -539,6 +539,12 @@ export interface IRideRepository {
   findActiveByDriverId(driverId: string): Promise<any[]>;
   update(id: string, ride: any): Promise<any>;
   findRecent(limit: number): Promise<any[]>;
-  findByStatus(status: string, limit?: number): Promise<any[]>;
+  findByStatus(status: string, limit?: number, excludeDriverId?: string): Promise<any[]>;
+  /**
+   * Marca que un conductor rechazó este viaje (idempotente).
+   * Usado por POST /rides/:id/reject para que el viaje no aparezca de nuevo
+   * en GET /rides/pending para ese conductor específico.
+   */
+  addRejection(rideId: string, driverId: string): Promise<void>;
   delete(id: string): Promise<void>;
 }

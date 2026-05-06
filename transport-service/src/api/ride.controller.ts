@@ -134,9 +134,16 @@ export class RideController {
    * GET /api/rides/pending
    */
   @Get('pending')
-  async getPendingRides(@Query('limit') limit?: string): Promise<any[]> {
+  async getPendingRides(
+    @CurrentUser() user: AuthUser,
+    @Query('limit') limit?: string,
+  ): Promise<any[]> {
     const max = limit ? Math.min(Math.max(parseInt(limit, 10) || 20, 1), 50) : 20;
-    const rides = await this.rideRepo.findByStatus('pending', max);
+    // Para conductores, excluimos viajes que YA RECHAZARON (rejectedByDriverIds)
+    // para que no se les muestre el mismo viaje en cada poll. Para admins/users
+    // no aplica filtro — ven todos los pendientes.
+    const excludeDriverId = user.role === 'driver' ? user.id : undefined;
+    const rides = await this.rideRepo.findByStatus('pending', max, excludeDriverId);
     return rides.map((r: any) => ({
       id:     r.rideId ?? r.id,
       userId: r.userId,
@@ -167,6 +174,80 @@ export class RideController {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
     return ride;
+  }
+
+  /**
+   * Reject a ride (driver endpoint)
+   * POST /api/rides/:rideId/reject
+   *
+   * El conductor declina la oferta. Marca el viaje como rechazado por ESTE
+   * driver en `rejectedByDriverIds`. El viaje sigue en estado 'pending' y
+   * otros conductores siguen viéndolo. GET /rides/pending filtra los rechazos
+   * para que el mismo conductor no reciba la oferta de nuevo.
+   *
+   * Idempotente: rechazos repetidos del mismo conductor son no-op (efectos: 0).
+   */
+  @Post(':rideId/reject')
+  @HttpCode(HttpStatus.OK)
+  async rejectRide(
+    @CurrentUser() user: AuthUser,
+    @Param('rideId') rideId: string,
+    @Body() body: { reason?: string } = {},
+  ): Promise<{ rideId: string; status: string }> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    await this.rideRepo.addRejection(rideId, user.id);
+    this.logger.log(
+      `Driver ${user.id} rejected ride ${rideId}${body?.reason ? ` (reason: ${body.reason})` : ''}`,
+    );
+    return { rideId, status: 'rejected_by_driver' };
+  }
+
+  /**
+   * SOS / emergencia activada por el pasajero durante un viaje activo
+   * POST /api/rides/:rideId/sos
+   *
+   * Body opcional: { currentLat?, currentLng?, message? }
+   *
+   * Acciones:
+   *  - Log estructurado (Cloud Logging, severity ALERT) para que ops detecte
+   *  - Emit evento `ride:sos` al room ride:{rideId} (admins suscritos verán)
+   *  - Retorna 201 inmediato — la app no espera notificaciones manuales
+   *
+   * Importante: el endpoint NUNCA debe fallar si los side effects fallan.
+   * El pasajero está en peligro — primero confirmamos recepción, luego
+   * intentamos notificar.
+   */
+  @Post(':rideId/sos')
+  @HttpCode(HttpStatus.CREATED)
+  async sosAlert(
+    @CurrentUser() user: AuthUser,
+    @Param('rideId') rideId: string,
+    @Body() body: { currentLat?: number; currentLng?: number; message?: string } = {},
+  ): Promise<{ rideId: string; alertId: string; received: true }> {
+    const alertId = uuidv4();
+    const payload = {
+      alertId,
+      rideId,
+      userId: user.id,
+      currentLat: body.currentLat,
+      currentLng: body.currentLng,
+      message: body.message,
+      receivedAt: new Date().toISOString(),
+    };
+
+    // 1. Log SOS — severity alta para que ops-agent y Cloud Logging lo recojan
+    this.logger.error(`[SOS_ALERT] ${JSON.stringify(payload)}`);
+
+    // 2. Emit a admins/ops via WebSocket (best-effort, no fail si gateway down)
+    try {
+      this.eventsGateway['server']?.emit('ride:sos', payload);
+    } catch (e) {
+      this.logger.warn(`SOS emit fallo (no critico): ${(e as Error).message}`);
+    }
+
+    // 3. Retornar éxito inmediato — la pantalla de SOS muestra confirmación
+    return { rideId, alertId, received: true };
   }
 
   /**

@@ -21,6 +21,11 @@ export class RideModelSchema {
   @Prop() totalDistanceKm: number;     // distancia total de la ruta (para % progreso)
   @Prop() cancellationReason: string;
   @Prop() cancellationTime: Date;
+  /**
+   * Conductores que rechazaron este viaje. Se usa para filtrar GET /rides/pending
+   * y evitar que el mismo conductor vea de nuevo un viaje que ya rechazó (flood fix).
+   */
+  @Prop({ type: [String], default: [] }) rejectedByDriverIds: string[];
   @Prop() serviceType: string;          // suv | suv_xl | van | van_xl | minibus | bus
   @Prop() modalidad: string;            // compartido | privado
   @Prop() scheduledAt: Date;

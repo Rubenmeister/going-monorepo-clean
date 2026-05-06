@@ -196,8 +196,10 @@ export function ConfirmRideScreen() {
         return;
       }
 
-      // 2. Crear viaje real vía transportAPI (POST /transport/request).
-      await transportAPI.requestRide({
+      // 2. Crear viaje real vía transportAPI (POST /rides/request).
+      //    Capturamos el rideId del response para navegar a ActiveRide y
+      //    que el pasajero vea tracking en tiempo real con su conductor.
+      const response = await transportAPI.requestRide({
         userId: user.id,
         origin: {
           address:   params.origin,
@@ -213,11 +215,36 @@ export function ConfirmRideScreen() {
       });
 
       hapticSuccess();
-      Alert.alert(
-        '¡Reserva confirmada!',
-        `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} en efectivo al conductor.`,
-        [{ text: 'Ver mis viajes', onPress: () => navigation.navigate('Historial' as any) }],
-      );
+      const rideId = (response.data as { rideId?: string })?.rideId;
+
+      if (rideId) {
+        // Caso normal: tenemos rideId del backend, abrimos ActiveRide para
+        // que socket.io se conecte al room ride:{rideId} y muestre tracking.
+        navigation.replace('ActiveRide', {
+          rideId,
+          origin: {
+            latitude:  originCoords.lat,
+            longitude: originCoords.lng,
+            address:   params.origin,
+          },
+          destination: {
+            latitude:  destCoords.lat,
+            longitude: destCoords.lng,
+            address:   params.destination,
+          },
+          vehicleType: params.vehicle,
+          tripMode:    params.type,
+          category:    params.zone ?? '',
+          price:       totalAmount,
+        });
+      } else {
+        // Fallback defensivo si el backend cambia la shape — no perdemos al usuario.
+        Alert.alert(
+          '¡Reserva confirmada!',
+          `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} en efectivo al conductor.`,
+          [{ text: 'Ver mis viajes', onPress: () => navigation.navigate('Historial' as any) }],
+        );
+      }
     } catch (err: any) {
       hapticError();
       const msg = err?.response?.data?.message || err?.message || 'Intenta de nuevo.';

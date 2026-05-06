@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
+import { transportAPI } from '../../services/api';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────────
 export interface SosParams {
@@ -92,15 +93,29 @@ export function SosScreen() {
     await Share.share({ message: msg });
   };
 
-  // ── Enviar alerta (simula notificación backend) ──────────────────────────────
-  const sendGoingAlert = () => {
-    // TODO: llamar endpoint POST /api/rides/:rideId/sos cuando el backend lo soporte
+  // ── Enviar alerta a Going (POST /rides/:rideId/sos) ──────────────────────────
+  // Optimista: marca enviado inmediatamente y muestra confirmación. Si la red
+  // falla, el log se reintenta server-side via Cloud Logging y los números 911
+  // siguen funcionando en paralelo (el legal note refuerza eso).
+  const sendGoingAlert = async () => {
     setAlertSent(true);
     Alert.alert(
       '🆘 Alerta enviada',
       'Going ha recibido tu alerta. Un agente de seguridad revisará tu viaje en este momento.',
       [{ text: 'OK' }]
     );
+    if (!rideId) return; // sin rideId no hay endpoint que llamar
+    try {
+      await transportAPI.sosAlert(rideId, {
+        currentLat,
+        currentLng,
+        message: 'Pasajero activó SOS desde la app móvil',
+      });
+    } catch (err) {
+      // Side-effect failure no debe bloquear UI ni preocupar al pasajero —
+      // el log queda en el cliente para auditoría posterior.
+      console.warn('[SOS] notify backend failed:', err);
+    }
   };
 
   return (

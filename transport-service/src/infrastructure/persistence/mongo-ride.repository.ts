@@ -152,8 +152,16 @@ export class MongoRideRepository implements IRideRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
-  async findByStatus(status: string, limit?: number): Promise<any[]> {
-    const query = this.rideModel.find({ status }).sort({ requestedAt: -1 });
+  async findByStatus(
+    status: string,
+    limit?: number,
+    excludeDriverId?: string,
+  ): Promise<any[]> {
+    const filter: any = { status };
+    if (excludeDriverId) {
+      filter.rejectedByDriverIds = { $ne: excludeDriverId };
+    }
+    const query = this.rideModel.find(filter).sort({ requestedAt: -1 });
 
     if (limit) {
       query.limit(limit);
@@ -161,6 +169,13 @@ export class MongoRideRepository implements IRideRepository {
 
     const docs = await query;
     return docs.map((doc) => this.mapToEntity(doc));
+  }
+
+  async addRejection(rideId: string, driverId: string): Promise<void> {
+    await this.rideModel.updateOne(
+      { rideId },
+      { $addToSet: { rejectedByDriverIds: driverId } },
+    );
   }
 
   async findByStatusPaginated(
