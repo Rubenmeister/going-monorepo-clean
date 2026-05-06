@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.AUTH_SERVICE_URL;
+const BACKEND = process.env.AUTH_SERVICE_URL || 'https://api.goingec.com';
 
 export async function POST(req: NextRequest) {
   try {
