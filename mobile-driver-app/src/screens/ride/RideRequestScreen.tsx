@@ -26,7 +26,7 @@ type Route = RouteProp<DriverMainStackParamList, 'RideRequest'>;
 export function RideRequestScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
-  const { driver } = useDriverStore();
+  const { driver, rejectTrip } = useDriverStore();
   const {
     rideId,
     passengerName: passenger,
@@ -56,7 +56,12 @@ export function RideRequestScreen() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          navigation.goBack(); // auto-reject
+          // Auto-reject por timeout — notifica al backend para que el viaje
+          // no aparezca de nuevo en el siguiente poll (evita flood). Si la
+          // llamada falla, igual hacemos goBack para no atrapar al conductor.
+          rejectTrip(rideId, 'auto_reject_timeout').finally(() => {
+            navigation.goBack();
+          });
           return 0;
         }
         return prev - 1;
@@ -103,6 +108,9 @@ export function RideRequestScreen() {
           fare: amount ?? 0,
         });
       } else {
+        // Reject manual: notifica al backend para que filtre este viaje en
+        // futuros polls. rejectTrip es idempotente y no bloquea UX si falla.
+        await rejectTrip(rideId, 'manual_reject');
         navigation.goBack();
       }
     } catch (e: any) {
