@@ -2,19 +2,27 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Result, ok, err } from 'neverthrow';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+import { ExpoPushService } from '../services/expo-push.service';
 
 /**
  * Ride Dispatch Gateway
- * Notifies matched drivers of new ride offers via the notifications-service.
- * Uses HTTP POST to the internal notifications endpoint so the notifications-service
- * handles FCM/APNs push delivery (no Socket.io required here).
+ * Notifies matched drivers of new ride offers via 2 canales en paralelo:
+ *   1. notifications-service HTTP (legacy, mantiene historial de notificaciones)
+ *   2. Expo Push API directo (entrega push real al mobile-driver-app)
+ *
+ * El driver app registra su Expo push token al login en
+ * POST /transport/drivers/me/push-token. ExpoPushService busca ese token
+ * y manda push directo a https://exp.host/--/api/v2/push/send.
  */
 @Injectable()
 export class RideDispatchGateway {
   private readonly logger = new Logger(RideDispatchGateway.name);
   private readonly notificationsUrl: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(
+    private readonly config: ConfigService,
+    private readonly expoPush: ExpoPushService,
+  ) {
     this.notificationsUrl =
       this.config.get<string>('NOTIFICATIONS_SERVICE_URL') ||
       'http://localhost:3008';
@@ -27,36 +35,50 @@ export class RideDispatchGateway {
   ): Promise<Result<void, Error>> {
     try {
       this.logger.log(
-        `Dispatching ride ${rideId} to ${driverIds.length} drivers`
+        `Dispatching ride ${rideId} to ${driverIds.length} drivers (Expo + notifications-service)`
       );
 
-      // Send one push notification per matched driver (fire-and-forget per driver)
-      const sends = driverIds.map((driverId) => {
+      const buildPayload = (driverId: string) => {
         const match = matches.find((m) => m.driverId === driverId);
+        return {
+          title: '🚗 Nueva solicitud de viaje',
+          body: match
+            ? `${match.distance?.toFixed(1) ?? '?'} km · ETA ${match.eta ?? '?'} min`
+            : 'Hay un viaje disponible cerca de ti',
+          data: {
+            type: 'ride_match', // mobile listener filtra por este string
+            rideId,
+            matchId: match?.matchId,
+            distance: match?.distance,
+            eta: match?.eta,
+          },
+        };
+      };
+
+      // Canal 1: Expo Push API directo al device (latencia mínima, fiable)
+      const expoSends = driverIds.map((driverId) =>
+        this.expoPush.sendToDriver(String(driverId), buildPayload(String(driverId))),
+      );
+
+      // Canal 2: notifications-service HTTP — historial + fallback redundante
+      const notifSends = driverIds.map((driverId) => {
+        const payload = buildPayload(String(driverId));
         return fetch(`${this.notificationsUrl}/api/notifications/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: driverId,
-            title: '🚗 Nueva solicitud de viaje',
-            body: match
-              ? `${match.distance?.toFixed(1) ?? '?'} km · ETA ${match.eta ?? '?'} min`
-              : 'Hay un viaje disponible cerca de ti',
+            title: payload.title,
+            body: payload.body,
             channel: 'PUSH',
-            data: {
-              type: 'RIDE_MATCH',
-              rideId,
-              matchId: match?.matchId,
-              distance: match?.distance,
-              eta: match?.eta,
-            },
+            data: payload.data,
           }),
         }).catch((e) =>
-          this.logger.warn(`Push to driver ${driverId} failed: ${e.message}`)
+          this.logger.warn(`notifications-service push to ${driverId} failed: ${e.message}`)
         );
       });
 
-      await Promise.allSettled(sends);
+      await Promise.allSettled([...expoSends, ...notifSends]);
       return ok(undefined);
     } catch (error) {
       this.logger.error(`Failed to dispatch ride matches: ${error.message}`);
