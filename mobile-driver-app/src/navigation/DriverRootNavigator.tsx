@@ -1,17 +1,49 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { useDriverStore } from '@store/useDriverStore';
 import { DriverAuthNavigator } from './DriverAuthNavigator';
 import { DriverMainNavigator } from './DriverMainNavigator';
+import {
+  registerForPushNotificationsAsync,
+  sendTokenToBackend,
+  setupNotificationListeners,
+} from '@services/notifications';
 
 export function DriverRootNavigator() {
   const { token, isLoading, loadToken } = useDriverStore();
+  const navRef = useRef<NavigationContainerRef<any>>(null);
 
   // Restore persisted token from AsyncStorage on app launch
   useEffect(() => {
     loadToken();
   }, []);
+
+  // Push notifications: registrar token al login + setup listener para que tap
+  // de notificación lleve al RideRequestScreen. Solo corre cuando hay token
+  // (driver autenticado), y limpia listeners al logout.
+  useEffect(() => {
+    if (!token) return;
+    let cleanup: (() => void) | null = null;
+    (async () => {
+      const expoPushToken = await registerForPushNotificationsAsync();
+      if (expoPushToken) await sendTokenToBackend(expoPushToken);
+      cleanup = setupNotificationListeners((rideId, data) => {
+        // Tap en notificación push → abrir RideRequestScreen con los datos
+        navRef.current?.navigate('RideRequest', {
+          rideId,
+          passengerName: data?.passengerName ?? 'Pasajero',
+          origin: data?.origin ?? '',
+          destination: data?.destination ?? '',
+          amount: data?.amount,
+          paymentMethod: data?.paymentMethod ?? 'card',
+        });
+      });
+    })();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [token]);
 
   // Show spinner while checking stored token
   if (isLoading) {
@@ -23,7 +55,7 @@ export function DriverRootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navRef}>
       {token ? <DriverMainNavigator /> : <DriverAuthNavigator />}
     </NavigationContainer>
   );

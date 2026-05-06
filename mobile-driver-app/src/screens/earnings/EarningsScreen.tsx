@@ -39,6 +39,7 @@ export function EarningsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -48,22 +49,20 @@ export function EarningsScreen() {
         `${API_BASE_URL}/api/payment/driver/earnings`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSummary(
-        data.summary || { today: 47.5, week: 215.3, total: 3420.8, trips: 6 }
+      // Si el backend devuelve summary, usarlo; si no, mostrar ceros (no mock).
+      // El conductor real con 0 viajes debe ver 0, no datos demo que confunden.
+      setSummary(data.summary ?? { today: 0, week: 0, total: 0, trips: 0 });
+      setHistory(data.history ?? []);
+      setLoadError(null);
+    } catch (err: any) {
+      // API unavailable → mostrar ceros + error visible. NO mock data en prod
+      // porque el conductor podría retirar pensando que ganó plata que no tiene.
+      setSummary({ today: 0, week: 0, total: 0, trips: 0 });
+      setHistory([]);
+      setLoadError(
+        err?.response?.data?.message ||
+        'No se pudieron cargar tus ganancias. Tira hacia abajo para reintentar.',
       );
-      setHistory(data.history || []);
-    } catch {
-      // Use demo data if API is unavailable
-      setSummary({ today: 47.5, week: 215.3, total: 3420.8, trips: 6 });
-      setHistory([
-        { date: '2026-03-09', trips: 6,  earnings: 47.5 },
-        { date: '2026-03-08', trips: 9,  earnings: 63.0 },
-        { date: '2026-03-07', trips: 8,  earnings: 56.4 },
-        { date: '2026-03-06', trips: 7,  earnings: 49.8 },
-        { date: '2026-03-05', trips: 5,  earnings: 37.2 },
-        { date: '2026-03-04', trips: 11, earnings: 78.1 },
-        { date: '2026-03-03', trips: 4,  earnings: 28.6 },
-      ]);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -139,6 +138,12 @@ export function EarningsScreen() {
         />
       }
     >
+      {loadError && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="cloud-offline-outline" size={16} color="#dc2626" />
+          <Text style={styles.errorText}>{loadError}</Text>
+        </View>
+      )}
       <View style={styles.hero}>
         <Text style={styles.heroLabel}>Total acumulado</Text>
         <Text style={styles.heroValue}>${summary.total.toFixed(2)}</Text>
@@ -415,4 +420,17 @@ const styles = StyleSheet.create({
   },
   exportBtnLoading: { opacity: 0.7 },
   exportBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fef2f2',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#dc2626',
+  },
+  errorText: { fontSize: 12, color: '#dc2626', flex: 1, fontWeight: '600' },
 });

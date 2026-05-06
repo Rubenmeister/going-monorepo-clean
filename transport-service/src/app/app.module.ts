@@ -42,6 +42,12 @@ import {
   DriverBaseModelSchema,
   DriverBaseSchema,
 } from '../infrastructure/persistence/schemas/driver-base.schema';
+import {
+  DriverPushTokenModelSchema,
+  DriverPushTokenSchema,
+} from '../infrastructure/persistence/schemas/driver-push-token.schema';
+import { DriverPushTokenController } from '../api/driver-push-token.controller';
+import { ExpoPushService } from '../infrastructure/services/expo-push.service';
 import { ZoneController } from '../api/zone.controller';
 import { DriverBaseController } from '../api/driver-base.controller';
 import { TransportController } from '../api/transport.controller';
@@ -122,6 +128,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MongooseModule.forFeature([
       { name: ZoneModelSchema.name, schema: ZoneSchema },
       { name: DriverBaseModelSchema.name, schema: DriverBaseSchema },
+      { name: DriverPushTokenModelSchema.name, schema: DriverPushTokenSchema },
     ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
   ],
@@ -135,6 +142,7 @@ import { MulterModule } from '@nestjs/platform-express';
     DriverScheduleController,
     ZoneController,
     DriverBaseController,
+    DriverPushTokenController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
@@ -145,6 +153,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MatchAvailableDriversUseCase,
     RideDispatchGateway,
     RideEventsGateway,
+    ExpoPushService,
     RequestRideUseCase,
     AcceptRideUseCase,
     CompleteRideUseCase,
