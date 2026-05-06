@@ -76,9 +76,29 @@ export class MongooseRideRepository implements IRideRepository {
     return docs.map((d) => this._toRideData(d));
   }
 
-  async findByStatus(status: string, limit = 20): Promise<any[]> {
-    const docs = await this.model.find({ status }).limit(limit).lean();
+  async findByStatus(
+    status: string,
+    limit = 20,
+    excludeDriverId?: string,
+  ): Promise<any[]> {
+    const filter: any = { status };
+    if (excludeDriverId) {
+      // Excluir viajes que este conductor ya rechazó — evita flood en /rides/pending
+      filter.rejectedByDriverIds = { $ne: excludeDriverId };
+    }
+    const docs = await this.model.find(filter).limit(limit).lean();
     return docs.map((d) => this._toRideData(d));
+  }
+
+  /**
+   * Idempotente: $addToSet evita duplicados si el conductor rechaza dos veces
+   * (ej. clic doble o auto-reject + manual). No crea el documento si no existe.
+   */
+  async addRejection(rideId: string, driverId: string): Promise<void> {
+    await this.model.updateOne(
+      { _id: rideId },
+      { $addToSet: { rejectedByDriverIds: driverId } },
+    );
   }
 
   async delete(id: string): Promise<void> {

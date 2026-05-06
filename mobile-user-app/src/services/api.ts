@@ -102,6 +102,17 @@ export const transportAPI = {
   /** User trip history */
   getUserHistory: (userId: string) =>
     api.get(`/transport/user/${userId}/history`),
+
+  /**
+   * Activar SOS / emergencia para un viaje activo.
+   * POST /rides/:rideId/sos — backend logea, emite WS a admins, y siempre
+   * retorna 201 (no falla aunque side-effects internos fallen, porque la
+   * pantalla SOS ya mostró confirmación al pasajero).
+   */
+  sosAlert: (
+    rideId: string,
+    data: { currentLat?: number; currentLng?: number; message?: string },
+  ) => api.post(`/rides/${rideId}/sos`, data),
 };
 
 // ── Bookings ─────────────────────────────────────────────────────────────────

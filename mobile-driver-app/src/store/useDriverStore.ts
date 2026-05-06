@@ -52,6 +52,7 @@ interface DriverState {
   toggleOnline: () => void;
   pollPendingTrips: () => Promise<void>;
   acceptTrip: (tripId: string) => Promise<void>;
+  rejectTrip: (tripId: string, reason?: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -167,6 +168,26 @@ export const useDriverStore = create<DriverState>((set, get) => ({
       set({ currentRideId: tripId, pendingTrip: null });
     } catch (e: any) {
       set({ error: e.response?.data?.message || 'Error al aceptar viaje' });
+    }
+  },
+
+  /**
+   * POST /rides/:tripId/reject — Conductor declina la oferta. El backend
+   * añade el driverId a `rejectedByDriverIds` para que GET /rides/pending
+   * NO devuelva este viaje en futuros polls (evita flood al mismo conductor).
+   * Idempotente — llamadas repetidas son no-op en el backend.
+   */
+  rejectTrip: async (tripId: string, reason?: string) => {
+    try {
+      await api.post(`/rides/${tripId}/reject`, reason ? { reason } : {});
+    } catch (e: any) {
+      // No bloqueamos UX si la red falla — limpiamos local de todos modos.
+      // El próximo poll puede traer el viaje de nuevo si el rechazo no se grabó,
+      // pero el conductor verá la oferta una vez más en lugar de quedar atado.
+      console.warn('rejectTrip API failed:', e?.response?.data?.message ?? e?.message);
+    } finally {
+      // Limpieza local: cualquiera sea el resultado, el conductor descartó la oferta.
+      set({ pendingTrip: null });
     }
   },
 
