@@ -9,7 +9,7 @@ import { applySessionCookie } from '@/lib/providers/session-cookie';
  * de sesión para que el middleware permita rutas protegidas inmediatamente.
  */
 
-const BACKEND = process.env.AUTH_SERVICE_URL;
+const BACKEND = process.env.AUTH_SERVICE_URL || 'https://api.goingec.com';
 
 export async function POST(req: NextRequest) {
   try {

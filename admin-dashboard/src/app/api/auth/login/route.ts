@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = process.env.AUTH_SERVICE_URL;
+const BACKEND = process.env.AUTH_SERVICE_URL || 'https://api.goingec.com';
 
 /**
  * /api/auth/login — proxy del Next.js admin-dashboard al backend.

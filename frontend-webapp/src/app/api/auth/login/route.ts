@@ -12,7 +12,7 @@ import { applySessionCookie } from '@/lib/providers/session-cookie';
  * usarlos en localStorage y Authorization headers de subsiguientes requests.
  */
 
-const BACKEND = process.env.AUTH_SERVICE_URL;
+const BACKEND = process.env.AUTH_SERVICE_URL || 'https://api.goingec.com';
 
 export async function POST(req: NextRequest) {
   try {
