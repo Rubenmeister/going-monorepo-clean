@@ -34,7 +34,7 @@ packages:
   - 'financial-agent'
   - 'content-agent'
   - 'marketing-agent'
-  # going-agent es el último; se agregará cuando se le wire-in al Cerebro.
+  - 'going-agent'
 
   # Libraries
   - 'libs/**'
