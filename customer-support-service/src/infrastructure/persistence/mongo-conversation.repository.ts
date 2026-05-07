@@ -83,4 +83,56 @@ export class MongoConversationRepository {
       .sort({ createdAt: -1 })
       .lean();
   }
+
+  // ─── Métricas para el cerebro-service ─────────────────────────────
+  //
+  // Estos counts son baratos (Mongo cuenta sobre índices status + priority).
+  // Los usa MetricsService cada 10 min para componer el snapshot que se
+  // publica al cerebro.
+
+  async countByStatus(status: 'active' | 'handoff' | 'resolved'): Promise<number> {
+    return this.conversationModel.countDocuments({ status });
+  }
+
+  async countHandoffByPriority(priority: 'RED' | 'ORANGE' | 'NORMAL'): Promise<number> {
+    return this.conversationModel.countDocuments({ status: 'handoff', priority });
+  }
+
+  /** Conversaciones nuevas (createdAt >= since). */
+  async countCreatedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({ createdAt: { $gte: since } });
+  }
+
+  /** Tickets de handoff abiertos en una ventana — basados en createdAt. */
+  async countHandoffsCreatedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({
+      status: 'handoff',
+      createdAt: { $gte: since },
+    });
+  }
+
+  /**
+   * Aproximación: tickets resueltos en la ventana = status='resolved' y
+   * updatedAt >= since. (No tenemos resolvedAt explícito; el updateStatus
+   * actualiza updatedAt cuando el operador cierra el handoff.)
+   */
+  async countResolvedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({
+      status: 'resolved',
+      updatedAt: { $gte: since },
+    });
+  }
+
+  /**
+   * Edad de la handoff RED/ORANGE más vieja sin atender (status=handoff).
+   * Devuelve el `createdAt` o null si la cola está limpia.
+   */
+  async oldestHandoffByPriority(priority: 'RED' | 'ORANGE' | 'NORMAL'): Promise<Date | null> {
+    const doc = await this.conversationModel
+      .findOne({ status: 'handoff', priority })
+      .sort({ createdAt: 1 })
+      .select('createdAt')
+      .lean();
+    return doc?.createdAt ?? null;
+  }
 }
