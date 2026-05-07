@@ -1,19 +1,33 @@
+# customer-support-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico
+# (mismo patrón que user-auth-service y resto de NestJS services). Esto
+# permite que el servicio importe `@going-platform/cerebro-contracts`
+# (workspace lib) para publicar eventos al cerebro-service.
+#
+# Trigger:
+#   gcloud builds submit . --config=customer-support-service/cloudbuild.yaml --project=going-5d1ae
+
 steps:
-  # 1. Build Docker image
+  # 1. Build con Dockerfile genérico de NestJS services, contexto = monorepo root.
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=customer-support-service
       - -t
       - gcr.io/$PROJECT_ID/customer-support-service:latest
       - .
+    timeout: '1800s'
 
-  # 2. Push to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - push
       - gcr.io/$PROJECT_ID/customer-support-service:latest
 
-  # 3. Deploy as Cloud Run Service (always-on, receives Meta WhatsApp + Telegram webhooks)
+  # 2. Deploy as Cloud Run Service (always-on, receives Meta WhatsApp + Telegram webhooks).
   #
   # Secrets gestionados por Cloud Build (Secret Manager):
   #   JWT_SECRET-prod  — JWT compartido con transport-service para crear rides desde el chat
@@ -29,6 +43,7 @@ steps:
   #   TELEGRAM_WEBHOOK_SECRET   — opcional, valida el header del webhook de Telegram
   #   OPERATOR_TELEGRAM_CHAT_IDS — comma-separated chat IDs de operadores
   #   TRANSPORT_SERVICE_URL     — URL interna de transport-service en Cloud Run
+  #   CEREBRO_PUBLISH_ENABLED   — true|false; default false hasta que cerebro-service esté arriba
   #
   # NOTA: Anthropic + Twilio quedaron deprecados aquí — el LLM corre sobre
   # Vertex AI (Gemini) y todo WhatsApp (inbound + outbound) usa Meta Cloud API.
@@ -42,7 +57,7 @@ steps:
       - --region=us-central1
       - --platform=managed
       - --allow-unauthenticated
-      - --port=8080
+      - --port=3000
       - --cpu=1
       - --memory=512Mi
       - --min-instances=0
@@ -56,3 +71,5 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'
