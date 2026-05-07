@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+
+# Memory persistence vive en Firestore en producción.
+# El JSON local solo aparece en testing local — no debe commitearse.
+memory.json
