@@ -211,6 +211,10 @@ export class WebhookController {
           transactionId: event.transactionId || event.sessionId,
         }),
       }).catch(e => this.logger.warn(`Billing notification failed: ${e.message}`));
+
+      // Notify envios-service — la referencia podría ser un parcelId. envios
+      // detecta si conoce el ID o ignora silenciosamente.
+      this.notifyEnviosService(tripId, 'succeeded');
     } catch (error) {
       this.logger.error(
         `Error handling Datafast approved payment: ${error instanceof Error ? error.message : String(error)}`,
@@ -248,6 +252,9 @@ export class WebhookController {
         `Payment ${payment.id} marked as failed for tripId ${tripId}. Reason: ${event.errorMessage}`,
       );
 
+      // Notify envios-service por si la referencia era un parcel.
+      this.notifyEnviosService(tripId, 'failed');
+
       // TODO: Call transport service HTTP endpoint to cancel/revert ride
       // POST to TRANSPORT_SERVICE_URL/api/rides/{tripId}/payment-failed
       // or implement event emission for async processing
@@ -256,6 +263,24 @@ export class WebhookController {
         `Error handling Datafast failed payment: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  /**
+   * Notifica a envios-service cuando un pago cambió de estado.
+   * Si la referenceId no es un parcel (ej. es un tripId), envios devuelve 200
+   * silenciosamente sin tocar nada (su webhook handler lo ignora).
+   *
+   * Best-effort: errors no se propagan, solo se logean.
+   */
+  private notifyEnviosService(parcelId: string, status: 'succeeded' | 'failed'): void {
+    const enviosUrl = process.env.ENVIOS_SERVICE_URL || 'http://localhost:3010';
+    fetch(`${enviosUrl}/parcels/webhooks/payment-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parcelId, status }),
+    }).catch((e) =>
+      this.logger.warn(`Envios payment notification failed: ${e.message}`),
+    );
   }
 
   /**
@@ -300,6 +325,9 @@ export class WebhookController {
           transactionId: event.transactionId || event.orderId,
         }),
       }).catch(e => this.logger.warn(`Billing notification failed: ${e.message}`));
+
+      // Notify envios-service — orderId podría ser parcelId.
+      this.notifyEnviosService(orderId, 'succeeded');
     } catch (error) {
       this.logger.error(
         `Error handling DeUna approved payment: ${error instanceof Error ? error.message : String(error)}`,
@@ -338,6 +366,9 @@ export class WebhookController {
       this.logger.warn(
         `Payment ${payment.id} marked as failed for DeUna orderId ${orderId}. Reason: ${event.status}`,
       );
+
+      // Notify envios-service por si el orderId era un parcel.
+      this.notifyEnviosService(orderId, 'failed');
 
       // TODO: Call transport service HTTP endpoint to cancel/revert ride
       // POST to TRANSPORT_SERVICE_URL/api/rides/{orderId}/payment-failed
