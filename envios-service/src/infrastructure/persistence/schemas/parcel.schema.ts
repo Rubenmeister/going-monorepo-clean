@@ -99,6 +99,13 @@ export class ParcelModelSchema {
 
   @Prop()
   cashConfirmedBy?: string;
+
+  // OTP rate-limit (anti brute-force, OTP es 4 dígitos = 10K combos)
+  @Prop({ default: 0 })
+  otpAttempts?: number;
+
+  @Prop()
+  otpLockedUntil?: Date;
 }
 
 export const ParcelSchema = SchemaFactory.createForClass(ParcelModelSchema);
