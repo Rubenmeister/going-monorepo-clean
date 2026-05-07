@@ -68,21 +68,11 @@ export function alertMetaAlcanzada(nombre: string, ingresoHoy: number): string {
     `¡Felicitaciones al conductor por superar la meta de $70!`;
 }
 
-export function alertDocumentoVence(nombre: string, tipo: string, placa: string, diasRestantes: number, fechaVencimiento: string): string {
-  const emoji = diasRestantes <= 7 ? '🚨' : '⚠️';
-  return `${emoji} <b>DOCUMENTO POR VENCER</b>\n\n` +
-    `👤 ${nombre} | 🚗 ${placa}\n` +
-    `📄 ${tipo}\n` +
-    `📅 Vence: <b>${fechaVencimiento}</b> (en ${diasRestantes} días)\n\n` +
-    `Solicitar renovación inmediata.`;
-}
-
-export function alertCalificacionBaja(nombre: string, placa: string, rating: number, totalReviews: number): string {
-  return `⭐ <b>CALIFICACIÓN BAJA</b>\n\n` +
-    `👤 ${nombre} | 🚗 ${placa}\n` +
-    `⭐ Rating: <b>${rating.toFixed(1)}/5.0</b> (${totalReviews} reseñas)\n\n` +
-    `Revisar reseñas recientes y contactar al conductor.`;
-}
+// Nota: alertDocumentoVence y alertCalificacionBaja fueron removidos
+// porque el schema actual de going-users.users no tiene campos de
+// licencia/SOAT/seguro ni una collection de ratings. Cuando se agreguen
+// (extensión del user schema o nueva collection `ratings`), se restaurarán
+// junto con sus monitores correspondientes en operations.monitor.ts.
 
 export function reporteDiario(stats: {
   fecha: string;
