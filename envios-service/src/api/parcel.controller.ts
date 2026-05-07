@@ -27,6 +27,8 @@ import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
 import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
+import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
+import { SmsService } from '../infrastructure/services/sms.service';
 
 interface AuthUser {
   id: string;
@@ -47,6 +49,8 @@ export class ParcelController {
     private readonly assignParcelUseCase: AssignParcelUseCase,
     private readonly cancelParcelUseCase: CancelParcelUseCase,
     private readonly orchestrator: ParcelMatchingOrchestrator,
+    private readonly paymentIntent: PaymentIntentService,
+    private readonly sms: SmsService,
     @Inject(IParcelRepository)
     private readonly parcelRepository: IParcelRepository,
   ) {}
@@ -102,11 +106,42 @@ export class ParcelController {
       userId: user.id,
     });
 
-    // Arrancar ciclo de matching (fire-and-forget, no bloquea response).
-    // El orchestrator maneja retries + fallback internamente.
+    const paymentMethod = dto.paymentMethod ?? 'cash';
+    const payerRole = dto.payerRole ?? 'sender';
+
+    // ── A) sender + card: crear payment intent y NO arrancar matching aún ────
+    // El orchestrator se dispara cuando webhook confirme el pago.
+    if (paymentMethod === 'card' && payerRole === 'sender') {
+      const intent = await this.paymentIntent.createForParcel({
+        userId: user.id,
+        parcelId: result.id,
+        amountUsd: dto.price.amount,
+        description: `Envío Going #${result.trackingCode}`,
+      });
+      if (intent) {
+        // Persistir intent details en parcel (por si webhook falla, podemos buscar)
+        const findRes = await this.parcelRepository.findById(result.id as UUID);
+        if (findRes.isOk() && findRes.value) {
+          findRes.value.setPaymentIntent(intent.intentId, intent.paymentUrl);
+          await this.parcelRepository.update(findRes.value);
+        }
+        return {
+          ...result,
+          paymentIntentId: intent.intentId,
+          paymentUrl: intent.paymentUrl,
+        };
+      }
+      // Si intent falló: parcel queda en pending_payment, frontend puede
+      // reintentar con POST /parcels/:id/retry-payment (futura mejora).
+      this.logger.warn(`Payment intent failed for parcel ${result.id}, no auto-retry yet`);
+      return result;
+    }
+
+    // ── B/D) cash + (sender o recipient): orchestrator matchea ya ──────────
+    // ── C) recipient + card: orchestrator matchea ya, intent + SMS al accept ─
     if (
-      typeof dto.origin.latitude === 'number' &&
-      typeof dto.origin.longitude === 'number'
+      typeof dto.origin?.latitude === 'number' &&
+      typeof dto.origin?.longitude === 'number'
     ) {
       this.orchestrator.start({
         parcelId: result.id,
@@ -116,13 +151,71 @@ export class ParcelController {
           lng: dto.origin.longitude,
           address: dto.origin.address,
         },
-        destination: { address: dto.destination.address },
+        destination: { address: dto.destination?.address ?? '' },
         price: dto.price.amount,
-        // vehicleTypes se puede derivar del tipo de paquete en el futuro.
       });
     }
 
     return result;
+  }
+
+  /**
+   * Webhook desde payment-service cuando una transaction asociada a un parcel
+   * cambia de estado. Actualiza parcel.paymentStatus y, en caso A, transiciona
+   * status='pending_payment' → 'pending' para que el orchestrator lo recoja.
+   *
+   * POST /api/parcels/webhooks/payment-event
+   * Body: { parcelId, status: 'succeeded'|'failed' }
+   *
+   * NOTA: este endpoint es interno (servicio a servicio). En producción debe
+   * validarse via Cloud Run service-to-service auth o un HMAC compartido.
+   * Por ahora confiamos en VPC + IAM del cluster.
+   */
+  @Post('webhooks/payment-event')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async paymentEventWebhook(
+    @Body() body: { parcelId: string; status: 'succeeded' | 'failed' },
+  ): Promise<{ ok: true }> {
+    const findRes = await this.parcelRepository.findById(body.parcelId as UUID);
+    if (findRes.isErr() || !findRes.value) {
+      this.logger.warn(`Webhook for unknown parcel ${body.parcelId}`);
+      return { ok: true };
+    }
+    const parcel = findRes.value;
+    const transition =
+      body.status === 'succeeded'
+        ? parcel.markPaymentConfirmed()
+        : parcel.markPaymentFailed();
+
+    if (transition.isErr()) {
+      this.logger.warn(`payment webhook transition failed: ${transition.error.message}`);
+      return { ok: true };
+    }
+
+    await this.parcelRepository.update(parcel);
+    const primitives = parcel.toPrimitives();
+
+    // Caso A: el sender pagó → ahora arrancamos matching.
+    if (
+      body.status === 'succeeded' &&
+      primitives.paymentMethod === 'card' &&
+      primitives.payerRole === 'sender' &&
+      typeof primitives.origin?.latitude === 'number'
+    ) {
+      this.orchestrator.start({
+        parcelId: primitives.id,
+        userId: primitives.userId,
+        origin: {
+          lat: primitives.origin.latitude,
+          lng: primitives.origin.longitude,
+          address: primitives.origin.address,
+        },
+        destination: { address: primitives.destination?.address ?? '' },
+        price: primitives.price.amount,
+      });
+    }
+    return { ok: true };
   }
 
   /**
@@ -198,7 +291,95 @@ export class ParcelController {
     const result = await this.assignParcelUseCase.execute(id, user.id as UUID);
     // Parar el ciclo — otros drivers no deben seguir recibiendo pushes.
     this.orchestrator.cancel(id);
+
+    // Caso C: receptor + card. Tras matchear driver, creamos payment intent
+    // y enviamos link SMS al receptor para que pague antes de la entrega.
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isOk() && findRes.value) {
+      const parcel = findRes.value;
+      const p = parcel.toPrimitives();
+      if (
+        p.paymentMethod === 'card' &&
+        p.payerRole === 'recipient' &&
+        p.recipientPhone
+      ) {
+        const intent = await this.paymentIntent.createForParcel({
+          userId: p.userId,
+          parcelId: p.id,
+          amountUsd: p.price.amount,
+          description: `Envío Going contra pago — ${p.trackingCode}`,
+        });
+        if (intent?.paymentUrl) {
+          parcel.setPaymentIntent(intent.intentId, intent.paymentUrl);
+          await this.parcelRepository.update(parcel);
+          // Best-effort: SMS no bloquea — si Twilio falla, driver puede llamar manual.
+          this.sms
+            .sendPaymentLink({
+              toPhone: p.recipientPhone,
+              recipientName: p.recipientName,
+              amountUsd: p.price.amount,
+              paymentLinkUrl: intent.paymentUrl,
+            })
+            .catch((e) => this.logger.warn(`SMS payment link failed: ${e?.message}`));
+        }
+      }
+    }
     return result;
+  }
+
+  /**
+   * Driver confirma haber recibido el pago en efectivo del SENDER al recoger
+   * el paquete. Solo válido para escenario B (sender + cash).
+   *
+   * PATCH /api/parcels/:id/confirm-cash-pickup
+   *
+   * Tras esto, paymentStatus='paid_at_pickup' y el driver puede llamar a
+   * markInTransit (que valida este flag). Idempotente.
+   */
+  @Patch(':id/confirm-cash-pickup')
+  @HttpCode(HttpStatus.OK)
+  async confirmCashAtPickup(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+  ): Promise<any> {
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const parcel = findRes.value;
+    const result = parcel.confirmCash(user.id as UUID, 'pickup');
+    if (result.isErr()) {
+      throw new BadRequestException(result.error.message);
+    }
+    await this.parcelRepository.update(parcel);
+    this.logger.log(`Parcel ${id} cash confirmed at pickup by driver ${user.id}`);
+    return { id, paymentStatus: parcel.paymentStatus };
+  }
+
+  /**
+   * Driver confirma haber recibido el pago en efectivo del RECEPTOR al entregar.
+   * Solo válido para escenario D (recipient + cash, "contra entrega").
+   *
+   * PATCH /api/parcels/:id/confirm-cash-delivery
+   */
+  @Patch(':id/confirm-cash-delivery')
+  @HttpCode(HttpStatus.OK)
+  async confirmCashAtDelivery(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+  ): Promise<any> {
+    const findRes = await this.parcelRepository.findById(id);
+    if (findRes.isErr() || !findRes.value) {
+      throw new NotFoundException('Envío no encontrado');
+    }
+    const parcel = findRes.value;
+    const result = parcel.confirmCash(user.id as UUID, 'delivery');
+    if (result.isErr()) {
+      throw new BadRequestException(result.error.message);
+    }
+    await this.parcelRepository.update(parcel);
+    this.logger.log(`Parcel ${id} cash confirmed at delivery by driver ${user.id}`);
+    return { id, paymentStatus: parcel.paymentStatus };
   }
 
   /**

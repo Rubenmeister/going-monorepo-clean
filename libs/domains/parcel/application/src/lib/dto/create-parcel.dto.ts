@@ -71,4 +71,30 @@ export class CreateParcelDto {
   @ValidateNested()
   @Type(() => MoneyDto)
   price: MoneyDto;
+
+  // ── Payment scheme ──────────────────────────────────────────────────────────
+  // Combinación payerRole + paymentMethod determina el flujo:
+  //  sender + card  → A: pre-pay con Datafast/DeUna antes de matchear
+  //  sender + cash  → B: driver cobra al sender en pickup
+  //  recipient + card → C: link enviado al receptor por SMS, paga antes de delivery
+  //  recipient + cash → D: driver cobra al receptor en delivery (contra entrega)
+  // Si se omiten, default = sender + cash (legacy behavior).
+
+  @IsOptional()
+  @IsIn(['card', 'cash'])
+  paymentMethod?: 'card' | 'cash';
+
+  @IsOptional()
+  @IsIn(['sender', 'recipient'])
+  payerRole?: 'sender' | 'recipient';
+
+  /** Requerido si payerRole='recipient' (para enviar link SMS o contactar). */
+  @IsOptional()
+  @IsString()
+  recipientPhone?: string;
+
+  /** Requerido si payerRole='recipient' + paymentMethod='card' (para personalizar SMS). */
+  @IsOptional()
+  @IsString()
+  recipientName?: string;
 }

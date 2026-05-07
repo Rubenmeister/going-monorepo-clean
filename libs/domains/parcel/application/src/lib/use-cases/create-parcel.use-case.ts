@@ -38,6 +38,10 @@ export class CreateParcelUseCase {
       destination: destinationVOResult.value,
       description: dto.description,
       price: priceVO,
+      paymentMethod: dto.paymentMethod,
+      payerRole: dto.payerRole,
+      recipientPhone: dto.recipientPhone,
+      recipientName: dto.recipientName,
     });
 
     if (parcelResult.isErr()) {
@@ -50,6 +54,14 @@ export class CreateParcelUseCase {
     if (saveResult.isErr()) {
       throw new InternalServerErrorException(saveResult.error.message);
     }
-    return { id: parcel.id, trackingCode: parcel.trackingCode, otpPin: parcel.otpPin };
+    return {
+      id: parcel.id,
+      trackingCode: parcel.trackingCode,
+      otpPin: parcel.otpPin,
+      paymentMethod: parcel.paymentMethod,
+      payerRole: parcel.payerRole,
+      paymentStatus: parcel.paymentStatus,
+      status: parcel.status,
+    };
   }
 }

@@ -32,6 +32,9 @@ export type RecogidaPaqueteParams = {
   packageType:   string;
   packageDesc?:  string;
   totalAmount:   number;
+  /** Para escenario B (sender+cash): backend exige confirm-cash-pickup antes de mark-in-transit. */
+  paymentMethod?: 'card' | 'cash';
+  payerRole?:    'sender' | 'recipient';
 };
 
 export function RecogidaPaqueteScreen() {
@@ -65,28 +68,51 @@ export function RecogidaPaqueteScreen() {
       Alert.alert('Foto requerida', 'Debes tomar una foto del paquete antes de confirmar la recogida.');
       return;
     }
+    // Para escenario B (sender+cash) recordamos al conductor que debe cobrar.
+    // El backend rechazará mark-in-transit si paymentStatus !== 'paid_at_pickup'.
+    if (p.paymentMethod === 'cash' && p.payerRole === 'sender') {
+      const ok = await new Promise<boolean>((resolve) => {
+        Alert.alert(
+          `Cobrar $${p.totalAmount.toFixed(2)} efectivo`,
+          `Confirma que recibiste el pago en efectivo del remitente antes de tomar el paquete.`,
+          [
+            { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Sí, ya cobré', onPress: () => resolve(true) },
+          ],
+        );
+      });
+      if (!ok) return;
+    }
+
     hapticMedium();
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
+      const headers = { Authorization: `Bearer ${token}` };
 
-      // Subir foto + confirmar recogida
-      const formData = new FormData();
-      formData.append('photo', { uri: photo, type: 'image/jpeg', name: `pickup_${p.envioId}.jpg` } as any);
-      formData.append('envioId', p.envioId);
-      formData.append('status', 'picked_up');
+      // 1. Confirmar cobro de efectivo (solo escenario B)
+      if (p.paymentMethod === 'cash' && p.payerRole === 'sender') {
+        await axios.patch(
+          `${API_BASE_URL}/parcels/${p.envioId}/confirm-cash-pickup`,
+          {},
+          { headers },
+        );
+      }
 
-      await axios.post(`${API_BASE_URL}/envios/${p.envioId}/pickup`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-      });
+      // 2. Marcar parcel como in_transit (endpoint correcto post audit fix).
+      // El endpoint legacy `/envios/:id/pickup` no existe — siempre fue un bug.
+      await axios.patch(
+        `${API_BASE_URL}/parcels/${p.envioId}/mark-in-transit`,
+        {},
+        { headers },
+      );
 
       hapticSuccess();
       setConfirmed(true);
     } catch (err: any) {
       hapticError();
-      // Si la API falla, permitir continuar (foto se guardará localmente)
-      hapticSuccess();
-      setConfirmed(true);
+      const msg = err?.response?.data?.message ?? 'No se pudo confirmar la recogida.';
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }
