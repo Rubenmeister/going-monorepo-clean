@@ -1,7 +1,7 @@
 {
   "name": "@going-monorepo-clean/customer-support-service",
   "version": "1.0.0",
-  "description": "GOING AI Customer Support Service - WhatsApp + Web chat with Claude",
+  "description": "GOING AI Customer Support Service — WhatsApp (Meta) + Telegram + Web chat con Vertex AI (Gemini 2.5 Flash) y voz Neural2 ES/EN",
   "main": "src/main.ts",
   "scripts": {
     "start": "node dist/main.js",
