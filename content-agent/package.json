@@ -1,10 +1,11 @@
 {
   "name": "content-agent",
   "version": "1.0.0",
-  "description": "Going Content Agent — revista, blog, noticias y Academia Going",
+  "description": "Going Content Agent — tip semanal público al canal Telegram + revista, blog, noticias y Academia Going",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npx ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
     "build": "tsc"
   },
   "dependencies": {
