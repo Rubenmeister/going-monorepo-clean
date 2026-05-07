@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import { Firestore, Timestamp } from '@google-cloud/firestore';
+import { WhatsAppService } from '../infrastructure/whatsapp.service';
 
 interface Coords {
   latitude: number;
@@ -34,7 +35,10 @@ export class BookingService implements OnModuleInit {
   private readonly jwtSecret: string;
   private readonly db: Firestore;
 
-  constructor(private config: ConfigService) {
+  constructor(
+    private config: ConfigService,
+    private whatsappService: WhatsAppService,
+  ) {
     const secret = this.config.get<string>('JWT_SECRET');
     if (!secret) {
       throw new Error('[BookingService] JWT_SECRET es requerido — sin él los tokens son inseguros y el transport-service rechazará las peticiones');
@@ -166,34 +170,22 @@ export class BookingService implements OnModuleInit {
     }
   }
 
-  // Enviar mensaje de WhatsApp via Twilio (outbound)
+  /**
+   * Envía un mensaje de WhatsApp outbound (recordatorios de viaje programado).
+   *
+   * Migrado de Twilio a Meta Cloud API (mismo canal que el inbound) — Meta
+   * cubre todo el flujo y elimina dependencia + facturación duplicada.
+   * El `to` debe ser el número en formato internacional sin signo "+",
+   * mismo formato que recibe Meta en `from` (ej. "593984037949").
+   */
   async sendWhatsApp(to: string, message: string): Promise<void> {
-    const accountSid = this.config.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken  = this.config.get<string>('TWILIO_AUTH_TOKEN');
-    const from       = this.config.get<string>('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886');
-
-    if (!accountSid || !authToken) {
-      this.logger.warn('Twilio credentials not configured for outbound');
-      return;
-    }
-
-    const toNumber = to.startsWith('whatsapp:') ? to : `whatsapp:${to}`;
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-
-    try {
-      const body = new URLSearchParams({ From: from, To: toNumber, Body: message });
-      const creds = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${creds}`,
-        },
-        body,
-      });
-      this.logger.log(`WhatsApp reminder sent to ${to}`);
-    } catch (err) {
-      this.logger.error('Twilio outbound error', err);
+    // Si el caller envió "whatsapp:+593..." (formato Twilio legacy), lo limpio.
+    const cleanTo = to.replace(/^whatsapp:/, '').replace(/^\+/, '');
+    const sent = await this.whatsappService.sendText(cleanTo, message);
+    if (sent) {
+      this.logger.log(`WhatsApp reminder sent to ${cleanTo}`);
+    } else {
+      this.logger.error(`Failed to send WhatsApp reminder to ${cleanTo}`);
     }
   }
 

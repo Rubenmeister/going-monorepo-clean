@@ -13,7 +13,25 @@ steps:
       - push
       - gcr.io/$PROJECT_ID/customer-support-service:latest
 
-  # 3. Deploy as Cloud Run Service (always-on, receives Twilio webhooks)
+  # 3. Deploy as Cloud Run Service (always-on, receives Meta WhatsApp + Telegram webhooks)
+  #
+  # Secrets gestionados por Cloud Build (Secret Manager):
+  #   JWT_SECRET-prod  — JWT compartido con transport-service para crear rides desde el chat
+  #   MAPBOX_TOKEN     — geocoding EC para resolver direcciones del usuario
+  #
+  # Vars que se setean fuera del cloudbuild (vía `gcloud run services update --update-env-vars`):
+  #   MONGO_URL                 — Mongo Atlas (DB: going-support)
+  #   META_WA_ACCESS_TOKEN      — Meta System User token (whatsapp_business_messaging)
+  #   WHATSAPP_PHONE_NUMBER_ID  — phone ID de Meta Business Suite
+  #   WHATSAPP_BUSINESS_ACCOUNT_ID — WABA ID (opcional, para /whatsapp/diagnose)
+  #   WHATSAPP_VERIFY_TOKEN     — verify token del webhook de Meta
+  #   TELEGRAM_BOT_TOKEN        — token del bot de Telegram (BotFather)
+  #   TELEGRAM_WEBHOOK_SECRET   — opcional, valida el header del webhook de Telegram
+  #   OPERATOR_TELEGRAM_CHAT_IDS — comma-separated chat IDs de operadores
+  #   TRANSPORT_SERVICE_URL     — URL interna de transport-service en Cloud Run
+  #
+  # NOTA: Anthropic + Twilio quedaron deprecados aquí — el LLM corre sobre
+  # Vertex AI (Gemini) y todo WhatsApp (inbound + outbound) usa Meta Cloud API.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -30,7 +48,7 @@ steps:
       - --min-instances=0
       - --max-instances=5
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
-      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY-prod:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID-prod:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN-prod:latest,JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
+      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
 images:
