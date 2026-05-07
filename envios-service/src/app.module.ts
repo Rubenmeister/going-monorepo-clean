@@ -19,6 +19,7 @@ import { ParcelDispatchGateway } from './infrastructure/gateways/parcel-dispatch
 import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-matching-orchestrator.service';
 import { PaymentIntentService } from './infrastructure/services/payment-intent.service';
 import { SmsService } from './infrastructure/services/sms.service';
+import { TrackingClientService } from './infrastructure/services/tracking-client.service';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { SmsService } from './infrastructure/services/sms.service';
     ParcelMatchingOrchestrator,
     PaymentIntentService,
     SmsService,
+    TrackingClientService,
   ],
 })
 export class AppModule {}
