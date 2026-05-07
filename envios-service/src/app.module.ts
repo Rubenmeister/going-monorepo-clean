@@ -17,6 +17,8 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { NearbyDriversService } from './infrastructure/services/nearby-drivers.service';
 import { ParcelDispatchGateway } from './infrastructure/gateways/parcel-dispatch.gateway';
 import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-matching-orchestrator.service';
+import { PaymentIntentService } from './infrastructure/services/payment-intent.service';
+import { SmsService } from './infrastructure/services/sms.service';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-mat
     NearbyDriversService,
     ParcelDispatchGateway,
     ParcelMatchingOrchestrator,
+    PaymentIntentService,
+    SmsService,
   ],
 })
 export class AppModule {}

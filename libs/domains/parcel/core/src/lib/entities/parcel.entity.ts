@@ -4,10 +4,29 @@ import { Money, UUID, Location } from '@going-monorepo-clean/shared-domain'; // 
 
 export type ParcelStatus =
   | 'pending'
+  | 'pending_payment'           // A: esperando que el sender pague con tarjeta
+  | 'pending_recipient_payment' // C: el conductor matcheado espera el pago del receptor
   | 'pickup_assigned'
   | 'in_transit'
   | 'delivered'
   | 'cancelled';
+
+/**
+ * Cuatro escenarios de pago:
+ *   A) sender + card  → pre-pay con Datafast/DeUna antes de matchear driver
+ *   B) sender + cash  → driver cobra al sender al recoger
+ *   C) recipient + card → driver matchea, link enviado al receptor por SMS
+ *   D) recipient + cash → "contra entrega": driver cobra al receptor al entregar
+ */
+export type ParcelPaymentMethod = 'card' | 'cash';
+export type ParcelPayerRole = 'sender' | 'recipient';
+export type ParcelPaymentStatus =
+  | 'pending'           // B: aún sin cobrar (esperando pickup)
+  | 'pending_payment'   // A o C: payment intent creado, esperando confirmación
+  | 'paid'              // A o C: webhook confirmó card
+  | 'paid_at_pickup'    // B: driver confirmó cash del sender
+  | 'paid_at_delivery'  // D: driver confirmó cash del receptor
+  | 'failed';           // A o C: rechazo Datafast / OBS provider
 
 export interface ParcelProps {
   id: UUID;
@@ -21,6 +40,17 @@ export interface ParcelProps {
   trackingCode: string;
   otpPin: string;
   createdAt: Date;
+  // Payment tracking — opcional para retrocompat con parcels viejos sin estos
+  // campos. Por defecto, parcels legacy se asumen sender+cash (B).
+  paymentMethod?: ParcelPaymentMethod;
+  payerRole?: ParcelPayerRole;
+  paymentStatus?: ParcelPaymentStatus;
+  paymentIntentId?: string;
+  paymentLinkUrl?: string;
+  recipientPhone?: string;     // requerido para C (link SMS) y D (contacto)
+  recipientName?: string;
+  cashConfirmedAt?: Date;
+  cashConfirmedBy?: UUID;      // driverId que cobró el efectivo
 }
 
 export class Parcel {
@@ -35,6 +65,15 @@ export class Parcel {
   readonly trackingCode: string;
   readonly otpPin: string;
   readonly createdAt: Date;
+  readonly paymentMethod?: ParcelPaymentMethod;
+  readonly payerRole?: ParcelPayerRole;
+  readonly paymentStatus?: ParcelPaymentStatus;
+  readonly paymentIntentId?: string;
+  readonly paymentLinkUrl?: string;
+  readonly recipientPhone?: string;
+  readonly recipientName?: string;
+  readonly cashConfirmedAt?: Date;
+  readonly cashConfirmedBy?: UUID;
 
   private constructor(props: ParcelProps) {
     this.id = props.id;
@@ -48,15 +87,39 @@ export class Parcel {
     this.trackingCode = props.trackingCode;
     this.otpPin = props.otpPin;
     this.createdAt = props.createdAt;
+    this.paymentMethod = props.paymentMethod;
+    this.payerRole = props.payerRole;
+    this.paymentStatus = props.paymentStatus;
+    this.paymentIntentId = props.paymentIntentId;
+    this.paymentLinkUrl = props.paymentLinkUrl;
+    this.recipientPhone = props.recipientPhone;
+    this.recipientName = props.recipientName;
+    this.cashConfirmedAt = props.cashConfirmedAt;
+    this.cashConfirmedBy = props.cashConfirmedBy;
   }
 
-  // "Factory method" para crear un nuevo envío
+  /**
+   * Factory para crear un nuevo envío.
+   *
+   * El estado inicial depende del esquema de pago:
+   *  - sender+card (A) → 'pending_payment' (orchestrator espera webhook)
+   *  - sender+cash (B) → 'pending' (orchestrator matchea inmediato, cobro al pickup)
+   *  - recipient+card (C) → 'pending' inicialmente; cuando driver acepta, controller
+   *      crea payment intent y transiciona a 'pending_recipient_payment'
+   *  - recipient+cash (D) → 'pending' (cobro al delivery)
+   *
+   * paymentMethod + payerRole son opcionales; sin ellos se asume cash+sender (B legacy).
+   */
   public static create(props: {
     userId: UUID;
     origin: Location;
     destination: Location;
     description: string;
     price: Money;
+    paymentMethod?: ParcelPaymentMethod;
+    payerRole?: ParcelPayerRole;
+    recipientPhone?: string;
+    recipientName?: string;
   }): Result<Parcel, Error> {
 
     if (props.description.length < 3) {
@@ -66,15 +129,37 @@ export class Parcel {
       return err(new Error('Price must be positive'));
     }
 
-    // Generate tracking code (6-char alphanumeric)
+    const paymentMethod = props.paymentMethod ?? 'cash';
+    const payerRole = props.payerRole ?? 'sender';
+
+    // Validación: si el receptor paga (cualquier método), recipientPhone es obligatorio
+    if (payerRole === 'recipient' && !props.recipientPhone) {
+      return err(new Error('recipientPhone is required when payerRole=recipient'));
+    }
+    // Si recipient+card (C), también necesitamos al menos un nombre legible
+    if (payerRole === 'recipient' && paymentMethod === 'card' && !props.recipientName) {
+      return err(new Error('recipientName is required for recipient card payments'));
+    }
+
+    // Estado inicial según escenario
+    let status: ParcelStatus = 'pending';
+    let paymentStatus: ParcelPaymentStatus = 'pending';
+    if (payerRole === 'sender' && paymentMethod === 'card') {
+      // A: bloquear matching hasta confirmación de pago
+      status = 'pending_payment';
+      paymentStatus = 'pending_payment';
+    }
+
     const trackingCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-    // Generate OTP PIN (4-digit)
     const otpPin = String(Math.floor(1000 + Math.random() * 9000));
 
     const parcel = new Parcel({
       id: uuidv4(),
       ...props,
-      status: 'pending',
+      paymentMethod,
+      payerRole,
+      paymentStatus,
+      status,
       trackingCode,
       otpPin,
       createdAt: new Date(),
@@ -98,6 +183,15 @@ export class Parcel {
       trackingCode: this.trackingCode,
       otpPin: this.otpPin,
       createdAt: this.createdAt,
+      paymentMethod: this.paymentMethod,
+      payerRole: this.payerRole,
+      paymentStatus: this.paymentStatus,
+      paymentIntentId: this.paymentIntentId,
+      paymentLinkUrl: this.paymentLinkUrl,
+      recipientPhone: this.recipientPhone,
+      recipientName: this.recipientName,
+      cashConfirmedAt: this.cashConfirmedAt,
+      cashConfirmedBy: this.cashConfirmedBy,
     };
   }
 
@@ -113,28 +207,112 @@ export class Parcel {
   // --- Lógica de Negocio ---
   
   public assignDriver(driverId: UUID): Result<void, Error> {
+    // Permitir asignación desde 'pending' (B/D normal) o 'pending_recipient_payment'
+    // (C donde el driver acepta antes de que receptor pague — hay que pagar antes
+    // de soltar el paquete pero el match ya ocurrió).
     if (this.status !== 'pending') {
-      return err(new Error('Parcel is not pending assignment'));
+      return err(new Error(`Parcel cannot be assigned from status ${this.status}`));
     }
     (this as any).driverId = driverId;
     (this as any).status = 'pickup_assigned';
     return ok(undefined);
   }
-  
+
   public markAsInTransit(): Result<void, Error> {
     if (this.status !== 'pickup_assigned') {
       return err(new Error('Parcel must be assigned to a driver first'));
     }
+    // Si es escenario B (sender+cash), el cobro debe haberse confirmado antes
+    // de marcar in_transit — el driver no puede llevarse el paquete sin cobrar.
+    if (
+      this.paymentMethod === 'cash' &&
+      this.payerRole === 'sender' &&
+      this.paymentStatus !== 'paid_at_pickup'
+    ) {
+      return err(new Error('Cash from sender must be confirmed before pickup (use confirm-cash-pickup endpoint)'));
+    }
     (this as any).status = 'in_transit';
     return ok(undefined);
   }
-  
+
   public deliver(): Result<void, Error> {
     if (this.status !== 'in_transit') {
       return err(new Error('Parcel is not in transit'));
     }
+    // Para escenarios donde el receptor paga, NO se entrega hasta confirmar pago.
+    // C: paymentStatus debe ser 'paid' (webhook ya confirmó card del receptor)
+    // D: paymentStatus debe ser 'paid_at_delivery' (driver confirmó cash del receptor)
+    if (this.payerRole === 'recipient') {
+      const ok =
+        this.paymentMethod === 'card'
+          ? this.paymentStatus === 'paid'
+          : this.paymentStatus === 'paid_at_delivery';
+      if (!ok) {
+        return err(new Error('Recipient payment must be confirmed before delivery'));
+      }
+    }
     (this as any).status = 'delivered';
     return ok(undefined);
+  }
+
+  /** Driver confirma efectivo cobrado al sender (B) o al receptor (D). */
+  public confirmCash(driverId: UUID, when: 'pickup' | 'delivery'): Result<void, Error> {
+    if (this.paymentMethod !== 'cash') {
+      return err(new Error('confirmCash only valid for cash parcels'));
+    }
+    if (when === 'pickup' && this.payerRole !== 'sender') {
+      return err(new Error('Cash at pickup is only valid for sender-paid parcels'));
+    }
+    if (when === 'delivery' && this.payerRole !== 'recipient') {
+      return err(new Error('Cash at delivery is only valid for recipient-paid parcels'));
+    }
+    if (this.driverId !== driverId) {
+      return err(new Error('Only the assigned driver can confirm cash collection'));
+    }
+    (this as any).paymentStatus = when === 'pickup' ? 'paid_at_pickup' : 'paid_at_delivery';
+    (this as any).cashConfirmedAt = new Date();
+    (this as any).cashConfirmedBy = driverId;
+    return ok(undefined);
+  }
+
+  /** Webhook desde payment-service: card pagada (escenarios A o C). */
+  public markPaymentConfirmed(): Result<void, Error> {
+    if (this.paymentMethod !== 'card') {
+      return err(new Error('markPaymentConfirmed only valid for card parcels'));
+    }
+    if (this.paymentStatus === 'paid') return ok(undefined); // idempotente
+    (this as any).paymentStatus = 'paid';
+    // Para escenario A: una vez pagado el sender, parcel queda 'pending' para
+    // que el orchestrator lo matchee. Para C: el driver ya está asignado, no
+    // cambiamos status — solo paymentStatus.
+    if (this.payerRole === 'sender' && this.status === 'pending_payment') {
+      (this as any).status = 'pending';
+    }
+    return ok(undefined);
+  }
+
+  /** Webhook desde payment-service: card rechazada / failed. */
+  public markPaymentFailed(): Result<void, Error> {
+    if (this.paymentMethod !== 'card') {
+      return err(new Error('markPaymentFailed only valid for card parcels'));
+    }
+    (this as any).paymentStatus = 'failed';
+    return ok(undefined);
+  }
+
+  /**
+   * Set payment intent details after creating it via payment-service.
+   * Para A: llamado en POST /parcels create.
+   * Para C: llamado en PATCH /parcels/:id/accept después que driver aceptó.
+   */
+  public setPaymentIntent(intentId: string, linkUrl?: string): void {
+    (this as any).paymentIntentId = intentId;
+    if (linkUrl) (this as any).paymentLinkUrl = linkUrl;
+    // Para C: ahora estamos esperando que el receptor pague
+    if (this.payerRole === 'recipient' && this.paymentMethod === 'card') {
+      (this as any).status = 'pending_recipient_payment';
+      (this as any).paymentStatus = 'pending_payment';
+    }
   }
 
   /**
