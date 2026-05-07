@@ -50,8 +50,13 @@ export default function TrackingPage() {
 
   const fetchShipment = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
-      const res = await fetch(`${apiUrl}/envios/parcels/${trackingId}`, { signal: AbortSignal.timeout(6000) });
+      // FIX: usar custom domain estable + path correcto.
+      // /parcels/track/:trackingCode es público (no requiere JWT) — devuelve
+      // resumen del estado del envío. Es lo que la UI de tracking necesita.
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+      const res = await fetch(`${apiUrl}/parcels/track/${trackingId}`, {
+        signal: AbortSignal.timeout(6000),
+      });
 
       if (!res.ok) throw new Error('Envío no encontrado');
 
@@ -59,26 +64,9 @@ export default function TrackingPage() {
       setShipment(data);
       setError('');
     } catch {
-      // Si el backend no responde, mostrar demo visual si el trackingId empieza con GO-
-      if (trackingId.toUpperCase().startsWith('GO-')) {
-        setShipment({
-          id: trackingId.toUpperCase(),
-          status: 'in_transit',
-          origin: { address: 'Quito Centro Norte' },
-          destination: { address: 'Ambato' },
-          senderName: 'Remitente',
-          recipientName: 'Destinatario',
-          recipientPhone: '+593 99 000 0000',
-          type: 'Paquete pequeño',
-          price: { amount: 12, currency: 'USD' },
-          driver: { name: 'Carlos M.', rating: 4.8, vehicle: 'SUV Toyota RAV4', licensePlate: 'PBX-1234' },
-          createdAt: new Date().toISOString(),
-          estimatedDelivery: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-        });
-        setError('');
-      } else {
-        setError('No se encontró el envío. Verifica el código de seguimiento.');
-      }
+      // FIX: NO mostrar demo data. El audit anterior detectó que el fallback
+      // hacía que usuarios creyeran que su envío existía cuando no.
+      setError('No se encontró el envío. Verifica el código de seguimiento.');
     } finally {
       setLoading(false);
     }

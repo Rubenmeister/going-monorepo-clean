@@ -165,6 +165,9 @@ export default function EnviosCotizarPage() {
   const [otpCode,        setOtpCode]        = useState('');
   const [trackingRef,    setTrackingRef]    = useState('');
   const [errors,         setErrors]         = useState<string[]>([]);
+  // Esquema de pago — A/B/C/D (igual que mobile EnviosScreen).
+  // 'A' por default (sender + card) es el más rápido y seguro para el sender.
+  const [paymentScheme,  setPaymentScheme]  = useState<'A' | 'B' | 'C' | 'D'>('A');
 
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
   const totalPrice  = selectedPkg.price;
@@ -183,27 +186,64 @@ export default function EnviosCotizarPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.goingec.com';
-      const res = await fetch(`${API}/envios/parcels`, {
+      // Auth requerido para crear parcels — sin token no funciona.
+      // Si no hay token, redirigimos a login con returnUrl.
+      const { getStoredToken, redirectToLogin } = await import('@/lib/providers/auth-client');
+      const token = getStoredToken();
+      if (!token) {
+        redirectToLogin('/envios/cotizar');
+        return;
+      }
+
+      // Mapeo del esquema A/B/C/D a fields del backend
+      const apiPayment = {
+        A: { paymentMethod: 'card' as const, payerRole: 'sender' as const },
+        B: { paymentMethod: 'cash' as const, payerRole: 'sender' as const },
+        C: { paymentMethod: 'card' as const, payerRole: 'recipient' as const },
+        D: { paymentMethod: 'cash' as const, payerRole: 'recipient' as const },
+      }[paymentScheme];
+
+      const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+      // FIX: el endpoint correcto es /parcels (no /envios/parcels que no existe).
+      const res = await fetch(`${API}/parcels`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           origin:      { address: senderAddr,    latitude: senderLat,    longitude: senderLon },
           destination: { address: recipientAddr, latitude: recipientLat, longitude: recipientLon },
-          type:        pkgType,
-          description: pkgDesc,
-          recipientName, recipientPhone,
-          price: { amount: totalPrice, currency: 'USD' },
+          description: pkgDesc || `Envío ${selectedPkg.label}`,
+          recipientName,
+          recipientPhone,
+          price: { amount: totalPrice, currency: 'USD' as const },
+          paymentMethod: apiPayment.paymentMethod,
+          payerRole:     apiPayment.payerRole,
         }),
       });
-      const data = res.ok ? await res.json() : null;
-      setTrackingRef(data?.id ?? data?.trackingId ?? generateRef());
-      setOtpCode(data?.otpCode ?? String(Math.floor(1000 + Math.random() * 9000)));
+
+      // FIX: NO enmascarar errors con tracking codes falsos.
+      // Si la API rechaza, mostrar al usuario el error real.
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        const msg = errBody?.message || `Error ${res.status} al crear el envío`;
+        setErrors([msg]);
+        return;
+      }
+
+      const data = await res.json();
+      setTrackingRef(data?.trackingCode ?? data?.id ?? '');
+      setOtpCode(data?.otpPin ?? '');
+
+      // Caso A: backend devuelve paymentUrl. Abrimos en nueva tab para pagar.
+      if (data?.paymentUrl) {
+        window.open(data.paymentUrl, '_blank', 'noopener');
+      }
+
       setView('tracking');
-    } catch {
-      setTrackingRef(generateRef());
-      setOtpCode(String(Math.floor(1000 + Math.random() * 9000)));
-      setView('tracking');
+    } catch (err: any) {
+      setErrors([err?.message || 'No se pudo conectar con el servidor.']);
     } finally {
       setLoading(false);
     }
@@ -521,6 +561,47 @@ export default function EnviosCotizarPage() {
               <p className="text-xs text-gray-400">Opcional · recomendado para reclamaciones</p>
             </div>
           </div>
+        </SectionCard>
+
+        {/* CÓMO SE PAGA — 4 escenarios (mismo que mobile) */}
+        <SectionCard
+          icon={<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
+          title="CÓMO SE PAGA"
+        >
+          {([
+            { id: 'A' as const, label: 'Pago ahora con tarjeta',                icon: '💳', sub: 'Datafast/DeUna · El más rápido' },
+            { id: 'B' as const, label: 'Pago en efectivo al recoger',           icon: '💵', sub: 'Le pagas al conductor cuando llegue' },
+            { id: 'C' as const, label: 'Que pague el destinatario (tarjeta)',   icon: '📱', sub: 'Recibe link de pago por SMS' },
+            { id: 'D' as const, label: 'Contra entrega (efectivo del destinatario)', icon: '🤝', sub: 'Cobra al recibir' },
+          ]).map((scheme) => {
+            const active = paymentScheme === scheme.id;
+            return (
+              <button
+                key={scheme.id}
+                type="button"
+                onClick={() => setPaymentScheme(scheme.id)}
+                className="flex items-center gap-3 w-full rounded-xl px-3 py-3 border-2 transition-all text-left"
+                style={{
+                  borderColor:     active ? RED : '#F3F4F6',
+                  backgroundColor: active ? '#FFF0EF' : '#F9FAFB',
+                }}
+              >
+                <div
+                  className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: active ? RED : '#D1D5DB' }}
+                >
+                  {active && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: RED }} />}
+                </div>
+                <span className="text-2xl">{scheme.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold" style={{ color: active ? RED : '#111827' }}>
+                    {scheme.label}
+                  </p>
+                  <p className="text-xs text-gray-500">{scheme.sub}</p>
+                </div>
+              </button>
+            );
+          })}
         </SectionCard>
 
       </div>
