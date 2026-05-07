@@ -50,6 +50,8 @@ export class ParcelModelSchema {
     type: String,
     enum: [
       'pending',
+      'pending_payment',
+      'pending_recipient_payment',
       'pickup_assigned',
       'in_transit',
       'delivered',
@@ -66,6 +68,37 @@ export class ParcelModelSchema {
 
   @Prop()
   createdAt: Date;
+
+  // ── Payment fields ──────────────────────────────────────────────────────────
+  @Prop({ type: String, enum: ['card', 'cash'] })
+  paymentMethod?: string;
+
+  @Prop({ type: String, enum: ['sender', 'recipient'] })
+  payerRole?: string;
+
+  @Prop({
+    type: String,
+    enum: ['pending', 'pending_payment', 'paid', 'paid_at_pickup', 'paid_at_delivery', 'failed'],
+  })
+  paymentStatus?: string;
+
+  @Prop({ index: true })
+  paymentIntentId?: string;
+
+  @Prop()
+  paymentLinkUrl?: string;
+
+  @Prop()
+  recipientPhone?: string;
+
+  @Prop()
+  recipientName?: string;
+
+  @Prop()
+  cashConfirmedAt?: Date;
+
+  @Prop()
+  cashConfirmedBy?: string;
 }
 
 export const ParcelSchema = SchemaFactory.createForClass(ParcelModelSchema);

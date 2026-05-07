@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Image,
-  KeyboardAvoidingView, Platform,
+  KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -32,6 +32,33 @@ const PACKAGE_TYPES = [
 type PackageType = typeof PACKAGE_TYPES[number]['id'];
 type ScreenView  = 'form' | 'tracking' | 'delivered';
 
+/**
+ * 4 esquemas de pago para envíos:
+ *  A) sender + card     → tú pagas ahora con tarjeta
+ *  B) sender + cash     → tú pagas en efectivo al conductor en pickup
+ *  C) recipient + card  → el destinatario paga con tarjeta (link por SMS)
+ *  D) recipient + cash  → contra entrega: el destinatario paga en efectivo al recibir
+ */
+type PaymentScheme = 'A' | 'B' | 'C' | 'D';
+const PAYMENT_SCHEMES: { id: PaymentScheme; label: string; icon: string; sub: string }[] = [
+  { id: 'A', label: 'Pago ahora con tarjeta',           icon: '💳', sub: 'Datafast/DeUna · El más rápido' },
+  { id: 'B', label: 'Pago en efectivo al recoger',       icon: '💵', sub: 'Le pagas al conductor cuando llegue' },
+  { id: 'C', label: 'Que pague el destinatario (tarjeta)', icon: '📱', sub: 'Recibe link de pago por SMS' },
+  { id: 'D', label: 'Contra entrega (el destinatario paga efectivo)', icon: '🤝', sub: 'Cobra al recibir' },
+];
+
+function schemeToApi(scheme: PaymentScheme): {
+  paymentMethod: 'card' | 'cash';
+  payerRole: 'sender' | 'recipient';
+} {
+  switch (scheme) {
+    case 'A': return { paymentMethod: 'card', payerRole: 'sender' };
+    case 'B': return { paymentMethod: 'cash', payerRole: 'sender' };
+    case 'C': return { paymentMethod: 'card', payerRole: 'recipient' };
+    case 'D': return { paymentMethod: 'cash', payerRole: 'recipient' };
+  }
+}
+
 export function EnviosScreen() {
   const navigation = useNavigation<any>();
   const route      = useRoute<RouteProp<{ params: any }, 'params'>>();
@@ -48,6 +75,7 @@ export function EnviosScreen() {
   const [loading,        setLoading]       = useState(false);
   const [otpCode,        setOtpCode]       = useState('');
   const [trackingRef,    setTrackingRef]   = useState('');
+  const [paymentScheme,  setPaymentScheme] = useState<PaymentScheme>('A');
 
   // Recibir ubicaciones del LocationPicker
   useEffect(() => {
@@ -98,6 +126,7 @@ export function EnviosScreen() {
         hasPhoto: !!pkgPhoto,
       });
 
+      const apiPayment = schemeToApi(paymentScheme);
       const { data } = await parcelsAPI.create({
         origin: {
           address:   senderAddr,
@@ -111,11 +140,35 @@ export function EnviosScreen() {
         },
         description: descriptionPayload,
         price: { amount: totalPrice, currency: 'USD' },
+        paymentMethod: apiPayment.paymentMethod,
+        payerRole:     apiPayment.payerRole,
+        recipientPhone: recipientPhone,
+        recipientName: recipientName,
       });
 
       setTrackingRef(data.trackingCode);
       setOtpCode(data.otpPin);
-      hapticSuccess(); setView('tracking');
+
+      // Caso A (sender+card): backend devuelve paymentUrl. Abrimos en navegador
+      // para que el usuario pague con widget Datafast/DeUna. Cuando cierre el
+      // navegador, ya está la pantalla de tracking esperando.
+      if (data.paymentUrl) {
+        hapticSuccess();
+        setView('tracking');
+        // Pequeño delay para que la transición sea suave antes de abrir browser
+        setTimeout(() => {
+          Linking.openURL(data.paymentUrl!).catch(() =>
+            Alert.alert(
+              'No se pudo abrir el pago',
+              `Abre manualmente: ${data.paymentUrl}`,
+            ),
+          );
+        }, 300);
+      } else {
+        // B, C, D: matching arranca inmediato; el cobro ocurre por otra vía.
+        hapticSuccess();
+        setView('tracking');
+      }
     } catch (err: any) {
       hapticError();
       const msg = err?.response?.data?.message || err?.message || 'Intenta de nuevo';
@@ -209,6 +262,35 @@ export function EnviosScreen() {
               }
             </TouchableOpacity>
           </View>
+
+          {/* CÓMO SE PAGA */}
+          <View style={s.card}>
+            <View style={s.cardTitle}>
+              <Ionicons name="card-outline" size={15} color={RED} />
+              <Text style={s.cardTitleText}>CÓMO SE PAGA</Text>
+            </View>
+            {PAYMENT_SCHEMES.map((scheme) => {
+              const active = paymentScheme === scheme.id;
+              return (
+                <TouchableOpacity
+                  key={scheme.id}
+                  style={[s.schemeRow, active && s.schemeRowActive]}
+                  onPress={() => { setPaymentScheme(scheme.id); hapticLight(); }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[s.schemeRadio, active && s.schemeRadioActive]}>
+                    {active && <View style={s.schemeRadioInner} />}
+                  </View>
+                  <Text style={s.schemeIcon}>{scheme.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[s.schemeLabel, active && { color: RED }]}>{scheme.label}</Text>
+                    <Text style={s.schemeSub}>{scheme.sub}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <View style={{ height: 24 }} />
         </ScrollView>
 
@@ -417,6 +499,27 @@ const s = StyleSheet.create({
   pkgSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   pkgSummaryName:  { fontSize: 13, fontWeight: '700', color: '#111827' },
   pkgSummaryPrice: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+
+  schemeRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingVertical: 10, paddingHorizontal: 8,
+    borderRadius: 10,
+    borderWidth: 1, borderColor: '#E5E7EB',
+    marginTop: 6,
+  },
+  schemeRowActive: {
+    borderColor: RED, backgroundColor: '#FFF5F4',
+  },
+  schemeRadio: {
+    width: 18, height: 18, borderRadius: 9,
+    borderWidth: 2, borderColor: '#D1D5DB',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  schemeRadioActive: { borderColor: RED },
+  schemeRadioInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: RED },
+  schemeIcon: { fontSize: 22 },
+  schemeLabel: { fontSize: 13, fontWeight: '700', color: '#111827' },
+  schemeSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   paidBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#ECFDF5', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
   paidText:  { fontSize: 10, fontWeight: '700', color: GREEN },
   trackFooter: { flexDirection: 'row', gap: 8, backgroundColor: '#fff', padding: 14, paddingBottom: 28, borderTopWidth: 1, borderTopColor: '#F3F4F6' },

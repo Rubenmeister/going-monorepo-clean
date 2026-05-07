@@ -143,16 +143,34 @@ export const searchAPI = {
 // Alternativa flat: { from, to, fromLatitude, fromLongitude, toLatitude, toLongitude }
 // Respuesta: { id, trackingCode, otpPin }
 export const parcelsAPI = {
-  /** Crear nuevo envío */
+  /**
+   * Crear nuevo envío con esquema de pago.
+   * Combinaciones soportadas (paymentMethod x payerRole):
+   *  card+sender    → A: pre-pay con Datafast (response trae paymentUrl)
+   *  cash+sender    → B: driver cobra al sender en pickup
+   *  card+recipient → C: SMS con link al receptor (paga antes de delivery)
+   *  cash+recipient → D: contra entrega
+   */
   create: (data: {
     origin: { address: string; latitude?: number; longitude?: number };
     destination: { address: string; latitude?: number; longitude?: number };
     description: string;
     price: { amount: number; currency: 'USD' };
-  }) => api.post<{ id: string; trackingCode: string; otpPin: string }>(
-    '/parcels',
-    data,
-  ),
+    paymentMethod?: 'card' | 'cash';
+    payerRole?: 'sender' | 'recipient';
+    recipientPhone?: string;
+    recipientName?: string;
+  }) => api.post<{
+    id: string;
+    trackingCode: string;
+    otpPin: string;
+    paymentMethod?: 'card' | 'cash';
+    payerRole?: 'sender' | 'recipient';
+    paymentStatus?: string;
+    status?: string;
+    paymentIntentId?: string;
+    paymentUrl?: string;  // presente si response es escenario A
+  }>('/parcels', data),
 
   /** Mis envíos */
   getMine: () => api.get('/parcels/my'),
