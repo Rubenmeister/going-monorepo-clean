@@ -1,22 +1,21 @@
 {
   "name": "going-financial-agent",
   "version": "1.0.0",
-  "description": "Going Financial Agent – revenue reports, driver payouts, payment monitoring, Datil invoicing",
+  "description": "Going Financial Agent — revenue reports, driver payouts, payment monitoring, Datil invoicing, SRI compliance, AI analysis (Gemini)",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0",
     "@google-cloud/firestore": "^7.6.0",
+    "@google-cloud/vertexai": "^1.9.0",
     "mongodb": "^6.10.0",
     "nodemailer": "^6.9.14"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/nodemailer": "^6.4.15",
-    "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }
 }

@@ -17,8 +17,17 @@ steps:
       - --cpu=1
       - --memory=512Mi
       - --task-timeout=300s
-      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,DATIL_API_KEY=DATIL_API_KEY:latest,DATIL_CERT_PASSWORD=DATIL_CERT_PASSWORD:latest,GOING_RUC=GOING_RUC:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,MONGO_URL=MONGO_URL-prod:latest
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,DATIL_ENV=1,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com
+      # Secrets gestionados por Cloud Build:
+      #   DATIL_API_KEY        — facturación electrónica Datil
+      #   DATIL_CERT_PASSWORD  — password del certificado .p12 SRI
+      #   GOING_RUC            — RUC empresa (13 dígitos)
+      #   GMAIL_APP_PASSWORD   — app-password Gmail SMTP para notificaciones
+      #   MONGO_URL-prod       — Mongo Atlas
+      #
+      # NO se inyectan: ANTHROPIC_API_KEY (migrado a Gemini Vertex via SA),
+      # TELEGRAM_BOT_TOKEN/CHAT_ID (alertas salen por Gmail, no Telegram).
+      - --set-secrets=DATIL_API_KEY=DATIL_API_KEY:latest,DATIL_CERT_PASSWORD=DATIL_CERT_PASSWORD:latest,GOING_RUC=GOING_RUC:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest,MONGO_URL=MONGO_URL-prod:latest
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,DATIL_ENV=1,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com,AI_ANALYSIS_MODEL=gemini-2.5-flash
       - --vpc-connector=going-connector
       - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com

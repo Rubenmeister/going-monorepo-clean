@@ -1,18 +1,54 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { VertexAI } from '@google-cloud/vertexai';
 import { Firestore, Timestamp } from '@google-cloud/firestore';
 import { generateDailyReport, generateWeeklyReport } from '../reports/revenue.report';
 import { RevenueReport } from '../types/financial.types';
 
 // ============================================================
-// AI Financial Analysis – Claude analiza los datos financieros
+// AI Financial Analysis – Gemini 2.5 Flash analiza los datos financieros
 // - Detecta conductores con patrones anómalos (posible fraude)
 // - Proyección de ingresos del mes
 // - Comparación semana vs semana anterior + explicación
 // - Análisis de causas de pagos fallidos
+//
+// Migrado de Anthropic Claude a Vertex AI / Gemini 2.5 Flash:
+//  - Costo ~40x menor para outputs cortos (150-400 tokens) que es el caso aquí.
+//  - Auth nativa con el SA de Cloud Run; sin rotación de API key.
+//  - Stack consistente con customer-support-service (mismo cliente Vertex).
+//  - Calidad suficiente: el agente le pasa stats pre-agregadas y solo pide
+//    síntesis/recomendación corta — no requiere razonamiento profundo.
+//
+// Cuando llegue MyCortex (capa cognitiva del Cerebro) usaremos Claude allí,
+// donde sí razonamos sobre el world model entero.
 // ============================================================
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const GEMINI_MODEL = process.env.AI_ANALYSIS_MODEL || 'gemini-2.5-flash';
+
+const vertexAI = new VertexAI({
+  project: process.env.GCP_PROJECT || 'going-5d1ae',
+  location: process.env.GCP_REGION || 'us-central1',
+});
+
 const db = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
+
+/**
+ * Llama al modelo Gemini con un prompt único y devuelve el texto plano.
+ * Si la llamada falla (cuota, timeout, modelo no disponible), devuelve un
+ * fallback breve para que el caller pueda continuar sin crashear el monitor.
+ */
+async function generateText(prompt: string, maxOutputTokens: number): Promise<string> {
+  try {
+    const model = vertexAI.getGenerativeModel({
+      model: GEMINI_MODEL,
+      generationConfig: { maxOutputTokens, temperature: 0.4 },
+    });
+    const result = await model.generateContent(prompt);
+    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
+    return text?.trim() || 'Análisis no disponible.';
+  } catch (err) {
+    console.error('[ai.analysis] Vertex AI call failed:', (err as Error).message);
+    return 'Análisis IA no disponible en esta corrida (ver logs).';
+  }
+}
 
 // ─── 1. Detectar anomalías en conductores ────────────────────
 export async function detectDriverAnomalies(): Promise<{
@@ -83,27 +119,20 @@ export async function detectDriverAnomalies(): Promise<{
 
   if (suspicious.length === 0) return { suspicious: [], aiSummary: 'Sin anomalías detectadas esta semana.' };
 
-  // Pedir a Claude un análisis más profundo
+  // Pedir a Gemini un análisis más profundo
   const statsText = suspicious.map(s =>
     `Conductor ${s.driverId.slice(-6)}: ${s.reason} (riesgo: ${s.riskLevel})`
   ).join('\n');
 
-  const response = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
-    max_tokens: 400,
-    messages: [{
-      role: 'user',
-      content: `Eres analista antifraude de Going Ecuador (plataforma de transporte).
+  const aiSummary = await generateText(
+    `Eres analista antifraude de Going Ecuador (plataforma de transporte).
 Analiza estas anomalías detectadas en conductores esta semana y da recomendaciones de acción:
 ${statsText}
 Responde en máximo 150 palabras, en español, con acciones concretas por nivel de riesgo.`,
-    }],
-  });
+    400,
+  );
 
-  return {
-    suspicious,
-    aiSummary: (response.content[0] as { text: string }).text,
-  };
+  return { suspicious, aiSummary };
 }
 
 // ─── 2. Proyección de ingresos del mes ───────────────────────
@@ -121,7 +150,7 @@ export async function projectMonthlyRevenue(): Promise<{
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
   const from = new Date(now.getFullYear(), now.getMonth(), 1);
-  const currentReport = await generateDailyReport(now);
+  await generateDailyReport(now); // mantiene la llamada por si tiene side effects
 
   // Ingresos acumulados del mes hasta hoy
   const monthSnap = await db.collection('rides')
@@ -140,13 +169,8 @@ export async function projectMonthlyRevenue(): Promise<{
   const monthlyTarget = activeDrivers * 100 * daysInMonth;
   const onTrack       = projected >= monthlyTarget * 0.8; // 80% de la meta = on track
 
-  // Claude: análisis de tendencia
-  const response = await client.messages.create({
-    model: 'claude-opus-4-6',
-    max_tokens: 200,
-    messages: [{
-      role: 'user',
-      content: `Eres analista financiero de Going Ecuador.
+  const aiInsight = await generateText(
+    `Eres analista financiero de Going Ecuador.
 Datos del mes (día ${day} de ${daysInMonth}):
 - Ingresos acumulados: $${currentRevenue.toFixed(2)}
 - Promedio diario: $${dailyAverage.toFixed(2)}
@@ -154,8 +178,8 @@ Datos del mes (día ${day} de ${daysInMonth}):
 - Meta mensual estimada: $${monthlyTarget.toFixed(2)}
 - Conductores activos: ${activeDrivers}
 En 2 oraciones, ¿está el mes en buen camino? ¿Qué recomiendas?`,
-    }],
-  });
+    200,
+  );
 
   return {
     currentRevenue: round2(currentRevenue),
@@ -164,11 +188,11 @@ En 2 oraciones, ¿está el mes en buen camino? ¿Qué recomiendas?`,
     daysRemaining,
     dailyAverage: round2(dailyAverage),
     onTrack,
-    aiInsight: (response.content[0] as { text: string }).text,
+    aiInsight,
   };
 }
 
-// ─── 3. Comparación semanal con análisis Claude ───────────────
+// ─── 3. Comparación semanal con análisis Gemini ───────────────
 export async function compareWeeklyPerformance(): Promise<{
   currentWeek: RevenueReport;
   previousWeek: RevenueReport;
@@ -201,27 +225,23 @@ export async function compareWeeklyPerformance(): Promise<{
     ? ((currentWeek.totalRides - previousWeek.totalRides) / previousWeek.totalRides) * 100
     : 0;
 
-  const response = await client.messages.create({
-    model: 'claude-opus-4-6',
-    max_tokens: 300,
-    messages: [{
-      role: 'user',
-      content: `Analiza el rendimiento semanal de Going Ecuador:
+  const aiAnalysis = await generateText(
+    `Analiza el rendimiento semanal de Going Ecuador:
 Semana actual: $${currentWeek.totalRevenue.toFixed(2)}, ${currentWeek.totalRides} viajes
 Semana anterior: $${previousWeek.totalRevenue.toFixed(2)}, ${previousWeek.totalRides} viajes
 Cambio ingresos: ${revenueChange.toFixed(1)}%
 Cambio viajes: ${ridesChange.toFixed(1)}%
 
 En 3 oraciones en español: ¿qué explica este cambio y qué se recomienda para la próxima semana?`,
-    }],
-  });
+    300,
+  );
 
   return {
     currentWeek,
     previousWeek,
     revenueChange: round2(revenueChange),
     ridesChange: round2(ridesChange),
-    aiAnalysis: (response.content[0] as { text: string }).text,
+    aiAnalysis,
   };
 }
 
