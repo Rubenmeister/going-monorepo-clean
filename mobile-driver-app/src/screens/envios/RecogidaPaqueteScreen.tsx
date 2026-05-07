@@ -149,6 +149,10 @@ export function RecogidaPaqueteScreen() {
             deliveryAddress:  '',
             totalAmount:      p.totalAmount,
             pickupPhotoUri:   photo,
+            // Forward payment scheme — EntregaPaqueteScreen ajusta UI según
+            // si el receptor paga (C/D) y si tiene que cobrar cash o esperar SMS.
+            paymentMethod:    p.paymentMethod,
+            payerRole:        p.payerRole,
           })}
           activeOpacity={0.85}
         >

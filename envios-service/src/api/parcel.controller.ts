@@ -455,9 +455,26 @@ export class ParcelController {
       throw new ForbiddenException('Solo el conductor asignado puede confirmar la entrega');
     }
 
-    // Verify OTP
-    if (primitives.otpPin !== body.otpPin) {
-      throw new BadRequestException('Código OTP incorrecto');
+    // Verify OTP con rate-limit (5 intentos → lockout 1h, anti brute-force).
+    // verifyOtp muta el entity (incrementa attempts o resetea); persistimos
+    // el cambio aunque el resultado sea fallido para que el contador no se pierda.
+    const otpResult = parcel.verifyOtp(body.otpPin);
+    if (otpResult.isErr()) {
+      throw new ConflictException(otpResult.error.message);
+    }
+    await this.parcelRepository.update(parcel);
+    if (!otpResult.value.ok) {
+      if (otpResult.value.lockedUntil) {
+        const minutesLeft = Math.ceil(
+          (otpResult.value.lockedUntil.getTime() - Date.now()) / 60000,
+        );
+        throw new BadRequestException(
+          `OTP bloqueado por demasiados intentos. Intenta de nuevo en ${minutesLeft} minutos.`,
+        );
+      }
+      throw new BadRequestException(
+        `Código OTP incorrecto. Intentos restantes: ${otpResult.value.attemptsLeft ?? 0}.`,
+      );
     }
 
     const deliverResult = parcel.deliver();

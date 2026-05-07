@@ -51,6 +51,9 @@ export interface ParcelProps {
   recipientName?: string;
   cashConfirmedAt?: Date;
   cashConfirmedBy?: UUID;      // driverId que cobró el efectivo
+  // OTP rate-limiting (anti brute-force, OTP es 4 dígitos = 10K combos)
+  otpAttempts?: number;
+  otpLockedUntil?: Date;
 }
 
 export class Parcel {
@@ -74,6 +77,8 @@ export class Parcel {
   readonly recipientName?: string;
   readonly cashConfirmedAt?: Date;
   readonly cashConfirmedBy?: UUID;
+  readonly otpAttempts?: number;
+  readonly otpLockedUntil?: Date;
 
   private constructor(props: ParcelProps) {
     this.id = props.id;
@@ -96,6 +101,8 @@ export class Parcel {
     this.recipientName = props.recipientName;
     this.cashConfirmedAt = props.cashConfirmedAt;
     this.cashConfirmedBy = props.cashConfirmedBy;
+    this.otpAttempts = props.otpAttempts;
+    this.otpLockedUntil = props.otpLockedUntil;
   }
 
   /**
@@ -192,6 +199,8 @@ export class Parcel {
       recipientName: this.recipientName,
       cashConfirmedAt: this.cashConfirmedAt,
       cashConfirmedBy: this.cashConfirmedBy,
+      otpAttempts: this.otpAttempts,
+      otpLockedUntil: this.otpLockedUntil,
     };
   }
 
@@ -273,6 +282,40 @@ export class Parcel {
     (this as any).cashConfirmedAt = new Date();
     (this as any).cashConfirmedBy = driverId;
     return ok(undefined);
+  }
+
+  /**
+   * Verifica el OTP entregado por el receptor con rate-limit anti brute-force.
+   *
+   * Política:
+   *  - 5 intentos fallidos consecutivos → lockout 1 hora
+   *  - OTP correcto resetea el contador
+   *  - Durante lockout, cualquier intento falla con `locked` flag
+   *
+   * El driver app puede mostrar tiempo restante en lockout para UX clara.
+   * 4 dígitos = 10K combos; sin rate-limit, brute force toma <1 min via API.
+   */
+  public verifyOtp(provided: string): Result<{ ok: boolean; lockedUntil?: Date; attemptsLeft?: number }, Error> {
+    const now = new Date();
+    if (this.otpLockedUntil && this.otpLockedUntil > now) {
+      return ok({ ok: false, lockedUntil: this.otpLockedUntil });
+    }
+    if (this.otpPin === provided) {
+      // Reset contador en éxito
+      (this as any).otpAttempts = 0;
+      (this as any).otpLockedUntil = undefined;
+      return ok({ ok: true });
+    }
+    // Falló — incrementar
+    const attempts = (this.otpAttempts ?? 0) + 1;
+    (this as any).otpAttempts = attempts;
+    if (attempts >= 5) {
+      // Lockout 1 hora
+      const lockedUntil = new Date(now.getTime() + 60 * 60 * 1000);
+      (this as any).otpLockedUntil = lockedUntil;
+      return ok({ ok: false, lockedUntil, attemptsLeft: 0 });
+    }
+    return ok({ ok: false, attemptsLeft: 5 - attempts });
   }
 
   /** Webhook desde payment-service: card pagada (escenarios A o C). */
