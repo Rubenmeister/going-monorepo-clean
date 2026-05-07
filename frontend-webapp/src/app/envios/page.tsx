@@ -17,8 +17,8 @@ export default function EnviosPage() {
             <Link href="/envios/cotizar" className="bg-white text-gray-900 font-black px-8 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105">
               Cotizar ahora →
             </Link>
-            <Link href="/auth/login" className="border-2 border-white text-white font-bold px-8 py-4 rounded-2xl text-lg hover:bg-white/10 transition-all">
-              Ya tengo cuenta
+            <Link href="/envios/mis-envios" className="border-2 border-white text-white font-bold px-8 py-4 rounded-2xl text-lg hover:bg-white/10 transition-all">
+              Mis envíos
             </Link>
           </div>
         </div>
