@@ -22,9 +22,15 @@ class LocationSchema {
 
 export type ParcelDocument = ParcelModelSchema & Document;
 
-@Schema({ timestamps: true, _id: false })
+// Nota: NO usar _id: false aquí — eso es solo para sub-documents.
+// En documentos top-level, Mongoose siempre necesita un _id; con _id:false
+// el save() falla con "document must have an _id before saving".
+// Dejamos que Mongoose auto-genere ObjectId como _id, y mantenemos `id`
+// como UUID separado (campo de aplicación) — `findOne({ id })` sigue
+// funcionando porque hay índice único en `id`.
+@Schema({ timestamps: true })
 export class ParcelModelSchema {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, index: true })
   id: string;
 
   @Prop({ required: true, index: true })
