@@ -1,5 +1,5 @@
 {
-  "name": "content-agent",
+  "name": "@going-platform/content-agent",
   "version": "1.0.0",
   "description": "Going Content Agent — tip semanal público al canal Telegram + revista, blog, noticias y Academia Going",
   "main": "src/index.ts",
@@ -10,12 +10,16 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
+    "@going-platform/cerebro-contracts": "workspace:*",
     "@google-cloud/firestore": "^7.9.0",
-    "nodemailer": "^6.9.14"
+    "@google-cloud/pubsub": "^4.7.0",
+    "nodemailer": "^6.9.14",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "@types/nodemailer": "^6.4.15",
+    "@types/uuid": "^9.0.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }
