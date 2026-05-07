@@ -11,16 +11,21 @@ import {
   saveContentAlert,
 } from '../firestore/content.service';
 import {
-  sendMessage,
+  sendInternalAlert,
   alertOverdueReview,
   alertScheduledSoon,
   alertAcademyIncomplete,
   weeklyContentReport,
-} from '../publishers/telegram.publisher';
+} from '../publishers/internal-notifier';
 import { sendTelegramTip } from '../publishers/telegram.bot';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const fsdb   = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
+
+// Modelo del tip semanal: override por env. Default Claude Sonnet 4.5 —
+// el tip es contenido público que representa la marca, conviene
+// pagar buena calidad de copywriting (volumen mínimo, ~52 tips/año).
+const AI_TIP_MODEL = process.env.AI_TIP_MODEL || 'claude-sonnet-4-5';
 
 // ── Timezone helpers ──────────────────────────────────────────
 function currentHourEcuador(): number {
@@ -47,7 +52,7 @@ export async function checkOverdueReviews(): Promise<void> {
   const items = await getItemsPendingReview(48);
   for (const item of items) {
     const horas = Math.round((Date.now() - new Date(item.createdAt).getTime()) / 3600000);
-    await sendMessage(alertOverdueReview(item.title, item.type, horas));
+    await sendInternalAlert(alertOverdueReview(item.title, item.type, horas));
     try {
       await saveContentAlert({
         type:      'overdue_review',
@@ -70,7 +75,7 @@ export async function checkScheduledPublications(): Promise<void> {
   for (const item of items) {
     if (!item.scheduledAt) continue;
     const minutos = Math.round((new Date(item.scheduledAt).getTime() - Date.now()) / 60000);
-    await sendMessage(alertScheduledSoon(item.title, item.type, minutos));
+    await sendInternalAlert(alertScheduledSoon(item.title, item.type, minutos));
   }
 }
 
@@ -82,7 +87,7 @@ export async function checkAcademyContent(): Promise<void> {
     const lessons = await getCourseLessons(course.id);
     const drafts  = lessons.filter(l => l.status === 'draft').length;
     if (drafts > 0) {
-      await sendMessage(alertAcademyIncomplete(course.title, lessons.length, drafts));
+      await sendInternalAlert(alertAcademyIncomplete(course.title, lessons.length, drafts));
       try {
         await saveContentAlert({
           type:      'academy_incomplete',
@@ -151,7 +156,7 @@ export async function generateWeeklyTip(): Promise<void> {
     console.log(`[content] tópico esta semana: ${topic.key}`);
 
     const response = await client.messages.create({
-      model:      'claude-sonnet-4-5',
+      model:      AI_TIP_MODEL,
       max_tokens: 400,
       messages: [{
         role:    'user',
@@ -183,7 +188,7 @@ Formato de respuesta (JSON):
     if (!ok) {
       console.warn('[content] Telegram no aceptó el tip');
       // Fallback: intentamos por email también para que ops lo vea
-      await sendMessage(`📰 <b>Tip semanal generado pero NO enviado a Telegram</b>\n\n${message}\n\nRevisar config CONTENT_TELEGRAM_CHAT_ID.`);
+      await sendInternalAlert(`📰 <b>Tip semanal generado pero NO enviado a Telegram</b>\n\n${message}\n\nRevisar config CONTENT_TELEGRAM_CHAT_ID.`);
       return;
     }
 
@@ -241,7 +246,7 @@ export async function sendWeeklyContentReport(): Promise<void> {
     leccionesAcademia: published.filter(i => i.type === 'academy_lesson').length,
   });
 
-  await sendMessage(msg);
+  await sendInternalAlert(msg);
 }
 
 // ─── Runner principal ─────────────────────────────────────────

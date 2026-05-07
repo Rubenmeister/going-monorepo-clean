@@ -1,12 +1,18 @@
 /**
- * Going Content Agent — Notificaciones internas
- * Canal: Gmail (reemplaza Telegram ops chat)
+ * Going Content Agent — Notificador interno (alertas a ops por Gmail).
+ *
+ * NOTA: Antes este archivo se llamaba `telegram.publisher.ts` por legacy,
+ * pero NUNCA usó Telegram — siempre fue Gmail. El nombre engañaba.
+ *
+ * El bot Telegram REAL (publicación pública del tip semanal al canal de
+ * Going) vive en `./telegram.bot.ts` — ese sí toca la Bot API.
  */
 
 import { sendNotification } from './email.notify';
 
-export async function sendMessage(text: string): Promise<void> {
-  await sendNotification(text);
+/** Envía una alerta interna por Gmail HTML (audiencia: ops, no público). */
+export async function sendInternalAlert(html: string): Promise<void> {
+  await sendNotification(html);
 }
 
 export function alertOverdueReview(title: string, type: string, horasEspera: number): string {
