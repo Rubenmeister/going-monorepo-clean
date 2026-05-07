@@ -1,12 +1,12 @@
 {
   "name": "going-marketing-agent",
   "version": "1.0.0",
-  "description": "Going Marketing Agent – content generation, auto-publishing, metrics",
+  "description": "Going Marketing Agent — métricas semanales de 9 redes (IG, FB, X, TikTok, YT, LinkedIn, Threads, WA, Telegram) + content generator on-demand",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "build": "tsc",
-    "start:compiled": "node dist/index.js"
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

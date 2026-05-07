@@ -13,6 +13,11 @@ import { Firestore } from '@google-cloud/firestore';
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const db = new Firestore({ projectId: process.env.GCP_PROJECT });
 
+// Modelo para generar insights del reporte semanal — output muy corto
+// (3-4 líneas, ~400 tokens). Override por env. Default Sonnet 4.5;
+// para reducir costo a futuro se podría bajar a Haiku 4.5.
+const AI_INSIGHTS_MODEL = process.env.AI_INSIGHTS_MODEL || 'claude-sonnet-4-5';
+
 // ── Helpers de timezone Ecuador ───────────────────────────────
 function currentHourEcuador(): number {
   return parseInt(new Date().toLocaleString('en-US', {
@@ -277,7 +282,7 @@ async function generateInsights(metrics: PlatformMetrics[]): Promise<string[]> {
 
   try {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: AI_INSIGHTS_MODEL,
       max_tokens: 400,
       messages: [{
         role: 'user',

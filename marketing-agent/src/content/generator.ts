@@ -4,6 +4,13 @@ import { getTemplate, PLATFORM_LIMITS } from './templates';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// Modelo de generación creativa — override por env. Default Sonnet 4.5
+// (existe; el legacy 'claude-opus-4-6' era un typo que retornaba 404
+// silenciosamente). Sonnet basta para copy de marca; reservamos Opus
+// para casos puntuales (newsletters largos, comunicados de prensa) si
+// alguna vez se justifica el costo.
+const AI_CONTENT_MODEL = process.env.AI_CONTENT_MODEL || 'claude-sonnet-4-5';
+
 // ============================================================
 // Content Generator – uses Claude to generate platform-specific
 // marketing content for Going
@@ -23,7 +30,7 @@ export async function generateContent(request: ContentRequest): Promise<Generate
   console.log(`[generator] Generating ${request.contentType} for ${request.platform} — topic: ${request.topic}`);
 
   const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+    model: AI_CONTENT_MODEL,
     max_tokens: template.maxTokens,
     system: template.systemPrompt,
     messages: [{ role: 'user', content: fullUserPrompt }],
@@ -102,7 +109,7 @@ Formato: HTML email simple (usa <h2>, <p>, <ul>, <strong>).
 Extensión: 300-500 palabras. Tono cercano y motivador.`;
 
   const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+    model: AI_CONTENT_MODEL,
     max_tokens: 1500,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -133,7 +140,7 @@ Contacto: ${context.contactName || 'Equipo Going'} — ${context.contactEmail ||
 Formato estándar de comunicado de prensa. Extensión: 400-600 palabras. Estilo periodístico formal.`;
 
   const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+    model: AI_CONTENT_MODEL,
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   });
