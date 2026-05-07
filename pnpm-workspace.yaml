@@ -33,8 +33,8 @@ packages:
   - 'ops-agent'
   - 'financial-agent'
   - 'content-agent'
-  # Los demás agentes (marketing, going) se irán agregando a medida que
-  # se les wire-in al Cerebro.
+  - 'marketing-agent'
+  # going-agent es el último; se agregará cuando se le wire-in al Cerebro.
 
   # Libraries
   - 'libs/**'
