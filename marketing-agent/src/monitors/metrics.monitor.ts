@@ -9,6 +9,35 @@ import { getWhatsAppMetrics } from '../publishers/whatsapp.publisher';
 import { getTelegramMetrics, sendWeeklyMarketingSummary, alertFollowerMilestone, alertViralPost } from '../publishers/telegram.publisher';
 import Anthropic from '@anthropic-ai/sdk';
 import { Firestore } from '@google-cloud/firestore';
+import {
+  Anomaly,
+  ActionTaken,
+  ActionProposed,
+} from '@going-platform/cerebro-contracts';
+
+// ─── RunCollector compartido (Cerebro) ───────────────────────
+//
+// Cada job empuja a este recolector. `runMarketingMonitor` lo retorna y
+// `index.ts` lo envuelve en un AgentRunEvent que se publica al
+// cerebro-service. El world model usa estas métricas para entender la
+// salud de la presencia digital de Going semana a semana.
+
+export interface RunCollector {
+  metrics:         Record<string, number | string>;
+  anomalies:       Anomaly[];
+  actionsTaken:    ActionTaken[];
+  actionsProposed: ActionProposed[];
+  errors:          string[];
+}
+
+function createCollector(): RunCollector {
+  return { metrics: {}, anomalies: [], actionsTaken: [], actionsProposed: [], errors: [] };
+}
+
+function recordError(c: RunCollector, jobName: string, err: unknown): void {
+  console.error(`[metrics] ${jobName} failed:`, err);
+  c.errors.push(jobName);
+}
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const db = new Firestore({ projectId: process.env.GCP_PROJECT });
@@ -235,7 +264,7 @@ export async function collectAllMetrics(): Promise<PlatformMetrics[]> {
 }
 
 // ─── Check for milestone crossings ───────────────────────────
-export async function checkFollowerMilestones(metrics: PlatformMetrics[]): Promise<void> {
+export async function checkFollowerMilestones(metrics: PlatformMetrics[], c?: RunCollector): Promise<void> {
   const lastKnownFollowers = await loadFollowerCounts();
   const updated: Record<string, number> = { ...lastKnownFollowers };
 
@@ -247,6 +276,20 @@ export async function checkFollowerMilestones(metrics: PlatformMetrics[]): Promi
       if (previous < milestone && current >= milestone) {
         console.log(`[metrics] 🎉 Milestone reached: ${m.platform} → ${milestone} followers`);
         await alertFollowerMilestone(m.platform, milestone);
+        if (c) {
+          c.anomalies.push({
+            type: 'follower_milestone',
+            severity: 'info',
+            message: `${m.platform} cruzó ${milestone.toLocaleString()} seguidores`,
+            data: { platform: m.platform, milestone, previous, current },
+          });
+          c.actionsTaken.push({
+            type: 'alerted_milestone',
+            target: m.platform,
+            result: 'ok',
+            data: { milestone, count: current },
+          });
+        }
       }
     }
 
@@ -257,7 +300,7 @@ export async function checkFollowerMilestones(metrics: PlatformMetrics[]): Promi
 }
 
 // ─── Check for viral posts (engagement > 2x average) ─────────
-export async function checkViralPosts(metrics: PlatformMetrics[]): Promise<void> {
+export async function checkViralPosts(metrics: PlatformMetrics[], c?: RunCollector): Promise<void> {
   for (const m of metrics) {
     if (!m.topPost) continue;
 
@@ -268,6 +311,34 @@ export async function checkViralPosts(metrics: PlatformMetrics[]): Promise<void>
     if (totalEngagement > 500 || m.engagementRate > 10) {
       console.log(`[metrics] 🔥 Potential viral post on ${m.platform}: ${totalEngagement} engagements`);
       await alertViralPost(m.platform, topPost.caption, totalEngagement);
+      if (c) {
+        c.anomalies.push({
+          type: 'viral_post',
+          severity: 'warning',  // "warning" no porque sea malo, sino porque amerita atención del cerebro
+          message: `Post viral en ${m.platform}: ${totalEngagement.toLocaleString()} engagement`,
+          data: {
+            platform: m.platform,
+            postId: topPost.postId,
+            caption: topPost.caption.slice(0, 200),
+            engagement: totalEngagement,
+            engagementRate: m.engagementRate,
+          },
+        });
+        c.actionsTaken.push({
+          type: 'alerted_viral_post',
+          target: `${m.platform}:${topPost.postId}`,
+          result: 'ok',
+          data: { engagement: totalEngagement },
+        });
+        // Cerebro puede sugerir replicar el formato/tópico en otras plataformas.
+        c.actionsProposed.push({
+          type: 'replicate_viral_format',
+          target: m.platform,
+          reason: `Post viral con ${totalEngagement} engagement — replicar formato en otras redes`,
+          urgency: 0.5,
+          data: { sourcePlatform: m.platform, postId: topPost.postId },
+        });
+      }
     }
   }
 }
@@ -304,7 +375,7 @@ Formato: una idea por línea, sin bullets, sin numeración. Máximo 20 palabras 
 }
 
 // ─── Weekly Report ────────────────────────────────────────────
-export async function generateAndSendWeeklyReport(): Promise<void> {
+export async function generateAndSendWeeklyReport(c?: RunCollector): Promise<void> {
   console.log('[metrics] Generating weekly report...');
 
   const metrics = await collectAllMetrics();
@@ -327,8 +398,42 @@ export async function generateAndSendWeeklyReport(): Promise<void> {
 
   await sendWeeklyMarketingSummary(report);
 
+  // Empuja métricas al cerebro: pulso de presencia digital semanal por plataforma.
+  if (c) {
+    c.metrics.totalReach = totalReach;
+    c.metrics.totalEngagement = totalEngagement;
+    c.metrics.platformsActive = metrics.length;
+
+    for (const m of metrics) {
+      const p = m.platform;
+      c.metrics[`followers_${p}`] = m.followers;
+      c.metrics[`engagement_rate_${p}`] = +m.engagementRate.toFixed(2);
+      c.metrics[`reach_${p}`] = m.reach;
+
+      // Si una plataforma tiene engagement <0.5% sostenido, propuesta para review.
+      // Threshold low porque algunas redes tienen reach inflado.
+      if (m.followers > 100 && m.impressions > 1000 && m.engagementRate < 0.5) {
+        c.actionsProposed.push({
+          type: 'review_platform_content',
+          target: p,
+          reason: `Engagement rate ${m.engagementRate.toFixed(2)}% en ${p} con ${m.followers} seguidores — contenido no resonando`,
+          urgency: 0.4,
+          data: { platform: p, engagementRate: m.engagementRate, followers: m.followers },
+        });
+      }
+    }
+
+    c.actionsTaken.push({
+      type: 'sent_weekly_report',
+      target: 'telegram_ops_chat',
+      result: 'ok',
+      data: { totalReach, totalEngagement, platformCount: metrics.length },
+    });
+  }
+
   // Also check milestones while we have fresh data
-  await checkFollowerMilestones(metrics);
+  await checkFollowerMilestones(metrics, c);
+  await checkViralPosts(metrics, c);
 
   console.log('[metrics] Weekly report sent ✅');
 }
@@ -342,10 +447,26 @@ export async function generateAndSendWeeklyReport(): Promise<void> {
 //
 // Plataformas con secret faltante fallan silenciosamente (try/catch
 // por plataforma) — el reporte sale igual con las que sí tienen token.
-export async function runMarketingMonitor(): Promise<void> {
+export interface MonitorRunResult {
+  collector: RunCollector;
+}
+
+async function safeRun(c: RunCollector, name: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
+  } catch (err) {
+    recordError(c, name, err);
+  }
+}
+
+export async function runMarketingMonitor(): Promise<MonitorRunResult> {
   const hour      = currentHourEcuador();
   const dayOfWeek = currentDayOfWeekEcuador();
   console.log(`[marketing-monitor] Running at Ecuador hour ${hour}, day ${dayOfWeek}`);
+
+  const c = createCollector();
+  c.metrics.runHourEcuador = hour;
+  c.metrics.runDayOfWeek = dayOfWeek;
 
   // Lunes 9am Ecuador o trigger manual: reporte semanal con métricas
   // de todas las plataformas + insights IA.
@@ -354,10 +475,12 @@ export async function runMarketingMonitor(): Promise<void> {
 
   if (isWeeklySlot || isForced) {
     if (isForced) console.log('[marketing-monitor] FORCE_WEEKLY_REPORT=1 — disparando manual');
-    await generateAndSendWeeklyReport();
+    await safeRun(c, 'generateAndSendWeeklyReport', () => generateAndSendWeeklyReport(c));
   } else {
     console.log('[marketing-monitor] fuera de ventana semanal (lunes 9am Ecuador) — nada que hacer');
+    c.metrics.outsideWeeklyWindow = 1;
   }
 
   console.log('[marketing-monitor] Done ✅');
+  return { collector: c };
 }

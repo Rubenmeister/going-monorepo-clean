@@ -1,5 +1,5 @@
 {
-  "name": "going-marketing-agent",
+  "name": "@going-platform/marketing-agent",
   "version": "1.0.0",
   "description": "Going Marketing Agent — métricas semanales de 9 redes (IG, FB, X, TikTok, YT, LinkedIn, Threads, WA, Telegram) + content generator on-demand",
   "main": "src/index.ts",
@@ -10,10 +10,14 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",
-    "@google-cloud/firestore": "^7.6.0"
+    "@going-platform/cerebro-contracts": "workspace:*",
+    "@google-cloud/firestore": "^7.6.0",
+    "@google-cloud/pubsub": "^4.7.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.37",
+    "@types/uuid": "^9.0.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
