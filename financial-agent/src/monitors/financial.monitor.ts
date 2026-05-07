@@ -10,7 +10,9 @@ import { getUpcomingDeadlines, formatDeadlinesForTelegram, hasUrgentDeadlines } 
 import { sendGmail } from './email.notify';
 
 // ============================================================
-// Financial Monitor – Alertas por Gmail (reemplaza Telegram)
+// Financial Monitor – Alertas por Gmail (HTML email)
+// El canal de notificaciones es Gmail (nodemailer), no Telegram.
+// La función `sendNotification` delega en `sendGmail`.
 // ============================================================
 
 /** Hora actual en Ecuador (0-23) — evita el bug UTC vs GMT-5 */
@@ -49,8 +51,9 @@ function isPrimaryRunOfHour(): boolean {
   return currentMinuteEcuador() < 30;
 }
 
-async function sendTelegram(text: string): Promise<void> {
-  await sendGmail(text);
+/** Adapter: las alertas internas salen por Gmail, no Telegram. */
+async function sendNotification(html: string): Promise<void> {
+  await sendGmail(html);
 }
 
 function fmt(n: number): string {
@@ -86,10 +89,10 @@ export async function checkPaymentErrors(): Promise<void> {
       `Verificar estado de Datafast y notificar al equipo técnico.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'payment_failed', severity: 'critical', message: msg, data: { failureRate: stats.failureRate, count: stats.failed }, createdAt: new Date() });
   } else if (stats.failed >= 3) {
-    await sendTelegram(`⚠️ <b>${stats.failed} pagos fallidos</b> en los últimos 30 minutos. Tasa: ${pct(stats.failureRate)}`);
+    await sendNotification(`⚠️ <b>${stats.failed} pagos fallidos</b> en los últimos 30 minutos. Tasa: ${pct(stats.failureRate)}`);
   }
 }
 
@@ -111,7 +114,7 @@ export async function checkChargebacks(): Promise<void> {
     `Acción requerida: revisar en panel Datafast y gestionar disputa.`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   await logAlert({ type: 'chargeback', severity: 'critical', message: msg, data: { count: chargebacks.length, amount: total }, createdAt: new Date() });
 }
 
@@ -153,7 +156,7 @@ export async function sendDailyFinancialReport(): Promise<void> {
     `🎯 Meta $${DAILY_REVENUE_TARGET}/día: ${report.driversMetTarget} alcanzaron | ${report.driversBelowTarget} pendientes`,
   ].filter(l => l !== '').join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] Daily report sent ✅');
 }
 
@@ -180,7 +183,7 @@ export async function sendWeeklyFinancialReport(): Promise<void> {
     `🎯 Conductores en meta: ${report.driversMetTarget} | Bajo meta: ${report.driversBelowTarget}`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] Weekly report sent ✅');
 }
 
@@ -204,7 +207,7 @@ export async function checkPendingPayouts(): Promise<void> {
       `Revisar en panel de operaciones y procesar transferencias.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'pending_payouts', severity: 'warning', message: msg, data: { count: old.length, amount: totalAmount }, createdAt: new Date() });
   }
 }
@@ -230,7 +233,7 @@ export async function processDailyPayouts(): Promise<void> {
     `Estado: <b>Pendiente de transferencia</b>`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log(`[financial-monitor] ${payouts.length} payouts created, total: $${total.toFixed(2)}`);
 }
 
@@ -245,7 +248,7 @@ export async function processWeeklyPayouts(): Promise<void> {
 
   const payouts = await generateWeeklyPayouts();
   if (payouts.length === 0) {
-    await sendTelegram([
+    await sendNotification([
       `💸 <b>Liquidaciones semanales</b>`,
       `Sin viajes en la semana anterior — nada que liquidar.`,
     ].join('\n'));
@@ -275,7 +278,7 @@ export async function processWeeklyPayouts(): Promise<void> {
     `Cada payout queda en Firestore <code>driver_payouts</code> con status=pending.`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   await logAlert({
     type:     'pending_payouts',
     severity: 'info',
@@ -311,7 +314,7 @@ export async function runBankReconciliation(): Promise<void> {
       `Revisar panel de pagos Datafast y Firestore.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'revenue_anomaly', severity: 'critical', message: msg, data: { issues: result.issueCount, variance: result.variance }, createdAt: new Date() });
   } else {
     console.log(`[financial-monitor] ✅ Reconciliation balanced: $${result.totalAmount}`);
@@ -324,7 +327,7 @@ export async function checkSRIDeadlines(): Promise<void> {
 
   const deadlines = getUpcomingDeadlines();
   const msg = formatDeadlinesForTelegram(deadlines);
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] SRI deadline alert sent');
 }
 
@@ -345,7 +348,7 @@ export async function sendAIFinancialInsights(): Promise<void> {
         ``,
         `💡 ${aiSummary}`,
       ].join('\n');
-      await sendTelegram(msg);
+      await sendNotification(msg);
     }
 
     // Proyección mensual
@@ -361,7 +364,7 @@ export async function sendAIFinancialInsights(): Promise<void> {
       ``,
       `💡 ${projection.aiInsight}`,
     ].join('\n');
-    await sendTelegram(projMsg);
+    await sendNotification(projMsg);
 
   } catch (e) {
     console.error('[financial-monitor] AI analysis failed:', (e as Error).message);
@@ -413,7 +416,7 @@ export async function runInvoicingLoop(): Promise<void> {
     }
   }
 
-  await sendTelegram(lines.join('\n'));
+  await sendNotification(lines.join('\n'));
 
   if (result.failed > 0) {
     await logAlert({
@@ -454,13 +457,13 @@ export async function runMonthlySRIReport(): Promise<void> {
       : `✅ ${report.daysUntilDeadline} días para el vencimiento`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
 
   // Generar ATS
   try {
     const atsPath = await generateATS(year, month);
     console.log(`[financial-monitor] ATS generated: ${atsPath}`);
-    await sendTelegram(`📁 <b>Archivo ATS generado</b>\nPeriodo: ${report.monthName} ${report.year}\nListo para subir al portal del SRI.`);
+    await sendNotification(`📁 <b>Archivo ATS generado</b>\nPeriodo: ${report.monthName} ${report.year}\nListo para subir al portal del SRI.`);
   } catch (e) {
     console.error('[financial-monitor] ATS generation failed:', e);
   }
@@ -508,7 +511,7 @@ export async function runFinancialMonitor(): Promise<void> {
     await sendWeeklyFinancialReport();
     try {
       const comparison = await compareWeeklyPerformance();
-      await sendTelegram([
+      await sendNotification([
         `📊 <b>Análisis Comparativo Semanal</b>`,
         `Ingresos: ${comparison.revenueChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.revenueChange).toFixed(1)}% vs semana anterior`,
         `Viajes: ${comparison.ridesChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.ridesChange).toFixed(1)}%`,

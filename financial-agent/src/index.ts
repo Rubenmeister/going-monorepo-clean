@@ -12,15 +12,16 @@ import { seedTestRide, cleanupTestRides, showTestRideStatus, cancelTestInvoice }
 // ============================================================
 
 // ─── Validación temprana de env vars requeridas ───────────────
+//
+// AI (Vertex AI) usa Application Default Credentials del SA — no API key.
+// Telegram quedó deprecado: las alertas salen por Gmail HTML.
 const REQUIRED_VARS = [
-  'ANTHROPIC_API_KEY',
   'GCP_PROJECT',
-  'TELEGRAM_BOT_TOKEN',
-  'TELEGRAM_CHAT_ID',
+  'GMAIL_APP_PASSWORD', // password de app para nodemailer (alertas)
   'DATIL_API_KEY',
   'DATIL_ENV',
   'GOING_RUC',
-  'MONGO_URL', // requerido para leer rides/transactions/users desde MongoDB Atlas
+  'MONGO_URL',          // rides/transactions/users desde MongoDB Atlas
 ];
 const missing = REQUIRED_VARS.filter(v => !process.env[v]);
 if (missing.length > 0) {
