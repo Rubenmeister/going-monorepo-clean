@@ -34,6 +34,11 @@ export type EntregaPaqueteParams = {
   totalAmount:     number;
   correctOtp?:     string;  // En producción vendría del backend
   pickupPhotoUri?: string;
+  /** Para escenarios C (recipient+card) y D (recipient+cash): cambia el flow. */
+  paymentMethod?:  'card' | 'cash';
+  payerRole?:      'sender' | 'recipient';
+  /** Status del pago — para C, debemos esperar 'paid' antes de permitir entrega. */
+  paymentStatus?:  string;
 };
 
 export function EntregaPaqueteScreen() {
@@ -46,6 +51,74 @@ export function EntregaPaqueteScreen() {
   const [loading,   setLoading]   = useState(false);
   const [otpValid,  setOtpValid]  = useState<boolean | null>(null);
   const [delivered, setDelivered] = useState(false);
+  const [cashCollected, setCashCollected] = useState(false);
+  // Para C: paymentStatus actualizado polleando el backend hasta que sea 'paid'.
+  const [livePaymentStatus, setLivePaymentStatus] = useState<string | undefined>(p.paymentStatus);
+  const [pollingPayment, setPollingPayment] = useState(false);
+
+  const isRecipientCard = p.paymentMethod === 'card' && p.payerRole === 'recipient'; // C
+  const isRecipientCash = p.paymentMethod === 'cash' && p.payerRole === 'recipient'; // D
+  const recipientPaid = livePaymentStatus === 'paid';
+  // Para D: requiere que el driver confirme cash antes de poder entregar.
+  // Para C: requiere que el receptor haya pagado (livePaymentStatus === 'paid').
+  // Para A/B: no hay bloqueo de pago en delivery.
+  const paymentReadyForDelivery =
+    isRecipientCash ? cashCollected :
+    isRecipientCard ? recipientPaid :
+    true;
+
+  // Polling de estado de pago para escenario C
+  React.useEffect(() => {
+    if (!isRecipientCard || recipientPaid) return;
+    setPollingPayment(true);
+    const interval = setInterval(async () => {
+      try {
+        const token = await AsyncStorage.getItem('driver_token');
+        const { data } = await axios.get(
+          `${API_BASE_URL}/parcels/${p.envioId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (data?.paymentStatus) {
+          setLivePaymentStatus(data.paymentStatus);
+          if (data.paymentStatus === 'paid') {
+            setPollingPayment(false);
+            hapticSuccess();
+            clearInterval(interval);
+          }
+        }
+      } catch {
+        /* network glitches no bloquean — siguiente tick reintenta */
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isRecipientCard, recipientPaid, p.envioId]);
+
+  const handleConfirmCashDelivery = async () => {
+    const ok = await new Promise<boolean>((resolve) => {
+      Alert.alert(
+        `Cobrar $${p.totalAmount.toFixed(2)} efectivo`,
+        `Confirma que recibiste el pago en efectivo del destinatario antes de entregar el paquete.`,
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Sí, ya cobré', onPress: () => resolve(true) },
+        ],
+      );
+    });
+    if (!ok) return;
+    try {
+      const token = await AsyncStorage.getItem('driver_token');
+      await axios.patch(
+        `${API_BASE_URL}/parcels/${p.envioId}/confirm-cash-delivery`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setCashCollected(true);
+      hapticSuccess();
+    } catch (e: any) {
+      hapticError();
+      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo confirmar el cobro.');
+    }
+  };
 
   const inputs = [useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null), useRef<TextInput>(null)];
 
@@ -64,32 +137,17 @@ export function EntregaPaqueteScreen() {
     }
   };
 
-  const verifyOtp = async () => {
+  // Verificación local — el OTP real lo valida el backend en /parcels/:id/deliver
+  // con rate-limit anti brute-force (5 intentos → lockout 1h). Aquí solo
+  // marcamos visualmente que están los 4 dígitos antes de habilitar el botón.
+  const verifyOtp = () => {
     const enteredOtp = otp.join('');
     if (enteredOtp.length !== 4) {
       Alert.alert('OTP incompleto', 'Ingresa los 4 dígitos del código del destinatario.');
       return;
     }
+    setOtpValid(true);
     hapticMedium();
-    try {
-      const token = await AsyncStorage.getItem('driver_token');
-      const { data } = await axios.post(
-        `${API_BASE_URL}/envios/${p.envioId}/verify-otp`,
-        { otp: enteredOtp },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (data?.valid) {
-        setOtpValid(true);
-        hapticSuccess();
-      } else {
-        setOtpValid(false);
-        hapticError();
-      }
-    } catch {
-      // En demo: cualquier OTP de 4 dígitos es válido
-      setOtpValid(true);
-      hapticSuccess();
-    }
   };
 
   const handleTakePhoto = async () => {
@@ -109,6 +167,15 @@ export function EntregaPaqueteScreen() {
   };
 
   const handleConfirmDelivery = async () => {
+    if (!paymentReadyForDelivery) {
+      Alert.alert(
+        'Pago pendiente',
+        isRecipientCard
+          ? 'El destinatario aún no ha pagado. Espera la confirmación del pago.'
+          : 'Confirma el cobro de efectivo antes de entregar.',
+      );
+      return;
+    }
     if (!otpValid) {
       Alert.alert('OTP requerido', 'Verifica el código OTP antes de confirmar.');
       return;
@@ -121,20 +188,26 @@ export function EntregaPaqueteScreen() {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      const formData = new FormData();
-      formData.append('photo', { uri: photo, type: 'image/jpeg', name: `delivery_${p.envioId}.jpg` } as any);
-      formData.append('envioId', p.envioId);
-      formData.append('otp', otp.join(''));
-      formData.append('status', 'delivered');
-
-      await axios.post(`${API_BASE_URL}/envios/${p.envioId}/deliver`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-      });
+      // Endpoint correcto post audit: PATCH /parcels/:id/deliver con JSON body
+      // (el legacy `/envios/:id/deliver` con FormData nunca existió en el backend).
+      // El backend valida OTP con rate-limit. La foto subimos en otra request si
+      // es necesario — por ahora solo enviamos el otpPin.
+      await axios.patch(
+        `${API_BASE_URL}/parcels/${p.envioId}/deliver`,
+        { otpPin: otp.join(''), photoUrl: photo },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       hapticSuccess();
       setDelivered(true);
-    } catch {
-      hapticSuccess();
-      setDelivered(true);
+    } catch (err: any) {
+      hapticError();
+      const msg = err?.response?.data?.message ?? 'No se pudo confirmar la entrega.';
+      Alert.alert('Error', msg);
+      // Si el OTP fue rechazado por el backend (rate-limit message lo indica),
+      // limpiamos el otpValid local para que el conductor reintente.
+      if (msg?.toLowerCase().includes('otp')) {
+        setOtpValid(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -211,6 +284,81 @@ export function EntregaPaqueteScreen() {
             <Text style={s.infoVal} numberOfLines={2}>{p.deliveryAddress}</Text>
           </View>
         </View>
+
+        {/* PAGO — solo si recipient (C o D) */}
+        {(isRecipientCard || isRecipientCash) && (
+          <View style={s.card}>
+            <View style={s.cardTitle}>
+              <Ionicons name="card-outline" size={16} color={RED} />
+              <Text style={s.cardTitleText}>PAGO DEL DESTINATARIO</Text>
+            </View>
+
+            {/* Caso D: cash al recibir — botón para confirmar cobro */}
+            {isRecipientCash && (
+              <>
+                <Text style={s.otpHint}>
+                  El destinatario paga ${p.totalAmount.toFixed(2)} en efectivo. Confirma el cobro antes de entregar el paquete.
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    s.payActionBtn,
+                    cashCollected && { backgroundColor: '#ECFDF5', borderColor: GREEN },
+                  ]}
+                  onPress={handleConfirmCashDelivery}
+                  disabled={cashCollected}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons
+                    name={cashCollected ? 'checkmark-circle' : 'cash-outline'}
+                    size={20}
+                    color={cashCollected ? GREEN : NAVY}
+                  />
+                  <Text style={[s.payActionText, cashCollected && { color: GREEN }]}>
+                    {cashCollected
+                      ? `Cobro confirmado · $${p.totalAmount.toFixed(2)}`
+                      : `Confirmar cobro de $${p.totalAmount.toFixed(2)} efectivo`}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {/* Caso C: card por SMS — esperar a que receptor pague */}
+            {isRecipientCard && (
+              <>
+                <Text style={s.otpHint}>
+                  Se envió un link de pago por SMS al destinatario. Solo puedes entregar el paquete cuando el pago se confirme.
+                </Text>
+                <View
+                  style={[
+                    s.payStatusBox,
+                    recipientPaid
+                      ? { backgroundColor: '#ECFDF5', borderColor: GREEN }
+                      : { backgroundColor: '#FFFBEB', borderColor: GOLD },
+                  ]}
+                >
+                  {pollingPayment && !recipientPaid && (
+                    <ActivityIndicator size="small" color={GOLD} />
+                  )}
+                  <Ionicons
+                    name={recipientPaid ? 'checkmark-circle' : 'time-outline'}
+                    size={20}
+                    color={recipientPaid ? GREEN : '#92400E'}
+                  />
+                  <Text
+                    style={[
+                      s.payStatusText,
+                      recipientPaid ? { color: GREEN } : { color: '#92400E' },
+                    ]}
+                  >
+                    {recipientPaid
+                      ? `Pago confirmado · $${p.totalAmount.toFixed(2)}`
+                      : `Esperando pago del destinatario...`}
+                  </Text>
+                </View>
+              </>
+            )}
+          </View>
+        )}
 
         {/* OTP */}
         <View style={s.card}>
@@ -425,4 +573,19 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
   },
   doneBtnText: { fontSize: 15, fontWeight: '900', color: '#fff' },
+
+  payActionBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#fff', borderRadius: 12,
+    borderWidth: 2, borderColor: NAVY,
+    paddingVertical: 12, paddingHorizontal: 14,
+  },
+  payActionText: { fontSize: 13, fontWeight: '800', color: NAVY },
+
+  payStatusBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    borderRadius: 12, borderWidth: 2,
+    padding: 14,
+  },
+  payStatusText: { flex: 1, fontSize: 13, fontWeight: '700' },
 });
