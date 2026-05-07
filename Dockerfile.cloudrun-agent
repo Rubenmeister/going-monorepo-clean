@@ -48,10 +48,18 @@ RUN pnpm --filter "${AGENT_NAME}" --prod --legacy deploy /deploy
 FROM node:20-slim AS runtime
 WORKDIR /app
 
-# CA certs para TLS contra Mongo Atlas, Pub/Sub, Telegram.
+# CA certs para TLS contra Mongo Atlas, Pub/Sub, Telegram, etc.
+# `git` lo necesita going-agent (clona el repo + commit/push); para los
+# demás agentes el binario suma ~5MB y queda sin uso, costo aceptable
+# para mantener un único Dockerfile genérico.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
+ && apt-get install -y --no-install-recommends ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
+
+# Identidad del going-agent al hacer commits en agent/fixes (sin efecto
+# para los demás agentes que no tocan git).
+RUN git config --global user.email "agent@goingec.com" \
+ && git config --global user.name "Going Agent"
 
 COPY --from=builder /deploy/dist ./dist
 COPY --from=builder /deploy/node_modules ./node_modules

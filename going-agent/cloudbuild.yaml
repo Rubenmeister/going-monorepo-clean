@@ -1,17 +1,39 @@
+# going-agent — Cloud Run Job (cron-triggered) deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-agent del root
+# (el genérico ya incluye `git` en runtime para que going-agent pueda
+# clonar el repo + commit/push).
+#
+# Trigger:
+#   gcloud builds submit . --config=going-agent/cloudbuild.yaml --project=going-5d1ae
+#
+# Schedule: cada 6 horas. Vars seteadas fuera de Cloud Build:
+#   CEREBRO_PUBLISH_ENABLED=true|false  (default false hasta cerebro-service listo)
+
 steps:
-  # 1. Build imagen del agente
+  # 1. Build con Dockerfile genérico de agentes, contexto = monorepo root.
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
+      - -f
+      - Dockerfile.cloudrun-agent
+      - --build-arg
+      - AGENT_NAME=going-agent
       - -t
       - gcr.io/$PROJECT_ID/going-agent:latest
       - .
+    timeout: '1200s'
 
-  # 2. Push a Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/going-agent:latest']
 
-  # 3. Crear o actualizar el Cloud Run Job
+  # 2. Deploy como Cloud Run Job.
+  #
+  # Secrets:
+  #   ANTHROPIC_API_KEY    — Claude Haiku 4.5 (tool use intensivo)
+  #   GIT_TOKEN            — PAT/GitHub App token para clonar + push agent/fixes
+  #   TELEGRAM_BOT_TOKEN   — bot que reporta el ciclo
+  #   TELEGRAM_CHAT_ID     — chat ops donde llega el reporte
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -25,11 +47,11 @@ steps:
       - --cpu=2
       - --max-retries=1
       - --task-timeout=300s
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git,AGENT_MODEL=claude-haiku-4-5
       - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,GIT_TOKEN=GIT_TOKEN:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
-  # 4. Crear/actualizar Cloud Scheduler (dispara el Job cada 30 minutos)
+  # 3. Cloud Scheduler — cada 6 horas (UTC).
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: bash
     args:
@@ -56,3 +78,5 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+timeout: '1500s'
