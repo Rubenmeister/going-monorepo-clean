@@ -131,8 +131,7 @@ for topic in "${TOPICS[@]}"; do
     --member="serviceAccount:$PUBLISHER_SA" \
     --role="roles/pubsub.publisher" \
     --project="$GCP_PROJECT" \
-    --condition=None \
-    >/dev/null 2>&1 || true
+    >/dev/null
 done
 print_success "publisher binding aplicado a los 6 topics"
 echo ""
@@ -166,8 +165,7 @@ for topic in "${TOPICS[@]}"; do
     --member="serviceAccount:$SUBSCRIBER_SA" \
     --role="roles/pubsub.subscriber" \
     --project="$GCP_PROJECT" \
-    --condition=None \
-    >/dev/null 2>&1 || true
+    >/dev/null
 done
 print_success "subscriber binding aplicado a las 6 subscriptions"
 echo ""
