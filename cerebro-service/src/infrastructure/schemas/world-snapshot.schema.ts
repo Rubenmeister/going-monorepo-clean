@@ -87,19 +87,22 @@ export interface BusinessMetrics {
 
 @Schema({ collection: 'cerebro_world_snapshots', timestamps: true })
 export class WorldSnapshotEntity {
-  @Prop({ required: true, index: true })
+  // type: explícito en cada @Prop — webpack + reflect-metadata pierden la
+  // inferencia para tipos union (SystemHealth) y a veces incluso para
+  // primitivos. Más seguro siempre declararlo.
+  @Prop({ required: true, index: true, type: Date })
   generatedAt!: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   windowMinutes!: number;        // ventana hacia atrás considerada (típico 30min)
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, index: true, type: String })
   systemHealth!: SystemHealth;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   totalCriticalAnomalies!: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   totalWarnings!: number;
 
   @Prop({ type: [Object], default: [] })
@@ -124,7 +127,7 @@ export class WorldSnapshotEntity {
     description:          string;        // "ops-agent: nuevo no_driver_assigned, financial-agent: cleared"
   };
 
-  @Prop({ default: () => new Date(), index: true, expires: '7d' })
+  @Prop({ type: Date, default: () => new Date(), index: true, expires: '7d' })
   receivedAt!: Date;
 }
 
