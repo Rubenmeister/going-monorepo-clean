@@ -5,15 +5,18 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './api/health.controller';
 import { CerebroController } from './api/cerebro.controller';
 import { AgentEventSchema } from './infrastructure/schemas/agent-event.schema';
+import { WorldSnapshotSchema } from './infrastructure/schemas/world-snapshot.schema';
 import { AgentEventRepository } from './infrastructure/persistence/agent-event.repository';
+import { WorldSnapshotRepository } from './infrastructure/persistence/world-snapshot.repository';
 import { EventHandlerService } from './infrastructure/event-handler.service';
 import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.service';
+import { WorldModelService } from './world-model/world-model.service';
+import { DiffDetectorService } from './world-model/diff-detector.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // ScheduleModule reservado para Fase 2: el WorldModelService va a
-    // generar snapshots cada 10 min con @Cron.
+    // Habilita @Cron para el WorldModelService (cada 10 min).
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(
       process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017',
@@ -27,7 +30,8 @@ import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.serv
       },
     ),
     MongooseModule.forFeature([
-      { name: 'AgentEvent', schema: AgentEventSchema },
+      { name: 'AgentEvent',    schema: AgentEventSchema },
+      { name: 'WorldSnapshot', schema: WorldSnapshotSchema },
     ]),
   ],
   controllers: [
@@ -36,8 +40,11 @@ import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.serv
   ],
   providers: [
     AgentEventRepository,
+    WorldSnapshotRepository,
     EventHandlerService,
     PubSubSubscriberService,
+    DiffDetectorService,
+    WorldModelService,
   ],
 })
 export class AppModule {}
