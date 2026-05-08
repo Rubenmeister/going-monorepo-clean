@@ -1,0 +1,82 @@
+# mycortex-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico
+# (mismo patrón que cerebro-service, customer-support, etc.).
+#
+# Trigger:
+#   gcloud builds submit . --config=mycortex-service/cloudbuild.yaml --project=going-5d1ae
+#
+# Antes del primer deploy:
+#   1. Crear SA mycortex-service-sa:
+#      gcloud iam service-accounts create mycortex-service-sa \
+#        --display-name='MyCortex Service' --project=going-5d1ae
+#      gcloud projects add-iam-policy-binding going-5d1ae \
+#        --member='serviceAccount:mycortex-service-sa@going-5d1ae.iam.gserviceaccount.com' \
+#        --role='roles/secretmanager.secretAccessor' --condition=None
+#   2. Asegurar que ANTHROPIC_API_KEY existe en Secret Manager.
+
+steps:
+  # 1. Build con Dockerfile genérico de NestJS services.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=mycortex-service
+      - -t
+      - gcr.io/$PROJECT_ID/mycortex-service:latest
+      - .
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/mycortex-service:latest
+
+  # 2. Deploy as Cloud Run Service. min-instances=1 para que el cron del
+  # razonamiento corra fiable (Cloud Run no schedula crons en containers
+  # a 0 instances). max-instances=2 — no necesitamos paralelismo, solo
+  # tolerar redeploys sin downtime.
+  #
+  # Secrets:
+  #   MONGO_URL-prod         — Mongo Atlas (DB: going-mycortex)
+  #   ANTHROPIC_API_KEY      — Claude SDK
+  #   TELEGRAM_BOT_TOKEN     — bot que reporta los ciclos al chat ops
+  #   TELEGRAM_CHAT_ID       — chat ops Telegram
+  #
+  # CEREBRO_STATE_URL: hardcoded a la URL típica de cerebro-service en
+  # us-central1. Si se mueve a otro region, override via --update-env-vars.
+  #
+  # MYCORTEX_REASONING_ENABLED=false por default (no llama Anthropic). Activar
+  # con `gcloud run services update mycortex-service --update-env-vars MYCORTEX_REASONING_ENABLED=true`
+  # cuando el world model esté validado.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - mycortex-service
+      - --image=gcr.io/$PROJECT_ID/mycortex-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=1Gi
+      - --min-instances=1
+      - --max-instances=2
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,MYCORTEX_REASONING_ENABLED=false,MYCORTEX_MODEL=claude-sonnet-4-5,CEREBRO_STATE_URL=https://cerebro-service-780842550857.us-central1.run.app
+      - --set-secrets=MONGO_URL=MONGO_URL-prod:latest,ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
+      # VPC connector necesario para conectar a MongoDB Atlas (whitelist IP).
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
+      - --service-account=mycortex-service-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/mycortex-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

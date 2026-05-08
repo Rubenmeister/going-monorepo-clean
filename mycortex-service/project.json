@@ -1,0 +1,20 @@
+{
+  "name": "mycortex-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "mycortex-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/mycortex-service",
+        "main": "mycortex-service/src/main.ts",
+        "tsConfig": "mycortex-service/tsconfig.app.json",
+        "webpackConfig": "mycortex-service/webpack.config.js"
+      }
+    }
+  }
+}
