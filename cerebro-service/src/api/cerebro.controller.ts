@@ -1,68 +1,62 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AGENT_IDS, AgentId } from '@going-platform/cerebro-contracts';
 import { AgentEventRepository } from '../infrastructure/persistence/agent-event.repository';
+import { WorldSnapshotRepository } from '../infrastructure/persistence/world-snapshot.repository';
+import { WorldModelService } from '../world-model/world-model.service';
 
 /**
  * Endpoints públicos del cerebro.
  *
- * Fase 1 (skeleton): /state devuelve un resumen rudimentario basado en
- * eventos crudos. Fase 2 reemplaza esto con el world model agregado.
+ * Fase 2 (actual): /state devuelve el último WorldSnapshot agregado.
+ * /state/history para auditoría. /events* siguen siendo el feed crudo.
  */
 @Controller('cerebro')
 export class CerebroController {
-  constructor(private readonly events: AgentEventRepository) {}
+  constructor(
+    private readonly events:    AgentEventRepository,
+    private readonly snapshots: WorldSnapshotRepository,
+    private readonly worldModel: WorldModelService,
+  ) {}
 
   /**
-   * Estado actual del cerebro — placeholder Fase 1.
+   * GET /cerebro/state
    *
-   * Devuelve:
-   *   - últimos eventos por agente (resumen)
-   *   - anomalías críticas en las últimas 24h
-   *   - conteo de eventos recibidos en la ventana
-   *
-   * Fase 2 reemplaza con el world snapshot del WorldModelService.
+   * Devuelve el último WorldSnapshot persistido. Si todavía no se generó
+   * ninguno (cold start del cerebro-service), construye uno on-demand y
+   * lo devuelve sin persistirlo — para que el endpoint nunca devuelva
+   * vacío durante los primeros 10 min después del deploy.
    */
   @Get('state')
   async getState() {
-    const since24h = new Date(Date.now() - 24 * 3600 * 1000);
+    const latest = await this.snapshots.latest();
+    if (latest) {
+      return {
+        version: 'fase-2',
+        ...latest,
+      };
+    }
 
-    const [eventsByAgent, criticalAnoms, recent] = await Promise.all([
-      this.events.countByAgentSince(since24h),
-      this.events.criticalAnomaliesSince(since24h, 20),
-      this.events.recentGlobal(10),
-    ]);
-
+    // Cold start: aún no corrió el cron del WorldModelService.
+    const onDemand = await this.worldModel.buildOnDemand();
     return {
-      version: 'fase-1-placeholder',
-      generatedAt: new Date().toISOString(),
-      windowHours: 24,
-      eventsByAgent,
-      criticalAnomaliesCount: criticalAnoms.reduce(
-        (s, e) => s + e.anomalies.filter(a => a.severity === 'critical').length,
-        0,
-      ),
-      criticalAnomalies: criticalAnoms.flatMap(e =>
-        e.anomalies
-          .filter(a => a.severity === 'critical')
-          .map(a => ({
-            agentId: e.agentId,
-            runId:   e.runId,
-            finishedAt: e.finishedAt,
-            type:    a.type,
-            message: a.message,
-            data:    a.data,
-          })),
-      ),
-      recentEvents: recent.map(e => ({
-        agentId:    e.agentId,
-        runId:      e.runId,
-        finishedAt: e.finishedAt,
-        status:     e.status,
-        anomaliesCount:      e.anomalies.length,
-        actionsTakenCount:   e.actionsTaken.length,
-        actionsProposedCount: e.actionsProposed.length,
-      })),
+      version: 'fase-2',
+      note: 'Snapshot generado on-demand (aún no hay snapshots persistidos — cron correrá pronto)',
+      ...onDemand,
     };
+  }
+
+  /**
+   * GET /cerebro/state/history?limit=N
+   *
+   * Histórico de snapshots para auditoría / dashboards / análisis temporal.
+   * Útil para ver cómo evolucionó systemHealth a lo largo del día.
+   */
+  @Get('state/history')
+  async getStateHistory(@Query('limit') limit?: string) {
+    const n = parseInt(limit || '50', 10);
+    const safeLimit = Number.isFinite(n) && n > 0 && n <= 500 ? n : 50;
+    const history = await this.snapshots.history(safeLimit);
+    return { count: history.length, snapshots: history };
   }
 
   /** Eventos recientes globales para auditoría / dashboard. */
