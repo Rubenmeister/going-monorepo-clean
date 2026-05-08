@@ -59,6 +59,13 @@ RUN node -e "\
 
 # Build with Nx (project graph requires NX_DAEMON=false in CI)
 ENV NX_DAEMON=false
+
+# Pre-compilar cerebro-contracts. main de su package.json apunta a
+# dist/index.js — webpack del service necesita el dist/ pre-existente
+# para resolver el import desde la lib. `|| true` para no romper builds
+# de services que NO importan cerebro-contracts.
+RUN pnpm --filter "@going-platform/cerebro-contracts" run build || true
+
 RUN pnpm exec nx build ${SERVICE_NAME} --skip-nx-cache
 
 # Strip workspace deps (@going-platform/*) from the generated package.json.
