@@ -13,22 +13,27 @@ import { AgentId, AnomalySeverity, RunStatus } from '@going-platform/cerebro-con
  */
 @Schema({ collection: 'cerebro_agent_events', timestamps: true })
 export class AgentEventEntity {
-  @Prop({ required: true, index: true })
+  // NOTA: tipos union de literales (AgentId, RunStatus) requieren `type: String`
+  // explícito. reflect-metadata no puede inferir union types en runtime y
+  // @nestjs/mongoose tira CannotDetermineTypeError. Tipos primitivos
+  // (string/number/Date) sí necesitan también el type explícito cuando
+  // pasan por webpack — el bundler estrecha el reflect-metadata.
+  @Prop({ required: true, index: true, type: String })
   agentId!: AgentId;
 
-  @Prop({ required: true, unique: true })  // unique para idempotencia (Pub/Sub at-least-once)
+  @Prop({ required: true, unique: true, type: String })  // unique → idempotencia (Pub/Sub at-least-once)
   runId!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Date })
   startedAt!: Date;
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, index: true, type: Date })
   finishedAt!: Date;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   durationMs!: number;
 
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, index: true, type: String })
   status!: RunStatus;
 
   @Prop({ type: Object, default: {} })
@@ -65,7 +70,7 @@ export class AgentEventEntity {
   // ── Telemetría del lado del cerebro ─────────────────────
   // Cuándo lo recibimos nosotros (vs. finishedAt que es cuándo terminó el agente).
   // Útil para detectar lag en el bus.
-  @Prop({ default: () => new Date(), index: true, expires: '30d' })
+  @Prop({ type: Date, default: () => new Date(), index: true, expires: '30d' })
   receivedAt!: Date;
 }
 
