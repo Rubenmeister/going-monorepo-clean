@@ -23,7 +23,8 @@ ARG AGENT_NAME
 
 WORKDIR /repo
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Pin pnpm@10 — pnpm 11 requiere Node ≥22.13, este Dockerfile usa node:20.
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Workspace meta — copiamos primero para aprovechar layer cache si solo
 # cambia el código del agente.
