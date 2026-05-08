@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist/mycortex-service"
+  },
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

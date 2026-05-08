@@ -56,6 +56,11 @@ steps:
       - --max-instances=2
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,CEREBRO_SUBSCRIBE_ENABLED=true
       - --set-secrets=MONGO_URL=MONGO_URL-prod:latest
+      # VPC connector: Cloud Run sale por going-connector (10.8.0.0/28) que
+      # ya está whitelisted en MongoDB Atlas. Sin esto, Atlas rechaza la
+      # conexión porque Cloud Run NAT IP cambia entre revisiones.
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
       - --service-account=cerebro-service-sa@$PROJECT_ID.iam.gserviceaccount.com
 
 images:

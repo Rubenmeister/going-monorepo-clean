@@ -64,6 +64,9 @@ steps:
       - --max-instances=5
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
       - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
+      # VPC connector necesario para conectar a MongoDB Atlas (whitelist IP).
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
 images:

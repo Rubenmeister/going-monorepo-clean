@@ -29,6 +29,7 @@ packages:
   - 'recommendation-service'
   - 'subscription-service'
   - 'cerebro-service'
+  - 'mycortex-service'
 
   # Agents (cron-triggered Cloud Run Jobs, comparten libs/cerebro-contracts)
   - 'ops-agent'
