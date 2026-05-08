@@ -11,8 +11,10 @@ ARG SERVICE_NAME
 # Install build tools required for native modules (bcrypt, firebase-admin, grpc, etc.)
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm via corepack. Pin a v10 — pnpm 11 requiere Node ≥22.13 y
+# este Dockerfile usa node:20-slim. Sin el pin, builds nuevos rompen
+# cuando Corepack resuelve `latest` a una versión que no soporta Node 20.
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
