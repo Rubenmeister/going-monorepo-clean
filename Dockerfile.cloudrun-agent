@@ -38,8 +38,13 @@ COPY libs/cerebro-contracts/ ./libs/cerebro-contracts/
 # transitive workspace deps. Mucho más rápido que un install full del monorepo.
 RUN pnpm install --filter "${AGENT_NAME}..." --no-frozen-lockfile
 
-# Compilar TypeScript del agente (y sus deps internas si las hubiera).
-RUN pnpm --filter "${AGENT_NAME}..." run build
+# Compilar PRIMERO cerebro-contracts (workspace dep). main de su package.json
+# apunta a dist/index.js — sin pre-build, pnpm deploy copia el src/*.ts y
+# Node.js falla en runtime con SyntaxError al intentar ejecutar `export type`.
+RUN pnpm --filter "@going-platform/cerebro-contracts" run build || true
+
+# Compilar el agente.
+RUN pnpm --filter "${AGENT_NAME}" run build
 
 # `pnpm deploy` aplana node_modules en /deploy/ — sin symlinks pnpm-store,
 # listo para correr con `node` plano en runtime.
