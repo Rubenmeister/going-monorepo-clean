@@ -61,6 +61,12 @@ RUN node -e "\
 ENV NX_DAEMON=false
 RUN pnpm exec nx build ${SERVICE_NAME} --skip-nx-cache
 
+# Strip workspace deps (@going-platform/*) from the generated package.json.
+# Webpack ya bundleó esas libs dentro de main.js — la dep solo está en el
+# package.json porque generatePackageJson la heredó del original. npm install
+# no entiende `workspace:*` (es protocolo pnpm) y rompe con EUNSUPPORTEDPROTOCOL.
+RUN node -e "const fs=require('fs'); const f='dist/${SERVICE_NAME}/package.json'; const p=JSON.parse(fs.readFileSync(f,'utf8')); for(const sec of ['dependencies','devDependencies','peerDependencies']){ if(!p[sec]) continue; for(const k of Object.keys(p[sec])){ if(k.startsWith('@going-platform/')){ delete p[sec][k]; console.log('Stripped '+sec+'.'+k);} } } fs.writeFileSync(f, JSON.stringify(p,null,2));"
+
 # Install production dependencies inside the dist folder using plain npm.
 # This creates a flat node_modules/ inside dist/ that Node can resolve cleanly,
 # avoiding any pnpm virtual-store symlink issues in the final image.
