@@ -1,0 +1,20 @@
+{
+  "name": "@going-platform/frontend-agent",
+  "version": "1.0.0",
+  "description": "Going Frontend Agent — monitorea deploys + errores de las 3 web apps en Vercel (frontend-webapp, admin-dashboard, corporate-portal). Publica al cerebro-service.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@going-platform/cerebro-contracts": "workspace:*",
+    "@google-cloud/pubsub": "^4.7.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.4.5"
+  }
+}
