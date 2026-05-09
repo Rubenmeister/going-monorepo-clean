@@ -2,7 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { runMarketingMonitor } from './monitors/metrics.monitor';
 import {
   AgentRunEvent,
+  parseCommandFromEnv,
   publishAgentRunEvent,
+  runCommandMode,
 } from '@going-platform/cerebro-contracts';
 
 // ============================================================
@@ -21,6 +23,15 @@ if (missing.length > 0) {
 async function main(): Promise<void> {
   console.log('🚀 Going Marketing Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);
+
+  // Modo command (Orchestrator override COMMAND_JSON).
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // driver_bonus_zone: async (c) => { await sendDriverBonusToZone(c.payload.zone); },
+    });
+    process.exit(0);
+  }
 
   const runId     = uuidv4();
   const startedAt = new Date();

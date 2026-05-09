@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './api/health.controller';
 import { CerebroController } from './api/cerebro.controller';
+import { CommandController } from './api/command.controller';
 import { AgentEventSchema } from './infrastructure/schemas/agent-event.schema';
 import { WorldSnapshotSchema } from './infrastructure/schemas/world-snapshot.schema';
 import { AgentEventRepository } from './infrastructure/persistence/agent-event.repository';
@@ -37,6 +38,7 @@ import { DiffDetectorService } from './world-model/diff-detector.service';
   controllers: [
     HealthController,
     CerebroController,
+    CommandController,
   ],
   providers: [
     AgentEventRepository,

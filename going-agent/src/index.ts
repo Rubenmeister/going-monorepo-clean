@@ -12,7 +12,9 @@ import {
   Anomaly,
   ActionTaken,
   ActionProposed,
+  parseCommandFromEnv,
   publishAgentRunEvent,
+  runCommandMode,
 } from '@going-platform/cerebro-contracts';
 
 // ─── RunCollector compartido (Cerebro) ───────────────────────
@@ -466,6 +468,18 @@ async function main() {
   console.log('🚀 Going Agent — Cloud Run Job');
   console.log(`📁 Repo: ${config.repoPath}`);
   console.log(`🕐 ${new Date().toISOString()}\n`);
+
+  // Modo command (Orchestrator override COMMAND_JSON).
+  // Si está presente, ejecutamos solo la acción específica y salimos —
+  // sin correr el ciclo agéntico normal.
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // Handlers concretos cuando aparezcan reglas, ej:
+      // force_review_logs: async () => { await runAgentCycle(createCollector()); },
+    });
+    process.exit(0);
+  }
 
   const runId     = uuidv4();
   const startedAt = new Date();

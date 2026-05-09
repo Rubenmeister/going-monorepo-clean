@@ -7,6 +7,7 @@ import { TelegramController } from './api/telegram.controller';
 import { ChatController } from './api/chat.controller';
 import { HealthController } from './api/health.controller';
 import { MetricsController } from './api/metrics.controller';
+import { CommandController } from './api/command.controller';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
 import { BookingService } from './booking/booking.service';
@@ -50,6 +51,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     ChatController,
     HealthController,
     MetricsController,
+    CommandController,
   ],
   providers: [
     AgentService,

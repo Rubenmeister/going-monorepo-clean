@@ -8,7 +8,9 @@ import { closeMongoClient, getRidesDb } from './mongodb/connection';
 import { seedTestRide, cleanupTestRides, showTestRideStatus, cancelTestInvoice } from './test/seed-test-ride';
 import {
   AgentRunEvent,
+  parseCommandFromEnv,
   publishAgentRunEvent,
+  runCommandMode,
 } from '@going-platform/cerebro-contracts';
 
 // ============================================================
@@ -53,6 +55,18 @@ async function smokeTestMongoDB(): Promise<void> {
 async function main(): Promise<void> {
   console.log('💰 Going Financial Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);
+
+  // Modo command (Orchestrator override COMMAND_JSON).
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // Handlers concretos se agregan cuando aparezcan reglas:
+      // force_invoice_retry: async () => { await runInvoicingLoop(); },
+      // force_weekly_payouts: async () => { await processWeeklyPayouts(); },
+    });
+    await closeMongoClient().catch(() => {});
+    process.exit(0);
+  }
 
   const runId     = uuidv4();
   const startedAt = new Date();
