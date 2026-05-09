@@ -27,3 +27,6 @@ export type {
 
 export { publishAgentRunEvent } from './publisher';
 export type { PublishOptions } from './publisher';
+
+export { parseCommandFromEnv, runCommandMode } from './command';
+export type { AgentCommand, CommandHandler } from './command';

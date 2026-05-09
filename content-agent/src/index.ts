@@ -2,7 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { runContentMonitor } from './monitors/content.monitor';
 import {
   AgentRunEvent,
+  parseCommandFromEnv,
   publishAgentRunEvent,
+  runCommandMode,
 } from '@going-platform/cerebro-contracts';
 
 // ── Validación de env vars ────────────────────────────────────
@@ -18,6 +20,15 @@ if (missing.length > 0) {
 
 async function main(): Promise<void> {
   console.log('📰 Going Content Agent iniciando...');
+
+  // Modo command (Orchestrator override COMMAND_JSON).
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // force_weekly_tip: async () => { await generateWeeklyTip(); },
+    });
+    process.exit(0);
+  }
 
   const runId     = uuidv4();
   const startedAt = new Date();

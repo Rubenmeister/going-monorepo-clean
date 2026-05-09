@@ -3,7 +3,9 @@ import { runAllMonitors } from './monitors/operations.monitor';
 import { closeMongoClient, getRidesDb } from './mongodb/connection';
 import {
   AgentRunEvent,
+  parseCommandFromEnv,
   publishAgentRunEvent,
+  runCommandMode,
 } from '@going-platform/cerebro-contracts';
 
 // ── Validación temprana de variables de entorno ───────────────────────────
@@ -31,6 +33,19 @@ async function smokeTestMongoDB(): Promise<void> {
 
 async function main() {
   console.log('🚀 Going Ops Agent iniciando...');
+
+  // Modo command (Orchestrator triggea con env var override COMMAND_JSON).
+  // Si está presente, ejecutamos solo la acción específica y salimos —
+  // sin correr el ciclo de monitoreo normal.
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // Ejemplo handler para cuando se agreguen reglas concretas:
+      // force_check_no_drivers: async () => { await checkRidesSinConductor(...); },
+    });
+    await closeMongoClient().catch(() => {});
+    process.exit(0);
+  }
 
   const runId     = uuidv4();
   const startedAt = new Date();
