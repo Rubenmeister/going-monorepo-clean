@@ -135,11 +135,13 @@ Máximo 5 intenciones por ciclo. Calidad > cantidad.`;
 
   private formatAgentsSection(s: WorldSnapshot): string {
     const lines = ['## Agentes'];
-    for (const a of s.agents) {
+    for (const a of (s.agents ?? [])) {
       const fresh = a.lastRunAt
         ? `${a.ageMinutes}min ago, status=${a.lastStatus}`
         : 'sin datos en ventana';
-      const metricsStr = Object.entries(a.metrics)
+      // Agents sin datos vienen del cerebro sin el campo `metrics`. Guard
+      // contra Object.entries(undefined) — TypeError fatal en runtime.
+      const metricsStr = Object.entries(a.metrics ?? {})
         .filter(([_, v]) => typeof v === 'number')
         .map(([k, v]) => `${k}=${v}`)
         .slice(0, 8)
@@ -151,9 +153,10 @@ Máximo 5 intenciones por ciclo. Calidad > cantidad.`;
   }
 
   private formatAnomaliesSection(s: WorldSnapshot): string {
-    if (s.activeAnomalies.length === 0) return '## Anomalías activas\n- (ninguna)';
+    const list = s.activeAnomalies ?? [];
+    if (list.length === 0) return '## Anomalías activas\n- (ninguna)';
     const lines = ['## Anomalías activas (top 30)'];
-    for (const a of s.activeAnomalies) {
+    for (const a of list) {
       const emoji = a.severity === 'critical' ? '🚨' : '⚠️';
       lines.push(`- ${emoji} [${a.agentId}] ${a.type}: ${a.message}`);
     }
@@ -161,18 +164,19 @@ Máximo 5 intenciones por ciclo. Calidad > cantidad.`;
   }
 
   private formatProposedActionsSection(s: WorldSnapshot): string {
-    if (s.topProposedActions.length === 0) {
+    const list = s.topProposedActions ?? [];
+    if (list.length === 0) {
       return '## Acciones propuestas por agentes\n- (ninguna)';
     }
     const lines = ['## Acciones propuestas por agentes (top 10 por urgency)'];
-    for (const p of s.topProposedActions) {
+    for (const p of list) {
       lines.push(`- [${p.agentId}] ${p.type} (urgency ${p.urgency.toFixed(2)}): ${p.reason}`);
     }
     return lines.join('\n');
   }
 
   private formatBusinessSection(s: WorldSnapshot): string {
-    const entries = Object.entries(s.business)
+    const entries = Object.entries(s.business ?? {})
       .filter(([_, v]) => v !== undefined && v !== null)
       .map(([k, v]) => `- ${k}: ${v}`);
     if (entries.length === 0) return '## Métricas de negocio\n- (sin datos)';
