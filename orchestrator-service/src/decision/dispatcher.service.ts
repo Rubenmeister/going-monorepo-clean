@@ -1,0 +1,159 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
+import { RulesEngineService, ActionRule } from './rules-engine.service';
+import { safetyMeta } from './safety-levels';
+import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
+import { AgentBridgeClient } from '../infrastructure/agent-bridge.client';
+import { TelegramApprovalService } from '../infrastructure/telegram-approval.service';
+import { DecisionEntity } from '../infrastructure/schemas/decision.schema';
+
+/**
+ * El dispatcher es el corazón del Orchestrator. Para cada intención de
+ * MyCortex:
+ *
+ *   1. Resuelve la regla (RulesEngineService).
+ *   2. Si es human_only → persiste 'ignored' + notifica Telegram.
+ *   3. Crea Decision en estado proposed.
+ *   4. Aplica safety level:
+ *        - Cat 1 → ejecuta directo via bridge
+ *        - Cat 2 → ejecuta directo via bridge + post-notify
+ *        - Cat 3 → estado pending_approval, manda Telegram con timeout
+ *   5. Persiste outcome.
+ *
+ * Si ORCHESTRATOR_EXECUTE_ENABLED=false (default), persiste decisiones
+ * en estado 'dormant' sin tocar el bridge — útil durante la semana de
+ * observación.
+ */
+@Injectable()
+export class DispatcherService {
+  private readonly logger = new Logger(DispatcherService.name);
+
+  constructor(
+    private readonly config:   ConfigService,
+    private readonly rules:    RulesEngineService,
+    private readonly repo:     DecisionRepository,
+    private readonly bridge:   AgentBridgeClient,
+    private readonly telegram: TelegramApprovalService,
+  ) {}
+
+  private get executeEnabled(): boolean {
+    return this.config.get<string>('ORCHESTRATOR_EXECUTE_ENABLED') === 'true';
+  }
+
+  /**
+   * Procesa una intención. Devuelve la decisión persistida (con su status
+   * final). Idempotente: si la misma intentionId ya tiene decisión, la
+   * devuelve sin reprocesar.
+   */
+  async process(intent: {
+    intentionId: string;
+    type:        string;
+    target?:     string;
+    urgency?:    number;
+    data?:       Record<string, unknown>;
+  }): Promise<DecisionEntity> {
+    // 1. Idempotencia
+    const existing = await this.repo.findByIntentionId(intent.intentionId);
+    if (existing) {
+      this.logger.debug(`Intention ${intent.intentionId.slice(0, 8)} ya procesada (status=${existing.status})`);
+      return existing;
+    }
+
+    // 2. Resolver regla
+    const resolved = this.rules.resolve(intent);
+    const decisionId = uuidv4();
+    const now = new Date();
+
+    // Caso human_only o unresolved → no ejecutar, solo persistir + notificar.
+    if (resolved === null || 'humanOnly' in resolved) {
+      const reason =
+        resolved !== null && 'humanOnly' in resolved
+          ? resolved.reason
+          : 'unresolved';
+      const decision: Partial<DecisionEntity> = {
+        decisionId,
+        intentionId:     intent.intentionId,
+        intentionType:   intent.type,
+        intentionUrgency: intent.urgency,
+        status:          'ignored',
+        humanOnlyReason: reason,
+      };
+      const created = await this.repo.create(decision);
+      await this.telegram.notifyHumanOnly(created.toObject());
+      return created.toObject();
+    }
+
+    // resolved ahora está narroweado a { action, args }
+    const { action, args } = resolved;
+    const meta = safetyMeta(action.safetyLevel);
+
+    // 3. Crear Decision base
+    const baseDecision: Partial<DecisionEntity> = {
+      decisionId,
+      intentionId:      intent.intentionId,
+      intentionType:    intent.type,
+      intentionUrgency: intent.urgency,
+      agentId:          action.agent,
+      action:           action.action,
+      args,
+      safetyLevel:      action.safetyLevel,
+      status:           'proposed',
+    };
+
+    // 4. Modo dormant — no toca el bridge
+    if (!this.executeEnabled) {
+      baseDecision.status = 'dormant';
+      const created = await this.repo.create(baseDecision);
+      this.logger.log(
+        `[DORMANT] decision ${decisionId.slice(0, 8)} ${intent.type} → ${action.agent}/${action.action} (Cat ${action.safetyLevel}) — NO ejecutado, ORCHESTRATOR_EXECUTE_ENABLED=false`,
+      );
+      return created.toObject();
+    }
+
+    // 5. Cat 3 — pedir ack y esperar
+    if (meta.requiresAck) {
+      baseDecision.status    = 'pending_approval';
+      baseDecision.expiresAt = new Date(now.getTime() + meta.ackTimeoutMs);
+      const created = await this.repo.create(baseDecision);
+      await this.telegram.requestApproval(created.toObject());
+      this.logger.log(
+        `decision ${decisionId.slice(0, 8)} → pending_approval (Cat 3, timeout ${meta.ackTimeoutMs / 60000}min)`,
+      );
+      return created.toObject();
+    }
+
+    // 6. Cat 1 / Cat 2 — ejecutar directo
+    const created = await this.repo.create(baseDecision);
+    await this.executeNow(created.toObject(), action);
+    return (await this.repo.findById(decisionId)) ?? created.toObject();
+  }
+
+  /**
+   * Ejecuta una decisión que ya pasó la validación (Cat 1, Cat 2, o Cat 3
+   * recién aprobada). Persiste outcome.
+   */
+  async executeNow(decision: DecisionEntity, rule: ActionRule): Promise<void> {
+    await this.repo.updateStatus(decision.decisionId, 'executing');
+
+    const result = await this.bridge.dispatch({
+      decisionId: decision.decisionId,
+      agentId:    rule.agent,
+      action:     rule.action,
+      payload:    decision.args ?? {},
+    });
+
+    await this.repo.updateStatus(decision.decisionId, 'executed', {
+      executedAt:   new Date(),
+      outcome:      result.ok ? 'success' : 'failure',
+      outcomeData:  result.outcomeData,
+      errorMessage: result.error,
+    });
+
+    // Cat 2 + Cat 3 → post-notify
+    if (safetyMeta(rule.safetyLevel).postNotify) {
+      const updated = await this.repo.findById(decision.decisionId);
+      if (updated) await this.telegram.notifyExecution(updated);
+    }
+  }
+}

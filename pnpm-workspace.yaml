@@ -30,6 +30,8 @@ packages:
   - 'subscription-service'
   - 'cerebro-service'
   - 'mycortex-service'
+  - 'orchestrator-service'
+  - 'agent-bridge-service'
 
   # Agents (cron-triggered Cloud Run Jobs, comparten libs/cerebro-contracts)
   - 'ops-agent'
