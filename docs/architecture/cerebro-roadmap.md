@@ -297,48 +297,104 @@ de MyCortex + permisos en el endpoint.
 **Criterio de salida**: vos pedís "¿cómo va Cumbayá esta hora?" y recibís
 audio con el contexto correcto del world model.
 
-#### 8b — Voz para conductores Going (Nivel B)
+#### 8b — Voz para prestadores de servicios (Nivel B)
 
-**Esfuerzo**: 5-7 días
+**Esfuerzo**: 7-10 días (más amplio porque cubre 5 tipos de prestadores)
 
-Bot conversacional dentro de mobile-driver-app (los drivers no abren
-WhatsApp manejando — el chat tiene que estar dentro de la app).
+Going es un marketplace con MÚLTIPLES tipos de prestadores, no solo
+conductores. Cada uno tiene su contexto, métricas y preguntas naturales:
 
-> *"Ey Going, ¿cuánto me falta para la meta de hoy?"*
-> *"Apagá disponibilidad las próximas 2 horas"*
-> *"¿Hay algún viaje cerca?"*
+| Prestador | Backend | Preguntas típicas |
+|---|---|---|
+| **Conductor** | transport-service | "¿cuánto falta para la meta?", "apagá disponibilidad" |
+| **Anfitrión** (alojamiento) | anfitriones-service | "¿reservas este fin de semana?", "subir foto" |
+| **Operador tour** | tours-service | "pasajeros del tour Otavalo mañana" |
+| **Repartidor** (parcels) | envios-service | "parcels disponibles cerca" |
+| **Guía** (experiencias) | experiencias-service | "próximas experiencias agendadas" |
+
+El SDK de voz debe ser **prestador-agnóstico**: misma capa de voz, contexto
+distinto inyectado al system prompt según el rol del JWT.
+
+**Arquitectura**:
+
+```
+provider-voice-assistant-service/   # nuevo, único endpoint para todos los prestadores
+  src/
+    api/
+      conversation.controller.ts     # POST /provider/ask (acepta JWT + texto/audio)
+    context/
+      driver-context.builder.ts      # arma prompt con datos de transport-service
+      host-context.builder.ts        # idem anfitriones-service
+      tour-operator-context.builder.ts
+      courier-context.builder.ts
+      guide-context.builder.ts
+      provider-router.ts             # routing por rol del JWT
+    actions/
+      driver-actions.ts              # ejecuta "apagá disponibilidad" via tracking-service
+      host-actions.ts                # ejecuta "subí foto" via anfitriones-service
+      ...
+```
 
 **Componentes**:
-- `driver-voice-assistant-service/` (nuevo) o endpoint nuevo en
-  customer-support-service
-- React Native SDK embeddable (web speech API + recording + upload)
-- Auth con JWT del driver para personalización ("tu meta hoy", "tus viajes")
-- Integración con tracking-service para "apagá disponibilidad"
+- `provider-voice-assistant-service/` (nuevo)
+- React Native SDK embeddable (Web Speech API + recording + upload), reusable
+  por mobile-driver-app y mobile-user-app (los anfitriones/operadores
+  acceden por mobile-user-app con rol distinto)
+- Auth con JWT que ya identifica el rol del prestador
+- Acciones ejecutables por voz integradas con el service correspondiente
+- Logging de cada interacción para Fase 7 (aprendizaje)
 
-#### 8c — Voz para pasajeros (Nivel C)
+**Criterio de salida**:
+- Driver dice "apagá disponibilidad" → tracking-service lo ejecuta
+- Anfitrión dice "¿cuántas reservas este fin de semana?" → anfitriones-service
+  responde con voz Neural2
+- Mismo SDK funciona en ambas apps móviles
 
-**Esfuerzo**: 5-7 días
+#### 8c — Voz para usuarios (Nivel C)
+
+**Esfuerzo**: 5-7 días (reusa el SDK de 8b)
 
 Embebido en mobile-user-app. Hoy customer-support funciona por WhatsApp/
 Telegram externos, pero un usuario ya está dentro de la app y no debería
-salir para pedir un viaje.
+salir para pedir un viaje, reservar alojamiento o agendar un tour.
 
 > *"Necesito viaje a Quito mañana 6am"*
 > *"¿Cuánto cuesta a Otavalo?"*
+> *"Reservá alojamiento en Cumbayá para 2 personas el fin de semana"*
 > *"Cancelá mi viaje"*
+> *"¿Qué experiencias hay en Mindo este fin de semana?"*
 
 **Componentes**:
-- React Native SDK (mismo que 8b)
-- Endpoint nuevo en customer-support-service (`/chat/voice` interno) o reuso
-  del flujo de WhatsApp con autenticación JWT
-- Integración con BookingService que ya crea viajes desde el chat (existe)
+- React Native SDK compartido con 8b (mismo módulo en mobile-user-app y
+  mobile-driver-app, abstrae STT/TTS/upload)
+- Endpoint nuevo en customer-support-service (`/chat/voice` interno) o
+  reuso del flujo de WhatsApp con autenticación JWT del user
+- Integración con BookingService (transport), anfitriones-service,
+  tours-service, experiencias-service para crear/consultar reservas
+- Acciones cross-domain: "reservá alojamiento Y agendá viaje al
+  aeropuerto el día siguiente" → orchestrator ejecuta secuencia
 
 **Dependencias entre las 3 sub-fases**: ninguna estricta, pero conviene
-empezar por 8a (público chico = vos = feedback rápido), después 8b/8c
-en paralelo.
+empezar por 8a (público chico = vos = feedback rápido), después 8b
+(prestadores — más volumen, más impacto en oferta), después 8c
+(usuarios finales — más volumen, más impacto en demanda).
 
-**Costo adicional**: ~$0.001-0.005 por interacción (Gemini Flash + STT/TTS).
-Para 1000 interacciones/día = ~$30-150/mes según volumen.
+**Costo adicional**:
+- Por interacción: ~$0.001-0.005 (Gemini Flash + STT/TTS)
+- 1000 interacciones/día = ~$30-150/mes
+- 10K interacciones/día (escala) = ~$300-1500/mes — ahí ya conviene
+  evaluar Haiku 4.5 para queries simples y reservar Gemini/Sonnet para
+  casos complejos.
+
+**Punto crítico de marketplace**: Going es un marketplace bilateral.
+La voz tiene que cerrar el loop por ambos lados:
+- Usuario pide algo → MyCortex/Orchestrator decide qué prestador
+- Prestador recibe propuesta por voz → confirma o declina por voz
+- MyCortex aprende de cada match exitoso vs fallido (Fase 7)
+
+Esto es lo que diferencia a Going de un Uber clásico: NO es solo dispatch,
+es coordinación inteligente entre prestadores múltiples (transporte +
+alojamiento + tours + experiencias) y un único usuario.
 
 ---
 
