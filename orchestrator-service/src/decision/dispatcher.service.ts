@@ -42,6 +42,27 @@ export class DispatcherService {
   }
 
   /**
+   * Nivel máximo de safety que se ejecuta automáticamente. Pensado para
+   * rollout gradual (Etapa A del roadmap):
+   *
+   *   - 0 (default) → ningún Cat se ejecuta automáticamente, todo dormant.
+   *   - 1           → solo Cat 1 (info-only, log_anomaly). Cat 2/3 dormant.
+   *   - 2           → Cat 1 + Cat 2 (reversibles). Cat 3 sigue Telegram-ack.
+   *   - 3           → todos los niveles. Cat 3 igual requiere Telegram ack.
+   *
+   * Cat 3 SIEMPRE requiere ack — este max no lo cambia (su gate es safetyMeta.requiresAck).
+   * Lo que sí controla: si Cat 3 entra en pending_approval o queda dormant.
+   *
+   * Solo aplica cuando executeEnabled=true. Si executeEnabled=false, todo
+   * cae a dormant con dormantReason='execute_disabled' (master switch).
+   */
+  private get maxAutoLevel(): 0 | 1 | 2 | 3 {
+    const raw = parseInt(this.config.get<string>('ORCHESTRATOR_MAX_AUTO_LEVEL') || '0', 10);
+    if (raw === 1 || raw === 2 || raw === 3) return raw;
+    return 0;
+  }
+
+  /**
    * Procesa una intención. Devuelve la decisión persistida (con su status
    * final). Idempotente: si la misma intentionId ya tiene decisión, la
    * devuelve sin reprocesar.
@@ -101,17 +122,30 @@ export class DispatcherService {
       status:           'proposed',
     };
 
-    // 4. Modo dormant — no toca el bridge
+    // 4. Modo dormant — master switch off
     if (!this.executeEnabled) {
-      baseDecision.status = 'dormant';
+      baseDecision.status        = 'dormant';
+      baseDecision.dormantReason = 'execute_disabled';
       const created = await this.repo.create(baseDecision);
       this.logger.log(
-        `[DORMANT] decision ${decisionId.slice(0, 8)} ${intent.type} → ${action.agent}/${action.action} (Cat ${action.safetyLevel}) — NO ejecutado, ORCHESTRATOR_EXECUTE_ENABLED=false`,
+        `[DORMANT/master-off] decision ${decisionId.slice(0, 8)} ${intent.type} → ${action.agent}/${action.action} (Cat ${action.safetyLevel})`,
       );
       return created.toObject();
     }
 
-    // 5. Cat 3 — pedir ack y esperar
+    // 5. Modo dormant — safety level por encima del max permitido
+    //    Pensado para rollout gradual: arrancamos con MAX_AUTO_LEVEL=1, después 2.
+    if (action.safetyLevel > this.maxAutoLevel) {
+      baseDecision.status        = 'dormant';
+      baseDecision.dormantReason = `above_auto_level:${this.maxAutoLevel}`;
+      const created = await this.repo.create(baseDecision);
+      this.logger.log(
+        `[DORMANT/level-gate] decision ${decisionId.slice(0, 8)} Cat ${action.safetyLevel} > MAX_AUTO=${this.maxAutoLevel} — ${intent.type} → ${action.agent}/${action.action}`,
+      );
+      return created.toObject();
+    }
+
+    // 6. Cat 3 — pedir ack y esperar (solo si maxAutoLevel ≥ 3)
     if (meta.requiresAck) {
       baseDecision.status    = 'pending_approval';
       baseDecision.expiresAt = new Date(now.getTime() + meta.ackTimeoutMs);
@@ -123,7 +157,7 @@ export class DispatcherService {
       return created.toObject();
     }
 
-    // 6. Cat 1 / Cat 2 — ejecutar directo
+    // 7. Cat 1 / Cat 2 — ejecutar directo
     const created = await this.repo.create(baseDecision);
     await this.executeNow(created.toObject(), action);
     return (await this.repo.findById(decisionId)) ?? created.toObject();

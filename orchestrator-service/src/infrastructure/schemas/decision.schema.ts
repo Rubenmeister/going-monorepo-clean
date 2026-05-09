@@ -62,6 +62,15 @@ export class DecisionEntity {
   @Prop({ type: String })
   humanOnlyReason?: string;          // 'rule_configured_human_only' | 'unknown_type:...'
 
+  /**
+   * Si la decision quedó en status='dormant', acá va el motivo:
+   *   - 'execute_disabled'      → ORCHESTRATOR_EXECUTE_ENABLED=false (master switch)
+   *   - 'above_auto_level:N'    → safetyLevel > ORCHESTRATOR_MAX_AUTO_LEVEL (rollout gradual)
+   * Útil para que admin-dashboard distinga "dormant por config" vs por nivel.
+   */
+  @Prop({ type: String })
+  dormantReason?: string;
+
   @Prop({ type: Date })
   expiresAt?: Date;                  // Cat 3 ack timeout
 
