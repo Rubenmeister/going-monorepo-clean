@@ -551,6 +551,49 @@ importers:
         specifier: ^5.0.0
         version: 5.3.3
 
+  agent-bridge-service:
+    dependencies:
+      '@google-cloud/run':
+        specifier: ^1.4.0
+        version: 1.5.1(encoding@0.1.13)
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: ^3.3.0
+        version: 3.3.0(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.14(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.14)(@nestjs/websockets@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.14(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.1
+        version: 0.14.3
+      express:
+        specifier: ^4.18.2
+        version: 4.22.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
+    devDependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
   analytics-service:
     dependencies:
       '@nestjs/axios':
@@ -2206,6 +2249,64 @@ importers:
         version: 9.0.8
       typescript:
         specifier: ^5.4.5
+        version: 5.9.3
+
+  orchestrator-service:
+    dependencies:
+      '@going-platform/cerebro-contracts':
+        specifier: workspace:*
+        version: link:../libs/cerebro-contracts
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/config':
+        specifier: ^3.3.0
+        version: 3.3.0(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.14(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.14)(@nestjs/websockets@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/mongoose':
+        specifier: ^10.0.0
+        version: 10.1.0(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(mongoose@8.23.0(snappy@7.3.3))(rxjs@7.8.2)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.14(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)
+      '@nestjs/schedule':
+        specifier: ^4.1.1
+        version: 4.1.2(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.1
+        version: 0.14.3
+      express:
+        specifier: ^4.18.2
+        version: 4.22.1
+      mongoose:
+        specifier: ^8.0.0
+        version: 8.23.0(snappy@7.3.3)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
+    devDependencies:
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      '@types/uuid':
+        specifier: ^9.0.8
+        version: 9.0.8
+      typescript:
+        specifier: ^5.0.0
         version: 5.9.3
 
   payment-service:
@@ -4603,6 +4704,10 @@ packages:
 
   '@google-cloud/pubsub@4.11.0':
     resolution: {integrity: sha512-xWxJAlyUGd6OPp97u8maMcI3xVXuHjxfwh6Dr7P/P+6NK9o446slJobsbgsmK0xKY4nTK8m5uuJrhEKapfZSmQ==}
+    engines: {node: '>=14.0.0'}
+
+  '@google-cloud/run@1.5.1':
+    resolution: {integrity: sha512-4SHyaRMOIHc/EwaiDbi6mtBsTxBmxQTN4VHe3Yp7EHVfodSIY8YJThya3YJkGR1eayyWGmfYFoW6qiepLEmP2g==}
     engines: {node: '>=14.0.0'}
 
   '@google-cloud/speech@6.7.1':
@@ -18182,6 +18287,13 @@ snapshots:
       is-stream-ended: 0.1.4
       lodash.snakecase: 4.1.1
       p-defer: 3.0.0
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
+  '@google-cloud/run@1.5.1(encoding@0.1.13)':
+    dependencies:
+      google-gax: 4.6.1(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
       - supports-color
