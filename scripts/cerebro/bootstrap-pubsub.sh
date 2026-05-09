@@ -2,8 +2,8 @@
 #
 # 🧠 CEREBRO — Pub/Sub Topics Bootstrap
 #
-# Provisiona los 6 topics que los agentes usan para reportar al cerebro,
-# las 6 subscriptions que cerebro-service consume, y los IAM bindings
+# Provisiona los topics que los agentes usan para reportar al cerebro,
+# las subscriptions que cerebro-service consume, y los IAM bindings
 # necesarios. Idempotente: re-ejecutar es seguro, no duplica recursos.
 #
 # Topics:
@@ -13,6 +13,8 @@
 #   agent.marketing.events
 #   agent.going.events
 #   agent.customer-support.events
+#   agent.mobile.events
+#   agent.frontend.events
 #
 # Roles aplicados:
 #   - Service account de los agentes (going-agent-sa) → roles/pubsub.publisher
@@ -96,9 +98,11 @@ TOPICS=(
   "agent.marketing.events"
   "agent.going.events"
   "agent.customer-support.events"
+  "agent.mobile.events"
+  "agent.frontend.events"
 )
 
-print_step "Step 1: Crear 6 topics + subscriptions cerebro-{topic}"
+print_step "Step 1: Crear topics + subscriptions cerebro-{topic}"
 for topic in "${TOPICS[@]}"; do
   if gcloud pubsub topics describe "$topic" --project="$GCP_PROJECT" &>/dev/null; then
     print_skip "topic $topic ya existe"

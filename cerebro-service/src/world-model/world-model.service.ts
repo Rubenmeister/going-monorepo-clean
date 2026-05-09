@@ -288,6 +288,8 @@ export class WorldModelService {
         'marketing-agent': 60 * 24 * 8,
         'going-agent': 60 * 24,
         'customer-support-service': 40,
+        'mobile-agent': 60 * 24,         // cron cada 6h → stale >24h
+        'frontend-agent': 60 * 24,       // cron cada 6h → stale >24h (futuro)
       };
       return a.ageMinutes > (staleThresholds[a.agentId] ?? 120);
     });
