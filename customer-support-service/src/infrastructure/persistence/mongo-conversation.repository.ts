@@ -62,6 +62,38 @@ export class MongoConversationRepository {
     );
   }
 
+  /**
+   * Marca como 'resolved' todas las conversaciones en estado 'handoff' cuyo
+   * updatedAt sea más viejo que `olderThanMs`. Devuelve el número modificado.
+   * Usado por el orchestrator (cleanup_handoffs action) cuando MyCortex
+   * detecta tickets fantasma de épocas pre-actuales.
+   *
+   * Conservador: solo toca handoffs que ya estaban estancados (sin operatorId
+   * asignado). Si un operador ya está atendiendo, no interferimos.
+   */
+  async resolveStaleHandoffs(olderThanMs: number): Promise<number> {
+    const cutoff = new Date(Date.now() - olderThanMs);
+    const result = await this.conversationModel.updateMany(
+      {
+        status:    'handoff',
+        updatedAt: { $lt: cutoff },
+        $or: [
+          { operatorId: { $exists: false } },
+          { operatorId: null },
+          { operatorId: '' },
+        ],
+      },
+      {
+        $set: {
+          status:        'resolved',
+          handoffReason: undefined,
+          updatedAt:     new Date(),
+        },
+      },
+    );
+    return result.modifiedCount ?? 0;
+  }
+
   async getHandoffQueue(status?: string): Promise<ConversationEntity[]> {
     const query: any = { status: 'handoff' };
     if (status) {
