@@ -1683,6 +1683,28 @@ importers:
         specifier: ^5.4.0
         version: 5.9.3
 
+  frontend-agent:
+    dependencies:
+      '@going-platform/cerebro-contracts':
+        specifier: workspace:*
+        version: link:../libs/cerebro-contracts
+      '@google-cloud/pubsub':
+        specifier: ^4.7.0
+        version: 4.11.0(encoding@0.1.13)
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.39
+      '@types/uuid':
+        specifier: ^9.0.8
+        version: 9.0.8
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+
   frontend-webapp:
     dependencies:
       '@dataconnect/generated':
