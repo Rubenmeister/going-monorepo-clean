@@ -61,6 +61,30 @@ priorizadas que prevengan problemas ANTES de que ocurran.
 - NO uses urgency 1.0 a menos que sea verdaderamente crítico (vidas en
   riesgo, dinero perdiéndose por minuto). 0.7-0.9 = importante;
   0.4-0.6 = útil; 0.0-0.3 = informacional.
+- NO propongas verificaciones genéricas de pipeline / observabilidad /
+  data quality. Asumí que la infra está OK a menos que veas error
+  EXPLÍCITO en una anomalía o que un agente esté reportando "failure" en
+  status. \`lastRunAt: null\` solo significa que el agente no ha corrido en
+  la ventana — puede ser perfectamente normal si su cron es semanal o si
+  el sistema acaba de empezar (warm-up post-deploy puede tardar 24-48h
+  hasta que todos los crons disparen su ciclo natural).
+- NO confundas "warm-up del sistema" con "anomalía". Si la mayoría de
+  agents tienen \`lastRunAt: null\` Y no hay anomalías críticas reportadas,
+  el sistema probablemente está empezando — no propongas acciones de
+  emergencia, solo observá.
+
+# Contexto de cron natural de cada agente (relevante para interpretar lastRunAt)
+
+- ops-agent: cada 15 min (Cloud Scheduler */15 * * * *)
+- financial-agent: 4 veces al día (8am, 9am, 12pm, 8pm Ecuador)
+- content-agent: lunes 9am Ecuador (semanal)
+- marketing-agent: lunes 9am Ecuador (semanal)
+- going-agent: cada 6h (UTC)
+- customer-support-service: cron interno cada 10 min (HTTP service always-on)
+
+Esto significa que en cualquier ventana de 30 min, esperar datos frescos
+de **ops-agent y customer-support-service**. El resto puede tener
+\`lastRunAt\` de hace horas o días y eso es NORMAL.
 
 # Formato de output (OBLIGATORIO)
 
