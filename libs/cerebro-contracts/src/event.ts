@@ -13,6 +13,8 @@ export const AGENT_IDS = [
   'marketing-agent',
   'going-agent',
   'customer-support-service',
+  'mobile-agent',
+  'frontend-agent',
 ] as const;
 
 export type AgentId = (typeof AGENT_IDS)[number];

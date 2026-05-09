@@ -1,0 +1,90 @@
+# mobile-agent — Cloud Run Job (cron-triggered) deployment
+#
+# Build context: monorepo ROOT — Dockerfile genérico
+# `Dockerfile.cloudrun-agent` necesita acceso a pnpm-workspace.yaml,
+# pnpm-lock.yaml, libs/cerebro-contracts y mobile-agent/.
+#
+# Trigger:
+#   gcloud builds submit . --config=mobile-agent/cloudbuild.yaml --project=going-5d1ae
+#
+# Schedule (Cloud Scheduler): cada 6h, alineado con going-agent — los crashes
+# móviles no necesitan polling fino; agruparlos en ventanas de 6h da contexto
+# suficiente para detectar spikes y regresiones.
+#
+# Vars seteadas via gcloud run jobs update --update-env-vars cuando el
+# operador haya creado los proyectos en Sentry:
+#   SENTRY_AUTH_TOKEN  (secret, scopes project:read + event:read)
+#   SENTRY_ORG         (slug, ej: 'going-app')
+#   SENTRY_USER_PROJECT
+#   SENTRY_DRIVER_PROJECT
+# Sin estas vars el agent corre en modo idle (registra anomaly y exit 0).
+
+steps:
+  # 1. Build con Dockerfile genérico de agentes, contexto = monorepo root.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-agent
+      - --build-arg
+      - AGENT_NAME=mobile-agent
+      - -t
+      - gcr.io/$PROJECT_ID/mobile-agent:latest
+      - .
+    timeout: '1200s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/mobile-agent:latest']
+
+  # 2. Deploy como Cloud Run Job.
+  #    --set-env-vars setea solo GCP_PROJECT — el resto de vars Sentry
+  #    se setean externamente cuando el operador configure las cuentas.
+  #    --set-secrets queda vacío hasta entonces.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - jobs
+      - deploy
+      - mobile-agent
+      - --image=gcr.io/$PROJECT_ID/mobile-agent:latest
+      - --region=us-central1
+      - --memory=256Mi
+      - --cpu=1
+      - --max-retries=1
+      - --task-timeout=300s
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,SENTRY_LOOKBACK_HOURS=6
+      - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+  # 3. Schedule: cada 6h en hora Ecuador. Crea o actualiza idempotente.
+  #    Pattern "0 */6 * * *" = 00:00, 06:00, 12:00, 18:00 hora local.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud scheduler jobs describe mobile-agent-trigger --location=us-central1 --project=$PROJECT_ID 2>/dev/null \
+        && gcloud scheduler jobs update http mobile-agent-trigger \
+            --location=us-central1 \
+            --schedule="0 */6 * * *" \
+            --time-zone="America/Guayaquil" \
+            --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/mobile-agent:run" \
+            --message-body='{}' \
+            --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \
+            --project=$PROJECT_ID \
+        || gcloud scheduler jobs create http mobile-agent-trigger \
+            --location=us-central1 \
+            --schedule="0 */6 * * *" \
+            --time-zone="America/Guayaquil" \
+            --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$PROJECT_ID/jobs/mobile-agent:run" \
+            --message-body='{}' \
+            --oauth-service-account-email=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com \
+            --project=$PROJECT_ID
+
+images:
+  - gcr.io/$PROJECT_ID/mobile-agent:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1500s'

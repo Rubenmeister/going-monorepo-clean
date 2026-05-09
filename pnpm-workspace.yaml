@@ -39,6 +39,8 @@ packages:
   - 'content-agent'
   - 'marketing-agent'
   - 'going-agent'
+  - 'mobile-agent'
+  - 'frontend-agent'
 
   # Libraries
   - 'libs/**'
