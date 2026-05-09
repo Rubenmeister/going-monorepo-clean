@@ -1,21 +1,29 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Put, Query } from '@nestjs/common';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
 import { ReasoningLoopService } from '../reasoning/reasoning-loop.service';
+import { CortexConfigRepository } from '../infrastructure/persistence/cortex-config.repository';
+import { CortexConfigService } from '../reasoning/cortex-config.service';
+import { PromptBuilderService } from '../reasoning/prompt-builder.service';
 
 /**
  * Endpoints públicos de MyCortex.
  *
- * Fase 4 v0:
  *   - GET /mycortex/intentions     → top intenciones pendientes (urgency desc)
  *   - GET /mycortex/intentions/all → últimas N (incluyendo executed/expired)
  *   - POST /mycortex/run-now       → fuerza un ciclo de razonamiento on-demand
- *   - POST /mycortex/intentions/:id/ack → ops marca como vista/aceptada
+ *
+ *   - GET /mycortex/config         → config singleton (system prompt, model, etc.)
+ *   - PUT /mycortex/config         → admin-dashboard guarda cambios
+ *   - GET /mycortex/config/default → DEFAULT_SYSTEM_PROMPT (botón "restaurar default" en UI)
  */
 @Controller('mycortex')
 export class MyCortexController {
   constructor(
-    private readonly repo: IntentionRepository,
-    private readonly loop: ReasoningLoopService,
+    private readonly repo:           IntentionRepository,
+    private readonly loop:           ReasoningLoopService,
+    private readonly configRepo:     CortexConfigRepository,
+    private readonly configCache:    CortexConfigService,
+    private readonly promptBuilder:  PromptBuilderService,
   ) {}
 
   @Get('intentions')
@@ -38,5 +46,75 @@ export class MyCortexController {
   async runNow() {
     const result = await this.loop.runOnce();
     return result;
+  }
+
+  // ─── Config singleton ──────────────────────────────────────
+  //
+  // Read va directo al repo (no cacheado) — el admin quiere ver el estado
+  // real cuando abre la página. La cache de CortexConfigService es solo
+  // para el reasoning loop (que corre cada 30 min y tolera 60s de delay).
+
+  @Get('config')
+  async getConfig() {
+    const doc = await this.configRepo.findOrCreate();
+    return {
+      _id:             doc._id,
+      systemPrompt:    doc.systemPrompt ?? '',
+      model:           doc.model ?? '',
+      maxTokens:       doc.maxTokens ?? null,
+      pollIntervalMin: doc.pollIntervalMin ?? null,
+      enabled:         doc.enabled ?? true,
+      updatedAt:       doc.updatedAt ?? null,
+      updatedBy:       doc.updatedBy ?? null,
+    };
+  }
+
+  @Get('config/default')
+  getConfigDefault() {
+    return { systemPrompt: this.promptBuilder.getDefaultSystemPrompt() };
+  }
+
+  /**
+   * PUT semántico — el body es el patch a aplicar. Campos undefined/missing
+   * NO se modifican (merge superficial). Después de guardar invalida el
+   * cache para que el próximo ciclo lea valores frescos sin esperar TTL.
+   *
+   * No usamos JWT aquí porque el admin-dashboard ya está protegido por su
+   * propio gate; el service sigue en VPC privada (nadie llama directo desde
+   * fuera). Si en el futuro abrimos el endpoint, agregar guard.
+   */
+  @Put('config')
+  @HttpCode(200)
+  async updateConfig(
+    @Body()
+    body: {
+      systemPrompt?:    string;
+      model?:           string;
+      maxTokens?:       number;
+      pollIntervalMin?: number;
+      enabled?:         boolean;
+      updatedBy?:       string;
+    },
+  ) {
+    const updated = await this.configRepo.update({
+      systemPrompt:    body.systemPrompt,
+      model:           body.model,
+      maxTokens:       body.maxTokens,
+      pollIntervalMin: body.pollIntervalMin,
+      enabled:         body.enabled,
+      updatedBy:       body.updatedBy ?? 'admin-dashboard',
+    });
+    this.configCache.invalidate();
+    return {
+      ok:              true,
+      _id:             updated._id,
+      systemPrompt:    updated.systemPrompt ?? '',
+      model:           updated.model ?? '',
+      maxTokens:       updated.maxTokens ?? null,
+      pollIntervalMin: updated.pollIntervalMin ?? null,
+      enabled:         updated.enabled ?? true,
+      updatedAt:       updated.updatedAt ?? null,
+      updatedBy:       updated.updatedBy ?? null,
+    };
   }
 }

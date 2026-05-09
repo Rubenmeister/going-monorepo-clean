@@ -5,12 +5,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './api/health.controller';
 import { MyCortexController } from './api/mycortex.controller';
 import { IntentionSchema } from './infrastructure/schemas/intention.schema';
+import { CortexConfig, CortexConfigSchema } from './infrastructure/schemas/cortex-config.schema';
 import { IntentionRepository } from './infrastructure/persistence/intention.repository';
+import { CortexConfigRepository } from './infrastructure/persistence/cortex-config.repository';
 import { WorldSnapshotClient } from './reasoning/world-snapshot.client';
 import { AnthropicClient } from './reasoning/anthropic.client';
 import { PromptBuilderService } from './reasoning/prompt-builder.service';
 import { IntentionsParserService } from './reasoning/intentions-parser.service';
 import { TelegramReporterService } from './reasoning/telegram-reporter.service';
+import { CortexConfigService } from './reasoning/cortex-config.service';
 import { ReasoningLoopService } from './reasoning/reasoning-loop.service';
 
 @Module({
@@ -30,7 +33,8 @@ import { ReasoningLoopService } from './reasoning/reasoning-loop.service';
       },
     ),
     MongooseModule.forFeature([
-      { name: 'Intention', schema: IntentionSchema },
+      { name: 'Intention',          schema: IntentionSchema },
+      { name: CortexConfig.name,    schema: CortexConfigSchema },
     ]),
   ],
   controllers: [
@@ -39,8 +43,10 @@ import { ReasoningLoopService } from './reasoning/reasoning-loop.service';
   ],
   providers: [
     IntentionRepository,
+    CortexConfigRepository,
     WorldSnapshotClient,
     AnthropicClient,
+    CortexConfigService,
     PromptBuilderService,
     IntentionsParserService,
     TelegramReporterService,
