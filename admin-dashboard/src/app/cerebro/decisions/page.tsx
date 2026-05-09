@@ -24,6 +24,7 @@ interface Decision {
     | 'ignored'
     | 'dormant';
   humanOnlyReason?: string;
+  dormantReason?: string;        // 'execute_disabled' | 'above_auto_level:N'
   expiresAt?: string;
   approvedAt?: string;
   approvedBy?: string;
@@ -263,6 +264,22 @@ export default function DecisionsPage() {
                           {JSON.stringify(d.args, null, 2)}
                         </pre>
                       </details>
+                    )}
+                  </div>
+                )}
+
+                {/* Dormant reason — por qué no se ejecutó */}
+                {d.status === 'dormant' && d.dormantReason && (
+                  <div className="p-2 rounded text-xs bg-purple-50 text-purple-700">
+                    {d.dormantReason === 'execute_disabled' && (
+                      <>Master switch <code className="font-mono">ORCHESTRATOR_EXECUTE_ENABLED=false</code> — observación pura</>
+                    )}
+                    {d.dormantReason.startsWith('above_auto_level:') && (
+                      <>
+                        Cat {d.safetyLevel} requiere{' '}
+                        <code className="font-mono">ORCHESTRATOR_MAX_AUTO_LEVEL≥{d.safetyLevel}</code>
+                        {' '}(actual: {d.dormantReason.split(':')[1] || '0'})
+                      </>
                     )}
                   </div>
                 )}
