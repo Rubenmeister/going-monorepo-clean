@@ -262,6 +262,86 @@ admin-dashboard/
 
 ---
 
+### Fase 8 — Voz + chat conversacional en GoingApp
+
+**Objetivo**: que MyCortex sea accesible por voz y texto desde dentro de
+GoingApp (no solo a través de Telegram externo). Tres niveles de público
+con esfuerzo y prioridad diferentes.
+
+**Esfuerzo total**: 13-19 días distribuidos en 3 sub-fases independientes.
+
+**Stack a reutilizar** (todo ya en producción):
+- `voice.service.ts` (Google Speech-to-Text + Text-to-Speech Neural2 ES/EN × M/F)
+- Gemini 2.5 Flash (Vertex AI) para conversación
+- WhatsApp Meta Cloud API + Telegram Bot API para canales externos
+
+#### 8a — Voz para founder + equipo (Nivel A)
+
+**Esfuerzo**: 3-5 días
+
+Endpoint nuevo en `mycortex-service` que acepta voz/texto + canal Telegram
+privado de operaciones. Vos preguntás "¿cómo está la operación hoy?",
+MyCortex razona sobre el world model y responde con voz Neural2.
+
+Roles por persona del equipo (ops, finance, marketing) para que cada uno
+pregunte solo sobre su área. Implementado como filtros en el system prompt
+de MyCortex + permisos en el endpoint.
+
+**Componentes**:
+- `mycortex-service/src/api/conversation.controller.ts` — POST /mycortex/ask
+  (acepta texto o audio multipart)
+- Reuso de `voice.service.ts` (copiar de customer-support o extraer a
+  `libs/shared-voice/`)
+- Bot Telegram privado nuevo o reuso del existente con prefijo `/mycortex`
+
+**Criterio de salida**: vos pedís "¿cómo va Cumbayá esta hora?" y recibís
+audio con el contexto correcto del world model.
+
+#### 8b — Voz para conductores Going (Nivel B)
+
+**Esfuerzo**: 5-7 días
+
+Bot conversacional dentro de mobile-driver-app (los drivers no abren
+WhatsApp manejando — el chat tiene que estar dentro de la app).
+
+> *"Ey Going, ¿cuánto me falta para la meta de hoy?"*
+> *"Apagá disponibilidad las próximas 2 horas"*
+> *"¿Hay algún viaje cerca?"*
+
+**Componentes**:
+- `driver-voice-assistant-service/` (nuevo) o endpoint nuevo en
+  customer-support-service
+- React Native SDK embeddable (web speech API + recording + upload)
+- Auth con JWT del driver para personalización ("tu meta hoy", "tus viajes")
+- Integración con tracking-service para "apagá disponibilidad"
+
+#### 8c — Voz para pasajeros (Nivel C)
+
+**Esfuerzo**: 5-7 días
+
+Embebido en mobile-user-app. Hoy customer-support funciona por WhatsApp/
+Telegram externos, pero un usuario ya está dentro de la app y no debería
+salir para pedir un viaje.
+
+> *"Necesito viaje a Quito mañana 6am"*
+> *"¿Cuánto cuesta a Otavalo?"*
+> *"Cancelá mi viaje"*
+
+**Componentes**:
+- React Native SDK (mismo que 8b)
+- Endpoint nuevo en customer-support-service (`/chat/voice` interno) o reuso
+  del flujo de WhatsApp con autenticación JWT
+- Integración con BookingService que ya crea viajes desde el chat (existe)
+
+**Dependencias entre las 3 sub-fases**: ninguna estricta, pero conviene
+empezar por 8a (público chico = vos = feedback rápido), después 8b/8c
+en paralelo.
+
+**Costo adicional**: ~$0.001-0.005 por interacción (Gemini Flash + STT/TTS).
+Para 1000 interacciones/día = ~$30-150/mes según volumen.
+
+---
+
 ### Fase 7 — Aprendizaje
 
 **Objetivo**: que MyCortex mejore con el tiempo basándose en outcomes reales.
@@ -359,6 +439,7 @@ estadísticamente significativos.
 | Mongo Atlas (DB nuevas) | $0 | mismo cluster M10 ya existente |
 | Cloud Build (re-deploys) | <$5 | promedio mensual |
 | **Total nueva infra** | **~$70-130/mes** | dominado por Claude API |
+| Fase 8 (voz/chat opcional) | +$30-150/mes | 1000 interacciones/día estimadas |
 
 Mitigación: Haiku 4.5 en MyCortex bajaría a $15-30/mes (5x más barato).
 Decidir después de validar calidad con Sonnet.
