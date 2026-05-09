@@ -62,6 +62,16 @@ export const RULES: Record<string, ActionRule | 'human_only'> = {
     action: 'page_operator',
     safetyLevel: 2,
   },
+  // Cleanup de handoffs estancados sin operatorId — reversible: el operador
+  // puede reabrir cualquier conversación si se cerró por error.
+  'cleanup_stale_customer_handoffs': {
+    agent: 'customer-support-service',
+    action: 'cleanup_handoffs',
+    safetyLevel: 2,
+    buildArgs: (intent) => ({
+      olderThanDays: (intent.data?.olderThanDays as number) ?? 7,
+    }),
+  },
 
   // ── Cat 3 — irreversibles / alto costo (requieren ack) ────
   // Bonos a drivers gastan presupuesto de marketing.
@@ -81,6 +91,17 @@ export const RULES: Record<string, ActionRule | 'human_only'> = {
   'configure_operators':            'human_only', // requiere setup manual
   'schedule_content_review_session':'human_only', // requiere coordinación
   'review_platform_content':        'human_only', // estrategia
+
+  // Tipos meta que MyCortex emite cuando duda del estado del sistema.
+  // Marcamos human_only EXPLÍCITO para sacarlos del bucket "unknown" —
+  // así admin-dashboard distingue "no automatizable por diseño" vs
+  // "type que MyCortex inventó y nadie ha decidido qué hacer".
+  'request_human_decision_on_zero_state':  'human_only', // calibración del operador
+  'confirm_system_operational_state':      'human_only', // operador responde A/B/C
+  'establish_manual_monitoring_fallback':  'human_only', // operación manual
+  'audit_snapshot_generation_logic':       'human_only', // requiere developer
+  'request_going_agent_deep_dive':         'human_only', // going-agent corre cron propio
+  'emergency_data_validation':             'human_only', // requiere developer
 };
 
 @Injectable()
