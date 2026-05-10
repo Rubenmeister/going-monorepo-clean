@@ -5,10 +5,13 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HealthController } from './api/health.controller';
 import { CerebroController } from './api/cerebro.controller';
 import { CommandController } from './api/command.controller';
+import { WebEventController } from './api/web-event.controller';
 import { AgentEventSchema } from './infrastructure/schemas/agent-event.schema';
 import { WorldSnapshotSchema } from './infrastructure/schemas/world-snapshot.schema';
+import { WebEventSchema } from './infrastructure/schemas/web-event.schema';
 import { AgentEventRepository } from './infrastructure/persistence/agent-event.repository';
 import { WorldSnapshotRepository } from './infrastructure/persistence/world-snapshot.repository';
+import { WebEventRepository } from './infrastructure/persistence/web-event.repository';
 import { EventHandlerService } from './infrastructure/event-handler.service';
 import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.service';
 import { WorldModelService } from './world-model/world-model.service';
@@ -33,16 +36,19 @@ import { DiffDetectorService } from './world-model/diff-detector.service';
     MongooseModule.forFeature([
       { name: 'AgentEvent',    schema: AgentEventSchema },
       { name: 'WorldSnapshot', schema: WorldSnapshotSchema },
+      { name: 'WebEvent',      schema: WebEventSchema },
     ]),
   ],
   controllers: [
     HealthController,
     CerebroController,
     CommandController,
+    WebEventController,
   ],
   providers: [
     AgentEventRepository,
     WorldSnapshotRepository,
+    WebEventRepository,
     EventHandlerService,
     PubSubSubscriberService,
     DiffDetectorService,
