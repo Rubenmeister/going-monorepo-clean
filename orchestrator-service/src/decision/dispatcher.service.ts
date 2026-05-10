@@ -6,6 +6,7 @@ import { safetyMeta } from './safety-levels';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { AgentBridgeClient } from '../infrastructure/agent-bridge.client';
 import { TelegramApprovalService } from '../infrastructure/telegram-approval.service';
+import { MycortexClient } from '../infrastructure/mycortex.client';
 import { DecisionEntity } from '../infrastructure/schemas/decision.schema';
 
 /**
@@ -35,6 +36,7 @@ export class DispatcherService {
     private readonly repo:     DecisionRepository,
     private readonly bridge:   AgentBridgeClient,
     private readonly telegram: TelegramApprovalService,
+    private readonly mycortex: MycortexClient,
   ) {}
 
   private get executeEnabled(): boolean {
@@ -166,6 +168,10 @@ export class DispatcherService {
   /**
    * Ejecuta una decisión que ya pasó la validación (Cat 1, Cat 2, o Cat 3
    * recién aprobada). Persiste outcome.
+   *
+   * Después del dispatch, cierra el feedback loop con MyCortex llamando
+   * PATCH /mycortex/intentions/:id/outcome. Best-effort: si falla, log y
+   * seguir — la decision YA está persistida acá con su outcome real.
    */
   async executeNow(decision: DecisionEntity, rule: ActionRule): Promise<void> {
     await this.repo.updateStatus(decision.decisionId, 'executing');
@@ -188,6 +194,17 @@ export class DispatcherService {
     if (safetyMeta(rule.safetyLevel).postNotify) {
       const updated = await this.repo.findById(decision.decisionId);
       if (updated) await this.telegram.notifyExecution(updated);
+    }
+
+    // Feedback loop a MyCortex — si la intención existía allá, se actualiza
+    // su outcome para que MyCortex lo vea en próximos ciclos. El client
+    // maneja errores internamente (best-effort, no rethrow).
+    if (decision.intentionId) {
+      await this.mycortex.recordOutcome({
+        intentionId:     decision.intentionId,
+        decisionOutcome: result.ok ? 'success' : 'failure',
+        errorMessage:    result.error,
+      });
     }
   }
 }

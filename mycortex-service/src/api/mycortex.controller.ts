@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
 import { ReasoningLoopService } from '../reasoning/reasoning-loop.service';
 import { CortexConfigRepository } from '../infrastructure/persistence/cortex-config.repository';
@@ -46,6 +46,48 @@ export class MyCortexController {
   async runNow() {
     const result = await this.loop.runOnce();
     return result;
+  }
+
+  /**
+   * Cierra el feedback loop con el orchestrator.
+   *
+   * El orchestrator llama acá después de ejecutar una decisión que vino
+   * de una de nuestras intenciones — así MyCortex ve en su próximo ciclo
+   * qué pasó realmente. Sin esto, MyCortex razonaría siempre en ciego.
+   *
+   *   PATCH /mycortex/intentions/:intentionId/outcome
+   *   { outcome: 'effective'|'partial'|'ineffective'|'counterproductive'|'unknown',
+   *     notes?: string,
+   *     acknowledgedBy?: string }
+   *
+   * Idempotente: re-llamar sobrescribe (el último wins).
+   */
+  @Patch('intentions/:intentionId/outcome')
+  @HttpCode(200)
+  async recordOutcome(
+    @Param('intentionId') intentionId: string,
+    @Body()
+    body: {
+      outcome:        'effective' | 'partial' | 'ineffective' | 'counterproductive' | 'unknown';
+      notes?:         string;
+      acknowledgedBy?: string;
+    },
+  ) {
+    const validOutcomes = ['effective', 'partial', 'ineffective', 'counterproductive', 'unknown'];
+    if (!body?.outcome || !validOutcomes.includes(body.outcome)) {
+      return { ok: false, error: `outcome inválido: ${body?.outcome}. Valid: ${validOutcomes.join(', ')}` };
+    }
+
+    const updated = await this.repo.recordOutcome(intentionId, {
+      outcome:        body.outcome,
+      notes:          body.notes,
+      acknowledgedBy: body.acknowledgedBy,
+    });
+
+    if (!updated) {
+      return { ok: false, error: `intention ${intentionId} no encontrada` };
+    }
+    return { ok: true, intentionId, outcome: body.outcome };
   }
 
   // ─── Config singleton ──────────────────────────────────────
