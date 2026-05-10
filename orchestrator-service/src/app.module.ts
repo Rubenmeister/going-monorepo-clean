@@ -8,6 +8,7 @@ import { DecisionSchema } from './infrastructure/schemas/decision.schema';
 import { DecisionRepository } from './infrastructure/persistence/decision.repository';
 import { AgentBridgeClient } from './infrastructure/agent-bridge.client';
 import { TelegramApprovalService } from './infrastructure/telegram-approval.service';
+import { MycortexClient } from './infrastructure/mycortex.client';
 import { RulesEngineService } from './decision/rules-engine.service';
 import { DispatcherService } from './decision/dispatcher.service';
 import { MyCortexPollerService } from './decision/mycortex-poller.service';
@@ -41,6 +42,7 @@ import { MyCortexPollerService } from './decision/mycortex-poller.service';
     DecisionRepository,
     AgentBridgeClient,
     TelegramApprovalService,
+    MycortexClient,
     RulesEngineService,
     DispatcherService,
     MyCortexPollerService,
