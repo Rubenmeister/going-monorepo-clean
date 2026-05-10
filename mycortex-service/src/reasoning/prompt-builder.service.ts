@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorldSnapshot } from './world-snapshot.client';
 import { IntentionEntity } from '../infrastructure/schemas/intention.schema';
+import { MemoryRollupEntity } from '../infrastructure/schemas/memory-rollup.schema';
 import { CortexConfigService } from './cortex-config.service';
 
 /**
@@ -58,14 +59,16 @@ export class PromptBuilderService {
   }
 
   /**
-   * User prompt que incluye el world snapshot + memoria reciente.
+   * User prompt que incluye el world snapshot + memoria reciente +
+   * rollups de las últimas semanas (memoria de largo plazo, Etapa D).
    */
   buildUserPrompt(args: {
     snapshot:           WorldSnapshot;
     recentIntentions:   IntentionEntity[];
+    memoryRollups?:     MemoryRollupEntity[];
     nowIso:             string;
   }): string {
-    const { snapshot, recentIntentions, nowIso } = args;
+    const { snapshot, recentIntentions, memoryRollups, nowIso } = args;
 
     const sections: string[] = [
       `# Hora actual: ${nowIso} (Ecuador UTC-5)`,
@@ -93,6 +96,21 @@ export class PromptBuilderService {
       for (const i of recentIntentions.slice(0, 10)) {
         const outcomeStr = i.outcome === 'unknown' ? '(sin outcome aún)' : `→ outcome: ${i.outcome}`;
         sections.push(`- [${i.status}] ${i.type} (urgency ${i.urgency.toFixed(2)}): ${i.suggestedAction.slice(0, 100)}... ${outcomeStr}`);
+      }
+    }
+
+    // Memoria de largo plazo — últimos 4 rollups semanales (Etapa D).
+    if (memoryRollups && memoryRollups.length > 0) {
+      sections.push('', `# Memoria estratégica (últimas ${memoryRollups.length} semanas)`);
+      sections.push('Usá esta info para detectar patrones recurrentes y calibrar urgencia. Si un type aparece semana tras semana sin solución, escalá. Si un type recurrió y se ejecutó effective, podés bajar urgencia.');
+      for (const r of memoryRollups) {
+        sections.push(`- ${r.summary}`);
+        if (r.byType.length > 0) {
+          const topTypes = r.byType.slice(0, 3).map(t =>
+            `${t.type}=${t.count}(exec ${t.executedCount})`
+          ).join(', ');
+          sections.push(`  top types: ${topTypes}`);
+        }
       }
     }
 

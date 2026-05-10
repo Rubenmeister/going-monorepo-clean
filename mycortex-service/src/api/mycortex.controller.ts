@@ -4,6 +4,8 @@ import { ReasoningLoopService } from '../reasoning/reasoning-loop.service';
 import { CortexConfigRepository } from '../infrastructure/persistence/cortex-config.repository';
 import { CortexConfigService } from '../reasoning/cortex-config.service';
 import { PromptBuilderService } from '../reasoning/prompt-builder.service';
+import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
+import { MemoryRollupService } from '../reasoning/memory-rollup.service';
 
 /**
  * Endpoints públicos de MyCortex.
@@ -24,6 +26,8 @@ export class MyCortexController {
     private readonly configRepo:     CortexConfigRepository,
     private readonly configCache:    CortexConfigService,
     private readonly promptBuilder:  PromptBuilderService,
+    private readonly rollupRepo:     MemoryRollupRepository,
+    private readonly rollupSvc:      MemoryRollupService,
   ) {}
 
   @Get('intentions')
@@ -158,5 +162,61 @@ export class MyCortexController {
       updatedAt:       updated.updatedAt ?? null,
       updatedBy:       updated.updatedBy ?? null,
     };
+  }
+
+  // ─── Memory rollups (Etapa D — memoria largo plazo) ─────────
+  //
+  // El @Cron del MemoryRollupService corre domingos 23:55 EC y genera el
+  // rollup de la semana. Acá los exponemos para visualización + regenerar
+  // manual.
+
+  @Get('rollups')
+  async listRollups(@Query('limit') limit?: string) {
+    const n = parseInt(limit || '12', 10);
+    const safe = Number.isFinite(n) && n > 0 && n <= 52 ? n : 12;
+    const rollups = await this.rollupRepo.recent(safe);
+    return { count: rollups.length, rollups };
+  }
+
+  /**
+   * Regenera el rollup de la semana ANTERIOR (cierra el martes pasado).
+   * Útil para backfill después de un downtime, o para ver el estado
+   * actual sin esperar al cron del domingo.
+   *
+   * Si el body tiene weekStarting + weekEnding (ISO), regenera ese rango.
+   */
+  @Post('rollups/regenerate')
+  @HttpCode(200)
+  async regenerateRollup(
+    @Body()
+    body: {
+      weekStarting?: string;
+      weekEnding?:   string;
+    },
+  ) {
+    if (body.weekStarting && body.weekEnding) {
+      const start = new Date(body.weekStarting);
+      const end   = new Date(body.weekEnding);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return { ok: false, error: 'invalid weekStarting/weekEnding' };
+      }
+      const result = await this.rollupSvc.generateForWeek({
+        weekStarting: start,
+        weekEnding:   end,
+      });
+      return { ok: true, rollup: result };
+    }
+    // Sin args: regenera la semana actual hasta ahora (útil para preview).
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay();
+    const daysFromMonday = (dayOfWeek + 6) % 7;
+    const start = new Date(now);
+    start.setUTCDate(now.getUTCDate() - daysFromMonday);
+    start.setUTCHours(5, 0, 0, 0);
+    const result = await this.rollupSvc.generateForWeek({
+      weekStarting: start,
+      weekEnding:   now,
+    });
+    return { ok: true, rollup: result };
   }
 }

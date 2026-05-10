@@ -9,6 +9,7 @@ import { IntentionsParserService } from './intentions-parser.service';
 import { TelegramReporterService } from './telegram-reporter.service';
 import { CortexConfigService } from './cortex-config.service';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
+import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
 
 /**
  * Loop principal de MyCortex.
@@ -37,6 +38,7 @@ export class ReasoningLoopService implements OnModuleInit {
     private readonly reporter:      TelegramReporterService,
     private readonly cortexConfig:  CortexConfigService,
     private readonly repo:          IntentionRepository,
+    private readonly rollups:       MemoryRollupRepository,
   ) {}
 
   onModuleInit() {
@@ -141,11 +143,16 @@ export class ReasoningLoopService implements OnModuleInit {
     // 3. Memoria reciente (últimas 24h, top 20 ordenadas)
     const recentIntentions = await this.repo.recent(20).catch(() => []);
 
-    // 4. Prompt + Claude
+    // 4. Memoria de largo plazo (Etapa D) — últimos 4 rollups semanales.
+    //    Si falla la lectura, no rompe el ciclo (best-effort).
+    const memoryRollups = await this.rollups.recent(4).catch(() => []);
+
+    // 5. Prompt + Claude
     const systemPrompt = await this.prompt.buildSystemPrompt();
     const userPrompt = this.prompt.buildUserPrompt({
       snapshot,
       recentIntentions,
+      memoryRollups,
       nowIso: new Date().toISOString(),
     });
 
