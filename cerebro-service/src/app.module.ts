@@ -14,8 +14,10 @@ import { WorldSnapshotRepository } from './infrastructure/persistence/world-snap
 import { WebEventRepository } from './infrastructure/persistence/web-event.repository';
 import { EventHandlerService } from './infrastructure/event-handler.service';
 import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.service';
+import { TelegramAlertService } from './infrastructure/telegram-alert.service';
 import { WorldModelService } from './world-model/world-model.service';
 import { DiffDetectorService } from './world-model/diff-detector.service';
+import { HealthMonitorService } from './world-model/health-monitor.service';
 
 @Module({
   imports: [
@@ -51,8 +53,10 @@ import { DiffDetectorService } from './world-model/diff-detector.service';
     WebEventRepository,
     EventHandlerService,
     PubSubSubscriberService,
+    TelegramAlertService,
     DiffDetectorService,
     WorldModelService,
+    HealthMonitorService,
   ],
 })
 export class AppModule {}
