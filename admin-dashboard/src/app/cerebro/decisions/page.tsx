@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { AdminLayout, StatCard } from '../../components';
 
 interface Decision {
@@ -205,9 +206,10 @@ export default function DecisionsPage() {
           const safety = d.safetyLevel ? SAFETY_STYLES[d.safetyLevel] : null;
           const isHumanOnly = d.status === 'ignored' && d.humanOnlyReason;
           return (
-            <div
+            <Link
               key={d.decisionId}
-              className={`p-5 rounded-2xl border-2 border-gray-200 bg-white`}
+              href={`/cerebro/decisions/${d.decisionId}`}
+              className={`block p-5 rounded-2xl border-2 border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm transition`}
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
@@ -322,7 +324,7 @@ export default function DecisionsPage() {
                 <span>decision: {d.decisionId.slice(0, 8)}</span>
                 <span>intention: {d.intentionId.slice(0, 8)}</span>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

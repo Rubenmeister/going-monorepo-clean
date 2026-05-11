@@ -7,9 +7,11 @@ import { MyCortexController } from './api/mycortex.controller';
 import { IntentionSchema } from './infrastructure/schemas/intention.schema';
 import { CortexConfig, CortexConfigSchema } from './infrastructure/schemas/cortex-config.schema';
 import { MemoryRollupSchema } from './infrastructure/schemas/memory-rollup.schema';
+import { ConfigAuditSchema } from './infrastructure/schemas/config-audit.schema';
 import { IntentionRepository } from './infrastructure/persistence/intention.repository';
 import { CortexConfigRepository } from './infrastructure/persistence/cortex-config.repository';
 import { MemoryRollupRepository } from './infrastructure/persistence/memory-rollup.repository';
+import { ConfigAuditRepository } from './infrastructure/persistence/config-audit.repository';
 import { WorldSnapshotClient } from './reasoning/world-snapshot.client';
 import { AnthropicClient } from './reasoning/anthropic.client';
 import { PromptBuilderService } from './reasoning/prompt-builder.service';
@@ -39,6 +41,7 @@ import { MemoryRollupService } from './reasoning/memory-rollup.service';
       { name: 'Intention',          schema: IntentionSchema },
       { name: CortexConfig.name,    schema: CortexConfigSchema },
       { name: 'MemoryRollup',       schema: MemoryRollupSchema },
+      { name: 'ConfigAudit',        schema: ConfigAuditSchema },
     ]),
   ],
   controllers: [
@@ -49,6 +52,7 @@ import { MemoryRollupService } from './reasoning/memory-rollup.service';
     IntentionRepository,
     CortexConfigRepository,
     MemoryRollupRepository,
+    ConfigAuditRepository,
     WorldSnapshotClient,
     AnthropicClient,
     CortexConfigService,

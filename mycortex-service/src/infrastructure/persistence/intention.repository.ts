@@ -45,6 +45,11 @@ export class IntentionRepository {
       .lean();
   }
 
+  /** Una sola intention por intentionId — usado por dashboard drill-down. */
+  async findOne(intentionId: string): Promise<IntentionEntity | null> {
+    return this.model.findOne({ intentionId }).lean();
+  }
+
   /**
    * Marca como expiradas las intenciones cuyo expiresAt ya pasó. Lo llama
    * el cron del reasoning-loop antes de generar nuevas, así no acumula
@@ -98,5 +103,57 @@ export class IntentionRepository {
       },
     );
     return (result.matchedCount ?? 0) > 0;
+  }
+
+  /**
+   * Stats de ciclos de razonamiento para el panel /admin/cerebro/costs.
+   *
+   * Cada cycleId = 1 llamada a Claude. Cada intention dentro del mismo
+   * cycleId comparte la llamada. Para contar CICLOS distintos en una
+   * ventana, usamos $group por cycleId.
+   *
+   * Devuelve breakdown por día (para timeline) + por modelo (para cost
+   * breakdown — Sonnet vs Opus vs Haiku tienen precios distintos).
+   */
+  async cycleStats(args: {
+    sinceMs: number;
+    untilMs?: number;
+  }): Promise<{
+    byDay:   Array<{ date: string; cycles: number }>;
+    byModel: Array<{ model: string; cycles: number }>;
+    totalCycles: number;
+  }> {
+    const since = new Date(args.sinceMs);
+    const until = new Date(args.untilMs ?? Date.now());
+
+    // Distinct cycleIds en la ventana. Usamos $group por cycleId + first(modelUsed/date)
+    // para conseguir 1 fila por ciclo.
+    const cycles = await this.model.aggregate([
+      { $match: { receivedAt: { $gte: since, $lte: until } } },
+      {
+        $group: {
+          _id: '$cycleId',
+          model: { $first: '$modelUsed' },
+          date:  { $first: { $dateToString: { format: '%Y-%m-%d', date: '$receivedAt' } } },
+        },
+      },
+    ]);
+
+    const byDayMap   = new Map<string, number>();
+    const byModelMap = new Map<string, number>();
+    for (const c of cycles) {
+      byDayMap.set(c.date,  (byDayMap.get(c.date) ?? 0) + 1);
+      byModelMap.set(c.model || 'unknown', (byModelMap.get(c.model || 'unknown') ?? 0) + 1);
+    }
+
+    return {
+      byDay:   Array.from(byDayMap.entries())
+                .map(([date, cycles]) => ({ date, cycles }))
+                .sort((a, b) => a.date.localeCompare(b.date)),
+      byModel: Array.from(byModelMap.entries())
+                .map(([model, cycles]) => ({ model, cycles }))
+                .sort((a, b) => b.cycles - a.cycles),
+      totalCycles: cycles.length,
+    };
   }
 }
