@@ -87,6 +87,8 @@ const NAV_SECTIONS = [
       { label: 'Decisiones',  href: '/cerebro/decisions',  icon: '🎯' },
       { label: 'Reglas',      href: '/cerebro/rules',      icon: '⚙️' },
       { label: 'Agents',      href: '/cerebro/agents',     icon: '🤖' },
+      { label: 'Web errors',  href: '/cerebro/web-events', icon: '🐞' },
+      { label: 'Memoria',     href: '/cerebro/memory',     icon: '📚' },
       { label: 'Config',      href: '/cerebro/config',     icon: '🛠️' },
       { label: 'Eventos',     href: '/cerebro/events',     icon: '📡' },
     ],
