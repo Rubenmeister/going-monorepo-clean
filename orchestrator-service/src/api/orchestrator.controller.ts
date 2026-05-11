@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { DispatcherService } from '../decision/dispatcher.service';
 import { MyCortexPollerService } from '../decision/mycortex-poller.service';
@@ -26,6 +27,7 @@ export class OrchestratorController {
     private readonly dispatcher: DispatcherService,
     private readonly poller:     MyCortexPollerService,
     private readonly rules:      RulesEngineService,
+    private readonly config:     ConfigService,
   ) {}
 
   @Get('decisions')
@@ -65,6 +67,31 @@ export class OrchestratorController {
     return {
       total: Object.keys(RULES).length,
       rules: this.rules.listSupportedTypes(),
+    };
+  }
+
+  /**
+   * Estado runtime del orchestrator — gates de seguridad + cadencia del poller.
+   * Usado por /admin/cerebro/health para mostrar de un vistazo si Cat 1/2/3
+   * están activados o si el master switch está apagado.
+   *
+   * No expone secrets ni IDs. Solo configuración que ya está visible en
+   * los logs y en el comportamiento observable del service.
+   */
+  @Get('status')
+  status() {
+    const executeRaw   = this.config.get<string>('ORCHESTRATOR_EXECUTE_ENABLED');
+    const maxAutoRaw   = parseInt(this.config.get<string>('ORCHESTRATOR_MAX_AUTO_LEVEL') || '0', 10);
+    const pollRaw      = this.config.get<string>('ORCHESTRATOR_POLL_ENABLED');
+    const maxAutoLevel = (maxAutoRaw === 1 || maxAutoRaw === 2 || maxAutoRaw === 3) ? maxAutoRaw : 0;
+    return {
+      executeEnabled: executeRaw === 'true',
+      maxAutoLevel,
+      pollEnabled:    pollRaw !== 'false', // default true si no está seteado
+      // Resumen de qué Cats están vivos en este momento:
+      activeCats: executeRaw === 'true'
+        ? Array.from({ length: maxAutoLevel }, (_, i) => i + 1)
+        : [],
     };
   }
 
