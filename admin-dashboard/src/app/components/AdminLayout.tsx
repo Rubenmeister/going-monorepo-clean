@@ -82,6 +82,7 @@ const NAV_SECTIONS = [
     title: 'Cerebro',
     items: [
       { label: 'Estado',      href: '/cerebro',            icon: '🧠' },
+      { label: 'Salud',       href: '/cerebro/health',     icon: '🩺' },
       { label: 'Intenciones', href: '/cerebro/intentions', icon: '💡' },
       { label: 'Decisiones',  href: '/cerebro/decisions',  icon: '🎯' },
       { label: 'Reglas',      href: '/cerebro/rules',      icon: '⚙️' },
