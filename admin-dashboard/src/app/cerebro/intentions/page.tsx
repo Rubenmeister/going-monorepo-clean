@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { AdminLayout } from '../../components';
 
 interface Intention {
@@ -143,10 +144,11 @@ export default function IntentionsPage() {
           const expired =
             intent.expiresAt && new Date(intent.expiresAt).getTime() < Date.now();
           return (
-            <div
+            <Link
               key={intent.intentionId}
-              className={`p-5 rounded-2xl border-2 ${
-                expired ? 'border-gray-200 bg-gray-50 opacity-60' : 'border-gray-200 bg-white'
+              href={`/cerebro/intentions/${intent.intentionId}`}
+              className={`block p-5 rounded-2xl border-2 transition ${
+                expired ? 'border-gray-200 bg-gray-50 opacity-60 hover:opacity-80' : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm'
               }`}
             >
               {/* Header */}
@@ -215,7 +217,7 @@ export default function IntentionsPage() {
                   cycle: {intent.cycleId.slice(0, 8)}
                 </span>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

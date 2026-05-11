@@ -6,6 +6,7 @@ import { CortexConfigService } from '../reasoning/cortex-config.service';
 import { PromptBuilderService } from '../reasoning/prompt-builder.service';
 import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
 import { MemoryRollupService } from '../reasoning/memory-rollup.service';
+import { ConfigAuditRepository } from '../infrastructure/persistence/config-audit.repository';
 
 /**
  * Endpoints públicos de MyCortex.
@@ -28,6 +29,7 @@ export class MyCortexController {
     private readonly promptBuilder:  PromptBuilderService,
     private readonly rollupRepo:     MemoryRollupRepository,
     private readonly rollupSvc:      MemoryRollupService,
+    private readonly auditRepo:      ConfigAuditRepository,
   ) {}
 
   @Get('intentions')
@@ -44,6 +46,14 @@ export class MyCortexController {
     const safe = Number.isFinite(n) && n > 0 && n <= 200 ? n : 50;
     const intentions = await this.repo.recent(safe);
     return { count: intentions.length, intentions };
+  }
+
+  /** Drill-down de una sola intention para el admin-dashboard. */
+  @Get('intentions/:intentionId')
+  async getOne(@Param('intentionId') intentionId: string) {
+    const intention = await this.repo.findOne(intentionId);
+    if (!intention) return { error: `intention ${intentionId} no encontrada` };
+    return intention;
   }
 
   @Post('run-now')
@@ -142,6 +152,18 @@ export class MyCortexController {
       updatedBy?:       string;
     },
   ) {
+    // Snapshot ANTES del cambio para audit. Si es la primera config, será null.
+    const before = await this.configRepo.findOrCreate();
+    const beforeSnap = {
+      systemPrompt:    before.systemPrompt,
+      model:           before.model,
+      maxTokens:       before.maxTokens,
+      pollIntervalMin: before.pollIntervalMin,
+      enabled:         before.enabled,
+      updatedBy:       before.updatedBy,
+      updatedAt:       before.updatedAt,
+    };
+
     const updated = await this.configRepo.update({
       systemPrompt:    body.systemPrompt,
       model:           body.model,
@@ -151,6 +173,33 @@ export class MyCortexController {
       updatedBy:       body.updatedBy ?? 'admin-dashboard',
     });
     this.configCache.invalidate();
+
+    // Detect which fields cambiaron, registrar audit (best-effort).
+    const changedFields: string[] = [];
+    for (const k of ['systemPrompt', 'model', 'maxTokens', 'pollIntervalMin', 'enabled'] as const) {
+      if (body[k] !== undefined && (before as any)[k] !== body[k]) changedFields.push(k);
+    }
+    if (changedFields.length > 0) {
+      try {
+        await this.auditRepo.record({
+          changedBy:      body.updatedBy ?? 'admin-dashboard',
+          changedFields,
+          snapshotBefore: beforeSnap,
+          snapshotAfter: {
+            systemPrompt:    updated.systemPrompt,
+            model:           updated.model,
+            maxTokens:       updated.maxTokens,
+            pollIntervalMin: updated.pollIntervalMin,
+            enabled:         updated.enabled,
+            updatedBy:       updated.updatedBy,
+            updatedAt:       updated.updatedAt,
+          },
+        });
+      } catch (e) {
+        // Audit best-effort — no romper el PUT si la grabación falla.
+        console.warn(`[config-audit] record failed: ${(e as Error).message}`);
+      }
+    }
     return {
       ok:              true,
       _id:             updated._id,
@@ -176,6 +225,36 @@ export class MyCortexController {
     const safe = Number.isFinite(n) && n > 0 && n <= 52 ? n : 12;
     const rollups = await this.rollupRepo.recent(safe);
     return { count: rollups.length, rollups };
+  }
+
+  // ─── Config audit log ───────────────────────────────────────
+  //
+  // Cada PUT /mycortex/config registra una entrada acá (best-effort).
+  // Sirve para responder "quién y cuándo cambió X campo" cuando hay
+  // debugging operativo. TTL 180d.
+
+  @Get('config/audit')
+  async getAuditLog(@Query('limit') limit?: string) {
+    const n = parseInt(limit || '50', 10);
+    const safe = Number.isFinite(n) && n > 0 && n <= 200 ? n : 50;
+    const log = await this.auditRepo.recent(safe);
+    return { count: log.length, audit: log };
+  }
+
+  /**
+   * Stats de ciclos para /admin/cerebro/costs.
+   *   GET /mycortex/cost-stats?days=30
+   *
+   * Cada ciclo = 1 llamada a Claude. La UI calcula el costo estimado
+   * usando precios por modelo de su propia tabla.
+   */
+  @Get('cost-stats')
+  async getCostStats(@Query('days') days?: string) {
+    const d = parseInt(days || '30', 10);
+    const safe = Number.isFinite(d) && d > 0 && d <= 365 ? d : 30;
+    const sinceMs = Date.now() - safe * 24 * 3600 * 1000;
+    const stats = await this.repo.cycleStats({ sinceMs });
+    return { windowDays: safe, ...stats };
   }
 
   /**
