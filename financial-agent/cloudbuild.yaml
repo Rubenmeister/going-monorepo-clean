@@ -52,7 +52,7 @@ steps:
       - --memory=512Mi
       - --task-timeout=300s
       - --set-secrets=DATIL_API_KEY=DATIL_API_KEY:latest,DATIL_CERT_PASSWORD=DATIL_CERT_PASSWORD:latest,GOING_RUC=GOING_RUC:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest,MONGO_URL=MONGO_URL-prod:latest
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,DATIL_ENV=1,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com,AI_ANALYSIS_MODEL=gemini-2.5-flash
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,DATIL_ENV=1,GMAIL_FROM=goingappecuador@gmail.com,NOTIFICATION_EMAIL=rubenmeister@gmail.com,AI_ANALYSIS_MODEL=gemini-2.5-flash,CEREBRO_PUBLISH_ENABLED=true
       - --vpc-connector=going-connector
       - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com

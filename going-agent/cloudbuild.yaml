@@ -47,7 +47,7 @@ steps:
       - --cpu=2
       - --max-retries=1
       - --task-timeout=300s
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git,AGENT_MODEL=claude-haiku-4-5
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,REPO_PATH=/tmp/going-repo,REPO_URL=github.com/Rubenmeister/going-monorepo-clean.git,AGENT_MODEL=claude-haiku-4-5,CEREBRO_PUBLISH_ENABLED=true
       - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,GIT_TOKEN=GIT_TOKEN:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 

@@ -43,7 +43,9 @@ steps:
   #   TELEGRAM_WEBHOOK_SECRET   — opcional, valida el header del webhook de Telegram
   #   OPERATOR_TELEGRAM_CHAT_IDS — comma-separated chat IDs de operadores
   #   TRANSPORT_SERVICE_URL     — URL interna de transport-service en Cloud Run
-  #   CEREBRO_PUBLISH_ENABLED   — true|false; default false hasta que cerebro-service esté arriba
+  #   CEREBRO_PUBLISH_ENABLED   — true en producción. Cron interno cada 10 min publica
+  #                                 al cerebro-service. Pausar solo si cerebro-service
+  #                                 está caído (raro, tiene min-instances=1).
   #
   # NOTA: Anthropic + Twilio quedaron deprecados aquí — el LLM corre sobre
   # Vertex AI (Gemini) y todo WhatsApp (inbound + outbound) usa Meta Cloud API.
@@ -66,7 +68,7 @@ steps:
       # mantiene el container vivo. Costo: ~$5/mes adicional.
       - --min-instances=1
       - --max-instances=5
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production,CEREBRO_PUBLISH_ENABLED=true
       # MONGO_URL se incluye acá porque --set-env-vars/--set-secrets reemplazan
       # TODA la config previa (no es additive). Sin esto el service intenta
       # conectar a localhost:27017 y falla startup probe.

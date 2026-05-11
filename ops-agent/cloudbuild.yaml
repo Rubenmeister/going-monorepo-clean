@@ -42,7 +42,7 @@ steps:
       - --cpu=1
       - --max-retries=1
       - --task-timeout=300s
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GOING_COMMISSION_RATE=0.20
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GOING_COMMISSION_RATE=0.20,CEREBRO_PUBLISH_ENABLED=true
       - --set-secrets=TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest,MONGO_URL=MONGO_URL-prod:latest
       - --vpc-connector=going-connector
       - --vpc-egress=all-traffic
