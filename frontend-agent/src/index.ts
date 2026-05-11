@@ -28,13 +28,39 @@ async function main(): Promise<void> {
   console.log(`Time: ${new Date().toISOString()}`);
 
   // Modo command (Orchestrator override COMMAND_JSON).
+  // force_check re-corre el monitor on-demand. Útil cuando MyCortex sospecha
+  // que un deploy Vercel falló y quiere data fresca sin esperar al cron de 6h.
   const cmd = parseCommandFromEnv();
   if (cmd) {
-    await runCommandMode(cmd, {
-      // Handlers concretos cuando aparezcan reglas, ej:
-      // force_frontend_check: async () => { await runFrontendMonitor(loadConfig()); },
+    const result = await runCommandMode(cmd, {
+      force_check: async () => {
+        console.log('[command] force_check — re-running monitor on demand');
+        const startedAt = new Date();
+        const config = loadConfig();
+        const runResult = await runFrontendMonitor(config);
+        const finishedAt = new Date();
+        const event: AgentRunEvent = {
+          agentId:    'frontend-agent',
+          runId:      uuidv4(),
+          startedAt:  startedAt.toISOString(),
+          finishedAt: finishedAt.toISOString(),
+          durationMs: finishedAt.getTime() - startedAt.getTime(),
+          status:     runResult.collector.errors.length > 0 ? 'partial_failure' : 'success',
+          metrics:        runResult.collector.metrics,
+          anomalies:      runResult.collector.anomalies,
+          actionsTaken:   runResult.collector.actionsTaken,
+          actionsProposed: runResult.collector.actionsProposed,
+          meta: {
+            gitSha: process.env.GIT_SHA,
+            runEnv: (process.env.NODE_ENV === 'production' ? 'production' : 'staging'),
+          },
+        };
+        await publishAgentRunEvent(event).catch(e =>
+          console.error('[frontend-agent force_check] publish failed:', e),
+        );
+      },
     });
-    process.exit(0);
+    process.exit(result.ok ? 0 : 1);
   }
 
   const runId     = uuidv4();

@@ -45,6 +45,17 @@ export const AGENT_REGISTRY: Record<string, AgentConfig> = {
     kind:    'cloud-run-job',
     jobName: 'going-agent',
   },
+  // Read-only por naturaleza — accionables vía force_check para re-correr
+  // su monitor on-demand. Acciones write futuras (sentry resolve, vercel
+  // redeploy) se agregan acá cuando se necesiten.
+  'mobile-agent': {
+    kind:    'cloud-run-job',
+    jobName: 'mobile-agent',
+  },
+  'frontend-agent': {
+    kind:    'cloud-run-job',
+    jobName: 'frontend-agent',
+  },
 
   // ── HTTP Services ──────────────────────────────────────────
   'customer-support-service': {

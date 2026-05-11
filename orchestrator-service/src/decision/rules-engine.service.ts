@@ -38,6 +38,19 @@ export const RULES: Record<string, ActionRule | 'human_only'> = {
     action: 'log_anomaly',
     safetyLevel: 1,
   },
+  // Force re-check de los agents read-only — Cat 1 porque solo re-lee
+  // datos externos (Sentry / Vercel) y publica al cerebro. Útil cuando
+  // MyCortex sospecha algo y quiere data fresca sin esperar 6h.
+  'force_mobile_check': {
+    agent: 'mobile-agent',
+    action: 'force_check',
+    safetyLevel: 1,
+  },
+  'force_frontend_check': {
+    agent: 'frontend-agent',
+    action: 'force_check',
+    safetyLevel: 1,
+  },
 
   // ── Cat 2 — operacionales reversibles ─────────────────────
   // Customer-support: abrir ticket es reversible (se puede cerrar).

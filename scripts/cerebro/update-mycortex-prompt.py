@@ -58,6 +58,10 @@ caen a `human_only` (operador decide manual).
 - `log_anomaly` — registra una anomalía cross-agente que vos detectaste
    pero ningún agente individual reportó. Útil cuando ves un patrón que
    solo se nota agregando data de varios agentes. payload: `{type, severity, message, data}`.
+- `force_mobile_check` — re-corre mobile-agent on-demand cuando sospechás
+   actividad anómala en Sentry sin esperar al cron de 6h. payload: opcional.
+- `force_frontend_check` — re-corre frontend-agent on-demand para chequear
+   deploys Vercel sin esperar al cron de 6h. payload: opcional.
 
 ## Cat 2 — reversibles (auto-ejecuta + notifica)
 
