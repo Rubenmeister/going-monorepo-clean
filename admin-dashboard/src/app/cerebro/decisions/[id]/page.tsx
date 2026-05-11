@@ -88,6 +88,8 @@ export default function DecisionDetailPage() {
   const [intention, setIntention] = useState<Intention | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [acting, setActing] = useState(false);
+  const [actionResult, setActionResult] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -117,6 +119,59 @@ export default function DecisionDetailPage() {
   useEffect(() => {
     if (id) load();
   }, [id]);
+
+  const approve = async () => {
+    if (!decision) return;
+    const operator = window.prompt('Tu nombre/handle para audit (e.g. ruben):', 'admin');
+    if (!operator) return;
+    setActing(true);
+    setActionResult(null);
+    try {
+      const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${decision.decisionId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvedBy: operator }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string; willExecute?: boolean };
+      if (json.ok) {
+        setActionResult(`Aprobada. ${json.willExecute ? 'Ejecutándose ahora…' : 'Sin dispatch (revisar logs).'}`);
+        setTimeout(load, 3000); // refrescar tras dar tiempo al dispatch
+      } else {
+        setActionResult(`Error: ${json.error || 'desconocido'}`);
+      }
+    } catch (e) {
+      setActionResult(`Excepción: ${(e as Error).message}`);
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const reject = async () => {
+    if (!decision) return;
+    const operator = window.prompt('Tu nombre/handle para audit (e.g. ruben):', 'admin');
+    if (!operator) return;
+    const reason = window.prompt('Motivo del rechazo (opcional):', '') || undefined;
+    setActing(true);
+    setActionResult(null);
+    try {
+      const res = await fetch(`${ORCH_URL}/orchestrator/decisions/${decision.decisionId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejectedBy: operator, reason }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (json.ok) {
+        setActionResult('Rechazada.');
+        setTimeout(load, 1500);
+      } else {
+        setActionResult(`Error: ${json.error || 'desconocido'}`);
+      }
+    } catch (e) {
+      setActionResult(`Excepción: ${(e as Error).message}`);
+    } finally {
+      setActing(false);
+    }
+  };
 
   return (
     <AdminLayout>
@@ -156,6 +211,46 @@ export default function DecisionDetailPage() {
               <div>Recibida {new Date(decision.createdReceivedAt).toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}</div>
             </div>
           </div>
+
+          {/* Approval CTA — solo si está pending_approval */}
+          {decision.status === 'pending_approval' && (
+            <div className="mb-6 p-5 rounded-2xl bg-orange-50 border-2 border-orange-200">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-orange-900 mb-1">⏳ Esperando tu aprobación</h2>
+                  <p className="text-sm text-orange-800">
+                    Esta decisión es Cat 3 (irreversible / alto costo). El Orchestrator no la ejecuta hasta que vos
+                    apruebes manualmente aquí. Si no decidís, expira solo y queda como{' '}
+                    <code className="font-mono bg-white px-1 rounded">expired</code>.
+                  </p>
+                  {decision.expiresAt && (
+                    <p className="text-xs text-orange-700 mt-2">
+                      Vence: {new Date(decision.expiresAt).toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={approve}
+                    disabled={acting}
+                    className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-bold"
+                  >
+                    {acting ? '…' : '✓ Aprobar y ejecutar'}
+                  </button>
+                  <button
+                    onClick={reject}
+                    disabled={acting}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-bold"
+                  >
+                    ❌ Rechazar
+                  </button>
+                </div>
+              </div>
+              {actionResult && (
+                <div className="mt-3 p-2 rounded bg-white text-sm font-mono">{actionResult}</div>
+              )}
+            </div>
+          )}
 
           {/* Acción decidida */}
           {decision.agentId && (

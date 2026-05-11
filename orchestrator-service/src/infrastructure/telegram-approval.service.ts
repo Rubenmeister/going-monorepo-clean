@@ -5,15 +5,17 @@ import { DecisionEntity } from './schemas/decision.schema';
 /**
  * Notificador Telegram para aprobaciones de Cat 3.
  *
- * MVP: envía mensaje con instrucciones para aprobar via comandos
- * `/approve <decisionId>` o `/reject <decisionId>` enviados como reply
- * al bot de operaciones. La parte de recibir comandos vive en un endpoint
- * webhook del Orchestrator (no implementado en MVP — los aprobadores van
- * por la UI de admin-dashboard `/admin/cerebro/approvals`).
+ * Diseño actual (Etapa A3):
+ *   El mensaje incluye un deep-link directo al admin-dashboard
+ *   /cerebro/decisions/[id] donde están los botones Approve/Reject.
+ *   El operador hace click → admin-dashboard hace POST a
+ *   /orchestrator/decisions/:id/approve|reject. No hay webhook de
+ *   Telegram para recibir comandos — la UI hace la mitad del trabajo
+ *   y es más auditable.
  *
- * Inline keyboards con buttons "Approve" / "Reject" son más bonitos pero
- * requieren handler de callback queries — más superficie de implementación.
- * Se agrega en una iteración futura si vale la pena.
+ * Inline keyboards con buttons "Approve"/"Reject" como reply markup serían
+ * más bonitos pero requieren un webhook handler que reciba callback queries
+ * + valida secret de Telegram. Se agrega cuando el flujo Cat 3 esté maduro.
  */
 @Injectable()
 export class TelegramApprovalService {
@@ -33,6 +35,8 @@ export class TelegramApprovalService {
       ? Math.max(0, Math.floor((decision.expiresAt.getTime() - Date.now()) / 60000))
       : 15;
 
+    const adminBase = this.config.get<string>('ADMIN_DASHBOARD_URL') ?? 'https://admin.goingec.com';
+    const approveUrl = `${adminBase}/cerebro/decisions/${decision.decisionId}`;
     const text = [
       `🚦 <b>Aprobación requerida</b> (Cat 3)`,
       ``,
@@ -49,8 +53,7 @@ export class TelegramApprovalService {
       `<b>Decisión ID:</b> <code>${decision.decisionId.slice(0, 8)}…</code>`,
       `<b>Vence en:</b> ${expiresIn} min`,
       ``,
-      `Aprobar: <code>/approve ${decision.decisionId.slice(0, 8)}</code>`,
-      `Rechazar: <code>/reject ${decision.decisionId.slice(0, 8)} <razón></code>`,
+      `👉 <a href="${approveUrl}">Aprobar / Rechazar en admin-dashboard</a>`,
     ].filter(Boolean).join('\n');
 
     return this.send(token, chatId, text);

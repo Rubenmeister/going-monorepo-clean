@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { runMarketingMonitor } from './monitors/metrics.monitor';
+import { driverBonusZone } from './actions/driver-bonus-zone';
 import {
   AgentRunEvent,
   parseCommandFromEnv,
@@ -25,12 +26,17 @@ async function main(): Promise<void> {
   console.log(`Time: ${new Date().toISOString()}`);
 
   // Modo command (Orchestrator override COMMAND_JSON).
+  // Triggereado por agent-bridge cuando una intención Cat 3 es aprobada
+  // via Telegram ack en /admin/cerebro/decisions/[id].
   const cmd = parseCommandFromEnv();
   if (cmd) {
-    await runCommandMode(cmd, {
-      // driver_bonus_zone: async (c) => { await sendDriverBonusToZone(c.payload.zone); },
+    const result = await runCommandMode(cmd, {
+      driver_bonus_zone: async (c) => {
+        const r = await driverBonusZone(c.payload);
+        if (!r.ok) throw new Error(r.error || 'driver_bonus_zone failed');
+      },
     });
-    process.exit(0);
+    process.exit(result.ok ? 0 : 1);
   }
 
   const runId     = uuidv4();
