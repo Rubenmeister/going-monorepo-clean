@@ -16,7 +16,26 @@
  * Para más detalle ver admin-dashboard/src/lib/cerebro-tracker.ts (gemelo).
  */
 
-const APP_ID = 'frontend-webapp';
+/**
+ * APP_ID se computa dinámicamente en función del hostname — esto es
+ * porque frontend-webapp es un monolith Next.js que sirve TANTO la web
+ * de pasajeros (app.goingec.com) COMO el portal de empresas
+ * (empresas.goingec.com, post-migración del 2026-04-20 desde el
+ * deprecated corporate-portal). Queremos que los errores en cada
+ * superficie se agrupen separados en /admin/cerebro/web-events.
+ */
+function resolveAppId(): 'frontend-webapp' | 'corporate-portal' {
+  if (typeof window === 'undefined') return 'frontend-webapp';
+  const host = window.location.hostname;
+  // Cualquier subdominio empresas.* (prod, preview, custom) se tagea como
+  // corporate-portal. Fallback frontend-webapp para todo lo demás.
+  if (host === 'empresas.goingec.com' || host.startsWith('empresas.')) {
+    return 'corporate-portal';
+  }
+  return 'frontend-webapp';
+}
+
+const APP_ID = resolveAppId();
 const CEREBRO_URL =
   (typeof window !== 'undefined' && (window as any).__CEREBRO_URL__) ||
   process.env.NEXT_PUBLIC_CEREBRO_URL ||
