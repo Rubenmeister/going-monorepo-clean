@@ -162,12 +162,102 @@ export class PromptBuilderService {
     return lines.join('\n');
   }
 
+  /**
+   * Sección de business KPIs — organiza tácticos vs estratégicos, y al final
+   * lista los KPIs PENDIENTES (cuya data source no está implementada) para
+   * que MyCortex pueda emitir intentions human_only de implementación cuando
+   * los necesite.
+   *
+   * Lo "available pero null" no se muestra (evita ruido). Lo "available
+   * con dato" se agrupa por dominio. Lo "pending" se lista al final
+   * para visibilidad estratégica.
+   */
   private formatBusinessSection(s: WorldSnapshot): string {
-    const entries = Object.entries(s.business ?? {})
-      .filter(([_, v]) => v !== undefined && v !== null)
-      .map(([k, v]) => `- ${k}: ${v}`);
-    if (entries.length === 0) return '## Métricas de negocio\n- (sin datos)';
-    return ['## Métricas de negocio', ...entries].join('\n');
+    const business = (s.business ?? {}) as Record<string, number | undefined>;
+
+    // Agrupación temática — más legible que lista plana de 30 campos.
+    const sections: Array<{ title: string; keys: string[] }> = [
+      {
+        title: 'Demanda + supply (ops)',
+        keys: [
+          'pendingRidesNoDriver', 'idleDrivers', 'activeDrivers',
+          'dailyRidesCompleted', 'dailyRidesCancelled', 'dailyGoingRevenue',
+          'ridesCompleted7d', 'avgRideValueUsd', 'rideCompletionRate',
+          'newDriverSignups7d', 'activeDrivers7d',
+        ],
+      },
+      {
+        title: 'Revenue + finanzas (financial)',
+        keys: [
+          'weeklyRevenueUsd', 'weeklyRevenueChangePct',
+          'monthlyRevenueCurrent', 'monthlyRevenueProjected', 'monthlyOnTrack',
+          'pendingPayoutsCount', 'pendingPayoutsAmount',
+          'suspiciousDriversCount',
+        ],
+      },
+      {
+        title: 'Marketing + alcance',
+        keys: ['totalReach', 'totalEngagement', 'platformsActive'],
+      },
+      {
+        title: 'Soporte (customer-support)',
+        keys: [
+          'activeConversations',
+          'pendingHandoffsRed', 'pendingHandoffsOrange', 'pendingHandoffsNormal',
+          'oldestRedHandoffAgeMinutes',
+        ],
+      },
+      {
+        title: 'Content + Code (content + going)',
+        keys: ['weeklyTipPublished', 'draftsCount', 'inReviewCount',
+               'toolCallsLastCycle', 'fixesAppliedLastCycle'],
+      },
+    ];
+
+    // KPIs pendientes (sin data source). MyCortex los ve y puede emitir
+    // intentions human_only tipo "implement DAU tracking" cuando vea valor.
+    const PENDING_KPIS: Array<{ key: string; reason: string }> = [
+      { key: 'dailyActivePassengers',   reason: 'requiere session tracking' },
+      { key: 'monthlyActivePassengers', reason: 'requiere ventana 30d + session tracking' },
+      { key: 'signupToFirstRideRate',   reason: 'requiere users.firstRideAt o aggregation pesada' },
+      { key: 'monthlyChurnRate',        reason: 'requiere ventana 30d + definir churn' },
+      { key: 'pendingInvoicesCount',    reason: 'requiere query a Datil filtro estado!=AUTHORIZED' },
+      { key: 'pendingInvoicesAmountUsd',reason: 'requiere rides con invoiceId null' },
+      { key: 'weeklyFollowerGrowth',    reason: 'requiere historial follower count' },
+      { key: 'avgHandoffResponseMin',   reason: 'requiere timestamp at first operator reply' },
+      { key: 'handoffResolutionRate',   reason: 'requiere ventana + resolved field tracking' },
+      { key: 'npsScore',                reason: 'requiere encuestas post-ride (no implementadas)' },
+    ];
+
+    const lines: string[] = ['## Métricas de negocio'];
+    let anyValue = false;
+
+    for (const sec of sections) {
+      const items = sec.keys
+        .filter(k => typeof business[k] === 'number')
+        .map(k => `  - ${k}: ${business[k]}`);
+      if (items.length > 0) {
+        lines.push(`### ${sec.title}`);
+        lines.push(...items);
+        anyValue = true;
+      }
+    }
+
+    if (!anyValue) {
+      lines.push('- (sin datos en ventana)');
+    }
+
+    // Lista pending KPIs siempre (info estratégica para MyCortex)
+    lines.push('', '### 🔴 KPIs estratégicos pendientes (data source no implementada)');
+    lines.push(
+      'Cuando notes que necesitarías estos para razonar mejor, emití una intention',
+      'human_only proponiendo implementar la data source correspondiente:',
+    );
+    for (const p of PENDING_KPIS) {
+      lines.push(`  - **${p.key}** — ${p.reason}`);
+    }
+
+    return lines.join('\n');
   }
 }
 

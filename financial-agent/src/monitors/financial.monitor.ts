@@ -639,8 +639,9 @@ export async function runFinancialMonitor(): Promise<MonitorRunResult> {
     await safeRun(c, 'sendWeeklyFinancialReport', sendWeeklyFinancialReport);
     const comparison = await safeRun(c, 'compareWeeklyPerformance', compareWeeklyPerformance);
     if (comparison) {
+      c.metrics.weeklyRevenueUsd       = Number(comparison.currentWeek.totalRevenue.toFixed(2));
       c.metrics.weeklyRevenueChangePct = comparison.revenueChange;
-      c.metrics.weeklyRidesChangePct = comparison.ridesChange;
+      c.metrics.weeklyRidesChangePct   = comparison.ridesChange;
       await safeRun(c, 'sendWeeklyComparison', async () => {
         await sendNotification([
           `📊 <b>Análisis Comparativo Semanal</b>`,
