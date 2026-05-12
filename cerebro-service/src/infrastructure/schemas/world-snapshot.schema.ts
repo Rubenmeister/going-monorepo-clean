@@ -47,42 +47,102 @@ export interface ProposedAction {
   data?:    Record<string, unknown>;
 }
 
+/**
+ * BusinessMetrics — KPIs canónicos que MyCortex razona sobre.
+ *
+ * Mezcla métricas TÁCTICAS (estado momento a momento) con ESTRATÉGICAS
+ * (tendencias multi-día). Cada campo es opcional: si el agente que lo
+ * produce no corrió todavía en la ventana del snapshot, el campo queda
+ * undefined y MyCortex sabe que la data no está disponible.
+ *
+ * Marcadores en comentarios:
+ *   ✅ Disponible — agente correspondiente computa + publica
+ *   🔴 Pending — TODO data source (necesita schema extension u otro service)
+ *
+ * Para implementar un 🔴: ver `prompt-builder.service.ts` que tiene la
+ * lista expuesta al modelo. Hasta entonces MyCortex emite human_only
+ * intentions tipo "implement DAU tracking" cuando ve gap.
+ */
 export interface BusinessMetrics {
-  // De ops-agent
-  pendingRidesNoDriver?:   number;
-  idleDrivers?:            number;
-  activeDrivers?:          number;
-  dailyRidesCompleted?:    number;
-  dailyGoingRevenue?:      number;
+  // ═════════ DE OPS-AGENT ═════════
 
-  // De financial-agent
-  pendingPayoutsCount?:    number;
-  pendingPayoutsAmount?:   number;
-  monthlyRevenueCurrent?:  number;
-  monthlyRevenueProjected?: number;
-  monthlyOnTrack?:         number;
-  suspiciousDriversCount?: number;
+  // ── Estado momento a momento (tácticos) ───────────────────
+  pendingRidesNoDriver?:   number;   // ✅
+  idleDrivers?:            number;   // ✅
+  activeDrivers?:          number;   // ✅ activos ahora (último ride <2h)
+  dailyRidesCompleted?:    number;   // ✅ contador del día
+  dailyRidesCancelled?:    number;   // ✅
+  dailyGoingRevenue?:      number;   // ✅ comisiones del día (USD)
 
-  // De content-agent
-  weeklyTipPublished?:     number;
-  draftsCount?:            number;
-  inReviewCount?:          number;
+  // ── Estratégico — demanda + supply 7d/30d ────────────────
+  ridesCompleted7d?:       number;   // ✅ total rides 7d
+  avgRideValueUsd?:        number;   // ✅ promedio 7d (revenue / rides)
+  newDriverSignups7d?:     number;   // ✅ users con role=driver creados 7d
+  activeDrivers7d?:        number;   // ✅ unique drivers con ≥1 ride en 7d
+  rideCompletionRate?:     number;   // ✅ completed / (completed + cancelled), 24h
 
-  // De marketing-agent
-  totalReach?:             number;
-  totalEngagement?:        number;
-  platformsActive?:        number;
+  /** 🔴 Sessions únicas pasajeros 24h. Requiere session tracking (no implementado). */
+  dailyActivePassengers?:  number;
+  /** 🔴 MAU pasajeros. Requiere ventana 30d + session tracking. */
+  monthlyActivePassengers?: number;
+  /** 🔴 % usuarios que hicieron primer ride dentro de 7d de signup. Requiere users.firstRideAt o aggregation pesada sobre rides. */
+  signupToFirstRideRate?:  number;
+  /** 🔴 Churn mensual. Requiere ventana 30d + definir churn. */
+  monthlyChurnRate?:       number;
 
-  // De going-agent
-  toolCallsLastCycle?:     number;
-  fixesAppliedLastCycle?:  number;
+  // ═════════ DE FINANCIAL-AGENT ═════════
 
-  // De customer-support-service
-  activeConversations?:        number;
-  pendingHandoffsRed?:         number;
-  pendingHandoffsOrange?:      number;
-  pendingHandoffsNormal?:      number;
-  oldestRedHandoffAgeMinutes?: number;
+  pendingPayoutsCount?:    number;   // ✅
+  pendingPayoutsAmount?:   number;   // ✅
+  monthlyRevenueCurrent?:  number;   // ✅ acumulado del mes
+  monthlyRevenueProjected?: number;  // ✅ extrapolación lineal
+  monthlyOnTrack?:         number;   // ✅ 1/0 vs meta
+  weeklyRevenueUsd?:       number;   // ✅ comisiones últimos 7d (currentWeek.totalRevenue)
+  weeklyRevenueChangePct?: number;   // ✅ Δ% vs semana anterior
+  suspiciousDriversCount?: number;   // ✅
+
+  /** 🔴 SRI invoices pendientes de autorización. Requiere query a Datil + filtro estado!=AUTHORIZED. */
+  pendingInvoicesCount?:     number;
+  /** 🔴 USD pendientes facturar SRI (rides completed sin invoiceId). Requiere extender rides query. */
+  pendingInvoicesAmountUsd?: number;
+
+  // ═════════ DE CONTENT-AGENT ═════════
+
+  weeklyTipPublished?:     number;   // ✅
+  draftsCount?:            number;   // ✅
+  inReviewCount?:          number;   // ✅
+
+  // ═════════ DE MARKETING-AGENT ═════════
+
+  totalReach?:             number;   // ✅ alcance agregado redes
+  totalEngagement?:        number;   // ✅ engagement agregado
+  platformsActive?:        number;   // ✅ count plataformas reportando
+
+  /** 🔴 % followers nuevos vs semana anterior. Requiere comparación historial. */
+  weeklyFollowerGrowth?:   number;
+
+  // ═════════ DE GOING-AGENT ═════════
+
+  toolCallsLastCycle?:     number;   // ✅
+  fixesAppliedLastCycle?:  number;   // ✅
+
+  // ═════════ DE CUSTOMER-SUPPORT-SERVICE ═════════
+
+  activeConversations?:        number;  // ✅
+  pendingHandoffsRed?:         number;  // ✅
+  pendingHandoffsOrange?:      number;  // ✅
+  pendingHandoffsNormal?:      number;  // ✅
+  oldestRedHandoffAgeMinutes?: number;  // ✅
+
+  /** 🔴 Tiempo promedio entre handoff request y primera respuesta operador. Requiere captura timestamp at first reply. */
+  avgHandoffResponseMin?:  number;
+  /** 🔴 % handoffs cerrados dentro de 24h. Requiere ventana + resolved field. */
+  handoffResolutionRate?:  number;
+
+  // ═════════ DE NPS / LOYALTY (no implementado) ═════════
+
+  /** 🔴 NPS score 0-100. Requiere implementar encuestas post-ride. */
+  npsScore?:               number;
 }
 
 @Schema({ collection: 'cerebro_world_snapshots', timestamps: true })

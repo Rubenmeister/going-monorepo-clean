@@ -42,6 +42,8 @@ import {
   mongoGetCompletedRidesToday,
   mongoGetDriverLastActivity,
   mongoGetTodayRidesStats,
+  mongoGetWeeklyStats,
+  mongoGetNewDriverSignups7d,
 } from '../mongodb/rides.repository';
 import {
   mongoGetAllDrivers,
@@ -458,6 +460,41 @@ export async function runAllMonitors(): Promise<MonitorRunResult> {
   await checkIngresos(collector);              // solo 12pm y 18pm
   await enviarReporteDiario(collector);        // solo 21pm
 
+  // Strategic KPIs (Item 5 — el cerebro los proyecta al snapshot business)
+  await collectStrategicKpis(collector);
+
   console.log('[ops] Ciclo completado');
   return { collector };
+}
+
+/**
+ * Strategic KPIs 7d — calculados cada ciclo (cron 15min) pero la data
+ * underlying se mueve poco a poco. Cheap query (2 aggregations + 1 count).
+ *
+ * Best-effort: si Mongo falla aquí, log y seguir — los KPIs tácticos
+ * (pendingRides etc.) ya están cargados en metrics antes.
+ */
+async function collectStrategicKpis(c: RunCollector): Promise<void> {
+  try {
+    const [weekly, newDriverSignups] = await Promise.all([
+      mongoGetWeeklyStats(),
+      mongoGetNewDriverSignups7d(),
+    ]);
+    c.metrics.ridesCompleted7d      = weekly.ridesCompleted7d;
+    c.metrics.ridesCancelled7d      = weekly.ridesCancelled7d;
+    c.metrics.totalRevenue7d        = weekly.totalRevenue7d;
+    c.metrics.avgRideValueUsd       = weekly.avgRideValueUsd;
+    c.metrics.activeDrivers7d       = weekly.uniqueActiveDrivers7d;
+    c.metrics.rideCompletionRate    = weekly.rideCompletionRate;
+    c.metrics.newDriverSignups7d    = newDriverSignups;
+    console.log(
+      `[ops/kpis] 7d: ${weekly.ridesCompleted7d} rides ($${weekly.totalRevenue7d}), ` +
+      `${weekly.uniqueActiveDrivers7d} active drivers, ${newDriverSignups} new signups, ` +
+      `completion ${(weekly.rideCompletionRate * 100).toFixed(0)}%`,
+    );
+  } catch (e) {
+    const err = (e as Error).message;
+    console.warn('[ops/kpis] strategic KPIs failed (non-fatal):', err);
+    c.errors.push(`strategic_kpis: ${err.slice(0, 200)}`);
+  }
 }

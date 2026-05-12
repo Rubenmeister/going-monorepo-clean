@@ -217,20 +217,32 @@ export class WorldModelService {
 
     switch (agentId) {
       case 'ops-agent':
+        // Tácticos (estado del momento)
         business.pendingRidesNoDriver = num('pendingRidesNoDriver');
         business.idleDrivers          = num('idleDrivers');
         business.activeDrivers        = num('activeDrivers');
         business.dailyRidesCompleted  = num('dailyRidesCompleted');
+        business.dailyRidesCancelled  = num('dailyRidesCancelled');
         business.dailyGoingRevenue    = num('dailyGoingRevenue');
+        // Estratégicos 7d
+        business.ridesCompleted7d     = num('ridesCompleted7d');
+        business.avgRideValueUsd      = num('avgRideValueUsd');
+        business.newDriverSignups7d   = num('newDriverSignups7d');
+        business.activeDrivers7d      = num('activeDrivers7d');
+        business.rideCompletionRate   = num('rideCompletionRate');
         break;
 
       case 'financial-agent':
-        business.pendingPayoutsCount     = num('pendingPayoutsCount');
-        business.pendingPayoutsAmount    = num('pendingPayoutsAmount');
-        business.monthlyRevenueCurrent   = num('monthlyRevenueCurrent');
-        business.monthlyRevenueProjected = num('monthlyRevenueProjected');
-        business.monthlyOnTrack          = num('monthlyOnTrack');
-        business.suspiciousDriversCount  = num('suspiciousDriversCount');
+        business.pendingPayoutsCount       = num('pendingPayoutsCount');
+        business.pendingPayoutsAmount      = num('pendingPayoutsAmount');
+        business.monthlyRevenueCurrent     = num('monthlyRevenueCurrent');
+        business.monthlyRevenueProjected   = num('monthlyRevenueProjected');
+        business.monthlyOnTrack            = num('monthlyOnTrack');
+        business.weeklyRevenueUsd          = num('weeklyRevenueUsd');
+        business.weeklyRevenueChangePct    = num('weeklyRevenueChangePct');
+        business.suspiciousDriversCount    = num('suspiciousDriversCount');
+        business.pendingInvoicesCount      = num('pendingInvoicesCount');
+        business.pendingInvoicesAmountUsd  = num('pendingInvoicesAmountUsd');
         break;
 
       case 'content-agent':
