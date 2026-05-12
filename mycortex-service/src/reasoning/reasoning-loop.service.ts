@@ -8,6 +8,7 @@ import { PromptBuilderService } from './prompt-builder.service';
 import { IntentionsParserService } from './intentions-parser.service';
 import { TelegramReporterService } from './telegram-reporter.service';
 import { CortexConfigService } from './cortex-config.service';
+import { computeCycleCostUsd } from './anthropic-pricing';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
 import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
 
@@ -175,6 +176,20 @@ export class ReasoningLoopService implements OnModuleInit {
       `Modelo propuso ${intentions.length} intención(es) (reasoning len=${reasoning.length})`,
     );
 
+    // Costo real del ciclo (denormalizado en cada intention del cycleId).
+    const cycleCostUsd = computeCycleCostUsd({
+      model:               modelResponse.model,
+      tokensIn:            modelResponse.tokensIn,
+      tokensOut:           modelResponse.tokensOut,
+      cacheReadTokens:     modelResponse.cacheReadTokens,
+      cacheCreationTokens: modelResponse.cacheCreationTokens,
+    });
+    this.logger.log(
+      `Costo ciclo ${cycleId.slice(0,8)}: $${cycleCostUsd.toFixed(4)} ` +
+      `(${modelResponse.tokensIn}in / ${modelResponse.tokensOut}out, ` +
+      `cache_read=${modelResponse.cacheReadTokens})`,
+    );
+
     if (intentions.length > 0) {
       try {
         await this.repo.saveMany(
@@ -189,6 +204,12 @@ export class ReasoningLoopService implements OnModuleInit {
             expiresAt:   i.expiresAt ? new Date(i.expiresAt) : undefined,
             data:        i.data,
             modelUsed:   modelResponse.model,
+            // Tokens denormalizados del ciclo (Item 4 — real cost monitoring)
+            tokensIn:              modelResponse.tokensIn,
+            tokensOut:             modelResponse.tokensOut,
+            cacheReadTokens:       modelResponse.cacheReadTokens,
+            cacheCreationTokens:   modelResponse.cacheCreationTokens,
+            cycleCostUsd,
             worldSnapshotGeneratedAt: new Date(snapshot.generatedAt).getTime(),
             acknowledgedAt: undefined,
             acknowledgedBy: undefined,

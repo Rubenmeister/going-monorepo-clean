@@ -119,41 +119,90 @@ export class IntentionRepository {
     sinceMs: number;
     untilMs?: number;
   }): Promise<{
-    byDay:   Array<{ date: string; cycles: number }>;
-    byModel: Array<{ model: string; cycles: number }>;
-    totalCycles: number;
+    byDay:   Array<{ date: string; cycles: number; tokensIn: number; tokensOut: number; costUsd: number }>;
+    byModel: Array<{ model: string; cycles: number; tokensIn: number; tokensOut: number; costUsd: number }>;
+    totalCycles:                number;
+    totalRealTokensIn:          number;
+    totalRealTokensOut:         number;
+    totalCacheReadTokens:       number;
+    totalActualCostUsd:         number;
+    cyclesWithRealCost:         number;  // cuántos ciclos tienen tokens persistidos (vs estimación)
   }> {
     const since = new Date(args.sinceMs);
     const until = new Date(args.untilMs ?? Date.now());
 
-    // Distinct cycleIds en la ventana. Usamos $group por cycleId + first(modelUsed/date)
-    // para conseguir 1 fila por ciclo.
+    // Distinct cycleIds. $first captura los tokens (todos los docs de un cycleId
+    // los comparten — denormalización). Si un cycleId pre-Item4 no tiene tokens,
+    // $first devuelve null y caller usará estimación.
     const cycles = await this.model.aggregate([
       { $match: { receivedAt: { $gte: since, $lte: until } } },
       {
         $group: {
-          _id: '$cycleId',
-          model: { $first: '$modelUsed' },
-          date:  { $first: { $dateToString: { format: '%Y-%m-%d', date: '$receivedAt' } } },
+          _id:                   '$cycleId',
+          model:                 { $first: '$modelUsed' },
+          date:                  { $first: { $dateToString: { format: '%Y-%m-%d', date: '$receivedAt' } } },
+          tokensIn:              { $first: '$tokensIn' },
+          tokensOut:             { $first: '$tokensOut' },
+          cacheReadTokens:       { $first: '$cacheReadTokens' },
+          cycleCostUsd:          { $first: '$cycleCostUsd' },
         },
       },
     ]);
 
-    const byDayMap   = new Map<string, number>();
-    const byModelMap = new Map<string, number>();
+    interface DayAgg { cycles: number; tokensIn: number; tokensOut: number; costUsd: number }
+    interface ModelAgg { cycles: number; tokensIn: number; tokensOut: number; costUsd: number }
+    const byDayMap   = new Map<string, DayAgg>();
+    const byModelMap = new Map<string, ModelAgg>();
+
+    let totalRealTokensIn     = 0;
+    let totalRealTokensOut    = 0;
+    let totalCacheReadTokens  = 0;
+    let totalActualCostUsd    = 0;
+    let cyclesWithRealCost    = 0;
+
     for (const c of cycles) {
-      byDayMap.set(c.date,  (byDayMap.get(c.date) ?? 0) + 1);
-      byModelMap.set(c.model || 'unknown', (byModelMap.get(c.model || 'unknown') ?? 0) + 1);
+      const model = c.model || 'unknown';
+      const tIn   = typeof c.tokensIn  === 'number' ? c.tokensIn  : 0;
+      const tOut  = typeof c.tokensOut === 'number' ? c.tokensOut : 0;
+      const cost  = typeof c.cycleCostUsd === 'number' ? c.cycleCostUsd : 0;
+      const cacheRead = typeof c.cacheReadTokens === 'number' ? c.cacheReadTokens : 0;
+
+      if (tIn > 0) {
+        cyclesWithRealCost++;
+        totalRealTokensIn  += tIn;
+        totalRealTokensOut += tOut;
+        totalActualCostUsd += cost;
+        totalCacheReadTokens += cacheRead;
+      }
+
+      const day = byDayMap.get(c.date) ?? { cycles: 0, tokensIn: 0, tokensOut: 0, costUsd: 0 };
+      day.cycles    += 1;
+      day.tokensIn  += tIn;
+      day.tokensOut += tOut;
+      day.costUsd   += cost;
+      byDayMap.set(c.date, day);
+
+      const m = byModelMap.get(model) ?? { cycles: 0, tokensIn: 0, tokensOut: 0, costUsd: 0 };
+      m.cycles    += 1;
+      m.tokensIn  += tIn;
+      m.tokensOut += tOut;
+      m.costUsd   += cost;
+      byModelMap.set(model, m);
     }
 
     return {
       byDay:   Array.from(byDayMap.entries())
-                .map(([date, cycles]) => ({ date, cycles }))
+                .map(([date, v]) => ({ date, ...v }))
                 .sort((a, b) => a.date.localeCompare(b.date)),
       byModel: Array.from(byModelMap.entries())
-                .map(([model, cycles]) => ({ model, cycles }))
+                .map(([model, v]) => ({ model, ...v }))
                 .sort((a, b) => b.cycles - a.cycles),
-      totalCycles: cycles.length,
+      totalCycles:           cycles.length,
+      totalRealTokensIn,
+      totalRealTokensOut,
+      totalCacheReadTokens,
+      totalActualCostUsd:    Number(totalActualCostUsd.toFixed(4)),
+      cyclesWithRealCost,
     };
   }
 }

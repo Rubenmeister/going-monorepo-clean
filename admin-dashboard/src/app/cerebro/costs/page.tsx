@@ -4,11 +4,20 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { AdminLayout, StatCard } from '../../components';
 
+interface ByDay   { date:  string; cycles: number; tokensIn: number; tokensOut: number; costUsd: number }
+interface ByModel { model: string; cycles: number; tokensIn: number; tokensOut: number; costUsd: number }
+
 interface CostStats {
-  windowDays:  number;
-  totalCycles: number;
-  byDay:       Array<{ date: string; cycles: number }>;
-  byModel:     Array<{ model: string; cycles: number }>;
+  windowDays:            number;
+  totalCycles:           number;
+  byDay:                 ByDay[];
+  byModel:               ByModel[];
+  // Item 4 — tokens y costos reales del ciclo (post 2026-05-12)
+  totalRealTokensIn?:    number;
+  totalRealTokensOut?:   number;
+  totalCacheReadTokens?: number;
+  totalActualCostUsd?:   number;
+  cyclesWithRealCost?:   number;
 }
 
 const MYCORTEX_URL =
@@ -78,15 +87,44 @@ export default function CostsPage() {
 
   const computed = useMemo(() => {
     if (!data) return null;
-    let totalCost = 0;
+    // ¿Tenemos costos reales para TODOS los ciclos? Si sí, mostramos solo real.
+    // Si parcial (algunos pre-Item4, otros post), híbrido: real para los nuevos
+    // + estimación para los viejos. Si nada real, todo estimado.
+    const realCycles = data.cyclesWithRealCost ?? 0;
+    const totalCycles = data.totalCycles;
+    const hasRealAll  = realCycles === totalCycles && totalCycles > 0;
+    const hasRealAny  = realCycles > 0;
+
+    // Costos por modelo: si hay real en el row, lo usamos; si no, estimación.
     const byModelWithCost = data.byModel.map(m => {
-      const cost = m.cycles * costPerCycle(m.model);
-      totalCost += cost;
-      return { ...m, cost, perCycle: costPerCycle(m.model) };
+      const realCost = m.costUsd ?? 0;
+      const estCost  = m.cycles * costPerCycle(m.model);
+      // Híbrido: real para los ciclos con tokens + estimación para los sin
+      const cyclesWithReal = m.tokensIn > 0 ? m.cycles : 0; // approximation
+      const finalCost = realCost > 0 ? realCost : estCost;
+      const source: 'real' | 'estimate' = realCost > 0 ? 'real' : 'estimate';
+      return {
+        ...m,
+        cost:        finalCost,
+        perCycle:    finalCost / Math.max(1, m.cycles),
+        source,
+      };
     });
+
+    const totalCost = byModelWithCost.reduce((s, m) => s + m.cost, 0);
     const dailyAvg = data.windowDays > 0 ? totalCost / data.windowDays : 0;
     const monthlyProj = dailyAvg * 30;
-    return { totalCost, dailyAvg, monthlyProj, byModelWithCost };
+
+    return {
+      totalCost,
+      dailyAvg,
+      monthlyProj,
+      byModelWithCost,
+      hasRealAll,
+      hasRealAny,
+      realCycles,
+      totalCycles,
+    };
   }, [data]);
 
   // Para el bar chart de cycles by day, normalizamos
@@ -131,6 +169,29 @@ export default function CostsPage() {
 
       {data && computed && (
         <>
+          {/* Badge fidelidad de la medición */}
+          <div className={`mb-4 p-3 rounded-lg border text-sm ${
+            computed.hasRealAll
+              ? 'bg-green-50 border-green-200 text-green-900'
+              : computed.hasRealAny
+              ? 'bg-yellow-50 border-yellow-200 text-yellow-900'
+              : 'bg-gray-50 border-gray-200 text-gray-700'
+          }`}>
+            {computed.hasRealAll && (
+              <><strong>💎 Costos reales:</strong> {computed.realCycles}/{computed.totalCycles} ciclos con
+                tokens persistidos. Cifras exactas basadas en <code className="font-mono bg-white px-1 rounded">usage.input_tokens / output_tokens</code> de Anthropic.</>
+            )}
+            {!computed.hasRealAll && computed.hasRealAny && (
+              <><strong>🔀 Híbrido:</strong> {computed.realCycles}/{computed.totalCycles} ciclos con costo real,
+                el resto estimación (~±20%). Ciclos previos a Item 4 (2026-05-12) no tienen tokens persistidos
+                — los siguientes ya sí.</>
+            )}
+            {!computed.hasRealAny && (
+              <><strong>📐 Estimación:</strong> Sin tokens persistidos en la ventana. Asume ~5k cached + 3k uncached
+                + 2k output por ciclo (tolerancia ±20%). Los ciclos nuevos post-Item-4 traerán datos exactos.</>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <StatCard
               title="Ciclos en ventana"
@@ -138,7 +199,7 @@ export default function CostsPage() {
               icon="🧠"
             />
             <StatCard
-              title="Costo estimado"
+              title={computed.hasRealAll ? 'Costo real' : 'Costo (parcial real)'}
               value={`$${computed.totalCost.toFixed(2)}`}
               icon="💰"
             />
@@ -153,6 +214,33 @@ export default function CostsPage() {
               icon="📅"
             />
           </div>
+
+          {/* Token usage real cuando lo tenemos */}
+          {computed.hasRealAny && data.totalRealTokensIn !== undefined && (
+            <div className="mb-6 p-4 rounded-xl bg-white border border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div>
+                <div className="text-xs text-gray-500 uppercase font-semibold">Tokens IN total</div>
+                <div className="font-mono font-bold text-gray-900">{(data.totalRealTokensIn ?? 0).toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 uppercase font-semibold">Tokens OUT total</div>
+                <div className="font-mono font-bold text-gray-900">{(data.totalRealTokensOut ?? 0).toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 uppercase font-semibold">Cache READ tokens</div>
+                <div className="font-mono font-bold text-green-700">{(data.totalCacheReadTokens ?? 0).toLocaleString()}</div>
+                <div className="text-xs text-gray-500">
+                  {data.totalRealTokensIn && data.totalCacheReadTokens
+                    ? `${((data.totalCacheReadTokens / data.totalRealTokensIn) * 100).toFixed(0)}% hit rate`
+                    : '—'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 uppercase font-semibold">Costo real exacto</div>
+                <div className="font-mono font-bold text-gray-900">${(data.totalActualCostUsd ?? 0).toFixed(4)}</div>
+              </div>
+            </div>
+          )}
 
           {/* Cycles per day bar chart */}
           <div className="mb-6 p-5 rounded-2xl bg-white border border-gray-200">
@@ -187,6 +275,7 @@ export default function CostsPage() {
                   <th className="text-right pb-2">Ciclos</th>
                   <th className="text-right pb-2">$/ciclo</th>
                   <th className="text-right pb-2">Costo total</th>
+                  <th className="text-right pb-2">Fuente</th>
                   <th className="text-right pb-2">% del total</th>
                 </tr>
               </thead>
@@ -203,6 +292,15 @@ export default function CostsPage() {
                       <td className="py-2 text-right font-mono">{row.cycles}</td>
                       <td className="py-2 text-right font-mono text-gray-600">${row.perCycle.toFixed(4)}</td>
                       <td className="py-2 text-right font-mono font-bold">${row.cost.toFixed(2)}</td>
+                      <td className="py-2 text-right">
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          row.source === 'real'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {row.source === 'real' ? '💎 real' : '📐 estimado'}
+                        </span>
+                      </td>
                       <td className="py-2 text-right text-gray-600">{pct.toFixed(0)}%</td>
                     </tr>
                   );
