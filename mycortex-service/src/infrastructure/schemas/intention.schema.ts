@@ -60,6 +60,25 @@ export class IntentionEntity {
   @Prop({ required: true, type: String })
   modelUsed!: string;              // ej. 'claude-sonnet-4-5'
 
+  // ── Token usage del ciclo Anthropic ──────────────────────────
+  // Denormalizados — todas las intentions del mismo cycleId comparten
+  // estos valores (vienen de la única call a Claude del ciclo). Storage
+  // overhead trivial; queries de cost-stats simples (no join cross-collection).
+  @Prop({ type: Number })
+  tokensIn?: number;               // input total del response.usage
+
+  @Prop({ type: Number })
+  tokensOut?: number;              // output del response.usage
+
+  @Prop({ type: Number })
+  cacheReadTokens?: number;        // input servido desde cache (Anthropic prompt cache)
+
+  @Prop({ type: Number })
+  cacheCreationTokens?: number;    // input nuevo escrito al cache (25% premium)
+
+  @Prop({ type: Number })
+  cycleCostUsd?: number;           // costo USD calculado a precios del momento de la call
+
   @Prop({ required: true, type: Number })
   worldSnapshotGeneratedAt!: number;  // timestamp ms del snapshot que se usó
 

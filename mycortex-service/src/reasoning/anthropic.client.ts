@@ -74,12 +74,23 @@ export class AnthropicClient {
   /**
    * Llamada con retry exponencial frente a 429 (rate limit). El cron corre
    * cada 30 min — si tenemos rate limit por minuto, esperar 60s+ es OK.
+   *
+   * Devuelve breakdown completo de tokens (input total + uncached + cached_read
+   * + cache_creation + output). Esto permite que el caller calcule costo real
+   * vs estimación basada en avg.
    */
   async reason(args: {
     systemPrompt: string;
     userPrompt:   string;
     maxTokens?:   number;
-  }): Promise<{ text: string; tokensIn: number; tokensOut: number; model: string }> {
+  }): Promise<{
+    text:                  string;
+    tokensIn:              number;  // input total (cached + uncached)
+    tokensOut:             number;  // output
+    cacheReadTokens:       number;  // input servido desde cache (90% descuento)
+    cacheCreationTokens:   number;  // input nuevo escrito al cache (25% premium)
+    model:                 string;
+  }> {
     const model     = await this.resolveModel();
     const maxTokens = await this.resolveMaxTokens(args.maxTokens);
     const maxRetries = 3;
@@ -96,15 +107,24 @@ export class AnthropicClient {
         const block = response.content?.[0];
         const text  = block && 'text' in block ? (block as { text: string }).text : '';
 
-        const tokensIn  = response.usage?.input_tokens  ?? 0;
-        const tokensOut = response.usage?.output_tokens ?? 0;
+        const usage = response.usage as {
+          input_tokens?:                number;
+          output_tokens?:               number;
+          cache_read_input_tokens?:     number;
+          cache_creation_input_tokens?: number;
+        } | undefined;
+
+        const tokensIn            = usage?.input_tokens             ?? 0;
+        const tokensOut           = usage?.output_tokens            ?? 0;
+        const cacheReadTokens     = usage?.cache_read_input_tokens  ?? 0;
+        const cacheCreationTokens = usage?.cache_creation_input_tokens ?? 0;
         const ms = Date.now() - t0;
 
         this.logger.log(
-          `Claude ${model} responded in ${ms}ms — in=${tokensIn} out=${tokensOut}`,
+          `Claude ${model} responded in ${ms}ms — in=${tokensIn} out=${tokensOut} cached_read=${cacheReadTokens} cache_write=${cacheCreationTokens}`,
         );
 
-        return { text, tokensIn, tokensOut, model };
+        return { text, tokensIn, tokensOut, cacheReadTokens, cacheCreationTokens, model };
       } catch (err: unknown) {
         const e = err as { status?: number; message?: string };
         const isRateLimit = e?.status === 429 || (e?.message ?? '').toLowerCase().includes('rate limit');
