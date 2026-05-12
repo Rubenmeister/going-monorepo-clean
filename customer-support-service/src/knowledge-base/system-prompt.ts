@@ -5,10 +5,49 @@ const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
 import type { AgentGender } from '../agent/conversation.service';
 
-// Language detection
-export function detectLanguage(text: string): 'es' | 'en' {
-  const englishWords = /\b(the|is|are|was|were|have|has|what|where|when|how|can|please|help|need|want)\b/i;
-  return englishWords.test(text) ? 'en' : 'es';
+/**
+ * Idiomas soportados por el voice agent (Item 6 — Fase 8).
+ *   es — español (Ecuador primary)
+ *   en — inglés
+ *   fr — francés
+ *   de — alemán
+ *   qu — kichwa/quichua (best-effort)
+ */
+export type SupportedLang = 'es' | 'en' | 'fr' | 'de' | 'qu';
+
+/**
+ * Detección de idioma del texto via heurísticas regex. Cubre los 5 idiomas
+ * con keywords muy específicos. Default fallback: español (volumen alto Ecuador).
+ *
+ * Para audio (WhatsApp voice notes), preferimos el idioma detectado por STT
+ * (más confiable que regex sobre el transcript). Esta función es para input
+ * de texto típico.
+ *
+ * Para kichwa, regex es muy poco confiable — palabras como "rikuchina",
+ * "yachay", "shungu" son fuertes señales pero muchas conversaciones mezclan
+ * con español. Si la heurística no matchea, dejamos a 'es' que es el
+ * default seguro (el agent puede inferir kichwa por contexto).
+ */
+export function detectLanguage(text: string): SupportedLang {
+  const lower = text.toLowerCase();
+
+  // Francés — palabras muy comunes que casi nunca aparecen en es/en/de
+  if (/\b(bonjour|merci|s'il vous pla[iî]t|comment allez|je suis|c'est|est-ce|quelle?|pourquoi|j'ai|nous|vous)\b/i.test(lower)) {
+    return 'fr';
+  }
+  // Alemán — keywords distintivos (eszett ß también es señal fuerte)
+  if (/ß/.test(text) || /\b(guten tag|danke|bitte|ich bin|wie geht|wo ist|warum|haben|sind|nicht|deutsch)\b/i.test(lower)) {
+    return 'de';
+  }
+  // Kichwa/Quichua — palabras quichuas comunes en Ecuador
+  if (/\b(allillanchu|imanalla|yupaychani|kausay|ñukanchik|kunan|wasi|ñuka|allku|warmi|wawa|kallari)\b/i.test(lower)) {
+    return 'qu';
+  }
+  // Inglés
+  if (/\b(the|is|are|was|were|have|has|what|where|when|how|can|please|help|need|want)\b/i.test(lower)) {
+    return 'en';
+  }
+  return 'es';
 }
 
 // Detect if a canton is mentioned in the message
@@ -39,7 +78,7 @@ function getCantonContext(cantonName: string): string {
 `;
 }
 
-export function getSystemPrompt(lang: 'es' | 'en', canton: string | null, gender: AgentGender = 'male'): string {
+export function getSystemPrompt(lang: SupportedLang, canton: string | null, gender: AgentGender = 'male'): string {
   const cantonCtx = canton ? getCantonContext(canton) : '';
 
   // Spanish agents: Carlos (male) / Sofia (female)
@@ -197,5 +236,20 @@ ${cantonCtx}
 4. If the user is frustrated or asks for a human, respond with empathy and inform them you'll connect them
 5. NEVER make up prices, schedules, or specific availability`;
 
-  return lang === 'en' ? baseEN : baseES;
+  // Estrategia multilingüe (Item 6 — Fase 8):
+  //   - es / en: usamos los prompts dedicados (más naturales, brand voice cuidada)
+  //   - fr / de / qu: usamos el prompt en español + suffix de idioma. El modelo
+  //     (Gemini Flash) maneja la traducción nativa de la respuesta. Para Going
+  //     pre-launch esto es suficiente; cuando un canal se vuelva alto-volumen
+  //     en fr/de, escribir su prompt dedicado.
+  if (lang === 'en') return baseEN;
+  if (lang === 'es') return baseES;
+
+  const langInstructions: Record<Exclude<SupportedLang, 'es' | 'en'>, string> = {
+    fr: `\n\n## ⚠️ INSTRUCTION DE LANGUE\nL'utilisateur écrit en FRANÇAIS. Réponds TOUJOURS en français naturel et chaleureux. Garde le contexte business + nombres + nombres de téléphone tels quels. Pour les noms de villes équatoriennes (Quito, Guayaquil, etc.) usa los originales en español.`,
+    de: `\n\n## ⚠️ SPRACH-ANWEISUNG\nDer Nutzer schreibt auf DEUTSCH. Antworte IMMER auf natürlichem, freundlichem Deutsch. Behalte den Business-Kontext + Zahlen + Telefonnummern bei. Für ecuadorianische Städtenamen (Quito, Guayaquil, etc.) usa los originales en español.`,
+    qu: `\n\n## ⚠️ SHIMI YACHACHIY (Kichwa instructions)\nRikukmi runa kichwapi rimakushka. KICHWAPI tigrachiwanki, mishu shimimanta mana paktarishpaka mishu shimitami kushpa. Si no puedes responder bien en kichwa, mezcla con español sin pena — el usuario entiende ambos. Mantén nombres propios y números en español original.`,
+  };
+
+  return baseES + langInstructions[lang];
 }

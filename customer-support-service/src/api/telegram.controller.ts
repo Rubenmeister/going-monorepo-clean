@@ -69,6 +69,8 @@ export class TelegramController {
 
       let messageText = '';
       let wasVoice   = false;
+      // Item 6 — Fase 8: capturar idioma detectado por STT cuando es voice note
+      let sttLang: import('../knowledge-base/system-prompt').SupportedLang | undefined;
 
       // ── Tipo: texto ─────────────────────────────────────────────
       if (typeof message.text === 'string') {
@@ -127,18 +129,24 @@ export class TelegramController {
           await this.telegramService.sendMessage(chatId, 'No pude descargar tu audio. Intenta de nuevo.');
           return;
         }
-        messageText = await this.voiceService.transcribe(audio);
+        const stt = await this.voiceService.transcribe(audio);
+        messageText = stt.transcript;
+        sttLang = stt.lang;
         if (!messageText) {
           await this.telegramService.sendMessage(chatId, 'No pude entender el audio 🎤 Por favor escribe tu mensaje. / I couldn\'t understand the audio. Please type your message.');
           return;
         }
-        this.logger.log(`Telegram audio transcribed for ${chatId}: "${messageText.slice(0, 80)}"`);
+        this.logger.log(`Telegram audio transcribed for ${chatId} (lang=${sttLang}): "${messageText.slice(0, 80)}"`);
       }
       // ── Tipo: audio file (no voice note) ────────────────────────
       else if (message.audio?.file_id) {
         wasVoice = true;
         const audio = await this.telegramService.downloadFile(message.audio.file_id);
-        if (audio) messageText = await this.voiceService.transcribe(audio);
+        if (audio) {
+          const stt = await this.voiceService.transcribe(audio);
+          messageText = stt.transcript;
+          sttLang = stt.lang;
+        }
         if (!messageText) {
           await this.telegramService.sendMessage(chatId, 'No pude entender el audio. Por favor escribe tu mensaje.');
           return;
@@ -171,13 +179,14 @@ export class TelegramController {
 
       await this.telegramService.sendChatAction(chatId, wasVoice ? 'record_voice' : 'typing');
 
-      const reply = await this.agentService.respond(userId, messageText);
+      const reply = await this.agentService.respond(userId, messageText, sttLang ? { lang: sttLang } : undefined);
 
       // null = bot silenciado (handoff en curso). Mensaje ya quedó guardado.
       if (!reply) return;
 
       if (wasVoice) {
-        const lang = detectLanguage(messageText);
+        // Item 6: preferimos lang de STT (más confiable que regex sobre transcript)
+        const lang = sttLang ?? detectLanguage(reply);
         const audio = await this.voiceService.synthesize(reply, lang, conv.agentGender);
         if (audio) {
           const sent = await this.telegramService.sendVoice(chatId, audio);

@@ -188,6 +188,10 @@ export class WhatsAppController {
       const from = msg.from; // e.g. "593999123456"
       let messageText = '';
       let wasAudio = false;
+      // sttLang opcional: si el mensaje es audio, capturamos el idioma detectado
+      // por Cloud STT (5 idiomas — Item 6 Fase 8). Lo pasamos al AgentService
+      // para que (a) responda en ese idioma, (b) TTS use el mismo lang para voz.
+      let sttLang: import('../knowledge-base/system-prompt').SupportedLang | undefined;
 
       if (msg.type === 'text') {
         messageText = msg.text?.body || '';
@@ -198,12 +202,16 @@ export class WhatsAppController {
       } else if (msg.type === 'audio') {
         wasAudio = true;
         const audioBuffer = await this.whatsappService.downloadMedia(msg.id);
-        messageText = audioBuffer ? await this.voiceService.transcribe(audioBuffer) : '';
+        if (audioBuffer) {
+          const stt = await this.voiceService.transcribe(audioBuffer);
+          messageText = stt.transcript;
+          sttLang = stt.lang;
+        }
         if (!messageText) {
           await this.whatsappService.sendText(from, 'No pude entender el audio 🎤 Por favor escribe tu mensaje. / I couldn\'t understand the audio. Please type your message.');
           return;
         }
-        this.logger.log(`Audio transcribed for ${from}: "${messageText.slice(0, 80)}"`);
+        this.logger.log(`Audio transcribed for ${from} (lang=${sttLang}): "${messageText.slice(0, 80)}"`);
       } else {
         this.logger.log(`Unsupported message type from ${from}: ${msg.type}`);
         return;
@@ -219,13 +227,18 @@ export class WhatsAppController {
       // If human agent is active, don't respond with AI
       if (conv.state === 'HUMAN_ACTIVE') return;
 
-      const reply = await this.agentService.respond(from, messageText);
+      // Pasamos sttLang al agent — si es audio, usa el idioma confiable de STT
+      // (no re-detecta por regex sobre el transcript). Si es texto, el agent
+      // hace su propia detección con detectLanguage().
+      const reply = await this.agentService.respond(from, messageText, sttLang ? { lang: sttLang } : undefined);
 
       if (wasAudio) {
-        // Respond with audio (TTS) when user sent audio
-        const lang   = detectLanguage(messageText);
+        // Respond with audio (TTS). Para el TTS preferimos el idioma de STT
+        // (más confiable que regex sobre el transcript del usuario).
+        // Fallback: si por alguna razón no tenemos sttLang, detectamos del reply text.
+        const lang   = sttLang ?? detectLanguage(reply || '');
         const gender = conv.agentGender;
-        const audio  = await this.voiceService.synthesize(reply, lang, gender);
+        const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender) : null;
         const sent   = audio ? await this.whatsappService.sendAudio(from, audio) : false;
         if (sent) {
           this.logger.log(`Audio reply sent to ${from} (${lang}-${gender})`);
