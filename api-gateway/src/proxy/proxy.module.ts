@@ -27,20 +27,27 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
   const transport = isHttps ? https : http;
 
   return (req: any, res: any, next: () => void) => {
-    // CORS preflight (OPTIONS): respondemos local sin reenviar al upstream.
-    // Fastify-cors no intercepta wildcards registrados sólo vía middleware,
-    // y los upstreams no necesariamente tienen un handler OPTIONS — eso
-    // resultaría en 404. Aquí emitimos 204 con headers CORS desde el
-    // origin solicitante (que ya fue validado por enableCors() arriba en
-    // la cadena, su onRequest hook deja `access-control-*` en res; si no
-    // están, los añadimos defensivamente desde CORS_ORIGINS).
+    // CORS: el proxy reenvía streams HTTP crudos al upstream, así que el
+    // enableCors() de NestJS NO toca las respuestas del proxy. Tenemos que
+    // emitir Access-Control-* manualmente — tanto en OPTIONS preflight como
+    // en las respuestas reales (201, 401, 502, etc.) — porque el browser
+    // rechaza CUALQUIER respuesta cross-origin sin Access-Control-Allow-Origin.
+    const origin = req.headers?.origin;
+    const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean);
+    const corsAllowed = !!(origin && allowedOrigins.includes(origin));
+    const corsResponseHeaders: Record<string, string> = corsAllowed
+      ? {
+          'Access-Control-Allow-Origin': origin,
+          'Vary': 'Origin',
+          'Access-Control-Allow-Credentials': 'true',
+        }
+      : {};
+
     if (req.method === 'OPTIONS') {
-      const origin = req.headers?.origin;
-      const allowed = (process.env.CORS_ORIGINS ?? '')
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean);
-      if (origin && allowed.includes(origin)) {
+      if (corsAllowed) {
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Vary', 'Origin');
         res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -117,14 +124,23 @@ function makeForwardMiddleware(targetBase: string, stripPrefix: string) {
 
     const proxyReq = transport.request(options, (proxyRes) => {
       logger.debug(`← ${proxyRes.statusCode} from ${targetBase}${proxiedPath}`);
-      res.writeHead(proxyRes.statusCode ?? 502, proxyRes.headers);
+      // Mergear CORS sobre los headers del upstream para que el browser
+      // acepte la respuesta cross-origin (sin esto, todo response sin OPTIONS
+      // falla con "Failed to fetch" desde app.goingec.com).
+      res.writeHead(proxyRes.statusCode ?? 502, {
+        ...proxyRes.headers,
+        ...corsResponseHeaders,
+      });
       proxyRes.pipe(res, { end: true });
     });
 
     proxyReq.on('error', (err) => {
       logger.error(`Proxy error: ${err.message}`);
       if (!res.headersSent) {
-        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.writeHead(502, {
+          'Content-Type': 'application/json',
+          ...corsResponseHeaders,
+        });
         res.end(
           JSON.stringify({ statusCode: 502, message: 'Service unavailable' })
         );
