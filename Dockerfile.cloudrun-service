@@ -11,8 +11,9 @@ ARG SERVICE_NAME
 # Install build tools required for native modules (bcrypt, firebase-admin, grpc, etc.)
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm via corepack. Pin to pnpm@10 — pnpm 11 requires Node ≥22.13
+# y este builder usa node:20-slim (necesario por compatibilidad de native modules).
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 

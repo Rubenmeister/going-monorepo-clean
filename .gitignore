@@ -72,6 +72,9 @@ local.properties
 node_modules/
 npm-debug.log
 yarn-error.log
+firebase-debug.log
+*-debug.log
+*.log
 
 # fastlane
 #
@@ -144,6 +147,8 @@ google-service-account.json
 /app.json
 /health-reports/
 /tmp/
+_tmp_*
+*.patch
 
 *.jks
 *.pem
