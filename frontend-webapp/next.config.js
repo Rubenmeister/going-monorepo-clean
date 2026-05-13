@@ -19,10 +19,6 @@ const nextConfig = {
         __dirname,
         './src/lib/stores'
       ),
-      '@going-monorepo-clean/shared-ui': path.resolve(
-        __dirname,
-        './src/lib/shared-ui'
-      ),
       // NOTA: NO definir alias `@/*` aquí. Webpack alias no soporta
       // arrays, lo cual rompe los multi-paths de tsconfig.json
       // (`@/lib/*` y `@/components/*` viven en DOS directorios cada
