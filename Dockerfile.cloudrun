@@ -1,8 +1,8 @@
 # Dockerfile para Cloud Run - API Gateway
 FROM node:20-slim AS builder
 
-# Instalar pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Instalar pnpm via corepack. Pin a pnpm@10 — pnpm 11 requiere Node ≥22.13
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
