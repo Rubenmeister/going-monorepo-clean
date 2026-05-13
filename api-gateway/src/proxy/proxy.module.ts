@@ -183,10 +183,6 @@ export class ProxyModule implements NestModule {
       analytics: this.configService.get<string>('ANALYTICS_SERVICE_URL', ''),
       support: this.configService.get<string>('CUSTOMER_SUPPORT_SERVICE_URL', ''),
       social: this.configService.get<string>('SOCIAL_SERVICE_URL', 'http://localhost:3019'),
-      ar: this.configService.get<string>('AR_SERVICE_URL', 'http://localhost:3016'),
-      blockchain: this.configService.get<string>('BLOCKCHAIN_SERVICE_URL', 'http://localhost:3018'),
-      recommendations: this.configService.get<string>('RECOMMENDATION_SERVICE_URL', 'http://localhost:3020'),
-      subscriptions: this.configService.get<string>('SUBSCRIPTION_SERVICE_URL', 'http://localhost:3021'),
       corporate: this.configService.get<string>('CORPORATE_SERVICE_URL', 'http://localhost:3022'),
     };
 
@@ -270,10 +266,6 @@ export class ProxyModule implements NestModule {
     guard('invoices', svc.invoices);
     guard('analytics', svc.analytics);
     guard('social', svc.social);
-    guard('ar', svc.ar);
-    guard('blockchain', svc.blockchain);
-    guard('recommendations', svc.recommendations);
-    guard('subscriptions', svc.subscriptions);
     guard('corporate', svc.corporate);
 
     // --- Exact-collection roots ---

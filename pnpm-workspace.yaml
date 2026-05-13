@@ -23,11 +23,7 @@ packages:
   - 'analytics-service'
   - 'customer-support-service'
   - 'ratings-service'
-  - 'ar-service'
-  - 'blockchain-service'
   - 'corporate-service'
-  - 'recommendation-service'
-  - 'subscription-service'
 
   # Libraries
   - 'libs/**'
