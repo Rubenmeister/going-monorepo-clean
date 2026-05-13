@@ -238,6 +238,23 @@ export class ProxyModule implements NestModule {
     guard('rides', svc.transport);
     // /zones/* — geocercas (administradas por transport-service)
     guard('zones', svc.transport);
+
+    // /drivers/me/wallet|earnings|earnings/history|withdraw → payment-service
+    // (DriverEarningsController). Estas rutas conviven con el prefix /drivers
+    // de transport-service: las registramos PRIMERO para que el middleware de
+    // payment matchee antes que el catch-all `/drivers/*` → transport.
+    if (svc.payments) {
+      const driverEarningsRoutes = [
+        { path: 'drivers/me/wallet', method: RequestMethod.GET },
+        { path: 'drivers/me/earnings', method: RequestMethod.GET },
+        { path: 'drivers/me/earnings/history', method: RequestMethod.GET },
+        { path: 'drivers/me/withdraw', method: RequestMethod.POST },
+      ];
+      consumer
+        .apply(jwtAuthSkipOptions, makeForwardMiddleware(svc.payments, 'drivers'))
+        .forRoutes(...driverEarningsRoutes);
+    }
+
     // /drivers/* — bases de conductor + perfil (transport-service)
     guard('drivers', svc.transport);
     // /driver-bases/* — bases priorizadas (FASE 2)
