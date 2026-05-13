@@ -463,7 +463,17 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
                 <input type="date" min={today} value={scheduledDate}
-                  onChange={e => { setScheduledDate(e.target.value); setIsScheduled(!!e.target.value && !!scheduledTime); }}
+                  onChange={e => {
+                    // Auto-clamp: si el usuario tipea una fecha pasada (común
+                    // si el browser auto-completa o el year defaultea a algo
+                    // viejo), saltamos a hoy en lugar de quedar con un valor
+                    // inválido que dispara el tooltip nativo "El valor debe
+                    // ser igual o posterior a <today>" y bloquea el submit.
+                    const raw = e.target.value;
+                    const next = raw && raw < today ? today : raw;
+                    setScheduledDate(next);
+                    setIsScheduled(!!next && !!scheduledTime);
+                  }}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
               </div>
               <div>
