@@ -179,7 +179,7 @@ export default function DriverRegistroPage() {
           <Link href="/conductores" className="text-gray-400 text-sm hover:text-white mb-4 inline-block">
             ← Volver a Conductores
           </Link>
-          <h1 className="text-3xl font-bold mb-2">Activar tu cuenta de conductor</h1>
+          <h1 className="text-3xl font-bold mb-2">Activa tu cuenta como conductora o conductor</h1>
           <p className="text-gray-300 text-sm">
             Solo unos pasos para verificar tu vehículo y documentos. Proceso 100% digital.
           </p>
