@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useState } from 'react';
 import { useAuthStore } from '@going-monorepo-clean/frontend-stores';
 
 // --- Auth Types ---
@@ -24,6 +24,35 @@ export interface AuthState {
 // --- React Context ---
 const AuthContext = createContext<AuthState | null>(null);
 
+/**
+ * Decodifica el payload de un JWT y devuelve un perfil sintético mínimo.
+ * Sin verificación de firma — solo parseo para evitar el flash de
+ * "Ingresar" mientras Zustand rehidrata su persist desde localStorage.
+ */
+function fallbackUserFromLocalStorage(): { user: AuthUser; token: string } | null {
+  if (typeof window === 'undefined') return null;
+  const token = localStorage.getItem('authToken') || localStorage.getItem('auth_token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) return null; // expirado, no preauth
+    const email: string = payload.email || '';
+    const firstName = email.split('@')[0] || 'Cuenta';
+    return {
+      token,
+      user: {
+        id: payload.sub || '',
+        firstName,
+        email,
+        roles: payload.roles || [],
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 // --- AuthProvider Component ---
 // Thin wrapper over Zustand auth store — single source of truth.
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -35,6 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const error = useAuthStore((s) => s.error);
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
+  // Fallback sincrónico para evitar el flash "Ingresar" en el primer
+  // render. Si hay un JWT válido en localStorage decodificamos un perfil
+  // mínimo (id, email, roles) y lo usamos hasta que el store rehidrate.
+  // useState con initializer asegura que sólo se ejecuta una vez por mount.
+  const [initialFallback] = useState(fallbackUserFromLocalStorage);
+
   // Map store UserProfile → AuthUser shape consumed by existing components
   const user: AuthUser | null = storeUser
     ? {
@@ -45,18 +80,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         roles: storeUser.roles ?? (storeUser.role ? [storeUser.role] : []),
         isAdmin: storeUser.isAdmin,
       }
-    : null;
+    : initialFallback?.user ?? null;
+
+  const effectiveToken = token || initialFallback?.token || null;
 
   const value = useMemo<AuthState>(
     () => ({
       user,
       isLoading,
       error,
-      isAuthenticated: Boolean(token && storeUser),
+      isAuthenticated: Boolean(effectiveToken && user),
       logout: () => clearAuth(),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [storeUser, token, isLoading, error, clearAuth]
+    [user, effectiveToken, isLoading, error, clearAuth]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
