@@ -197,7 +197,7 @@ export default function TermsPage() {
               <li>No reproducir, distribuir, modificar o explotar comercialmente el contenido de la plataforma sin autorización expresa.</li>
               <li>No intentar acceder a áreas restringidas o realizar ingeniería inversa de la plataforma.</li>
               <li>No usar la plataforma para actividades ilegales, fraudulentas o que dañen a terceros.</li>
-              <li>Tratar con respeto a los conductores, proveedores y demás usuarios de la comunidad Going.</li>
+              <li>Tratar con respeto a quienes conducen, proveen servicios y forman parte de la comunidad Going.</li>
               <li>Proporcionar información veraz en reservas, envíos y perfiles.</li>
               <li>No enviar objetos prohibidos por ley ecuatoriana ni contenido peligroso a través del servicio de envíos.</li>
             </ul>

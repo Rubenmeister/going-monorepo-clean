@@ -39,7 +39,7 @@ const TRONCO_COMUN = [
     icon: '🌱',
     title: 'Sostenibilidad y Respeto',
     subtitle: 'Turismo responsable',
-    desc: 'Reglas de no dejar rastro, respeto a comunidades locales y trato inclusivo con todos los usuarios.',
+    desc: 'Reglas de no dejar rastro, respeto a comunidades locales y trato inclusivo con toda la comunidad usuaria.',
     duration: '12 min',
     lessons: 2,
     formats: ['📖', '✅'],
@@ -537,7 +537,7 @@ export default function AcademyPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-4">Beneficios de subir de nivel</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { icon: '🔍', title: 'Mejor posicionamiento', desc: 'Apareces más arriba cuando los usuarios buscan servicios en tu cantón.' },
+                  { icon: '🔍', title: 'Mejor posicionamiento', desc: 'Apareces más arriba cuando alguien busca servicios en tu cantón.' },
                   { icon: '🏅', title: 'Insignias en tu perfil', desc: 'Badges visibles que generan confianza y aumentan tu tasa de conversión.' },
                   { icon: '📊', title: 'Acceso a estadísticas avanzadas', desc: 'Métricas detalladas de rendimiento, ocupación y satisfacción de clientes.' },
                   { icon: '💰', title: 'Bonos de desempeño', desc: 'Los aliados Oro reciben bonificaciones mensuales por su calidad de servicio.' },

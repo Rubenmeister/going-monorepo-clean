@@ -26,7 +26,7 @@ const BENEFITS = [
 const REQUIREMENTS: { icon: string; item: string; note: string; required: boolean }[] = [
   { icon: '🪪', item: 'Cédula o RUC', note: 'Persona natural o jurídica', required: true },
   { icon: '🛡️', item: 'Seguro de responsabilidad civil', note: 'Obligatorio para actividades de riesgo', required: true },
-  { icon: '📸', item: 'Foto de la actividad en operación', note: 'Transmite confianza a los viajeros', required: true },
+  { icon: '📸', item: 'Foto de la actividad en operación', note: 'Transmite confianza a quienes viajan', required: true },
   { icon: '📋', item: 'Registro Nacional de Turismo (RNT)', note: 'Recomendado — mayor visibilidad', required: false },
   { icon: '🎒', item: 'Inventario de equipos de seguridad', note: 'Cascos, arneses, botiquín, etc.', required: false },
 ];
