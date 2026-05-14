@@ -26,7 +26,7 @@ export default function CookiesPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">2.2 Cookies de rendimiento</h3>
-                <p>Recopilan información anónima sobre cómo los usuarios utilizan Going (páginas visitadas, errores encontrados, tiempo de carga). Nos ayudan a mejorar la plataforma continuamente.</p>
+                <p>Recopilan información anónima sobre cómo usas la plataforma Going (páginas visitadas, errores encontrados, tiempo de carga). Nos ayudan a mejorar la experiencia continuamente.</p>
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">2.3 Cookies de funcionalidad</h3>
@@ -34,7 +34,7 @@ export default function CookiesPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">2.4 Cookies de análisis</h3>
-                <p>Utilizamos herramientas de análisis (como Google Analytics) para entender el comportamiento de los usuarios de forma agregada y anónima. Estos datos nunca identifican a personas individuales.</p>
+                <p>Utilizamos herramientas de análisis (como Google Analytics) para entender el comportamiento de nuestra comunidad de forma agregada y anónima. Estos datos nunca identifican a personas individuales.</p>
               </div>
             </div>
           </section>

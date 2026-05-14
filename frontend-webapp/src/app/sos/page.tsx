@@ -11,7 +11,7 @@ export default function SOSPage() {
             Asistencia de Emergencia
           </h1>
           <p className="text-gray-500 text-lg">
-            Disponible 24/7 para todos los usuarios de Going
+            Disponible 24/7 para toda la comunidad Going
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function SOSPage() {
               },
               {
                 q: '¿Tiene costo el servicio de emergencia?',
-                a: 'La asistencia básica de emergencia es gratuita para todos los usuarios de Going. Servicios adicionales pueden tener costos según la naturaleza de la emergencia.',
+                a: 'La asistencia básica de emergencia es gratuita para toda la comunidad Going. Servicios adicionales pueden tener costos según la naturaleza de la emergencia.',
               },
             ].map((faq) => (
               <details
