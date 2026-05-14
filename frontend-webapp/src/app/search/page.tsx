@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com/api';
 
 type Category = 'all' | 'transport' | 'tours' | 'experiences' | 'accommodation' | 'envios';
 

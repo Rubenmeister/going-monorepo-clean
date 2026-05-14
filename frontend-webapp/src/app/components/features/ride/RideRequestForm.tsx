@@ -129,6 +129,11 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const [isScheduled, setIsScheduled]     = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  // Schedule UI gating: en modo privado los inputs de fecha/hora están
+  // ocultos por default (viaje inmediato), y se expanden cuando el usuario
+  // hace tap a "Programar para más tarde". En compartido siempre visibles
+  // porque las salidas compartidas son inherentemente programadas.
+  const [showSchedule, setShowSchedule]   = useState(false);
   const [localFare, setLocalFare]         = useState<number | null>(null);
   const [fareFixed, setFareFixed]         = useState(false);
   const [roadDistKm,  setRoadDistKm]      = useState<number | null>(null);
@@ -337,6 +342,15 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                   onClick={() => {
                     setMode(opt.key);
                     if (opt.key === 'compartido') setPassengers(p => Math.min(p, 3));
+                    // Al volver de compartido a privado, resetear la
+                    // programación (los compartidos siempre tienen fecha/hora
+                    // pero en privado el caso dominante es "ahora").
+                    if (opt.key === 'privado') {
+                      setShowSchedule(false);
+                      setScheduledDate('');
+                      setScheduledTime('');
+                      setIsScheduled(false);
+                    }
                   }}
                   className={`px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-1.5 ${
                     mode === opt.key
@@ -453,37 +467,66 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           </div>
 
           {/* ── Fecha y hora ─────────────────────────────────────────── */}
-          <div>
-            <p className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
-              <IcoCalendar />
-              Fecha y hora
-              <span className="normal-case font-normal text-gray-400">(dejar en blanco para viaje inmediato)</span>
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
-                <input type="date" min={today} value={scheduledDate}
-                  onChange={e => {
-                    // Auto-clamp: si el usuario tipea una fecha pasada (común
-                    // si el browser auto-completa o el year defaultea a algo
-                    // viejo), saltamos a hoy en lugar de quedar con un valor
-                    // inválido que dispara el tooltip nativo "El valor debe
-                    // ser igual o posterior a <today>" y bloquea el submit.
-                    const raw = e.target.value;
-                    const next = raw && raw < today ? today : raw;
-                    setScheduledDate(next);
-                    setIsScheduled(!!next && !!scheduledTime);
-                  }}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
-                <input type="time" value={scheduledTime}
-                  onChange={e => { setScheduledTime(e.target.value); setIsScheduled(!!scheduledDate && !!e.target.value); }}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
+          {/* En modo privado se oculta por default (viaje inmediato es el caso
+              dominante) y aparece bajo demanda con "Programar para más tarde".
+              En compartido siempre visible porque las salidas compartidas son
+              programadas por naturaleza. */}
+          {(mode === 'compartido' || showSchedule) ? (
+            <div>
+              <p className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                <IcoCalendar />
+                Fecha y hora
+                {mode === 'privado' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSchedule(false);
+                      setScheduledDate('');
+                      setScheduledTime('');
+                      setIsScheduled(false);
+                    }}
+                    className="normal-case font-normal text-gray-400 hover:text-gray-600 underline ml-auto"
+                  >
+                    Cancelar — ir ahora
+                  </button>
+                )}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
+                  <input type="date" min={today} value={scheduledDate}
+                    onChange={e => {
+                      // Auto-clamp: si el usuario tipea una fecha pasada (común
+                      // si el browser auto-completa o el year defaultea a algo
+                      // viejo), saltamos a hoy en lugar de quedar con un valor
+                      // inválido que dispara el tooltip nativo "El valor debe
+                      // ser igual o posterior a <today>" y bloquea el submit.
+                      const raw = e.target.value;
+                      const next = raw && raw < today ? today : raw;
+                      setScheduledDate(next);
+                      setIsScheduled(!!next && !!scheduledTime);
+                    }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
+                  <input type="time" value={scheduledTime}
+                    onChange={e => { setScheduledTime(e.target.value); setIsScheduled(!!scheduledDate && !!e.target.value); }}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowSchedule(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              <IcoCalendar />
+              Programar para más tarde
+              <span className="text-xs text-gray-400">(opcional)</span>
+            </button>
+          )}
 
         </div>
       </div>

@@ -6,8 +6,8 @@ const STORY = {
   title: 'Nuestra Historia',
   paragraphs: [
     'Going nació en Ecuador con una visión simple: conectar a las personas con los mejores destinos, servicios y experiencias de su país, todo desde una sola plataforma.',
-    'Fundada por ecuatorianos apasionados por el turismo y la tecnología, Going reúne transporte, alojamiento, tours, experiencias, envíos y pagos en un ecosistema digital que funciona para viajeros, anfitriones y conductores por igual.',
-    'Hoy operamos en las cuatro regiones del Ecuador — Sierra, Costa, Amazonía y Galápagos — con el compromiso de impulsar el turismo local, generar oportunidades y poner a Ecuador en el mapa del viajero moderno.',
+    'Fundada por ecuatorianas y ecuatorianos apasionados por el turismo y la tecnología, Going reúne transporte, alojamiento, tours, experiencias, envíos y pagos en un ecosistema digital que funciona por igual para quienes viajan, hospedan y conducen.',
+    'Hoy operamos en las cuatro regiones del Ecuador — Sierra, Costa, Amazonía y Galápagos — con el compromiso de impulsar el turismo local, generar oportunidades y poner a Ecuador en el mapa de cada viajero y viajera moderna.',
   ],
 };
 
@@ -43,12 +43,12 @@ const TEAM_VALUES = [
   {
     icon: '🤝',
     title: 'Confianza',
-    desc: 'Cada proveedor y conductor pasa por verificación rigurosa antes de unirse a nuestra red.',
+    desc: 'Cada proveedor, proveedora, conductor o conductora pasa por verificación rigurosa antes de unirse a nuestra red.',
   },
   {
     icon: '🔒',
     title: 'Seguridad',
-    desc: 'Seguimiento GPS en tiempo real, pagos protegidos y soporte 24/7 para todos nuestros usuarios.',
+    desc: 'Seguimiento GPS en tiempo real, pagos protegidos y soporte 24/7 para toda nuestra comunidad.',
   },
   {
     icon: '🌱',
@@ -112,7 +112,7 @@ export default function AboutPage() {
             Conoce <span style={{ color: '#ff4c41' }}>Going</span>
           </h1>
           <p className="text-xl text-white/75 max-w-2xl mx-auto leading-relaxed">
-            La plataforma que conecta a viajeros, anfitriones y conductores con
+            La plataforma que conecta a quienes viajan, hospedan y conducen con
             lo mejor de los cuatro mundos de Ecuador.
           </p>
         </div>

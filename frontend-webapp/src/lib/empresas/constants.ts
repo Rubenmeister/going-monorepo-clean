@@ -114,7 +114,7 @@ export const INDUSTRY_OPTIONS = [
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://api-gateway-780842550857.us-central1.run.app";
+  "https://api.goingec.com";
 
 export const AUTH_TOKEN_KEY = "empresas_authToken";
 export const REFRESH_TOKEN_KEY = "empresas_refreshToken";

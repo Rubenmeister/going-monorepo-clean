@@ -32,7 +32,7 @@ const REQUIRED_DOCS: { key: DocKey; label: string; desc: string; icon: string; r
   { key: 'cedula_ruc', label: 'Cédula o RUC', desc: 'Cédula si eres persona natural. RUC si operas como empresa.', icon: '🪪', required: true },
   { key: 'rnt', label: 'Registro Nacional de Turismo (RNT) o LUAE', desc: 'Habilitación legal para operar. Si no lo tienes aún, puedes aplicar provisionalmente.', icon: '📋', required: false },
   { key: 'seguro', label: 'Póliza de seguro de responsabilidad civil', desc: 'Obligatoria para actividades de riesgo. Debe cubrir a los participantes durante las actividades.', icon: '🛡️', required: true },
-  { key: 'foto_actividad', label: 'Foto de tu operación en acción', desc: 'Una foto de una actividad real. Transmite confianza a los viajeros.', icon: '📸', required: true },
+  { key: 'foto_actividad', label: 'Foto de tu operación en acción', desc: 'Una foto de una actividad real. Transmite confianza a quienes viajan.', icon: '📸', required: true },
   { key: 'lista_equipos', label: 'Lista de equipos de seguridad', desc: 'PDF o foto de tu inventario: cascos, arneses, chalecos, kit de primeros auxilios, etc.', icon: '🎒', required: false },
 ];
 
