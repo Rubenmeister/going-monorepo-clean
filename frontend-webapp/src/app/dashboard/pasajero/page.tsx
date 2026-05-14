@@ -30,9 +30,14 @@ function parseJwt(token: string): UserInfo | null {
   try {
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     const p = JSON.parse(atob(base64));
+    // El JWT no incluye firstName/lastName — esos quedan en el zustand
+    // store tras /auth/login. Si llegamos aquí sin store hidratado,
+    // derivamos un placeholder del email (más amigable que "Usuario").
+    const emailLocal = typeof p.email === 'string' ? p.email.split('@')[0] : null;
+    const firstName = p.firstName || p.name || emailLocal || 'Usuario';
     return {
       id: p.sub || p.userId || '',
-      firstName: p.firstName || p.name || 'Usuario',
+      firstName,
       lastName: p.lastName,
       email: p.email,
       roles: Array.isArray(p.roles) ? p.roles : [],

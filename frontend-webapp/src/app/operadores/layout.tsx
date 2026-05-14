@@ -1,9 +1,6 @@
-import { RoleGuard } from '@/components/common/RoleGuard';
-
+// Operadores is a public marketing page — el RoleGuard 'operator'
+// bloqueaba a no-operators de leer la propuesta de valor antes de
+// registrarse. /operadores/registro también es público.
 export default function OperadoresLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allowedRoles={['operator']} redirectTo="/?acceso=solo-operadores">
-      {children}
-    </RoleGuard>
-  );
+  return <>{children}</>;
 }
