@@ -8,8 +8,8 @@ const STEPS = [
   {
     id: 'welcome',
     icon: '👋',
-    title: 'Bienvenido a Going',
-    subtitle: 'Ecuador en un solo app',
+    title: 'Te damos la bienvenida',
+    subtitle: 'Ecuador en una sola app',
     desc: 'Viajes, hospedaje, tours, experiencias y envíos — todo en un lugar pensado para que explores tu país.',
     color: '#ff4c41',
     bg: '#fff2f2',

@@ -135,7 +135,7 @@ export default function OperadoresRegistroPage() {
       <div className="text-white py-10 px-6" style={{ background: 'linear-gradient(135deg, #451a03 0%, #78350f 70%, #d9770620 100%)' }}>
         <div className="max-w-2xl mx-auto">
           <Link href="/auth/register" className="text-amber-300 text-sm hover:text-white mb-4 inline-block">← Volver al registro</Link>
-          <h1 className="text-3xl font-bold mb-2">Activar tu perfil de Operador</h1>
+          <h1 className="text-3xl font-bold mb-2">Activa tu perfil como operadora u operador</h1>
           <p className="text-amber-200 text-sm">Lleva a viajeros a los rincones más increíbles de Ecuador con tu operación verificada.</p>
         </div>
       </div>
