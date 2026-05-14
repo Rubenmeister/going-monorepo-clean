@@ -136,8 +136,8 @@ export default function GuiasRegistroPage() {
       <div className="text-white py-10 px-6" style={{ background: 'linear-gradient(135deg, #0c4a6e 0%, #075985 70%, #0891b220 100%)' }}>
         <div className="max-w-2xl mx-auto">
           <Link href="/auth/register" className="text-cyan-300 text-sm hover:text-white mb-4 inline-block">← Volver al registro</Link>
-          <h1 className="text-3xl font-bold mb-2">Activar tu perfil de Promotor Local</h1>
-          <p className="text-cyan-200 text-sm">Diseña tus propios tours y conecta con viajeros que buscan experiencias auténticas.</p>
+          <h1 className="text-3xl font-bold mb-2">Activa tu perfil como promotora o promotor local</h1>
+          <p className="text-cyan-200 text-sm">Diseña tus propios tours y conecta con quienes viajan en busca de experiencias auténticas.</p>
         </div>
       </div>
 
