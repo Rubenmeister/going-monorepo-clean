@@ -79,6 +79,23 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'Cerebro',
+    items: [
+      { label: 'Estado',      href: '/cerebro',            icon: '🧠' },
+      { label: 'Salud',       href: '/cerebro/health',     icon: '🩺' },
+      { label: 'Intenciones', href: '/cerebro/intentions', icon: '💡' },
+      { label: 'Decisiones',  href: '/cerebro/decisions',  icon: '🎯' },
+      { label: 'Reglas',      href: '/cerebro/rules',      icon: '⚙️' },
+      { label: 'Agents',      href: '/cerebro/agents',     icon: '🤖' },
+      { label: 'Web errors',  href: '/cerebro/web-events', icon: '🐞' },
+      { label: 'Memoria',     href: '/cerebro/memory',     icon: '📚' },
+      { label: 'Config',      href: '/cerebro/config',     icon: '🛠️' },
+      { label: 'Audit log',   href: '/cerebro/audit',      icon: '📜' },
+      { label: 'Costos',      href: '/cerebro/costs',      icon: '💸' },
+      { label: 'Eventos',     href: '/cerebro/events',     icon: '📡' },
+    ],
+  },
+  {
     title: 'Cuenta',
     items: [{ label: 'Configuración', href: '/settings', icon: '⚙️' }],
   },

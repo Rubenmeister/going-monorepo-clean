@@ -11,8 +11,9 @@ ARG SERVICE_NAME
 # Install build tools required for native modules (bcrypt, firebase-admin, grpc, etc.)
 RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm via corepack. Pin to pnpm@10 — pnpm 11 requires Node ≥22.13
-# y este builder usa node:20-slim (necesario por compatibilidad de native modules).
+# Install pnpm via corepack. Pin a v10 — pnpm 11 requiere Node ≥22.13 y
+# este Dockerfile usa node:20-slim. Sin el pin, builds nuevos rompen
+# cuando Corepack resuelve `latest` a una versión que no soporta Node 20.
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
@@ -58,7 +59,20 @@ RUN node -e "\
 
 # Build with Nx (project graph requires NX_DAEMON=false in CI)
 ENV NX_DAEMON=false
+
+# Pre-compilar cerebro-contracts. main de su package.json apunta a
+# dist/index.js — webpack del service necesita el dist/ pre-existente
+# para resolver el import desde la lib. `|| true` para no romper builds
+# de services que NO importan cerebro-contracts.
+RUN pnpm --filter "@going-platform/cerebro-contracts" run build || true
+
 RUN pnpm exec nx build ${SERVICE_NAME} --skip-nx-cache
+
+# Strip workspace deps (@going-platform/*) from the generated package.json.
+# Webpack ya bundleó esas libs dentro de main.js — la dep solo está en el
+# package.json porque generatePackageJson la heredó del original. npm install
+# no entiende `workspace:*` (es protocolo pnpm) y rompe con EUNSUPPORTEDPROTOCOL.
+RUN node -e "const fs=require('fs'); const f='dist/${SERVICE_NAME}/package.json'; const p=JSON.parse(fs.readFileSync(f,'utf8')); for(const sec of ['dependencies','devDependencies','peerDependencies']){ if(!p[sec]) continue; for(const k of Object.keys(p[sec])){ if(k.startsWith('@going-platform/')){ delete p[sec][k]; console.log('Stripped '+sec+'.'+k);} } } fs.writeFileSync(f, JSON.stringify(p,null,2));"
 
 # Install production dependencies inside the dist folder using plain npm.
 # This creates a flat node_modules/ inside dist/ that Node can resolve cleanly,

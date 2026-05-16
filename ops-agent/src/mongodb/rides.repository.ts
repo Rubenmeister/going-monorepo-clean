@@ -14,7 +14,7 @@
  *   - última actividad de un conductor
  */
 import { Filter } from 'mongodb';
-import { getRidesDb } from './connection';
+import { getRidesDb, getUsersDb } from './connection';
 
 export interface PendingRide {
   id:           string;
@@ -158,4 +158,83 @@ export async function mongoGetTodayRidesStats(): Promise<{
     cancelled,
     totalRevenue: (revenueAgg[0] as any)?.total || 0,
   };
+}
+
+/**
+ * Stats agregadas últimos 7 días — KPIs estratégicos para snapshot:
+ *
+ *   ridesCompleted7d         — count
+ *   ridesCancelled7d         — count
+ *   totalRevenue7d           — sum amount completed
+ *   avgRideValueUsd          — totalRevenue7d / ridesCompleted7d
+ *   uniqueActiveDrivers7d    — distinct driverId con rides completed en ventana
+ *   rideCompletionRate       — completed / (completed + cancelled) [24h ventana,
+ *                              corregido aquí para 7d más estable que día único]
+ *
+ * Ventana 7d desde "ahora". No alineamos a midnight Ecuador para que
+ * sea siempre los últimos 168h corridos — más estable para análisis
+ * de tendencia que "esta semana civil" que cambia bruscamente.
+ */
+export async function mongoGetWeeklyStats(): Promise<{
+  ridesCompleted7d:        number;
+  ridesCancelled7d:        number;
+  totalRevenue7d:          number;
+  avgRideValueUsd:         number;
+  uniqueActiveDrivers7d:   number;
+  rideCompletionRate:      number;
+}> {
+  const db = await getRidesDb();
+  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+
+  const [completedCount, cancelledCount, revenueAgg, uniqueDriversAgg] = await Promise.all([
+    db.collection<MongoRide>('rides').countDocuments({
+      status: 'completed',
+      completedAt: { $gte: since },
+    }),
+    db.collection<MongoRide>('rides').countDocuments({
+      status: 'cancelled',
+      cancelledAt: { $gte: since },
+    } as any),
+    db.collection<MongoRide>('rides').aggregate([
+      { $match: { status: 'completed', completedAt: { $gte: since } } },
+      { $group: { _id: null, total: { $sum: { $ifNull: ['$finalFare.total', '$fare.total'] } } } },
+    ]).toArray(),
+    db.collection<MongoRide>('rides').aggregate([
+      { $match: { status: 'completed', completedAt: { $gte: since }, driverId: { $ne: null } } },
+      { $group: { _id: '$driverId' } },
+      { $count: 'uniqueCount' },
+    ]).toArray(),
+  ]);
+
+  const totalRevenue7d        = (revenueAgg[0] as any)?.total || 0;
+  const uniqueActiveDrivers7d = (uniqueDriversAgg[0] as any)?.uniqueCount || 0;
+  const avgRideValueUsd       = completedCount > 0
+    ? Number((totalRevenue7d / completedCount).toFixed(2))
+    : 0;
+  const totalAttempts = completedCount + cancelledCount;
+  const rideCompletionRate = totalAttempts > 0
+    ? Number((completedCount / totalAttempts).toFixed(4))
+    : 0;
+
+  return {
+    ridesCompleted7d:        completedCount,
+    ridesCancelled7d:        cancelledCount,
+    totalRevenue7d:          Number(totalRevenue7d.toFixed(2)),
+    avgRideValueUsd,
+    uniqueActiveDrivers7d,
+    rideCompletionRate,
+  };
+}
+
+/**
+ * Cuenta nuevos drivers signed-up en últimos 7 días.
+ * Lee de la collection 'users' en going-users DB (no rides DB).
+ */
+export async function mongoGetNewDriverSignups7d(): Promise<number> {
+  const usersDb = await getUsersDb();
+  const since = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+  return usersDb.collection('users').countDocuments({
+    createdAt: { $gte: since },
+    roles: 'driver',
+  });
 }

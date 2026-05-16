@@ -1,0 +1,20 @@
+{
+  "name": "cerebro-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "cerebro-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/cerebro-service",
+        "main": "cerebro-service/src/main.ts",
+        "tsConfig": "cerebro-service/tsconfig.app.json",
+        "webpackConfig": "cerebro-service/webpack.config.js"
+      }
+    }
+  }
+}

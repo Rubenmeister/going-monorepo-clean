@@ -1,19 +1,54 @@
+# customer-support-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico
+# (mismo patrón que user-auth-service y resto de NestJS services). Esto
+# permite que el servicio importe `@going-platform/cerebro-contracts`
+# (workspace lib) para publicar eventos al cerebro-service.
+#
+# Trigger:
+#   gcloud builds submit . --config=customer-support-service/cloudbuild.yaml --project=going-5d1ae
+
 steps:
-  # 1. Build Docker image
+  # 1. Build con Dockerfile genérico de NestJS services, contexto = monorepo root.
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=customer-support-service
       - -t
       - gcr.io/$PROJECT_ID/customer-support-service:latest
       - .
+    timeout: '1800s'
 
-  # 2. Push to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - push
       - gcr.io/$PROJECT_ID/customer-support-service:latest
 
-  # 3. Deploy as Cloud Run Service (always-on, receives Twilio webhooks)
+  # 2. Deploy as Cloud Run Service (always-on, receives Meta WhatsApp + Telegram webhooks).
+  #
+  # Secrets gestionados por Cloud Build (Secret Manager):
+  #   JWT_SECRET-prod  — JWT compartido con transport-service para crear rides desde el chat
+  #   MAPBOX_TOKEN     — geocoding EC para resolver direcciones del usuario
+  #
+  # Vars que se setean fuera del cloudbuild (vía `gcloud run services update --update-env-vars`):
+  #   MONGO_URL                 — Mongo Atlas (DB: going-support)
+  #   META_WA_ACCESS_TOKEN      — Meta System User token (whatsapp_business_messaging)
+  #   WHATSAPP_PHONE_NUMBER_ID  — phone ID de Meta Business Suite
+  #   WHATSAPP_BUSINESS_ACCOUNT_ID — WABA ID (opcional, para /whatsapp/diagnose)
+  #   WHATSAPP_VERIFY_TOKEN     — verify token del webhook de Meta
+  #   TELEGRAM_BOT_TOKEN        — token del bot de Telegram (BotFather)
+  #   TELEGRAM_WEBHOOK_SECRET   — opcional, valida el header del webhook de Telegram
+  #   OPERATOR_TELEGRAM_CHAT_IDS — comma-separated chat IDs de operadores
+  #   TRANSPORT_SERVICE_URL     — URL interna de transport-service en Cloud Run
+  #   CEREBRO_PUBLISH_ENABLED   — true en producción. Cron interno cada 10 min publica
+  #                                 al cerebro-service. Pausar solo si cerebro-service
+  #                                 está caído (raro, tiene min-instances=1).
+  #
+  # NOTA: Anthropic + Twilio quedaron deprecados aquí — el LLM corre sobre
+  # Vertex AI (Gemini) y todo WhatsApp (inbound + outbound) usa Meta Cloud API.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -24,13 +59,23 @@ steps:
       - --region=us-central1
       - --platform=managed
       - --allow-unauthenticated
-      - --port=8080
+      - --port=3000
       - --cpu=1
       - --memory=512Mi
-      - --min-instances=0
+      # min-instances=1 es OBLIGATORIO: el CerebroPublisherService usa
+      # @Cron interno cada 10 min. Con scale-to-zero el container se duerme
+      # entre requests y el timer del cron muere — no dispara nunca. min=1
+      # mantiene el container vivo. Costo: ~$5/mes adicional.
+      - --min-instances=1
       - --max-instances=5
-      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
-      - --set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY-prod:latest,TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID-prod:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN-prod:latest,JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production,CEREBRO_PUBLISH_ENABLED=true
+      # MONGO_URL se incluye acá porque --set-env-vars/--set-secrets reemplazan
+      # TODA la config previa (no es additive). Sin esto el service intenta
+      # conectar a localhost:27017 y falla startup probe.
+      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MAPBOX_TOKEN=MAPBOX_TOKEN:latest,MONGO_URL=MONGO_URL-prod:latest
+      # VPC connector necesario para conectar a MongoDB Atlas (whitelist IP).
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
       - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
 
 images:
@@ -38,3 +83,5 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

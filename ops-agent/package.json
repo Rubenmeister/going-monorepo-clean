@@ -1,19 +1,22 @@
 {
-  "name": "ops-agent",
+  "name": "@going-platform/ops-agent",
   "version": "1.0.0",
-  "description": "Going Operations Agent — monitoreo de proveedores via Telegram",
+  "description": "Going Operations Agent — monitoreo de viajes/conductores via Telegram + publisher de eventos al cerebro-service",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npx ts-node src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc"
   },
   "dependencies": {
+    "@going-platform/cerebro-contracts": "workspace:*",
     "@google-cloud/firestore": "^7.9.0",
-    "mongodb": "^6.10.0"
+    "@google-cloud/pubsub": "^4.7.0",
+    "mongodb": "^6.10.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
-    "ts-node": "^10.9.2",
-    "@types/node": "^20.14.0"
+    "@types/node": "^20.14.0",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.4.5"
   }
 }

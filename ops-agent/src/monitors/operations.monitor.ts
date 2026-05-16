@@ -17,8 +17,18 @@
  *
  * Se reactivan agregando los campos correspondientes a `going-users.users`
  * o creando collections separadas (ratings, documents, academy).
+ *
+ * Cada monitor además de su efecto colateral (Telegram + Firestore log)
+ * empuja métricas / anomalías / acciones a un `RunCollector` que el
+ * runner principal usa para construir el AgentRunEvent que se publica al
+ * cerebro-service al final del run.
  */
 import { Firestore, Timestamp } from '@google-cloud/firestore';
+import {
+  Anomaly,
+  ActionTaken,
+  ActionProposed,
+} from '@going-platform/cerebro-contracts';
 import {
   sendMessage,
   alertNoConductor,
@@ -32,14 +42,38 @@ import {
   mongoGetCompletedRidesToday,
   mongoGetDriverLastActivity,
   mongoGetTodayRidesStats,
+  mongoGetWeeklyStats,
+  mongoGetNewDriverSignups7d,
 } from '../mongodb/rides.repository';
 import {
   mongoGetAllDrivers,
   mongoGetDriversByIds,
-  DriverBasic,
 } from '../mongodb/drivers.repository';
 
 const fsdb = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
+
+// ─── Recolector compartido entre los 4 monitores ──────────────
+//
+// Cada checkXxx empuja a este collector. `runAllMonitors` lo retorna y el
+// index.ts lo envuelve con el envelope del AgentRunEvent.
+
+export interface RunCollector {
+  metrics:         Record<string, number | string>;
+  anomalies:       Anomaly[];
+  actionsTaken:    ActionTaken[];
+  actionsProposed: ActionProposed[];
+  errors:          string[];   // monitor names que tiraron excepción
+}
+
+function createCollector(): RunCollector {
+  return {
+    metrics:         {},
+    anomalies:       [],
+    actionsTaken:    [],
+    actionsProposed: [],
+    errors:          [],
+  };
+}
 
 // ─── Helpers de tiempo (Ecuador) ──────────────────────────────
 
@@ -106,35 +140,68 @@ async function logAlert(payload: {
 
 // ─── 1. Viajes sin conductor asignado (cutoff 2 min) ──────────
 
-export async function checkRidesSinConductor(): Promise<void> {
+export async function checkRidesSinConductor(c: RunCollector): Promise<void> {
   console.log('[ops] Verificando viajes sin conductor...');
   try {
     const rides = await mongoGetPendingRidesNoDriver(2);
+    c.metrics.pendingRidesNoDriver = rides.length;
+
     let alerted = 0;
     for (const ride of rides) {
-      if (await shouldSuppress('no_driver_assigned', ride.id)) continue;
+      // Toda ride pendiente >2min va al evento como anomaly, sin
+      // depender de la suppression (el cerebro decide qué hacer).
+      c.anomalies.push({
+        type:     'no_driver_assigned',
+        severity: ride.ageMinutes >= 5 ? 'critical' : 'warning',
+        message:  `Ride ${ride.id.slice(-6)} sin conductor por ${ride.ageMinutes} min`,
+        data: {
+          rideId:     ride.id,
+          ageMinutes: ride.ageMinutes,
+          pickup:     ride.pickupAddr,
+          dropoff:    ride.dropoffAddr,
+        },
+      });
+
+      if (await shouldSuppress('no_driver_assigned', ride.id)) {
+        c.actionsTaken.push({
+          type:   'sent_telegram_alert',
+          target: ride.id,
+          result: 'suppressed',
+        });
+        continue;
+      }
+
       const msg = alertNoConductor(ride.id, ride.ageMinutes, ride.pickupAddr, ride.dropoffAddr);
-      await sendMessage(msg);
+      const sent = await sendMessage(msg);
       await logAlert({
         type:     'no_driver_assigned',
         severity: 'critical',
         message:  `Viaje ${ride.id.slice(-6)} sin conductor por ${ride.ageMinutes} min`,
         data:     { rideId: ride.id, ageMinutes: ride.ageMinutes },
       });
+      c.actionsTaken.push({
+        type:   'sent_telegram_alert',
+        target: ride.id,
+        result: sent ? 'ok' : 'failed',
+        data:   { reason: 'no_driver_assigned' },
+      });
       alerted++;
     }
     console.log(`[ops] ${rides.length} viajes sin conductor (${alerted} alertados, resto suprimidos)`);
   } catch (err) {
     console.error('[ops] Error en checkRidesSinConductor:', err);
+    c.errors.push('checkRidesSinConductor');
   }
 }
 
 // ─── 2. Conductores inactivos (>2h sin viaje completado) ──────
 
-export async function checkConductoresInactivos(): Promise<void> {
+export async function checkConductoresInactivos(c: RunCollector): Promise<void> {
   console.log('[ops] Verificando conductores inactivos...');
   try {
     const drivers = await mongoGetAllDrivers();
+    c.metrics.activeDrivers = drivers.length;
+
     if (drivers.length === 0) {
       console.log('[ops] no hay conductores activos en el sistema todavía');
       return;
@@ -142,21 +209,41 @@ export async function checkConductoresInactivos(): Promise<void> {
 
     const cutoff = Date.now() - 2 * 3600 * 1000;
     let alerted = 0;
+    let idleCount = 0;
 
     for (const driver of drivers) {
       const last = await mongoGetDriverLastActivity(driver.id);
-
-      // Si nunca completó viaje, o el último fue antes del cutoff:
       const isIdle = !last || last.getTime() < cutoff;
       if (!isIdle) continue;
-
-      if (await shouldSuppress('driver_idle', driver.id)) continue;
+      idleCount++;
 
       const horasIdle = last
         ? (Date.now() - last.getTime()) / 3600000
         : 999;
+
+      c.anomalies.push({
+        type:     'driver_idle',
+        severity: horasIdle > 6 ? 'critical' : 'warning',
+        message:  `${driver.fullName} lleva ${horasIdle.toFixed(1)}h sin viajes`,
+        data: {
+          driverId:      driver.id,
+          driverName:    driver.fullName,
+          hoursIdle:     horasIdle,
+          lastCompleted: last?.toISOString() || null,
+        },
+      });
+
+      if (await shouldSuppress('driver_idle', driver.id)) {
+        c.actionsTaken.push({
+          type:   'sent_telegram_alert',
+          target: driver.id,
+          result: 'suppressed',
+        });
+        continue;
+      }
+
       const msg = alertConductorInactivo(driver.fullName, '—', horasIdle, '—');
-      await sendMessage(msg);
+      const sent = await sendMessage(msg);
       await logAlert({
         type:         'driver_idle',
         severity:     'warning',
@@ -165,30 +252,37 @@ export async function checkConductoresInactivos(): Promise<void> {
         message:      `${driver.fullName} lleva ${horasIdle.toFixed(1)}h sin viajes`,
         data:         { hoursIdle: horasIdle, lastCompleted: last?.toISOString() || null },
       });
+      c.actionsTaken.push({
+        type:   'sent_telegram_alert',
+        target: driver.id,
+        result: sent ? 'ok' : 'failed',
+        data:   { reason: 'driver_idle' },
+      });
       alerted++;
     }
+
+    c.metrics.idleDrivers = idleCount;
     console.log(`[ops] ${drivers.length} conductores activos, ${alerted} idle alertados`);
   } catch (err) {
     console.error('[ops] Error en checkConductoresInactivos:', err);
+    c.errors.push('checkConductoresInactivos');
   }
 }
 
 // ─── 3. Revenue diario por conductor (12pm y 6pm Ecuador) ─────
 
-export async function checkIngresos(): Promise<void> {
+export async function checkIngresos(c: RunCollector): Promise<void> {
   const hour = currentHourEcuador();
   if (hour !== 12 && hour !== 18) return;
   if (!isPrimaryRunOfHour()) return;
 
   console.log(`[ops] Verificando revenue por conductor a las ${hour}:00...`);
   try {
-    // Meta proporcional: $35 a las 12, $60 a las 18 (final $70 al día)
     const threshold = hour === 12 ? 35 : 60;
     const horaStr   = hour === 12 ? '12:00' : '18:00';
 
     const completed = await mongoGetCompletedRidesToday();
 
-    // Agregar revenue por conductor
     const revenueByDriver = new Map<string, { revenue: number; rides: number }>();
     for (const ride of completed) {
       const cur = revenueByDriver.get(ride.driverId) || { revenue: 0, rides: 0 };
@@ -202,12 +296,12 @@ export async function checkIngresos(): Promise<void> {
       return;
     }
 
-    // Lookup de nombres en bulk
     const driverIds = Array.from(revenueByDriver.keys());
     const drivers   = await mongoGetDriversByIds(driverIds);
 
     let alertasBajos      = 0;
     let alertasCelebradas = 0;
+    let driversBelow       = 0;
 
     for (const [driverId, stats] of revenueByDriver) {
       const driver = drivers.get(driverId);
@@ -215,8 +309,21 @@ export async function checkIngresos(): Promise<void> {
 
       // Bajo umbral
       if (stats.revenue < threshold) {
+        driversBelow++;
+        c.anomalies.push({
+          type:     'below_revenue',
+          severity: 'warning',
+          message:  `${name} lleva $${stats.revenue.toFixed(2)} a las ${horaStr} (umbral $${threshold})`,
+          data: { driverId, driverName: name, revenue: stats.revenue, threshold, hour },
+        });
         if (!(await shouldSuppress('below_revenue', driverId))) {
-          await sendMessage(alertBajoIngreso(name, '—', stats.revenue, horaStr));
+          const sent = await sendMessage(alertBajoIngreso(name, '—', stats.revenue, horaStr));
+          c.actionsTaken.push({
+            type:   'sent_telegram_alert',
+            target: driverId,
+            result: sent ? 'ok' : 'failed',
+            data:   { reason: 'below_revenue', revenue: stats.revenue },
+          });
           alertasBajos++;
         }
       }
@@ -224,21 +331,32 @@ export async function checkIngresos(): Promise<void> {
       // Meta diaria $70 alcanzada (solo al final 18:00)
       if (hour === 18 && stats.revenue >= 70) {
         if (!(await shouldSuppress('daily_target', driverId))) {
-          await sendMessage(alertMetaAlcanzada(name, stats.revenue));
+          const sent = await sendMessage(alertMetaAlcanzada(name, stats.revenue));
+          c.actionsTaken.push({
+            type:   'sent_telegram_alert',
+            target: driverId,
+            result: sent ? 'ok' : 'failed',
+            data:   { reason: 'daily_target', revenue: stats.revenue },
+          });
           alertasCelebradas++;
         }
       }
     }
 
+    c.metrics[`revenueCheck_${hour}h_belowThreshold`] = driversBelow;
+    c.metrics[`revenueCheck_${hour}h_alerted`] = alertasBajos;
+    if (hour === 18) c.metrics.dailyTargetCelebrated = alertasCelebradas;
+
     console.log(`[ops] revenue check: ${alertasBajos} bajos, ${alertasCelebradas} celebrados`);
   } catch (err) {
     console.error('[ops] Error en checkIngresos:', err);
+    c.errors.push('checkIngresos');
   }
 }
 
 // ─── 4. Reporte diario (9pm Ecuador) ──────────────────────────
 
-export async function enviarReporteDiario(): Promise<void> {
+export async function enviarReporteDiario(c: RunCollector): Promise<void> {
   if (currentHourEcuador() !== 21) return;
   if (!isPrimaryRunOfHour()) return;
 
@@ -252,7 +370,6 @@ export async function enviarReporteDiario(): Promise<void> {
       mongoGetAllDrivers(),
     ]);
 
-    // Top conductor del día
     const revenueByDriver = new Map<string, { revenue: number; rides: number }>();
     for (const ride of completed) {
       const cur = revenueByDriver.get(ride.driverId) || { revenue: 0, rides: 0 };
@@ -274,7 +391,6 @@ export async function enviarReporteDiario(): Promise<void> {
       }
     }
 
-    // Alertas del día
     const todayStartEc = (() => {
       const ec = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
       ec.setHours(0, 0, 0, 0);
@@ -299,23 +415,86 @@ export async function enviarReporteDiario(): Promise<void> {
       alertasDelDia:     alertsSnap.size,
     });
 
-    await sendMessage(msg);
+    const sent = await sendMessage(msg);
+    c.actionsTaken.push({
+      type:   'sent_daily_report',
+      result: sent ? 'ok' : 'failed',
+      data: {
+        viajesCompletados:  stats.completed,
+        viajesCancelados:   stats.cancelled,
+        conductoresEnMeta,
+        ingresoTotal:       stats.totalRevenue * COMMISSION,
+        alertasDelDia:      alertsSnap.size,
+      },
+    });
+
+    // Métricas del día completas — el cerebro las usa para construir el world model.
+    c.metrics.dailyRidesCompleted  = stats.completed;
+    c.metrics.dailyRidesCancelled  = stats.cancelled;
+    c.metrics.dailyTotalRevenue    = stats.totalRevenue;
+    c.metrics.dailyGoingRevenue    = +(stats.totalRevenue * COMMISSION).toFixed(2);
+    c.metrics.dailyDriversInGoal   = conductoresEnMeta;
+    c.metrics.dailyAlertsTotal     = alertsSnap.size;
+
     console.log('[ops] reporte diario enviado');
   } catch (err) {
     console.error('[ops] Error en enviarReporteDiario:', err);
+    c.errors.push('enviarReporteDiario');
   }
 }
 
 // ─── Runner principal ─────────────────────────────────────────
 
-export async function runAllMonitors(): Promise<void> {
+export interface MonitorRunResult {
+  collector: RunCollector;
+}
+
+export async function runAllMonitors(): Promise<MonitorRunResult> {
   console.log(`[ops] Ciclo de monitoreo —`,
     new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' }));
 
-  await checkRidesSinConductor();   // cada run
-  await checkConductoresInactivos(); // cada run (suprimido por hora)
-  await checkIngresos();             // solo 12pm y 18pm
-  await enviarReporteDiario();       // solo 21pm
+  const collector = createCollector();
+
+  await checkRidesSinConductor(collector);     // cada run
+  await checkConductoresInactivos(collector);  // cada run (suprimido por hora)
+  await checkIngresos(collector);              // solo 12pm y 18pm
+  await enviarReporteDiario(collector);        // solo 21pm
+
+  // Strategic KPIs (Item 5 — el cerebro los proyecta al snapshot business)
+  await collectStrategicKpis(collector);
 
   console.log('[ops] Ciclo completado');
+  return { collector };
+}
+
+/**
+ * Strategic KPIs 7d — calculados cada ciclo (cron 15min) pero la data
+ * underlying se mueve poco a poco. Cheap query (2 aggregations + 1 count).
+ *
+ * Best-effort: si Mongo falla aquí, log y seguir — los KPIs tácticos
+ * (pendingRides etc.) ya están cargados en metrics antes.
+ */
+async function collectStrategicKpis(c: RunCollector): Promise<void> {
+  try {
+    const [weekly, newDriverSignups] = await Promise.all([
+      mongoGetWeeklyStats(),
+      mongoGetNewDriverSignups7d(),
+    ]);
+    c.metrics.ridesCompleted7d      = weekly.ridesCompleted7d;
+    c.metrics.ridesCancelled7d      = weekly.ridesCancelled7d;
+    c.metrics.totalRevenue7d        = weekly.totalRevenue7d;
+    c.metrics.avgRideValueUsd       = weekly.avgRideValueUsd;
+    c.metrics.activeDrivers7d       = weekly.uniqueActiveDrivers7d;
+    c.metrics.rideCompletionRate    = weekly.rideCompletionRate;
+    c.metrics.newDriverSignups7d    = newDriverSignups;
+    console.log(
+      `[ops/kpis] 7d: ${weekly.ridesCompleted7d} rides ($${weekly.totalRevenue7d}), ` +
+      `${weekly.uniqueActiveDrivers7d} active drivers, ${newDriverSignups} new signups, ` +
+      `completion ${(weekly.rideCompletionRate * 100).toFixed(0)}%`,
+    );
+  } catch (e) {
+    const err = (e as Error).message;
+    console.warn('[ops/kpis] strategic KPIs failed (non-fatal):', err);
+    c.errors.push(`strategic_kpis: ${err.slice(0, 200)}`);
+  }
 }

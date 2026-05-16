@@ -1,11 +1,37 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { execSync } from 'child_process';
 import * as fsSync from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 import { config } from './config';
 import { GitTool } from './tools/git';
 import { FilesystemTool } from './tools/filesystem';
 import { CloudRunTool } from './tools/cloudrun';
 import { MemoryStore } from './memory/context';
+import {
+  AgentRunEvent,
+  Anomaly,
+  ActionTaken,
+  ActionProposed,
+  parseCommandFromEnv,
+  publishAgentRunEvent,
+  runCommandMode,
+} from '@going-platform/cerebro-contracts';
+
+// ─── RunCollector compartido (Cerebro) ───────────────────────
+//
+// Acumula durante el ciclo del agente para publicar al cerebro al final.
+
+interface RunCollector {
+  metrics:         Record<string, number | string>;
+  anomalies:       Anomaly[];
+  actionsTaken:    ActionTaken[];
+  actionsProposed: ActionProposed[];
+  errors:          string[];
+}
+
+function createCollector(): RunCollector {
+  return { metrics: {}, anomalies: [], actionsTaken: [], actionsProposed: [], errors: [] };
+}
 
 // ── Notificación al canal Telegram (para que el reporte se vea) ────────────
 async function sendTelegramReport(text: string): Promise<void> {
@@ -154,7 +180,15 @@ function trimToolResult(result: string): string {
 }
 
 // ── Ejecutor de herramientas ────────────────────────────────────────────────
-async function executeTool(name: string, input: Record<string, any>): Promise<string> {
+//
+// El collector es opcional; si está presente, acumulamos cada tool call
+// (nombre, target, resultado) para que el cerebro reciba un breakdown
+// concreto de qué hizo el agente este ciclo.
+async function executeTool(
+  name: string,
+  input: Record<string, any>,
+  c?: RunCollector,
+): Promise<string> {
   try {
     switch (name) {
       case 'read_file': {
@@ -165,13 +199,41 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
       }
       case 'write_file':
         fs.writeFile(input.path, input.content);
+        if (c) {
+          c.actionsTaken.push({
+            type: 'write_file',
+            target: input.path,
+            result: 'ok',
+          });
+        }
         return `✅ Archivo escrito: ${input.path}`;
       case 'list_directory':
         return fs.listDir(input.path, input.depth || 1).join('\n');
-      case 'get_cloud_run_logs':
-        return await cloudrun.getServiceLogs(input.service);
-      case 'get_failed_builds':
-        return await cloudrun.getFailedBuilds();
+      case 'get_cloud_run_logs': {
+        const result = await cloudrun.getServiceLogs(input.service);
+        // Si hay errores en el output, lo capturamos como anomaly para el cerebro.
+        if (c && result && !result.startsWith('✅') && !result.startsWith('❌ Error leyendo')) {
+          c.anomalies.push({
+            type: 'cloud_run_errors_found',
+            severity: 'warning',
+            message: `Errores en logs de ${input.service}`,
+            data: { service: input.service, sample: result.slice(0, 500) },
+          });
+        }
+        return result;
+      }
+      case 'get_failed_builds': {
+        const result = await cloudrun.getFailedBuilds();
+        if (c && result && !result.startsWith('✅') && !result.startsWith('❌ Error')) {
+          c.anomalies.push({
+            type: 'failed_builds_found',
+            severity: 'warning',
+            message: 'Builds fallidos en Cloud Build',
+            data: { sample: result.slice(0, 500) },
+          });
+        }
+        return result;
+      }
       case 'get_git_log':
         return git.getRecentLog(input.lines || 10);
       case 'commit_fix': {
@@ -187,12 +249,28 @@ async function executeTool(name: string, input: Record<string, any>): Promise<st
         }
         const commit = await git.commitAndPush(input.message, input.files);
         await memory.recordFix(input.message, commit);
+        if (c) {
+          c.actionsTaken.push({
+            type: 'commit_fix',
+            target: config.agentBranch,
+            result: 'ok',
+            data: { sha: commit, message: input.message, files: input.files },
+          });
+        }
         return `✅ Commit: ${commit}`;
       }
       default:
         return `Unknown tool: ${name}`;
     }
   } catch (e: any) {
+    if (c) {
+      c.actionsTaken.push({
+        type: name,
+        target: input?.path || input?.service || input?.message,
+        result: 'failed',
+        data: { error: e.message },
+      });
+    }
     return `❌ Error: ${e.message}`;
   }
 }
@@ -220,7 +298,10 @@ async function callWithRetry(
 }
 
 // ── Loop principal del agente ──────────────────────────────────────────────
-async function runAgentCycle(): Promise<void> {
+//
+// Devuelve el RunCollector para que main() arme el AgentRunEvent que se
+// publica al cerebro al final del ciclo.
+async function runAgentCycle(c: RunCollector): Promise<{ finalReport: string }> {
   console.log(`\n🤖 Going Agent — ${new Date().toLocaleString()}`);
   console.log(`📊 ${memory.summary()}\n`);
 
@@ -261,6 +342,7 @@ Reporta todo lo que encuentres.`,
   // Agentic loop
   const MAX_ITERATIONS = 15;
   let iterations = 0;
+  let toolCallsCount = 0;
   let finalReport = '';
 
   while (iterations < MAX_ITERATIONS) {
@@ -293,10 +375,11 @@ Reporta todo lo que encuentres.`,
       for (const tool of toolUses) {
         if (tool.type !== 'tool_use') continue;
         console.log(`  🔧 ${tool.name}(${JSON.stringify(tool.input).slice(0, 80)})`);
-        const rawResult = await executeTool(tool.name, tool.input as Record<string, any>);
+        const rawResult = await executeTool(tool.name, tool.input as Record<string, any>, c);
         const result    = trimToolResult(rawResult);
         console.log(`     → ${result.slice(0, 100)}${rawResult.length > TOOL_RESULT_MAX_CHARS ? ' [trimmed]' : ''}`);
         results.push({ type: 'tool_result', tool_use_id: tool.id, content: result });
+        toolCallsCount++;
       }
 
       messages.push({ role: 'user', content: results });
@@ -358,13 +441,26 @@ Reporta todo lo que encuentres.`,
 
   console.log('\n📋 Reporte del agente:\n', finalReport);
 
+  // Métricas finales del ciclo al collector.
+  c.metrics.iterations = iterations;
+  c.metrics.toolCallsCount = toolCallsCount;
+  c.metrics.maxIterationsReached = iterations >= MAX_ITERATIONS ? 1 : 0;
+
   const trimmed = finalReport.trim();
   if (trimmed.length > 50) {
     const header = `🤖 *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n`;
     await sendTelegramReport(header + trimmed);
+    c.actionsTaken.push({
+      type: 'sent_telegram_report',
+      target: 'ops_chat',
+      result: 'ok',
+      data: { reportLength: trimmed.length, iterations, toolCalls: toolCallsCount },
+    });
   } else {
     console.log('[going-agent] reporte muy corto, no se envía a Telegram');
   }
+
+  return { finalReport };
 }
 
 // ── Arranque — Cloud Run Job: un ciclo y salida limpia ────────────────────
@@ -373,14 +469,62 @@ async function main() {
   console.log(`📁 Repo: ${config.repoPath}`);
   console.log(`🕐 ${new Date().toISOString()}\n`);
 
-  try {
-    await runAgentCycle();
-    console.log('\n✅ Ciclo completado. Saliendo.');
+  // Modo command (Orchestrator override COMMAND_JSON).
+  // Si está presente, ejecutamos solo la acción específica y salimos —
+  // sin correr el ciclo agéntico normal.
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    await runCommandMode(cmd, {
+      // Handlers concretos cuando aparezcan reglas, ej:
+      // force_review_logs: async () => { await runAgentCycle(createCollector()); },
+    });
     process.exit(0);
+  }
+
+  const runId     = uuidv4();
+  const startedAt = new Date();
+  const collector = createCollector();
+  let runStatus: 'success' | 'partial_failure' | 'failure' = 'success';
+  let cycleOk = false;
+
+  try {
+    await runAgentCycle(collector);
+    cycleOk = true;
+    if (collector.errors.length > 0) {
+      runStatus = 'partial_failure';
+    }
+    console.log('\n✅ Ciclo completado.');
   } catch (err) {
     console.error('\n❌ Error en el ciclo:', err);
-    process.exit(1);
+    runStatus = 'failure';
+    collector.errors.push((err as Error).message?.slice(0, 200) || 'unknown');
   }
+
+  const finishedAt = new Date();
+
+  // Publish al cerebro — antes de exit, con guardia non-fatal.
+  const event: AgentRunEvent = {
+    agentId:    'going-agent',
+    runId,
+    startedAt:  startedAt.toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    durationMs: finishedAt.getTime() - startedAt.getTime(),
+    status:     runStatus,
+    metrics:        collector.metrics,
+    anomalies:      collector.anomalies,
+    actionsTaken:   collector.actionsTaken,
+    actionsProposed: collector.actionsProposed,
+    meta: {
+      gitSha: process.env.GIT_SHA,
+      runEnv: (process.env.NODE_ENV === 'production' ? 'production' : 'staging'),
+    },
+  };
+
+  await publishAgentRunEvent(event).catch(e =>
+    console.error('[going-agent] publish failed (non-fatal):', e),
+  );
+
+  process.exit(cycleOk ? 0 : 1);
 }
 
 main();

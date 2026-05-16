@@ -1,8 +1,16 @@
+import { v4 as uuidv4 } from 'uuid';
 import { runMarketingMonitor } from './monitors/metrics.monitor';
+import { driverBonusZone } from './actions/driver-bonus-zone';
+import {
+  AgentRunEvent,
+  parseCommandFromEnv,
+  publishAgentRunEvent,
+  runCommandMode,
+} from '@going-platform/cerebro-contracts';
 
 // ============================================================
 // Going – Marketing Agent Entry Point
-// Runs as Cloud Run Job (triggered by Cloud Scheduler)
+// Runs as Cloud Run Job (triggered by Cloud Scheduler: lunes 9am Ecuador)
 // ============================================================
 
 // ─── Validación temprana de env vars requeridas ───────────────
@@ -17,15 +25,65 @@ async function main(): Promise<void> {
   console.log('🚀 Going Marketing Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);
 
-  try {
-    await runMarketingMonitor();
-    console.log('✅ Marketing Agent completed successfully');
-  } catch (error) {
-    console.error('❌ Marketing Agent failed:', error);
-    process.exit(1);
+  // Modo command (Orchestrator override COMMAND_JSON).
+  // Triggereado por agent-bridge cuando una intención Cat 3 es aprobada
+  // via Telegram ack en /admin/cerebro/decisions/[id].
+  const cmd = parseCommandFromEnv();
+  if (cmd) {
+    const result = await runCommandMode(cmd, {
+      driver_bonus_zone: async (c) => {
+        const r = await driverBonusZone(c.payload);
+        if (!r.ok) throw new Error(r.error || 'driver_bonus_zone failed');
+      },
+    });
+    process.exit(result.ok ? 0 : 1);
   }
 
-  process.exit(0);
+  const runId     = uuidv4();
+  const startedAt = new Date();
+  let runStatus: 'success' | 'partial_failure' | 'failure' = 'success';
+  let runResult: Awaited<ReturnType<typeof runMarketingMonitor>> | null = null;
+
+  try {
+    runResult = await runMarketingMonitor();
+
+    if (runResult.collector.errors.length > 0) {
+      runStatus = 'partial_failure';
+      console.warn(`⚠️ Marketing Agent terminó con errores parciales: ${runResult.collector.errors.join(', ')}`);
+    } else {
+      console.log('✅ Marketing Agent completed successfully');
+    }
+  } catch (error) {
+    console.error('❌ Marketing Agent failed:', error);
+    runStatus = 'failure';
+  } finally {
+    const finishedAt = new Date();
+
+    if (runResult) {
+      const event: AgentRunEvent = {
+        agentId:    'marketing-agent',
+        runId,
+        startedAt:  startedAt.toISOString(),
+        finishedAt: finishedAt.toISOString(),
+        durationMs: finishedAt.getTime() - startedAt.getTime(),
+        status:     runStatus,
+        metrics:        runResult.collector.metrics,
+        anomalies:      runResult.collector.anomalies,
+        actionsTaken:   runResult.collector.actionsTaken,
+        actionsProposed: runResult.collector.actionsProposed,
+        meta: {
+          gitSha: process.env.GIT_SHA,
+          runEnv: (process.env.NODE_ENV === 'production' ? 'production' : 'staging'),
+        },
+      };
+
+      await publishAgentRunEvent(event).catch(e =>
+        console.error('[marketing-agent] publish failed (non-fatal):', e),
+      );
+    }
+
+    process.exit(runStatus === 'failure' ? 1 : 0);
+  }
 }
 
 main();

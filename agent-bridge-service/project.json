@@ -1,0 +1,20 @@
+{
+  "name": "agent-bridge-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "agent-bridge-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/agent-bridge-service",
+        "main": "agent-bridge-service/src/main.ts",
+        "tsConfig": "agent-bridge-service/tsconfig.app.json",
+        "webpackConfig": "agent-bridge-service/webpack.config.js"
+      }
+    }
+  }
+}

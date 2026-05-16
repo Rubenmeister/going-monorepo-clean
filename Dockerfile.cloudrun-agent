@@ -1,0 +1,76 @@
+# Generic Cloud Run Job Dockerfile para los agentes de Going (cron-triggered).
+#
+# Diferencia con `Dockerfile.cloudrun-service` (NestJS services):
+#   - Los agentes son standalone TypeScript scripts (no usan @nx/webpack).
+#   - El runtime ejecuta `node dist/index.js` directo, no NestJS.
+#   - Build context = monorepo root para resolver workspace deps
+#     (libs/cerebro-contracts vía pnpm workspace protocol).
+#
+# Uso:
+#   docker build -f Dockerfile.cloudrun-agent --build-arg AGENT_NAME=ops-agent .
+#
+# Cada agente debe tener:
+#   - "build": "tsc" en su package.json
+#   - tsconfig.json con outDir: "./dist"
+#   - main entry en src/index.ts
+#   - estar listado en pnpm-workspace.yaml
+
+ARG AGENT_NAME=ops-agent
+
+# ── Stage 1: Builder ────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
+ARG AGENT_NAME
+
+WORKDIR /repo
+
+# Pin pnpm@10 — pnpm 11 requiere Node ≥22.13, este Dockerfile usa node:20.
+RUN corepack enable && corepack prepare pnpm@10 --activate
+
+# Workspace meta — copiamos primero para aprovechar layer cache si solo
+# cambia el código del agente.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc nx.json tsconfig.base.json ./
+
+# Código del agente + libs compartidas (workspace dependency).
+COPY ${AGENT_NAME}/ ./${AGENT_NAME}/
+COPY libs/cerebro-contracts/ ./libs/cerebro-contracts/
+
+# Install workspace-aware: sólo las deps necesarias para AGENT_NAME y sus
+# transitive workspace deps. Mucho más rápido que un install full del monorepo.
+RUN pnpm install --filter "${AGENT_NAME}..." --no-frozen-lockfile
+
+# Compilar PRIMERO cerebro-contracts (workspace dep). main de su package.json
+# apunta a dist/index.js — sin pre-build, pnpm deploy copia el src/*.ts y
+# Node.js falla en runtime con SyntaxError al intentar ejecutar `export type`.
+RUN pnpm --filter "@going-platform/cerebro-contracts" run build || true
+
+# Compilar el agente.
+RUN pnpm --filter "${AGENT_NAME}" run build
+
+# `pnpm deploy` aplana node_modules en /deploy/ — sin symlinks pnpm-store,
+# listo para correr con `node` plano en runtime.
+RUN pnpm --filter "${AGENT_NAME}" --prod --legacy deploy /deploy
+
+# ── Stage 2: Runtime ────────────────────────────────────────────────────────
+FROM node:20-slim AS runtime
+WORKDIR /app
+
+# CA certs para TLS contra Mongo Atlas, Pub/Sub, Telegram, etc.
+# `git` lo necesita going-agent (clona el repo + commit/push); para los
+# demás agentes el binario suma ~5MB y queda sin uso, costo aceptable
+# para mantener un único Dockerfile genérico.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Identidad del going-agent al hacer commits en agent/fixes (sin efecto
+# para los demás agentes que no tocan git).
+RUN git config --global user.email "agent@goingec.com" \
+ && git config --global user.name "Going Agent"
+
+COPY --from=builder /deploy/dist ./dist
+COPY --from=builder /deploy/node_modules ./node_modules
+COPY --from=builder /deploy/package.json ./package.json
+
+ENV NODE_ENV=production
+
+CMD ["node", "dist/index.js"]

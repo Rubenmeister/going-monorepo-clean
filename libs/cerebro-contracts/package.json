@@ -1,0 +1,19 @@
+{
+  "name": "@going-platform/cerebro-contracts",
+  "version": "0.1.0",
+  "description": "Tipos + schemas Zod + helper Pub/Sub para que los agentes de Going publiquen eventos al cerebro-service. Single source of truth del AgentRunEvent.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'no tests yet'"
+  },
+  "keywords": ["cerebro", "agent", "pubsub", "going", "contracts"],
+  "author": "Going Platform",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/pubsub": "^4.7.0",
+    "zod": "^3.23.8"
+  }
+}

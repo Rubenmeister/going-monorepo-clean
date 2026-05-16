@@ -62,6 +62,38 @@ export class MongoConversationRepository {
     );
   }
 
+  /**
+   * Marca como 'resolved' todas las conversaciones en estado 'handoff' cuyo
+   * updatedAt sea más viejo que `olderThanMs`. Devuelve el número modificado.
+   * Usado por el orchestrator (cleanup_handoffs action) cuando MyCortex
+   * detecta tickets fantasma de épocas pre-actuales.
+   *
+   * Conservador: solo toca handoffs que ya estaban estancados (sin operatorId
+   * asignado). Si un operador ya está atendiendo, no interferimos.
+   */
+  async resolveStaleHandoffs(olderThanMs: number): Promise<number> {
+    const cutoff = new Date(Date.now() - olderThanMs);
+    const result = await this.conversationModel.updateMany(
+      {
+        status:    'handoff',
+        updatedAt: { $lt: cutoff },
+        $or: [
+          { operatorId: { $exists: false } },
+          { operatorId: null },
+          { operatorId: '' },
+        ],
+      },
+      {
+        $set: {
+          status:        'resolved',
+          handoffReason: undefined,
+          updatedAt:     new Date(),
+        },
+      },
+    );
+    return result.modifiedCount ?? 0;
+  }
+
   async getHandoffQueue(status?: string): Promise<ConversationEntity[]> {
     const query: any = { status: 'handoff' };
     if (status) {
@@ -82,5 +114,57 @@ export class MongoConversationRepository {
       .find({ status: { $in: ['active', 'handoff'] } })
       .sort({ createdAt: -1 })
       .lean();
+  }
+
+  // ─── Métricas para el cerebro-service ─────────────────────────────
+  //
+  // Estos counts son baratos (Mongo cuenta sobre índices status + priority).
+  // Los usa MetricsService cada 10 min para componer el snapshot que se
+  // publica al cerebro.
+
+  async countByStatus(status: 'active' | 'handoff' | 'resolved'): Promise<number> {
+    return this.conversationModel.countDocuments({ status });
+  }
+
+  async countHandoffByPriority(priority: 'RED' | 'ORANGE' | 'NORMAL'): Promise<number> {
+    return this.conversationModel.countDocuments({ status: 'handoff', priority });
+  }
+
+  /** Conversaciones nuevas (createdAt >= since). */
+  async countCreatedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({ createdAt: { $gte: since } });
+  }
+
+  /** Tickets de handoff abiertos en una ventana — basados en createdAt. */
+  async countHandoffsCreatedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({
+      status: 'handoff',
+      createdAt: { $gte: since },
+    });
+  }
+
+  /**
+   * Aproximación: tickets resueltos en la ventana = status='resolved' y
+   * updatedAt >= since. (No tenemos resolvedAt explícito; el updateStatus
+   * actualiza updatedAt cuando el operador cierra el handoff.)
+   */
+  async countResolvedSince(since: Date): Promise<number> {
+    return this.conversationModel.countDocuments({
+      status: 'resolved',
+      updatedAt: { $gte: since },
+    });
+  }
+
+  /**
+   * Edad de la handoff RED/ORANGE más vieja sin atender (status=handoff).
+   * Devuelve el `createdAt` o null si la cola está limpia.
+   */
+  async oldestHandoffByPriority(priority: 'RED' | 'ORANGE' | 'NORMAL'): Promise<Date | null> {
+    const doc = await this.conversationModel
+      .findOne({ status: 'handoff', priority })
+      .sort({ createdAt: 1 })
+      .select('createdAt')
+      .lean();
+    return doc?.createdAt ?? null;
   }
 }
