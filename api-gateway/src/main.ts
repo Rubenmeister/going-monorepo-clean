@@ -102,6 +102,28 @@ async function bootstrap() {
       done();
     }
   );
+
+  // ── CORS GLOBAL HOOK ──────────────────────────────────────
+  // Fallback que garantiza Access-Control-Allow-Origin en TODAS las
+  // respuestas (incluyendo 401 de passport, 429 de rate-limit, 500/503
+  // genéricos, etc.). Sin esto, errores de cualquier capa rompen el flujo
+  // con "Failed to fetch" desde el browser porque no traen CORS.
+  fastifyInstance.addHook(
+    'onSend',
+    (request: any, reply: any, _payload: any, done: () => void) => {
+      const origin = request.headers?.origin;
+      const allowed = (process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((o: string) => o.trim())
+        .filter(Boolean);
+      if (origin && allowed.includes(origin) && !reply.getHeader('access-control-allow-origin')) {
+        reply.header('Access-Control-Allow-Origin', origin);
+        reply.header('Vary', 'Origin');
+        reply.header('Access-Control-Allow-Credentials', 'true');
+      }
+      done();
+    }
+  );
   // Copy parsed body to raw IncomingMessage so proxy middleware can read req.body
   fastifyInstance.addHook(
     'preHandler',

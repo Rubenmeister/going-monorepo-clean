@@ -37,21 +37,6 @@ const SLIDES = [
   { region: 'Galápagos', subtitle: 'Islas únicas en el mundo', img: '/images/galàpagos.png', color: '#f59e0b' },
 ];
 
-const EC_CITIES = [
-  // Rutas Going (aeropuerto + principales)
-  'Aeropuerto Quito (Tababela)',
-  'Quito',
-  // Ruta Sierra Centro
-  'Ambato','Baños','Latacunga','Salcedo','Píllaro','Cevallos','Tisaleo','Mocha',
-  // Ruta Norte
-  'Ibarra','Otavalo','Atuntaqui','Peguche',
-  // Ruta Costa (SD)
-  'El Carmen','La Concordia','Santo Domingo',
-  // Otras ciudades Ecuador
-  'Guayaquil','Cuenca','Riobamba','Loja','Manta','Portoviejo','Esmeraldas',
-  'Machala','Tulcán','Babahoyo','Lago Agrio','Tena','Puyo','Macas','Zamora','Guaranda',
-];
-
 const REGIONS = {
   Sierra: {
     color: '#6366f1',
@@ -103,33 +88,6 @@ const ACADEMY_COURSES = [
   { title: 'Manejo seguro y eficiente', level: 'Avanzado', duration: '2 hrs', icon: '🛡️', color: '#16a34a' },
 ];
 
-/* ── LocationInput ──────────────────────────────────────────── */
-function LocationInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
-  const [open, setOpen] = useState(false);
-  const filtered = EC_CITIES.filter(c => c.toLowerCase().includes(value.toLowerCase()) && value.length > 0);
-  return (
-    <div className="relative">
-      <input
-        value={value}
-        onChange={e => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-800 text-sm"
-      />
-      {open && filtered.length > 0 && (
-        <ul className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-xl max-h-48 overflow-y-auto">
-          {filtered.map(c => (
-            <li key={c} onMouseDown={() => { onChange(c); setOpen(false); }} className="px-4 py-2.5 hover:bg-gray-50 cursor-pointer text-sm text-gray-700">
-              📍 {c}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 /* ── Main Page ──────────────────────────────────────────────── */
 export default function HomePage() {
   // Fuente de verdad: el store de auth (vía useIsAuthenticated). Devuelve
@@ -142,22 +100,6 @@ export default function HomePage() {
     const id = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 5000);
     return () => clearInterval(id);
   }, []);
-
-  // Search
-  const [origin, setOrigin] = useState('');
-  const [dest, setDest] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams({ ...(origin && { from: origin }), ...(dest && { to: dest }), ...(date && { date }), ...(time && { time }) });
-    // Siempre ir a /ride — la confirmación del viaje pedirá login si es necesario
-    window.location.href = `/ride${params.toString() ? '?' + params.toString() : ''}`;
-  };
-
-  // (handleHeroCTA eliminado: el botón hero "Buscar viaje" se quitó porque
-  // duplicaba al form de búsqueda que está justo debajo en #search-card)
 
   // Destinos
   const [activeRegion, setActiveRegion] = useState<keyof typeof REGIONS>('Sierra');
@@ -212,33 +154,21 @@ export default function HomePage() {
       </section>
 
       {/* ── Search Card ───────────────────────────────────── */}
+      {/* Card simplificada: el form completo (origen, destino, fecha, hora)
+          vive en /ride. Aquí ofrecemos un solo CTA prominente para llevar
+          al usuario al flujo real sin duplicar inputs. */}
       <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4" style={{ marginTop: -64 }}>
         <FadeIn>
-          <div className="bg-white rounded-3xl shadow-2xl p-8">
-            <h2 className="text-gray-900 font-black text-2xl mb-6 text-center">¿A dónde viajas hoy?</h2>
-            <form onSubmit={handleSearch}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">📍 Origen</label>
-                  <LocationInput value={origin} onChange={setOrigin} placeholder="Ciudad de origen" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">🎯 Destino</label>
-                  <LocationInput value={dest} onChange={setDest} placeholder="Ciudad de destino" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">📅 Fecha</label>
-                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-sm text-gray-800" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">🕐 Hora</label>
-                  <input type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-sm text-gray-800" />
-                </div>
-              </div>
-              <button type="submit" className="w-full py-4 text-white font-black text-lg rounded-2xl transition-all hover:opacity-90 hover:scale-[1.01] shadow-lg" style={{ backgroundColor: '#ff4c41' }}>
-                Buscar viaje →
-              </button>
-            </form>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
+            <h2 className="text-gray-900 font-black text-2xl mb-2">¿A dónde viajas hoy?</h2>
+            <p className="text-gray-500 text-sm mb-6">Encuentra tu próxima ruta en segundos.</p>
+            <a
+              href="/ride"
+              className="inline-block w-full sm:w-auto px-10 py-4 text-white font-black text-lg rounded-2xl transition-all hover:opacity-90 hover:scale-[1.01] shadow-lg"
+              style={{ backgroundColor: '#ff4c41' }}
+            >
+              Buscar viaje →
+            </a>
           </div>
         </FadeIn>
       </section>

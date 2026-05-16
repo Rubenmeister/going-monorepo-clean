@@ -8,14 +8,16 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoiZ29pbmdhcHAiLCJhIjoiY21wNG9heDUxMDF5ZTJxcTIyM25jN2VwbSJ9.44EiHGLQ_7f7sixNxXLPig"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoiZ29pbmdhcHAiLCJhIjoiY21wNG9heDUxMDF5ZTJxcTIyM25jN2VwbSJ9.44EiHGLQ_7f7sixNxXLPig"
       }
     },
     "production": {
@@ -23,7 +25,8 @@
       "credentialsSource": "remote",
       "prebuildCommand": "npx expo prebuild --clean",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.goingec.com"
+        "EXPO_PUBLIC_API_URL": "https://api.goingec.com",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "pk.eyJ1IjoiZ29pbmdhcHAiLCJhIjoiY21wNG9heDUxMDF5ZTJxcTIyM25jN2VwbSJ9.44EiHGLQ_7f7sixNxXLPig"
       }
     }
   },

@@ -32,7 +32,7 @@ const REQUIRED_DOCS: { key: DocKey; label: string; desc: string; icon: string; r
   { key: 'cedula_ruc', label: 'Cédula o RUC', desc: 'Cédula si eres persona natural. RUC si operas como empresa.', icon: '🪪', required: true },
   { key: 'rnt', label: 'Registro Nacional de Turismo (RNT) o LUAE', desc: 'Habilitación legal para operar. Si no lo tienes aún, puedes aplicar provisionalmente.', icon: '📋', required: false },
   { key: 'seguro', label: 'Póliza de seguro de responsabilidad civil', desc: 'Obligatoria para actividades de riesgo. Debe cubrir a los participantes durante las actividades.', icon: '🛡️', required: true },
-  { key: 'foto_actividad', label: 'Foto de tu operación en acción', desc: 'Una foto de una actividad real. Transmite confianza a los viajeros.', icon: '📸', required: true },
+  { key: 'foto_actividad', label: 'Foto de tu operación en acción', desc: 'Una foto de una actividad real. Transmite confianza a quienes viajan.', icon: '📸', required: true },
   { key: 'lista_equipos', label: 'Lista de equipos de seguridad', desc: 'PDF o foto de tu inventario: cascos, arneses, chalecos, kit de primeros auxilios, etc.', icon: '🎒', required: false },
 ];
 
@@ -135,7 +135,7 @@ export default function OperadoresRegistroPage() {
       <div className="text-white py-10 px-6" style={{ background: 'linear-gradient(135deg, #451a03 0%, #78350f 70%, #d9770620 100%)' }}>
         <div className="max-w-2xl mx-auto">
           <Link href="/auth/register" className="text-amber-300 text-sm hover:text-white mb-4 inline-block">← Volver al registro</Link>
-          <h1 className="text-3xl font-bold mb-2">Activar tu perfil de Operador</h1>
+          <h1 className="text-3xl font-bold mb-2">Activa tu perfil como operadora u operador</h1>
           <p className="text-amber-200 text-sm">Lleva a viajeros a los rincones más increíbles de Ecuador con tu operación verificada.</p>
         </div>
       </div>

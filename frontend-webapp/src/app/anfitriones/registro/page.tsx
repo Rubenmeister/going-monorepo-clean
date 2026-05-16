@@ -141,7 +141,7 @@ export default function AnfitrionesRegistroPage() {
       <div className="text-white py-10 px-6" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 70%, #7c3aed20 100%)' }}>
         <div className="max-w-2xl mx-auto">
           <Link href="/auth/register" className="text-purple-300 text-sm hover:text-white mb-4 inline-block">← Volver al registro</Link>
-          <h1 className="text-3xl font-bold mb-2">Activar tu perfil de Anfitrión</h1>
+          <h1 className="text-3xl font-bold mb-2">Activa tu perfil como anfitriona o anfitrión</h1>
           <p className="text-purple-200 text-sm">Publica tu espacio y empieza a recibir huéspedes de todo el mundo.</p>
         </div>
       </div>

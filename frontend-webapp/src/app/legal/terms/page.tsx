@@ -63,7 +63,7 @@ export default function TermsPage() {
               y la aplicación móvil Going, domiciliada en Echeverría N2-170, Quito, Ecuador.
             </p>
             <p className="mt-2">
-              Al registrarse, acceder o utilizar cualquier servicio de la plataforma, el usuario
+              Al registrarse, acceder o utilizar cualquier servicio de la plataforma, la persona usuaria
               declara haber leído, comprendido y aceptado en su totalidad los presentes Términos.
               Si no está de acuerdo, deberá abstenerse de usar la plataforma.
             </p>
@@ -83,7 +83,7 @@ export default function TermsPage() {
 
           <section id="registro">
             <h2 className="text-xl font-bold text-gray-900 mb-3">3. Registro y Cuenta de Usuario</h2>
-            <p className="mb-3">Para acceder a la mayoría de los servicios, el usuario debe crear una cuenta. Al registrarse, el usuario se compromete a:</p>
+            <p className="mb-3">Para acceder a la mayoría de los servicios, la persona usuaria debe crear una cuenta. Al registrarse, la persona usuaria se compromete a:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Proporcionar información veraz, completa y actualizada.</li>
               <li>Mantener la confidencialidad de sus credenciales de acceso.</li>
@@ -105,7 +105,7 @@ export default function TermsPage() {
                 comparten ruta y costo con un conductor verificado.
               </li>
               <li>
-                <strong>Transporte privado:</strong> servicio de movilidad exclusivo para el usuario
+                <strong>Transporte privado:</strong> servicio de movilidad exclusivo para la persona usuaria
                 o grupo, con conductor asignado y tarifa fija.
               </li>
               <li>
@@ -122,9 +122,9 @@ export default function TermsPage() {
           <section id="reserva">
             <h2 className="text-xl font-bold text-gray-900 mb-3">5. Proceso de Reserva y Contratación</h2>
             <p>
-              La contratación se perfecciona cuando el usuario completa el proceso de reserva en la
+              La contratación se perfecciona cuando la persona usuaria completa el proceso de reserva en la
               plataforma y recibe la confirmación por notificación en la aplicación. Going actúa como
-              intermediario tecnológico entre el usuario y el proveedor del servicio.
+              intermediario tecnológico entre la persona usuaria y el proveedor del servicio.
             </p>
             <p className="mt-2">
               Para viajes inmediatos, la plataforma asignará al conductor disponible más cercano.
@@ -179,7 +179,7 @@ export default function TermsPage() {
                 por cada operador y se muestran claramente antes de confirmar la reserva.
               </li>
               <li>
-                <strong>Envíos:</strong> el usuario puede cancelar sin cargo hasta que el conductor
+                <strong>Envíos:</strong> la persona usuaria puede cancelar sin cargo hasta que el conductor
                 haya recogido el paquete. Una vez recogido, no aplica reembolso.
               </li>
               <li>
@@ -197,7 +197,7 @@ export default function TermsPage() {
               <li>No reproducir, distribuir, modificar o explotar comercialmente el contenido de la plataforma sin autorización expresa.</li>
               <li>No intentar acceder a áreas restringidas o realizar ingeniería inversa de la plataforma.</li>
               <li>No usar la plataforma para actividades ilegales, fraudulentas o que dañen a terceros.</li>
-              <li>Tratar con respeto a los conductores, proveedores y demás usuarios de la comunidad Going.</li>
+              <li>Tratar con respeto a quienes conducen, proveen servicios y forman parte de la comunidad Going.</li>
               <li>Proporcionar información veraz en reservas, envíos y perfiles.</li>
               <li>No enviar objetos prohibidos por ley ecuatoriana ni contenido peligroso a través del servicio de envíos.</li>
             </ul>
@@ -250,7 +250,7 @@ export default function TermsPage() {
           <section id="privacidad">
             <h2 className="text-xl font-bold text-gray-900 mb-3">12. Privacidad y Protección de Datos</h2>
             <p>
-              El tratamiento de los datos personales del usuario se rige por la{' '}
+              El tratamiento de los datos personales dla persona usuaria se rige por la{' '}
               <Link href="/legal/privacy" className="text-blue-600 hover:underline font-medium">
                 Política de Privacidad
               </Link>{' '}
@@ -311,7 +311,7 @@ export default function TermsPage() {
 
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 italic">
-              Estos Términos y Condiciones constituyen el acuerdo completo entre el usuario y
+              Estos Términos y Condiciones constituyen el acuerdo completo entre la persona usuaria y
               Going Ecuador S.A.S. respecto al uso de la plataforma y reemplazan cualquier
               acuerdo anterior sobre la misma materia.
             </p>

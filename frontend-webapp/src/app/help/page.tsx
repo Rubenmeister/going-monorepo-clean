@@ -34,10 +34,10 @@ const FAQS: { category: string; q: string; a: string }[] = [
   { category: 'pagos', q: '¿Going cobra comisión?', a: 'Going cobra una comisión del 15% sobre el valor del servicio. Esta ya está incluida en el precio que ves al reservar — no hay cargos ocultos.' },
 
   // Seguridad
-  { category: 'seguridad', q: '¿Cómo sé que el conductor es verificado?', a: 'Todos los conductores pasan por verificación de cédula, licencia, SOAT, matrícula y antecedentes penales. Verás el badge "Verificado ✓" en su perfil. También puedes ver sus calificaciones y reseñas de otros usuarios.' },
+  { category: 'seguridad', q: '¿Cómo sé que mi conductor o conductora es verificada?', a: 'Todas las conductoras y conductores pasan por verificación de cédula, licencia, SOAT, matrícula y antecedentes penales. Verás el badge "Verificado ✓" en su perfil. También puedes ver sus calificaciones y reseñas de otras personas usuarias.' },
   { category: 'seguridad', q: '¿Qué hago si tengo una emergencia durante el viaje?', a: 'Usa el botón SOS dentro de la app activa. También puedes escribirnos al WhatsApp de emergencias. Siempre comparte tu ruta en tiempo real con un familiar desde la app.' },
-  { category: 'seguridad', q: '¿Pueden ver mis datos personales los conductores?', a: 'Los conductores solo ven tu nombre y número de teléfono para coordinar el viaje. Nunca comparten ni almacenan tu información adicional. Ver nuestra Política de Privacidad para más detalles.' },
-  { category: 'seguridad', q: '¿Cómo reporto un conductor o incidente?', a: 'Al finalizar el viaje puedes calificar y dejar un reporte. También puedes escribirnos directamente por WhatsApp. Todos los reportes son revisados por nuestro equipo en menos de 24 horas.' },
+  { category: 'seguridad', q: '¿Pueden ver mis datos personales las conductoras y conductores?', a: 'Quienes conducen solo ven tu nombre y número de teléfono para coordinar el viaje. Nunca comparten ni almacenan tu información adicional. Ver nuestra Política de Privacidad para más detalles.' },
+  { category: 'seguridad', q: '¿Cómo reporto una persona conductora o un incidente?', a: 'Al finalizar el viaje puedes calificar y dejar un reporte. También puedes escribirnos directamente por WhatsApp. Todos los reportes son revisados por nuestro equipo en menos de 24 horas.' },
 
   // Técnico
   { category: 'tecnico', q: '¿La app no carga o está lenta. Qué hago?', a: 'Primero verifica tu conexión a internet. Si el problema persiste, cierra y vuelve a abrir la app. Si aún falla, desinstala y reinstala la última versión desde la tienda.' },

@@ -58,7 +58,7 @@ const cities = [
 ];
 
 const sostenibilidadCards = [
-  { icon: '🌱', title: 'Flota hacia vehículos limpios', desc: 'Going incentiva activamente a los conductores a migrar a vehículos híbridos y eléctricos con tarifas preferenciales y bonificaciones.' },
+  { icon: '🌱', title: 'Flota hacia vehículos limpios', desc: 'Going incentiva activamente a conductoras y conductores a migrar a vehículos híbridos y eléctricos con tarifas preferenciales y bonificaciones.' },
   { icon: '♻️', title: 'Operación sin papel', desc: 'Contratos, recibos y comunicaciones son 100% digitales. Cero papel en toda la cadena operativa de Going.' },
   { icon: '🌍', title: 'Neutralidad de carbono 2030', desc: 'Going está comprometido a compensar el 100% de las emisiones generadas por su operación antes del año 2030.' },
   { icon: '💧', title: 'Oficinas sostenibles', desc: 'Nuestras instalaciones operan con energía renovable certificada y programas de gestión de residuos.' },
