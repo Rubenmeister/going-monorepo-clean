@@ -83,12 +83,14 @@ export class VoiceService {
     try {
       const { SpeechClient } = await import('@google-cloud/speech');
       const speechClient = new SpeechClient();
-      // Sin sampleRateHertz: STT lo auto-detecta del header OGG. WhatsApp
-      // entrega voice notes a sample rates variados (8/16/48 kHz), forzar
-      // 16000 fijo causaba transcript vacío en silencio.
+      // Sample rate: WhatsApp Cloud API entrega OGG_OPUS a 48000 Hz (default
+      // del spec Opus). Cloud STT v1 NO auto-detecta del header — hay que
+      // pasarlo explícito. Antes estaba 16000 lo cual fallaba silencioso con
+      // INVALID_ARGUMENT en algunos clientes (Whats nativo usa 48k).
       const [response] = await speechClient.recognize({
         config: {
           encoding: 'OGG_OPUS' as any,
+          sampleRateHertz: 48000,
           languageCode: LANG.es.sttPrimary,
           // Cloud STT v1 acepta hasta 4 alternativas adicionales.
           alternativeLanguageCodes: [
