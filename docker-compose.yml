@@ -378,31 +378,6 @@ services:
     networks:
       - going_network
 
-  # AR Service (Augmented Reality)
-  ar-service:
-    build:
-      context: .
-      dockerfile: ar-service/Dockerfile
-      args:
-        SERVICE_NAME: ar-service
-        SERVICE_PORT: 3016
-    container_name: going-ar
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3016
-      AR_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-    ports:
-      - "3016:3016"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - going_network
-
   # ML Service (Machine Learning)
   ml-service:
     build:
@@ -428,31 +403,6 @@ services:
     networks:
       - going_network
 
-  # Blockchain Service
-  blockchain-service:
-    build:
-      context: .
-      dockerfile: blockchain-service/Dockerfile
-      args:
-        SERVICE_NAME: blockchain-service
-        SERVICE_PORT: 3018
-    container_name: going-blockchain
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3018
-      BLOCKCHAIN_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-    ports:
-      - "3018:3018"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - going_network
-
   # IoT Service (Internet of Things)
   iot-service:
     build:
@@ -470,56 +420,6 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3019:3019"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - going_network
-
-  # Recommendation Service
-  recommendation-service:
-    build:
-      context: .
-      dockerfile: recommendation-service/Dockerfile
-      args:
-        SERVICE_NAME: recommendation-service
-        SERVICE_PORT: 3020
-    container_name: going-recommendation
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3020
-      RECOMMENDATION_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-    ports:
-      - "3020:3020"
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - going_network
-
-  # Subscription Service
-  subscription-service:
-    build:
-      context: .
-      dockerfile: subscription-service/Dockerfile
-      args:
-        SERVICE_NAME: subscription-service
-        SERVICE_PORT: 3021
-    container_name: going-subscription
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3021
-      SUBSCRIPTION_DB_URL: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongodb:27017/going_platform
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-    ports:
-      - "3021:3021"
     depends_on:
       mongodb:
         condition: service_healthy

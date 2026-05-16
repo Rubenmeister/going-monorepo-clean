@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { authFetch, getStoredToken, parseJwtPayload, redirectToLogin } from '@/lib/providers/auth-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com/api';
 
 interface PointsData {
   balance: number;

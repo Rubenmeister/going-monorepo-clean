@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { authFetch } from '@/lib/providers/auth-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 interface PeriodStats { trips: number; earnings: number }
 interface Stats {

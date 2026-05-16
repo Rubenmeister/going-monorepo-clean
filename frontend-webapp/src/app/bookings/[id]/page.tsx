@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { rideService } from '@/services/ride/rideService';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com/api';
 
 interface TripDetail {
   id: string;

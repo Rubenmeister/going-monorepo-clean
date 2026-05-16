@@ -17,7 +17,7 @@ import { applyEmpresasSessionCookie } from '@/lib/empresas/empresas-cookie';
 const BACKEND =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 export async function POST(req: NextRequest) {
   try {

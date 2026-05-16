@@ -17,7 +17,7 @@ import { authFetch } from '@/lib/providers/auth-client';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  'https://api-gateway-780842550857.us-central1.run.app';
+  'https://api.goingec.com';
 
 class PaymentService {
   // ─── Cálculo de resumen ───────────────────────────────────────────────────────

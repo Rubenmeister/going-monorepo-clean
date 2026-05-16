@@ -77,7 +77,9 @@ steps:
           --min-instances 0 \
           --max-instances 5 \
           --timeout 60 \
-          --update-env-vars NODE_ENV=production,JWT_EXPIRES_IN=15m,FRONTEND_URL=https://goingec.com \
+          --vpc-connector=going-connector \
+          --vpc-egress=all-traffic \
+          --update-env-vars="^|^NODE_ENV=production|JWT_ACCESS_TOKEN_EXPIRES_IN=7d|JWT_REFRESH_TOKEN_EXPIRES_IN=30d|FRONTEND_URL=https://goingec.com|CORS_ORIGINS=https://goingec.com,https://www.goingec.com,https://admin.goingec.com,https://app.goingec.com,https://empresas.goingec.com,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003" \
           --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest
         echo "=== Deploy complete for ${_SERVICE_NAME} ==="
 

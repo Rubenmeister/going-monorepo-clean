@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getStoredToken, setStoredAuth } from '@/lib/providers/auth-client';
 
-const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
+const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 function LoginForm() {
   const searchParams = useSearchParams();
