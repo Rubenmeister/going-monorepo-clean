@@ -1,0 +1,69 @@
+# orchestrator-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico.
+#
+# Trigger:
+#   gcloud builds submit . --config=orchestrator-service/cloudbuild.yaml --project=going-5d1ae
+#
+# Antes del primer deploy:
+#   1. Crear SA orchestrator-service-sa
+#   2. Grant secretmanager.secretAccessor
+
+steps:
+  # 1. Build con Dockerfile genérico de NestJS services.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=orchestrator-service
+      - -t
+      - gcr.io/$PROJECT_ID/orchestrator-service:latest
+      - .
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/orchestrator-service:latest
+
+  # 2. Deploy.
+  #
+  # min-instances=1 OBLIGATORIO — el MyCortexPollerService usa @Cron
+  # cada 5 min. Con scale-to-zero el container se duerme entre requests
+  # y el timer del cron muere.
+  #
+  # ORCHESTRATOR_EXECUTE_ENABLED=true desde 2026-05-09. MAX_AUTO_LEVEL=2
+  # (Cat 1 + Cat 2 reversibles auto-ejecutan; Cat 3 sigue Telegram-ack).
+  # Para pausar sin redeploy: gcloud run services update ... --update-env-vars
+  # ORCHESTRATOR_EXECUTE_ENABLED=false (no toca el cloudbuild).
+  # Para subir/bajar nivel: bash scripts/cerebro/activate-orchestrator.sh <0-3>.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - orchestrator-service
+      - --image=gcr.io/$PROJECT_ID/orchestrator-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=512Mi
+      - --min-instances=1
+      - --max-instances=2
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,ORCHESTRATOR_EXECUTE_ENABLED=true,ORCHESTRATOR_MAX_AUTO_LEVEL=2,ORCHESTRATOR_POLL_ENABLED=true,MYCORTEX_URL=https://mycortex-service-780842550857.us-central1.run.app,AGENT_BRIDGE_URL=https://agent-bridge-service-780842550857.us-central1.run.app
+      - --set-secrets=MONGO_URL=MONGO_URL-prod:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
+      - --service-account=orchestrator-service-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/orchestrator-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

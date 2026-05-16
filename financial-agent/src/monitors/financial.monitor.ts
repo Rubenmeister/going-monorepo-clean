@@ -8,9 +8,40 @@ import { generateMonthlyIVAReport, generateATS } from '../sri/sri.report';
 import { detectDriverAnomalies, projectMonthlyRevenue, compareWeeklyPerformance } from '../analysis/ai.analysis';
 import { getUpcomingDeadlines, formatDeadlinesForTelegram, hasUrgentDeadlines } from '../sri/sri.deadlines';
 import { sendGmail } from './email.notify';
+import {
+  Anomaly,
+  ActionTaken,
+  ActionProposed,
+} from '@going-platform/cerebro-contracts';
+
+// ─── RunCollector compartido (Cerebro) ───────────────────────
+//
+// Cada función del monitor empuja a este recolector. `runFinancialMonitor`
+// lo retorna y `index.ts` lo envuelve en un AgentRunEvent que se publica
+// al cerebro-service.
+
+export interface RunCollector {
+  metrics:         Record<string, number | string>;
+  anomalies:       Anomaly[];
+  actionsTaken:    ActionTaken[];
+  actionsProposed: ActionProposed[];
+  errors:          string[];
+}
+
+function createCollector(): RunCollector {
+  return { metrics: {}, anomalies: [], actionsTaken: [], actionsProposed: [], errors: [] };
+}
+
+/** Marca un fallo en un sub-job sin propagar la excepción al runner. */
+function recordError(c: RunCollector, jobName: string, err: unknown): void {
+  console.error(`[financial-monitor] ${jobName} failed:`, err);
+  c.errors.push(jobName);
+}
 
 // ============================================================
-// Financial Monitor – Alertas por Gmail (reemplaza Telegram)
+// Financial Monitor – Alertas por Gmail (HTML email)
+// El canal de notificaciones es Gmail (nodemailer), no Telegram.
+// La función `sendNotification` delega en `sendGmail`.
 // ============================================================
 
 /** Hora actual en Ecuador (0-23) — evita el bug UTC vs GMT-5 */
@@ -49,8 +80,9 @@ function isPrimaryRunOfHour(): boolean {
   return currentMinuteEcuador() < 30;
 }
 
-async function sendTelegram(text: string): Promise<void> {
-  await sendGmail(text);
+/** Adapter: las alertas internas salen por Gmail, no Telegram. */
+async function sendNotification(html: string): Promise<void> {
+  await sendGmail(html);
 }
 
 function fmt(n: number): string {
@@ -86,10 +118,10 @@ export async function checkPaymentErrors(): Promise<void> {
       `Verificar estado de Datafast y notificar al equipo técnico.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'payment_failed', severity: 'critical', message: msg, data: { failureRate: stats.failureRate, count: stats.failed }, createdAt: new Date() });
   } else if (stats.failed >= 3) {
-    await sendTelegram(`⚠️ <b>${stats.failed} pagos fallidos</b> en los últimos 30 minutos. Tasa: ${pct(stats.failureRate)}`);
+    await sendNotification(`⚠️ <b>${stats.failed} pagos fallidos</b> en los últimos 30 minutos. Tasa: ${pct(stats.failureRate)}`);
   }
 }
 
@@ -111,7 +143,7 @@ export async function checkChargebacks(): Promise<void> {
     `Acción requerida: revisar en panel Datafast y gestionar disputa.`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   await logAlert({ type: 'chargeback', severity: 'critical', message: msg, data: { count: chargebacks.length, amount: total }, createdAt: new Date() });
 }
 
@@ -153,7 +185,7 @@ export async function sendDailyFinancialReport(): Promise<void> {
     `🎯 Meta $${DAILY_REVENUE_TARGET}/día: ${report.driversMetTarget} alcanzaron | ${report.driversBelowTarget} pendientes`,
   ].filter(l => l !== '').join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] Daily report sent ✅');
 }
 
@@ -180,7 +212,7 @@ export async function sendWeeklyFinancialReport(): Promise<void> {
     `🎯 Conductores en meta: ${report.driversMetTarget} | Bajo meta: ${report.driversBelowTarget}`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] Weekly report sent ✅');
 }
 
@@ -204,7 +236,7 @@ export async function checkPendingPayouts(): Promise<void> {
       `Revisar en panel de operaciones y procesar transferencias.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'pending_payouts', severity: 'warning', message: msg, data: { count: old.length, amount: totalAmount }, createdAt: new Date() });
   }
 }
@@ -230,7 +262,7 @@ export async function processDailyPayouts(): Promise<void> {
     `Estado: <b>Pendiente de transferencia</b>`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log(`[financial-monitor] ${payouts.length} payouts created, total: $${total.toFixed(2)}`);
 }
 
@@ -245,7 +277,7 @@ export async function processWeeklyPayouts(): Promise<void> {
 
   const payouts = await generateWeeklyPayouts();
   if (payouts.length === 0) {
-    await sendTelegram([
+    await sendNotification([
       `💸 <b>Liquidaciones semanales</b>`,
       `Sin viajes en la semana anterior — nada que liquidar.`,
     ].join('\n'));
@@ -275,7 +307,7 @@ export async function processWeeklyPayouts(): Promise<void> {
     `Cada payout queda en Firestore <code>driver_payouts</code> con status=pending.`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
   await logAlert({
     type:     'pending_payouts',
     severity: 'info',
@@ -311,7 +343,7 @@ export async function runBankReconciliation(): Promise<void> {
       `Revisar panel de pagos Datafast y Firestore.`,
     ].join('\n');
 
-    await sendTelegram(msg);
+    await sendNotification(msg);
     await logAlert({ type: 'revenue_anomaly', severity: 'critical', message: msg, data: { issues: result.issueCount, variance: result.variance }, createdAt: new Date() });
   } else {
     console.log(`[financial-monitor] ✅ Reconciliation balanced: $${result.totalAmount}`);
@@ -324,7 +356,7 @@ export async function checkSRIDeadlines(): Promise<void> {
 
   const deadlines = getUpcomingDeadlines();
   const msg = formatDeadlinesForTelegram(deadlines);
-  await sendTelegram(msg);
+  await sendNotification(msg);
   console.log('[financial-monitor] SRI deadline alert sent');
 }
 
@@ -345,7 +377,7 @@ export async function sendAIFinancialInsights(): Promise<void> {
         ``,
         `💡 ${aiSummary}`,
       ].join('\n');
-      await sendTelegram(msg);
+      await sendNotification(msg);
     }
 
     // Proyección mensual
@@ -361,7 +393,7 @@ export async function sendAIFinancialInsights(): Promise<void> {
       ``,
       `💡 ${projection.aiInsight}`,
     ].join('\n');
-    await sendTelegram(projMsg);
+    await sendNotification(projMsg);
 
   } catch (e) {
     console.error('[financial-monitor] AI analysis failed:', (e as Error).message);
@@ -413,7 +445,7 @@ export async function runInvoicingLoop(): Promise<void> {
     }
   }
 
-  await sendTelegram(lines.join('\n'));
+  await sendNotification(lines.join('\n'));
 
   if (result.failed > 0) {
     await logAlert({
@@ -454,76 +486,181 @@ export async function runMonthlySRIReport(): Promise<void> {
       : `✅ ${report.daysUntilDeadline} días para el vencimiento`,
   ].join('\n');
 
-  await sendTelegram(msg);
+  await sendNotification(msg);
 
   // Generar ATS
   try {
     const atsPath = await generateATS(year, month);
     console.log(`[financial-monitor] ATS generated: ${atsPath}`);
-    await sendTelegram(`📁 <b>Archivo ATS generado</b>\nPeriodo: ${report.monthName} ${report.year}\nListo para subir al portal del SRI.`);
+    await sendNotification(`📁 <b>Archivo ATS generado</b>\nPeriodo: ${report.monthName} ${report.year}\nListo para subir al portal del SRI.`);
   } catch (e) {
     console.error('[financial-monitor] ATS generation failed:', e);
   }
 }
 
 // ─── Runner principal ─────────────────────────────────────────
-export async function runFinancialMonitor(): Promise<void> {
+//
+// Cada job se ejecuta en su propio try/catch — un fallo en un job no rompe
+// el resto. Los errores se empujan al collector para que el cerebro
+// reciba telemetría sobre qué partes del run fallaron.
+//
+// Capturamos resultados de los jobs analíticos (AI / payouts / reportes)
+// para mapearlos a metrics + anomalies + actionsProposed del AgentRunEvent.
+
+export interface MonitorRunResult {
+  collector: RunCollector;
+}
+
+async function safeRun<T>(c: RunCollector, name: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch (err) {
+    recordError(c, name, err);
+    return null;
+  }
+}
+
+/** Mapeo riskLevel del análisis IA → severity de Anomaly. */
+function riskToSeverity(risk: 'low' | 'medium' | 'high'): 'info' | 'warning' | 'critical' {
+  if (risk === 'high') return 'critical';
+  if (risk === 'medium') return 'warning';
+  return 'info';
+}
+
+export async function runFinancialMonitor(): Promise<MonitorRunResult> {
   const hour       = currentHourEcuador();
   const dayOfWeek  = currentDayOfWeekEcuador();   // 0=dom, 1=lun
   const dayOfMonth = currentDayOfMonthEcuador();
 
   console.log(`[financial-monitor] Running at Ecuador hour ${hour}, day ${dayOfWeek}`);
 
+  const c = createCollector();
+  c.metrics.runHourEcuador = hour;
+  c.metrics.runDayOfWeek = dayOfWeek;
+
   // ── Cada corrida (cada 30 min) ────────────────────────────
-  await checkPaymentErrors();
-  await checkChargebacks();
-  await checkPendingPayouts();
-  await runInvoicingLoop();           // Día 2: emite facturas Datil pendientes
-  await checkPendingAuthorization();  // Verificar autorización SRI
-  await checkSRIDeadlines();          // Alertar si vence declaración
+  await safeRun(c, 'checkPaymentErrors', checkPaymentErrors);
+  await safeRun(c, 'checkChargebacks', checkChargebacks);
+  await safeRun(c, 'checkPendingPayouts', checkPendingPayouts);
+
+  // Captura de invoicing loop result a métricas — útil para el cerebro
+  // saber cuántas facturas se emitieron sin tener que parsear logs.
+  await safeRun(c, 'runInvoicingLoop', async () => {
+    await runInvoicingLoop();
+  });
+
+  await safeRun(c, 'checkPendingAuthorization', checkPendingAuthorization);
+  await safeRun(c, 'checkSRIDeadlines', checkSRIDeadlines);
+
+  // Pending payouts summary — útil para el cerebro independiente del horario.
+  const payoutsSummary = await safeRun(c, 'pendingPayoutsSummary', async () => {
+    return getPendingPayoutsSummary();
+  });
+  if (payoutsSummary) {
+    c.metrics.pendingPayoutsCount = payoutsSummary.count;
+    c.metrics.pendingPayoutsAmount = payoutsSummary.totalAmount;
+  }
 
   // ── 8am diario: conciliación del día anterior ─────────────
   if (hour === 8 && isPrimaryRunOfHour()) {
-    const yesterday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
-    yesterday.setDate(yesterday.getDate() - 1);
-    await reconcileDay(yesterday);
+    await safeRun(c, 'reconcileYesterday', async () => {
+      const yesterday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' }));
+      yesterday.setDate(yesterday.getDate() - 1);
+      const res = await reconcileDay(yesterday);
+      if (res && !res.isBalanced) {
+        c.anomalies.push({
+          type: 'reconciliation_imbalance',
+          severity: 'critical',
+          message: `Conciliación bancaria descuadrada: ${res.issueCount} diferencia(s), variación $${res.variance.toFixed(2)}`,
+          data: { issueCount: res.issueCount, variance: res.variance },
+        });
+      }
+    });
   }
 
   // ── 12pm: análisis IA (anomalías + proyección) ────────────
+  // En vez de delegar al wrapper sendAIFinancialInsights() (que solo manda
+  // emails y descarta el dato), llamamos directo a las funciones IA y
+  // capturamos su salida al collector — esto le da al cerebro acceso a
+  // las anomalías de fraude detectadas SIN tener que leer Gmail.
   if (hour === 12 && isPrimaryRunOfHour()) {
-    await sendAIFinancialInsights();
+    const driverAnoms = await safeRun(c, 'detectDriverAnomalies', detectDriverAnomalies);
+    if (driverAnoms) {
+      c.metrics.suspiciousDriversCount = driverAnoms.suspicious.length;
+      for (const s of driverAnoms.suspicious) {
+        c.anomalies.push({
+          type: 'driver_fraud_pattern',
+          severity: riskToSeverity(s.riskLevel),
+          message: s.reason,
+          data: { driverId: s.driverId, riskLevel: s.riskLevel, aiSummary: driverAnoms.aiSummary },
+        });
+        // El cerebro podría querer escalar drivers high-risk a customer-support / ops.
+        if (s.riskLevel === 'high') {
+          c.actionsProposed.push({
+            type: 'investigate_driver',
+            target: s.driverId,
+            reason: s.reason,
+            urgency: 0.85,
+            data: { aiSummary: driverAnoms.aiSummary },
+          });
+        }
+      }
+    }
+
+    const projection = await safeRun(c, 'projectMonthlyRevenue', projectMonthlyRevenue);
+    if (projection) {
+      c.metrics.monthlyRevenueCurrent = projection.currentRevenue;
+      c.metrics.monthlyRevenueProjected = projection.projectedRevenue;
+      c.metrics.monthlyOnTrack = projection.onTrack ? 1 : 0;
+      if (!projection.onTrack) {
+        c.anomalies.push({
+          type: 'monthly_revenue_below_target',
+          severity: 'warning',
+          message: `Proyección mensual $${projection.projectedRevenue.toFixed(2)} bajo meta`,
+          data: { currentRevenue: projection.currentRevenue, projectedRevenue: projection.projectedRevenue, daysRemaining: projection.daysRemaining },
+        });
+      }
+    }
+
+    // Re-emitimos los emails (mantenemos la visibilidad de Ruben).
+    await safeRun(c, 'sendAIFinancialInsights', sendAIFinancialInsights);
   }
 
   // ── 8pm diario: reporte + liquidaciones ───────────────────
   if (hour === 20 && isPrimaryRunOfHour()) {
-    await sendDailyFinancialReport();
-    await processDailyPayouts();
-    await runBankReconciliation();
+    await safeRun(c, 'sendDailyFinancialReport', sendDailyFinancialReport);
+    await safeRun(c, 'processDailyPayouts', processDailyPayouts);
+    await safeRun(c, 'runBankReconciliation', runBankReconciliation);
   }
 
   // ── Lunes 9am: payouts semanales + reporte + análisis ─────
-  // Días 4 (payouts) + reporte semanal + análisis IA comparativo
   if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
-    await processWeeklyPayouts();        // Día 4: liquida la semana pasada
-    await sendWeeklyFinancialReport();
-    try {
-      const comparison = await compareWeeklyPerformance();
-      await sendTelegram([
-        `📊 <b>Análisis Comparativo Semanal</b>`,
-        `Ingresos: ${comparison.revenueChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.revenueChange).toFixed(1)}% vs semana anterior`,
-        `Viajes: ${comparison.ridesChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.ridesChange).toFixed(1)}%`,
-        ``,
-        `💡 ${comparison.aiAnalysis}`,
-      ].join('\n'));
-    } catch (e) { console.error('[financial-monitor] Weekly comparison failed:', e); }
+    await safeRun(c, 'processWeeklyPayouts', processWeeklyPayouts);
+    await safeRun(c, 'sendWeeklyFinancialReport', sendWeeklyFinancialReport);
+    const comparison = await safeRun(c, 'compareWeeklyPerformance', compareWeeklyPerformance);
+    if (comparison) {
+      c.metrics.weeklyRevenueUsd       = Number(comparison.currentWeek.totalRevenue.toFixed(2));
+      c.metrics.weeklyRevenueChangePct = comparison.revenueChange;
+      c.metrics.weeklyRidesChangePct   = comparison.ridesChange;
+      await safeRun(c, 'sendWeeklyComparison', async () => {
+        await sendNotification([
+          `📊 <b>Análisis Comparativo Semanal</b>`,
+          `Ingresos: ${comparison.revenueChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.revenueChange).toFixed(1)}% vs semana anterior`,
+          `Viajes: ${comparison.ridesChange >= 0 ? '▲' : '▼'} ${Math.abs(comparison.ridesChange).toFixed(1)}%`,
+          ``,
+          `💡 ${comparison.aiAnalysis}`,
+        ].join('\n'));
+      });
+    }
   }
 
   // ── Día 1 del mes 9am: reporte SRI del mes anterior ───────
   if (dayOfMonth === 1 && hour === 9 && isPrimaryRunOfHour()) {
-    await runMonthlySRIReport();
+    await safeRun(c, 'runMonthlySRIReport', runMonthlySRIReport);
   }
 
   console.log('[financial-monitor] Done ✅');
+  return { collector: c };
 }
 
 // ─── Helper ───────────────────────────────────────────────────

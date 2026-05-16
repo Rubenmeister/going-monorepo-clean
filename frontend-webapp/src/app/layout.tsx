@@ -1,6 +1,9 @@
 import { RootLayoutClient } from './RootLayoutClient';
 import { PWARegister } from '@/components/PWARegister';
 import './global.css';
+// Side-effect import: registra listeners window.onerror + unhandledrejection
+// que envían errores JS al cerebro-service. 10% sampling por sesión.
+import '@/lib/cerebro-tracker';
 
 export const metadata = {
   title: 'Going Ecuador: Reserva tu aventura',

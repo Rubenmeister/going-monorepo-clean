@@ -23,7 +23,24 @@ packages:
   - 'analytics-service'
   - 'customer-support-service'
   - 'ratings-service'
+  - 'ar-service'
+  - 'blockchain-service'
   - 'corporate-service'
+  - 'recommendation-service'
+  - 'subscription-service'
+  - 'cerebro-service'
+  - 'mycortex-service'
+  - 'orchestrator-service'
+  - 'agent-bridge-service'
+
+  # Agents (cron-triggered Cloud Run Jobs, comparten libs/cerebro-contracts)
+  - 'ops-agent'
+  - 'financial-agent'
+  - 'content-agent'
+  - 'marketing-agent'
+  - 'going-agent'
+  - 'mobile-agent'
+  - 'frontend-agent'
 
   # Libraries
   - 'libs/**'

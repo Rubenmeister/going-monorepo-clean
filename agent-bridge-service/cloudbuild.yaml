@@ -1,0 +1,60 @@
+# agent-bridge-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico.
+#
+# Trigger:
+#   gcloud builds submit . --config=agent-bridge-service/cloudbuild.yaml --project=going-5d1ae
+#
+# Antes del primer deploy:
+#   1. Crear SA agent-bridge-service-sa
+#   2. Grant roles/run.developer (para invocar jobs)
+#   3. Grant roles/secretmanager.secretAccessor (para credenciales)
+
+steps:
+  # 1. Build con Dockerfile genérico de NestJS services.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=agent-bridge-service
+      - -t
+      - gcr.io/$PROJECT_ID/agent-bridge-service:latest
+      - .
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/agent-bridge-service:latest
+
+  # 2. Deploy.
+  #
+  # min-instances=0 (scale-to-zero) — el bridge es stateless y solo se
+  # llama bajo demanda. Cold start ~1s aceptable.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - agent-bridge-service
+      - --image=gcr.io/$PROJECT_ID/agent-bridge-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=256Mi
+      - --min-instances=0
+      - --max-instances=3
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,CUSTOMER_SUPPORT_URL=https://customer-support-service-780842550857.us-central1.run.app,CEREBRO_URL=https://cerebro-service-780842550857.us-central1.run.app
+      - --service-account=agent-bridge-service-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/agent-bridge-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

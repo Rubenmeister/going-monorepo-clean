@@ -1,0 +1,74 @@
+# cerebro-service — Cloud Run Service deployment
+#
+# Build context: monorepo ROOT — usa Dockerfile.cloudrun-service genérico
+# (mismo patrón que customer-support-service). Tiene que tener acceso a
+# pnpm-workspace.yaml + libs/cerebro-contracts/.
+#
+# Trigger:
+#   gcloud builds submit . --config=cerebro-service/cloudbuild.yaml --project=going-5d1ae
+#
+# Antes del primer deploy:
+#   1. bash scripts/cerebro/bootstrap-pubsub.sh  (crea SA + topics + subs)
+#   2. Crear secret MONGO_URL-prod si no existe.
+
+steps:
+  # 1. Build con Dockerfile genérico de NestJS services.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=cerebro-service
+      - -t
+      - gcr.io/$PROJECT_ID/cerebro-service:latest
+      - .
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/cerebro-service:latest
+
+  # 2. Deploy as Cloud Run Service. min-instances=1 para que el subscriber
+  # esté siempre activo consumiendo (Pub/Sub no entrega a containers a 0
+  # instances; necesitamos always-on).
+  #
+  # Secrets:
+  #   MONGO_URL-prod  — Mongo Atlas (DB: going-cerebro)
+  #
+  # Vars setadas externamente cuando el sistema esté listo:
+  #   CEREBRO_SUBSCRIBE_ENABLED=true|false (default true)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - cerebro-service
+      - --image=gcr.io/$PROJECT_ID/cerebro-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=512Mi
+      - --min-instances=1
+      - --max-instances=2
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,CEREBRO_SUBSCRIBE_ENABLED=true,CEREBRO_HEALTH_ALERTS_ENABLED=true
+      # MONGO_URL + TELEGRAM creds para alerts del HealthMonitorService.
+      # Sin TELEGRAM, las alerts se loguean pero no se envían (best-effort).
+      - --set-secrets=MONGO_URL=MONGO_URL-prod:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,TELEGRAM_CHAT_ID=TELEGRAM_CHAT_ID:latest
+      # VPC connector: Cloud Run sale por going-connector (10.8.0.0/28) que
+      # ya está whitelisted en MongoDB Atlas. Sin esto, Atlas rechaza la
+      # conexión porque Cloud Run NAT IP cambia entre revisiones.
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
+      - --service-account=cerebro-service-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/cerebro-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

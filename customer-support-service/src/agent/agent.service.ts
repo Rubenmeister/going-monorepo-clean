@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VertexAI, Content } from '@google-cloud/vertexai';
 import { ConversationService } from './conversation.service';
-import { getSystemPrompt, detectLanguage, detectCanton } from '../knowledge-base/system-prompt';
+import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
 
@@ -30,16 +30,37 @@ export class AgentService {
     });
   }
 
-  async respond(userId: string, userMessage: string): Promise<string | null> {
+  /**
+   * Genera respuesta del agente para un mensaje del usuario.
+   *
+   * @param opts.lang  — idioma override (Item 6 — Fase 8). Si lo pasás,
+   *                     se usa en lugar de la detección por regex. Útil
+   *                     para audio (donde STT ya detectó el idioma con
+   *                     más confiabilidad). Si no se pasa, detectLanguage
+   *                     analiza el texto del mensaje.
+   */
+  async respond(
+    userId: string,
+    userMessage: string,
+    opts?: { lang?: SupportedLang },
+  ): Promise<string | null> {
     this.conversationService.addMessage(userId, 'user', userMessage);
+
+    // Idioma efectivo: override (STT) > regex sobre texto
+    const lang: SupportedLang = opts?.lang ?? detectLanguage(userMessage);
 
     const { needed, priority } = this.conversationService.detectHandoffTrigger(userMessage);
     if (needed) {
       await this.conversationService.requestHandoff(userId, userMessage, priority);
-      const lang = detectLanguage(userMessage);
-      return lang === 'en'
-        ? "🙋 I'm connecting you with a Going team member. Please wait a moment..."
-        : '🙋 Te estoy conectando con un miembro del equipo Going. Por favor espera un momento...';
+      // Mensaje de handoff multilingüe — fallback a español para fr/de/qu
+      const handoffMsg: Record<SupportedLang, string> = {
+        es: '🙋 Te estoy conectando con un miembro del equipo Going. Por favor espera un momento...',
+        en: "🙋 I'm connecting you with a Going team member. Please wait a moment...",
+        fr: '🙋 Je vous mets en relation avec un membre de l\'équipe Going. Un moment, s\'il vous plaît...',
+        de: '🙋 Ich verbinde Sie mit einem Mitglied des Going-Teams. Bitte warten Sie einen Moment...',
+        qu: '🙋 Going equipoman kunan kichashpa. Ama llakikuychu, shuk ratulla shuyay...',
+      };
+      return handoffMsg[lang];
     }
 
     const conv = await this.conversationService.getOrCreate(userId);
@@ -52,7 +73,6 @@ export class AgentService {
       this.logger.log(`Bot silenciado para ${userId} (state=${conv.state}) — mensaje guardado`);
       return null;
     }
-    const lang = detectLanguage(userMessage);
     const canton = detectCanton(userMessage);
     const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
 

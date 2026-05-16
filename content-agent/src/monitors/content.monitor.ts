@@ -11,16 +11,49 @@ import {
   saveContentAlert,
 } from '../firestore/content.service';
 import {
-  sendMessage,
+  sendInternalAlert,
   alertOverdueReview,
   alertScheduledSoon,
   alertAcademyIncomplete,
   weeklyContentReport,
-} from '../publishers/telegram.publisher';
+} from '../publishers/internal-notifier';
 import { sendTelegramTip } from '../publishers/telegram.bot';
+import {
+  Anomaly,
+  ActionTaken,
+  ActionProposed,
+} from '@going-platform/cerebro-contracts';
+
+// ─── RunCollector compartido (Cerebro) ───────────────────────
+//
+// Cada job empuja a este recolector. `runContentMonitor` lo retorna y
+// `index.ts` lo envuelve en un AgentRunEvent que se publica al
+// cerebro-service.
+
+export interface RunCollector {
+  metrics:         Record<string, number | string>;
+  anomalies:       Anomaly[];
+  actionsTaken:    ActionTaken[];
+  actionsProposed: ActionProposed[];
+  errors:          string[];
+}
+
+function createCollector(): RunCollector {
+  return { metrics: {}, anomalies: [], actionsTaken: [], actionsProposed: [], errors: [] };
+}
+
+function recordError(c: RunCollector, jobName: string, err: unknown): void {
+  console.error(`[content] ${jobName} failed:`, err);
+  c.errors.push(jobName);
+}
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const fsdb   = new Firestore({ projectId: process.env.GCP_PROJECT || 'going-5d1ae' });
+
+// Modelo del tip semanal: override por env. Default Claude Sonnet 4.5 —
+// el tip es contenido público que representa la marca, conviene
+// pagar buena calidad de copywriting (volumen mínimo, ~52 tips/año).
+const AI_TIP_MODEL = process.env.AI_TIP_MODEL || 'claude-sonnet-4-5';
 
 // ── Timezone helpers ──────────────────────────────────────────
 function currentHourEcuador(): number {
@@ -42,12 +75,30 @@ function isPrimaryRunOfHour(): boolean {
 // Solo dispara si el equipo está usando el CMS (escribiendo a
 // content_items). Si la collection está vacía, el monitor no hace nada.
 
-export async function checkOverdueReviews(): Promise<void> {
+export async function checkOverdueReviews(c?: RunCollector): Promise<void> {
   console.log('[content] Verificando borradores sin revisar...');
   const items = await getItemsPendingReview(48);
+  if (c) c.metrics.overdueReviewsCount = items.length;
+
   for (const item of items) {
     const horas = Math.round((Date.now() - new Date(item.createdAt).getTime()) / 3600000);
-    await sendMessage(alertOverdueReview(item.title, item.type, horas));
+    if (c) {
+      c.anomalies.push({
+        type: 'overdue_review',
+        severity: horas > 96 ? 'critical' : 'warning',
+        message: `"${item.title}" lleva ${horas}h sin revisión`,
+        data: { itemId: item.id, type: item.type, hoursWaiting: horas },
+      });
+    }
+    await sendInternalAlert(alertOverdueReview(item.title, item.type, horas));
+    if (c) {
+      c.actionsTaken.push({
+        type: 'sent_internal_alert',
+        target: item.id,
+        result: 'ok',
+        data: { reason: 'overdue_review' },
+      });
+    }
     try {
       await saveContentAlert({
         type:      'overdue_review',
@@ -64,25 +115,48 @@ export async function checkOverdueReviews(): Promise<void> {
 }
 
 // ─── 2. Publicaciones programadas próximas (+1h) ──────────────
-export async function checkScheduledPublications(): Promise<void> {
+export async function checkScheduledPublications(c?: RunCollector): Promise<void> {
   console.log('[content] Verificando publicaciones próximas...');
   const items = await getScheduledItems(1);
+  if (c) c.metrics.scheduledSoonCount = items.length;
+
   for (const item of items) {
     if (!item.scheduledAt) continue;
     const minutos = Math.round((new Date(item.scheduledAt).getTime() - Date.now()) / 60000);
-    await sendMessage(alertScheduledSoon(item.title, item.type, minutos));
+    if (c) {
+      c.anomalies.push({
+        type: 'scheduled_soon',
+        severity: 'info',
+        message: `"${item.title}" se publica en ${minutos} min`,
+        data: { itemId: item.id, type: item.type, minutesUntilPublish: minutos },
+      });
+    }
+    await sendInternalAlert(alertScheduledSoon(item.title, item.type, minutos));
   }
 }
 
 // ─── 3. Cursos de Academia incompletos ────────────────────────
-export async function checkAcademyContent(): Promise<void> {
+export async function checkAcademyContent(c?: RunCollector): Promise<void> {
   console.log('[content] Verificando cursos de la Academia...');
   const courses = await getIncompleteCourses();
+  let coursesWithDrafts = 0;
+  let totalDraftLessons = 0;
+
   for (const course of courses) {
     const lessons = await getCourseLessons(course.id);
     const drafts  = lessons.filter(l => l.status === 'draft').length;
     if (drafts > 0) {
-      await sendMessage(alertAcademyIncomplete(course.title, lessons.length, drafts));
+      coursesWithDrafts++;
+      totalDraftLessons += drafts;
+      if (c) {
+        c.anomalies.push({
+          type: 'academy_incomplete',
+          severity: 'warning',
+          message: `Curso "${course.title}": ${drafts} lecciones en borrador`,
+          data: { courseId: course.id, totalLessons: lessons.length, draftLessons: drafts },
+        });
+      }
+      await sendInternalAlert(alertAcademyIncomplete(course.title, lessons.length, drafts));
       try {
         await saveContentAlert({
           type:      'academy_incomplete',
@@ -95,6 +169,10 @@ export async function checkAcademyContent(): Promise<void> {
         console.error('[content] save academy alert failed:', err);
       }
     }
+  }
+  if (c) {
+    c.metrics.academyIncompleteCourses = coursesWithDrafts;
+    c.metrics.academyDraftLessonsTotal = totalDraftLessons;
   }
 }
 
@@ -144,14 +222,15 @@ async function getNextTopic(): Promise<typeof TOPIC_POOL[number]> {
   return TOPIC_POOL[nextIndex];
 }
 
-export async function generateWeeklyTip(): Promise<void> {
+export async function generateWeeklyTip(c?: RunCollector): Promise<void> {
   console.log('[content] Generando tip semanal...');
   try {
     const topic = await getNextTopic();
     console.log(`[content] tópico esta semana: ${topic.key}`);
+    if (c) c.metrics.weeklyTipTopic = topic.key;
 
     const response = await client.messages.create({
-      model:      'claude-sonnet-4-5',
+      model:      AI_TIP_MODEL,
       max_tokens: 400,
       messages: [{
         role:    'user',
@@ -169,6 +248,14 @@ Formato de respuesta (JSON):
     const text  = block && 'text' in block ? (block as { text: string }).text : '';
     if (!text) {
       console.warn('[content] respuesta vacía del modelo');
+      if (c) {
+        c.anomalies.push({
+          type: 'weekly_tip_generation_failed',
+          severity: 'warning',
+          message: `Modelo ${AI_TIP_MODEL} devolvió respuesta vacía`,
+          data: { topic: topic.key, model: AI_TIP_MODEL },
+        });
+      }
       return;
     }
 
@@ -182,9 +269,40 @@ Formato de respuesta (JSON):
     const ok = await sendTelegramTip(message);
     if (!ok) {
       console.warn('[content] Telegram no aceptó el tip');
+      if (c) {
+        c.anomalies.push({
+          type: 'weekly_tip_publish_failed',
+          severity: 'critical',
+          message: `Tip generado pero Telegram lo rechazó — config CONTENT_TELEGRAM_CHAT_ID?`,
+          data: { topic: topic.key, title: data.title },
+        });
+        c.actionsTaken.push({
+          type: 'published_weekly_tip',
+          target: 'telegram_channel',
+          result: 'failed',
+          data: { topic: topic.key, title: data.title, model: AI_TIP_MODEL },
+        });
+      }
       // Fallback: intentamos por email también para que ops lo vea
-      await sendMessage(`📰 <b>Tip semanal generado pero NO enviado a Telegram</b>\n\n${message}\n\nRevisar config CONTENT_TELEGRAM_CHAT_ID.`);
+      await sendInternalAlert(`📰 <b>Tip semanal generado pero NO enviado a Telegram</b>\n\n${message}\n\nRevisar config CONTENT_TELEGRAM_CHAT_ID.`);
       return;
+    }
+
+    // Tip publicado — registrar acción al cerebro. Esto es el "pulso de
+    // imagen de marca" que el world model querrá tracker semana a semana.
+    if (c) {
+      c.actionsTaken.push({
+        type: 'published_weekly_tip',
+        target: 'telegram_channel',
+        result: 'ok',
+        data: {
+          topic: topic.key,
+          title: data.title,
+          bodyLength: data.body.length,
+          model: AI_TIP_MODEL,
+        },
+      });
+      c.metrics.weeklyTipPublished = 1;
     }
 
     // Persistir como published para tener registro y evitar tópicos repetidos
@@ -209,11 +327,20 @@ Formato de respuesta (JSON):
     }
   } catch (e) {
     console.error('[content] error generando tip semanal:', (e as Error).message);
+    if (c) {
+      c.errors.push('generateWeeklyTip');
+      c.anomalies.push({
+        type: 'weekly_tip_generation_failed',
+        severity: 'warning',
+        message: `Error generando tip: ${(e as Error).message}`,
+        data: { model: AI_TIP_MODEL },
+      });
+    }
   }
 }
 
 // ─── 5. Reporte semanal interno (lunes 9am, después del tip) ──
-export async function sendWeeklyContentReport(): Promise<void> {
+export async function sendWeeklyContentReport(c?: RunCollector): Promise<void> {
   console.log('[content] Generando reporte semanal...');
   const published = await getPublishedThisWeek();
   const [noticias, blog, revista, lecciones] = await Promise.all([
@@ -241,32 +368,76 @@ export async function sendWeeklyContentReport(): Promise<void> {
     leccionesAcademia: published.filter(i => i.type === 'academy_lesson').length,
   });
 
-  await sendMessage(msg);
+  await sendInternalAlert(msg);
+
+  // Métricas al cerebro: pulso del CMS semana a semana.
+  if (c) {
+    c.metrics.publishedThisWeek = published.length;
+    c.metrics.draftsCount = borradores;
+    c.metrics.inReviewCount = enRevision;
+    c.metrics.publishedArticles = published.filter(i => i.type === 'article').length;
+    c.metrics.publishedBlogPosts = published.filter(i => i.type === 'blog_post').length;
+    c.metrics.publishedNews = published.filter(i => i.type === 'news').length;
+    c.metrics.publishedAcademyLessons = published.filter(i => i.type === 'academy_lesson').length;
+
+    // Si el equipo tiene mucho borrador acumulado sin publicar, proponer
+    // que ops/marketing programen una sesión de revisión. Heurística simple
+    // pero accionable.
+    if (borradores > 10) {
+      c.actionsProposed.push({
+        type: 'schedule_content_review_session',
+        reason: `${borradores} borradores acumulados sin publicar`,
+        urgency: borradores > 20 ? 0.6 : 0.3,
+        data: { drafts: borradores, inReview: enRevision },
+      });
+    }
+  }
 }
 
 // ─── Runner principal ─────────────────────────────────────────
-export async function runContentMonitor(): Promise<void> {
+//
+// Cada job en su propio try/catch — un fallo no rompe los demás.
+// El collector se devuelve para que index.ts arme el AgentRunEvent.
+
+export interface MonitorRunResult {
+  collector: RunCollector;
+}
+
+async function safeRun(c: RunCollector, name: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
+  } catch (err) {
+    recordError(c, name, err);
+  }
+}
+
+export async function runContentMonitor(): Promise<MonitorRunResult> {
   const hour      = currentHourEcuador();
   const dayOfWeek = currentDayOfWeekEcuador();
   console.log(`[content-agent] Corriendo a las ${hour}h Ecuador, día ${dayOfWeek}`);
 
+  const c = createCollector();
+  c.metrics.runHourEcuador = hour;
+  c.metrics.runDayOfWeek = dayOfWeek;
+
   // Cada corrida: alertas de revisión y publicaciones próximas
   // (silenciosas si content_items está vacío)
-  await checkOverdueReviews();
-  await checkScheduledPublications();
-  await checkAcademyContent();
+  await safeRun(c, 'checkOverdueReviews', () => checkOverdueReviews(c));
+  await safeRun(c, 'checkScheduledPublications', () => checkScheduledPublications(c));
+  await safeRun(c, 'checkAcademyContent', () => checkAcademyContent(c));
 
   // Lunes 9am: tip semanal + reporte interno
   if (dayOfWeek === 1 && hour === 9 && isPrimaryRunOfHour()) {
-    await generateWeeklyTip();
-    await sendWeeklyContentReport();
+    await safeRun(c, 'generateWeeklyTip', () => generateWeeklyTip(c));
+    await safeRun(c, 'sendWeeklyContentReport', () => sendWeeklyContentReport(c));
   }
 
-  // Triggers manuales (testing)
+  // Triggers manuales (testing) — útil sin esperar al lunes
   if (process.env.FORCE_WEEKLY_TIP === '1') {
     console.log('[content-agent] FORCE_WEEKLY_TIP=1 — disparando tip manual');
-    await generateWeeklyTip();
+    await safeRun(c, 'forcedWeeklyTip', () => generateWeeklyTip(c));
   }
 
   console.log('[content-agent] Ciclo completado ✅');
+  return { collector: c };
 }

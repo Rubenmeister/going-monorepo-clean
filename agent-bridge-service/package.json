@@ -1,0 +1,27 @@
+{
+  "name": "@going-platform/agent-bridge-service",
+  "version": "0.1.0",
+  "description": "Going Agent Bridge — traduce comandos HTTP del Orchestrator a `gcloud run jobs execute` (cron agents) o HTTP a services (customer-support). Stateless.",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve agent-bridge-service"
+  },
+  "dependencies": {
+    "@google-cloud/run": "^1.4.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "express": "^4.18.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

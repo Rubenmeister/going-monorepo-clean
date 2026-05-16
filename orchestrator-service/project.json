@@ -1,0 +1,20 @@
+{
+  "name": "orchestrator-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "orchestrator-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/orchestrator-service",
+        "main": "orchestrator-service/src/main.ts",
+        "tsConfig": "orchestrator-service/tsconfig.app.json",
+        "webpackConfig": "orchestrator-service/webpack.config.js"
+      }
+    }
+  }
+}
