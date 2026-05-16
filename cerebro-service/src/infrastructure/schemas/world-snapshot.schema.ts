@@ -76,6 +76,8 @@ export interface BusinessMetrics {
 
   // ── Estratégico — demanda + supply 7d/30d ────────────────
   ridesCompleted7d?:       number;   // ✅ total rides 7d
+  ridesCancelled7d?:       number;   // ✅ total cancellations 7d
+  totalRevenue7d?:         number;   // ✅ GMV 7d (Going + driver share)
   avgRideValueUsd?:        number;   // ✅ promedio 7d (revenue / rides)
   newDriverSignups7d?:     number;   // ✅ users con role=driver creados 7d
   activeDrivers7d?:        number;   // ✅ unique drivers con ≥1 ride en 7d
@@ -125,6 +127,26 @@ export interface BusinessMetrics {
 
   toolCallsLastCycle?:     number;   // ✅
   fixesAppliedLastCycle?:  number;   // ✅
+
+  // ═════════ DE MOBILE-AGENT ═════════
+
+  mobileAppsAnalyzed?:        number;   // ✅ # apps Sentry monitoreadas (user + driver)
+  mobileTotalIssues?:         number;   // ✅ issues totales activos en ventana
+  mobileTotalFatalIssues?:    number;   // ✅ crashes fatales en ventana
+  mobileTotalUnhandled?:      number;   // ✅ exceptions no manejadas
+  mobileTotalAffectedUsers?:  number;   // ✅ usuarios únicos afectados
+  /** 🔴 Crash-free rate (sessions sin crash / total). Requiere release+session metrics de Sentry. */
+  mobileCrashFreeRate?:       number;
+
+  // ═════════ DE FRONTEND-AGENT ═════════
+
+  frontendProjectsAnalyzed?:  number;   // ✅ # proyectos Vercel (webapp + admin + corporate)
+  frontendTotalDeploys?:      number;   // ✅ deploys totales en ventana
+  frontendProdDeploys?:       number;   // ✅ solo target=production
+  frontendErrorDeploys?:      number;   // ✅ con state=ERROR
+  frontendReadyDeploys?:      number;   // ✅ con state=READY
+  /** 🔴 Avg build time minutos. Requiere agregar buildTime al snapshot del agente. */
+  frontendAvgBuildTimeMin?:   number;
 
   // ═════════ DE CUSTOMER-SUPPORT-SERVICE ═════════
 

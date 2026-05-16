@@ -132,21 +132,40 @@ export class WhatsAppService {
    * Devuelve null si falla; el caller debe tener fallback a texto.
    */
   async downloadMedia(mediaId: string): Promise<Buffer | null> {
-    if (!this.accessToken) return null;
+    if (!this.accessToken) {
+      this.logger.error('[downloadMedia] no access token bound');
+      return null;
+    }
 
     try {
+      this.logger.log(`[downloadMedia] fetching metadata for media ${mediaId}`);
       const metaRes = await fetch(`${META_GRAPH}/${mediaId}`, {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      const mediaData = (await metaRes.json()) as { url?: string };
-      if (!mediaData.url) return null;
+      const mediaData = (await metaRes.json()) as { url?: string; mime_type?: string; file_size?: number; error?: any };
+      if (mediaData.error) {
+        this.logger.error(`[downloadMedia] Meta returned error: ${JSON.stringify(mediaData.error)}`);
+        return null;
+      }
+      if (!mediaData.url) {
+        this.logger.error(`[downloadMedia] metadata missing url (mime=${mediaData.mime_type}, size=${mediaData.file_size})`);
+        return null;
+      }
+      this.logger.log(`[downloadMedia] metadata ok (mime=${mediaData.mime_type}, size=${mediaData.file_size}b), downloading binary`);
 
       const audioRes = await fetch(mediaData.url, {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      return Buffer.from(await audioRes.arrayBuffer());
+      if (!audioRes.ok) {
+        const text = await audioRes.text();
+        this.logger.error(`[downloadMedia] binary fetch failed: ${audioRes.status} ${text.slice(0, 200)}`);
+        return null;
+      }
+      const buf = Buffer.from(await audioRes.arrayBuffer());
+      this.logger.log(`[downloadMedia] downloaded ${buf.length} bytes`);
+      return buf;
     } catch (err) {
-      this.logger.error('downloadMedia error', err);
+      this.logger.error(`[downloadMedia] exception: ${(err as Error).message}`, (err as Error).stack);
       return null;
     }
   }

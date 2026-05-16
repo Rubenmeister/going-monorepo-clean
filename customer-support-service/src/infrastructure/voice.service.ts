@@ -75,13 +75,20 @@ export class VoiceService {
    *  - Fallback a 'es' si no podemos determinarlo
    */
   async transcribe(audioBuffer: Buffer): Promise<{ transcript: string; lang: SupportedLang }> {
+    this.logger.log(`[stt] start: audioBuffer ${audioBuffer.length} bytes`);
+    if (audioBuffer.length < 100) {
+      this.logger.warn(`[stt] buffer too small (${audioBuffer.length} bytes), aborting`);
+      return { transcript: '', lang: 'es' };
+    }
     try {
       const { SpeechClient } = await import('@google-cloud/speech');
       const speechClient = new SpeechClient();
+      // Sin sampleRateHertz: STT lo auto-detecta del header OGG. WhatsApp
+      // entrega voice notes a sample rates variados (8/16/48 kHz), forzar
+      // 16000 fijo causaba transcript vacío en silencio.
       const [response] = await speechClient.recognize({
         config: {
           encoding: 'OGG_OPUS' as any,
-          sampleRateHertz: 16000,
           languageCode: LANG.es.sttPrimary,
           // Cloud STT v1 acepta hasta 4 alternativas adicionales.
           alternativeLanguageCodes: [
@@ -95,6 +102,8 @@ export class VoiceService {
         },
         audio: { content: audioBuffer.toString('base64') },
       });
+
+      this.logger.log(`[stt] response: ${JSON.stringify({ resultsCount: response.results?.length ?? 0 })}`);
 
       const transcript = response.results
         ?.map((r: any) => r.alternatives?.[0]?.transcript)
@@ -112,10 +121,10 @@ export class VoiceService {
         ?.lang;
 
       const lang = normalizeLang(langOfBest);
-      this.logger.log(`[stt] transcript ${transcript.length} chars, lang=${lang} (detected from ${langOfBest})`);
+      this.logger.log(`[stt] transcript "${transcript.slice(0, 80)}" (${transcript.length} chars, lang=${lang}, detected=${langOfBest})`);
       return { transcript, lang };
     } catch (err) {
-      this.logger.error('STT transcribe error', err);
+      this.logger.error(`[stt] transcribe error: ${(err as Error).message}`, (err as Error).stack);
       return { transcript: '', lang: 'es' };
     }
   }

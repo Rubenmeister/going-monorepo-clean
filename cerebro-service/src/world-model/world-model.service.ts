@@ -226,6 +226,8 @@ export class WorldModelService {
         business.dailyGoingRevenue    = num('dailyGoingRevenue');
         // Estratégicos 7d
         business.ridesCompleted7d     = num('ridesCompleted7d');
+        business.ridesCancelled7d     = num('ridesCancelled7d');
+        business.totalRevenue7d       = num('totalRevenue7d');
         business.avgRideValueUsd      = num('avgRideValueUsd');
         business.newDriverSignups7d   = num('newDriverSignups7d');
         business.activeDrivers7d      = num('activeDrivers7d');
@@ -269,6 +271,22 @@ export class WorldModelService {
         business.pendingHandoffsOrange      = num('pendingHandoffsOrange');
         business.pendingHandoffsNormal      = num('pendingHandoffsNormal');
         business.oldestRedHandoffAgeMinutes = num('oldestRedHandoffAgeMinutes');
+        break;
+
+      case 'mobile-agent':
+        business.mobileAppsAnalyzed       = num('appsAnalyzed');
+        business.mobileTotalIssues        = num('totalIssues');
+        business.mobileTotalFatalIssues   = num('totalFatalIssues');
+        business.mobileTotalUnhandled     = num('totalUnhandled');
+        business.mobileTotalAffectedUsers = num('totalAffectedUsers');
+        break;
+
+      case 'frontend-agent':
+        business.frontendProjectsAnalyzed = num('projectsAnalyzed');
+        business.frontendTotalDeploys     = num('totalDeploys');
+        business.frontendProdDeploys      = num('prodDeploys');
+        business.frontendErrorDeploys     = num('errorDeploys');
+        business.frontendReadyDeploys     = num('readyDeploys');
         break;
     }
   }
