@@ -182,7 +182,8 @@ export class PromptBuilderService {
         keys: [
           'pendingRidesNoDriver', 'idleDrivers', 'activeDrivers',
           'dailyRidesCompleted', 'dailyRidesCancelled', 'dailyGoingRevenue',
-          'ridesCompleted7d', 'avgRideValueUsd', 'rideCompletionRate',
+          'ridesCompleted7d', 'ridesCancelled7d', 'totalRevenue7d',
+          'avgRideValueUsd', 'rideCompletionRate',
           'newDriverSignups7d', 'activeDrivers7d',
         ],
       },
@@ -212,6 +213,20 @@ export class PromptBuilderService {
         keys: ['weeklyTipPublished', 'draftsCount', 'inReviewCount',
                'toolCallsLastCycle', 'fixesAppliedLastCycle'],
       },
+      {
+        title: 'Mobile (Sentry crashes user + driver apps)',
+        keys: [
+          'mobileAppsAnalyzed', 'mobileTotalIssues', 'mobileTotalFatalIssues',
+          'mobileTotalUnhandled', 'mobileTotalAffectedUsers',
+        ],
+      },
+      {
+        title: 'Frontend (Vercel deploys webapp + admin + corporate)',
+        keys: [
+          'frontendProjectsAnalyzed', 'frontendTotalDeploys', 'frontendProdDeploys',
+          'frontendErrorDeploys', 'frontendReadyDeploys',
+        ],
+      },
     ];
 
     // KPIs pendientes (sin data source). MyCortex los ve y puede emitir
@@ -227,6 +242,8 @@ export class PromptBuilderService {
       { key: 'avgHandoffResponseMin',   reason: 'requiere timestamp at first operator reply' },
       { key: 'handoffResolutionRate',   reason: 'requiere ventana + resolved field tracking' },
       { key: 'npsScore',                reason: 'requiere encuestas post-ride (no implementadas)' },
+      { key: 'mobileCrashFreeRate',     reason: 'requiere release+session metrics de Sentry' },
+      { key: 'frontendAvgBuildTimeMin', reason: 'requiere agregar buildTime al snapshot Vercel' },
     ];
 
     const lines: string[] = ['## Métricas de negocio'];

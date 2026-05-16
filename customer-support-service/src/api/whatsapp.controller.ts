@@ -193,21 +193,31 @@ export class WhatsAppController {
       // para que (a) responda en ese idioma, (b) TTS use el mismo lang para voz.
       let sttLang: import('../knowledge-base/system-prompt').SupportedLang | undefined;
 
+      this.logger.log(`[webhook] type=${msg.type} from=${from} msgId=${msg.id}`);
+
       if (msg.type === 'text') {
         messageText = msg.text?.body || '';
       } else if (msg.type === 'location') {
         const { latitude, longitude, name } = msg.location;
         messageText = `[UBICACION_GPS:lat=${latitude},lng=${longitude},label=${name || ''}]`;
         this.logger.log(`GPS location from ${from}: ${latitude},${longitude}`);
-      } else if (msg.type === 'audio') {
+      } else if (msg.type === 'audio' || msg.type === 'voice') {
         wasAudio = true;
-        const audioBuffer = await this.whatsappService.downloadMedia(msg.id);
+        // Meta entrega voice notes con type='audio' y msg.audio.id como mediaId.
+        // Algunas SDK refieren a msg.voice; fallback a msg.id solo si nada hay.
+        const audioMediaId = msg.audio?.id || msg.voice?.id || msg.id;
+        this.logger.log(`[audio] mediaId=${audioMediaId} mime=${msg.audio?.mime_type || msg.voice?.mime_type || 'unknown'}`);
+        const audioBuffer = await this.whatsappService.downloadMedia(audioMediaId);
         if (audioBuffer) {
+          this.logger.log(`[audio] buffer ${audioBuffer.length} bytes, calling STT`);
           const stt = await this.voiceService.transcribe(audioBuffer);
           messageText = stt.transcript;
           sttLang = stt.lang;
+        } else {
+          this.logger.warn(`[audio] downloadMedia returned null for ${audioMediaId}`);
         }
         if (!messageText) {
+          this.logger.warn(`[audio] empty transcript from ${from}, sending fallback`);
           await this.whatsappService.sendText(from, 'No pude entender el audio 🎤 Por favor escribe tu mensaje. / I couldn\'t understand the audio. Please type your message.');
           return;
         }
