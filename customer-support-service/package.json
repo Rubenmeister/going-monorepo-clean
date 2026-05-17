@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@going-platform/cerebro-contracts": "workspace:*",
-    "pricing": "workspace:*",
+    "@going-platform/pricing": "workspace:*",
     "@google-cloud/firestore": "^7.0.0",
     "@google-cloud/pubsub": "^4.7.0",
     "@google-cloud/speech": "^6.0.0",

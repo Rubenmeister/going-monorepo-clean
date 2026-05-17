@@ -2,7 +2,7 @@ import { GOING_SERVICES_KB } from './going-services';
 // FARES y getFareTable importados desde libs/pricing (source of truth única
 // para precios). Misma tabla que usa payment-service para cobrar — Gemini
 // nunca devolverá un precio distinto al que se va a cobrar.
-import { FARES, getFareTable } from 'pricing';
+import { FARES, getFareTable } from '@going-platform/pricing';
 
 const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';

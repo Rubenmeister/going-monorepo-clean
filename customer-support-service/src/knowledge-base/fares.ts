@@ -3,4 +3,4 @@
 // './knowledge-base/fares' dentro de customer-support-service.
 //
 // Cuando todos los imports migren a `from 'pricing'`, este archivo se borra.
-export { FARES, getFareTable } from 'pricing';
+export { FARES, getFareTable } from '@going-platform/pricing';

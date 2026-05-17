@@ -7,4 +7,4 @@
 // Cuando todos los consumers migren a `import { ... } from 'pricing'`, este
 // archivo se puede borrar.
 
-export * from 'pricing';
+export * from '@going-platform/pricing';

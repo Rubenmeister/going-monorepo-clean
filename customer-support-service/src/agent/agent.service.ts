@@ -5,7 +5,7 @@ import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
-import { FARES, applyDynamicPricing } from 'pricing';
+import { FARES, applyDynamicPricing } from '@going-platform/pricing';
 
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;

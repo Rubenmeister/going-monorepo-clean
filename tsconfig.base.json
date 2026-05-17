@@ -203,6 +203,7 @@
       "tour": ["libs/tour/src/index.ts"],
       "payment": ["libs/payment/src/index.ts"],
       "pricing": ["libs/pricing/src/index.ts"],
+      "@going-platform/pricing": ["libs/pricing/src/index.ts"],
       "experience": ["libs/experience/src/index.ts"],
       "parcel": ["libs/parcel/src/index.ts"]
     }
