@@ -47,8 +47,8 @@ function ResetPasswordForm() {
     e.preventDefault();
     setError('');
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+    if (password.length < 12) {
+      setError('La contraseña debe tener al menos 12 caracteres.');
       return;
     }
     if (password !== confirm) {
@@ -117,7 +117,7 @@ function ResetPasswordForm() {
     <>
       <h1 className="text-2xl font-black text-gray-900 mb-2">Nueva contraseña</h1>
       <p className="text-gray-500 mb-8">
-        Elegí una contraseña fuerte de al menos 8 caracteres.
+        Elegí una contraseña fuerte de al menos 12 caracteres.
       </p>
 
       {error && (
@@ -136,10 +136,10 @@ function ResetPasswordForm() {
               type={showPwd ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Mínimo 12 caracteres"
               required
               autoFocus
-              minLength={8}
+              minLength={12}
               className="w-full px-4 py-3.5 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0033A0] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
             />
             <button
@@ -163,7 +163,7 @@ function ResetPasswordForm() {
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Repite la contraseña"
             required
-            minLength={8}
+            minLength={12}
             className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0033A0] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
           />
         </div>
