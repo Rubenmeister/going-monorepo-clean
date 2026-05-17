@@ -45,8 +45,11 @@ export function EarningsScreen() {
     if (refresh) setRefreshing(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
+      // Antes: /api/payment/driver/earnings → 404 (gateway no rutea /api/*).
+      // El gateway tiene /drivers/me/earnings que rutea a payment-service
+      // (mismo endpoint que usa WalletScreen exitosamente).
       const { data } = await axios.get(
-        `${API_BASE_URL}/api/payment/driver/earnings`,
+        `${API_BASE_URL}/drivers/me/earnings`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       // Si el backend devuelve summary, usarlo; si no, mostrar ceros (no mock).

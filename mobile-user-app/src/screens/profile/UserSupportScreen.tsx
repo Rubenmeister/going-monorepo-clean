@@ -66,8 +66,10 @@ export function UserSupportScreen() {
     }
     setLoading(true);
     try {
-      // customer-support-service: POST /chat/message
-      await api.post('/chat/message', {
+      // Gateway expone /notifications/chat/message (no /chat/message — eso es
+      // el path interno del notifications-service controller, no la ruta del
+      // gateway. Antes era 404 silente y la pantalla siempre fallaba).
+      await api.post('/notifications/chat/message', {
         content: `[${subject}] ${message}`,
         type: 'user_support',
       });

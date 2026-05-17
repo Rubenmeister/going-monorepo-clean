@@ -196,14 +196,15 @@ export const ridesAPI = {
   getById: (rideId: string) =>
     api.get(`/transport/rides/${rideId}`),
 
-  /** Calificar conductor */
+  /** Calificar conductor — el gateway rutea /rides/rate a transport-service.
+   *  Antes era /ratings/submit → 404 silente, ratings nunca se enviaban. */
   submitRating: (data: {
     tripId:      string;
     rateeId:     string;
     stars:       number;
     review?:     string;
     categories?: string[];
-  }) => api.post('/ratings/submit', data),
+  }) => api.post('/rides/rate', data),
 
   /** Estimar precio */
   estimate: (data: {
