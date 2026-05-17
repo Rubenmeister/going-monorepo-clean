@@ -15,8 +15,8 @@ import { api } from '@services/api';
 
 const GOING_BLUE = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
-const WHATSAPP_NUMBER = '593962499988';
-const SUPPORT_PHONE = '+593962499988';
+const WHATSAPP_NUMBER = '593984037949';
+const SUPPORT_PHONE = '+593984037949';
 
 const FAQS = [
   {
