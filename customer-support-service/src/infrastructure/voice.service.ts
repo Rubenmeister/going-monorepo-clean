@@ -65,6 +65,33 @@ function normalizeLang(bcp47: string | null | undefined): SupportedLang {
   return 'es'; // default fallback
 }
 
+/**
+ * Extrae sample rate REAL del header OpusHead de un OGG_OPUS buffer.
+ *
+ * Sin esto, Google STT recibe el audio + un sampleRateHertz hardcoded y si
+ * no coinciden, devuelve resultsCount:0 silencioso o results con transcript
+ * vacío. WhatsApp móvil suele enviar a 16 kHz (ahorra datos) mientras que
+ * web envía a 48 kHz. Sin detectar dinámico, mitad de las notas fallan.
+ *
+ * Estructura del Ogg page + OpusHead (bytes desde inicio del buffer):
+ *   0-3:   "OggS" magic (4f 67 67 53)
+ *   ...    (header de página variable)
+ *   ?:     "OpusHead" magic (8 bytes ASCII)
+ *   +8:    version (1 byte)
+ *   +9:    channel count (1 byte)
+ *   +10-11: pre-skip (uint16 LE)
+ *   +12-15: sample rate (uint32 LE) ← QUEREMOS ESTO
+ *
+ * Devuelve null si no encuentra el header — caller debe fallback a 48000.
+ */
+function extractOpusSampleRate(audioBuffer: Buffer): number | null {
+  const marker = Buffer.from('OpusHead');
+  const idx = audioBuffer.indexOf(marker);
+  if (idx < 0 || idx + 16 > audioBuffer.length) return null;
+  // Sample rate está 12 bytes después del marker "OpusHead", uint32 little-endian
+  return audioBuffer.readUInt32LE(idx + 12);
+}
+
 @Injectable()
 export class VoiceService {
   private readonly logger = new Logger(VoiceService.name);
@@ -112,16 +139,25 @@ export class VoiceService {
       //                       `default` permite reconocer voz en audio
       //                       ruidoso. ALTERNATIVAS reducidas a solo en-US para
       //                       evitar que el matcher se confunda con 4 idiomas.
+      // Detectar sample rate REAL del OpusHead del audio. WhatsApp móvil
+      // suele entregar 16 kHz (ahorro de datos), web 48 kHz. Pasarle a
+      // Google STT un sampleRateHertz que NO coincida con el audio resulta
+      // en transcripts vacíos o resultsCount:0 silente. Causa raíz del bug
+      // de "no entiende voz" en producción (2026-05-17).
+      const detectedRate = extractOpusSampleRate(audioBuffer);
+      const sampleRate = detectedRate ?? 48000;
+      this.logger.log(`[stt] sample rate detectado=${detectedRate}, usando=${sampleRate}`);
+
       const [response] = await speechClient.recognize({
         config: {
           encoding: 'OGG_OPUS' as any,
-          sampleRateHertz: 48000,
+          sampleRateHertz: sampleRate,
           audioChannelCount: 1, // WhatsApp voice = mono
           languageCode: LANG.es.sttPrimary,
-          // Solo en-US como alternativa: 95%+ del tráfico es español, los
-          // angloparlantes son la siguiente comunidad. Quitamos fr/de/qu por
-          // ahora — agregaban ruido al detector de idioma sin uso real.
-          alternativeLanguageCodes: [LANG.en.sttPrimary],
+          // SIN alternativeLanguageCodes: la verificación 2026-05-17 mostró
+          // que con ['en-US'] como alt, el detector clasificó audio español
+          // como en-US y devolvió result vacío con confidence 0. Para 95%+
+          // del tráfico que es español, forzar solo es-US es más confiable.
           enableAutomaticPunctuation: true,
           model: 'default',
           useEnhanced: true,
