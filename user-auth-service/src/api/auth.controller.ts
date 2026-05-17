@@ -330,7 +330,46 @@ export class AuthController {
 
       const normalized = result as any;
       const authToken = normalized.accessToken || normalized.token;
-      return { ...normalized, token: authToken, accessToken: authToken };
+
+      // 6. Generar refresh token (estrategia A3 — short TTL access +
+      // refresh-based revocation). LoginUserUseCase (CORE) solo retorna
+      // access token; el TokenManager crea el par access+refresh con
+      // persistencia Redis. Usamos el access del TokenManager para que
+      // ambos tokens compartan el mismo jti/familia, simplificando revocación.
+      // Si TokenManager falla (Redis down), degradamos a solo access del use
+      // case — login no debería caer por falta de refresh.
+      let refreshToken: string | undefined;
+      let accessTokenFinal = authToken;
+      let expiresIn: number | undefined;
+      try {
+        const tokenPairResult = await this.tokenManager.createTokenPair(
+          result.user.id,
+          result.user.email,
+          result.user.roles ?? [],
+        );
+        if (tokenPairResult.isOk()) {
+          refreshToken = tokenPairResult.value.refreshToken;
+          accessTokenFinal = tokenPairResult.value.accessToken;
+          expiresIn = tokenPairResult.value.expiresIn;
+        } else {
+          this.logger.warn(
+            `Login OK but refresh token creation failed: ${tokenPairResult.error.message}. Degradando a access-only.`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `TokenManager.createTokenPair threw: ${err instanceof Error ? err.message : err}. Degradando a access-only.`,
+        );
+      }
+
+      return {
+        ...normalized,
+        token: accessTokenFinal,
+        accessToken: accessTokenFinal,
+        refreshToken,
+        expiresIn,
+        userId: result.user.id,
+      };
 
     } catch (error) {
       if (error instanceof HttpException && error.getStatus() === 429) throw error;
