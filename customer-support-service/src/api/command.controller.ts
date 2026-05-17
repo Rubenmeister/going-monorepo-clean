@@ -1,7 +1,8 @@
-import { Body, Controller, HttpCode, Logger, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Logger, Post, UseGuards } from '@nestjs/common';
 import { ConversationService } from '../agent/conversation.service';
 import { HandoffNotifierService } from '../infrastructure/handoff-notifier.service';
 import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
+import { InternalServiceGuard } from '../infrastructure/auth/jwt.guard';
 
 interface CommandBody {
   decisionId: string;
@@ -29,10 +30,13 @@ interface CommandResponse {
  * Cuando se necesiten más, agregar acá. Cada acción debe ser idempotente
  * por decisionId (el orchestrator puede reintentar).
  *
- * Sin auth interna por ahora — ambos services en misma VPC. En producción
- * con tráfico real, agregar verificación de SA del orchestrator.
+ * Auth: InternalServiceGuard — exige header X-Internal-Token con valor
+ * matching env var INTERNAL_SERVICE_TOKEN. El orchestrator/agent-bridge
+ * deben enviarlo. Sin él, 401. Antes era 100% público — un atacante
+ * podía abrir tickets fake o cleanup masivo.
  */
 @Controller('support')
+@UseGuards(InternalServiceGuard)
 export class CommandController {
   private readonly logger = new Logger(CommandController.name);
 
