@@ -135,7 +135,10 @@ export const authService = {
           process.env.EXPO_PUBLIC_API_URL ?? 'https://api.goingec.com';
 
         const { data } = await axios.post<AuthTokens>(
-          `${apiUrl}/api/auth/refresh`,
+          // Gateway expone /auth/refresh (NO /api/auth/refresh). El resto
+          // de mobile/api.ts usa /auth/* directo — esta era la única ruta
+          // con prefijo /api/ y resultaba en 404 silente, rompiendo A3.
+          `${apiUrl}/auth/refresh`,
           { refreshToken },
           { timeout: 10_000 },
         );
