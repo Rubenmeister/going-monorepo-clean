@@ -38,10 +38,23 @@ export class HttpServiceClient {
       (args.config.commandPath || '/command');
     const t0 = Date.now();
 
+    // S2S auth: el receiver (customer-support /support/command) ahora
+    // requiere X-Internal-Token. Lo enviamos siempre que tengamos el env
+    // var. Si no está configurado, log warning pero seguimos (durante
+    // bootstrap puede no estar bound y el receiver dará 401 — visible).
+    const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!internalToken) {
+      this.logger.warn(`INTERNAL_SERVICE_TOKEN no configurado — el receiver puede rechazar`);
+    }
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (internalToken) headers['X-Internal-Token'] = internalToken;
+
     try {
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           decisionId: args.decisionId,
           action:     args.action,

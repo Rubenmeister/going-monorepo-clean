@@ -1,4 +1,5 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   CreatePaymentIntentDto,
   CreatePaymentIntentUseCase,
@@ -10,6 +11,14 @@ import {
 } from '../application/fare-engine.service';
 import { QuoteStore } from '../application/quote-store.service';
 
+/**
+ * Auth split:
+ *   - /quote, /estimate → PÚBLICOS por diseño (UX: usuario ve precio antes
+ *     de signup). Mitigación de price scraping: rate limiting (próxima
+ *     pasada — Redis-based throttler por IP).
+ *   - /intent, /quote/confirm → JWT requerido (acciones que crean state +
+ *     mueven dinero). Aplicamos guard a método individual.
+ */
 @Controller('payments')
 export class PaymentController {
   constructor(
@@ -20,6 +29,7 @@ export class PaymentController {
   ) {}
 
   @Post('intent')
+  @UseGuards(AuthGuard('jwt'))
   async createPaymentIntent(@Body() dto: CreatePaymentIntentDto): Promise<any> {
     try {
       return await this.createPaymentIntentUseCase.execute(dto);
@@ -117,6 +127,7 @@ export class PaymentController {
    * debe usar como precio definitivo de la transacción.
    */
   @Post('quote/confirm')
+  @UseGuards(AuthGuard('jwt'))
   async confirmQuote(@Body() body: { quoteId: string; userId?: string }) {
     if (!body?.quoteId) {
       throw new BadRequestException('quoteId requerido');

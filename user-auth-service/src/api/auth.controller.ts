@@ -9,6 +9,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   Inject,
+  Ip,
   Req,
   Res,
   HttpException,
@@ -810,21 +811,50 @@ export class AuthController {
    */
   @Post('forgot-password')
   @HttpCode(200)
-  async forgotPassword(@Body() body: { email: string }): Promise<{ message: string }> {
+  async forgotPassword(
+    @Body() body: { email: string },
+    @Ip() ipRaw: string,
+  ): Promise<{ message: string }> {
     if (!body?.email) throw new BadRequestException('email is required');
 
+    const normalizedEmail = body.email.toLowerCase().trim();
+    // Rate limit per email — usamos AccountLockoutService con un namespace
+    // "reset:" para que NO se mezcle con attempt counts de login. Misma
+    // mecánica (5 attempts → lockout exponencial), pero contadores aislados.
+    const rateLimitKey = `reset:${normalizedEmail}`;
+    const ip = (ipRaw || 'unknown').replace('::ffff:', '');
+
     try {
-      const normalizedEmail = body.email.toLowerCase().trim();
+      const locked = await this.accountLockoutService.isAccountLocked(rateLimitKey);
+      if (locked) {
+        // Privacidad: no revelamos que el email está rate-limited. Mismo
+        // mensaje de éxito que el flow normal — atacante no distingue.
+        this.logger.warn(
+          `[forgot-password] rate-limited: email=${normalizedEmail} ip=${ip}`,
+        );
+        return {
+          message:
+            'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.',
+        };
+      }
+
       const doc = await this.userModel.findOne({ email: normalizedEmail }).exec();
 
       if (doc) {
         const resetToken = randomBytes(32).toString('hex');
         const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1h
 
-        await this.userModel.updateOne(
-          { email: normalizedEmail },
-          { $set: { resetPasswordToken: resetToken, resetPasswordExpiry: resetExpiry } },
-        ).exec();
+        await this.userModel
+          .updateOne(
+            { email: normalizedEmail },
+            {
+              $set: {
+                resetPasswordToken: resetToken,
+                resetPasswordExpiry: resetExpiry,
+              },
+            },
+          )
+          .exec();
 
         const frontendUrl = process.env.FRONTEND_URL || 'https://goingec.com';
         const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
@@ -832,6 +862,15 @@ export class AuthController {
         await this.sendResetEmail(normalizedEmail, resetLink);
         this.logger.log(`Password reset email sent to ${normalizedEmail}`);
       }
+
+      // Registramos el attempt SIEMPRE (con o sin user). Asi limitamos
+      // spammeo + enumeración por email aunque no exista la cuenta — el
+      // atacante igual queda lock-out.
+      await this.accountLockoutService.recordFailedAttempt(
+        rateLimitKey,
+        rateLimitKey,
+        ip,
+      );
     } catch (err) {
       this.logger.error(
         `forgot-password error: ${err instanceof Error ? err.message : err}`,
@@ -839,7 +878,10 @@ export class AuthController {
       );
     }
 
-    return { message: 'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.' };
+    return {
+      message:
+        'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.',
+    };
   }
 
   /**
@@ -852,8 +894,8 @@ export class AuthController {
     if (!body?.token || !body?.password) {
       throw new BadRequestException('token and password are required');
     }
-    if (body.password.length < 8) {
-      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+    if (body.password.length < 12) {
+      throw new BadRequestException('La contraseña debe tener al menos 12 caracteres');
     }
 
     const doc = await this.userModel.findOne({
@@ -903,8 +945,14 @@ export class AuthController {
     try {
       await transporter.verify();
     } catch (e) {
-      this.logger.error(`SMTP verify falló para ${gmailUser}: ${(e as Error).message}`);
-      throw e;
+      // Maskear contenido del error porque nodemailer a veces incluye el
+      // password en error responses (especialmente 535 auth-failed). Solo
+      // logueamos el código + categoría, sin string raw del error.
+      const err = e as { code?: string; responseCode?: number; command?: string };
+      this.logger.error(
+        `SMTP verify falló para ${gmailUser} — code=${err.code ?? 'UNKNOWN'} responseCode=${err.responseCode ?? 'n/a'} command=${err.command ?? 'n/a'}`,
+      );
+      throw new Error('SMTP authentication failed (check GMAIL_APP_PASSWORD)');
     }
 
     const info = await transporter.sendMail({

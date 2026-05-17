@@ -1,4 +1,15 @@
-import { Body, Controller, HttpCode, Logger, Post } from '@nestjs/common';
+import {
+  Body,
+  CanActivate,
+  Controller,
+  ExecutionContext,
+  HttpCode,
+  Injectable,
+  Logger,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AgentEventRepository } from '../infrastructure/persistence/agent-event.repository';
 
 interface CommandBody {
@@ -14,16 +25,38 @@ interface CommandResponse {
 }
 
 /**
+ * InternalServiceGuard — solo permite llamadas con X-Internal-Token válido.
+ * Antes el endpoint era 100% público; cualquiera podía inyectar anomalías
+ * fake al cerebro o crash-loop con bad payloads.
+ */
+@Injectable()
+class InternalServiceGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest();
+    const provided = req.headers?.['x-internal-token'];
+    const expected = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!expected) {
+      throw new UnauthorizedException('Internal auth misconfigured');
+    }
+    if (provided !== expected) {
+      throw new UnauthorizedException('Invalid or missing X-Internal-Token');
+    }
+    return true;
+  }
+}
+
+/**
  * Endpoint que recibe comandos del agent-bridge-service (Orchestrator).
+ * Auth: InternalServiceGuard — exige header X-Internal-Token que el
+ * agent-bridge ya envía (post AUTH Batch 1).
  *
  * Acciones soportadas hoy:
  *   - log_anomaly  → registra una anomalía explícitamente en el cerebro
  *                    (útil para que el orchestrator deje rastro de
  *                    decisiones tomadas a partir de patrones cross-agente)
- *
- * Más acciones se agregan acá cuando aparezcan reglas que las requieran.
  */
 @Controller('cerebro')
+@UseGuards(InternalServiceGuard)
 export class CommandController {
   private readonly logger = new Logger(CommandController.name);
 

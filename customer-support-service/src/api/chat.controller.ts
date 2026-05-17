@@ -1,11 +1,19 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, UseGuards, ForbiddenException } from '@nestjs/common';
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
+import { JwtAuthGuard, AdminGuard, CurrentUser, AuthUser } from '../infrastructure/auth/jwt.guard';
 
-// Simple JWT guard stub (implement as needed)
-class JwtAuthGuard {}
-
+/**
+ * Soporte web — todas las rutas requieren JWT válido (JwtAuthGuard).
+ * Las rutas de operador/admin (handoff queue, tickets, accept, resolve)
+ * además requieren rol admin (AdminGuard).
+ *
+ * Para el `userId` en path params: validamos que el caller solo accede
+ * a SU PROPIA conversación, excepto si es admin (puede ver cualquier
+ * userId).
+ */
 @Controller('support')
+@UseGuards(JwtAuthGuard)
 export class ChatController {
 
   constructor(
@@ -13,10 +21,17 @@ export class ChatController {
     private conversationService: ConversationService,
   ) {}
 
-  /** Web chat: send message */
+  /** Web chat: send message (user authenticated) */
   @Post('message')
-  async sendMessage(@Body() body: { userId: string; message: string }) {
+  async sendMessage(
+    @CurrentUser() caller: AuthUser,
+    @Body() body: { userId: string; message: string },
+  ) {
     const { userId, message } = body;
+    // Ownership check: solo podés mandar mensajes en TU conversación.
+    if (userId !== caller.id && !caller.roles.includes('admin')) {
+      throw new ForbiddenException('No tenés permiso para hablar por otro usuario');
+    }
     const reply = await this.agentService.respond(userId, message);
     const conv = await this.conversationService.getOrCreate(userId);
     return {
@@ -26,15 +41,22 @@ export class ChatController {
     };
   }
 
-  /** Get conversation history */
+  /** Get conversation history — solo dueño o admin */
   @Get(':userId/history')
-  async getHistory(@Param('userId') userId: string) {
+  async getHistory(
+    @CurrentUser() caller: AuthUser,
+    @Param('userId') userId: string,
+  ) {
+    if (userId !== caller.id && !caller.roles.includes('admin')) {
+      throw new ForbiddenException('No tenés acceso a esta conversación');
+    }
     const conv = await this.conversationService.getOrCreate(userId);
     return { messages: conv.messages, state: conv.state };
   }
 
-  /** Operator: get handoff queue and tickets */
+  /** Operator: get handoff queue — admin only */
   @Get('handoff/queue')
+  @UseGuards(AdminGuard)
   async getQueue() {
     const queue = await this.conversationService.getHandoffQueue();
     return queue.map(c => ({
@@ -46,8 +68,9 @@ export class ChatController {
     }));
   }
 
-  /** Admin dashboard: get tickets (conversations in handoff status) */
+  /** Admin dashboard: list tickets — admin only */
   @Get('tickets')
+  @UseGuards(AdminGuard)
   async getTickets(@Query('status') status?: string) {
     const tickets = await this.conversationService.getHandoffQueue(status);
     return {
@@ -65,8 +88,9 @@ export class ChatController {
     };
   }
 
-  /** Admin dashboard: get single ticket details */
+  /** Admin dashboard: get single ticket — admin only */
   @Get('tickets/:userId')
+  @UseGuards(AdminGuard)
   async getTicket(@Param('userId') userId: string) {
     const context = await this.conversationService.buildOperatorContext(userId);
     const conv = await this.conversationService.getOrCreate(userId);
@@ -85,16 +109,18 @@ export class ChatController {
     };
   }
 
-  /** Operator accepts handoff */
+  /** Operator accepts handoff — admin only */
   @Post('handoff/:userId/accept')
+  @UseGuards(AdminGuard)
   async acceptHandoff(@Param('userId') userId: string, @Body() body: { operatorId: string }) {
     await this.conversationService.acceptHandoff(userId, body.operatorId);
     const context = await this.conversationService.buildOperatorContext(userId);
     return { ok: true, context };
   }
 
-  /** Operator resolves and returns control to AI */
+  /** Operator resolves and returns control to AI — admin only */
   @Post('handoff/:userId/resolve')
+  @UseGuards(AdminGuard)
   async resolveHandoff(@Param('userId') userId: string) {
     await this.conversationService.resolveHandoff(userId);
     return { ok: true };
