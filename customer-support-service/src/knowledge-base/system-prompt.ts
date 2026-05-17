@@ -188,7 +188,26 @@ PRIVADO (precio total del vehículo, solo para ese grupo):
 
 IMPORTANTE: Muestra solo 1 opción (la que corresponde al grupo). No listes todos los vehículos.
 
-Tarifas compartidas por ruta (precio por persona):
+## Cómo cotizar precios (CRÍTICO)
+
+Tenés la función \`get_quote(origen, destino, modalidad, fecha_hora?)\`. SIEMPRE
+úsala cuando el usuario pregunte cuánto cuesta un viaje. NO inventes precios —
+los precios reales incluyen recargos dinámicos (hora pico, nocturno, fin de
+semana, feriado) que solo la función conoce.
+
+Ejemplos:
+  Usuario: "cuánto cuesta de Quito a Ambato?"
+    → llamá get_quote(origen='quito', destino='ambato', modalidad='compartido')
+    → respondé con el final_price + explicación de surcharges si aplican
+
+  Usuario: "cuánto saldría privado a las 11pm el domingo?"
+    → llamá get_quote(origen='X', destino='Y', modalidad='privado', fecha_hora=ISO)
+    → mencioná el recargo nocturno + fin de semana
+
+La tabla de abajo es solo REFERENCIA estática (base price sin recargos).
+Para responder al cliente, usá la función.
+
+Tarifas compartidas base por ruta (precio por persona, SIN recargos):
 - Quito ↔ Santo Domingo: $${FARES.shared['quito-santo_domingo']}
 - Quito ↔ Ambato: $${FARES.shared['quito-ambato']}
 - Quito ↔ Ibarra: $${FARES.shared['quito-ibarra']}

@@ -1,13 +1,65 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { VertexAI, Content } from '@google-cloud/vertexai';
+import { VertexAI, Content, FunctionDeclarationSchemaType } from '@google-cloud/vertexai';
 import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
+import { FARES, applyDynamicPricing } from 'pricing';
 
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
+
+/**
+ * Tools que Gemini puede llamar para responder con datos LIVE en lugar
+ * de adivinar desde el system prompt.
+ *
+ * Por ahora: 1 sola tool (get_quote). Roadmap: get_ride_history,
+ * get_ride_status, find_drivers_nearby, book_ride.
+ *
+ * get_quote: calcula precio aplicando recargos dinámicos del MOMENTO
+ * (hora pico, nocturno, feriado, fin de semana, segmento). Antes Gemini
+ * solo veía la tabla base estática inyectada en el system prompt — no
+ * sabía que a las 11pm el domingo el precio sube ~30%. Con esta tool
+ * llama get_quote() y devuelve el precio que el cliente realmente pagará.
+ */
+const TOOLS = [{
+  functionDeclarations: [{
+    name: 'get_quote',
+    description:
+      'Calcula el precio EXACTO de un viaje aplicando recargos dinámicos ' +
+      '(hora pico mañana/tarde, nocturno, fin de semana, feriado nacional). ' +
+      'Usa esto SIEMPRE que el usuario pregunte cuánto cuesta un viaje. ' +
+      'NO inventes precios — siempre llama esta función.',
+    parameters: {
+      type: FunctionDeclarationSchemaType.OBJECT,
+      properties: {
+        origen: {
+          type: FunctionDeclarationSchemaType.STRING,
+          description:
+            'Ciudad o lugar de origen en minúsculas con guión bajo. ' +
+            'Ej: "quito", "ambato", "santo_domingo", "el_carmen", "aeropuerto"',
+        },
+        destino: {
+          type: FunctionDeclarationSchemaType.STRING,
+          description: 'Ciudad o lugar destino, mismo formato que origen',
+        },
+        modalidad: {
+          type: FunctionDeclarationSchemaType.STRING,
+          description:
+            '"compartido" (precio por asiento) o "privado" (vehículo completo)',
+        },
+        fecha_hora: {
+          type: FunctionDeclarationSchemaType.STRING,
+          description:
+            'ISO datetime del viaje (ej: "2026-05-17T23:00:00-05:00"). ' +
+            'Si el usuario no especifica, omitir — se asume "ahora".',
+        },
+      },
+      required: ['origen', 'destino', 'modalidad'],
+    },
+  }],
+}];
 
 // Modelo estable (sin sufijo -preview-XX-XX). El preview que se usaba antes
 // fue deprecado por Vertex (403 PERMISSION_DENIED con "or it may not exist").
@@ -130,6 +182,7 @@ export class AgentService {
     try {
       const model = this.vertexAI.getGenerativeModel({
         model: GEMINI_MODEL,
+        tools: TOOLS,
         generationConfig: { maxOutputTokens: 600 },
         systemInstruction: {
           role: 'system',
@@ -138,9 +191,32 @@ export class AgentService {
       });
 
       const chat = model.startChat({ history });
-      const result = await chat.sendMessage(userMessage);
-      const response = await result.response;
-      assistantMessage = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      let result = await chat.sendMessage(userMessage);
+      let candidate = result.response.candidates?.[0];
+
+      // ── Function calling loop ─────────────────────────────────────────
+      // Gemini puede devolver functionCall en lugar de texto. Ejecutamos
+      // la función real (usa libs/pricing) y mandamos el resultado de
+      // vuelta para que Gemini componga la respuesta natural.
+      let functionCallTurns = 0;
+      while (functionCallTurns < 3) {
+        const fnCall = candidate?.content?.parts?.find((p: any) => p.functionCall)?.functionCall;
+        if (!fnCall) break;
+        functionCallTurns++;
+        this.logger.log(`[tools] Gemini llamó: ${fnCall.name}(${JSON.stringify(fnCall.args)})`);
+
+        const fnResult = this.executeTool(fnCall.name, fnCall.args);
+        // sendMessage con functionResponse — Gemini ve el resultado y compone respuesta
+        result = await chat.sendMessage([{
+          functionResponse: {
+            name: fnCall.name,
+            response: { result: fnResult },
+          },
+        }] as any);
+        candidate = result.response.candidates?.[0];
+      }
+
+      assistantMessage = candidate?.content?.parts?.find((p: any) => p.text)?.text || '';
 
     } catch (error) {
       this.logger.error('Gemini API error', error);
@@ -218,5 +294,97 @@ export class AgentService {
     // Normal response
     this.conversationService.addMessage(userId, 'assistant', assistantMessage);
     return assistantMessage;
+  }
+
+  // ────────────────────────────────────────────────────────────────────
+  //  Function calling — dispatcher + tools
+  // ────────────────────────────────────────────────────────────────────
+
+  /**
+   * Dispatch del function call de Gemini al handler real. Cada tool
+   * devuelve un objeto plano serializable (Vertex lo pasa a Gemini como
+   * `functionResponse`). Si falla, devuelve { error } y Gemini compone
+   * una disculpa natural.
+   */
+  private executeTool(name: string, args: any): any {
+    try {
+      switch (name) {
+        case 'get_quote':
+          return this.toolGetQuote(args);
+        default:
+          this.logger.warn(`[tools] tool desconocido: ${name}`);
+          return { error: `Tool ${name} no implementado` };
+      }
+    } catch (err) {
+      this.logger.error(`[tools] error ejecutando ${name}: ${(err as Error).message}`);
+      return { error: (err as Error).message };
+    }
+  }
+
+  /**
+   * get_quote: calcula precio EXACTO usando libs/pricing. Mismo código que
+   * payment-service usa para cobrar — sin desincronización.
+   *
+   * Returns shape esperado por Gemini para componer respuesta natural:
+   *   {
+   *     base_price: 15,
+   *     final_price: 19.50,
+   *     surcharges: { time: '+20% nocturno', weekend: '+10%' },
+   *     currency: 'USD',
+   *     per_seat: true  // (compartido) o false (privado)
+   *   }
+   */
+  private toolGetQuote(args: any): any {
+    const origen   = String(args.origen   || '').toLowerCase().replace(/\s+/g, '_');
+    const destino  = String(args.destino  || '').toLowerCase().replace(/\s+/g, '_');
+    const modalidad = (args.modalidad === 'privado' ? 'privado' : 'compartido') as 'privado' | 'compartido';
+    const dateTime = args.fecha_hora ? new Date(args.fecha_hora) : new Date();
+    if (isNaN(dateTime.getTime())) {
+      return { error: 'fecha_hora inválida — usar formato ISO 8601' };
+    }
+
+    // Lookup en tabla FARES (direccional — probar ambos órdenes).
+    const sharedFares: Record<string, number> = FARES.shared as any;
+    const key1 = `${origen}-${destino}`;
+    const key2 = `${destino}-${origen}`;
+    let basePrice = sharedFares[key1] ?? sharedFares[key2];
+
+    // Si no es ruta compartida conocida, devolver no_route_found para
+    // que Gemini sugiera al usuario contactar soporte o usar la app.
+    if (basePrice === undefined) {
+      return {
+        error: 'ruta_no_listada',
+        message: `No tengo tarifa fija para ${origen} → ${destino}. Las rutas con tarifa pre-definida son: ${Object.keys(sharedFares).slice(0, 10).join(', ')}...`,
+      };
+    }
+
+    // applyDynamicPricing aplica TODOS los recargos del momento.
+    const pricing = applyDynamicPricing({
+      basePrice,
+      mode: modalidad,
+      dateTime,
+      clientSegment: 'public',
+    });
+
+    // Componer surcharges en formato humano para Gemini.
+    const surcharges: Record<string, string> = {};
+    if (pricing.timeSurchargeRate > 0) {
+      surcharges.tiempo = `+${(pricing.timeSurchargeRate * 100).toFixed(0)}%`;
+    }
+    if (pricing.clientSurchargeRate > 0) {
+      surcharges.segmento = `+${(pricing.clientSurchargeRate * 100).toFixed(0)}%`;
+    }
+
+    return {
+      origen,
+      destino,
+      modalidad,
+      base_price: basePrice,
+      final_price: pricing.adjustedPrice,
+      surcharges,
+      currency: 'USD',
+      per_seat: modalidad === 'compartido',
+      datetime_used: dateTime.toISOString(),
+    };
   }
 }
