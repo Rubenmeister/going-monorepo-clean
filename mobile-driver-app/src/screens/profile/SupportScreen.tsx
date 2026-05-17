@@ -60,11 +60,11 @@ export function SupportScreen() {
   };
 
   const handleCall = () => {
-    Linking.openURL('tel:+593999999999');
+    Linking.openURL('tel:+593984037949');
   };
 
   const handleWhatsApp = () => {
-    Linking.openURL('https://wa.me/593999999999?text=Hola,%20necesito%20soporte%20Going%20Conductor');
+    Linking.openURL('https://wa.me/593984037949?text=Hola,%20necesito%20soporte%20Going%20Conductor');
   };
 
   const handleSubmitTicket = async () => {
@@ -77,7 +77,7 @@ export function SupportScreen() {
     // mensaje pre-llenados — la conversación queda en el canal real de
     // soporte. Cuando el endpoint exista, este flujo cambia a POST directo.
     const composed = `*${subject.trim()}*\n\n${message.trim()}`;
-    const url = `https://wa.me/593999999999?text=${encodeURIComponent(composed)}`;
+    const url = `https://wa.me/593984037949?text=${encodeURIComponent(composed)}`;
     Linking.openURL(url).then(() => {
       setSubject('');
       setMessage('');

@@ -61,7 +61,7 @@ export function CorporateScreen() {
       const msg = encodeURIComponent(
         `Hola Going Empresas, me llamo ${user?.firstName ?? ''} ${user?.lastName ?? ''} y quiero solicitar una cuenta corporativa. Mi email: ${user?.email ?? ''}`
       );
-      Linking.openURL(`https://wa.me/593XXXXXXXXX?text=${msg}`).catch(() =>
+      Linking.openURL(`https://wa.me/593984037949?text=${msg}`).catch(() =>
         Alert.alert('Error', 'No se pudo enviar la solicitud. Escríbenos a empresas@goingec.com')
       );
     } finally {

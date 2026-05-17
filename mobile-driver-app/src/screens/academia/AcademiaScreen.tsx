@@ -102,7 +102,7 @@ const MODULES: Module[] = [
 // ── Recursos adicionales ───────────────────────────────────────────────────
 const RESOURCES = [
   { id: 'r1', title: 'Manual del Conductor Going',  icon: 'document-outline' as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/manual-conductor' },
-  { id: 'r2', title: 'Canal de WhatsApp Academia',  icon: 'logo-whatsapp'    as keyof typeof Ionicons.glyphMap, url: 'https://wa.me/593999000000' },
+  { id: 'r2', title: 'Canal de WhatsApp Academia',  icon: 'logo-whatsapp'    as keyof typeof Ionicons.glyphMap, url: 'https://wa.me/593984037949' },
   { id: 'r3', title: 'Comunidad Going Conductores', icon: 'people-outline'   as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/comunidad' },
   { id: 'r4', title: 'Preguntas frecuentes',        icon: 'help-circle-outline' as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/faq-conductor' },
 ];
