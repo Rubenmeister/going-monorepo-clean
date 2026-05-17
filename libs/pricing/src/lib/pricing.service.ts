@@ -164,6 +164,11 @@ export const QUITO_ZONE_SURCHARGE: Record<QuitoZone, number> = {
 };
 
 // ── Rutas oficiales de Viaje Compartido Going ─────────────────────────────────
+// @deprecated Los precios `stopPrices` aquí son INCORRECTOS — diferían de la
+// tabla oficial FARES (ver libs/pricing/lib/fares.ts). Verificado con ops
+// 2026-05-17: Ambato→Quito real es $15, no $10. Usar FARES.shared[...] como
+// source of truth. Esta constante se mantiene solo porque calcSharedRoute la
+// usa internamente; refactor pendiente para que también consuma FARES.
 export const GOING_SHARED_ROUTES = [
   {
     id:        'sierra_centro',
