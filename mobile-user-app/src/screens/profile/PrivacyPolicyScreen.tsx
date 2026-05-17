@@ -17,7 +17,7 @@ const SECTIONS = [
   {
     number: '1',
     title: 'Responsable del Tratamiento',
-    body: 'Going Ecuador S.A.S. (en adelante "Going"), con RUC: 1793XXXXXXX001, domicilio en Av. Amazonas N23-45, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales.\n\nContacto del Delegado de Protección de Datos (DPD):\n• Correo: privacidad@goingec.com\n• Teléfono: +593 2 XXX-XXXX\n• Horario: lunes a viernes, 09h00 – 17h00\n\nEsta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.',
+    body: 'THORN AI TECHNOLOGIES S.A.S. (titular de la marca "Going", en adelante "Going"), con RUC: 1793176925001, domicilio en Echeverría N2-170, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales.\n\nContacto del Delegado de Protección de Datos (DPD):\n• Correo: privacidad@goingec.com\n• WhatsApp: +593 98 403 7949\n• Horario: lunes a viernes, 09h00 – 17h00\n\nEsta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.',
   },
   {
     number: '2',
@@ -82,7 +82,7 @@ const SECTIONS = [
   {
     number: '14',
     title: 'Autoridad de Control y Reclamaciones',
-    body: 'Si consideras que el tratamiento de tus datos personales infringe la LOPDP o esta Política de Privacidad, tienes derecho a presentar una reclamación ante:\n\nAutoridad de Protección de Datos Personales del Ecuador\n• Web: www.protecciondatos.gob.ec\n• Correo: info@protecciondatos.gob.ec\n\nAntes de acudir a la autoridad de control, te invitamos a contactarnos directamente en privacidad@goingec.com, ya que nos comprometemos a resolver cualquier inquietud de manera rápida y satisfactoria.\n\nGoing Ecuador S.A.S. cooperará plenamente con la Autoridad de Protección de Datos en cualquier investigación relativa al tratamiento de datos personales de nuestros usuarios.',
+    body: 'Si consideras que el tratamiento de tus datos personales infringe la LOPDP o esta Política de Privacidad, tienes derecho a presentar una reclamación ante:\n\nAutoridad de Protección de Datos Personales del Ecuador\n• Web: www.protecciondatos.gob.ec\n• Correo: info@protecciondatos.gob.ec\n\nAntes de acudir a la autoridad de control, te invitamos a contactarnos directamente en privacidad@goingec.com, ya que nos comprometemos a resolver cualquier inquietud de manera rápida y satisfactoria.\n\nTHORN AI TECHNOLOGIES S.A.S. cooperará plenamente con la Autoridad de Protección de Datos en cualquier investigación relativa al tratamiento de datos personales de nuestros usuarios.',
   },
 ];
 
@@ -99,7 +99,7 @@ export function PrivacyPolicyScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.companyTag}>GOING ECUADOR S.A.S.</Text>
+        <Text style={styles.companyTag}>THORN AI TECHNOLOGIES S.A.S.</Text>
         <Text style={styles.headerTitle}>Política de{'\n'}Privacidad</Text>
         <View style={styles.versionRow}>
           <View style={styles.versionBadge}>
@@ -146,7 +146,7 @@ export function PrivacyPolicyScreen() {
             <Text style={styles.webLinkText}>goingec.com/privacidad</Text>
           </TouchableOpacity>
           <Text style={styles.contactAddress}>
-            Av. Amazonas N23-45, Quito, Ecuador
+            Echeverría N2-170, Quito, Ecuador
           </Text>
         </View>
       </View>
