@@ -129,7 +129,21 @@ export class VoiceService {
         audio: { content: audioBuffer.toString('base64') },
       });
 
-      this.logger.log(`[stt] response: ${JSON.stringify({ resultsCount: response.results?.length ?? 0 })}`);
+      // Log estructura COMPLETA del response cuando devuelve algún result.
+      // Útil para entender por qué resultsCount=1 pero transcript=''.
+      // Mostramos confidence + alternatives + languageCode de cada result.
+      const respDebug = {
+        resultsCount: response.results?.length ?? 0,
+        results: response.results?.map((r: any) => ({
+          languageCode: r.languageCode,
+          alternativesCount: r.alternatives?.length ?? 0,
+          alts: r.alternatives?.slice(0, 3).map((a: any) => ({
+            transcript: a.transcript || '(empty)',
+            confidence: a.confidence,
+          })),
+        })),
+      };
+      this.logger.log(`[stt] response: ${JSON.stringify(respDebug)}`);
 
       const transcript = response.results
         ?.map((r: any) => r.alternatives?.[0]?.transcript)
