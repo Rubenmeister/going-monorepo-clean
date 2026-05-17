@@ -9,6 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDriverStore } from '@store/useDriverStore';
+import { authService } from '../../services/authService';
 
 const GOING_RED = '#ff4c41';
 const NAVY   = '#001F6B'; // kept for internal use
@@ -133,8 +134,15 @@ export function DriverRegisterScreen({ navigation }: any) {
         phone,
         roles: ['driver'],
       });
-      const token = data.token ?? data.access_token;
-      await AsyncStorage.setItem('driver_token', token);
+      // A3: backend devuelve accessToken + refreshToken + expiresIn. Compat
+      // con backends viejos que solo devolvían `token`/`access_token`.
+      const accessToken: string = data.accessToken ?? data.token ?? data.access_token;
+      await authService.saveTokens({
+        accessToken,
+        refreshToken: data.refreshToken ?? '',
+        expiresIn: data.expiresIn,
+      });
+      const token = accessToken; // alias para uploads que vienen abajo
 
       // 2. Subir documentos al endpoint de documentos
       const docTypes = Object.keys(docs) as Array<keyof typeof docs>;

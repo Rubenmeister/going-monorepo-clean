@@ -1,22 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-
-const API_BASE =
-  process.env.EXPO_PUBLIC_API_URL ||
-  'https://api.goingec.com';
-
-const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('driver_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+import { api } from '../services/api';
+import { authService } from '../services/authService';
 
 export interface PendingTrip {
   id: string;
@@ -67,14 +52,14 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   error: null,
 
   loadToken: async () => {
-    const token = await AsyncStorage.getItem('driver_token');
-    const raw   = await AsyncStorage.getItem('driver_user');
-    if (token && raw) {
-      // Restaurar conductor completo desde storage
-      set({ token, driver: JSON.parse(raw) });
+    // bootstrap maneja refresh proactivo si el access está cerca de exp.
+    const token = await authService.bootstrap();
+    const driver = await authService.getDriver();
+    if (token && driver) {
+      set({ token, driver: driver as Driver });
     } else if (token) {
-      // Sin datos de usuario guardados: limpiar sesión
-      await AsyncStorage.removeItem('driver_token');
+      // Sin datos de usuario guardados: limpiar sesión completa.
+      await authService.clearAll();
     }
   },
 
@@ -82,8 +67,12 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      const token = data.token ?? data.access_token;
-      if (!token) throw new Error('No se recibió token de autenticación');
+      // A3: backend devuelve { accessToken, refreshToken, expiresIn, user, ... }.
+      // Compat con backends viejos que solo devolvían `token` o `access_token`.
+      const accessToken: string = data.accessToken ?? data.token ?? data.access_token;
+      const refreshToken: string | undefined = data.refreshToken;
+      const expiresIn: number | undefined = data.expiresIn;
+      if (!accessToken) throw new Error('No se recibió token de autenticación');
       const driverData = data.user ?? data;
 
       // Solo permitir acceso a conductores con rol 'driver'
@@ -102,9 +91,15 @@ export const useDriverStore = create<DriverState>((set, get) => ({
         rating: driverData.rating,
         isOnline: driverData.isOnline,
       };
-      await AsyncStorage.setItem('driver_token', token);
-      await AsyncStorage.setItem('driver_user', JSON.stringify(driver));
-      set({ token, driver, isLoading: false });
+
+      await authService.saveTokens({
+        accessToken,
+        refreshToken: refreshToken ?? '',
+        expiresIn,
+      });
+      await authService.saveDriver(driver);
+
+      set({ token: accessToken, driver, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || 'Error al iniciar sesión',
@@ -114,7 +109,15 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.multiRemove(['driver_token', 'driver_user']);
+    // Server-side revoke del refresh token (A3). Si falla por red,
+    // limpiamos local de todos modos — la sesión está rota igual.
+    try {
+      const rt = await authService.getRefreshToken();
+      await api.post('/auth/logout', rt ? { refreshToken: rt } : {});
+    } catch {
+      /* best-effort */
+    }
+    await authService.clearAll();
     set({
       token: null,
       driver: null,
