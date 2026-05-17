@@ -6,6 +6,7 @@ import {
   ITokenService,
   IRefreshTokenRepository,
   ITokenBlacklistRepository,
+  IUserRepository,
   AccessTokenResponse,
   TokenPair,
   RefreshTokenData,
@@ -31,7 +32,9 @@ export class TokenManagerService implements ITokenManager {
     @Inject(IRefreshTokenRepository)
     private refreshTokenRepo: IRefreshTokenRepository,
     @Inject(ITokenBlacklistRepository)
-    private blacklistRepo: ITokenBlacklistRepository
+    private blacklistRepo: ITokenBlacklistRepository,
+    @Inject(IUserRepository)
+    private userRepo: IUserRepository,
   ) {}
 
   /**
@@ -141,17 +144,40 @@ export class TokenManagerService implements ITokenManager {
         );
       }
 
-      // 3. Get user data (in real scenario, fetch from DB)
-      // For now, we'll assume refresh token contains this info or we fetch it
-      // This is a simplified version - in production, you'd fetch user details from DB
+      // 3. Fetch user del DB para re-emitir token con email + roles ACTUALES.
+      // Antes: emitía token con email='' y roles=[] — bug crítico porque si
+      // se revoca admin role a alguien, su refresh seguía dando acceso admin
+      // (porque el cliente puede haber cacheado el role viejo, y aunque no,
+      // el access token nuevo iba con roles=[] que en algunos services
+      // se interpretaba como "no roles definidos = default user").
+      const userResult = await this.userRepo.findById(storedToken.userId);
+      if (userResult.isErr() || !userResult.value) {
+        this.logger.warn(
+          `Refresh failed: user ${storedToken.userId} no encontrado al re-fetch`,
+        );
+        return err(new Error('User no longer exists or is disabled'));
+      }
+      const user = userResult.value;
+      const userPrim = (user as any).toPrimitives?.() ?? (user as any);
+      // Cualquier user con status != 'active' no debería poder refrescar.
+      if (userPrim.status && userPrim.status !== 'active') {
+        this.logger.warn(
+          `Refresh denied: user ${storedToken.userId} status=${userPrim.status}`,
+        );
+        return err(new Error('User account is not active'));
+      }
+      const userEmail = userPrim.email || '';
+      const userRoles: string[] = Array.isArray(userPrim.roles)
+        ? userPrim.roles
+        : userPrim.role
+          ? [userPrim.role]
+          : [];
 
-      // 4. Generate new access token
-      // Note: We don't have user email/roles from refresh token in this implementation
-      // In production, you'd need to store these or fetch from user DB
+      // 4. Generate new access token con datos FRESCOS del DB
       const newAccessToken = this.tokenService.generateAccessToken(
         storedToken.userId,
-        '', // Would be fetched from user in production
-        [] // Would be fetched from user in production
+        userEmail,
+        userRoles,
       );
 
       // 5. Optionally rotate refresh token if < 1 day remaining
