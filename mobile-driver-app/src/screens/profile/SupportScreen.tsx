@@ -72,25 +72,17 @@ export function SupportScreen() {
       Alert.alert('Campos requeridos', 'Completa el asunto y el mensaje.');
       return;
     }
-    setSending(true);
-    try {
-      const token = await AsyncStorage.getItem('driver_token');
-      await axios.post(`${API_BASE_URL}/support/ticket`, {
-        subject: subject.trim(),
-        message: message.trim(),
-        source: 'driver_app',
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      Alert.alert('Ticket enviado', 'Te responderemos a la brevedad por correo electrónico.');
+    // El backend aún no tiene /support/ticket. Para no perder el contenido
+    // que la persona conductora escribió, abrimos WhatsApp con el subject +
+    // mensaje pre-llenados — la conversación queda en el canal real de
+    // soporte. Cuando el endpoint exista, este flujo cambia a POST directo.
+    const composed = `*${subject.trim()}*\n\n${message.trim()}`;
+    const url = `https://wa.me/593999999999?text=${encodeURIComponent(composed)}`;
+    Linking.openURL(url).then(() => {
       setSubject('');
       setMessage('');
       setShowContactForm(false);
-    } catch {
-      Alert.alert('Error', 'No se pudo enviar el ticket. Intenta más tarde.');
-    } finally {
-      setSending(false);
-    }
+    });
   };
 
   return (
