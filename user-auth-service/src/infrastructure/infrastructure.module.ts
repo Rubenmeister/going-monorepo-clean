@@ -46,13 +46,30 @@ import { FacebookOauthGuard } from './oauth/facebook-oauth.guard';
     {
       provide: 'REDIS_CLIENT',
       useFactory: (configService: ConfigService) => {
+        // ioredis defaults: lazyConnect=false (connect on creation),
+        // enableOfflineQueue=true (queue commands while connecting).
+        //
+        // Antes teníamos `lazyConnect:true + enableOfflineQueue:false` y el primer
+        // comando del RefreshTokenRepository fallaba con "Stream isn't writeable"
+        // porque el socket no estaba listo. Con enableOfflineQueue:true los
+        // comandos quedan en buffer hasta que connect termina.
+        //
+        // maxRetriesPerRequest:1 = un retry por comando — evita que /auth/login
+        // cuelgue si Redis está caído (degradamos a access-only).
         const url = configService.get('REDIS_URL') || 'redis://localhost:6379';
-        return new Redis(url, {
-          lazyConnect: true,
-          enableOfflineQueue: false,
-          maxRetriesPerRequest: 0,
-          connectTimeout: 3000,
+        const client = new Redis(url, {
+          maxRetriesPerRequest: 1,
+          connectTimeout: 5000,
+          enableReadyCheck: true,
+          // enableOfflineQueue: true (default) — buffer hasta connect
         });
+        client.on('error', (err) => {
+          // Logger no disponible en factory; pero el evento existe para no
+          // tirar el proceso por unhandled rejection en conexión inicial.
+          // eslint-disable-next-line no-console
+          console.warn('[redis] error:', err.message);
+        });
+        return client;
       },
       inject: [ConfigService],
     },
