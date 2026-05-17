@@ -480,6 +480,7 @@ export class AuthController {
    * Revokes the user's refresh token(s) and blacklists access token
    */
   @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(200)
   async logout(
     @CurrentUser('userId') userId: UUID,
