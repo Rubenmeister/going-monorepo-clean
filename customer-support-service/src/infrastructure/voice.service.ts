@@ -75,7 +75,11 @@ export class VoiceService {
    *  - Fallback a 'es' si no podemos determinarlo
    */
   async transcribe(audioBuffer: Buffer): Promise<{ transcript: string; lang: SupportedLang }> {
-    this.logger.log(`[stt] start: audioBuffer ${audioBuffer.length} bytes`);
+    // Log primeros 32 bytes (header) en hex para diagnóstico. OGG empieza
+    // con "OggS" (0x4F 0x67 0x67 0x53). Si vemos otro magic number significa
+    // que WhatsApp cambió el formato o estamos recibiendo algo distinto.
+    const headerHex = audioBuffer.slice(0, 32).toString('hex');
+    this.logger.log(`[stt] start: audioBuffer ${audioBuffer.length} bytes, header=${headerHex}`);
     if (audioBuffer.length < 100) {
       this.logger.warn(`[stt] buffer too small (${audioBuffer.length} bytes), aborting`);
       return { transcript: '', lang: 'es' };
@@ -87,10 +91,19 @@ export class VoiceService {
       // del spec Opus). Cloud STT v1 NO auto-detecta del header — hay que
       // pasarlo explícito. Antes estaba 16000 lo cual fallaba silencioso con
       // INVALID_ARGUMENT en algunos clientes (Whats nativo usa 48k).
+      //
+      // Model: 'latest_short' está optimizado para utterances < 60s (voice
+      // notes de WhatsApp son típicamente 2-15s) y soporta multi-language
+      // bien. Antes era 'default' que tardaba 2+ min y devolvía 0 results
+      // (verificado en prod 2026-05-17 13:28-13:31).
+      // useEnhanced: true activa el modelo enhanced de Google (mejor accuracy
+      // a costo marginal de latencia, pero MUCHO mejor que 'default' para audio
+      // comprimido/ruidoso típico de mobile).
       const [response] = await speechClient.recognize({
         config: {
           encoding: 'OGG_OPUS' as any,
           sampleRateHertz: 48000,
+          audioChannelCount: 1, // WhatsApp voice = mono
           languageCode: LANG.es.sttPrimary,
           // Cloud STT v1 acepta hasta 4 alternativas adicionales.
           alternativeLanguageCodes: [
@@ -100,7 +113,8 @@ export class VoiceService {
             LANG.qu.sttPrimary,
           ],
           enableAutomaticPunctuation: true,
-          model: 'default',
+          model: 'latest_short',
+          useEnhanced: true,
         },
         audio: { content: audioBuffer.toString('base64') },
       });
