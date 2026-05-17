@@ -1357,6 +1357,9 @@ importers:
       mongoose:
         specifier: ^8.0.0
         version: 8.23.0(snappy@7.3.3)
+      pricing:
+        specifier: workspace:*
+        version: link:../libs/pricing
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

@@ -43,14 +43,17 @@ const LANG: Record<SupportedLang, LangConfig> = {
 
 /**
  * Chirp 3 HD voice persona — UN SOLO nombre cross-language para consistencia
- * de marca. Sample alternatives:
- *   'Aoede'   — femenina, cálida (recomendada para Going)
- *   'Charon'  — masculino, formal
- *   'Phoebe'  — femenina, joven
- *   'Algenib' — masculino, neutral
+ * de marca.
+ *
+ * Test A/B 2026-05-17 con 7 voces (Aoede, Leda, Kore, Despina, Sulafat,
+ * Charon, Algenib) sobre frase típica Going. Resultados:
+ *   - Femenina elegida: **Kore** (más neutral, menos acento mexicano que
+ *     Aoede). Despina también aceptable como backup.
+ *   - Masculina elegida: **Charon** (mantiene, suena formal/neutral).
+ *     Algenib también aceptable.
  */
 const CHIRP3_PERSONA: Record<AgentGender, string> = {
-  female: 'Aoede',
+  female: 'Kore',
   male:   'Charon',
 };
 
