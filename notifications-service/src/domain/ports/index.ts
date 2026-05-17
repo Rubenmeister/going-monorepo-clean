@@ -1,21 +1,70 @@
-import { Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { createParamDecorator } from '@nestjs/common';
+import * as jwt from 'jsonwebtoken';
 
 /**
- * JWT Auth Guard
- * Protects routes by validating JWT tokens
+ * JWT Auth Guard — versión standalone con jsonwebtoken directo.
+ *
+ * Reemplaza la versión previa que extendía AuthGuard('jwt') de
+ * @nestjs/passport, la cual fallaba con "Unknown authentication strategy
+ * 'jwt'" porque ningún JwtStrategy estaba registrado en el app module
+ * de notifications-service. (jsonwebtoken viene como dep transitivo de
+ * @nestjs/jwt.)
+ *
+ * Esta versión:
+ *   1. Lee `Authorization: Bearer <token>` del request
+ *   2. Verifica firma + expiración via jwt.verify (jsonwebtoken)
+ *   3. Normaliza el shape de req.user (sub|userId → id, role|roles → roles[])
+ *   4. Fail-closed si JWT_SECRET no está configurado
  */
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any, info: any, context: any) {
-    if (err) {
-      throw err;
+export class JwtAuthGuard implements CanActivate {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
+  canActivate(context: ExecutionContext): boolean {
+    const req = context.switchToHttp().getRequest();
+    const header = req.headers?.authorization || req.headers?.Authorization;
+    if (!header || typeof header !== 'string' || !header.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Missing or malformed Authorization header');
     }
-    if (!user) {
-      return null;
+    const token = header.slice(7).trim();
+    if (!token) throw new UnauthorizedException('Empty bearer token');
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      this.logger.error('JWT_SECRET no configurado — auth fail-closed');
+      throw new UnauthorizedException('Auth misconfigured');
     }
-    return user;
+
+    try {
+      const decoded = jwt.verify(token, secret) as Record<string, unknown>;
+      const userId = (decoded.sub as string) || (decoded.userId as string);
+      if (!userId) throw new Error('Token without sub/userId');
+      const rolesRaw = decoded.roles ?? decoded.role;
+      const roles = Array.isArray(rolesRaw)
+        ? (rolesRaw as string[])
+        : typeof rolesRaw === 'string'
+          ? [rolesRaw]
+          : [];
+      req.user = {
+        id:    userId,
+        email: (decoded.email as string) || '',
+        roles,
+        jti:   (decoded.jti as string) || undefined,
+        raw:   decoded,
+      };
+      return true;
+    } catch (err) {
+      throw new UnauthorizedException(
+        `Invalid token: ${(err as Error).message || 'verification failed'}`,
+      );
+    }
   }
 }
 
