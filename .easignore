@@ -18,6 +18,12 @@ pnpm-workspace.yaml
 .github/
 .circleci/
 
+# ── Claude Code worktrees y metadata (~10 GB!) ───────────────────────────────
+.claude/
+.cursor/
+.vscode/
+.idea/
+
 # ── Build artifacts ───────────────────────────────────────────────────────────
 dist/
 **/dist/
@@ -77,6 +83,35 @@ analytics-service/**
 !analytics-service/package.json
 customer-support-service/**
 !customer-support-service/package.json
+ratings-service/**
+!ratings-service/package.json
+ar-service/**
+!ar-service/package.json
+blockchain-service/**
+!blockchain-service/package.json
+corporate-service/**
+!corporate-service/package.json
+recommendation-service/**
+!recommendation-service/package.json
+subscription-service/**
+!subscription-service/package.json
+cerebro-service/**
+!cerebro-service/package.json
+mycortex-service/**
+!mycortex-service/package.json
+orchestrator-service/**
+!orchestrator-service/package.json
+agent-bridge-service/**
+!agent-bridge-service/package.json
+
+# ── Cron-triggered agents (not deployed with mobile) ─────────────────────────
+ops-agent/**
+financial-agent/**
+content-agent/**
+marketing-agent/**
+going-agent/**
+mobile-agent/**
+frontend-agent/**
 
 # ── Other apps: keep only package.json ───────────────────────────────────────
 frontend-webapp/**
@@ -89,6 +124,8 @@ admin-dashboard-e2e/**
 !admin-dashboard-e2e/package.json
 api-gateway-e2e/**
 !api-gateway-e2e/package.json
+website/**
+!website/package.json
 
 # ── Libs: keep only package.json per lib ─────────────────────────────────────
 libs/**
