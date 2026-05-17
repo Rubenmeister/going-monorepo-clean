@@ -807,14 +807,50 @@ export class AuthController {
    * POST /auth/forgot-password
    * Genera un token de reset y envía email con el enlace.
    * Siempre responde 200 para no revelar si el correo existe.
+   *
+   * SECURITY: rate limit por IP y por email para prevenir:
+   *   - Email bombing (mismo email solicitado masivamente)
+   *   - Enumeración de cuentas (varios emails desde una IP)
+   *   - Spam de emails desde SMTP de Going (costo + reputación)
+   * Aplica el mismo AccountLockoutService que login (MAX_ATTEMPTS=5,
+   * lockout 15 min con backoff exponencial).
    */
   @Post('forgot-password')
   @HttpCode(200)
-  async forgotPassword(@Body() body: { email: string }): Promise<{ message: string }> {
+  async forgotPassword(
+    @Body() body: { email: string },
+    @Req() req: Request
+  ): Promise<{ message: string }> {
     if (!body?.email) throw new BadRequestException('email is required');
 
+    const ip = this.extractIp(req);
+    const normalizedEmail = body.email.toLowerCase().trim();
+    const ipKey = `forgot:ip:${ip}`;
+    const emailKey = `forgot:email:${normalizedEmail}`;
+
+    // 1. Rate limit por IP (catches scripts running against multiple emails)
+    if (await this.accountLockoutService.isAccountLocked(ipKey)) {
+      this.logger.warn(`🔐 forgot-password rate-limited by IP: ${ip}`);
+      throw new HttpException(
+        { message: 'Demasiados intentos desde esta dirección. Inténtalo de nuevo en unos minutos.' },
+        429
+      );
+    }
+
+    // 2. Rate limit por email (catches abuse on a specific account)
+    if (await this.accountLockoutService.isAccountLocked(emailKey)) {
+      this.logger.warn(`🔐 forgot-password rate-limited by email: ${normalizedEmail}`);
+      // Devolvemos 200 con el mismo mensaje genérico para no revelar si la
+      // cuenta existe (anti-enumeración). El log del servidor sí registra.
+      return { message: 'Si existe una cuenta con ese correo, recibirás las instrucciones en breve.' };
+    }
+
     try {
-      const normalizedEmail = body.email.toLowerCase().trim();
+      // Contabilizar el intento ANTES de procesarlo. Si excede el threshold
+      // la próxima request verá isAccountLocked=true.
+      await this.accountLockoutService.recordFailedAttempt(ipKey, normalizedEmail, ip);
+      await this.accountLockoutService.recordFailedAttempt(emailKey, normalizedEmail, ip);
+
       const doc = await this.userModel.findOne({ email: normalizedEmail }).exec();
 
       if (doc) {
