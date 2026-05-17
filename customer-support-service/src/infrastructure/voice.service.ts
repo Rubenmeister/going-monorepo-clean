@@ -29,7 +29,12 @@ interface LangConfig {
 }
 
 const LANG: Record<SupportedLang, LangConfig> = {
-  es: { name: 'español',  sttPrimary: 'es-EC', ttsLangCode: 'es-US' },
+  // STT primary es-US (NO es-EC): el modelo 'latest_short' devuelve
+  // INVALID_ARGUMENT "The requested model is currently not supported for
+  // language: es-EC". es-US cubre Latin American Spanish con la misma
+  // accuracy práctica para voz ecuatoriana (verificado en prod 2026-05-17).
+  // El TTS sigue en es-US (voz natural).
+  es: { name: 'español',  sttPrimary: 'es-US', ttsLangCode: 'es-US' },
   en: { name: 'english',  sttPrimary: 'en-US', ttsLangCode: 'en-US' },
   fr: { name: 'français', sttPrimary: 'fr-FR', ttsLangCode: 'fr-FR' },
   de: { name: 'deutsch',  sttPrimary: 'de-DE', ttsLangCode: 'de-DE' },
