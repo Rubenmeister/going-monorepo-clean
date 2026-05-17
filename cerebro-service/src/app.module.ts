@@ -1,3 +1,12 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Pacha — cerebro-service                                             │
+ * │  "mundo · tiempo · universo"                                         │
+ * │  World model agregador. Lee eventos de los 7 agentes (Pub/Sub) y     │
+ * │  produce WorldSnapshots que Yachay (mycortex) consume para razonar.  │
+ * │  NO toma decisiones — solo agrega estado.                            │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';

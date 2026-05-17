@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Inti — financial-agent                                              │
+ * │  "sol — fuente de valor y luz en la cosmovisión andina"              │
+ * │  Finanzas. Datafast, reconciliación bancaria, reportes contables,    │
+ * │  payouts semanales a conductores. Publica eventos a Pacha.           │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import {
   runFinancialMonitor,

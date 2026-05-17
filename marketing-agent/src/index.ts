@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Sumak — marketing-agent                                             │
+ * │  "bueno · hermoso" (del concepto andino Sumak Kawsay = buen vivir)   │
+ * │  Marketing. Campañas, segmentación, bonos por zona, push de          │
+ * │  retención. Publica eventos a Pacha.                                 │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { runMarketingMonitor } from './monitors/metrics.monitor';
 import { driverBonusZone } from './actions/driver-bonus-zone';

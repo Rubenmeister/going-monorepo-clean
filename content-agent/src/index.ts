@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Killa — content-agent                                               │
+ * │  "luna — narradora del paso del tiempo"                              │
+ * │  Genera contenido: blog posts, copy, narrativa para campañas y       │
+ * │  comunicación. Publica eventos a Pacha.                              │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { runContentMonitor } from './monitors/content.monitor';
 import {
