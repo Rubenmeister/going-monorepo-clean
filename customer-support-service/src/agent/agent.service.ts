@@ -183,7 +183,10 @@ export class AgentService {
       const model = this.vertexAI.getGenerativeModel({
         model: GEMINI_MODEL,
         tools: TOOLS,
-        generationConfig: { maxOutputTokens: 600 },
+        // maxOutputTokens 600 → 250: respuestas más cortas (<100 palabras
+        // típicas) reduce ~1 seg de latencia y mejora UX (lectura rápida
+        // por WhatsApp). El bot no necesita escribir párrafos largos.
+        generationConfig: { maxOutputTokens: 250 },
         systemInstruction: {
           role: 'system',
           parts: [{ text: systemPrompt }],

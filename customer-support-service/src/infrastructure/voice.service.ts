@@ -134,14 +134,15 @@ export class VoiceService {
       //   2026-05-17 13:48 — `latest_short` + useEnhanced + es-EC: API rechazó
       //                       (modelo no soporta es-EC).
       //   2026-05-17 15:30 — `latest_short` + useEnhanced + es-US: API acepta
-      //                       pero devuelve resultsCount=0 silencioso. El modelo
-      //                       es muy estricto con audio ruidoso (auto en
-      //                       movimiento, viento, eco). Falla en producción.
-      //   2026-05-17 16:50 — `default` + useEnhanced + es-US: enhanced compensa
-      //                       la lentitud del `default` y la robustez de
-      //                       `default` permite reconocer voz en audio
-      //                       ruidoso. ALTERNATIVAS reducidas a solo en-US para
-      //                       evitar que el matcher se confunda con 4 idiomas.
+      //                       pero devuelve resultsCount=0. CAUSA REAL: sample
+      //                       rate del audio era 16kHz, le decíamos 48kHz.
+      //   2026-05-17 16:50 — `default` + useEnhanced + es-US: funcionó pero
+      //                       LENTO (~36 seg para audio de 3 seg). Causa de
+      //                       latencia inaceptable >2 min total.
+      //   2026-05-17 21:00 — `latest_short` + sample rate detection + es-US:
+      //                       VOLVEMOS al modelo rápido (~3-5 seg típico).
+      //                       Ahora que el sample rate es correcto desde el
+      //                       OpusHead, latest_short funciona bien.
       // Detectar sample rate REAL del OpusHead del audio. WhatsApp móvil
       // suele entregar 16 kHz (ahorro de datos), web 48 kHz. Pasarle a
       // Google STT un sampleRateHertz que NO coincida con el audio resulta
@@ -162,7 +163,7 @@ export class VoiceService {
           // como en-US y devolvió result vacío con confidence 0. Para 95%+
           // del tráfico que es español, forzar solo es-US es más confiable.
           enableAutomaticPunctuation: true,
-          model: 'default',
+          model: 'latest_short',
           useEnhanced: true,
         },
         audio: { content: audioBuffer.toString('base64') },
