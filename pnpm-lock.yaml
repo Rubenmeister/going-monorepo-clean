@@ -1315,6 +1315,9 @@ importers:
       '@google-cloud/speech':
         specifier: ^6.0.0
         version: 6.7.1(encoding@0.1.13)
+      '@google-cloud/storage':
+        specifier: ^7.0.0
+        version: 7.19.0(encoding@0.1.13)
       '@google-cloud/text-to-speech':
         specifier: ^5.0.0
         version: 5.8.1(encoding@0.1.13)

@@ -97,28 +97,33 @@ export class VoiceService {
       // pasarlo explícito. Antes estaba 16000 lo cual fallaba silencioso con
       // INVALID_ARGUMENT en algunos clientes (Whats nativo usa 48k).
       //
-      // Model: 'latest_short' está optimizado para utterances < 60s (voice
-      // notes de WhatsApp son típicamente 2-15s) y soporta multi-language
-      // bien. Antes era 'default' que tardaba 2+ min y devolvía 0 results
-      // (verificado en prod 2026-05-17 13:28-13:31).
-      // useEnhanced: true activa el modelo enhanced de Google (mejor accuracy
-      // a costo marginal de latencia, pero MUCHO mejor que 'default' para audio
-      // comprimido/ruidoso típico de mobile).
+      // Model selection — ver iteraciones previas:
+      //
+      //   2026-05-17 13:28 — `default` sin useEnhanced: tardaba 2+ min y
+      //                       devolvía 0 results en audio claro.
+      //   2026-05-17 13:48 — `latest_short` + useEnhanced + es-EC: API rechazó
+      //                       (modelo no soporta es-EC).
+      //   2026-05-17 15:30 — `latest_short` + useEnhanced + es-US: API acepta
+      //                       pero devuelve resultsCount=0 silencioso. El modelo
+      //                       es muy estricto con audio ruidoso (auto en
+      //                       movimiento, viento, eco). Falla en producción.
+      //   2026-05-17 16:50 — `default` + useEnhanced + es-US: enhanced compensa
+      //                       la lentitud del `default` y la robustez de
+      //                       `default` permite reconocer voz en audio
+      //                       ruidoso. ALTERNATIVAS reducidas a solo en-US para
+      //                       evitar que el matcher se confunda con 4 idiomas.
       const [response] = await speechClient.recognize({
         config: {
           encoding: 'OGG_OPUS' as any,
           sampleRateHertz: 48000,
           audioChannelCount: 1, // WhatsApp voice = mono
           languageCode: LANG.es.sttPrimary,
-          // Cloud STT v1 acepta hasta 4 alternativas adicionales.
-          alternativeLanguageCodes: [
-            LANG.en.sttPrimary,
-            LANG.fr.sttPrimary,
-            LANG.de.sttPrimary,
-            LANG.qu.sttPrimary,
-          ],
+          // Solo en-US como alternativa: 95%+ del tráfico es español, los
+          // angloparlantes son la siguiente comunidad. Quitamos fr/de/qu por
+          // ahora — agregaban ruido al detector de idioma sin uso real.
+          alternativeLanguageCodes: [LANG.en.sttPrimary],
           enableAutomaticPunctuation: true,
-          model: 'latest_short',
+          model: 'default',
           useEnhanced: true,
         },
         audio: { content: audioBuffer.toString('base64') },
@@ -143,11 +148,45 @@ export class VoiceService {
 
       const lang = normalizeLang(langOfBest);
       this.logger.log(`[stt] transcript "${transcript.slice(0, 80)}" (${transcript.length} chars, lang=${lang}, detected=${langOfBest})`);
+
+      // Si transcript vacío → subir el audio a GCS para diagnóstico.
+      // Habilitado mientras VOICE_DEBUG_UPLOAD=true en env. Apagar cuando se
+      // identifique el problema (no queremos guardar audio de usuarios real
+      // sin justificación). Bucket: going-5d1ae.firebasestorage.app
+      if (!transcript && process.env.VOICE_DEBUG_UPLOAD === 'true') {
+        await this.uploadAudioForDebug(audioBuffer).catch((e) =>
+          this.logger.warn(`[stt-debug] upload fallido: ${(e as Error).message}`),
+        );
+      }
       return { transcript, lang };
     } catch (err) {
       this.logger.error(`[stt] transcribe error: ${(err as Error).message}`, (err as Error).stack);
       return { transcript: '', lang: 'es' };
     }
+  }
+
+  /**
+   * Sube el buffer de audio a GCS para diagnóstico. Solo se invoca cuando
+   * VOICE_DEBUG_UPLOAD=true y el transcript salió vacío.
+   *
+   * Path: gs://going-5d1ae.firebasestorage.app/voice-debug/<YYYY-MM-DD>/<ts>.ogg
+   *
+   * Para escuchar:
+   *   gcloud storage cp gs://going-5d1ae.firebasestorage.app/voice-debug/... ./
+   */
+  private async uploadAudioForDebug(audioBuffer: Buffer): Promise<void> {
+    const { Storage } = await import('@google-cloud/storage');
+    const storage = new Storage();
+    const bucketName = 'going-5d1ae.firebasestorage.app';
+    const now = new Date();
+    const day = now.toISOString().slice(0, 10);
+    const ts = now.toISOString().replace(/[:.]/g, '-');
+    const path = `voice-debug/${day}/${ts}.ogg`;
+    await storage.bucket(bucketName).file(path).save(audioBuffer, {
+      contentType: 'audio/ogg',
+      metadata: { metadata: { source: 'stt-empty-transcript-debug' } },
+    });
+    this.logger.log(`[stt-debug] audio subido: gs://${bucketName}/${path}`);
   }
 
   /**
