@@ -33,7 +33,12 @@ export class DecisionEntity {
   @Prop({ required: true, unique: true, type: String })
   decisionId!: string;
 
-  @Prop({ required: true, type: String, index: true })
+  // unique:true protege contra race conditions con N instancias de Cloud Run
+  // corriendo el mismo @Cron simultáneamente. La idempotencia app-level
+  // (dispatcher.findByIntentionId) deja una ventana entre lookup y persist
+  // donde dos instancias pueden ambas ver null y ambas crear decisión. Con
+  // unique:true, la segunda inserción tira E11000 y el dispatcher captura.
+  @Prop({ required: true, type: String, index: true, unique: true })
   intentionId!: string;             // de qué MyCortex intention vino
 
   @Prop({ required: true, type: String })

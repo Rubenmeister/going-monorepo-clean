@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Sacha — going-agent                                                 │
+ * │  "selva · naturaleza — el todo del que somos parte"                  │
+ * │  Agente del producto core. Rides, transport, growth, métricas de la  │
+ * │  plataforma. Publica eventos a Pacha.                                │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import Anthropic from '@anthropic-ai/sdk';
 import { execSync } from 'child_process';
 import * as fsSync from 'fs';

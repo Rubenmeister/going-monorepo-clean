@@ -1306,6 +1306,9 @@ importers:
       '@going-platform/cerebro-contracts':
         specifier: workspace:*
         version: link:../libs/cerebro-contracts
+      '@going-platform/pricing':
+        specifier: workspace:*
+        version: link:../libs/pricing
       '@google-cloud/firestore':
         specifier: ^7.0.0
         version: 7.11.6(encoding@0.1.13)
@@ -1315,6 +1318,9 @@ importers:
       '@google-cloud/speech':
         specifier: ^6.0.0
         version: 6.7.1(encoding@0.1.13)
+      '@google-cloud/storage':
+        specifier: ^7.0.0
+        version: 7.19.0(encoding@0.1.13)
       '@google-cloud/text-to-speech':
         specifier: ^5.0.0
         version: 5.8.1(encoding@0.1.13)
@@ -1918,6 +1924,12 @@ importers:
         specifier: ~0.5.11
         version: 0.5.18
 
+  libs/pricing:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+
   libs/shared/infrastructure: {}
 
   libs/shared/observability:
@@ -2205,6 +2217,9 @@ importers:
       joi:
         specifier: ^17.12.1
         version: 17.13.3
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.3
       mongoose:
         specifier: ^8.1.1
         version: 8.23.0(snappy@7.3.3)
@@ -2233,6 +2248,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.11
         version: 29.5.14
+      '@types/jsonwebtoken':
+        specifier: ^9.0.7
+        version: 9.0.10
       '@types/node':
         specifier: ^20.11.2
         version: 20.19.9

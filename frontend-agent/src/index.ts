@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Kuntur — frontend-agent                                             │
+ * │  "cóndor — el que vuela alto y se ve desde lejos"                    │
+ * │  Frontend. Vercel deploys, web vitals, monitor de uptime de la cara  │
+ * │  pública (app.goingec.com, goingec.com). Publica eventos a Pacha.    │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { loadConfig } from './config';
 import { runFrontendMonitor } from './monitors/frontend.monitor';

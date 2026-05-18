@@ -11,8 +11,30 @@ export class DecisionRepository {
     @InjectModel('Decision') private readonly model: Model<DecisionDocument>,
   ) {}
 
+  /**
+   * Crea una decisión nueva. Si la intentionId ya existe (race con otra
+   * instancia de Cloud Run despachando el mismo poll), captura E11000
+   * duplicate key y devuelve la decisión ya persistida — así el flujo
+   * sigue siendo idempotente sin importar cuántas instancias polleen.
+   *
+   * @throws Si el error NO es duplicate key, lo propaga.
+   */
   async create(d: Partial<DecisionEntity>): Promise<DecisionDocument> {
-    return this.model.create({ ...d });
+    try {
+      return await this.model.create({ ...d });
+    } catch (err: any) {
+      // MongoDB duplicate key code = 11000. La key conflictiva puede ser
+      // intentionId (race) o decisionId (UUID colision — astronómicamente
+      // improbable). En ambos casos, re-fetch y devolver.
+      if (err?.code === 11000 && d.intentionId) {
+        this.logger.warn(
+          `Duplicate intentionId ${d.intentionId.slice(0, 8)} en create — race con otra instancia. Devolviendo existente.`,
+        );
+        const existing = await this.model.findOne({ intentionId: d.intentionId });
+        if (existing) return existing;
+      }
+      throw err;
+    }
   }
 
   async findById(decisionId: string): Promise<DecisionEntity | null> {
