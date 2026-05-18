@@ -180,12 +180,17 @@ export class AgentService {
     let assistantMessage = '';
 
     try {
+      // Function calling DESACTIVADO temporalmente. Hoy 2026-05-17 23:37
+      // Gemini no estaba llamando la tool (respondía saludo genérico) y el
+      // round-trip extra cuando sí la llamaba sumaba 3+ min adicionales.
+      // Volvemos al modo simple: prompt con tabla estática + Gemini compone
+      // respuesta. Función `executeTool`/`toolGetQuote` quedan en el código
+      // para retomar cuando hagamos refactor a Google Gen AI SDK (la
+      // deprecation warning en logs sugiere que VertexAI legacy SDK tiene
+      // bugs en function-calling).
       const model = this.vertexAI.getGenerativeModel({
         model: GEMINI_MODEL,
-        tools: TOOLS,
-        // maxOutputTokens 600 → 250: respuestas más cortas (<100 palabras
-        // típicas) reduce ~1 seg de latencia y mejora UX (lectura rápida
-        // por WhatsApp). El bot no necesita escribir párrafos largos.
+        // tools: TOOLS,   ← reactivar post-refactor a @google/genai
         generationConfig: { maxOutputTokens: 250 },
         systemInstruction: {
           role: 'system',
@@ -194,32 +199,9 @@ export class AgentService {
       });
 
       const chat = model.startChat({ history });
-      let result = await chat.sendMessage(userMessage);
-      let candidate = result.response.candidates?.[0];
-
-      // ── Function calling loop ─────────────────────────────────────────
-      // Gemini puede devolver functionCall en lugar de texto. Ejecutamos
-      // la función real (usa libs/pricing) y mandamos el resultado de
-      // vuelta para que Gemini componga la respuesta natural.
-      let functionCallTurns = 0;
-      while (functionCallTurns < 3) {
-        const fnCall = candidate?.content?.parts?.find((p: any) => p.functionCall)?.functionCall;
-        if (!fnCall) break;
-        functionCallTurns++;
-        this.logger.log(`[tools] Gemini llamó: ${fnCall.name}(${JSON.stringify(fnCall.args)})`);
-
-        const fnResult = this.executeTool(fnCall.name, fnCall.args);
-        // sendMessage con functionResponse — Gemini ve el resultado y compone respuesta
-        result = await chat.sendMessage([{
-          functionResponse: {
-            name: fnCall.name,
-            response: { result: fnResult },
-          },
-        }] as any);
-        candidate = result.response.candidates?.[0];
-      }
-
-      assistantMessage = candidate?.content?.parts?.find((p: any) => p.text)?.text || '';
+      const result = await chat.sendMessage(userMessage);
+      const response = await result.response;
+      assistantMessage = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     } catch (error) {
       this.logger.error('Gemini API error', error);

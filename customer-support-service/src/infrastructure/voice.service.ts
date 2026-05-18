@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentGender } from '../agent/conversation.service';
+// Top-level static imports — antes hacíamos `await import(...)` por
+// recognize() call lo que en cold container agregaba 100+ seg en cargar
+// el módulo. Importarlos al top los cachea desde process start.
+import { SpeechClient } from '@google-cloud/speech';
+import { TextToSpeechClient } from '@google-cloud/text-to-speech';
+import { Storage } from '@google-cloud/storage';
 
 /**
  * Soporte multilingüe (Item 6 — Fase 8 voz) — 5 idiomas:
@@ -98,6 +104,9 @@ function extractOpusSampleRate(audioBuffer: Buffer): number | null {
 @Injectable()
 export class VoiceService {
   private readonly logger = new Logger(VoiceService.name);
+  private speechClient: SpeechClient | null = null;
+  private ttsClient: TextToSpeechClient | null = null;
+  private storage: Storage | null = null;
 
   /**
    * Convierte un buffer OGG_OPUS a texto via Google Cloud Speech-to-Text v1.
@@ -120,8 +129,11 @@ export class VoiceService {
       return { transcript: '', lang: 'es' };
     }
     try {
-      const { SpeechClient } = await import('@google-cloud/speech');
-      const speechClient = new SpeechClient();
+      // SpeechClient cacheado a nivel de instancia para no reinicializar
+      // en cada recognize() — el SDK abre conexiones gRPC que cuestan
+      // ~100ms en establecerse.
+      if (!this.speechClient) this.speechClient = new SpeechClient();
+      const speechClient = this.speechClient;
       // Sample rate: WhatsApp Cloud API entrega OGG_OPUS a 48000 Hz (default
       // del spec Opus). Cloud STT v1 NO auto-detecta del header — hay que
       // pasarlo explícito. Antes estaba 16000 lo cual fallaba silencioso con
@@ -163,7 +175,11 @@ export class VoiceService {
           // como en-US y devolvió result vacío con confidence 0. Para 95%+
           // del tráfico que es español, forzar solo es-US es más confiable.
           enableAutomaticPunctuation: true,
-          model: 'latest_short',
+          // Volviendo a 'default' después de probar latest_short: hoy
+          // 2026-05-17 23:37 latest_short tardó 229s (debería ser <10s).
+          // Google API parece tener inconsistencias con ese modelo en es-US.
+          // 'default' es lento pero predecible (~30-50s para 24KB).
+          model: 'default',
           useEnhanced: true,
         },
         audio: { content: audioBuffer.toString('base64') },
@@ -229,8 +245,8 @@ export class VoiceService {
    *   gcloud storage cp gs://going-5d1ae.firebasestorage.app/voice-debug/... ./
    */
   private async uploadAudioForDebug(audioBuffer: Buffer): Promise<void> {
-    const { Storage } = await import('@google-cloud/storage');
-    const storage = new Storage();
+    if (!this.storage) this.storage = new Storage();
+    const storage = this.storage;
     const bucketName = 'going-5d1ae.firebasestorage.app';
     const now = new Date();
     const day = now.toISOString().slice(0, 10);
@@ -260,8 +276,8 @@ export class VoiceService {
     const personaName = CHIRP3_PERSONA[gender];
 
     try {
-      const { TextToSpeechClient } = await import('@google-cloud/text-to-speech');
-      const ttsClient = new TextToSpeechClient();
+      if (!this.ttsClient) this.ttsClient = new TextToSpeechClient();
+      const ttsClient = this.ttsClient;
 
       // Intentar Chirp 3 HD primero (calidad superior, voz consistente cross-lang)
       const chirpVoiceName = `${langCfg.ttsLangCode}-Chirp3-HD-${personaName}`;
