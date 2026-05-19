@@ -1303,6 +1303,9 @@ importers:
 
   customer-support-service:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.39.0
+        version: 0.39.0(encoding@0.1.13)
       '@deepgram/sdk':
         specifier: ^3.9.0
         version: 3.13.0(encoding@0.1.13)

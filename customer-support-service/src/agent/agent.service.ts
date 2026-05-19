@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { VertexAI, Content, FunctionDeclarationSchemaType } from '@google-cloud/vertexai';
+import Anthropic from '@anthropic-ai/sdk';
 import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
@@ -10,65 +10,31 @@ import { FARES, applyDynamicPricing } from '@going-platform/pricing';
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
 
-/**
- * Tools que Gemini puede llamar para responder con datos LIVE en lugar
- * de adivinar desde el system prompt.
- *
- * Por ahora: 1 sola tool (get_quote). Roadmap: get_ride_history,
- * get_ride_status, find_drivers_nearby, book_ride.
- *
- * get_quote: calcula precio aplicando recargos dinámicos del MOMENTO
- * (hora pico, nocturno, feriado, fin de semana, segmento). Antes Gemini
- * solo veía la tabla base estática inyectada en el system prompt — no
- * sabía que a las 11pm el domingo el precio sube ~30%. Con esta tool
- * llama get_quote() y devuelve el precio que el cliente realmente pagará.
- */
-const TOOLS = [{
-  functionDeclarations: [{
-    name: 'get_quote',
-    description:
-      'Calcula el precio EXACTO de un viaje aplicando recargos dinámicos ' +
-      '(hora pico mañana/tarde, nocturno, fin de semana, feriado nacional). ' +
-      'Usa esto SIEMPRE que el usuario pregunte cuánto cuesta un viaje. ' +
-      'NO inventes precios — siempre llama esta función.',
-    parameters: {
-      type: FunctionDeclarationSchemaType.OBJECT,
-      properties: {
-        origen: {
-          type: FunctionDeclarationSchemaType.STRING,
-          description:
-            'Ciudad o lugar de origen en minúsculas con guión bajo. ' +
-            'Ej: "quito", "ambato", "santo_domingo", "el_carmen", "aeropuerto"',
-        },
-        destino: {
-          type: FunctionDeclarationSchemaType.STRING,
-          description: 'Ciudad o lugar destino, mismo formato que origen',
-        },
-        modalidad: {
-          type: FunctionDeclarationSchemaType.STRING,
-          description:
-            '"compartido" (precio por asiento) o "privado" (vehículo completo)',
-        },
-        fecha_hora: {
-          type: FunctionDeclarationSchemaType.STRING,
-          description:
-            'ISO datetime del viaje (ej: "2026-05-17T23:00:00-05:00"). ' +
-            'Si el usuario no especifica, omitir — se asume "ahora".',
-        },
-      },
-      required: ['origen', 'destino', 'modalidad'],
-    },
-  }],
-}];
+// NOTA: Tool use con Claude (futuro post-migración) — Anthropic SDK soporta
+// tools nativos con schema JSON estándar. Cuando reactivemos function calling,
+// el formato es:
+//   tools: [{
+//     name: 'get_quote',
+//     description: '...',
+//     input_schema: { type: 'object', properties: {...}, required: [...] }
+//   }]
+// Y el response.content puede tener bloques 'tool_use' que ejecutamos +
+// devolvemos como 'tool_result'. Mucho más simple que Vertex FunctionDeclaration.
+//
+// Por ahora: sin tools. El system prompt tiene la tabla FARES inyectada
+// como string — Claude responde directamente.
 
-// Modelo estable (sin sufijo -preview-XX-XX). El preview que se usaba antes
-// fue deprecado por Vertex (403 PERMISSION_DENIED con "or it may not exist").
-const GEMINI_MODEL = 'gemini-2.5-flash';
+// Claude Haiku 3.5 — migración 2026-05-19 desde Gemini Flash 2.5.
+// El VertexAI legacy SDK tenía latencia inaceptable (60-120s por call) y
+// estaba deprecated. Claude Haiku da 1-3s típico con misma calidad de
+// respuesta. Costo: ~$0.80/M input tokens, $4/M output (vs Gemini gratis
+// en cuota, pero la velocidad importaba más).
+const CLAUDE_MODEL = 'claude-haiku-4-5';
 
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
-  private vertexAI: VertexAI;
+  private anthropic: Anthropic;
 
   constructor(
     private config: ConfigService,
@@ -76,10 +42,11 @@ export class AgentService {
     private bookingService: BookingService,
     private locationService: LocationService,
   ) {
-    this.vertexAI = new VertexAI({
-      project: this.config.get<string>('GCP_PROJECT') || 'going-5d1ae',
-      location: 'us-central1',
-    });
+    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    if (!apiKey) {
+      this.logger.warn('ANTHROPIC_API_KEY no configurada — agente no podrá responder');
+    }
+    this.anthropic = new Anthropic({ apiKey: apiKey || '' });
   }
 
   /**
@@ -171,40 +138,36 @@ export class AgentService {
         : 'Disculpa, no recibí tu mensaje. Por favor intenta de nuevo.';
     }
 
-    // Build Vertex AI history (all messages except the last user one)
-    const history: Content[] = allMessages.slice(0, -1).map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content.trim() }],
+    // Build Claude messages history. Claude requires alternating user/assistant
+    // turns. We map our 'user' role as-is, 'assistant' as 'assistant', and
+    // include the current user message at the end.
+    const history = allMessages.slice(0, -1).map((m) => ({
+      role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: m.content.trim(),
     }));
 
     let assistantMessage = '';
 
     try {
-      // Function calling DESACTIVADO temporalmente. Hoy 2026-05-17 23:37
-      // Gemini no estaba llamando la tool (respondía saludo genérico) y el
-      // round-trip extra cuando sí la llamaba sumaba 3+ min adicionales.
-      // Volvemos al modo simple: prompt con tabla estática + Gemini compone
-      // respuesta. Función `executeTool`/`toolGetQuote` quedan en el código
-      // para retomar cuando hagamos refactor a Google Gen AI SDK (la
-      // deprecation warning en logs sugiere que VertexAI legacy SDK tiene
-      // bugs en function-calling).
-      const model = this.vertexAI.getGenerativeModel({
-        model: GEMINI_MODEL,
-        // tools: TOOLS,   ← reactivar post-refactor a @google/genai
-        generationConfig: { maxOutputTokens: 250 },
-        systemInstruction: {
-          role: 'system',
-          parts: [{ text: systemPrompt }],
-        },
+      const t0 = Date.now();
+      // Claude Haiku 3.5 — sustituye Vertex Gemini que tenía latencia
+      // inaceptable. Mismo prompt, mismas reglas. max_tokens 250 igual.
+      const response = await this.anthropic.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 250,
+        system: systemPrompt,
+        messages: [
+          ...history,
+          { role: 'user', content: userMessage },
+        ],
       });
-
-      const chat = model.startChat({ history });
-      const result = await chat.sendMessage(userMessage);
-      const response = await result.response;
-      assistantMessage = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
+      const dt = Date.now() - t0;
+      // Claude devuelve content[] de blocks; tomamos el primer text block.
+      const textBlock = response.content.find((b) => b.type === 'text');
+      assistantMessage = (textBlock && 'text' in textBlock) ? textBlock.text : '';
+      this.logger.log(`[claude] respuesta ${assistantMessage.length} chars en ${dt}ms (in=${response.usage.input_tokens}tok, out=${response.usage.output_tokens}tok)`);
     } catch (error) {
-      this.logger.error('Gemini API error', error);
+      this.logger.error('Claude API error', error);
       return lang === 'en'
         ? "Sorry, I'm having trouble right now. Please try again in a moment."
         : 'Disculpa, estoy teniendo problemas en este momento. Por favor intenta de nuevo en un momento.';
