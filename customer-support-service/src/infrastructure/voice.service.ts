@@ -6,6 +6,7 @@ import { AgentGender } from '../agent/conversation.service';
 import { SpeechClient } from '@google-cloud/speech';
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { Storage } from '@google-cloud/storage';
+import { createClient as createDeepgramClient, DeepgramClient } from '@deepgram/sdk';
 
 /**
  * Soporte multilingüe (Item 6 — Fase 8 voz) — 5 idiomas:
@@ -107,6 +108,7 @@ export class VoiceService {
   private speechClient: SpeechClient | null = null;
   private ttsClient: TextToSpeechClient | null = null;
   private storage: Storage | null = null;
+  private deepgram: DeepgramClient | null = null;
 
   /**
    * Convierte un buffer OGG_OPUS a texto via Google Cloud Speech-to-Text v1.
@@ -128,6 +130,46 @@ export class VoiceService {
       this.logger.warn(`[stt] buffer too small (${audioBuffer.length} bytes), aborting`);
       return { transcript: '', lang: 'es' };
     }
+
+    // ── PRIMARY: Deepgram Nova-3 ──────────────────────────────────────────
+    // 5-15x más rápido que Google STT v1 para voice notes de WhatsApp.
+    // Soporta OGG_OPUS nativamente (sin parsear sample rate). Auto-detect
+    // de 36+ idiomas. Si falla cualquier cosa (red, key inválida, rate
+    // limit) → fallback automático a Google STT v1 (código abajo en catch).
+    const deepgramKey = process.env.DEEPGRAM_API_KEY;
+    if (deepgramKey) {
+      try {
+        if (!this.deepgram) this.deepgram = createDeepgramClient(deepgramKey);
+        const t0 = Date.now();
+        const { result, error } = await this.deepgram.listen.prerecorded.transcribeFile(
+          audioBuffer,
+          {
+            model: 'nova-3',
+            detect_language: true,
+            smart_format: true,
+            punctuate: true,
+            mimetype: 'audio/ogg',
+          },
+        );
+        const dt = Date.now() - t0;
+        if (error) throw new Error(`Deepgram error: ${error.message || JSON.stringify(error)}`);
+        const channel = result?.results?.channels?.[0];
+        const alt = channel?.alternatives?.[0];
+        const transcript = alt?.transcript ?? '';
+        const detectedLang = (channel as any)?.detected_language as string | undefined;
+        const lang = normalizeLang(detectedLang);
+        this.logger.log(`[stt-deepgram] transcript "${transcript.slice(0, 80)}" (${transcript.length} chars, lang=${lang}, detected=${detectedLang}, ${dt}ms)`);
+        if (transcript) return { transcript, lang };
+        // Si Deepgram devuelve vacío sin error, caer a Google como segundo intento
+        this.logger.warn(`[stt-deepgram] transcript vacío, intentando con Google STT como fallback`);
+      } catch (err) {
+        this.logger.warn(`[stt-deepgram] fallo, fallback a Google: ${(err as Error).message}`);
+      }
+    } else {
+      this.logger.warn(`[stt] DEEPGRAM_API_KEY no configurada, usando Google STT directo`);
+    }
+
+    // ── FALLBACK: Google Cloud Speech-to-Text v1 ─────────────────────────
     try {
       // SpeechClient cacheado a nivel de instancia para no reinicializar
       // en cada recognize() — el SDK abre conexiones gRPC que cuestan
