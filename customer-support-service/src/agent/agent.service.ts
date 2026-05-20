@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
@@ -24,17 +24,16 @@ const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servici
 // Por ahora: sin tools. El system prompt tiene la tabla FARES inyectada
 // como string — Claude responde directamente.
 
-// Claude Haiku 3.5 — migración 2026-05-19 desde Gemini Flash 2.5.
-// El VertexAI legacy SDK tenía latencia inaceptable (60-120s por call) y
-// estaba deprecated. Claude Haiku da 1-3s típico con misma calidad de
-// respuesta. Costo: ~$0.80/M input tokens, $4/M output (vs Gemini gratis
-// en cuota, pero la velocidad importaba más).
-const CLAUDE_MODEL = 'claude-haiku-4-5';
+// GPT-4.1-nano — migración 2026-05-20 desde Claude Haiku (cuya cuenta
+// quedó sin créditos). OpenAI nano: 2-4s típico, $0.10/M input tokens
+// (8x más barato que Claude). Gemini Flash 2.5 vía VertexAI legacy SDK
+// tomaba 60-120s (broken) — por eso esta migración.
+const OPENAI_MODEL = 'gpt-4.1-nano';
 
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
-  private anthropic: Anthropic;
+  private openai: OpenAI;
 
   constructor(
     private config: ConfigService,
@@ -42,11 +41,11 @@ export class AgentService {
     private bookingService: BookingService,
     private locationService: LocationService,
   ) {
-    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    const apiKey = this.config.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
-      this.logger.warn('ANTHROPIC_API_KEY no configurada — agente no podrá responder');
+      this.logger.warn('OPENAI_API_KEY no configurada — agente no podrá responder');
     }
-    this.anthropic = new Anthropic({ apiKey: apiKey || '' });
+    this.openai = new OpenAI({ apiKey: apiKey || '' });
   }
 
   /**
@@ -138,36 +137,33 @@ export class AgentService {
         : 'Disculpa, no recibí tu mensaje. Por favor intenta de nuevo.';
     }
 
-    // Build Claude messages history. Claude requires alternating user/assistant
-    // turns. We map our 'user' role as-is, 'assistant' as 'assistant', and
-    // include the current user message at the end.
-    const history = allMessages.slice(0, -1).map((m) => ({
-      role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-      content: m.content.trim(),
-    }));
+    // Build OpenAI messages: system prompt + history + current user message.
+    // OpenAI usa "messages: [{role: system|user|assistant, content}]" sin
+    // chat.startChat separado.
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...allMessages.slice(0, -1).map((m) => ({
+        role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+        content: m.content.trim(),
+      })),
+      { role: 'user', content: userMessage },
+    ];
 
     let assistantMessage = '';
 
     try {
       const t0 = Date.now();
-      // Claude Haiku 3.5 — sustituye Vertex Gemini que tenía latencia
-      // inaceptable. Mismo prompt, mismas reglas. max_tokens 250 igual.
-      const response = await this.anthropic.messages.create({
-        model: CLAUDE_MODEL,
-        max_tokens: 250,
-        system: systemPrompt,
-        messages: [
-          ...history,
-          { role: 'user', content: userMessage },
-        ],
+      const response = await this.openai.chat.completions.create({
+        model: OPENAI_MODEL,
+        max_completion_tokens: 250,
+        messages,
       });
       const dt = Date.now() - t0;
-      // Claude devuelve content[] de blocks; tomamos el primer text block.
-      const textBlock = response.content.find((b) => b.type === 'text');
-      assistantMessage = (textBlock && 'text' in textBlock) ? textBlock.text : '';
-      this.logger.log(`[claude] respuesta ${assistantMessage.length} chars en ${dt}ms (in=${response.usage.input_tokens}tok, out=${response.usage.output_tokens}tok)`);
+      assistantMessage = response.choices[0]?.message?.content || '';
+      const usage = response.usage;
+      this.logger.log(`[openai] respuesta ${assistantMessage.length} chars en ${dt}ms (in=${usage?.prompt_tokens}tok, out=${usage?.completion_tokens}tok)`);
     } catch (error) {
-      this.logger.error('Claude API error', error);
+      this.logger.error('OpenAI API error', error);
       return lang === 'en'
         ? "Sorry, I'm having trouble right now. Please try again in a moment."
         : 'Disculpa, estoy teniendo problemas en este momento. Por favor intenta de nuevo en un momento.';

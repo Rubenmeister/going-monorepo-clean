@@ -12,6 +12,7 @@
     "@going-platform/pricing": "workspace:*",
     "@anthropic-ai/sdk": "^0.39.0",
     "@deepgram/sdk": "^3.9.0",
+    "openai": "^4.77.0",
     "@google-cloud/firestore": "^7.0.0",
     "@google-cloud/pubsub": "^4.7.0",
     "@google-cloud/speech": "^6.0.0",
