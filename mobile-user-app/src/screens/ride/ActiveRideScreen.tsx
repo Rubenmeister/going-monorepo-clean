@@ -163,6 +163,37 @@ export function ActiveRideScreen() {
         }
       });
 
+      // Sin conductores disponibles cerca — sacar al pasajero del estado "buscando"
+      // y darle opción clara de volver a intentar. Sin esto, la pantalla se queda
+      // bloqueada en el spinner indefinidamente.
+      socket.on('ride:no_drivers_available', (data: { message?: string }) => {
+        hapticWarning();
+        Alert.alert(
+          'Sin conductores disponibles',
+          data?.message ?? 'No hay conductores disponibles cerca en este momento. Intenta de nuevo en unos minutos.',
+          [
+            {
+              text: 'Volver',
+              style: 'cancel',
+              onPress: () => {
+                socket?.disconnect();
+                navigation.goBack();
+              },
+            },
+            {
+              text: 'Intentar de nuevo',
+              onPress: () => {
+                socket?.disconnect();
+                // Volver dos pantallas atrás (ActiveRide → Confirm → Home/Search)
+                // para que el usuario pueda pedir nuevo viaje desde cero.
+                navigation.pop(2);
+              },
+            },
+          ],
+          { cancelable: false },
+        );
+      });
+
       // Conductor aceptó el viaje
       socket.on('ride:driver_accepted', (data: { driver?: { name: string; vehicle: string; plate: string; rating: number; photoUrl?: string }; message?: string }) => {
         hapticMedium();
