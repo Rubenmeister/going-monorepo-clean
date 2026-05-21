@@ -1,0 +1,270 @@
+# Security Contracts — Going Platform
+#
+# Cada contrato es un comportamiento de seguridad esperado en producción.
+# El smoke runner los ejecuta tras cada deploy y emite alerta si regresa.
+#
+# Sirven 2 propósitos:
+#   1. Documentación ejecutable del "good baseline" tras AUTH hardening 2026-05
+#   2. Spec para el cerebro futuro (capa 4.5: sensor git/deploy/contracts) —
+#      cuando el cerebro pueda actuar sobre regresiones automáticamente
+#
+# Severidades:
+#   P0 - bloquea AAB / requiere rollback inmediato
+#   P1 - alerta a ops, fix en <24h
+#   P2 - log y monitor, fix en próximo sprint
+
+version: 1
+last_audited: 2026-05-17
+last_audited_by: AUTH hardening cierre
+
+contracts:
+  # ── AUTH GENERAL ────────────────────────────────────────────────
+  - id: login-returns-access-token
+    description: POST /auth/login con creds válidas retorna access token JWT
+    method: POST
+    url: https://api.goingec.com/auth/login
+    body:
+      email: $STAGING_EMAIL
+      password: $STAGING_PASSWORD
+    expect:
+      status: 200
+      json_field: accessToken
+      json_field_min_length: 100
+    severity: P0
+
+  - id: login-returns-refresh-token
+    description: |
+      POST /auth/login con creds válidas retorna refreshToken. Sin esto, A3
+      (short TTL + refresh) no funciona y los clientes ven sesiones cortas
+      sin poder refrescar — los expulsa cada 15 min.
+    method: POST
+    url: https://api.goingec.com/auth/login
+    body:
+      email: $STAGING_EMAIL
+      password: $STAGING_PASSWORD
+    expect:
+      status: 200
+      json_field: refreshToken
+      json_field_min_length: 20
+    severity: P0
+
+  - id: login-rejects-bad-password
+    description: Login con password incorrecta devuelve 401 sin info adicional
+    method: POST
+    url: https://api.goingec.com/auth/login
+    body:
+      email: $STAGING_EMAIL
+      password: WRONG_PASSWORD_TEST
+    expect:
+      status: 401
+    severity: P0
+
+  - id: refresh-returns-fresh-data
+    description: |
+      POST /auth/refresh devuelve un access token con email + roles NO vacíos.
+      Antes del fix Batch 3 P0 el refresh devolvía email='' y roles=[] porque
+      el use case no re-fetcheaba el user del DB.
+    method: POST
+    url: https://api.goingec.com/auth/refresh
+    body:
+      refreshToken: $REFRESH_FROM_LOGIN
+    expect:
+      status: 200
+      json_field: accessToken
+      decode_jwt:
+        email_non_empty: true
+        roles_min_length: 1
+    severity: P0
+
+  - id: me-without-token-rejected
+    description: GET /auth/me sin Authorization header devuelve 401
+    method: GET
+    url: https://api.goingec.com/auth/me
+    expect:
+      status: 401
+    severity: P0
+
+  - id: forgot-password-rate-limited
+    description: |
+      6 intentos seguidos de /auth/forgot-password con el mismo email registra
+      rate limit en logs (5 intentos → lock 15 min). El response es 200 a todos
+      por anti-enumeración, la verificación es vía logs.
+    method: POST
+    url: https://api.goingec.com/auth/forgot-password
+    body:
+      email: $STAGING_EMAIL
+    repeat: 6
+    expect:
+      status: 200
+      logs_contain: '[forgot-password] rate-limited'
+    severity: P1
+
+  - id: bootstrap-admin-requires-token
+    description: POST /auth/bootstrap-admin sin x-bootstrap-token devuelve 403
+    method: POST
+    url: https://api.goingec.com/auth/bootstrap-admin
+    body:
+      email: test@test
+      password: test
+    expect:
+      status: 403
+    severity: P0
+
+  # ── CEREBRO / INTERNAL ENDPOINTS ────────────────────────────────
+  - id: cerebro-command-no-token
+    description: |
+      POST /cerebro/command sin X-Internal-Token devuelve 401. Sin esta guarda
+      cualquiera podría invocar acciones del orquestador.
+    method: POST
+    url: https://cerebro-service-780842550857.us-central1.run.app/cerebro/command
+    body:
+      action: test
+    expect:
+      status: 401
+    severity: P0
+
+  # ── ADMIN ENDPOINTS ────────────────────────────────────────────
+  - id: admin-stats-requires-admin-role
+    description: |
+      GET /auth/admin/stats con token de user (no admin) devuelve 403.
+      Verifica que el role guard funciona — antes era 401 lo que mezclaba
+      autenticación con autorización.
+    method: GET
+    url: https://api.goingec.com/auth/admin/stats
+    headers:
+      Authorization: Bearer $USER_TOKEN
+    expect:
+      status: 403
+    severity: P0
+
+  # ── CORS / API GATEWAY ────────────────────────────────────────
+  - id: cors-preflight-allows-webapp
+    description: |
+      OPTIONS preflight a /rides/request desde Origin app.goingec.com retorna
+      headers Access-Control-* correctos. Sin esto el webapp se rompe con
+      "Failed to fetch" silente.
+    method: OPTIONS
+    url: https://api.goingec.com/rides/request
+    headers:
+      Origin: https://app.goingec.com
+      Access-Control-Request-Method: POST
+      Access-Control-Request-Headers: content-type,authorization
+    expect:
+      status: 204
+      header_equals:
+        access-control-allow-origin: https://app.goingec.com
+      header_contains:
+        access-control-allow-methods: POST
+    severity: P0
+
+  # ── BROKEN ACCESS CONTROL (Batch 1) ──────────────────────────
+  - id: customer-support-tickets-no-token
+    description: GET /support/tickets sin token devuelve 401 (era 200 antes)
+    method: GET
+    url: https://customer-support-service-780842550857.us-central1.run.app/support/tickets
+    expect:
+      status: 401
+    severity: P0
+
+  - id: customer-support-command-no-token
+    description: POST /support/command sin token devuelve 401 (era 200 antes)
+    method: POST
+    url: https://customer-support-service-780842550857.us-central1.run.app/support/command
+    body:
+      action: test
+    expect:
+      status: 401
+    severity: P0
+
+  - id: payment-intent-no-token
+    description: POST /payment/intent sin token devuelve 401
+    method: POST
+    url: https://payment-service-780842550857.us-central1.run.app/payment/intent
+    body:
+      amount: 100
+    expect:
+      status: 401
+    severity: P0
+
+  # ── DRIVER ENDPOINTS (post-fix routing) ──────────────────────
+  - id: drivers-wallet-routes-to-payment
+    description: |
+      GET /drivers/me/wallet (con token) retorna 200 desde payment-service.
+      Antes el api-gateway lo ruteaba a transport-service → 404. Fix de
+      misrouting en proxy.module.ts.
+    method: GET
+    url: https://api.goingec.com/drivers/me/wallet
+    headers:
+      Authorization: Bearer $USER_TOKEN
+    expect:
+      status: 200
+      json_field: availableBalance
+    severity: P0
+
+  # ── ROUTES PÚBLICAS (Play Store compliance) ───────────────
+  - id: eliminar-cuenta-public-page
+    description: |
+      GET /eliminar-cuenta retorna 200 (requerido por Play Store policy de
+      account deletion accesible públicamente). Bug detectado en UX audit
+      — la página solo existía en website/ no en frontend-webapp/.
+    method: GET
+    url: https://app.goingec.com/eliminar-cuenta
+    expect:
+      status: 200
+      body_contains: Eliminar mi cuenta Going
+    severity: P0
+
+  # ── INFRA / DEPLOY HEALTH ─────────────────────────────────
+  - id: api-gateway-healthy
+    description: GET /health del api-gateway
+    method: GET
+    url: https://api.goingec.com/health
+    expect:
+      status: 200
+    severity: P1
+
+  - id: vpc-connector-services-no-mongo-tls-error
+    description: |
+      Verifica que booking-service, payment-service, tracking-service, etc.
+      tienen VPC connector 'going-connector'. Sin esto MongoDB Atlas TLS
+      handshake falla intermitentemente con 'tlsv1 alert internal error'.
+    type: gcloud_check
+    services:
+      - booking-service
+      - payment-service
+      - tracking-service
+      - notifications-service
+      - tours-service
+      - anfitriones-service
+      - experiencias-service
+      - analytics-service
+    expect:
+      annotation: run.googleapis.com/vpc-access-connector
+      value: going-connector
+    severity: P1
+
+# ── ENV VARS REQUERIDAS POR EL RUNNER ──────────────────────────
+required_env:
+  - STAGING_EMAIL: email de usuario de pruebas (staging@going.test)
+  - STAGING_PASSWORD: password del usuario de pruebas
+  - ADMIN_EMAIL: email de admin de pruebas (admin@going.com)
+  - ADMIN_PASSWORD: password de admin
+
+# ── ROADMAP (cuando el cerebro pueda actuar) ────────────────
+roadmap:
+  - phase: contracts_runner_v1
+    description: |
+      Script que ejecuta cada contrato (los que pueden expresarse en curl)
+      y emite YES/NO + latencia. Output JSON consumible por humanos + cerebro.
+    estimate: 4h
+  - phase: contracts_runner_v2
+    description: |
+      Lee logs estructurados con --format=json y verifica logs_contain
+      (sub-contratos como rate-limit que no son verificables solo por status).
+    estimate: 4h
+  - phase: cerebro_sensor_layer
+    description: |
+      Cerebro suscribe a contracts_runner outputs vía Pub/Sub. Cuando un P0
+      regresa → MyCortex genera intention 'security_regression' con propuesta
+      de fix conocido. Cat 3 acción requiere ack humano antes de aplicar.
+    estimate: 1-2 semanas

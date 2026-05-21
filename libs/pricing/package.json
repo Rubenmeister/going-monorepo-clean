@@ -1,0 +1,15 @@
+{
+  "name": "@going-platform/pricing",
+  "version": "0.1.0",
+  "description": "Source of truth para tarifas y motor de pricing dinámico de Going. Usado por payment-service (cobra), customer-support-service (cotiza bot), y frontend (estimate). Una sola implementación, cero divergencia.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'no tests yet — ver pricing.service.spec.ts'"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0"
+  }
+}

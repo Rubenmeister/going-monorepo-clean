@@ -1,3 +1,12 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Yachay — mycortex-service                                           │
+ * │  "conocimiento · sabiduría"                                          │
+ * │  Capa cognitiva. ÚNICA capa que invoca Claude. Lee snapshots de      │
+ * │  Pacha cada 30 min + memoria reciente y produce Intentions ("qué    │
+ * │  hacer"). Wayra (orchestrator) las consume y decide cómo ejecutar.   │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
