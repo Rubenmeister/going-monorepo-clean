@@ -1,15 +1,15 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://api-gateway-780842550857.us-central1.run.app';
 
 function ResetPasswordForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
 
@@ -79,8 +79,12 @@ function ResetPasswordForm() {
       }
 
       setSuccess(true);
-      // Redirige al login después de 3s — el user ve el mensaje y se reorienta
-      setTimeout(() => router.push('/auth/login?reset=ok'), 3000);
+      // Redirige al login con hard navigation (window.location) en lugar de
+      // router.push — el SPA navigation a veces deja la siguiente pantalla
+      // en blanco por hydration mismatch tras un form submit que cambia auth state.
+      setTimeout(() => {
+        window.location.href = '/auth/login?reset=ok';
+      }, 3000);
     } catch {
       setError('No se pudo conectar con el servidor. Intenta más tarde.');
     } finally {

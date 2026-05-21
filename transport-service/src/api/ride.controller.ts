@@ -112,16 +112,37 @@ export class RideController {
         maxRadius: 10,
       })
       .then((result) => {
-        if (result.isOk()) {
+        if (result.isOk() && result.value.matches.length > 0) {
           const driverIds = result.value.matches.map((m) => m.driverId);
           this.dispatchGateway.broadcastRideMatches(
             ride.rideId,
             result.value.matches,
             driverIds
           );
+        } else {
+          // Sin conductores disponibles — notificar al pasajero por socket
+          // para que el mobile salga del estado "buscando" y muestre mensaje.
+          // Delay de 4s para dar tiempo al mobile a conectar al room ride:{rideId}
+          // tras la navegación de ConfirmRide → ActiveRide.
+          setTimeout(() => {
+            this.eventsGateway['server']?.to(`ride:${ride.rideId}`).emit('ride:no_drivers_available', {
+              rideId: ride.rideId,
+              message: 'No hay conductores disponibles cerca en este momento. Intenta de nuevo en unos minutos.',
+              timestamp: new Date().toISOString(),
+            });
+          }, 4000);
         }
       })
-      .catch(() => { /* matching errors are non-fatal */ });
+      .catch(() => {
+        // Error real en el matching — también notificar al pasajero
+        setTimeout(() => {
+          this.eventsGateway['server']?.to(`ride:${ride.rideId}`).emit('ride:no_drivers_available', {
+            rideId: ride.rideId,
+            message: 'Ocurrió un problema buscando conductores. Intenta de nuevo.',
+            timestamp: new Date().toISOString(),
+          });
+        }, 4000);
+      });
 
     return ride;
   }
