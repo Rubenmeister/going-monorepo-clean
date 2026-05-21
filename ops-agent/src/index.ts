@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Rumi — ops-agent                                                    │
+ * │  "piedra" (de Rumiñahui, guerrero defensor de Quito)                 │
+ * │  Defensor de la operación. Monitorea producción, detecta anomalías,  │
+ * │  alerta incidentes. Publica eventos a Pacha (cerebro) vía Pub/Sub.   │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { runAllMonitors } from './monitors/operations.monitor';
 import { closeMongoClient, getRidesDb } from './mongodb/connection';

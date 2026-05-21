@@ -207,6 +207,18 @@ export class WhatsAppController {
         // Algunas SDK refieren a msg.voice; fallback a msg.id solo si nada hay.
         const audioMediaId = msg.audio?.id || msg.voice?.id || msg.id;
         this.logger.log(`[audio] mediaId=${audioMediaId} mime=${msg.audio?.mime_type || msg.voice?.mime_type || 'unknown'}`);
+
+        // ACK INMEDIATO — antes del download+stt+gemini+tts que puede tomar
+        // 30-90 seg total. Sin esto el usuario queda en silencio y siente que
+        // el bot no recibió su nota. Fire-and-forget: si la red está lenta el
+        // ack puede llegar después que la respuesta real, no hay problema.
+        this.whatsappService.sendText(
+          from,
+          '🎙️ Recibí tu nota de voz, dame un momento mientras te respondo...',
+        ).catch((err) =>
+          this.logger.warn(`[audio] ack send failed: ${(err as Error).message}`),
+        );
+
         const audioBuffer = await this.whatsappService.downloadMedia(audioMediaId);
         if (audioBuffer) {
           this.logger.log(`[audio] buffer ${audioBuffer.length} bytes, calling STT`);

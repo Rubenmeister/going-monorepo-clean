@@ -1,3 +1,12 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Wayra — orchestrator-service                                        │
+ * │  "viento · movimiento"                                               │
+ * │  Capa de ejecución. Polea Intentions de Yachay cada 5 min, las       │
+ * │  mapea a acciones via RULES, aplica safety levels (Cat 1/2/3) y      │
+ * │  despacha a Chaski (agent-bridge). Sin razonamiento — determinístico.│
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';

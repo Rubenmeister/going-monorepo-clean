@@ -1,3 +1,11 @@
+/**
+ * ┌──────────────────────────────────────────────────────────────────────┐
+ * │  Quinde — mobile-agent                                               │
+ * │  "colibrí — rápido, pequeño, va de un lugar a otro"                  │
+ * │  Mobile. APK builds (EAS), releases, monitor de crashes, Play Store  │
+ * │  health. Publica eventos a Pacha.                                    │
+ * └──────────────────────────────────────────────────────────────────────┘
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { loadConfig } from './config';
 import { runMobileMonitor } from './monitors/mobile.monitor';
