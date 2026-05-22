@@ -18,7 +18,7 @@ export class CreateExperienceUseCase {
   ) {}
 
   async execute(dto: CreateExperienceDto): Promise<{ id: string }> {
-    const locationVOResult = Location.create(dto.location);
+    const locationVOResult = Location.create(dto.location as any);
     if (locationVOResult.isErr()) {
       throw new InternalServerErrorException(locationVOResult.error.message);
     }
