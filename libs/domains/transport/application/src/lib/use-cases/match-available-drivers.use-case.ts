@@ -34,6 +34,8 @@ export interface MatchAvailableDriversDto {
   vehicleType: string;
   maxRadius?: number;
   limit?: number;
+  /** Viaje corporativo → despacho de alta prioridad (radio/SLA ampliados). */
+  isCorporate?: boolean;
 }
 
 export interface MatchResultDto {
@@ -88,17 +90,25 @@ export class MatchAvailableDriversUseCase {
      */
     @Optional()
     private readonly getDriverFairness?: GetDriverFairnessUseCase,
+    @Optional()
+    @Inject('IRideRepository')
+    private readonly rideRepo?: any,
   ) {}
 
   async execute(
     dto: MatchAvailableDriversDto
   ): Promise<Result<MatchResultDto, Error>> {
-    const maxRadius = dto.maxRadius || 5;
-    const limit = dto.limit || 10;
+    const baseRadius = dto.maxRadius || 5;
+    // Despacho corporativo de alta prioridad (SLA): ensanchamos el radio para
+    // asegurar asignación aunque haya pocos conductores cerca. La priorización
+    // por bases de conductor (paso 2b/2d) ya aplica para todos.
+    const maxRadius = dto.isCorporate ? Math.max(baseRadius, 12) : baseRadius;
+    const limit = dto.isCorporate ? Math.max(dto.limit || 10, 15) : dto.limit || 10;
     const matchingId = `matching_${Date.now()}` as UUID;
 
     this.logger.log(
-      `Matching ride ${dto.rideId} — vehicle: ${dto.vehicleType}, radius: ${maxRadius}km`
+      `Matching ride ${dto.rideId} — vehicle: ${dto.vehicleType}, radius: ${maxRadius}km` +
+        (dto.isCorporate ? ' [CORPORATIVO · alta prioridad]' : ''),
     );
 
     // Step 0: (opcional) gating por geocercas — rechazar pickup en
@@ -130,6 +140,20 @@ export class MatchAvailableDriversUseCase {
         this.logger.warn(
           `Zone pre-check falló para ride ${dto.rideId}: ${(e as Error).message}`,
         );
+      }
+    }
+
+    // Step 0b: Check if the current ride being matched is a real-time (on-demand) ride.
+    // If it's a real-time ride, we enforce the Wellness Gate (2-hour buffer before scheduled intercity rides).
+    let isRealTimeRide = true;
+    if (this.rideRepo) {
+      try {
+        const currentRide = await this.rideRepo.findById(dto.rideId);
+        if (currentRide && currentRide.scheduledAt) {
+          isRealTimeRide = false;
+        }
+      } catch (e) {
+        this.logger.warn(`Could not check if current ride is real-time: ${(e as Error).message}`);
       }
     }
 
@@ -185,6 +209,33 @@ export class MatchAvailableDriversUseCase {
 
       const distanceKm = parseFloat(distStr);
       const etaMinutes = Math.ceil((distanceKm / AVERAGE_SPEED_KMH) * 60);
+
+      // Overlap Wellness Gate check:
+      // If matching a real-time local ride, and the driver has an upcoming scheduled intercity carpool/ride
+      // starting in less than 2 hours, we skip matching them to prevent scheduling overlaps and protect rest.
+      if (isRealTimeRide && this.rideRepo) {
+        try {
+          const activeRides = await this.rideRepo.findActiveByDriverId(driverId);
+          const hasUpcomingScheduled = activeRides?.some((ride: any) => {
+            if (!ride.scheduledAt) return false;
+            const scheduledTime = new Date(ride.scheduledAt).getTime();
+            const now = Date.now();
+            const twoHoursMs = 2 * 60 * 60 * 1000;
+            return scheduledTime >= now && scheduledTime <= now + twoHoursMs;
+          });
+
+          if (hasUpcomingScheduled) {
+            this.logger.log(
+              `Gating driver ${driverId}: Excluded from real-time matching pool due to upcoming scheduled ride inside the 2-hour buffer window.`
+            );
+            continue;
+          }
+        } catch (e) {
+          this.logger.warn(
+            `Failed to verify scheduled ride overlap for driver ${driverId}: ${(e as Error).message}`
+          );
+        }
+      }
 
       filteredDrivers.push({
         driverId: driverId as UUID,

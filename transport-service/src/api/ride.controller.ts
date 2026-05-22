@@ -110,6 +110,7 @@ export class RideController {
         dropoffLongitude: dto.dropoffLongitude,
         vehicleType: dto.serviceType || 'ANY',
         maxRadius: 10,
+        isCorporate: dto.isCorporate,
       })
       .then((result) => {
         if (result.isOk() && result.value.matches.length > 0) {
