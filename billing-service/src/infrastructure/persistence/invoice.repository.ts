@@ -56,10 +56,10 @@ export class InvoiceRepository {
     companyId: string
   ): Promise<Invoice | null> {
     try {
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOne({ _id: invoiceId, companyId })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to find invoice: ${error}`);
       return null;
@@ -77,10 +77,10 @@ export class InvoiceRepository {
     companyId: string
   ): Promise<Invoice | null> {
     try {
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOne({ invoiceNumber, companyId })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to find invoice by number: ${error}`);
       return null;
@@ -157,12 +157,12 @@ export class InvoiceRepository {
     updateData: Partial<Invoice>
   ): Promise<Invoice | null> {
     try {
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOneAndUpdate({ _id: invoiceId, companyId }, updateData, {
           new: true,
         })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to update invoice: ${error}`);
       return null;
@@ -244,12 +244,12 @@ export class InvoiceRepository {
         }
       }
 
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOneAndUpdate({ _id: invoiceId, companyId }, updateData, {
           new: true,
         })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to record payment: ${error}`);
       return null;
@@ -279,12 +279,12 @@ export class InvoiceRepository {
         updateData.viewedAt = new Date();
       }
 
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOneAndUpdate({ _id: invoiceId, companyId }, updateData, {
           new: true,
         })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to update invoice status: ${error}`);
       return null;
@@ -305,14 +305,14 @@ export class InvoiceRepository {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysOverdue);
 
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .find({
           companyId,
           dueDate: { $lt: cutoffDate },
           status: { $nin: ['PAID', 'CANCELLED', 'REFUNDED'] },
         })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice[];
     } catch (error) {
       this.logger.error(`Failed to find overdue invoices: ${error}`);
       return [];
@@ -416,7 +416,7 @@ export class InvoiceRepository {
    */
   async findByTripId(tripId: string): Promise<Invoice | null> {
     try {
-      return await this.invoiceModel
+      return (await this.invoiceModel
         .findOne({
           $or: [
             { 'metadata.tripId': tripId },
@@ -424,7 +424,7 @@ export class InvoiceRepository {
           ],
         })
         .lean()
-        .exec();
+        .exec()) as unknown as Invoice | null;
     } catch (error) {
       this.logger.error(`Failed to find invoice by tripId: ${error}`);
       return null;

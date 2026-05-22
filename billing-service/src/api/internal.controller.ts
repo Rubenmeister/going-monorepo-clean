@@ -22,13 +22,13 @@ export class InternalController {
         return { success: false, message: 'Invoice not found' };
       }
       // Use a fallback companyId since this is internal
-      await this.invoiceRepository.recordPayment(invoice.id, invoice.companyId || 'internal', {
+      await this.invoiceRepository.recordPayment(invoice._id!, invoice.companyId || 'internal', {
         amount,
         method,
         reference: transactionId,
       });
-      this.logger.log(`Invoice ${invoice.id} updated to paid for tripId ${tripId}`);
-      return { success: true, invoiceId: invoice.id };
+      this.logger.log(`Invoice ${invoice._id} updated to paid for tripId ${tripId}`);
+      return { success: true, invoiceId: invoice._id };
     } catch (err) {
       this.logger.error(`Payment completion error: ${err}`);
       return { success: false };

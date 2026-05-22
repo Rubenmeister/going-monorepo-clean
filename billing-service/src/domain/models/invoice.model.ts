@@ -98,9 +98,11 @@ export interface Invoice {
   status: InvoiceStatus;
   paymentStatus: PaymentStatus;
   amountPaid: number;
+  amountDue?: number; // total - amountPaid (calculado y persistido)
+  currency?: string;
 
-  // Payment terms
-  paymentTerms: PaymentTerms;
+  // Payment terms (etiqueta, p.ej. 'NET_30' / '30 días')
+  paymentTerms: string;
   bankDetails?: {
     accountHolder: string;
     accountNumber: string;
