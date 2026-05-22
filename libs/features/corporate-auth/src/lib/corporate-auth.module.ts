@@ -3,7 +3,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuditLogService } from './services/audit-log.service';
-import { RbacService } from './services/rbac.service';
+import { RBACService } from './services/rbac.service';
 import { TokenService } from './services/token.service';
 import { CorporateUserService } from './services/corporate-user.service';
 import { CorporateJwtStrategy } from './strategies/corporate-jwt.strategy';
@@ -36,7 +36,7 @@ import { CorporateJwtAuthGuard } from './guards/corporate-jwt-auth.guard';
   ],
   providers: [
     AuditLogService,
-    RbacService,
+    RBACService,
     TokenService,
     CorporateUserService,
     CorporateJwtStrategy,
@@ -46,7 +46,7 @@ import { CorporateJwtAuthGuard } from './guards/corporate-jwt-auth.guard';
     PassportModule,
     JwtModule,
     AuditLogService,
-    RbacService,
+    RBACService,
     TokenService,
     CorporateUserService,
     CorporateJwtStrategy,

@@ -17,7 +17,9 @@ export class TokenService implements ITokenService {
    */
   generateToken(payload: any, expiresIn: string = '1h'): string {
     try {
-      return this.jwtService.sign(payload, { expiresIn });
+      // expiresIn llega como string genérico ('1h','7d'…); el tipo estricto de
+      // @nestjs/jwt espera un template `${number}d`-style, así que casteamos.
+      return this.jwtService.sign(payload, { expiresIn: expiresIn as any });
     } catch (error) {
       this.logger.error(`Failed to generate token:`, error);
       throw error;
