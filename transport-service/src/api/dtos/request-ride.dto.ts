@@ -1,4 +1,4 @@
-import { IsNumber, Min, Max, IsOptional, IsString } from 'class-validator';
+import { IsNumber, Min, Max, IsOptional, IsString, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -32,6 +32,11 @@ export class RequestRideDto {
   @IsOptional()
   @IsString()
   serviceType?: string; // standard, premium, economy
+
+  /** Empleado corporativo → despacho de alta prioridad (SLA) en el matching. */
+  @IsOptional()
+  @IsBoolean()
+  isCorporate?: boolean;
 }
 
 /**
