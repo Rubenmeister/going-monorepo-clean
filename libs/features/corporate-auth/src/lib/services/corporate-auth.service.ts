@@ -6,13 +6,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
-  ICorporateAuthService,
   ICorporateUser,
   LoginRequestDTO,
   LoginResponseDTO,
   MFASetupResponse,
   VerifyMFARequest,
   CorporateUserDTO,
+  CorporateUserRole,
+  UserStatus,
   SSOProvider,
 } from '../../interfaces/corporate-user.interface';
 import {
@@ -20,7 +21,10 @@ import {
   SSOUserProfile,
   SAMLAssertion,
 } from '../../interfaces/sso-config.interface';
-import { IMFAService } from '../../interfaces/corporate-auth.service';
+import {
+  ICorporateAuthService,
+  IMFAService,
+} from '../../interfaces/corporate-auth.service';
 
 /**
  * Corporate Authentication Service Implementation
@@ -54,8 +58,8 @@ export class CorporateAuthService implements ICorporateAuthService {
         userId: 'user123',
         email,
         fullName: 'Test User',
-        role: 'employee',
-        status: 'active',
+        role: CorporateUserRole.EMPLOYEE,
+        status: UserStatus.ACTIVE,
         mfaEnabled: false,
       };
 
@@ -137,8 +141,8 @@ export class CorporateAuthService implements ICorporateAuthService {
         userId: 'sso-user-123',
         email: 'user@company.com',
         fullName: 'SSO User',
-        role: 'employee',
-        status: 'active',
+        role: CorporateUserRole.EMPLOYEE,
+        status: UserStatus.ACTIVE,
         mfaEnabled: false,
       };
 
@@ -147,7 +151,7 @@ export class CorporateAuthService implements ICorporateAuthService {
         companyId,
         email: mockUser.email,
         role: mockUser.role,
-        ssoProvider: provider,
+        ssoProvider: SSOProvider.NONE,
       });
 
       return {
@@ -183,8 +187,8 @@ export class CorporateAuthService implements ICorporateAuthService {
         userId: 'saml-user-123',
         email: 'saml@company.com',
         fullName: 'SAML User',
-        role: 'employee',
-        status: 'active',
+        role: CorporateUserRole.EMPLOYEE,
+        status: UserStatus.ACTIVE,
         mfaEnabled: false,
       };
 
@@ -289,11 +293,11 @@ export class CorporateAuthService implements ICorporateAuthService {
         companyId,
         email: profile.email,
         fullName: `${profile.firstName} ${profile.lastName}`,
-        role: 'employee',
+        role: CorporateUserRole.EMPLOYEE,
         department: profile.department,
-        status: 'active',
+        status: UserStatus.ACTIVE,
         mfaEnabled: false,
-        ssoProvider: 'okta',
+        ssoProvider: SSOProvider.OKTA,
         ssoId: profile.id,
         createdAt: new Date(),
         updatedAt: new Date(),

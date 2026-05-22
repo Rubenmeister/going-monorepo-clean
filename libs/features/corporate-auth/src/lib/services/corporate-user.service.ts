@@ -5,6 +5,7 @@ import {
   ICorporateUser,
   CorporateUserRole,
   UserStatus,
+  SSOProvider,
 } from '../../interfaces/corporate-user.interface';
 
 /**
@@ -268,7 +269,7 @@ export class CorporateUserService {
         department: 'Administration',
         status: UserStatus.ACTIVE,
         mfaEnabled: true,
-        ssoProvider: 'none',
+        ssoProvider: SSOProvider.NONE,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -281,7 +282,7 @@ export class CorporateUserService {
         department: 'Management',
         status: UserStatus.ACTIVE,
         mfaEnabled: false,
-        ssoProvider: 'none',
+        ssoProvider: SSOProvider.NONE,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -294,7 +295,7 @@ export class CorporateUserService {
         department: 'Operations',
         status: UserStatus.ACTIVE,
         mfaEnabled: false,
-        ssoProvider: 'none',
+        ssoProvider: SSOProvider.NONE,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

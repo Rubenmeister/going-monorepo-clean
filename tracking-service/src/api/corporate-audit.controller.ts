@@ -16,7 +16,7 @@ import {
 import { Request } from 'express';
 import {
   AuditLogService,
-  RbacService,
+  RBACService,
   CorporateUserService,
   CorporateJwtAuthGuard,
 } from '@going-monorepo-clean/features-corporate-auth';
@@ -47,7 +47,7 @@ export class CorporateAuditController {
 
   constructor(
     private readonly auditLogService: AuditLogService,
-    private readonly rbacService: RbacService,
+    private readonly rbacService: RBACService,
     private readonly userService: CorporateUserService
   ) {}
 
