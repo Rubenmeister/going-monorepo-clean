@@ -27,6 +27,19 @@ export class ApprovalWorkflowSchema extends Document {
   @Prop({ enum: ['pending', 'approved', 'rejected'], default: 'pending', index: true })
   status: string;
 
+  // ── Cadena de aprobación multinivel ─────────────────────────────────────────
+  /**
+   * Pasos de la cadena (manager → finanzas → dirección, según el monto). Cada
+   * paso: { level, role, approverId, status, decidedBy, decidedAt, comments }.
+   */
+  @Prop({ type: [Object], default: [] })
+  approvalChain: Record<string, unknown>[];
+
+  /** Nivel que debe decidir ahora (1-based). 0 cuando ya no hay pendientes. */
+  @Prop({ default: 1 })
+  currentLevel: number;
+
+  // ── Última decisión / resultado global ──────────────────────────────────────
   @Prop({ default: null })
   decidedBy: string | null;
 

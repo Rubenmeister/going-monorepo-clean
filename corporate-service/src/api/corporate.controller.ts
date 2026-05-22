@@ -60,12 +60,46 @@ export class CorporateController {
     return this.svc.getSpendingReport(companyId, token, month);
   }
 
-  /** GET /corporate/billing/statement?month=YYYY-MM — estado de cuenta mensual */
+  /** GET /corporate/billing/statement?month=YYYY-MM — estado de cuenta mensual (preview) */
   @Get('billing/statement')
   async billingStatement(@Req() req: Request, @Query('month') month?: string) {
     const companyId = this.extractCompanyId(req);
     const token = this.extractToken(req);
     return this.svc.getMonthlyStatement(companyId, token, month);
+  }
+
+  /** POST /corporate/billing/invoices/generate?month=YYYY-MM — materializa la factura del mes */
+  @Post('billing/invoices/generate')
+  async generateInvoice(
+    @Req() req: Request,
+    @Query('month') queryMonth?: string,
+    @Body() body?: { month?: string },
+  ) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.generateMonthlyInvoice(companyId, token, body?.month ?? queryMonth);
+  }
+
+  /** GET /corporate/billing/invoices — facturas consolidadas persistidas */
+  @Get('billing/invoices')
+  async listCorporateInvoices(@Req() req: Request) {
+    return this.svc.listCorporateInvoices(this.extractCompanyId(req));
+  }
+
+  /** GET /corporate/billing/invoices/:id */
+  @Get('billing/invoices/:id')
+  async getCorporateInvoice(@Param('id') id: string) {
+    const invoice = await this.svc.getCorporateInvoice(id);
+    if (!invoice) throw new NotFoundException(`Factura ${id} no encontrada`);
+    return invoice;
+  }
+
+  /** PATCH /corporate/billing/invoices/:id/pay — marca la factura como pagada */
+  @Patch('billing/invoices/:id/pay')
+  async payCorporateInvoice(@Param('id') id: string) {
+    const invoice = await this.svc.markInvoicePaid(id);
+    if (!invoice) throw new NotFoundException(`Factura ${id} no encontrada`);
+    return invoice;
   }
 
   /** GET /corporate/invoices */

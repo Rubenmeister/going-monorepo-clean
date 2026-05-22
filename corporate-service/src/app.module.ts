@@ -7,9 +7,11 @@ import { CorporateService } from './api/corporate.service';
 import { CompanySettingsSchema, CompanySettingsSchemaDefinition } from './infrastructure/schemas/company-settings.schema';
 import { ApprovalWorkflowSchema, ApprovalWorkflowSchemaDefinition } from './infrastructure/schemas/approval-workflow.schema';
 import { SpendingLimitSchema, SpendingLimitSchemaDefinition } from './infrastructure/schemas/spending-limit.schema';
+import { CorporateInvoiceSchema, CorporateInvoiceSchemaDefinition } from './infrastructure/schemas/corporate-invoice.schema';
 import { CompanySettingsRepository } from './infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from './infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from './infrastructure/persistence/spending-limit.repository';
+import { CorporateInvoiceRepository } from './infrastructure/persistence/corporate-invoice.repository';
 
 @Module({
   imports: [
@@ -28,9 +30,10 @@ import { SpendingLimitRepository } from './infrastructure/persistence/spending-l
       { name: CompanySettingsSchema.name, schema: CompanySettingsSchemaDefinition },
       { name: ApprovalWorkflowSchema.name, schema: ApprovalWorkflowSchemaDefinition },
       { name: SpendingLimitSchema.name, schema: SpendingLimitSchemaDefinition },
+      { name: CorporateInvoiceSchema.name, schema: CorporateInvoiceSchemaDefinition },
     ]),
   ],
   controllers: [CorporateController, HealthController],
-  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository],
+  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository],
 })
 export class AppModule {}
