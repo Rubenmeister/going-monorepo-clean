@@ -8,6 +8,9 @@ export class SendMessageDto {
   rideId: string;
 
   @IsString()
+  receiverId: string;
+
+  @IsString()
   content: string;
 
   @IsOptional()

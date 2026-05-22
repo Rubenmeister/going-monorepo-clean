@@ -2,3 +2,8 @@ export * from './lib/entities/notification.entity';
 export * from './lib/ports/inotification.repository';
 export * from './lib/ports/inotification.gateway';
 export * from './lib/value-objects/NotificationChannel.vo';
+// Chat / mensajería
+export * from './lib/entities/message.entity';
+export * from './lib/entities/conversation.entity';
+export * from './lib/ports/imessage.repository';
+export * from './lib/ports/ichat.gateway';

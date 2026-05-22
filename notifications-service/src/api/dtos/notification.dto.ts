@@ -5,10 +5,10 @@ import {
   IsUUID,
   IsArray,
   ValidateNested,
-  Type,
   IsObject,
   IsBoolean,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 /**
  * Send Notification DTO
