@@ -33,6 +33,7 @@ export class RedisAvailabilityRepository
       accuracy: availability.currentLocation.accuracy.toString(),
       availableSeats: availability.availableSeats.toString(),
       serviceTypes: JSON.stringify(availability.serviceTypes),
+      vehicleClass: availability.vehicleClass,
       lastUpdate: availability.lastUpdate.toISOString(),
     });
 
@@ -74,6 +75,7 @@ export class RedisAvailabilityRepository
       currentLocation: location,
       availableSeats: parseInt(data.availableSeats, 10),
       serviceTypes: JSON.parse(data.serviceTypes || '["standard"]'),
+      vehicleClass: data.vehicleClass || 'suv',
       lastUpdate: new Date(data.lastUpdate),
     });
   }
@@ -117,6 +119,7 @@ export class RedisAvailabilityRepository
             currentLocation: location,
             availableSeats: parseInt(data.availableSeats, 10),
             serviceTypes,
+            vehicleClass: data.vehicleClass || 'suv',
             lastUpdate: new Date(data.lastUpdate),
           })
         );
@@ -184,6 +187,7 @@ export class RedisAvailabilityRepository
           currentLocation: location,
           availableSeats: parseInt(data.availableSeats, 10),
           serviceTypes: JSON.parse(data.serviceTypes || '["standard"]'),
+          vehicleClass: data.vehicleClass || 'suv',
           lastUpdate: new Date(data.lastUpdate),
         })
       );

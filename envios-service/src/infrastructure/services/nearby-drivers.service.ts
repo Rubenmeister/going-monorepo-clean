@@ -27,9 +27,9 @@ export interface FindRankedDriversOptions {
   maxResults?: number;
   minRating?: number;
   /**
-   * Filtra por tipos de vehículo aceptables.
-   * Ej: ['moto','car'] para envío pequeño/mediano.
-   * Si se omite o incluye 'any', no se filtra por tipo.
+   * Filtra por clase de vehículo del conductor.
+   * Envíos: ['suv','suv_xl'] (única flota que hace servicio compartido).
+   * Si se omite o incluye 'any', no se filtra por clase.
    */
   vehicleTypes?: string[];
 }
@@ -127,20 +127,12 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
         const rating = parseFloat(availability.rating || '4.5');
         if (rating < minRating) continue;
 
-        // serviceTypes = JSON array con tipos que el conductor acepta
-        const driverServiceTypes: string[] = (() => {
-          try {
-            return JSON.parse(availability.serviceTypes || '["standard"]');
-          } catch {
-            return ['standard'];
-          }
-        })();
-
-        if (!filterAnyVehicle) {
-          const match = driverServiceTypes.some((t) =>
-            vehicleFilter.includes(t.toLowerCase())
-          );
-          if (!match) continue;
+        // Clase de vehículo del conductor. La flota de servicio compartido de
+        // Going es SUV/SUV XL → default 'suv' si la disponibilidad aún no la
+        // trae (conductores conectados antes de este cambio).
+        const driverVehicleClass = (availability.vehicleClass || 'suv').toLowerCase();
+        if (!filterAnyVehicle && !vehicleFilter.includes(driverVehicleClass)) {
+          continue;
         }
 
         const distanceKm = parseFloat(distStr);
@@ -156,7 +148,7 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
             : `Conductor ${driverId.slice(-4)}`,
           rating,
           acceptanceRate: parseFloat(availability.acceptanceRate || '0.9'),
-          vehicleType: availability.vehicleType || 'standard',
+          vehicleType: availability.vehicleClass || availability.vehicleType || 'suv',
           vehiclePlate: availability.vehiclePlate,
           photoUrl: availability.photoUrl,
           distanceKm,

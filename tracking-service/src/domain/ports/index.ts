@@ -185,6 +185,9 @@ export class DriverAvailability {
   currentLocation: GeoLocation;
   availableSeats: number;
   serviceTypes: string[];
+  /** Clase de vehículo del conductor: 'suv' | 'suv_xl' | … La flota compartida
+   *  de Going es SUV/SUV XL → default 'suv'. Usado para gatear envíos. */
+  vehicleClass: string;
   lastUpdate: Date;
 
   constructor(props: {
@@ -193,6 +196,7 @@ export class DriverAvailability {
     currentLocation: GeoLocation;
     availableSeats: number;
     serviceTypes?: string[];
+    vehicleClass?: string;
     lastUpdate?: Date;
   }) {
     this.driverId = props.driverId;
@@ -200,6 +204,7 @@ export class DriverAvailability {
     this.currentLocation = props.currentLocation;
     this.availableSeats = props.availableSeats;
     this.serviceTypes = props.serviceTypes || ['standard'];
+    this.vehicleClass = props.vehicleClass || 'suv';
     this.lastUpdate = props.lastUpdate || new Date();
   }
 
@@ -241,6 +246,7 @@ export class DriverAvailability {
       currentLocation: this.currentLocation.toObject(),
       availableSeats: this.availableSeats,
       serviceTypes: this.serviceTypes,
+      vehicleClass: this.vehicleClass,
       lastUpdate: this.lastUpdate,
     };
   }
