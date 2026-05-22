@@ -37,10 +37,6 @@ export class RequestRideUseCase {
     serviceType?: string;
     modalidad?: string;
     scheduledAt?: Date;
-    isPackage?: boolean;
-    packageDescription?: string;
-    recipientName?: string;
-    recipientPhone?: string;
   }): Promise<any> {
     const {
       userId,
@@ -98,10 +94,6 @@ export class RequestRideUseCase {
       modalidad:          input.modalidad ?? 'compartido',
       scheduledAt:        input.scheduledAt,
       totalDistanceKm:    estimatedDistance,
-      isPackage:          input.isPackage ?? false,
-      packageDescription: input.packageDescription,
-      recipientName:      input.recipientName,
-      recipientPhone:     input.recipientPhone,
     });
 
     // Save to database
