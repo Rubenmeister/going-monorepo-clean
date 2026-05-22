@@ -36,7 +36,28 @@ export class CorporateController {
   async createBooking(@Req() req: Request, @Body() body: any) {
     const companyId = this.extractCompanyId(req);
     const token = this.extractToken(req);
-    return this.svc.createBooking(companyId, token, body);
+    const userId = this.extractUserId(req);
+    return this.svc.createBooking(companyId, token, userId, body);
+  }
+
+  /** GET /corporate/spending-limits — límites configurados de la empresa */
+  @Get('spending-limits')
+  async listSpendingLimits(@Req() req: Request) {
+    return this.svc.listSpendingLimits(this.extractCompanyId(req));
+  }
+
+  /** POST /corporate/spending-limits — fija un límite (employee/department/company) */
+  @Post('spending-limits')
+  async setSpendingLimit(@Req() req: Request, @Body() body: any) {
+    return this.svc.setSpendingLimit(this.extractCompanyId(req), body);
+  }
+
+  /** GET /corporate/spending-report?month=YYYY-MM — gasto por empleado + límites */
+  @Get('spending-report')
+  async spendingReport(@Req() req: Request, @Query('month') month?: string) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.getSpendingReport(companyId, token, month);
   }
 
   /** GET /corporate/invoices */
