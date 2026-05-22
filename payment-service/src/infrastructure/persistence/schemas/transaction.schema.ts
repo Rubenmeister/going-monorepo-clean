@@ -24,6 +24,12 @@ export class TransactionModelSchema {
   @Prop({ index: true })
   paymentIntentId?: string;
 
+  @Prop({ index: true })
+  idempotencyKey?: string;
+
+  @Prop()
+  clientSecret?: string;
+
   @Prop({ required: true, type: MoneySchema })
   amount: MoneySchema;
 

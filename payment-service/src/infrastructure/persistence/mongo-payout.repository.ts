@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payout, PayoutDocument } from '../schemas/payout.schema';
-import { IPayoutRepository } from '../../../domain/ports';
+import { IPayoutRepository } from '../../domain/ports';
 
 /**
  * MongoDB Payout Repository

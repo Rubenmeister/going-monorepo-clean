@@ -12,6 +12,8 @@ export interface TransactionProps {
   amount: Money;
   status: TransactionStatus;
   createdAt: Date;
+  idempotencyKey?: string;
+  clientSecret?: string;
 }
 
 export class Transaction {
@@ -22,6 +24,8 @@ export class Transaction {
   readonly amount: Money;
   readonly status: TransactionStatus;
   readonly createdAt: Date;
+  readonly idempotencyKey?: string;
+  readonly clientSecret?: string;
 
   private constructor(props: TransactionProps) {
     this.id = props.id;
@@ -31,12 +35,15 @@ export class Transaction {
     this.amount = props.amount;
     this.status = props.status;
     this.createdAt = props.createdAt;
+    this.idempotencyKey = props.idempotencyKey;
+    this.clientSecret = props.clientSecret;
   }
 
   public static create(props: {
     userId: UUID;
     referenceId: UUID;
     amount: Money;
+    idempotencyKey?: string;
   }): Result<Transaction, Error> {
     if (!props.amount.isPositive()) {
       return err(new Error('Amount must be positive'));
@@ -60,6 +67,8 @@ export class Transaction {
       amount: this.amount.toPrimitives(),
       status: this.status,
       createdAt: this.createdAt,
+      idempotencyKey: this.idempotencyKey,
+      clientSecret: this.clientSecret,
     };
   }
 
