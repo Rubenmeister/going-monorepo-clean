@@ -7,6 +7,7 @@ import {
   deriveTripSeedsForDate,
   evaluateSeatRequest,
   splitScheduleResults,
+  canAttachParcel,
   type DriverAgenda,
 } from './scheduled-trip.logic';
 
@@ -107,6 +108,30 @@ describe('evaluateSeatRequest (reglas de asientos SUV)', () => {
         suv,
       ).ok,
     ).toBe(false);
+  });
+});
+
+describe('canAttachParcel (carga en viaje programado)', () => {
+  const base = {
+    seatsTotal: 3,
+    seatsReserved: 0,
+    packagesOnboard: 0,
+    packageSeatsConsumed: 0,
+  };
+
+  it('viaje vacío acepta bulto normal y sobre-volumen', () => {
+    expect(canAttachParcel(base, false)).toBe(true);
+    expect(canAttachParcel(base, true)).toBe(true);
+  });
+
+  it('al tope de bultos (3) rechaza', () => {
+    expect(canAttachParcel({ ...base, packagesOnboard: 3 }, false)).toBe(false);
+  });
+
+  it('sobre-volumen necesita un asiento libre; el bulto normal no', () => {
+    const full = { ...base, seatsReserved: 3 }; // SUV con pasajeros llenos
+    expect(canAttachParcel(full, true)).toBe(false); // sobre-volumen sin asiento
+    expect(canAttachParcel(full, false)).toBe(true); // normal va en cajuela
   });
 });
 

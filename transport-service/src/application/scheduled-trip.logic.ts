@@ -228,6 +228,34 @@ export function evaluateSeatRequest(
   };
 }
 
+// ── Carga (envíos a bordo de un viaje programado) ────────────────────────────
+
+/** Tope de bultos normales que puede llevar un viaje compartido (provisional). */
+export const PARCEL_CARGO_CAP = 3;
+
+export interface CargoState {
+  seatsTotal: number;
+  seatsReserved: number;
+  packagesOnboard: number;
+  packageSeatsConsumed: number;
+}
+
+/**
+ * ¿Cabe un envío más en este viaje?
+ *  - Tope de bultos: packagesOnboard < PARCEL_CARGO_CAP.
+ *  - Sobre-volumen: además consume 1 asiento → debe quedar al menos 1 libre
+ *    (asientos totales − reservados por pasajeros − ya consumidos por carga).
+ */
+export function canAttachParcel(state: CargoState, isOverVolume: boolean): boolean {
+  if (state.packagesOnboard >= PARCEL_CARGO_CAP) return false;
+  if (isOverVolume) {
+    const freeSeats =
+      state.seatsTotal - state.seatsReserved - state.packageSeatsConsumed;
+    if (freeSeats < 1) return false;
+  }
+  return true;
+}
+
 // ── Cascada de sugerencias ──────────────────────────────────────────────────
 
 export interface DepartureLite {

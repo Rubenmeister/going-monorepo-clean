@@ -27,6 +27,7 @@ import {
   evaluateSeatRequest,
   splitScheduleResults,
   stopOffsetHours,
+  canAttachParcel,
   type Direction,
   type DriverAgenda,
 } from './scheduled-trip.logic';
@@ -301,6 +302,82 @@ export class ScheduledTripService {
       status: updated.status,
       price,
     };
+  }
+
+  /**
+   * Adjunta un envío interurbano a la salida programada más próxima del
+   * corredor que tenga cupo de carga. El paquete viaja con ese conductor.
+   * Sobre-volumen consume 1 asiento. Devuelve el viaje/conductor asignado, o
+   * { attached: false } si no hay salida con cupo (el caller hace fallback a
+   * despacho on-demand).
+   */
+  async attachParcel(input: {
+    originCity: string;
+    destCity: string;
+    requestedAt: Date;
+    isOverVolume?: boolean;
+  }): Promise<{
+    attached: boolean;
+    scheduledTripId?: string;
+    driverId?: string;
+    departureAt?: string;
+  }> {
+    const corridor = corridorBetween(input.originCity, input.destCity);
+    const direction =
+      corridor && resolveDirection(corridor, input.originCity, input.destCity);
+    if (!corridor || !direction) return { attached: false };
+
+    for (const offset of [0, 1]) {
+      await this.materializeForDate(
+        corridor.id,
+        new Date(input.requestedAt.getTime() + offset * ONE_DAY_MS),
+      );
+    }
+
+    // Salidas abiertas del corredor desde la hora pedida, la más próxima primero.
+    const trips = (await this.tripModel
+      .find({
+        corridorId: corridor.id,
+        status: 'open',
+        departureAt: { $gte: input.requestedAt },
+      })
+      .sort({ departureAt: 1 })
+      .lean()) as any[];
+
+    for (const t of trips) {
+      if (this.tripDirection(t) !== direction) continue;
+      const fits = canAttachParcel(
+        {
+          seatsTotal: t.seatsTotal,
+          seatsReserved: t.seatsReserved,
+          packagesOnboard: t.packagesOnboard ?? 0,
+          packageSeatsConsumed: t.packageSeatsConsumed ?? 0,
+        },
+        !!input.isOverVolume,
+      );
+      if (!fits) continue;
+
+      // Bloqueo optimista: solo adjunta si packagesOnboard no cambió.
+      const updated = await this.tripModel.findOneAndUpdate(
+        { _id: t._id, status: 'open', packagesOnboard: t.packagesOnboard ?? 0 },
+        {
+          $inc: {
+            packagesOnboard: 1,
+            packageSeatsConsumed: input.isOverVolume ? 1 : 0,
+          },
+        },
+        { new: true },
+      );
+      if (updated) {
+        return {
+          attached: true,
+          scheduledTripId: t._id.toString(),
+          driverId: t.driverId,
+          departureAt: new Date(t.departureAt).toISOString(),
+        };
+      }
+    }
+    return { attached: false };
   }
 
   // ── helpers ────────────────────────────────────────────────────────────────
