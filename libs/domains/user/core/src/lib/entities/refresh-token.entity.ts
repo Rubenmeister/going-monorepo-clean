@@ -22,7 +22,7 @@ export class RefreshToken {
   readonly expiresAt: Date;
   readonly createdAt: Date;
   readonly revokedAt?: Date;
-  readonly reason?: string;
+  readonly reason?: 'logout' | 'password_change' | 'admin_revoke';
 
   private constructor(props: RefreshTokenProps) {
     this.id = props.id;
@@ -91,7 +91,7 @@ export class RefreshToken {
   /**
    * Revoke the token
    */
-  revoke(reason: string = 'logout'): RefreshToken {
+  revoke(reason: 'logout' | 'password_change' | 'admin_revoke' = 'logout'): RefreshToken {
     return new RefreshToken({
       ...this,
       revokedAt: new Date(),

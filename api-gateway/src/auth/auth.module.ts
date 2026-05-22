@@ -25,7 +25,8 @@ import { GatewayTokenManagerService } from './gateway-token-manager.service';
       useFactory: (configService: ConfigService) => ({
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN'),
+          // string del config (p.ej. '7d'); el tipo de `ms` exige cast.
+          expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN') as any,
         },
       }),
     }),
