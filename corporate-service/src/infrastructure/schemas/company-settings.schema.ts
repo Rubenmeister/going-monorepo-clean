@@ -33,6 +33,14 @@ export class CompanySettingsSchema extends Document {
   @Prop({ default: 0 })
   approvalThreshold: number;
 
+  /**
+   * Niveles de la cadena de aprobación (escalado por monto). Cada elemento:
+   * { level:number, role?:string, approverId?:string, minAmount?:number }.
+   * Vacío → un solo nivel (manager) para cualquier monto.
+   */
+  @Prop({ type: [Object], default: [] })
+  approvalLevels: Record<string, unknown>[];
+
   // ── Contrato / facturación ─────────────────────────────────────────────────
   /** 'monthly_consolidated' (diferido, factura mensual) | 'prepaid' (saldo). */
   @Prop({ default: 'monthly_consolidated' })

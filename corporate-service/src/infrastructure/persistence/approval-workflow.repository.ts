@@ -23,10 +23,13 @@ export class ApprovalWorkflowRepository {
     return doc.save() as any;
   }
 
-  async decide(id: string, status: 'approved' | 'rejected', decidedBy: string, comments: string): Promise<ApprovalWorkflowSchema | null> {
+  async update(
+    id: string,
+    patch: Partial<ApprovalWorkflowSchema>,
+  ): Promise<ApprovalWorkflowSchema | null> {
     return this.model.findByIdAndUpdate(
       id,
-      { $set: { status, decidedBy, decidedAt: new Date(), comments } },
+      { $set: patch },
       { new: true, lean: true },
     ).exec() as any;
   }

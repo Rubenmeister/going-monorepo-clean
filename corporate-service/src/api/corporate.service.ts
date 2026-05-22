@@ -7,12 +7,18 @@ import {
 import { CompanySettingsRepository } from '../infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from '../infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from '../infrastructure/persistence/spending-limit.repository';
+import { CorporateInvoiceRepository } from '../infrastructure/persistence/corporate-invoice.repository';
 import {
   computePeriodSpend,
   checkBudget,
   type BudgetCheck,
   type LimitAmounts,
 } from './budget.logic';
+import {
+  buildApprovalChain,
+  applyDecision,
+  type ApprovalLevelConfig,
+} from './approval.logic';
 
 function numOrNull(v: unknown): number | null {
   const n = Number(v);
@@ -32,6 +38,7 @@ export class CorporateService {
     private readonly settingsRepo: CompanySettingsRepository,
     private readonly approvalRepo: ApprovalWorkflowRepository,
     private readonly limitRepo: SpendingLimitRepository,
+    private readonly invoiceRepo: CorporateInvoiceRepository,
   ) {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
@@ -121,15 +128,20 @@ export class CorporateService {
     const booking = await this.postJson(`${this.bookingUrl}/bookings`, token, payload);
 
     if (needsApproval && (booking as any)?.id) {
+      const chainAmount = payload.amount ?? payload.totalPrice ?? 0;
+      const levels = ((settings as any)?.approvalLevels ?? []) as ApprovalLevelConfig[];
+      const chain = buildApprovalChain(chainAmount, levels);
       await this.approvalRepo.create({
         companyId,
         bookingId: (booking as any).id,
         requesterId: (booking as any).userId ?? '',
         requesterName: body.employeeName ?? '',
         serviceType: body.serviceType ?? body.type ?? '',
-        amount: payload.amount ?? payload.totalPrice ?? 0,
+        amount: chainAmount,
         description: `${body.serviceType ?? 'Booking'} — ${body.destination ?? ''}`,
         status: 'pending',
+        approvalChain: chain as any,
+        currentLevel: chain[0]?.level ?? 1,
         bookingDetails: booking as any,
       } as any);
     }
@@ -159,20 +171,44 @@ export class CorporateService {
     decidedBy: string,
     comments: string,
   ) {
-    const result = await this.approvalRepo.decide(id, decision, decidedBy, comments);
-    if (!result) throw new Error(`Approval workflow ${id} not found`);
+    const wf = await this.approvalRepo.findById(id);
+    if (!wf) throw new Error(`Approval workflow ${id} not found`);
 
-    // Notify booking-service about the decision (non-blocking)
-    if ((result as any).bookingId) {
-      const newStatus = decision === 'approved' ? 'confirmed' : 'cancelled';
+    // Documentos previos a la cadena multinivel: sintetiza un único nivel.
+    const existingChain = ((wf as any).approvalChain ?? []) as any[];
+    const chain =
+      existingChain.length > 0
+        ? existingChain
+        : buildApprovalChain((wf as any).amount ?? 0, []);
+    const currentLevel = (wf as any).currentLevel ?? chain[0]?.level ?? 1;
+
+    const r = applyDecision(chain as any, currentLevel, decision, decidedBy, comments ?? '');
+    if (!r.changed) {
+      throw new BadRequestException(
+        `No hay un paso pendiente en el nivel ${currentLevel} de este flujo`,
+      );
+    }
+
+    const result = await this.approvalRepo.update(id, {
+      approvalChain: r.chain as any,
+      currentLevel: r.currentLevel,
+      status: r.status,
+      decidedBy,
+      decidedAt: new Date(),
+      comments: comments ?? '',
+    } as any);
+
+    // Sólo al cerrar la cadena se confirma/cancela el booking (no en pasos intermedios).
+    if (r.finalized && (wf as any).bookingId) {
+      const newStatus = r.status === 'approved' ? 'confirmed' : 'cancelled';
       this.postJson(
-        `${this.bookingUrl}/bookings/${(result as any).bookingId}/status`,
+        `${this.bookingUrl}/bookings/${(wf as any).bookingId}/status`,
         '',
         { status: newStatus, reason: comments },
       ).catch((e) => this.logger.warn(`Could not update booking status: ${e.message}`));
     }
 
-    return result;
+    return { ...(result as any), finalized: r.finalized };
   }
 
   // ── Reports ────────────────────────────────────────────────────────────
@@ -317,8 +353,16 @@ export class CorporateService {
     };
   }
 
-  /** Estado de cuenta mensual consolidado (la factura corporativa del mes). */
+  /**
+   * Estado de cuenta mensual consolidado (preview no persistido). Reusa el mismo
+   * cómputo que la factura: GET muestra, generateMonthlyInvoice materializa.
+   */
   async getMonthlyStatement(companyId: string, token: string, month?: string) {
+    return this.computeStatement(companyId, token, month);
+  }
+
+  /** Cómputo puro del estado de cuenta de un mes (sin persistir). */
+  private async computeStatement(companyId: string, token: string, month?: string) {
     const m = month ?? new Date().toISOString().slice(0, 7);
     const bookings = await this.companyBookings(companyId, token);
     const inMonth = bookings.filter(
@@ -368,6 +412,55 @@ export class CorporateService {
       byServiceType,
       lineItems,
     };
+  }
+
+  /**
+   * Materializa (o regenera) la factura consolidada del mes y la persiste.
+   * Idempotente: re-ejecutarla recalcula el mismo (companyId, month).
+   */
+  async generateMonthlyInvoice(companyId: string, token: string, month?: string) {
+    const s = await this.computeStatement(companyId, token, month);
+    const dueDate = this.invoiceDueDate(s.month);
+    return this.invoiceRepo.upsertForMonth(companyId, s.month, {
+      invoiceNumber: this.invoiceNumber(companyId, s.month),
+      currency: s.currency,
+      status: 'issued',
+      billingMode: s.billingMode,
+      contractStatus: s.contractStatus,
+      tripCount: s.tripCount,
+      total: s.total,
+      byEmployee: s.byEmployee,
+      byServiceType: s.byServiceType,
+      lineItems: s.lineItems,
+      issuedAt: new Date(),
+      dueDate,
+    } as any);
+  }
+
+  async listCorporateInvoices(companyId: string) {
+    return this.invoiceRepo.findByCompany(companyId);
+  }
+
+  async getCorporateInvoice(id: string) {
+    return this.invoiceRepo.findById(id);
+  }
+
+  async markInvoicePaid(id: string) {
+    return this.invoiceRepo.updateStatus(id, 'paid', new Date());
+  }
+
+  /** Número de factura determinista por (empresa, mes): INV-YYYYMM-XXXXXXXX. */
+  private invoiceNumber(companyId: string, month: string): string {
+    const ym = month.replace('-', '');
+    const co = companyId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase() || 'CORP';
+    return `INV-${ym}-${co}`;
+  }
+
+  /** Vencimiento: día 15 del mes siguiente al período facturado. */
+  private invoiceDueDate(month: string): Date {
+    const [y, mo] = month.split('-').map((n) => parseInt(n, 10));
+    // mo es 1-based; el mes siguiente en índice 0-based es justamente `mo`.
+    return new Date(y, mo, 15);
   }
 
   private async companyBookings(companyId: string, token: string): Promise<any[]> {
