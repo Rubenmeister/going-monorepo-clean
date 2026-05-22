@@ -60,6 +60,14 @@ export class CorporateController {
     return this.svc.getSpendingReport(companyId, token, month);
   }
 
+  /** GET /corporate/billing/statement?month=YYYY-MM — estado de cuenta mensual */
+  @Get('billing/statement')
+  async billingStatement(@Req() req: Request, @Query('month') month?: string) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.getMonthlyStatement(companyId, token, month);
+  }
+
   /** GET /corporate/invoices */
   @Get('invoices')
   async listInvoices(@Req() req: Request) {

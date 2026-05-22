@@ -107,7 +107,12 @@ export class CorporateService {
       );
     }
 
-    const payload = { ...body, companyId };
+    const payload = {
+      ...body,
+      companyId,
+      clientSegment: 'corporate', // +25% premium (sin descuentos)
+      paymentMode: body.paymentMode ?? 'corporate_monthly', // cobro diferido a fin de mes
+    };
     const settings = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
     const needsApproval =
       (settings as any)?.requireApproval &&
@@ -309,6 +314,59 @@ export class CorporateService {
       total: parseFloat(total.toFixed(2)),
       byEmployee,
       limits,
+    };
+  }
+
+  /** Estado de cuenta mensual consolidado (la factura corporativa del mes). */
+  async getMonthlyStatement(companyId: string, token: string, month?: string) {
+    const m = month ?? new Date().toISOString().slice(0, 7);
+    const bookings = await this.companyBookings(companyId, token);
+    const inMonth = bookings.filter(
+      (b: any) =>
+        b.createdAt &&
+        new Date(b.createdAt).toISOString().slice(0, 7) === m &&
+        ['completed', 'confirmed'].includes(b.status),
+    );
+
+    const byEmployee: Record<string, { count: number; amount: number }> = {};
+    const byServiceType: Record<string, number> = {};
+    const lineItems: any[] = [];
+    let total = 0;
+
+    for (const b of inMonth) {
+      const amt = b.totalPrice ?? b.amount ?? 0;
+      const emp = b.userId ?? 'unknown';
+      const svc = b.serviceType ?? b.type ?? 'other';
+      const prev = byEmployee[emp] ?? { count: 0, amount: 0 };
+      byEmployee[emp] = {
+        count: prev.count + 1,
+        amount: parseFloat((prev.amount + amt).toFixed(2)),
+      };
+      byServiceType[svc] = parseFloat(((byServiceType[svc] ?? 0) + amt).toFixed(2));
+      total += amt;
+      lineItems.push({
+        bookingId: b.id ?? b._id,
+        employeeId: emp,
+        serviceType: svc,
+        amount: amt,
+        date: b.createdAt,
+      });
+    }
+
+    const settings = await this.settingsRepo
+      .findByCompanyId(companyId)
+      .catch(() => null);
+    return {
+      companyId,
+      month: m,
+      currency: (settings as any)?.currency ?? 'USD',
+      billingMode: (settings as any)?.billingMode ?? 'monthly_consolidated',
+      contractStatus: (settings as any)?.contractStatus ?? 'active',
+      tripCount: inMonth.length,
+      total: parseFloat(total.toFixed(2)),
+      byEmployee,
+      byServiceType,
+      lineItems,
     };
   }
 
