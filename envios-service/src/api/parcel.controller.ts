@@ -30,7 +30,8 @@ import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-ma
 import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
 import { SmsService } from '../infrastructure/services/sms.service';
 import { TrackingClientService } from '../infrastructure/services/tracking-client.service';
-import { PricingService } from 'pricing';
+import { TransportClientService } from '../infrastructure/services/transport-client.service';
+import { PricingService, classifyRoute } from 'pricing';
 import {
   IsNumber,
   IsLatitude,
@@ -79,6 +80,7 @@ export class ParcelController {
     private readonly paymentIntent: PaymentIntentService,
     private readonly sms: SmsService,
     private readonly trackingClient: TrackingClientService,
+    private readonly transportClient: TransportClientService,
     private readonly pricing: PricingService,
     @Inject(IParcelRepository)
     private readonly parcelRepository: IParcelRepository,
@@ -232,28 +234,87 @@ export class ParcelController {
       return result;
     }
 
-    // ── B/D) cash + (sender o recipient): orchestrator matchea ya ──────────
-    // ── C) recipient + card: orchestrator matchea ya, intent + SMS al accept ─
+    // ── B/D) cash + (sender o recipient) y C) recipient + card: despacho ya.
+    // Interurbano → intenta adjuntar a un viaje programado; si no, on-demand.
     if (
       typeof dto.origin?.latitude === 'number' &&
       typeof dto.origin?.longitude === 'number'
     ) {
-      this.orchestrator.start({
+      await this.dispatchParcel({
         parcelId: result.id,
         userId: user.id,
-        origin: {
-          lat: dto.origin.latitude,
-          lng: dto.origin.longitude,
-          address: dto.origin.address,
-        },
-        destination: { address: dto.destination?.address ?? '' },
+        originLat: dto.origin.latitude,
+        originLng: dto.origin.longitude,
+        originAddress: dto.origin.address,
+        destLat: dto.destination?.latitude,
+        destLng: dto.destination?.longitude,
+        destAddress: dto.destination?.address ?? '',
         price: dto.price.amount,
-        // Envíos solo en SUV/SUV XL (única flota de servicio compartido).
-        vehicleTypes: ['suv', 'suv_xl'],
+        isOverVolume: dto.isOverVolume,
       });
     }
 
     return result;
+  }
+
+  /**
+   * Despacha un envío. Si es INTERURBANO, intenta adjuntarlo a la salida de
+   * carpooling programada más próxima con cupo (el paquete viaja con ese
+   * conductor); si no hay cupo, o es urbano, cae a despacho on-demand (SUV/SUV XL).
+   */
+  private async dispatchParcel(args: {
+    parcelId: string;
+    userId: string;
+    originLat: number;
+    originLng: number;
+    originAddress: string;
+    destLat?: number;
+    destLng?: number;
+    destAddress: string;
+    price: number;
+    isOverVolume?: boolean;
+  }): Promise<void> {
+    if (typeof args.destLat === 'number' && typeof args.destLng === 'number') {
+      const cls = classifyRoute(
+        args.originLat,
+        args.originLng,
+        args.destLat,
+        args.destLng,
+      );
+      if (cls.routeClass === 'intercity' && cls.originCity && cls.destinationCity) {
+        const res = await this.transportClient.attachParcel({
+          originCity: cls.originCity,
+          destCity: cls.destinationCity,
+          isOverVolume: args.isOverVolume,
+        });
+        if (res.attached && res.driverId) {
+          try {
+            await this.assignParcelUseCase.execute(
+              args.parcelId as UUID,
+              res.driverId as UUID,
+            );
+            this.logger.log(
+              `Parcel ${args.parcelId} adjuntado al viaje programado ${res.scheduledTripId} (driver ${res.driverId})`,
+            );
+            return;
+          } catch (e) {
+            this.logger.warn(
+              `No se pudo asignar parcel ${args.parcelId} al viaje programado: ${(e as Error).message}`,
+            );
+          }
+        }
+      }
+    }
+
+    // Fallback / urbano: despacho on-demand (solo SUV/SUV XL).
+    this.orchestrator.start({
+      parcelId: args.parcelId,
+      userId: args.userId,
+      origin: { lat: args.originLat, lng: args.originLng, address: args.originAddress },
+      destination: { address: args.destAddress },
+      price: args.price,
+      vehicleTypes: ['suv', 'suv_xl'],
+    });
   }
 
   /**
@@ -300,15 +361,15 @@ export class ParcelController {
       primitives.payerRole === 'sender' &&
       typeof primitives.origin?.latitude === 'number'
     ) {
-      this.orchestrator.start({
+      await this.dispatchParcel({
         parcelId: primitives.id,
         userId: primitives.userId,
-        origin: {
-          lat: primitives.origin.latitude,
-          lng: primitives.origin.longitude,
-          address: primitives.origin.address,
-        },
-        destination: { address: primitives.destination?.address ?? '' },
+        originLat: primitives.origin.latitude,
+        originLng: primitives.origin.longitude,
+        originAddress: primitives.origin.address,
+        destLat: primitives.destination?.latitude,
+        destLng: primitives.destination?.longitude,
+        destAddress: primitives.destination?.address ?? '',
         price: primitives.price.amount,
       });
     }
