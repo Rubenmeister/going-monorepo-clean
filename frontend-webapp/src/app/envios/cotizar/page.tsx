@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -168,9 +168,38 @@ export default function EnviosCotizarPage() {
   // Esquema de pago — A/B/C/D (igual que mobile EnviosScreen).
   // 'A' por default (sender + card) es el más rápido y seguro para el sender.
   const [paymentScheme,  setPaymentScheme]  = useState<'A' | 'B' | 'C' | 'D'>('A');
+  const [quotedPrice,    setQuotedPrice]    = useState<number | null>(null);
 
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
-  const totalPrice  = selectedPkg.price;
+  // Precio mostrado: cotización autoritativa del backend si ya está disponible;
+  // si no, el estimado local por tamaño (fallback antes de elegir direcciones).
+  const totalPrice  = quotedPrice ?? selectedPkg.price;
+
+  // Cotización autoritativa: cuando hay origen + destino + tamaño, pedimos el
+  // precio real al backend (urbano flat / interurbano por tier). /parcels/quote
+  // es público (no requiere login). Es lo que se cobrará al crear el envío.
+  useEffect(() => {
+    if (senderLat == null || senderLon == null || recipientLat == null || recipientLon == null) {
+      setQuotedPrice(null);
+      return;
+    }
+    const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+    const size = pkgType === 'document' ? 'small' : pkgType;
+    let cancelled = false;
+    fetch(`${API}/parcels/quote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        origin: { lat: senderLat, lng: senderLon },
+        destination: { lat: recipientLat, lng: recipientLon },
+        packageSize: size,
+      }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled) setQuotedPrice(d && typeof d.price === 'number' ? d.price : null); })
+      .catch(() => { if (!cancelled) setQuotedPrice(null); });
+    return () => { cancelled = true; };
+  }, [senderLat, senderLon, recipientLat, recipientLon, pkgType]);
 
   const validate = () => {
     const errs: string[] = [];
@@ -218,6 +247,7 @@ export default function EnviosCotizarPage() {
           recipientName,
           recipientPhone,
           price: { amount: totalPrice, currency: 'USD' as const },
+          packageSize: pkgType === 'document' ? 'small' : pkgType,
           paymentMethod: apiPayment.paymentMethod,
           payerRole:     apiPayment.payerRole,
         }),

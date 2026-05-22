@@ -76,6 +76,7 @@ export function EnviosScreen() {
   const [otpCode,        setOtpCode]       = useState('');
   const [trackingRef,    setTrackingRef]   = useState('');
   const [paymentScheme,  setPaymentScheme] = useState<PaymentScheme>('A');
+  const [quotedPrice,    setQuotedPrice]   = useState<number | null>(null);
 
   // Recibir ubicaciones del LocationPicker
   useEffect(() => {
@@ -88,8 +89,32 @@ export function EnviosScreen() {
     if (dst) setRecipientAddr(dst.address);
   }, [route.params?.selectedDelivery]);
 
+  // Cotización autoritativa: cuando hay origen+destino+tamaño, pedimos el precio
+  // real al backend (urbano flat / interurbano por tier). Es lo que se cobrará.
+  useEffect(() => {
+    const pickup = route.params?.selectedPickup;
+    const dropoff = route.params?.selectedDelivery;
+    if (
+      typeof pickup?.latitude === 'number' && typeof pickup?.longitude === 'number' &&
+      typeof dropoff?.latitude === 'number' && typeof dropoff?.longitude === 'number'
+    ) {
+      parcelsAPI
+        .quote({
+          origin: { lat: pickup.latitude, lng: pickup.longitude },
+          destination: { lat: dropoff.latitude, lng: dropoff.longitude },
+          packageSize: pkgType,
+        })
+        .then(({ data }) => setQuotedPrice(typeof data.price === 'number' ? data.price : null))
+        .catch(() => setQuotedPrice(null));
+    } else {
+      setQuotedPrice(null);
+    }
+  }, [route.params?.selectedPickup, route.params?.selectedDelivery, pkgType]);
+
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
-  const totalPrice  = selectedPkg.price;
+  // Precio mostrado: la cotización autoritativa si ya la tenemos; si no, el
+  // estimado local por tamaño (fallback antes de elegir direcciones).
+  const totalPrice  = quotedPrice ?? selectedPkg.price;
 
   const handlePickPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -140,6 +165,7 @@ export function EnviosScreen() {
         },
         description: descriptionPayload,
         price: { amount: totalPrice, currency: 'USD' },
+        packageSize: selectedPkg.id,
         paymentMethod: apiPayment.paymentMethod,
         payerRole:     apiPayment.payerRole,
         recipientPhone: recipientPhone,

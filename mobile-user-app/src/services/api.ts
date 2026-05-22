@@ -156,6 +156,8 @@ export const parcelsAPI = {
     destination: { address: string; latitude?: number; longitude?: number };
     description: string;
     price: { amount: number; currency: 'USD' };
+    /** Tamaño → el backend lo usa para cotizar; el precio se recomputa server-side. */
+    packageSize?: 'small' | 'medium' | 'large';
     paymentMethod?: 'card' | 'cash';
     payerRole?: 'sender' | 'recipient';
     recipientPhone?: string;
@@ -171,6 +173,23 @@ export const parcelsAPI = {
     paymentIntentId?: string;
     paymentUrl?: string;  // presente si response es escenario A
   }>('/parcels', data),
+
+  /** Cotización autoritativa (mismo precio que se cobrará). Público, sin auth. */
+  quote: (data: {
+    origin: { lat: number; lng: number };
+    destination: { lat: number; lng: number };
+    packageSize?: 'small' | 'medium' | 'large';
+    weightKg?: number;
+    isOverVolume?: boolean;
+  }) =>
+    api.post<{
+      price: number;
+      currency: string;
+      isIntercity: boolean;
+      routeClass: string;
+      originCity: string | null;
+      destinationCity: string | null;
+    }>('/parcels/quote', data),
 
   /** Mis envíos */
   getMine: () => api.get('/parcels/my'),
