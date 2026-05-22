@@ -12,6 +12,7 @@ import {
 import {
   Invoice,
   InvoiceStatus,
+  PaymentStatus,
   InvoiceLanguage,
   InvoiceCalculations,
 } from '../../domain/models/invoice.model';
@@ -80,10 +81,10 @@ export class InvoiceService {
         total: calculations.total - (dto.discountAmount || 0),
         amountDue: calculations.total - (dto.discountAmount || 0),
         amountPaid: 0,
-        status: 'DRAFT',
-        paymentStatus: 'NOT_PAID',
+        status: InvoiceStatus.DRAFT,
+        paymentStatus: PaymentStatus.NOT_PAID,
         paymentTerms: dto.paymentTerms,
-        language: dto.language || 'en',
+        language: (dto.language || 'en') as InvoiceLanguage,
         currency: dto.currency || 'EUR',
         notes: dto.notes,
         terms: dto.terms,

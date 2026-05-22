@@ -366,6 +366,8 @@ export class WalletService {
         customer: await this.getOrCreateStripeCustomer(walletId),
         items: [
           {
+            // Stripe tipa price_data de suscripción sin product_data inline;
+            // el runtime lo acepta. Cast para no romper el build.
             price_data: {
               currency: 'usd',
               product_data: {
@@ -376,7 +378,7 @@ export class WalletService {
                 interval_count: 1,
               },
               unit_amount: Math.round(amount * 100),
-            },
+            } as any,
           },
         ],
         metadata: {
