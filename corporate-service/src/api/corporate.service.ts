@@ -1,6 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CompanySettingsRepository } from '../infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from '../infrastructure/persistence/approval-workflow.repository';
+import { SpendingLimitRepository } from '../infrastructure/persistence/spending-limit.repository';
+import {
+  computePeriodSpend,
+  checkBudget,
+  type BudgetCheck,
+  type LimitAmounts,
+} from './budget.logic';
+
+function numOrNull(v: unknown): number | null {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 @Injectable()
 export class CorporateService {
@@ -14,6 +31,7 @@ export class CorporateService {
   constructor(
     private readonly settingsRepo: CompanySettingsRepository,
     private readonly approvalRepo: ApprovalWorkflowRepository,
+    private readonly limitRepo: SpendingLimitRepository,
   ) {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
@@ -29,7 +47,7 @@ export class CorporateService {
       this.fetchJson(`${this.bookingUrl}/bookings?companyId=${companyId}&limit=100`, ''),
     ]);
 
-    const bookings: any[] = this.settled(bookingsData, []);
+    const bookings: any = this.settled(bookingsData, []);
     const allBookings = Array.isArray(bookings) ? bookings : (bookings as any)?.bookings ?? [];
 
     const now = new Date();
@@ -71,7 +89,24 @@ export class CorporateService {
     return Array.isArray(data) ? data : (data as any)?.bookings ?? data;
   }
 
-  async createBooking(companyId: string, token: string, body: any) {
+  async createBooking(companyId: string, token: string, userId: string, body: any) {
+    const amount = body.amount ?? body.totalPrice ?? 0;
+
+    // Enforcement de presupuesto del empleado ANTES de crear el booking.
+    const budget = await this.checkEmployeeBudget(
+      companyId,
+      token,
+      userId,
+      amount,
+      body.department,
+    );
+    if (!budget.allowed) {
+      throw new ForbiddenException(
+        `Límite de presupuesto ${budget.breachedPeriod} excedido: tope $${budget.limit}, ` +
+          `el viaje llevaría el gasto a $${budget.wouldSpend}.`,
+      );
+    }
+
     const payload = { ...body, companyId };
     const settings = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
     const needsApproval =
@@ -196,6 +231,93 @@ export class CorporateService {
       token,
     ).catch(() => []);
     return Array.isArray(data) ? data : (data as any)?.users ?? [];
+  }
+
+  // ── Spending limits (presupuesto por empleado/departamento/empresa) ──────
+
+  async listSpendingLimits(companyId: string) {
+    return this.limitRepo.findByCompany(companyId);
+  }
+
+  async setSpendingLimit(companyId: string, body: any) {
+    const scope = body?.scope;
+    if (!['employee', 'department', 'company'].includes(scope)) {
+      throw new BadRequestException(
+        "scope debe ser 'employee' | 'department' | 'company'",
+      );
+    }
+    const targetId = scope === 'company' ? '' : String(body.targetId ?? '');
+    if (scope !== 'company' && !targetId) {
+      throw new BadRequestException(
+        'targetId requerido para scope employee/department',
+      );
+    }
+    return this.limitRepo.upsert(companyId, scope, targetId, {
+      daily: numOrNull(body.daily),
+      weekly: numOrNull(body.weekly),
+      monthly: numOrNull(body.monthly),
+    });
+  }
+
+  /** ¿El empleado puede gastar `amount` sin exceder su presupuesto? */
+  async checkEmployeeBudget(
+    companyId: string,
+    token: string,
+    employeeId: string,
+    amount: number,
+    department?: string,
+  ): Promise<BudgetCheck> {
+    const limit = await this.limitRepo.resolveForEmployee(
+      companyId,
+      employeeId,
+      department,
+    );
+    if (!limit) {
+      return {
+        allowed: true,
+        remaining: { daily: null, weekly: null, monthly: null },
+      };
+    }
+    const bookings = await this.companyBookings(companyId, token);
+    const spend = computePeriodSpend(bookings, employeeId);
+    return checkBudget(limit, spend, amount);
+  }
+
+  async getSpendingReport(companyId: string, token: string, month?: string) {
+    const bookings = await this.companyBookings(companyId, token);
+    const inScope = (b: any): boolean => {
+      if (!['completed', 'confirmed', 'in_progress', 'pending'].includes(b.status)) {
+        return false;
+      }
+      if (!month) return true;
+      const ym = b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 7) : '';
+      return ym === month;
+    };
+
+    const byEmployee: Record<string, number> = {};
+    let total = 0;
+    for (const b of bookings) {
+      if (!inScope(b)) continue;
+      const amt = b.totalPrice ?? b.amount ?? 0;
+      const emp = b.userId ?? 'unknown';
+      byEmployee[emp] = parseFloat(((byEmployee[emp] ?? 0) + amt).toFixed(2));
+      total += amt;
+    }
+    const limits = await this.limitRepo.findByCompany(companyId);
+    return {
+      month: month ?? 'all',
+      total: parseFloat(total.toFixed(2)),
+      byEmployee,
+      limits,
+    };
+  }
+
+  private async companyBookings(companyId: string, token: string): Promise<any[]> {
+    const data = await this.fetchJson(
+      `${this.bookingUrl}/bookings?companyId=${companyId}&limit=500`,
+      token,
+    ).catch(() => []);
+    return Array.isArray(data) ? data : (data as any)?.bookings ?? [];
   }
 
   // ── HTTP helpers ───────────────────────────────────────────────────────
