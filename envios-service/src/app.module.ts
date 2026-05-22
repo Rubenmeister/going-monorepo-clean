@@ -20,6 +20,7 @@ import { ParcelMatchingOrchestrator } from './infrastructure/services/parcel-mat
 import { PaymentIntentService } from './infrastructure/services/payment-intent.service';
 import { SmsService } from './infrastructure/services/sms.service';
 import { TrackingClientService } from './infrastructure/services/tracking-client.service';
+import { PricingService } from 'pricing';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { TrackingClientService } from './infrastructure/services/tracking-client
     PaymentIntentService,
     SmsService,
     TrackingClientService,
+    PricingService,
   ],
 })
 export class AppModule {}

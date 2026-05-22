@@ -10,6 +10,7 @@ import {
   IsOptional,
   IsLatitude,
   IsLongitude,
+  IsBoolean,
 } from 'class-validator';
 import { MoneyDto, LocationDto } from '@going-monorepo-clean/shared-domain'; // Asumiendo DTOs compartidos
 
@@ -67,10 +68,31 @@ export class CreateParcelDto {
   @IsString()
   description: string;
 
+  /**
+   * Precio. El backend lo RECOMPUTA con libs/pricing y sobre-escribe este valor
+   * (no se confía en el cliente). Se mantiene requerido por compatibilidad con
+   * las apps actuales; el monto autoritativo sale de quoteEnvio.
+   */
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => MoneyDto)
   price: MoneyDto;
+
+  /** Tamaño del paquete → define el peso para cotizar (small/medium/large). */
+  @IsOptional()
+  @IsIn(['small', 'medium', 'large'])
+  packageSize?: 'small' | 'medium' | 'large';
+
+  /** Peso exacto en kg (alternativa a packageSize). */
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  weightKg?: number;
+
+  /** Volumen grande aunque pese poco → cobra equivalente a 1 asiento. */
+  @IsOptional()
+  @IsBoolean()
+  isOverVolume?: boolean;
 
   // ── Payment scheme ──────────────────────────────────────────────────────────
   // Combinación payerRole + paymentMethod determina el flujo:

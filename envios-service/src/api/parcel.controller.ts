@@ -24,18 +24,44 @@ import {
   CancelParcelUseCase,
 } from '@going-monorepo-clean/domains-parcel-application';
 import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { UUID, MoneyDto } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
 import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
 import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
 import { SmsService } from '../infrastructure/services/sms.service';
 import { TrackingClientService } from '../infrastructure/services/tracking-client.service';
+import { PricingService } from 'pricing';
+import {
+  IsNumber,
+  IsLatitude,
+  IsLongitude,
+  IsOptional,
+  IsIn,
+  IsBoolean,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 interface AuthUser {
   id: string;
   email: string;
   role: 'user' | 'driver' | 'admin';
   roles?: string[];
+}
+
+class QuoteGeoPoint {
+  @IsNumber() @IsLatitude() lat: number;
+  @IsNumber() @IsLongitude() lng: number;
+}
+
+/** Cuerpo de POST /parcels/quote — cotización autoritativa antes de crear. */
+export class QuoteEnvioDto {
+  @ValidateNested() @Type(() => QuoteGeoPoint) origin: QuoteGeoPoint;
+  @ValidateNested() @Type(() => QuoteGeoPoint) destination: QuoteGeoPoint;
+  @IsOptional() @IsIn(['small', 'medium', 'large']) packageSize?: 'small' | 'medium' | 'large';
+  @IsOptional() @IsNumber() @Min(0) weightKg?: number;
+  @IsOptional() @IsBoolean() isOverVolume?: boolean;
 }
 
 @Controller('parcels')
@@ -53,9 +79,43 @@ export class ParcelController {
     private readonly paymentIntent: PaymentIntentService,
     private readonly sms: SmsService,
     private readonly trackingClient: TrackingClientService,
+    private readonly pricing: PricingService,
     @Inject(IParcelRepository)
     private readonly parcelRepository: IParcelRepository,
   ) {}
+
+  /**
+   * Cotización autoritativa de un envío (precio que se cobrará). El cliente la
+   * usa para mostrar el precio antes de crear. Misma fuente que usa create.
+   * POST /api/parcels/quote
+   */
+  @Post('quote')
+  @HttpCode(HttpStatus.OK)
+  async quote(@Body() dto: QuoteEnvioDto): Promise<any> {
+    const q = this.pricing.quoteEnvio({
+      originLat: dto.origin.lat,
+      originLng: dto.origin.lng,
+      destLat: dto.destination.lat,
+      destLng: dto.destination.lng,
+      packageSize: dto.packageSize,
+      weightKg: dto.weightKg,
+      isOverVolume: dto.isOverVolume,
+    });
+    if (!q.inCoverage) {
+      throw new BadRequestException(
+        'El origen o destino está fuera de la zona de cobertura de envíos',
+      );
+    }
+    return {
+      price: q.price,
+      currency: q.currency,
+      isIntercity: q.isIntercity,
+      routeClass: q.routeClass,
+      originCity: q.originCity,
+      destinationCity: q.destinationCity,
+      weightKg: q.weightKg,
+    };
+  }
 
   /**
    * Create a new parcel delivery request.
@@ -101,6 +161,38 @@ export class ParcelController {
       dto.destination.city = dto.destination.city ?? '';
       dto.destination.country = dto.destination.country ?? 'Ecuador';
     }
+
+    // ── Precio autoritativo server-side: se recomputa con libs/pricing y se
+    // sobre-escribe lo que mande el cliente (no se confía en el precio del app).
+    const oLat = dto.origin?.latitude;
+    const oLng = dto.origin?.longitude;
+    const dLat = dto.destination?.latitude;
+    const dLng = dto.destination?.longitude;
+    if (
+      typeof oLat !== 'number' ||
+      typeof oLng !== 'number' ||
+      typeof dLat !== 'number' ||
+      typeof dLng !== 'number'
+    ) {
+      throw new BadRequestException(
+        'Se requieren coordenadas de origen y destino para cotizar el envío',
+      );
+    }
+    const quote = this.pricing.quoteEnvio({
+      originLat: oLat,
+      originLng: oLng,
+      destLat: dLat,
+      destLng: dLng,
+      packageSize: dto.packageSize,
+      weightKg: dto.weightKg,
+      isOverVolume: dto.isOverVolume,
+    });
+    if (!quote.inCoverage) {
+      throw new BadRequestException(
+        'El origen o destino está fuera de la zona de cobertura de envíos',
+      );
+    }
+    dto.price = { amount: quote.price, currency: 'USD' } as MoneyDto;
 
     // Always use the authenticated user's ID — never trust client-provided userId
     const result = await this.createParcelUseCase.execute({

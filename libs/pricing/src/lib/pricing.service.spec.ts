@@ -322,3 +322,48 @@ describe('PricingService — calculate (entry point)', () => {
     });
   });
 });
+
+describe('PricingService — quoteEnvio (precio autoritativo por coordenadas)', () => {
+  const svc = new PricingService();
+  const QUITO_A: [number, number] = [-0.1807, -78.4678];
+  const QUITO_B: [number, number] = [-0.29, -78.54];
+  const RIOBAMBA: [number, number] = [-1.6644, -78.6544];
+  const PACIFICO: [number, number] = [0.0, -85.0];
+
+  const quote = (
+    o: [number, number],
+    d: [number, number],
+    size: 'small' | 'medium' | 'large',
+    isOverVolume = false,
+  ) =>
+    svc.quoteEnvio({
+      originLat: o[0],
+      originLng: o[1],
+      destLat: d[0],
+      destLng: d[1],
+      packageSize: size,
+      isOverVolume,
+    });
+
+  it('urbano (Quito→Quito) pequeño = flat $3', () => {
+    const q = quote(QUITO_A, QUITO_B, 'small');
+    expect(q.inCoverage).toBe(true);
+    expect(q.isIntercity).toBe(false);
+    expect(q.price).toBe(3);
+  });
+
+  it('interurbano Quito→Riobamba: small=$10, medium=$15, large=$20', () => {
+    expect(quote(QUITO_A, RIOBAMBA, 'small').isIntercity).toBe(true);
+    expect(quote(QUITO_A, RIOBAMBA, 'small').price).toBe(10);
+    expect(quote(QUITO_A, RIOBAMBA, 'medium').price).toBe(15);
+    expect(quote(QUITO_A, RIOBAMBA, 'large').price).toBe(20);
+  });
+
+  it('interurbano sobre-volumen = equivalente a 1 asiento (Quito-Riobamba $17)', () => {
+    expect(quote(QUITO_A, RIOBAMBA, 'small', true).price).toBe(17);
+  });
+
+  it('fuera de cobertura → inCoverage false', () => {
+    expect(quote(QUITO_A, PACIFICO, 'small').inCoverage).toBe(false);
+  });
+});

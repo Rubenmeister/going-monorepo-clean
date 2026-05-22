@@ -1,6 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { getFare } from './fares';
 import { CARPOOL_SEATING } from './seats';
+import { classifyRoute } from './cities';
+
+// ── Envíos: tamaño de paquete → peso representativo (tiers de calcEnvio) ──────
+// El cliente elige tamaño; el backend lo mapea a peso para cotizar de forma
+// autoritativa. Valores provisionales.
+export const PACKAGE_SIZE_WEIGHT_KG: Record<'small' | 'medium' | 'large', number> = {
+  small: 5,
+  medium: 15,
+  large: 25,
+};
+
+export function sizeToWeightKg(size?: 'small' | 'medium' | 'large'): number {
+  return PACKAGE_SIZE_WEIGHT_KG[size ?? 'small'];
+}
 
 // ════════════════════════════════════════════════════════════════
 // FERIADOS NACIONALES — ECUADOR
@@ -533,6 +547,67 @@ export class PricingService {
       currency: 'USD',
       platformFee,
       providerAmount,
+    };
+  }
+
+  /**
+   * Cotización autoritativa de un envío a partir de coordenadas + tamaño.
+   * Clasifica urbano/interurbano por geocercas (mismo resolver que el buscador)
+   * y aplica calcEnvio. El backend usa ESTO; el precio que mande el cliente se
+   * ignora. `inCoverage=false` → el caller debe rechazar el pedido.
+   */
+  quoteEnvio(params: {
+    originLat: number;
+    originLng: number;
+    destLat: number;
+    destLng: number;
+    weightKg?: number;
+    packageSize?: 'small' | 'medium' | 'large';
+    isOverVolume?: boolean;
+  }): {
+    price: number;
+    currency: string;
+    inCoverage: boolean;
+    routeClass: string;
+    isIntercity: boolean;
+    originCity: string | null;
+    destinationCity: string | null;
+    weightKg: number;
+    breakdown: Record<string, number>;
+  } {
+    const cls = classifyRoute(
+      params.originLat,
+      params.originLng,
+      params.destLat,
+      params.destLng,
+    );
+    const inCoverage = cls.routeClass !== 'out_of_coverage';
+    // Para precio: urbano = flat; interurbano y corredor aeropuerto = tiers.
+    const isIntercity =
+      cls.routeClass === 'intercity' || cls.routeClass === 'airport_corridor';
+    const weightKg =
+      params.weightKg ?? PACKAGE_SIZE_WEIGHT_KG[params.packageSize ?? 'small'];
+
+    const fare = this.calculate({
+      serviceType: 'envio',
+      distanceKm: cls.distanceKm,
+      weightKg,
+      isIntercity,
+      originCity: cls.originCity ?? undefined,
+      destinationCity: cls.destinationCity ?? undefined,
+      isOverVolume: params.isOverVolume,
+    });
+
+    return {
+      price: fare.total,
+      currency: fare.currency,
+      inCoverage,
+      routeClass: cls.routeClass,
+      isIntercity,
+      originCity: cls.originCity,
+      destinationCity: cls.destinationCity,
+      weightKg,
+      breakdown: fare.breakdown,
     };
   }
 
