@@ -32,7 +32,7 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
 /* ── Data ───────────────────────────────────────────────────── */
 const SLIDES = [
   { region: 'Sierra', subtitle: 'Andes · Volcanes · Cultura', img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg', color: '#6366f1' },
-  { region: 'Costa', subtitle: 'Mar · Playas · Atardeceres', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=85&auto=format&fit=crop', color: '#0ea5e9' },
+  { region: 'Costa', subtitle: 'Mar · Playas · Atardeceres', img: '/images/costa.png', color: '#0ea5e9' },
   { region: 'Amazonía', subtitle: 'Selva · Biodiversidad · Aventura', img: '/images/Orellana Pañacocha Laguna.jpg', color: '#16a34a' },
   { region: 'Galápagos', subtitle: 'Islas únicas en el mundo', img: '/images/galàpagos.png', color: '#f59e0b' },
 ];
@@ -75,12 +75,6 @@ const REGIONS = {
     ],
   },
 };
-
-const TESTIMONIALS = [
-  { name: 'María G.', city: 'Quito', text: 'Going cambió cómo me muevo en la ciudad. Puntual, seguro y más económico que lo que usaba antes.', rating: 5, avatar: '👩' },
-  { name: 'Carlos R.', city: 'Guayaquil', text: 'El servicio de envíos es increíble. Mi paquete llegó el mismo día y pude seguirlo en tiempo real.', rating: 5, avatar: '👨' },
-  { name: 'Andrea P.', city: 'Cuenca', text: 'Contraté un viaje privado para mi empresa y la experiencia fue de primer nivel. ¡100% recomendado!', rating: 5, avatar: '👩‍💼' },
-];
 
 const ACADEMY_COURSES = [
   { title: 'Cómo maximizar tus ganancias como conductora o conductor', level: 'Básico', duration: '45 min', icon: '🚗', color: '#ff4c41' },
@@ -246,13 +240,13 @@ export default function HomePage() {
                 color: '#60a5fa',
                 route: 'Ambato — Latacunga — Quito — Aeropuerto',
                 detail: 'Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.',
-                time: '~2 h 30 min', price: 'Desde $9',
+                time: '~2 h 30 min', price: 'Desde $10',
               },
               {
                 color: '#4ade80',
                 route: 'Ibarra — Quito — Aeropuerto',
                 detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
-                time: '~2 h 15 min', price: 'Desde $11',
+                time: '~2 h 15 min', price: 'Desde $15',
               },
             ].map((r) => (
               <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>
