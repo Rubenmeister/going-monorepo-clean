@@ -36,12 +36,9 @@ export class RideModelSchema {
   @Prop({ default: false }) pickupVerified: boolean;
   @Prop({ default: false }) deliveryVerified: boolean;
 
-  // ── Paquetes ──────────────────────────────────────────────────────────────
-  @Prop({ default: false }) isPackage: boolean;
-  @Prop() packageDescription: string;
-  @Prop() senderName: string;
-  @Prop() recipientName: string;
-  @Prop() recipientPhone: string;
+  // ── Entrega ───────────────────────────────────────────────────────────────
+  // Los envíos como producto viven en envios-service (parcels). Aquí solo queda
+  // la foto de entrega, que usa confirm-delivery (válido para pasajero o bulto).
   @Prop() deliveryPhotoUrl: string;     // foto de entrega en GCS
 
   // ── Link compartido ───────────────────────────────────────────────────────
