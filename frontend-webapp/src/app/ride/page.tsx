@@ -157,6 +157,9 @@ function ConfirmationPanel({
 }: ConfirmationPanelProps) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(rideToken)}&size=200x200&margin=10&color=0033A0`;
   const shortToken = rideToken.length > 8 ? rideToken.slice(-8).toUpperCase() : rideToken.toUpperCase();
+  // El QR viene de una API externa (api.qrserver.com). Si falla, ocultamos
+  // la imagen rota — el token en texto grande de abajo sirve de comprobante.
+  const [qrFailed, setQrFailed] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -221,16 +224,19 @@ function ConfirmationPanel({
           <p className="text-center text-xs text-gray-400">Este es el comprobante de tu viaje. Guárdalo como referencia antes de pagar.</p>
         </div>
 
-        <div className="p-3 bg-white rounded-2xl border-2 border-[#0033A0]/20 shadow-inner">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrUrl}
-            alt="QR código viaje"
-            width={180}
-            height={180}
-            className="rounded-xl"
-          />
-        </div>
+        {!qrFailed && (
+          <div className="p-3 bg-white rounded-2xl border-2 border-[#0033A0]/20 shadow-inner">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrUrl}
+              alt="QR código viaje"
+              width={180}
+              height={180}
+              className="rounded-xl"
+              onError={() => setQrFailed(true)}
+            />
+          </div>
+        )}
 
         <div className="bg-gray-50 rounded-xl px-6 py-3 text-center border border-gray-200">
           <p className="text-xs text-gray-400 font-medium mb-1">Token del viaje</p>
