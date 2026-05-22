@@ -196,7 +196,7 @@ describe('pricing — zonas Quito y rutas compartidas (datos)', () => {
   it('Riobamba → Quito tiene precio $17 por asiento SUV', () => {
     const sierraCentro = GOING_SHARED_ROUTES.find(r => r.id === 'sierra_centro');
     expect(sierraCentro).toBeDefined();
-    expect(sierraCentro && sierraCentro.stopPrices.Riobamba).toBe(17);
+    expect(sierraCentro && (sierraCentro.stopPrices as any).Riobamba).toBe(17);
   });
 });
 
@@ -259,13 +259,66 @@ describe('PricingService — calculate (entry point)', () => {
     expect(r.providerAmount).toBeCloseTo(8, 1);
   });
 
-  it('envio: baseFare + perKm + perKg', () => {
-    const r = service.calculate({
-      serviceType: 'envio',
-      distanceKm: 5,
-      weightKg: 3,
+  describe('envio (mensajería y encomiendas)', () => {
+    it('envío local (Quito Sur a Norte): flat rate de $3.00 USD', () => {
+      const r = service.calculate({
+        serviceType: 'envio',
+        distanceKm: 25, // larga distancia local
+        weightKg: 5,
+        isIntercity: false,
+      });
+      expect(r.subtotal).toBe(3.00);
+      expect(r.total).toBe(3.00);
+      expect(r.breakdown.flatRate).toBe(3.00);
     });
-    expect(r.subtotal).toBeGreaterThan(0);
-    expect(r.platformFee).toBeGreaterThan(0);
+
+    it('envío interurbano nivel 1 (0-10 kg) a Santo Domingo/Ambato: $10.00 USD', () => {
+      const r = service.calculate({
+        serviceType: 'envio',
+        distanceKm: 150,
+        weightKg: 8,
+        isIntercity: true,
+        originCity: 'Quito',
+        destinationCity: 'Santo Domingo',
+      });
+      expect(r.subtotal).toBe(10.00);
+      expect(r.breakdown.tier1_0_10kg).toBe(10.00);
+    });
+
+    it('envío interurbano nivel 2 (10-20 kg): $15.00 USD', () => {
+      const r = service.calculate({
+        serviceType: 'envio',
+        distanceKm: 150,
+        weightKg: 15,
+        isIntercity: true,
+      });
+      expect(r.subtotal).toBe(15.00);
+      expect(r.breakdown.tier2_10_20kg).toBe(15.00);
+    });
+
+    it('envío interurbano nivel 3 (>20 kg): $20.00 USD', () => {
+      const r = service.calculate({
+        serviceType: 'envio',
+        distanceKm: 150,
+        weightKg: 25,
+        isIntercity: true,
+      });
+      expect(r.subtotal).toBe(20.00);
+      expect(r.breakdown.tier3_over_20kg).toBe(20.00);
+    });
+
+    it('envío interurbano con volumen superior cobra equivalente a 1 asiento de Carpool (ej. Quito-Riobamba $17)', () => {
+      const r = service.calculate({
+        serviceType: 'envio',
+        distanceKm: 190,
+        weightKg: 12,
+        isIntercity: true,
+        isOverVolume: true,
+        originCity: 'Quito',
+        destinationCity: 'Riobamba',
+      });
+      expect(r.subtotal).toBe(17.00); // Tarifa compartida Quito-Riobamba es $17
+      expect(r.breakdown.overVolumeSeatEquivalent).toBe(17.00);
+    });
   });
 });

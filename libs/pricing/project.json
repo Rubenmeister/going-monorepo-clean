@@ -14,6 +14,14 @@
         "tsConfig": "libs/pricing/tsconfig.lib.json",
         "assets": ["libs/pricing/*.md"]
       }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/pricing"],
+      "options": {
+        "jestConfig": "libs/pricing/jest.config.cts",
+        "passWithNoTests": true
+      }
     }
   }
 }

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { getFare } from './fares';
+import { CARPOOL_SEATING } from './seats';
 
 // ════════════════════════════════════════════════════════════════
 // FERIADOS NACIONALES — ECUADOR
@@ -250,6 +252,10 @@ interface EnvioInput {
   serviceType: 'envio';
   distanceKm: number;
   weightKg: number;
+  isIntercity?: boolean;
+  originCity?: string;
+  destinationCity?: string;
+  isOverVolume?: boolean;
 }
 
 interface FixedInput {
@@ -384,22 +390,50 @@ export class PricingService {
 
   private calcEnvio(input: EnvioInput): FareBreakdown {
     const r = RATES.envio;
-    const distanceCost = input.distanceKm * r.perKm;
-    const weightCost = input.weightKg * r.perKg;
-    const subtotal = round(r.baseFare + distanceCost + weightCost);
+    let subtotal = 0;
+    const breakdown: Record<string, number> = {};
+
+    if (!input.isIntercity) {
+      // Local Quito Envíos flat rate ($3.00 USD)
+      subtotal = 3.00;
+      breakdown.flatRate = 3.00;
+      breakdown.localEnvio = 1;
+    } else {
+      // Intercity Same-Day Door-to-Door
+      if (input.isOverVolume) {
+        // Charged as seat equivalent
+        const origin = input.originCity || 'Quito';
+        const dest = input.destinationCity || 'Santo Domingo';
+        const seatFare = getFare(origin, dest) || 15; // default 15 if not found
+        subtotal = seatFare;
+        breakdown.overVolumeSeatEquivalent = seatFare;
+        breakdown.isOverVolume = 1;
+      } else {
+        // Tiers: 0-10kg: $10, 10-20kg: $15, 20kg+: $20
+        if (input.weightKg <= 10) {
+          subtotal = 10.00;
+          breakdown.tier1_0_10kg = 10.00;
+        } else if (input.weightKg <= 20) {
+          subtotal = 15.00;
+          breakdown.tier2_10_20kg = 15.00;
+        } else {
+          subtotal = 20.00;
+          breakdown.tier3_over_20kg = 20.00;
+        }
+      }
+      breakdown.isIntercity = 1;
+    }
+
     const platformFee = round(subtotal * r.platformFeePct);
     const providerAmount = round(subtotal - platformFee);
+
     return {
       subtotal,
       platformFee,
       providerAmount,
       total: subtotal,
       currency: 'USD',
-      breakdown: {
-        baseFare: r.baseFare,
-        distanceCost: round(distanceCost),
-        weightCost: round(weightCost),
-      },
+      breakdown,
     };
   }
 
@@ -456,6 +490,49 @@ export class PricingService {
         discountRate,
         originSurcharge,
       },
+    };
+  }
+
+  /**
+   * Precio de una reserva de asientos en un viaje compartido programado.
+   *
+   * Precio por asiento = tarifa de mercado FARES(origen→destino) — la misma
+   * tabla autoritativa que usa el resto del sistema (cotización = cobro).
+   * El asiento extra de grupo (centro trasero) va incluido en `seats` al mismo
+   * precio. El delantero exclusivo agrega su recargo fijo una sola vez.
+   */
+  calcCarpoolSeats(params: {
+    originCity: string;
+    destCity: string;
+    vehicleType: 'suv' | 'suv_xl';
+    seats: number;
+    frontExclusive?: boolean;
+  }): {
+    perSeat: number;
+    seats: number;
+    seatsSubtotal: number;
+    frontSurcharge: number;
+    total: number;
+    currency: string;
+    platformFee: number;
+    providerAmount: number;
+  } {
+    const perSeat = getFare(params.originCity, params.destCity) ?? 0;
+    const seating = CARPOOL_SEATING[params.vehicleType];
+    const frontSurcharge = params.frontExclusive ? seating?.frontSeatSurcharge ?? 0 : 0;
+    const seatsSubtotal = round(perSeat * params.seats);
+    const total = round(seatsSubtotal + frontSurcharge);
+    const platformFee = round(total * RATES.shared.platformFeePct);
+    const providerAmount = round(total - platformFee);
+    return {
+      perSeat,
+      seats: params.seats,
+      seatsSubtotal,
+      frontSurcharge,
+      total,
+      currency: 'USD',
+      platformFee,
+      providerAmount,
     };
   }
 

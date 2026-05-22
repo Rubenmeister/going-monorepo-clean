@@ -20,25 +20,12 @@ import { Model } from 'mongoose';
 import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
+import { CORRIDORS_BY_ID } from 'pricing';
 
 // ── Going routes config ───────────────────────────────────────────────────────
-const GOING_ROUTES = {
-  sierra_centro: {
-    label: 'Sierra Centro → Quito',
-    stops: ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
-    estimatedDurationH: 2.5,
-  },
-  costa_quito: {
-    label: 'Costa → Quito',
-    stops: ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
-    estimatedDurationH: 3.5,
-  },
-  sierra_norte: {
-    label: 'Sierra Norte → Quito',
-    stops: ['Ibarra', 'Otavalo', 'Quito'],
-    estimatedDurationH: 2.0,
-  },
-} as const;
+// Fuente única en libs/pricing (corridors.ts). Antes este objeto vivía
+// duplicado aquí y divergía de la geometría usada por el motor de precios.
+const GOING_ROUTES = CORRIDORS_BY_ID;
 
 // ── Schema de disponibilidad ──────────────────────────────────────────────────
 
@@ -56,6 +43,8 @@ class DriverScheduleModel {
   @Prop({ default: false })                            opportunisticMode: boolean;
   @Prop()                                              currentCity?: string;
   @Prop()                                              opportunisticUntil?: Date;
+  /** Vehículo del conductor para carpooling: 'suv' | 'suv_xl'. Define los asientos. */
+  @Prop({ default: 'suv' })                            vehicleType?: string;
 }
 
 type DriverScheduleDoc = DriverScheduleModel & Document;
@@ -143,17 +132,28 @@ export class DriverScheduleController {
     // Filtrar slots del día de hoy
     const todaySlots = schedule.slots.filter(s => s.days.includes(todayDow));
 
+    interface TodayTrip {
+      routeId: string;
+      routeLabel: string;
+      stops: string[];
+      departureTime: string;
+      date: string;
+      direction: 'ida' | 'vuelta';
+      estimatedArrival: string;
+      status: 'upcoming' | 'active' | 'completed';
+    }
+
     const trips = todaySlots.flatMap(slot => {
       const route = GOING_ROUTES[slot.routeId as keyof typeof GOING_ROUTES];
       if (!route) return [];
 
-      const result = [{
+      const result: TodayTrip[] = [{
         routeId:        slot.routeId,
         routeLabel:     route.label,
-        stops:          route.stops,
+        stops:          [...route.stops],
         departureTime:  slot.time,
         date:           todayStr,
-        direction:      'ida' as const,
+        direction:      'ida',
         estimatedArrival: addHours(slot.time, route.estimatedDurationH),
         status:         getTripStatus(slot.time),
       }];
@@ -166,7 +166,7 @@ export class DriverScheduleController {
           stops:          [...route.stops].reverse(),
           departureTime:  returnTime,
           date:           todayStr,
-          direction:      'vuelta' as const,
+          direction:      'vuelta',
           estimatedArrival: addHours(returnTime, route.estimatedDurationH),
           status:         getTripStatus(returnTime),
         });

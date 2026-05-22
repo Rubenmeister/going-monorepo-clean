@@ -70,7 +70,12 @@ import {
   RequestRideUseCase,
   AcceptRideUseCase,
   CompleteRideUseCase,
+  UnifiedSearchUseCase,
 } from '../application/use-cases';
+import { SearchController } from '../api/search.controller';
+import { ScheduledTripController } from '../api/scheduled-trip.controller';
+import { ScheduledTripService } from '../application/scheduled-trip.service';
+import { PricingService } from 'pricing';
 import { TokenService } from '../infrastructure/token.service';
 import { MulterModule } from '@nestjs/platform-express';
 
@@ -143,6 +148,8 @@ import { MulterModule } from '@nestjs/platform-express';
     ZoneController,
     DriverBaseController,
     DriverPushTokenController,
+    SearchController,
+    ScheduledTripController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
@@ -157,6 +164,9 @@ import { MulterModule } from '@nestjs/platform-express';
     RequestRideUseCase,
     AcceptRideUseCase,
     CompleteRideUseCase,
+    UnifiedSearchUseCase,
+    ScheduledTripService,
+    PricingService,
     TwilioProxyService,
     AgoraTokenService,
     DatafastProvider,

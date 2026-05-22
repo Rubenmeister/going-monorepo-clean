@@ -250,6 +250,10 @@ export class ProxyModule implements NestModule {
     guard('rides', svc.transport);
     // /zones/* — geocercas (administradas por transport-service)
     guard('zones', svc.transport);
+    // /search/* — buscador unificado de viajes (transport-service)
+    guard('search', svc.transport);
+    // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)
+    guard('scheduled-trips', svc.transport);
 
     // /drivers/me/wallet|earnings|earnings/history|withdraw → payment-service
     // (DriverEarningsController). Estas rutas conviven con el prefix /drivers
@@ -298,6 +302,7 @@ export class ProxyModule implements NestModule {
       RequestMethod.DELETE,
     ];
     guardExact('zones', svc.transport, allMethods);
+    guardExact('search', svc.transport, allMethods);
     guardExact('drivers', svc.transport, allMethods);
     guardExact('driver-bases', svc.transport, allMethods);
     guardExact('parcels', svc.parcels, allMethods);
