@@ -33,6 +33,19 @@ export class ReserveSeatDto {
 }
 
 /**
+ * Cuerpo de POST /scheduled-trips/attach-parcel (interno: lo llama
+ * envios-service para adjuntar un envío interurbano a una salida programada).
+ */
+export class AttachParcelDto {
+  @IsString() originCity: string;
+  @IsString() destCity: string;
+  /** Fecha/hora de referencia (ISO). Default: ahora. */
+  @IsOptional() @IsString() requestedAt?: string;
+  /** Sobre-volumen → consume 1 asiento del viaje. */
+  @IsOptional() @IsBoolean() isOverVolume?: boolean;
+}
+
+/**
  * ScheduledTripController — reserva de asientos en viajes compartidos programados.
  *
  * POST /scheduled-trips/:id/reserve
@@ -41,6 +54,23 @@ export class ReserveSeatDto {
 @UseGuards(JwtAuthGuard)
 export class ScheduledTripController {
   constructor(private readonly service: ScheduledTripService) {}
+
+  /**
+   * Adjunta un envío interurbano a la salida programada más próxima con cupo.
+   * Llamado por envios-service (servicio a servicio). Si no hay salida con cupo,
+   * devuelve { attached: false } y envios-service hace fallback a on-demand.
+   * POST /scheduled-trips/attach-parcel
+   */
+  @Post('attach-parcel')
+  @HttpCode(HttpStatus.OK)
+  async attachParcel(@Body() dto: AttachParcelDto) {
+    return this.service.attachParcel({
+      originCity: dto.originCity,
+      destCity: dto.destCity,
+      requestedAt: dto.requestedAt ? new Date(dto.requestedAt) : new Date(),
+      isOverVolume: dto.isOverVolume,
+    });
+  }
 
   @Post(':id/reserve')
   @HttpCode(HttpStatus.OK)

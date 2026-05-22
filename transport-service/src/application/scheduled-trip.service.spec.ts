@@ -188,4 +188,51 @@ describe('ScheduledTripService', () => {
       ).rejects.toThrow();
     });
   });
+
+  describe('attachParcel', () => {
+    beforeEach(() => {
+      scheduleModel.find.mockReturnValue(leanReturning([]));
+    });
+
+    it('adjunta el envío a la salida con cupo y devuelve el conductor', async () => {
+      tripModel.find.mockReturnValue({
+        sort: () =>
+          leanReturning([
+            {
+              _id: 't1',
+              driverId: 'd1',
+              corridorId: 'sierra_centro',
+              originCity: 'riobamba',
+              destinationCity: 'quito',
+              departureAt: new Date(2026, 4, 22, 8, 30),
+              seatsTotal: 3,
+              seatsReserved: 0,
+              packagesOnboard: 0,
+              packageSeatsConsumed: 0,
+            },
+          ]),
+      });
+      tripModel.findOneAndUpdate.mockResolvedValue({ packagesOnboard: 1 });
+
+      const res = await service.attachParcel({
+        originCity: 'ambato',
+        destCity: 'quito',
+        requestedAt: new Date(2026, 4, 22, 7, 0),
+      });
+
+      expect(res.attached).toBe(true);
+      expect(res.driverId).toBe('d1');
+      expect(res.scheduledTripId).toBe('t1');
+    });
+
+    it('sin salidas con cupo → attached false', async () => {
+      tripModel.find.mockReturnValue({ sort: () => leanReturning([]) });
+      const res = await service.attachParcel({
+        originCity: 'ambato',
+        destCity: 'quito',
+        requestedAt: new Date(2026, 4, 22, 7, 0),
+      });
+      expect(res.attached).toBe(false);
+    });
+  });
 });
