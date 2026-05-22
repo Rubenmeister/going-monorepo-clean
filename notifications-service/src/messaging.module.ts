@@ -27,7 +27,7 @@ import { INotificationGateway } from '@going-monorepo-clean/domains-notification
 
 // Schemas
 import { MessageSchema } from './infrastructure/schemas/message.schema';
-import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
+import { ConversationSchema } from './infrastructure/persistence/schemas/conversation.schema';
 import {
   DeviceToken,
   DeviceTokenSchema,

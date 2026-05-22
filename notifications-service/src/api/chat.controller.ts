@@ -11,7 +11,7 @@ import {
   Query,
   Inject,
 } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser, IMessageRepository } from '../../domain/ports';
+import { JwtAuthGuard, CurrentUser, IMessageRepository } from '../domain/ports';
 import {
   SendMessageDto,
   MessageResponseDto,
