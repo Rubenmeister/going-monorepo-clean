@@ -248,6 +248,8 @@ export class ParcelController {
         },
         destination: { address: dto.destination?.address ?? '' },
         price: dto.price.amount,
+        // Envíos solo en SUV/SUV XL (única flota de servicio compartido).
+        vehicleTypes: ['suv', 'suv_xl'],
       });
     }
 
