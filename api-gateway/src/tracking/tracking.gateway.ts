@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { firstValueFrom } from 'rxjs';
-import { ITokenManager } from '@going-monorepo-clean/shared-domain';
+import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
 
 @WebSocketGateway({
   cors: {
@@ -63,9 +63,11 @@ export class TrackingGateway
   async handleConnection(client: Socket) {
     try {
       // Extract JWT token from handshake query or auth header
-      const token =
+      const rawToken =
         client.handshake.query.token ||
         (client.handshake.headers.authorization?.split(' ')[1] ?? null);
+      // query params pueden venir como string[]; nos quedamos con el primero.
+      const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
 
       if (!token) {
         this.logger.warn(

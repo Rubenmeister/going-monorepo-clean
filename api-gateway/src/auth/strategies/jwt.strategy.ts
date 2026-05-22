@@ -2,7 +2,7 @@ import { Injectable, Logger, Inject, UnauthorizedException } from '@nestjs/commo
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { ITokenManager } from '@going-monorepo-clean/shared-domain';
+import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
 
 /**
  * JWT Strategy for API Gateway

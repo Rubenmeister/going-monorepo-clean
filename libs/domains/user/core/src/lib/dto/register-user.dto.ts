@@ -7,7 +7,7 @@ import {
   IsIn,
   IsArray,
 } from 'class-validator';
-import { RoleType } from '@going-monorepo-clean/domains-user-core'; // Reemplaza 'going-monorepo-clean' con el scope de tu monorepo
+import { RoleType } from '../value-objects/role.vo';
 
 export class RegisterUserDto {
   @IsNotEmpty()
