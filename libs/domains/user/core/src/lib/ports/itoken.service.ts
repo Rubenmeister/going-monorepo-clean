@@ -51,4 +51,9 @@ export interface ITokenService {
    * Extract JWT ID (jti) from token for blacklisting
    */
   extractJti(token: string): string | null;
+
+  /**
+   * Seconds until the access token expires (opcional; usado para TTL de blacklist)
+   */
+  getAccessTokenExpirationSeconds?(): number;
 }

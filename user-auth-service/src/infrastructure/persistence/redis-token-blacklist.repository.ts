@@ -131,7 +131,7 @@ export class RedisTokenBlacklistRepository
       // This would require access to all user tokens, which is complex
       // In a real scenario, we'd track token creation times and patterns
       // For now, return 0 as this is more of a notification mechanism
-      this.logger.info(`Revoke all tokens for user ${userId}, reason: ${reason}`);
+      this.logger.log(`Revoke all tokens for user ${userId}, reason: ${reason}`);
       return ok(0);
     } catch (error) {
       return err(error instanceof Error ? error : new Error(String(error)));

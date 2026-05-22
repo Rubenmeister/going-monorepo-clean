@@ -154,7 +154,7 @@ export class RedisRefreshTokenRepository implements IRefreshTokenRepository {
         expiresAt: new Date(parsed.expiresAt),
         createdAt: new Date(parsed.createdAt),
         revokedAt: new Date(),
-        reason,
+        reason: reason as any,
       });
 
       const ttl = revokedToken.getTtlSeconds();
@@ -197,7 +197,7 @@ export class RedisRefreshTokenRepository implements IRefreshTokenRepository {
               expiresAt: new Date(parsed.expiresAt),
               createdAt: new Date(parsed.createdAt),
             });
-            const revokedToken = token.revoke(reason);
+            const revokedToken = token.revoke(reason as any);
             const ttl = revokedToken.getTtlSeconds();
 
             if (ttl > 0) {
