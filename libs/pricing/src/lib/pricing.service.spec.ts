@@ -260,16 +260,22 @@ describe('PricingService — calculate (entry point)', () => {
   });
 
   describe('envio (mensajería y encomiendas)', () => {
-    it('envío local (Quito Sur a Norte): flat rate de $3.00 USD', () => {
-      const r = service.calculate({
-        serviceType: 'envio',
-        distanceKm: 25, // larga distancia local
-        weightKg: 5,
-        isIntercity: false,
-      });
-      expect(r.subtotal).toBe(3.00);
-      expect(r.total).toBe(3.00);
-      expect(r.breakdown.flatRate).toBe(3.00);
+    it('envío urbano: dinámico por distancia, mínimo $3 y tope $10', () => {
+      const corto = service.calculate({ serviceType: 'envio', distanceKm: 0, weightKg: 5, isIntercity: false });
+      expect(corto.total).toBe(3); // base mínimo
+
+      const medio = service.calculate({ serviceType: 'envio', distanceKm: 10, weightKg: 5, isIntercity: false });
+      expect(medio.total).toBe(6.5); // 3 + 0.35×10
+
+      const lejos = service.calculate({ serviceType: 'envio', distanceKm: 30, weightKg: 5, isIntercity: false });
+      expect(lejos.total).toBe(10); // acotado al tope urbano
+    });
+
+    it('envío urbano: el tamaño suma recargo (grande > pequeño a igual distancia)', () => {
+      const pequeno = service.calculate({ serviceType: 'envio', distanceKm: 8, weightKg: 5,  isIntercity: false });
+      const grande  = service.calculate({ serviceType: 'envio', distanceKm: 8, weightKg: 25, isIntercity: false });
+      expect(pequeno.total).toBe(5.8); // 3 + 0.35×8
+      expect(grande.total).toBe(8.8);  // 3 + 0.35×8 + 3 (recargo grande)
     });
 
     it('envío interurbano nivel 1 (0-10 kg) a Santo Domingo/Ambato: $10.00 USD', () => {
@@ -345,11 +351,12 @@ describe('PricingService — quoteEnvio (precio autoritativo por coordenadas)', 
       isOverVolume,
     });
 
-  it('urbano (Quito→Quito) pequeño = flat $3', () => {
+  it('urbano (Quito→Quito): dinámico por distancia, dentro de [$3, $10]', () => {
     const q = quote(QUITO_A, QUITO_B, 'small');
     expect(q.inCoverage).toBe(true);
     expect(q.isIntercity).toBe(false);
-    expect(q.price).toBe(3);
+    expect(q.price).toBeGreaterThanOrEqual(3);
+    expect(q.price).toBeLessThanOrEqual(10);
   });
 
   it('interurbano Quito→Riobamba: small=$10, medium=$15, large=$20', () => {

@@ -315,6 +315,26 @@ const RATES = {
   experience: { platformFeePct: 0.15 },
 };
 
+// ── Envío URBANO: dinámico por distancia + tamaño, acotado a [$3, $10] ─────────
+// En ciudades grandes el precio varía con la distancia punto a punto; el tamaño
+// (3 tiers) suma un recargo. Valores PROVISIONALES — ajustables en un solo lugar.
+const URBAN_ENVIO = {
+  baseFare: 3,   // mínimo (envío corto, pequeño)
+  perKm: 0.35,   // recargo por km recorrido
+  maxFare: 10,   // tope urbano
+  sizeSurcharge: { small: 0, medium: 1.5, large: 3 } as Record<
+    'small' | 'medium' | 'large',
+    number
+  >,
+};
+
+/** Tamaño del envío derivado del peso (mismos cortes que los tiers interurbanos). */
+function weightToEnvioSize(weightKg: number): 'small' | 'medium' | 'large' {
+  if (weightKg <= 10) return 'small';
+  if (weightKg <= 20) return 'medium';
+  return 'large';
+}
+
 @Injectable()
 export class PricingService {
   calculate(input: PricingInput): FareBreakdown {
@@ -408,10 +428,20 @@ export class PricingService {
     const breakdown: Record<string, number> = {};
 
     if (!input.isIntercity) {
-      // Local Quito Envíos flat rate ($3.00 USD)
-      subtotal = 3.00;
-      breakdown.flatRate = 3.00;
-      breakdown.localEnvio = 1;
+      // Urbano DINÁMICO: base + distancia + recargo por tamaño, acotado [3, 10].
+      const size = weightToEnvioSize(input.weightKg);
+      const distanceComponent = URBAN_ENVIO.perKm * (input.distanceKm ?? 0);
+      const sizeSurcharge = URBAN_ENVIO.sizeSurcharge[size];
+      const raw = URBAN_ENVIO.baseFare + distanceComponent + sizeSurcharge;
+      subtotal = Math.min(
+        URBAN_ENVIO.maxFare,
+        Math.max(URBAN_ENVIO.baseFare, round(raw)),
+      );
+      breakdown.baseFare = URBAN_ENVIO.baseFare;
+      breakdown.distanceKm = round(input.distanceKm ?? 0);
+      breakdown.distanceComponent = round(distanceComponent);
+      breakdown.sizeSurcharge = sizeSurcharge;
+      breakdown.urbanDynamic = 1;
     } else {
       // Intercity Same-Day Door-to-Door
       if (input.isOverVolume) {
