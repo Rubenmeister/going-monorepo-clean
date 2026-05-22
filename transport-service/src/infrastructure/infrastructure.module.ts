@@ -13,6 +13,7 @@ import { RideMatchSchema } from './schemas/ride-match.schema';
 import { DistanceCalculatorService, GeolocationService } from '../domain/ports';
 import { DriverDocumentModel, DriverDocumentSchema, DriverRatingModel, DriverRatingSchema } from '../api/driver.controller';
 import { DriverScheduleModel, DriverScheduleSchema } from '../api/driver-schedule.controller';
+import { ScheduledTripModel, ScheduledTripSchema } from './persistence/schemas/scheduled-trip.schema';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { DriverScheduleModel, DriverScheduleSchema } from '../api/driver-schedul
       { name: DriverDocumentModel.name, schema: DriverDocumentSchema },
       { name: DriverRatingModel.name,    schema: DriverRatingSchema    },
       { name: DriverScheduleModel.name, schema: DriverScheduleSchema },
+      { name: ScheduledTripModel.name, schema: ScheduledTripSchema },
     ]),
   ],
   providers: [

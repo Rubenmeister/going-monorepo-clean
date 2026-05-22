@@ -23,3 +23,10 @@ export * from './lib/pricing.service';
 // con valores distintos a libs/pricing.GOING_SHARED_ROUTES → causa de
 // inconsistencias entre cotización (bot) y cobro (payment-service).
 export * from './lib/fares';
+// Catálogo canónico de ciudades + resolución espacial (buscador unificado).
+// city.id ≡ claves normalizadas de FARES → clasificación y tarifa alineadas.
+export * from './lib/cities';
+// Corredores interurbanos (geometría de rutas; precios siempre vía FARES).
+export * from './lib/corridors';
+// Configuración de asientos de carpooling (SUV/SUV XL, grupo, delantero).
+export * from './lib/seats';

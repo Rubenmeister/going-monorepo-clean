@@ -1,0 +1,67 @@
+import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+
+/**
+ * Reserva de asiento dentro de un viaje programado.
+ */
+export interface SeatReservation {
+  userId: string;
+  seats: number;
+  /** true si esta reserva tomó el asiento delantero con exclusividad (+$3). */
+  frontExclusive: boolean;
+  /** true si la reserva usó el asiento extra de grupo (centro trasero). */
+  usedGroupSeat: boolean;
+  pricePaid: number;
+  createdAt: Date;
+}
+
+/**
+ * ScheduledTrip — viaje compartido programado de un conductor en un corredor.
+ *
+ * Se materializa desde la agenda del conductor (driver_schedules): cuando un
+ * conductor está asignado a una salida (ruta + fecha + hora), se le van
+ * asignando los pasajeros que coinciden con esa ruta y hora, llenando los
+ * asientos. El mismo viaje puede además llevar un envío (campos `package*`).
+ */
+@Schema({ timestamps: true, collection: 'scheduled_trips' })
+export class ScheduledTripModel {
+  @Prop({ required: true, index: true }) driverId: string;
+  @Prop({ required: true, index: true }) corridorId: string;
+  /** Ciudad de origen y destino (claves FARES). */
+  @Prop({ required: true }) originCity: string;
+  @Prop({ required: true }) destinationCity: string;
+  @Prop({ required: true, index: true }) departureAt: Date;
+  /** suv | suv_xl (solo estos hacen carpooling). */
+  @Prop({ required: true, default: 'suv' }) vehicleType: string;
+
+  /** Asientos vendibles al público (3 SUV / 4 SUV XL). */
+  @Prop({ required: true }) seatsTotal: number;
+  /** Asientos ya reservados (público + grupo). */
+  @Prop({ default: 0 }) seatsReserved: number;
+  /** Asiento extra de grupo (centro trasero) ya tomado. */
+  @Prop({ default: false }) groupSeatTaken: boolean;
+  /** Asiento delantero reservado con exclusividad. */
+  @Prop({ default: false }) frontSeatTaken: boolean;
+
+  /** Precio por asiento (snapshot de FARES al materializar). */
+  @Prop({ required: true }) pricePerSeat: number;
+
+  /** open | full | closed | cancelled */
+  @Prop({ default: 'open', index: true }) status: string;
+
+  @Prop({ type: [Object], default: [] }) reservations: SeatReservation[];
+
+  // ── Envíos a bordo (el flujo de envío se conecta en su fase) ───────────────
+  @Prop({ default: 0 }) packagesOnboard: number;
+  /** Asientos consumidos por encomiendas sobre-volumen (equivalente a 1 asiento). */
+  @Prop({ default: 0 }) packageSeatsConsumed: number;
+}
+
+export type ScheduledTripDocument = ScheduledTripModel & Document;
+export const ScheduledTripSchema = SchemaFactory.createForClass(ScheduledTripModel);
+
+// Evita duplicar la misma salida (conductor + corredor + hora exacta).
+ScheduledTripSchema.index(
+  { driverId: 1, corridorId: 1, departureAt: 1 },
+  { unique: true },
+);

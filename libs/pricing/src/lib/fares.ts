@@ -1,6 +1,12 @@
 /**
- * GOING — Tabla de tarifas oficiales
+ * GOING — Tabla de tarifas
  * Actualizada: Marzo 2026
+ *
+ * NOTA (2026-05-22): estos valores son PROVISIONALES — sirven para pruebas y
+ * para que el buscador cotice de forma consistente, pero NO son los precios
+ * definitivos. Pendiente reemplazarlos por la tabla final del negocio. Esta es
+ * la fuente única; al actualizarla, todo el sistema (buscador, cobro, cotización
+ * del bot) queda alineado automáticamente.
  */
 
 export const FARES = {
@@ -18,6 +24,8 @@ export const FARES = {
     'salcedo-quito':          12,
     'quito-ibarra':           15,
     'ibarra-quito':           15,
+    'quito-riobamba':         17,
+    'riobamba-quito':         17,
     'quito-otavalo':          12,
     'otavalo-quito':          12,
     'quito-cayambe':          8,
