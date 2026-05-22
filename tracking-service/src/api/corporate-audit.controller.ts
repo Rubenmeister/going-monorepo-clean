@@ -16,6 +16,7 @@ import {
 import { Request } from 'express';
 import {
   AuditLogService,
+  AuditAction,
   RBACService,
   CorporateUserService,
   CorporateJwtAuthGuard,
@@ -184,7 +185,7 @@ export class CorporateAuditController {
         companyId: user.companyId,
         from: query.from ? new Date(query.from) : undefined,
         to: query.to ? new Date(query.to) : undefined,
-        action: query.action?.split(',').map((a) => a.trim()),
+        action: query.action?.split(',').map((a) => a.trim() as AuditAction),
         actorId: query.actorId,
         targetUserId: query.targetUserId,
         bookingId: query.bookingId,

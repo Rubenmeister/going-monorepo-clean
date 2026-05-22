@@ -9,7 +9,7 @@ import {
   WebSocketServer,
   SubscribeMessage,
   OnGatewayInit,
-  OnGatewayConnect,
+  OnGatewayConnection,
   OnGatewayDisconnect,
   MessageBody,
   ConnectedSocket,
@@ -41,7 +41,7 @@ interface LocationUpdatePayload {
   },
 })
 export class LocationStreamGateway
-  implements OnGatewayInit, OnGatewayConnect, OnGatewayDisconnect
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
   server: Server;
@@ -55,7 +55,7 @@ export class LocationStreamGateway
     this.logger.log('Location Stream WebSocket Gateway initialized');
   }
 
-  handleConnect(client: Socket) {
+  handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
   }
 

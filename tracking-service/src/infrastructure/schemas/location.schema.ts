@@ -9,13 +9,6 @@ import { Document } from 'mongoose';
 @Schema({
   collection: 'locations',
   timestamps: true,
-  indexes: [
-    { driverId: 1, createdAt: -1 }, // Get latest locations for a driver
-    { companyId: 1, createdAt: -1 }, // Get company-wide locations
-    { vehicleId: 1, createdAt: -1 }, // Track vehicle movement
-    { 'coordinates.coordinates': '2dsphere' }, // Geospatial queries (find nearby)
-    { timestamp: 1, expireAfterSeconds: 7776000 }, // Auto-delete after 90 days
-  ],
 })
 export class LocationSchema extends Document {
   @Prop({ required: true, index: true })
@@ -79,6 +72,11 @@ export class LocationSchema extends Document {
 
 export const LocationSchemaDefinition =
   SchemaFactory.createForClass(LocationSchema);
+
+// Latest-location lookups por conductor / empresa / vehículo
+LocationSchemaDefinition.index({ driverId: 1, createdAt: -1 });
+LocationSchemaDefinition.index({ companyId: 1, createdAt: -1 });
+LocationSchemaDefinition.index({ vehicleId: 1, createdAt: -1 });
 
 // Enable geospatial queries
 LocationSchemaDefinition.index({ 'coordinates.coordinates': '2dsphere' });

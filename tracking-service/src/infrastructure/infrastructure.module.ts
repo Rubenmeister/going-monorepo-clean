@@ -35,10 +35,11 @@ import { RedisPoolService } from '@going-monorepo-clean/shared-infrastructure';
         try {
           const store = await redisStore({
             url: redisUrl,
-            lazyConnect: true,
-            enableOfflineQueue: false,
-            maxRetriesPerRequest: 0,
-            connectTimeout: 3000,
+            socket: {
+              connectTimeout: 3000,
+              // No reintentar en bucle: si Redis no responde, cae al store en memoria.
+              reconnectStrategy: () => false,
+            },
           });
           return { store };
         } catch (e) {

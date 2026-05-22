@@ -11,7 +11,7 @@ import {
   HttpStatus,
   Inject,
 } from '@nestjs/common';
-import { JwtAuthGuard, CurrentUser } from '../../domain/ports';
+import { JwtAuthGuard, CurrentUser } from '../domain/ports';
 import {
   LocationUpdateDto,
   NearbyDriversQueryDto,
@@ -25,7 +25,7 @@ import {
   DistanceCalculatorService,
   Coordinates,
   Distance,
-} from '../../domain/ports';
+} from '../domain/ports';
 
 /**
  * Geolocation Controller

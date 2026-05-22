@@ -133,7 +133,7 @@ export class RedisGeoRepository implements IGeoLocationRepository {
       this.GEO_KEY,
       driverId1,
       driverId2,
-      'km'
+      'KM'
     );
 
     if (result === null) {
