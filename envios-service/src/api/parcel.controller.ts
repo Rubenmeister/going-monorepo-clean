@@ -90,6 +90,7 @@ export class ParcelController {
    * POST /api/parcels/quote
    */
   @Post('quote')
+  @Public()
   @HttpCode(HttpStatus.OK)
   async quote(@Body() dto: QuoteEnvioDto): Promise<any> {
     const q = this.pricing.quoteEnvio({
