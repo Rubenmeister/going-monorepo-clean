@@ -638,7 +638,7 @@ export class AuthController {
       this.auditLogService.recordSuccess(
         result.user.id, 'user-auth-service', ip, 'CORPORATE_LOGIN',
         'auth', result.user.id, Date.now() - startTime, undefined,
-        { email: dto.email, companyId: result.user.companyId }
+        { email: dto.email, companyId: (result.user as any).companyId }
       );
 
       // Normalizar contrato: incluir `accessToken` además de `token` para

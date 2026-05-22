@@ -230,7 +230,7 @@ export class AccountLockoutService {
       const attemptsKey = this.FAILED_ATTEMPTS_KEY(userId);
       const deletedCount = await this.redis.del(lockKey, attemptsKey);
 
-      this.logger.info(
+      this.logger.log(
         `Account unlocked by admin (${deletedCount} keys removed): ${userId}`
       );
       return ok(undefined);

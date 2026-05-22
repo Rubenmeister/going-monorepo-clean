@@ -20,7 +20,8 @@ export type AuditActionType =
   | 'TOKEN_REFRESH'
   | 'TOKEN_REVOKE'
   | 'ACCOUNT_LOCK'
-  | 'ACCOUNT_UNLOCK';
+  | 'ACCOUNT_UNLOCK'
+  | 'CORPORATE_LOGIN';
 
 export type ResourceType =
   | 'users'

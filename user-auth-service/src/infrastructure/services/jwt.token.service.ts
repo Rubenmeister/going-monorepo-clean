@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
-import * as jwtDecode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { ITokenService } from '@going-monorepo-clean/domains-user-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
@@ -54,7 +54,7 @@ export class JwtTokenService implements ITokenService {
     };
 
     const token = this.jwtService.sign(payload, {
-      expiresIn: this.accessTokenExpiration,
+      expiresIn: this.accessTokenExpiration as any,
     });
 
     this.logger.debug(
@@ -109,7 +109,7 @@ export class JwtTokenService implements ITokenService {
     try {
       // In a real implementation, this would validate against Redis
       // For now, we decode assuming it could be a JWT
-      const decoded = jwtDecode.default(token);
+      const decoded = jwtDecode<{ sub: UUID; email: string; iat: number; exp: number }>(token);
 
       return {
         sub: decoded.sub,
@@ -131,7 +131,7 @@ export class JwtTokenService implements ITokenService {
    */
   extractJti(token: string): string | null {
     try {
-      const decoded = jwtDecode.default<{ jti?: string }>(token);
+      const decoded = jwtDecode<{ jti?: string }>(token);
       return decoded.jti || null;
     } catch {
       return null;
