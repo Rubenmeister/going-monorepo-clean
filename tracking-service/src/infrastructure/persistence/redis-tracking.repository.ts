@@ -19,6 +19,11 @@ export class RedisTrackingRepository implements ITrackingRepository {
     private readonly redisPoolService: RedisPoolService
   ) {}
 
+  /** Cliente node-redis subyacente del store (cache-manager-redis-yet lo expone como `.client`). */
+  private get redisClient(): any {
+    return (this.cache.store as any).client;
+  }
+
   async save(location: DriverLocation): Promise<Result<void, Error>> {
     try {
       const key = `${DRIVER_KEY_PREFIX}${location.driverId}`;
@@ -30,7 +35,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
 
       await this.cache.set(key, primitives, ttlMs);
 
-      const redisClient = this.cache.store.getClient();
+      const redisClient = this.redisClient;
       await redisClient.sAdd(ACTIVE_DRIVERS_SET, location.driverId);
 
       return ok(undefined);
@@ -53,7 +58,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
 
   async findAllActive(): Promise<Result<DriverLocation[], Error>> {
     try {
-      const redisClient = this.cache.store.getClient();
+      const redisClient = this.redisClient;
       const driverIds = await redisClient.sMembers(ACTIVE_DRIVERS_SET);
 
       if (!driverIds || driverIds.length === 0) {
@@ -61,7 +66,7 @@ export class RedisTrackingRepository implements ITrackingRepository {
       }
 
       const keys = driverIds.map((id) => `${DRIVER_KEY_PREFIX}${id}`);
-      const results = await this.cache.store.mGet(keys);
+      const results = await this.redisClient.mGet(keys);
 
       const locations = results
         .filter((res) => !!res)

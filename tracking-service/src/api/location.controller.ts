@@ -155,8 +155,8 @@ export class LocationController {
    */
   @Get('heatmap')
   async getHeatmapData(
-    @Query('gridSize') gridSize?: string,
-    @Req() req: Request
+    @Req() req: Request,
+    @Query('gridSize') gridSize?: string
   ) {
     const user = (req as any).user;
     const companyId = user.companyId;

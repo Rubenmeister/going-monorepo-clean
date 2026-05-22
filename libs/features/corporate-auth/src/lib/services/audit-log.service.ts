@@ -18,7 +18,8 @@ export type AuditAction =
   | 'mfa_failed'
   | 'user_invited'
   | 'user_suspended'
-  | 'spending_limit_changed';
+  | 'spending_limit_changed'
+  | 'audit_logs_purged';
 
 export interface AuditLogEntry {
   action: AuditAction;
@@ -31,6 +32,8 @@ export interface AuditLogEntry {
   ipAddress?: string;
   userAgent?: string;
   metadata?: Record<string, unknown>;
+  /** Si se omite, el servicio usa la hora actual. */
+  timestamp?: Date;
 }
 
 /**
@@ -52,10 +55,10 @@ export class AuditLogService {
   /**
    * Record an audit event
    */
-  async log(entry: AuditLogEntry): Promise<void> {
+  async log(entry: AuditLogEntry): Promise<string> {
+    const logId = this.generateLogId();
     try {
-      const logId = this.generateLogId();
-      const now = new Date();
+      const now = entry.timestamp ?? new Date();
       const expiresAt = this.calculateExpiry(now);
 
       const record = {
@@ -83,6 +86,7 @@ export class AuditLogService {
         error
       );
     }
+    return logId;
   }
 
   /**
@@ -140,16 +144,21 @@ export class AuditLogService {
     opts?: {
       actorId?: string;
       targetUserId?: string;
-      action?: AuditAction;
+      action?: AuditAction | AuditAction[];
       from?: Date;
       to?: Date;
       limit?: number;
+      offset?: number;
     }
-  ): Promise<any[]> {
+  ): Promise<{ logs: any[]; total: number }> {
     const query: Record<string, unknown> = { companyId };
     if (opts?.actorId) query.actorId = opts.actorId;
     if (opts?.targetUserId) query.targetUserId = opts.targetUserId;
-    if (opts?.action) query.action = opts.action;
+    if (opts?.action) {
+      query.action = Array.isArray(opts.action)
+        ? { $in: opts.action }
+        : opts.action;
+    }
     if (opts?.from || opts?.to) {
       query.timestamp = {
         ...(opts.from ? { $gte: opts.from } : {}),
@@ -157,9 +166,9 @@ export class AuditLogService {
       };
     }
 
-    // const logs = await this.mongoService.find('audit_logs', query, 0, opts?.limit ?? 100);
-    // return logs;
-    return [];
+    // const logs = await this.mongoService.find('audit_logs', query, opts?.offset ?? 0, opts?.limit ?? 100);
+    // return { logs, total: logs.length };
+    return { logs: [], total: 0 };
   }
 
   private generateLogId(): string {

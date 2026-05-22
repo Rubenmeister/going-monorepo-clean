@@ -33,7 +33,7 @@ export class LocationRepository {
       const newLocation = new this.locationModel(location);
       const saved = await newLocation.save();
       this.logger.debug(`Location saved for driver ${location.driverId}`);
-      return saved.toObject() as Location;
+      return saved.toObject() as unknown as Location;
     } catch (error) {
       this.logger.error(`Failed to create location: ${error}`);
       throw error;
@@ -51,11 +51,11 @@ export class LocationRepository {
     companyId: string
   ): Promise<Location | null> {
     try {
-      return await this.locationModel
+      return (await this.locationModel
         .findOne({ driverId, companyId })
         .sort({ createdAt: -1 })
         .lean()
-        .exec();
+        .exec()) as unknown as Location | null;
     } catch (error) {
       this.logger.error(`Failed to get latest location: ${error}`);
       return null;
@@ -121,7 +121,7 @@ export class LocationRepository {
     endTime: Date
   ): Promise<Location[]> {
     try {
-      return await this.locationModel
+      return (await this.locationModel
         .find({
           driverId,
           companyId,
@@ -129,7 +129,7 @@ export class LocationRepository {
         })
         .sort({ timestamp: 1 })
         .lean()
-        .exec();
+        .exec()) as unknown as Location[];
     } catch (error) {
       this.logger.error(`Failed to get location history: ${error}`);
       return [];
@@ -167,7 +167,7 @@ export class LocationRepository {
         query.companyId = companyId;
       }
 
-      return await this.locationModel.find(query).lean().exec();
+      return (await this.locationModel.find(query).lean().exec()) as unknown as Location[];
     } catch (error) {
       this.logger.error(`Failed to find locations within radius: ${error}`);
       return [];
@@ -224,10 +224,10 @@ export class LocationRepository {
     updateData: Partial<Location>
   ): Promise<Location | null> {
     try {
-      return await this.locationModel
+      return (await this.locationModel
         .findByIdAndUpdate(locationId, updateData, { new: true })
         .lean()
-        .exec();
+        .exec()) as unknown as Location | null;
     } catch (error) {
       this.logger.error(`Failed to update location: ${error}`);
       return null;

@@ -5,10 +5,10 @@ import {
   OnGatewayDisconnect,
   MessageBody,
 } from '@nestjs/websockets';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import {
-  UpdateLocationDto,
+  LocationUpdateDto,
   UpdateLocationUseCase,
 } from '@going-monorepo-clean/domains-tracking-application';
 
@@ -20,7 +20,6 @@ import {
 })
 export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(TrackingGateway.name);
-  private validationPipe = new ValidationPipe({ whitelist: true });
 
   constructor(
     private readonly updateLocationUseCase: UpdateLocationUseCase,
@@ -39,14 +38,12 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayDisconnect
     @MessageBody() payload: any,
   ): Promise<void> {
     try {
-      const dto = new UpdateLocationDto();
-      dto.driverId = payload.driverId;
-      dto.latitude = payload.latitude;
-      dto.longitude = payload.longitude;
-      
-      await this.validationPipe.transform(dto, { type: 'body' });
+      const dto: LocationUpdateDto = {
+        driverId: payload?.driverId,
+        latitude: payload?.latitude,
+        longitude: payload?.longitude,
+      };
       await this.updateLocationUseCase.execute(dto);
-      
     } catch (error) {
       this.logger.warn(`Invalid location data from socket: ${error.message}`);
     }
