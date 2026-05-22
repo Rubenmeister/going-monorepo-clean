@@ -3,7 +3,7 @@ import {
   Parcel,
   IParcelRepository,
 } from '@going-monorepo-clean/domains-parcel-core';
-import { Money, Location } from '@going-monorepo-clean/shared-domain';
+import { Money, Location, LocationProps } from '@going-monorepo-clean/shared-domain';
 import { CreateParcelDto } from '../dto/create-parcel.dto';
 
 @Injectable()
@@ -13,7 +13,15 @@ export class CreateParcelUseCase {
     private readonly parcelRepo: IParcelRepository,
   ) {}
 
-  async execute(dto: CreateParcelDto): Promise<{ id: string; trackingCode: string; otpPin: string }> {
+  async execute(dto: CreateParcelDto): Promise<{
+    id: string;
+    trackingCode: string;
+    otpPin: string;
+    paymentMethod?: string;
+    payerRole?: string;
+    paymentStatus?: string;
+    status?: string;
+  }> {
     // Money tiene constructor privado: usar el factory create() y validar.
     const priceVOResult = Money.create(dto.price.amount, dto.price.currency);
     if (priceVOResult.isErr()) {
@@ -22,8 +30,8 @@ export class CreateParcelUseCase {
       );
     }
     const priceVO = priceVOResult.value;
-    const originVOResult = Location.create(dto.origin);
-    const destinationVOResult = Location.create(dto.destination);
+    const originVOResult = Location.create(dto.origin as LocationProps);
+    const destinationVOResult = Location.create(dto.destination as LocationProps);
 
     if (originVOResult.isErr()) {
       throw new InternalServerErrorException(originVOResult.error.message);
