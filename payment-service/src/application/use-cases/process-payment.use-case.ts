@@ -34,7 +34,9 @@ export class ProcessPaymentUseCase {
     let driverAmount: number;
 
     if (input.serviceType && input.serviceType !== 'accommodation') {
-      const fareBreakdown = this.pricingService.calculate(
+      // serviceType de pago es más amplio que PricingInput (p.ej. shared_route por
+      // baseAmount); el service resuelve por serviceType en runtime → input as any.
+      const pricingInput: any =
         input.serviceType === 'transport' || input.serviceType === 'shared'
           ? {
               serviceType: input.serviceType,
@@ -51,8 +53,8 @@ export class ProcessPaymentUseCase {
               serviceType: input.serviceType,
               baseAmount: input.amount,
               quantity: input.quantity ?? 1,
-            }
-      );
+            };
+      const fareBreakdown = this.pricingService.calculate(pricingInput);
       platformFee = fareBreakdown.platformFee;
       driverAmount = fareBreakdown.providerAmount;
     } else {

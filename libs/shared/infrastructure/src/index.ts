@@ -23,7 +23,7 @@ export {
 } from './strategies/base-jwt.strategy';
 
 // Re-export existing services
-export { CircuitBreakerService } from './services/circuit-breaker.service';
+export { CircuitBreaker, CircuitBreakerFactory } from './services/circuit-breaker.service';
 export { RedisPoolService } from './services/redis-pool.service';
 export { TokenBucketService } from './services/token-bucket.service';
 export {
@@ -35,6 +35,9 @@ export {
 // Audit log (shared persistence)
 export { AuditLogDocument, AuditLogSchema } from './schemas/audit-log.schema';
 export { MongoAuditLogRepository } from './persistence/mongo-audit-log.repository';
+
+// Vault (cifrado/secretos para PCI)
+export * from './vault/vault.service';
 
 // Routing (distancia real por carretera)
 export {

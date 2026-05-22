@@ -52,6 +52,15 @@ export class MongooseTransactionRepository implements ITransactionRepository {
     }
   }
 
+  async findByIdempotencyKey(idempotencyKey: string): Promise<Result<Transaction | null, Error>> {
+    try {
+      const doc = await this.model.findOne({ idempotencyKey }).exec();
+      return ok(doc ? this.toDomain(doc) : null);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   private toDomain(doc: TransactionDocument): Transaction {
     return Transaction.fromPrimitives(doc.toObject() as any);
   }

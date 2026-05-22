@@ -9,4 +9,5 @@ export interface ITransactionRepository {
   update(transaction: Transaction): Promise<Result<void, Error>>;
   findById(id: UUID): Promise<Result<Transaction | null, Error>>;
   findByPaymentIntentId(paymentIntentId: string): Promise<Result<Transaction | null, Error>>;
+  findByIdempotencyKey(idempotencyKey: string): Promise<Result<Transaction | null, Error>>;
 }

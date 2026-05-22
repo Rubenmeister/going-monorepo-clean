@@ -51,7 +51,10 @@ export class CreatePaymentIntentUseCase {
   async execute(
     dto: CreatePaymentIntentDto
   ): Promise<{ clientSecret: string }> {
-    const amountVO = new Money(dto.price.amount, dto.price.currency);
+    const amountVO = Money.fromPrimitives({
+      amount: dto.price.amount,
+      currency: dto.price.currency,
+    });
 
     // IDEMPOTENCY: Check if request with same idempotencyKey was already processed
     if (dto.idempotencyKey) {
@@ -65,7 +68,7 @@ export class CreatePaymentIntentUseCase {
           dto.idempotencyKey
         );
 
-        if (existingResult && existingResult.isErr?.() === false) {
+        if (existingResult.isOk()) {
           const existingTransaction = existingResult.value;
           if (
             existingTransaction &&
@@ -103,11 +106,7 @@ export class CreatePaymentIntentUseCase {
     }
     const transaction = transactionResult.value;
 
-    const intentResult = await this.paymentGateway.createPaymentIntent(
-      amountVO,
-      // Pass idempotencyKey to payment gateway for additional idempotency
-      dto.idempotencyKey
-    );
+    const intentResult = await this.paymentGateway.createPaymentIntent(amountVO);
 
     if (intentResult.isErr()) {
       throw new InternalServerErrorException(intentResult.error.message);
