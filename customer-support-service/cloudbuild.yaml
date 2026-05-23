@@ -68,6 +68,11 @@ steps:
       # mantiene el container vivo. Costo: ~$5/mes adicional.
       - --min-instances=1
       - --max-instances=5
+      # timeout 300s (5 min) en lugar del default 60s. Las notas de voz
+      # combinan STT (5-50s; Deepgram rápido + fallback Google lento) + LLM
+      # (2-4s OpenAI nano) + TTS Chirp3 HD (2-5s) + envío WhatsApp (2s).
+      # Con 60s el flujo se cortaba antes de responder al usuario.
+      - --timeout=300
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production,CEREBRO_PUBLISH_ENABLED=true
       # MONGO_URL se incluye acá porque --set-env-vars/--set-secrets reemplazan
       # TODA la config previa (no es additive). Sin esto el service intenta
