@@ -48,10 +48,10 @@ export class CorporateService {
 
   // ── Stats ──────────────────────────────────────────────────────────────
 
-  async getStats(companyId: string) {
+  async getStats(companyId: string, token: string) {
     const [pendingCount, bookingsData] = await Promise.allSettled([
       this.approvalRepo.countPending(companyId),
-      this.fetchJson(`${this.bookingUrl}/bookings?companyId=${companyId}&limit=100`, ''),
+      this.fetchJson(`${this.bookingUrl}/bookings?companyId=${companyId}&limit=100`, token),
     ]);
 
     const bookings: any = this.settled(bookingsData, []);

@@ -23,6 +23,23 @@ export class CreateBookingDto {
   @IsEnum(['transport', 'accommodation', 'tour', 'experience', 'parcel'])
   serviceType: ServiceType;
 
+  @IsOptional()
+  @IsEnum(['urban', 'intercity'])
+  bookingType?: 'urban' | 'intercity';
+
+  /** Empresa corporativa dueña del booking (corporate-service lo setea). */
+  @IsOptional()
+  @IsUUID()
+  companyId?: string;
+
+  @IsOptional()
+  @IsEnum(['b2c', 'corporate'])
+  clientSegment?: 'b2c' | 'corporate';
+
+  @IsOptional()
+  @IsEnum(['immediate', 'corporate_monthly'])
+  paymentMode?: 'immediate' | 'corporate_monthly';
+
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => MoneyDto)

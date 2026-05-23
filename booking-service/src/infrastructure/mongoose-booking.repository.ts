@@ -70,6 +70,23 @@ export class MongooseBookingRepository implements IBookingRepository {
     }
   }
 
+  async findByCompany(
+    companyId: UUID,
+    opts?: { status?: string; limit?: number; skip?: number },
+  ): Promise<Result<Booking[], Error>> {
+    try {
+      const query: Record<string, unknown> = { companyId };
+      if (opts?.status) query.status = opts.status;
+      let q = this.model.find(query).sort({ createdAt: -1 });
+      if (opts?.skip) q = q.skip(opts.skip);
+      if (opts?.limit) q = q.limit(opts.limit);
+      const docs = await q.exec();
+      return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   async findByUserIdPaginated(
     userId: UUID,
     pagination?: PaginationDto

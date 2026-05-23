@@ -35,6 +35,13 @@ export class BookingModelSchema {
   })
   serviceType: ServiceType;
 
+  @Prop({
+    required: false,
+    type: String,
+    enum: ['urban', 'intercity'],
+  })
+  bookingType?: 'urban' | 'intercity';
+
   @Prop({ required: true, type: MoneySchema })
   totalPrice: MoneySchema;
 
@@ -53,6 +60,24 @@ export class BookingModelSchema {
 
   @Prop()
   endDate?: Date;
+
+  // ── Contexto corporativo (lo setea corporate-service al crear) ─────────
+  @Prop({ index: true })
+  companyId?: string;
+
+  @Prop({
+    type: String,
+    enum: ['b2c', 'corporate'],
+    default: 'b2c',
+  })
+  clientSegment?: 'b2c' | 'corporate';
+
+  @Prop({
+    type: String,
+    enum: ['immediate', 'corporate_monthly'],
+    default: 'immediate',
+  })
+  paymentMode?: 'immediate' | 'corporate_monthly';
 }
 
 export const BookingSchema = SchemaFactory.createForClass(BookingModelSchema);
@@ -71,3 +96,7 @@ BookingSchema.index({ startDate: 1, endDate: 1, status: 1 });
 
 // Index for date range queries
 BookingSchema.index({ createdAt: -1 });
+
+// Corporate listings: query principal de corporate-service (stats, factura, etc.).
+BookingSchema.index({ companyId: 1, createdAt: -1 });
+BookingSchema.index({ companyId: 1, status: 1, createdAt: -1 });
