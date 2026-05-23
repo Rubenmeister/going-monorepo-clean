@@ -13,6 +13,7 @@ import {
   CancelBookingUseCase,
 } from '@going-monorepo-clean/domains-booking-application';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
+import { PricingService } from 'pricing';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
     ConfirmBookingUseCase,
     CancelBookingUseCase,
     JwtStrategy,
+    PricingService,
   ],
 })
 export class AppModule {}

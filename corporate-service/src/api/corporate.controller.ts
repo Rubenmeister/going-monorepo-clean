@@ -15,7 +15,8 @@ export class CorporateController {
   @Get('stats')
   async getStats(@Req() req: Request) {
     const companyId = this.extractCompanyId(req);
-    return this.svc.getStats(companyId);
+    const token = this.extractToken(req);
+    return this.svc.getStats(companyId, token);
   }
 
   /** GET /corporate/bookings?page=1&limit=20&status=pending */

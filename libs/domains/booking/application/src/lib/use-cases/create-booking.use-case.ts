@@ -14,15 +14,19 @@ export class CreateBookingUseCase {
   ) {}
 
   async execute(dto: CreateBookingDto): Promise<{ id: string }> {
-    const priceVO = new Money(dto.totalPrice.amount, dto.totalPrice.currency as 'USD');
+    const priceVO = Money.fromPrimitives(dto.totalPrice);
 
     const bookingResult = Booking.create({
       userId: dto.userId,
       serviceId: dto.serviceId,
       serviceType: dto.serviceType,
+      bookingType: dto.bookingType,
       totalPrice: priceVO,
       startDate: dto.startDate,
       endDate: dto.endDate,
+      companyId: dto.companyId,
+      clientSegment: dto.clientSegment,
+      paymentMode: dto.paymentMode,
     });
 
     if (bookingResult.isErr()) {

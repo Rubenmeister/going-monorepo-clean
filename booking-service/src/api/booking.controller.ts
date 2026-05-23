@@ -5,6 +5,8 @@ import {
   Get,
   Param,
   Patch,
+  Query,
+  BadRequestException,
   NotFoundException,
   UseGuards,
   Inject,
@@ -19,6 +21,7 @@ import {
 import { IBookingRepository } from '@going-monorepo-clean/domains-booking-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
+import { PricingService } from 'pricing';
 
 interface AuthUser {
   id: string;
@@ -36,7 +39,17 @@ export class BookingController {
     private readonly cancelBookingUseCase: CancelBookingUseCase,
     @Inject(IBookingRepository)
     private readonly bookingRepo: IBookingRepository,
+    private readonly pricingService: PricingService,
   ) {}
+
+  /**
+   * POST /api/bookings/estimate
+   * Calculates dynamic pricing / rates for local envíos, intercity envíos, or rides
+   */
+  @Post('estimate')
+  async estimateFare(@Body() body: any): Promise<any> {
+    return this.pricingService.calculate(body);
+  }
 
   /**
    * POST /api/bookings
@@ -57,6 +70,33 @@ export class BookingController {
   @Get('my')
   async getMyBookings(@CurrentUser() user: AuthUser): Promise<any> {
     return this.findBookingsByUserUseCase.execute(user.id as UUID);
+  }
+
+  /**
+   * GET /api/bookings?companyId=X&status=Y&page=N&limit=M
+   * Reservas de una empresa (consumido por corporate-service para stats,
+   * presupuesto y factura mensual). Requiere companyId.
+   */
+  @Get()
+  async listByCompany(
+    @Query('companyId') companyId?: string,
+    @Query('status') status?: string,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+  ): Promise<any[]> {
+    if (!companyId) {
+      throw new BadRequestException('companyId requerido');
+    }
+    const limitN = Math.max(1, Math.min(500, limit ? parseInt(limit, 10) : 100));
+    const pageN = Math.max(1, page ? parseInt(page, 10) : 1);
+    const skip = (pageN - 1) * limitN;
+    const result = await this.bookingRepo.findByCompany(companyId as UUID, {
+      status,
+      limit: limitN,
+      skip,
+    });
+    if (result.isErr()) throw result.error;
+    return result.value.map((b) => b.toPrimitives());
   }
 
   /**
