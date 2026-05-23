@@ -28,7 +28,7 @@ import {
   QUITO_ZONES,
   calcSharedSeatPrice,
   type QuitoZone,
-} from '../home/HomeScreen';
+} from '../../catalog';
 import type { LocationResult } from '../shared/LocationPickerScreen';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {

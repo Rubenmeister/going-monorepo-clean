@@ -20,7 +20,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
-import { QUITO_ZONES, type QuitoZone } from '../home/HomeScreen';
+import { QUITO_ZONES, type QuitoZone } from '../../catalog';
 
 // ── Colores — Privado usa paleta NEGRO + DORADO ───────────────────────────────
 const NAVY   = '#0033A0';    // acento secundario (categorías)
