@@ -10,6 +10,7 @@ import { MetricsController } from './api/metrics.controller';
 import { CommandController } from './api/command.controller';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
+import { VoiceGatewayService } from './agent/voice-gateway.service';
 import { BookingService } from './booking/booking.service';
 import { VoiceService } from './infrastructure/voice.service';
 import { TelegramService } from './infrastructure/telegram.service';
@@ -67,6 +68,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     MetricsService,
     CerebroPublisherService,
     OpenAIRealtimeAdapter,
+    VoiceGatewayService,
   ],
 })
 export class AppModule {}
