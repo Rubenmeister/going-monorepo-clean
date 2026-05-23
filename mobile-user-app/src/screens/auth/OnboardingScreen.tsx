@@ -3,10 +3,10 @@
  *
  * 3 PRODUCTOS BÁSICOS:
  *   1. Compartido — SUV interurbano, hasta 7 pasajeros
- *   2. Privado    — SUV/SUV-Lujo, hasta 4 pasajeros
+ *   2. Privado    — SUV / SUV Premium, hasta 4 pasajeros
  *   3. Envíos     — paquete en SUV mismo día
  *
- * Tiers (display brand): Confort | Lujo
+ * Tiers (display brand): Confort | Premium
  *
  * Theme: ADAPTATIVO (light + dark) — usa useTheme() del provider raíz.
  * Tokens semánticos para que ambos modos funcionen sin tocar lógica de
@@ -41,7 +41,8 @@ type Slide = {
   eyebrow: string;
   headline: string;
   subtitle: string;
-  tiers?: Array<{ name: 'Confort' | 'Lujo'; subline: string }>;
+  tiers?: Array<{ name: 'Confort' | 'Premium'; subline: string }>;
+  // (decisión de marca 2026-05-23 rev): Premium en lugar de Lujo.
   stat: { value: string; label: string };
 };
 
@@ -55,7 +56,7 @@ const SLIDES: Slide[] = [
     subtitle: 'Hasta 7 pasajeros en SUV. Paga solo tu asiento. Conecta las ciudades del Ecuador con vecinos de viaje.',
     tiers: [
       { name: 'Confort', subline: 'SUV estándar' },
-      { name: 'Lujo',    subline: 'SUV de gama alta' },
+      { name: 'Premium',    subline: 'SUV de gama alta' },
     ],
     stat: { value: '50+', label: 'ciudades conectadas' },
   },
@@ -68,7 +69,7 @@ const SLIDES: Slide[] = [
     subtitle: 'Hasta 4 pasajeros. Conductor verificado, precio fijo desde el inicio, sin sorpresas.',
     tiers: [
       { name: 'Confort', subline: 'SUV estándar' },
-      { name: 'Lujo',    subline: 'Gama alta + amenities' },
+      { name: 'Premium',    subline: 'Gama alta + amenities' },
     ],
     stat: { value: '6 min', label: 'tiempo promedio de llegada' },
   },
@@ -170,17 +171,17 @@ export function OnboardingScreen() {
                 key={t.name}
                 style={[
                   styles.tierBadge,
-                  t.name === 'Lujo' && styles.tierBadgeLujo,
+                  t.name === 'Premium' && styles.tierBadgePremium,
                 ]}
               >
                 <View style={styles.tierLabelRow}>
-                  {t.name === 'Lujo' && (
-                    <Ionicons name="diamond" size={11} color={tokens.lujoBorder} />
+                  {t.name === 'Premium' && (
+                    <Ionicons name="diamond" size={11} color={tokens.premiumBorder} />
                   )}
                   <Text
                     style={[
                       styles.tierName,
-                      t.name === 'Lujo' && styles.tierNameLujo,
+                      t.name === 'Premium' && styles.tierNamePremium,
                     ]}
                   >
                     {t.name}
@@ -452,9 +453,9 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       borderRadius: 12,
       paddingHorizontal: 12, paddingVertical: 10,
     },
-    tierBadgeLujo: {
-      borderColor: t.lujoBorder,
-      backgroundColor: t.lujoBg,
+    tierBadgePremium: {
+      borderColor: t.premiumBorder,
+      backgroundColor: t.premiumBg,
     },
     tierLabelRow: {
       flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -464,8 +465,8 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       color: t.textPrimary,
       letterSpacing: 0.5,
     },
-    tierNameLujo: {
-      color: t.lujoText,
+    tierNamePremium: {
+      color: t.premiumText,
     },
     tierSubline: {
       fontSize: 10, fontWeight: '500',

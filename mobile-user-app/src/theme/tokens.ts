@@ -46,12 +46,14 @@ export interface ThemeTokens {
   error:         string;
   info:          string;
 
-  // ── Tier badges (Confort | Lujo) ───────────────────────────
+  // ── Tier badges (Confort | Premium) ────────────────────────
+  // Decisión de marca 2026-05-23 (rev): Premium en lugar de Lujo —
+  // suena menos ostentoso, alineado con la audiencia ecuatoriana.
   confortBorder: string;
   confortBg:     string;
-  lujoBorder:    string;   // dorado
-  lujoBg:        string;
-  lujoText:      string;
+  premiumBorder: string;  // acento dorado/ámbar
+  premiumBg:     string;
+  premiumText:   string;
 
   // ── Brand legacy ───────────────────────────────────────────
   brandRed:      string;
@@ -84,9 +86,9 @@ export const darkTokens: ThemeTokens = {
 
   confortBorder: 'rgba(255,255,255,0.25)',
   confortBg:     'rgba(255,255,255,0.04)',
-  lujoBorder:    '#FFD700',
-  lujoBg:        'rgba(255,215,0,0.06)',
-  lujoText:      'rgba(255,215,0,0.85)',
+  premiumBorder: '#FFD700',
+  premiumBg:     'rgba(255,215,0,0.06)',
+  premiumText:   'rgba(255,215,0,0.85)',
 
   brandRed:      '#ff4c41',
 };
@@ -121,11 +123,11 @@ export const lightTokens: ThemeTokens = {
 
   confortBorder: 'rgba(10,14,26,0.20)',
   confortBg:     'rgba(10,14,26,0.03)',
-  // Dorado más profundo para contraste sobre blanco (Lujo se debe ver
-  // premium, no como un highlight de marker).
-  lujoBorder:    '#C9A227',
-  lujoBg:        'rgba(201,162,39,0.08)',
-  lujoText:      '#8B6F00',
+  // Dorado más profundo para contraste sobre blanco (Premium se debe ver
+  // sofisticado, no como un highlight de marker).
+  premiumBorder: '#C9A227',
+  premiumBg:     'rgba(201,162,39,0.08)',
+  premiumText:   '#8B6F00',
 
   brandRed:      '#e63b2f',
 };
