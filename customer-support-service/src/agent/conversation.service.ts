@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
 import { HandoffNotifierService } from '../infrastructure/handoff-notifier.service';
+import { VoiceName } from '../infrastructure/voice.service';
 
 export type ConversationState = 'AI_ACTIVE' | 'HANDOFF_REQUESTED' | 'HUMAN_ACTIVE';
 export type Priority = 'RED' | 'ORANGE' | 'NORMAL';
@@ -21,6 +22,11 @@ export interface Conversation {
   priority: Priority;
   messages: Message[];
   agentGender: AgentGender;
+  /**
+   * Voz preferida del usuario (override por encima del default-por-género).
+   * Si no está set, voice.service.synthesize usa la default del agentGender.
+   */
+  voicePreference?: VoiceName;
   handoffReason?: string;
   operatorId?: string;
   createdAt: Date;
@@ -78,6 +84,7 @@ export class ConversationService {
         priority: (mongoConv.priority as Priority) || 'NORMAL',
         messages: mongoConv.messages as Message[],
         agentGender: (mongoConv as any).agentGender || (this.conversationCount % 2 === 0 ? 'male' : 'female'),
+        voicePreference: (mongoConv as any).voicePreference,
         handoffReason: (mongoConv as any).handoffReason,
         operatorId: (mongoConv as any).operatorId,
         createdAt: mongoConv.createdAt,

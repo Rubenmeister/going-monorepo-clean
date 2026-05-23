@@ -187,7 +187,7 @@ export class TelegramController {
       if (wasVoice) {
         // Item 6: preferimos lang de STT (más confiable que regex sobre transcript)
         const lang = sttLang ?? detectLanguage(reply);
-        const audio = await this.voiceService.synthesize(reply, lang, conv.agentGender);
+        const audio = await this.voiceService.synthesize(reply, lang, conv.agentGender, conv.voicePreference);
         if (audio) {
           const sent = await this.telegramService.sendVoice(chatId, audio);
           if (sent) return;
