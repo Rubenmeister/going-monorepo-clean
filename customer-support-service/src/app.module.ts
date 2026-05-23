@@ -19,6 +19,7 @@ import { HandoffNotifierService } from './infrastructure/handoff-notifier.servic
 import { MetricsService } from './infrastructure/metrics.service';
 import { CerebroPublisherService } from './infrastructure/cerebro-publisher.service';
 import { OpenAIRealtimeAdapter } from './infrastructure/openai-realtime.adapter';
+import { VoiceWsGateway } from './api/voice-ws.gateway';
 import { LocationService } from './knowledge-base/location.service';
 import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
 import { MongoConversationRepository } from './infrastructure/persistence/mongo-conversation.repository';
@@ -69,6 +70,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     CerebroPublisherService,
     OpenAIRealtimeAdapter,
     VoiceGatewayService,
+    VoiceWsGateway,
   ],
 })
 export class AppModule {}
