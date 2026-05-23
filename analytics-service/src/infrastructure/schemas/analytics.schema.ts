@@ -9,7 +9,6 @@ import { Document } from 'mongoose';
 @Schema({
   collection: 'dashboard-kpis',
   timestamps: true,
-  indexes: [{ companyId: 1, date: -1 }, { date: -1 }],
 })
 export class DashboardKPISchema extends Document {
   @Prop({ required: true, index: true })
@@ -83,12 +82,6 @@ export class DashboardKPISchema extends Document {
 @Schema({
   collection: 'reports',
   timestamps: true,
-  indexes: [
-    { companyId: 1, createdAt: -1 },
-    { createdBy: 1, companyId: 1 },
-    { type: 1, companyId: 1 },
-    { expiresAt: 1 },
-  ],
 })
 export class ReportSchema extends Document {
   @Prop({ required: true, index: true })
@@ -154,11 +147,6 @@ export class ReportSchema extends Document {
 @Schema({
   collection: 'audit-logs',
   timestamps: true,
-  indexes: [
-    { companyId: 1, createdAt: -1 },
-    { userId: 1, companyId: 1 },
-    { entityType: 1, entityId: 1 },
-  ],
 })
 export class AuditLogSchema extends Document {
   @Prop({ required: true, index: true })
@@ -192,11 +180,6 @@ export class AuditLogSchema extends Document {
 @Schema({
   collection: 'export-jobs',
   timestamps: true,
-  indexes: [
-    { companyId: 1, createdAt: -1 },
-    { status: 1, companyId: 1 },
-    { expiresAt: 1 },
-  ],
 })
 export class ExportJobSchema extends Document {
   @Prop({ required: true, index: true })
@@ -262,6 +245,21 @@ export const AuditLogSchemaDefinition =
   SchemaFactory.createForClass(AuditLogSchema);
 export const ExportJobSchemaDefinition =
   SchemaFactory.createForClass(ExportJobSchema);
+
+// Índices compuestos por colección
+DashboardKPISchemaDefinition.index({ companyId: 1, date: -1 });
+DashboardKPISchemaDefinition.index({ date: -1 });
+
+ReportSchemaDefinition.index({ companyId: 1, createdAt: -1 });
+ReportSchemaDefinition.index({ createdBy: 1, companyId: 1 });
+ReportSchemaDefinition.index({ type: 1, companyId: 1 });
+
+AuditLogSchemaDefinition.index({ companyId: 1, createdAt: -1 });
+AuditLogSchemaDefinition.index({ userId: 1, companyId: 1 });
+AuditLogSchemaDefinition.index({ entityType: 1, entityId: 1 });
+
+ExportJobSchemaDefinition.index({ companyId: 1, createdAt: -1 });
+ExportJobSchemaDefinition.index({ status: 1, companyId: 1 });
 
 // TTL index for auto-cleanup
 ReportSchemaDefinition.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

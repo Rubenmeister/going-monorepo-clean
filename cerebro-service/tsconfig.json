@@ -11,6 +11,9 @@
     "sourceMap": true,
     "outDir": "../dist/cerebro-service",
     "baseUrl": ".",
+    "paths": {
+      "@going-platform/cerebro-contracts": ["../libs/cerebro-contracts/src/index.ts"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

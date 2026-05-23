@@ -16,7 +16,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AnalyticsService } from '../application/services/analytics.service';
-import { CorporateJwtAuthGuard } from '../../shared/guards/corporate-jwt.guard';
+import { CorporateJwtAuthGuard } from '@going-monorepo-clean/features-corporate-auth';
 
 @Controller('api/analytics')
 @UseGuards(CorporateJwtAuthGuard)
