@@ -200,6 +200,7 @@ export class ProxyModule implements NestModule {
       support: this.configService.get<string>('CUSTOMER_SUPPORT_SERVICE_URL', ''),
       social: this.configService.get<string>('SOCIAL_SERVICE_URL', 'http://localhost:3019'),
       corporate: this.configService.get<string>('CORPORATE_SERVICE_URL', 'http://localhost:3022'),
+      emergency: this.configService.get<string>('EMERGENCY_SERVICE_URL', ''),
     };
 
     this.logger.log(`Proxy ready → auth: ${svc.auth}`);
@@ -288,6 +289,14 @@ export class ProxyModule implements NestModule {
     guard('social', svc.social);
     guard('corporate', svc.corporate);
 
+    // /sos y /incidents → emergency-service. Auth JWT en ambos (la propia
+    // controller-side re-valida y exige role admin/operator para incidents).
+    // /sos es protected porque queremos saber QUIÉN dispara la alerta; el
+    // mismo controller hace match jwt.sub === body.userId para evitar
+    // impersonation.
+    guard('sos', svc.emergency);
+    guard('incidents', svc.emergency);
+
     // --- Exact-collection roots ---
     // NestJS 11 + Fastify 5: el patrón `prefix/*path` NO matchea la raíz
     // exacta `/prefix` (porque `*path` requiere ≥1 segmento). Para rutas
@@ -316,6 +325,10 @@ export class ProxyModule implements NestModule {
     guardExact('invoices', svc.invoices, allMethods);
     guardExact('analytics', svc.analytics, allMethods);
     guardExact('social', svc.social, allMethods);
+    // /sos es solo POST; /incidents soporta GET (lista) y PATCH no aplica al
+    // root sino a /incidents/:id (cubierto por el `guard('incidents', ...)`).
+    guardExact('sos',       svc.emergency, [RequestMethod.POST]);
+    guardExact('incidents', svc.emergency, [RequestMethod.GET]);
 
     // --- PUBLIC: /support/* → customer-support-service (WhatsApp webhook + web chat, no JWT) ---
     if (svc.support) {
