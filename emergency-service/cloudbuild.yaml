@@ -60,7 +60,10 @@ steps:
       # Si Mongo o Telegram cuelgan, queremos saberlo rápido.
       - --timeout=30
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
-      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest
+      # IMPORTANTE: --set-secrets reemplaza TODA la lista de secrets (no es
+      # additive). Listamos los 4 secrets del runtime — agregar más acá si
+      # se necesitan futuros (push notifications, etc.).
+      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,TELEGRAM_BOT_TOKEN=TELEGRAM_BOT_TOKEN:latest,OPERATOR_TELEGRAM_CHAT_IDS=OPERATOR_TELEGRAM_CHAT_IDS:latest
       # VPC connector necesario para conectar a MongoDB Atlas (whitelist IP).
       - --vpc-connector=going-connector
       - --vpc-egress=all-traffic
