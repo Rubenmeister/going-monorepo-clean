@@ -5,7 +5,7 @@ import {
   RideAnalytics,
   RideAnalyticsDocument,
 } from '../schemas/ride-analytics.schema';
-import { IRideAnalyticsRepository } from '../../../domain/ports';
+import { IRideAnalyticsRepository } from '../../domain/ports';
 
 /**
  * MongoDB Ride Analytics Repository

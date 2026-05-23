@@ -11,6 +11,10 @@
     "sourceMap": true,
     "outDir": "../dist/customer-support-service",
     "baseUrl": ".",
+    "paths": {
+      "@going-platform/pricing": ["../libs/pricing/src/index.ts"],
+      "@going-platform/cerebro-contracts": ["../libs/cerebro-contracts/src/index.ts"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,

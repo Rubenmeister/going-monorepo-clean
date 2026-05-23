@@ -5,7 +5,7 @@ import {
   DriverAnalytics,
   DriverAnalyticsDocument,
 } from '../schemas/driver-analytics.schema';
-import { IDriverAnalyticsRepository } from '../../../domain/ports';
+import { IDriverAnalyticsRepository } from '../../domain/ports';
 
 /**
  * MongoDB Driver Analytics Repository
@@ -114,7 +114,7 @@ export class MongoDriverAnalyticsRepository
     const sortObj: Record<string, number> = {};
     sortObj[metric] = sortOrder === 'desc' ? -1 : 1;
 
-    const docs = await this.analyticsModel.find().sort(sortObj).limit(limit);
+    const docs = await this.analyticsModel.find().sort(sortObj as any).limit(limit);
 
     return docs.map((doc) => this.mapToEntity(doc));
   }
