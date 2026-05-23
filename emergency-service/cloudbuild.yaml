@@ -1,0 +1,75 @@
+# emergency-service — Cloud Run Service deployment
+#
+# Servicio crítico de alertas SOS. Recibe POST /sos del mobile/web/voice
+# y notifica al equipo de ops vía Telegram con location + map link.
+# Persiste cada incident en Mongo (going-emergency DB) para auditoría
+# y ops dashboard.
+#
+# Trigger:
+#   gcloud builds submit . --config=emergency-service/cloudbuild.yaml --project=going-5d1ae
+
+steps:
+  # 1. Build con Dockerfile genérico de NestJS services, contexto = monorepo root.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - Dockerfile.cloudrun-service
+      - --build-arg
+      - SERVICE_NAME=emergency-service
+      - -t
+      - gcr.io/$PROJECT_ID/emergency-service:latest
+      - .
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/emergency-service:latest
+
+  # 2. Deploy as Cloud Run Service.
+  #
+  # Secrets gestionados por Cloud Build (Secret Manager):
+  #   JWT_SECRET-prod  — JWT compartido con user-auth (verifica tokens del cliente y operadores)
+  #
+  # Vars que se setean fuera del cloudbuild (vía `gcloud run services update --update-env-vars`):
+  #   MONGO_URL                  — Mongo Atlas (DB: going-emergency)
+  #   TELEGRAM_BOT_TOKEN         — token del bot que envía alertas a ops
+  #   OPERATOR_TELEGRAM_CHAT_IDS — comma-separated chat IDs del equipo ops
+  #                                (misma lista que usa customer-support para handoffs)
+  #   SOS_ALLOW_UNAUTH           — solo dev/testing local. NUNCA en prod.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - emergency-service
+      - --image=gcr.io/$PROJECT_ID/emergency-service:latest
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=3000
+      - --cpu=1
+      - --memory=512Mi
+      # min-instances=1 es OBLIGATORIO para SOS — un cold start de 5-10s
+      # en una emergencia real es inaceptable. Cuesta ~$5/mes mantener
+      # un container caliente; vale la pena.
+      - --min-instances=1
+      - --max-instances=10
+      # timeout corto — el endpoint /sos debe responder en <300ms.
+      # Si Mongo o Telegram cuelgan, queremos saberlo rápido.
+      - --timeout=30
+      - --set-env-vars=GCP_PROJECT=$PROJECT_ID,NODE_ENV=production
+      - --set-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest
+      # VPC connector necesario para conectar a MongoDB Atlas (whitelist IP).
+      - --vpc-connector=going-connector
+      - --vpc-egress=all-traffic
+      - --service-account=going-agent-sa@$PROJECT_ID.iam.gserviceaccount.com
+
+images:
+  - gcr.io/$PROJECT_ID/emergency-service:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'
