@@ -55,8 +55,21 @@ export interface ThemeTokens {
   premiumBg:     string;
   premiumText:   string;
 
-  // ── Brand legacy ───────────────────────────────────────────
+  // ── Brand identity ─────────────────────────────────────────
+  // Decisión rev 2026-05-23 tras logo canónico:
+  //   brandRed    → SOLO logo G + SOS / destructivos. NO usar como CTA.
+  //   brandNavy   → hero backgrounds + primary CTA en forms (Login/Register/etc)
+  //   brandYellow → CTA de momentos especiales (Comenzar, Pagar, Iniciar ruta)
   brandRed:      string;
+  brandNavy:     string;   // primary action color (form CTAs)
+  brandNavyDark: string;   // hover/pressed state of navy
+  brandYellow:   string;   // accent CTA color (Comenzar/Pagar)
+  brandYellowDark: string; // pressed/hover
+
+  // Texto sobre brandYellow — el yellow tiene buen contraste con negro
+  textOnYellow:  string;
+  // Texto sobre brandNavy — siempre blanco
+  textOnNavy:    string;
 }
 
 // ─── Modo OSCURO (hero / brand / SOS / voice) ───────────────────────────
@@ -90,7 +103,13 @@ export const darkTokens: ThemeTokens = {
   premiumBg:     'rgba(255,215,0,0.06)',
   premiumText:   'rgba(255,215,0,0.85)',
 
-  brandRed:      '#ff4c41',
+  brandRed:        '#FF4C41',  // confirmado por logo canónico Going
+  brandNavy:       '#2a3a6e',  // navy ligeramente más claro en dark para contraste
+  brandNavyDark:   '#1d2e58',
+  brandYellow:     '#FFCD00',  // mismo en ambos modos — el yellow funciona en dark
+  brandYellowDark: '#E6B800',
+  textOnYellow:    '#0a0e1a',
+  textOnNavy:      '#ffffff',
 };
 
 // ─── Modo CLARO (operativo / diario) ────────────────────────────────────
@@ -129,7 +148,13 @@ export const lightTokens: ThemeTokens = {
   premiumBg:     'rgba(201,162,39,0.08)',
   premiumText:   '#8B6F00',
 
-  brandRed:      '#e63b2f',
+  brandRed:        '#FF4C41',  // mismo coral del logo en ambos modos
+  brandNavy:       '#1d2e58',  // navy profundo — primary CTA en forms
+  brandNavyDark:   '#142244',
+  brandYellow:     '#FFCD00',  // amarillo brand
+  brandYellowDark: '#E6B800',
+  textOnYellow:    '#0a0e1a',
+  textOnNavy:      '#ffffff',
 };
 
 /**
