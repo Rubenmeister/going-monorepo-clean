@@ -1,0 +1,20 @@
+{
+  "name": "emergency-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "emergency-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/emergency-service",
+        "main": "emergency-service/src/main.ts",
+        "tsConfig": "emergency-service/tsconfig.app.json",
+        "webpackConfig": "emergency-service/webpack.config.js"
+      }
+    }
+  }
+}
