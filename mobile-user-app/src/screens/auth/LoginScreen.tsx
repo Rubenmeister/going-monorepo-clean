@@ -1,28 +1,39 @@
 /**
  * LoginScreen — Going Ecuador
- * Pantalla 02: Bienvenido nuevamente
  *
  * Flujo:
- *  - Si ya tiene token guardado → auto-skip (maneja AuthNavigator)
+ *  - Biometría auto al abrir si está habilitada
  *  - Email + contraseña → "Entrar"
  *  - ¿Olvidaste tu clave? → ForgotPassword
- *  - Social login: Google | Facebook | Apple (UI lista, OAuth pendiente de config)
- *  - Crea una cuenta con nosotros → Register
- *  - Biometría: Face ID / Huella si está habilitado
+ *  - Crear cuenta → Register
+ *
+ * Theme: ADAPTATIVO light + dark (useTheme). Estilo tech-noir consistente
+ * con OnboardingScreen — hero card glass con HUD corners + acentos neon
+ * cyan, sin hero rojo brand (movido a Splash/identity moments).
+ *
+ * Decisiones de producto (2026-05-23):
+ *   - Sin social login visible: Google/Facebook/Apple stubs eliminados
+ *     hasta que OAuth real esté implementado (config + callback).
+ *   - Stats honestas: "Ciudades conectadas", "Soporte 24/7", "Conductores
+ *     verificados". El "4.9★" hardcoded y "100% seguro" salieron.
+ *   - Link a T&C/Privacy visible (requisito legal EC + UX standard).
+ *   - CTA primario en neonCyan (matches onboarding). brandRed reservado
+ *     para destructivos / SOS.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert,
   ScrollView,
   Image,
+  Linking,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -36,51 +47,34 @@ import {
 import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
 import { analyticsLogin } from '../../utils/analytics';
+import { useTheme, type ThemeTokens } from '../../theme';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
-// ── Brand tokens (DESIGN.md) ────────────────────────────────
-const RED      = '#F04E40';   // Going red
-const RED_DARK = '#C0392B';   // gradiente oscuro
-const YELLOW   = '#F5C518';   // Going yellow
-const NAVY     = '#131b2e';   // on_background
-const SURFACE  = '#faf8ff';   // surface
-const GRAY     = '#6B7280';
-
-// ── Social providers ────────────────────────────────────────
-const SOCIALS = [
-  {
-    id: 'google',
-    label: 'Google',
-    icon: 'logo-google' as const,
-    color: '#EA4335',
-    bg: '#FEF2F2',
-  },
-  {
-    id: 'facebook',
-    label: 'Facebook',
-    icon: 'logo-facebook' as const,
-    color: '#1877F2',
-    bg: '#EFF6FF',
-  },
-  {
-    id: 'apple',
-    label: 'Apple',
-    icon: 'logo-apple' as const,
-    color: '#000000',
-    bg: '#F3F4F6',
-  },
+// Stats defensibles (todas verificables o son políticas reales):
+//   - 50+ ciudades — catálogo real en libs/pricing/cities.ts
+//   - 24/7 soporte — customer-support-service always-on (min-instances=1)
+//   - 100% verificados — política operativa: todos los conductores pasan KYC
+const STATS = [
+  { value: '50+',  label: 'Ciudades' },
+  { value: '24/7', label: 'Soporte' },
+  { value: '100%', label: 'Verificados' },
 ];
 
 export function LoginScreen() {
   const navigation = useNavigation<Nav>();
   const { login, isLoading, error, clearError } = useAuthStore();
+  const { tokens, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [showPwd,  setShowPwd]  = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricType,    setBiometricType]    = useState<'faceid' | 'fingerprint' | null>(null);
+
+  // Ref al input de password — permite que el "next" del email focusee aquí
+  const passwordRef = useRef<TextInput>(null);
 
   // ── Biometría automática al abrir ───────────────────────────
   useEffect(() => {
@@ -117,13 +111,8 @@ export function LoginScreen() {
     analyticsLogin('email');
   };
 
-  const handleSocial = (provider: string) => {
-    // TODO: configurar OAuth con expo-auth-session
-    Alert.alert(
-      `Continuar con ${provider}`,
-      'El inicio de sesión con redes sociales estará disponible pronto.',
-    );
-  };
+  // Logo brand — en hero glass siempre legible (overlay propio del card)
+  const logoSource = require('../../../assets/going-logo-horizontal-white.png');
 
   return (
     <KeyboardAvoidingView
@@ -136,21 +125,23 @@ export function LoginScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* ══ HERO ROJO ══════════════════════════════════════════ */}
+        {/* ══ HERO TECH-NOIR ═══════════════════════════════════════ */}
         <View style={styles.hero}>
-          <Image
-            source={require('../../../assets/going-logo-horizontal-white.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {/* HUD corners decorativos — vibe consistent con onboarding */}
+          <View pointerEvents="none" style={[styles.hudCorner, styles.hudTopLeft]} />
+          <View pointerEvents="none" style={[styles.hudCorner, styles.hudTopRight]} />
 
-          {/* Stats pill */}
-          <View style={styles.statsRow}>
-            {[
-              { value: '50+',  label: 'Ciudades' },
-              { value: '4.9★', label: 'Calificación' },
-              { value: '100%', label: 'Seguro' },
-            ].map((s, i, arr) => (
+          {/* Eyebrow chip flotante */}
+          <View style={styles.eyebrowChip}>
+            <View style={styles.eyebrowDot} />
+            <Text style={styles.eyebrowText}>Acceso · Going</Text>
+          </View>
+
+          <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+
+          {/* Stats card glass */}
+          <View style={styles.statsCard}>
+            {STATS.map((s, i, arr) => (
               <React.Fragment key={s.label}>
                 <View style={styles.statItem}>
                   <Text style={styles.statValue}>{s.value}</Text>
@@ -162,14 +153,13 @@ export function LoginScreen() {
           </View>
         </View>
 
-        {/* ══ CARD BLANCA ════════════════════════════════════════ */}
+        {/* ══ FORM CARD ════════════════════════════════════════════ */}
         <View style={styles.card}>
 
-          {/* Título */}
           <Text style={styles.title}>Bienvenido nuevamente</Text>
           <Text style={styles.subtitle}>Ingresa a tu cuenta</Text>
 
-          {/* ── Biometría ── */}
+          {/* ── Biometría (si disponible y habilitada) ── */}
           {biometricEnabled && biometricType && (
             <TouchableOpacity
               style={styles.biometricBtn}
@@ -184,48 +174,59 @@ export function LoginScreen() {
               <Ionicons
                 name={biometricType === 'faceid' ? 'scan-circle-outline' : 'finger-print-outline'}
                 size={22}
-                color={RED}
+                color={tokens.neonCyan}
               />
               <Text style={styles.biometricText}>
                 {biometricType === 'faceid' ? 'Entrar con Face ID' : 'Entrar con huella digital'}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={RED} />
+              <Ionicons name="chevron-forward" size={16} color={tokens.neonCyan} />
             </TouchableOpacity>
           )}
 
           {/* ── Correo ── */}
           <Text style={styles.fieldLabel}>Correo electrónico</Text>
           <View style={styles.inputRow}>
-            <Ionicons name="mail-outline" size={18} color="#9CA3AF" />
+            <Ionicons name="mail-outline" size={18} color={tokens.textTertiary} />
             <TextInput
               style={styles.input}
               placeholder="correo@ejemplo.com"
-              placeholderTextColor="#C4C9D4"
+              placeholderTextColor={tokens.textTertiary}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
+              blurOnSubmit={false}
             />
           </View>
 
           {/* ── Contraseña ── */}
           <Text style={styles.fieldLabel}>Contraseña</Text>
           <View style={styles.inputRow}>
-            <Ionicons name="lock-closed-outline" size={18} color="#9CA3AF" />
+            <Ionicons name="lock-closed-outline" size={18} color={tokens.textTertiary} />
             <TextInput
+              ref={passwordRef}
               style={styles.input}
               placeholder="••••••••"
-              placeholderTextColor="#C4C9D4"
+              placeholderTextColor={tokens.textTertiary}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPwd}
               returnKeyType="done"
               onSubmitEditing={handleLogin}
             />
-            <TouchableOpacity onPress={() => setShowPwd(v => !v)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name={showPwd ? 'eye-off-outline' : 'eye-outline'} size={18} color="#9CA3AF" />
+            <TouchableOpacity
+              onPress={() => setShowPwd(v => !v)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel={showPwd ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              <Ionicons
+                name={showPwd ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={tokens.textTertiary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -244,38 +245,17 @@ export function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading}
             activeOpacity={0.88}
+            accessibilityLabel="Entrar a Going"
           >
             {isLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={tokens.textInverse} />
             ) : (
               <>
                 <Text style={styles.enterBtnText}>Entrar</Text>
-                <Ionicons name="arrow-forward" size={18} color="#fff" />
+                <Ionicons name="arrow-forward" size={18} color={tokens.textInverse} />
               </>
             )}
           </TouchableOpacity>
-
-          {/* ── Divisor ── */}
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o continúa con</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* ── Social login: Google | Facebook | Apple ── */}
-          <View style={styles.socialRow}>
-            {SOCIALS.map(s => (
-              <TouchableOpacity
-                key={s.id}
-                style={[styles.socialBtn, { backgroundColor: s.bg }]}
-                onPress={() => handleSocial(s.label)}
-                activeOpacity={0.85}
-              >
-                <Ionicons name={s.icon} size={22} color={s.color} />
-                <Text style={[styles.socialText, { color: s.color }]}>{s.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
 
           {/* ── Crear cuenta ── */}
           <TouchableOpacity
@@ -289,150 +269,241 @@ export function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
+          {/* ── Legal — requisito EC + UX best practice ── */}
+          <Text style={styles.legalText}>
+            Al iniciar sesión aceptas nuestros{' '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL('https://goingec.com/terminos')}
+            >
+              Términos
+            </Text>
+            {' y la '}
+            <Text
+              style={styles.legalLink}
+              onPress={() => Linking.openURL('https://goingec.com/privacidad')}
+            >
+              Política de Privacidad
+            </Text>
+            .
+          </Text>
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-// ── Styles ──────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: RED },
-  scroll: { flexGrow: 1 },
+// ─────────────────────────────────────────────────────────────
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    root:   { flex: 1, backgroundColor: t.bg },
+    scroll: { flexGrow: 1 },
 
-  // Hero
-  hero: {
-    backgroundColor: RED,
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 28,
-    paddingHorizontal: 24,
-  },
-  logo: { width: 190, height: 81, marginBottom: 20 },
+    // ── HERO TECH-NOIR ──────────────────────────────────────
+    // En dark: bgLayer (panel elevado) con HUD corners cyan.
+    // En light: panel blanco con bordes y HUD corners más visibles.
+    hero: {
+      backgroundColor: t.bgLayer,
+      alignItems: 'center',
+      paddingTop: 64,
+      paddingBottom: 32,
+      paddingHorizontal: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: t.glassBorder,
+      position: 'relative',
+    },
 
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    width: '100%',
-  },
-  statItem:   { flex: 1, alignItems: 'center' },
-  statValue:  { color: YELLOW, fontSize: 17, fontWeight: '900' },
-  statLabel:  { color: 'rgba(255,255,255,0.70)', fontSize: 10, marginTop: 2 },
-  statDivider:{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.20)' },
+    hudCorner: {
+      position: 'absolute',
+      width: 28, height: 28,
+      borderColor: t.neonCyan,
+      opacity: isDark ? 0.55 : 0.85,
+    },
+    hudTopLeft: {
+      top: 18, left: 18,
+      borderTopWidth: 1.5, borderLeftWidth: 1.5,
+    },
+    hudTopRight: {
+      top: 18, right: 18,
+      borderTopWidth: 1.5, borderRightWidth: 1.5,
+    },
 
-  // Card
-  card: {
-    backgroundColor: SURFACE,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 28,
-    paddingTop: 32,
-    paddingBottom: 48,
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: NAVY,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: GRAY,
-    marginBottom: 24,
-  },
+    eyebrowChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: `${t.neonCyan}15`,
+      borderWidth: 1, borderColor: `${t.neonCyan}40`,
+      paddingHorizontal: 12, paddingVertical: 4,
+      borderRadius: 999,
+      marginBottom: 18,
+    },
+    eyebrowDot: {
+      width: 6, height: 6, borderRadius: 3,
+      backgroundColor: t.neonCyan,
+    },
+    eyebrowText: {
+      fontSize: 10, fontWeight: '700', letterSpacing: 1.5,
+      color: t.neonCyan, textTransform: 'uppercase',
+    },
 
-  // Biometría
-  biometricBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#FEF2F2',
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
-  biometricText: { flex: 1, fontSize: 14, fontWeight: '700', color: RED },
+    // En dark el logo blanco se ve directo. En light necesita un sutil
+    // backdrop para que las letras blancas no se pierdan — wrap container
+    // ya provee bgLayer que en light es #ffffff (logo blanco no visible).
+    // Solución: usar tint del logo via Image tintColor. Mantener simple
+    // por ahora y pedir going-logo-dark.png (TODO).
+    logo: {
+      width: 170, height: 72,
+      marginBottom: 20,
+      tintColor: isDark ? undefined : t.textPrimary,
+    },
 
-  // Campos
-  fieldLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: GRAY,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 8,
-    marginTop: 14,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#F2F3FF',   // surface_container_low
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  input: { flex: 1, fontSize: 15, color: NAVY },
+    // Stats card glass — overlay sutil sobre el hero
+    statsCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: t.glass,
+      borderWidth: 1, borderColor: t.glassBorder,
+      borderRadius: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      width: '100%',
+    },
+    statItem:   { flex: 1, alignItems: 'center' },
+    statValue:  {
+      color: t.neonCyan,
+      fontSize: 17, fontWeight: '900',
+      letterSpacing: -0.3,
+    },
+    statLabel:  {
+      color: t.textTertiary,
+      fontSize: 10, marginTop: 2,
+      fontWeight: '600', letterSpacing: 0.3,
+      textTransform: 'uppercase',
+    },
+    statDivider: {
+      width: 1, height: 28,
+      backgroundColor: t.glassBorder,
+    },
 
-  // ¿Olvidaste tu clave?
-  forgotRow: { alignItems: 'flex-end', marginTop: 10 },
-  forgotText: { color: RED, fontSize: 13, fontWeight: '700' },
+    // ── FORM CARD ───────────────────────────────────────────
+    card: {
+      flex: 1,
+      backgroundColor: t.bg,
+      paddingHorizontal: 28,
+      paddingTop: 32,
+      paddingBottom: 48,
+    },
+    title: {
+      fontSize: 26, fontWeight: '900',
+      color: t.textPrimary,
+      letterSpacing: -0.5,
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginBottom: 24,
+    },
 
-  // Botón Entrar (gradiente simulado: rojo oscuro → rojo)
-  enterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: RED,
-    borderRadius: 48,   // pill — xl roundedness
-    paddingVertical: 16,
-    marginTop: 24,
-    // Sombra suave con tinte azul (DESIGN.md: sombra con on_surface)
-    shadowColor: RED_DARK,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  enterBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
+    // Biometría
+    biometricBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: `${t.neonCyan}10`,
+      borderWidth: 1, borderColor: `${t.neonCyan}30`,
+      borderRadius: 14,
+      paddingVertical: 13,
+      paddingHorizontal: 16,
+      marginBottom: 20,
+    },
+    biometricText: {
+      flex: 1, fontSize: 14, fontWeight: '700',
+      color: t.neonCyan,
+    },
 
-  // Divisor
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 28,
-    marginBottom: 20,
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
-  dividerText: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
+    // Campos
+    fieldLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: t.textTertiary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      marginBottom: 8,
+      marginTop: 14,
+    },
+    inputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: t.glass,
+      borderWidth: 1, borderColor: t.glassBorder,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+    },
+    input: {
+      flex: 1, fontSize: 15,
+      color: t.textPrimary,
+    },
 
-  // Social
-  socialRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 28,
-  },
-  socialBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderRadius: 14,
-    paddingVertical: 13,
-  },
-  socialText: { fontSize: 13, fontWeight: '700' },
+    // ¿Olvidaste tu clave?
+    forgotRow: { alignItems: 'flex-end', marginTop: 10 },
+    forgotText: {
+      color: t.neonCyan,
+      fontSize: 13, fontWeight: '700',
+    },
 
-  // Crear cuenta
-  createRow: { alignItems: 'center' },
-  createText: { fontSize: 13, color: GRAY, textAlign: 'center', lineHeight: 20 },
-  createLink: { color: RED, fontWeight: '800' },
-});
+    // Botón Entrar — neonCyan primary (matches onboarding)
+    enterBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: t.neonCyan,
+      borderRadius: 48,
+      paddingVertical: 16,
+      marginTop: 24,
+      shadowColor: t.neonCyan,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 12,
+      elevation: 6,
+    },
+    enterBtnText: {
+      color: t.textInverse,
+      fontSize: 16, fontWeight: '900',
+      letterSpacing: 0.3,
+    },
+
+    // Crear cuenta
+    createRow: { alignItems: 'center', marginTop: 28 },
+    createText: {
+      fontSize: 13,
+      color: t.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    createLink: {
+      color: t.neonCyan,
+      fontWeight: '800',
+    },
+
+    // Legal
+    legalText: {
+      fontSize: 11,
+      color: t.textTertiary,
+      textAlign: 'center',
+      lineHeight: 18,
+      marginTop: 24,
+      paddingHorizontal: 16,
+    },
+    legalLink: {
+      color: t.textSecondary,
+      fontWeight: '700',
+      textDecorationLine: 'underline',
+    },
+  });
+}
