@@ -8,6 +8,24 @@ export type IncidentType   = 'medical' | 'accident' | 'robbery' | 'harassment' |
 export type IncidentChannel = 'mobile' | 'web' | 'whatsapp' | 'telegram' | 'voice' | 'api';
 
 /**
+ * Sub-schema GeoJSON Point. Definido como clase separada con
+ * @Schema({_id:false}) porque Mongoose se confunde si lo definís inline
+ * en @Prop con un nested `type: { type: String, ... }` (interpreta el
+ * outer `type:` como SchemaTypeOptions y rompe). Smoke test 2026-05-23
+ * detectó el bug.
+ */
+@Schema({ _id: false })
+export class GeoPoint {
+  @Prop({ type: String, enum: ['Point'], default: 'Point', required: true })
+  type: 'Point';
+
+  /** [lng, lat] — orden invertido respecto a {lat,lng}. Convención GeoJSON. */
+  @Prop({ type: [Number], required: true })
+  coordinates: [number, number];
+}
+export const GeoPointSchema = SchemaFactory.createForClass(GeoPoint);
+
+/**
  * Una alerta SOS de un cliente. La crea POST /sos y queda en este schema
  * hasta que un operador la marca como resolved/false_alarm.
  *
@@ -40,17 +58,12 @@ export class IncidentEntity {
   description?: string;
 
   /**
-   * Punto GeoJSON [lng, lat] — orden invertido respecto a {lat, lng}.
-   * Index 2dsphere para queries geoespaciales en el ops dashboard.
+   * Punto GeoJSON [lng, lat]. Index 2dsphere para queries geoespaciales
+   * en el ops dashboard (definido al final del file). Ver GeoPoint arriba
+   * para el sub-schema separado.
    */
-  @Prop({
-    type: {
-      type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number] }, // [lng, lat]
-    },
-    required: true,
-  })
-  location: { type: 'Point'; coordinates: [number, number] };
+  @Prop({ type: GeoPointSchema, required: true })
+  location: GeoPoint;
 
   /** Accuracy del GPS reportado por el cliente, en metros. Opcional. */
   @Prop()
