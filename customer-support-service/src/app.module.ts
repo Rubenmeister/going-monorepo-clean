@@ -17,6 +17,7 @@ import { WhatsAppService } from './infrastructure/whatsapp.service';
 import { HandoffNotifierService } from './infrastructure/handoff-notifier.service';
 import { MetricsService } from './infrastructure/metrics.service';
 import { CerebroPublisherService } from './infrastructure/cerebro-publisher.service';
+import { OpenAIRealtimeAdapter } from './infrastructure/openai-realtime.adapter';
 import { LocationService } from './knowledge-base/location.service';
 import { ConversationSchema } from './infrastructure/schemas/conversation.schema';
 import { MongoConversationRepository } from './infrastructure/persistence/mongo-conversation.repository';
@@ -65,6 +66,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     MongoConversationRepository,
     MetricsService,
     CerebroPublisherService,
+    OpenAIRealtimeAdapter,
   ],
 })
 export class AppModule {}
