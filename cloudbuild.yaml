@@ -100,6 +100,8 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_HIGHCPU_4'
+  # NOTE: machineType requiere pool.name configurado; sin pool, gcloud lo
+  # rechaza con ".options.machineType: unused". Default es e2-medium (1 vCPU,
+  # 4GB) — suficiente para el build del api-gateway (NestJS pequeño).
 
 timeout: '1800s'
