@@ -3,11 +3,9 @@ import path from 'path';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-// Validación fail-fast: fallar inmediatamente si faltan vars críticas
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!ANTHROPIC_API_KEY) {
-  throw new Error('[Config] ANTHROPIC_API_KEY es requerida. Configúrala en .env o en GCP Secret Manager.');
-}
+// Validación fail-fast: fallar inmediatamente si faltan vars críticas.
+// (ANTHROPIC_API_KEY ya no se requiere — el agente usa Vertex AI / Gemini
+// con Application Default Credentials del SA going-agent-sa.)
 
 const GCP_PROJECT = process.env.GCP_PROJECT;
 if (!GCP_PROJECT) {
@@ -15,7 +13,6 @@ if (!GCP_PROJECT) {
 }
 
 export const config = {
-  anthropicApiKey: ANTHROPIC_API_KEY,
   repoPath: process.env.REPO_PATH || path.join(__dirname, '../../'),
   gcpProject: GCP_PROJECT,
   gcpRegion: process.env.GCP_REGION || 'us-central1',

@@ -4,9 +4,17 @@
  * │  "selva · naturaleza — el todo del que somos parte"                  │
  * │  Agente del producto core. Rides, transport, growth, métricas de la  │
  * │  plataforma. Publica eventos a Pacha.                                │
+ * │                                                                      │
+ * │  Migrado a Vertex AI / Gemini (2026-05-23):                          │
+ * │   - Eliminada dependencia de @anthropic-ai/sdk y ANTHROPIC_API_KEY.  │
+ * │   - Usa @google-cloud/vertexai con ADC del SA going-agent-sa.        │
+ * │   - Modelo default: gemini-2.5-flash (mismo patrón que financial).   │
+ * │   - Tool-use mapeado: Anthropic.Tool → FunctionDeclaration,          │
+ * │     tool_use → functionCall, tool_result → functionResponse,         │
+ * │     role 'assistant' → 'model'.                                      │
  * └──────────────────────────────────────────────────────────────────────┘
  */
-import Anthropic from '@anthropic-ai/sdk';
+import { VertexAI } from '@google-cloud/vertexai';
 import { execSync } from 'child_process';
 import * as fsSync from 'fs';
 import { v4 as uuidv4 } from 'uuid';
@@ -70,10 +78,6 @@ async function sendTelegramReport(text: string): Promise<void> {
 }
 
 // ── Asegurar que tenemos el repo clonado en este contenedor ───────────────
-// El going-agent es un autonomous code agent que necesita acceso al repo
-// (vía git diff, log, write_file, commit, push). Como Cloud Run Jobs no
-// montan el repo, lo clonamos al inicio de cada ejecución. Si REPO_PATH ya
-// tiene un .git/, hacemos pull para traer cambios recientes.
 function ensureRepo() {
   const REPO_PATH = process.env.REPO_PATH || '/tmp/going-repo';
   const GIT_TOKEN = process.env.GIT_TOKEN;
@@ -91,95 +95,102 @@ function ensureRepo() {
     const url = `https://x-access-token:${GIT_TOKEN}@${REPO_URL}`;
     execSync(`git clone --depth=50 ${url} ${REPO_PATH}`, { stdio: 'pipe' });
   }
-  // Override config.repoPath con la ubicación real
   (config as any).repoPath = REPO_PATH;
 }
 
 ensureRepo();
 
-const client = new Anthropic({ apiKey: config.anthropicApiKey });
+// ── Vertex AI client (ADC del SA del Cloud Run Job) ────────────────────────
+const vertexAI = new VertexAI({
+  project:  config.gcpProject,
+  location: config.gcpRegion,
+});
+
 const git = new GitTool();
 const fs = new FilesystemTool();
 const cloudrun = new CloudRunTool();
 const memory = new MemoryStore();
 
-// ── Definición de herramientas para el agente ──────────────────────────────
-const tools: Anthropic.Tool[] = [
-  {
-    name: 'read_file',
-    description: 'Lee el contenido de un archivo del repositorio',
-    input_schema: {
-      type: 'object' as const,
-      properties: { path: { type: 'string', description: 'Ruta relativa al repo' } },
-      required: ['path'],
-    },
-  },
-  {
-    name: 'write_file',
-    description: 'Escribe o modifica un archivo del repositorio. Nunca modificar archivos protegidos.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        path: { type: 'string' },
-        content: { type: 'string', description: 'Contenido completo del archivo' },
+// ── Definición de herramientas (FunctionDeclarations de Gemini) ───────────
+//
+// La forma del schema viene del estándar OpenAPI 3 que Gemini interpreta.
+// Usamos string literals para el type (`'OBJECT'`, `'STRING'`, etc.) — el
+// SDK los acepta sin necesidad de importar el enum SchemaType.
+const tools: any[] = [{
+  functionDeclarations: [
+    {
+      name: 'read_file',
+      description: 'Lee el contenido de un archivo del repositorio',
+      parameters: {
+        type: 'OBJECT',
+        properties: { path: { type: 'STRING', description: 'Ruta relativa al repo' } },
+        required: ['path'],
       },
-      required: ['path', 'content'],
     },
-  },
-  {
-    name: 'list_directory',
-    description: 'Lista archivos y carpetas en un directorio del repo',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        path: { type: 'string', description: 'Ruta relativa (ej: "api-gateway/src")' },
-        depth: { type: 'number', description: 'Profundidad máxima (1-3)' },
+    {
+      name: 'write_file',
+      description: 'Escribe o modifica un archivo del repositorio. Nunca modificar archivos protegidos.',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          path:    { type: 'STRING' },
+          content: { type: 'STRING', description: 'Contenido completo del archivo' },
+        },
+        required: ['path', 'content'],
       },
-      required: ['path'],
     },
-  },
-  {
-    name: 'get_cloud_run_logs',
-    description: 'Obtiene logs de errores de un servicio en Cloud Run',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        service: { type: 'string', description: 'Nombre del servicio (ej: api-gateway)' },
+    {
+      name: 'list_directory',
+      description: 'Lista archivos y carpetas en un directorio del repo',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          path:  { type: 'STRING', description: 'Ruta relativa (ej: "api-gateway/src")' },
+          depth: { type: 'NUMBER', description: 'Profundidad máxima (1-3)' },
+        },
+        required: ['path'],
       },
-      required: ['service'],
     },
-  },
-  {
-    name: 'get_failed_builds',
-    description: 'Lista los builds fallidos recientes en Cloud Build',
-    input_schema: { type: 'object' as const, properties: {}, required: [] },
-  },
-  {
-    name: 'get_git_log',
-    description: 'Obtiene los últimos commits del repositorio',
-    input_schema: {
-      type: 'object' as const,
-      properties: { lines: { type: 'number' } },
-      required: [],
-    },
-  },
-  {
-    name: 'commit_fix',
-    description: 'Hace commit de archivos modificados en la rama agent/fixes. Solo usar después de write_file.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        message: { type: 'string', description: 'Descripción del fix' },
-        files: { type: 'array', items: { type: 'string' }, description: 'Archivos a incluir' },
+    {
+      name: 'get_cloud_run_logs',
+      description: 'Obtiene logs de errores de un servicio en Cloud Run',
+      parameters: {
+        type: 'OBJECT',
+        properties: { service: { type: 'STRING', description: 'Nombre del servicio (ej: api-gateway)' } },
+        required: ['service'],
       },
-      required: ['message', 'files'],
     },
-  },
-];
+    {
+      name: 'get_failed_builds',
+      description: 'Lista los builds fallidos recientes en Cloud Build',
+      parameters: { type: 'OBJECT', properties: {}, required: [] },
+    },
+    {
+      name: 'get_git_log',
+      description: 'Obtiene los últimos commits del repositorio',
+      parameters: {
+        type: 'OBJECT',
+        properties: { lines: { type: 'NUMBER' } },
+        required: [],
+      },
+    },
+    {
+      name: 'commit_fix',
+      description: 'Hace commit de archivos modificados en la rama agent/fixes. Solo usar después de write_file.',
+      parameters: {
+        type: 'OBJECT',
+        properties: {
+          message: { type: 'STRING', description: 'Descripción del fix' },
+          files:   { type: 'ARRAY', items: { type: 'STRING' }, description: 'Archivos a incluir' },
+        },
+        required: ['message', 'files'],
+      },
+    },
+  ],
+}];
 
 // Cap de tamaño en resultados de tools — los reads de archivos grandes
-// disparan context overflow (200k tokens) tras 5-10 iteraciones.
-// 4000 chars ≈ 1000 tokens; con 15 iteraciones máx = ~15k tokens en results.
+// disparan context overflow tras varias iteraciones.
 const TOOL_RESULT_MAX_CHARS = 4000;
 
 function trimToolResult(result: string): string {
@@ -187,11 +198,7 @@ function trimToolResult(result: string): string {
   return result.slice(0, TOOL_RESULT_MAX_CHARS) + `\n\n…(truncado, ${result.length - TOOL_RESULT_MAX_CHARS} chars omitidos)`;
 }
 
-// ── Ejecutor de herramientas ────────────────────────────────────────────────
-//
-// El collector es opcional; si está presente, acumulamos cada tool call
-// (nombre, target, resultado) para que el cerebro reciba un breakdown
-// concreto de qué hizo el agente este ciclo.
+// ── Ejecutor de herramientas (sin cambios respecto a la versión Anthropic) ─
 async function executeTool(
   name: string,
   input: Record<string, any>,
@@ -219,7 +226,6 @@ async function executeTool(
         return fs.listDir(input.path, input.depth || 1).join('\n');
       case 'get_cloud_run_logs': {
         const result = await cloudrun.getServiceLogs(input.service);
-        // Si hay errores en el output, lo capturamos como anomaly para el cerebro.
         if (c && result && !result.startsWith('✅') && !result.startsWith('❌ Error leyendo')) {
           c.anomalies.push({
             type: 'cloud_run_errors_found',
@@ -283,19 +289,24 @@ async function executeTool(
   }
 }
 
-// ── Retry con backoff para rate limits ────────────────────────────────────
-async function callWithRetry(
-  fn: () => Promise<Anthropic.Message>,
-  maxRetries = 4,
-): Promise<Anthropic.Message> {
+// ── Retry con backoff para rate limits / quota exhausted ──────────────────
+async function callWithRetry<T>(fn: () => Promise<T>, maxRetries = 4): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (e: any) {
-      const isRateLimit = e?.status === 429 || e?.message?.includes('rate limit');
-      if (isRateLimit && attempt < maxRetries) {
+      const msg = String(e?.message || '');
+      const isRetryable =
+        e?.code === 429 ||
+        e?.status === 429 ||
+        msg.includes('429') ||
+        msg.includes('quota') ||
+        msg.includes('rate limit') ||
+        msg.includes('RESOURCE_EXHAUSTED') ||
+        msg.includes('UNAVAILABLE');
+      if (isRetryable && attempt < maxRetries) {
         const waitMs = Math.pow(2, attempt) * 15000; // 15s, 30s, 60s, 120s
-        console.log(`  ⏳ Rate limit — esperando ${waitMs / 1000}s (intento ${attempt + 1}/${maxRetries})`);
+        console.log(`  ⏳ Vertex quota/rate — esperando ${waitMs / 1000}s (intento ${attempt + 1}/${maxRetries})`);
         await new Promise(r => setTimeout(r, waitMs));
       } else {
         throw e;
@@ -306,9 +317,6 @@ async function callWithRetry(
 }
 
 // ── Loop principal del agente ──────────────────────────────────────────────
-//
-// Devuelve el RunCollector para que main() arme el AgentRunEvent que se
-// publica al cerebro al final del ciclo.
 async function runAgentCycle(c: RunCollector): Promise<{ finalReport: string }> {
   console.log(`\n🤖 Going Agent — ${new Date().toLocaleString()}`);
   console.log(`📊 ${memory.summary()}\n`);
@@ -338,16 +346,27 @@ Reglas estrictas:
 
 El stack es: NestJS 11 + Fastify 5 (api-gateway), NestJS + Express (servicios), Next.js 14 (frontend), MongoDB Atlas, Cloud Run, Cloud Build.`;
 
-  const messages: Anthropic.MessageParam[] = [
+  const modelName = process.env.AGENT_MODEL || 'gemini-2.5-flash';
+
+  const model = vertexAI.getGenerativeModel({
+    model: modelName,
+    systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] } as any,
+    tools,
+    generationConfig: { maxOutputTokens: 4096, temperature: 0.4 },
+  });
+
+  // Historia de la conversación (manejada manualmente para tener control sobre el pruning).
+  const contents: any[] = [
     {
       role: 'user',
-      content: `Ejecuta un ciclo de revisión. Revisa los servicios más críticos: api-gateway, user-auth-service, frontend-webapp.
+      parts: [{
+        text: `Ejecuta un ciclo de revisión. Revisa los servicios más críticos: api-gateway, user-auth-service, frontend-webapp.
 Busca errores en los logs y builds fallidos. Si encuentras algo concreto para arreglar, aplica el fix y haz commit en agent/fixes.
 Reporta todo lo que encuentres.`,
+      }],
     },
   ];
 
-  // Agentic loop
   const MAX_ITERATIONS = 15;
   let iterations = 0;
   let toolCallsCount = 0;
@@ -356,88 +375,89 @@ Reporta todo lo que encuentres.`,
   while (iterations < MAX_ITERATIONS) {
     iterations++;
 
-    const response = await callWithRetry(() =>
-      client.messages.create({
-        model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
-        max_tokens: 4096,
-        system: systemPrompt,
-        tools,
-        messages,
-      })
-    );
+    const result: any = await callWithRetry(() => model.generateContent({ contents }));
+    const candidate = result.response.candidates?.[0];
+    if (!candidate?.content) {
+      console.warn('[going-agent] Vertex no devolvió content — corto el loop');
+      break;
+    }
 
-    messages.push({ role: 'assistant', content: response.content });
+    const parts: any[] = candidate.content.parts || [];
 
-    if (response.stop_reason === 'end_turn') {
-      finalReport = response.content
-        .filter(b => b.type === 'text')
-        .map(b => (b as any).text)
+    // Agregar turno del modelo a la historia.
+    contents.push({ role: 'model', parts });
+
+    // Buscar function calls en el response.
+    const fnCalls = parts.filter((p: any) => p.functionCall);
+
+    if (fnCalls.length === 0) {
+      // Sin function calls → texto final del agente.
+      finalReport = parts
+        .filter((p: any) => typeof p.text === 'string')
+        .map((p: any) => p.text)
         .join('\n');
       break;
     }
 
-    if (response.stop_reason === 'tool_use') {
-      const toolUses = response.content.filter(b => b.type === 'tool_use');
-      const results: Anthropic.ToolResultBlockParam[] = [];
+    // Ejecutar cada function call y armar el turno de functionResponses.
+    const fnResponses: any[] = [];
+    for (const part of fnCalls) {
+      const fc = part.functionCall;
+      const args = (fc.args || {}) as Record<string, any>;
+      console.log(`  🔧 ${fc.name}(${JSON.stringify(args).slice(0, 80)})`);
+      const rawResult = await executeTool(fc.name, args, c);
+      const trimmed   = trimToolResult(rawResult);
+      console.log(`     → ${trimmed.slice(0, 100)}${rawResult.length > TOOL_RESULT_MAX_CHARS ? ' [trimmed]' : ''}`);
+      fnResponses.push({
+        functionResponse: {
+          name: fc.name,
+          response: { content: trimmed },
+        },
+      });
+      toolCallsCount++;
+    }
 
-      for (const tool of toolUses) {
-        if (tool.type !== 'tool_use') continue;
-        console.log(`  🔧 ${tool.name}(${JSON.stringify(tool.input).slice(0, 80)})`);
-        const rawResult = await executeTool(tool.name, tool.input as Record<string, any>, c);
-        const result    = trimToolResult(rawResult);
-        console.log(`     → ${result.slice(0, 100)}${rawResult.length > TOOL_RESULT_MAX_CHARS ? ' [trimmed]' : ''}`);
-        results.push({ type: 'tool_result', tool_use_id: tool.id, content: result });
-        toolCallsCount++;
-      }
+    // Gemini espera el turno con functionResponses como role 'user'.
+    contents.push({ role: 'user', parts: fnResponses });
 
-      messages.push({ role: 'user', content: results });
-
-      // Keep message history bounded. CRÍTICO: splice debe remover en pares
-      // (assistant + tool_results) porque Anthropic API exige que cada
-      // tool_result tenga el tool_use correspondiente en el mensaje previo.
-      // Splicear 1 sin par dejaría tool_results "huérfanos" → 400.
-      while (messages.length > 16) {
-        // Remueve oldest pair (asst + tool_results) preservando messages[0]
-        messages.splice(1, 2);
-      }
+    // Mantener historia acotada. Removemos en pares (model + user) para no
+    // dejar functionResponses huérfanos sin su functionCall.
+    while (contents.length > 17) {
+      contents.splice(1, 2);
     }
   }
 
-  // Si nunca hubo end_turn (el agente siguió tirando tools), forzar
-  // un cierre con una request final sin tools que solo pida el reporte.
+  // Si nunca generó texto final, forzar cierre con un turno SIN tools.
   if (!finalReport) {
     console.log(`\n⏰ Iteraciones máximas (${MAX_ITERATIONS}) alcanzadas — forzando reporte final`);
 
-    // Para evitar context overflow Y errores de pares tool_use/tool_result,
-    // pasamos el messages completo (ya está acotado a ≤16 + último turno)
-    // y pedimos un cierre sin tools. Si todavía es demasiado grande,
-    // el catch de abajo cae al fallback genérico.
-    const closingMessages: Anthropic.MessageParam[] = [
-      ...messages,
+    const closingModel = vertexAI.getGenerativeModel({
+      model: modelName,
+      systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] } as any,
+      generationConfig: { maxOutputTokens: 2000, temperature: 0.4 },
+      // sin tools — para que no pueda escapar pidiendo más function calls.
+    });
+
+    const closingContents = [
+      ...contents,
       {
         role: 'user',
-        content:
-          'Tu tiempo de exploración terminó. Genera AHORA el reporte final del ciclo en máximo 1500 caracteres ' +
-          'siguiendo el formato Markdown indicado. NO uses más herramientas. NO hagas preguntas. ' +
-          'Solo el reporte basado en lo que ya investigaste.',
+        parts: [{
+          text:
+            'Tu tiempo de exploración terminó. Genera AHORA el reporte final del ciclo en máximo 1500 caracteres ' +
+            'siguiendo el formato Markdown indicado. NO uses más herramientas. NO hagas preguntas. ' +
+            'Solo el reporte basado en lo que ya investigaste.',
+        }],
       },
     ];
 
     try {
-      const closing = await callWithRetry(() =>
-        client.messages.create({
-          model: process.env.AGENT_MODEL || 'claude-haiku-4-5',
-          max_tokens: 2000,
-          system: systemPrompt,
-          // Sin tools en esta llamada para que no pueda escapar
-          messages: closingMessages,
-        })
-      );
-
-      finalReport = closing.content
-        .filter(b => b.type === 'text')
-        .map(b => (b as any).text)
-        .join('\n');
+      const closing: any = await callWithRetry(() => closingModel.generateContent({ contents: closingContents }));
+      const candidate = closing.response.candidates?.[0];
+      finalReport = candidate?.content?.parts
+        ?.filter((p: any) => typeof p.text === 'string')
+        ?.map((p: any) => p.text)
+        ?.join('\n') || '';
     } catch (e) {
       console.error('[going-agent] No se pudo generar reporte forzado:', (e as Error).message);
       finalReport = `⚠️ *Going Agent — ciclo ${new Date().toLocaleString('es-EC', { timeZone: 'America/Guayaquil' })}*\n\n` +
@@ -478,8 +498,6 @@ async function main() {
   console.log(`🕐 ${new Date().toISOString()}\n`);
 
   // Modo command (Orchestrator override COMMAND_JSON).
-  // Si está presente, ejecutamos solo la acción específica y salimos —
-  // sin correr el ciclo agéntico normal.
   const cmd = parseCommandFromEnv();
   if (cmd) {
     await runCommandMode(cmd, {
