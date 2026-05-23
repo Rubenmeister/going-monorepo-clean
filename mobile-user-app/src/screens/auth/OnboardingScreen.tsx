@@ -1,26 +1,19 @@
 /**
  * OnboardingScreen — Going Ecuador
  *
- * Reorientado a los 3 PRODUCTOS BÁSICOS de la empresa:
- *   1. Compartido — SUV interurbano, hasta 7 pasajeros, paga solo tu asiento
- *   2. Privado    — SUV/SUV-Lujo, hasta 4 pasajeros, precio fijo
- *   3. Envíos     — paquete en SUV mismo día entre ciudades
+ * 3 PRODUCTOS BÁSICOS:
+ *   1. Compartido — SUV interurbano, hasta 7 pasajeros
+ *   2. Privado    — SUV/SUV-Lujo, hasta 4 pasajeros
+ *   3. Envíos     — paquete en SUV mismo día
  *
- * Tiers simplificados (decisión de marca 2026-05-23):
- *   - Confort  → SUV estándar (Toyota Prius, Hyundai Santa Fe, etc.)
- *   - Lujo     → gama alta (premium / XL)
+ * Tiers (display brand): Confort | Lujo
  *
- * Aesthetic: dark + glass + neon. Inspirado en el mockup del producto:
- * fondo negro profundo, cards con backdrop translúcido + borde sutil,
- * acentos cyan/azul vibrantes, gradientes simulados con Views apiladas
- * (no usamos expo-linear-gradient para no agregar deps).
- *
- * Asset por slide:
- *   - Compartido: 2.suvxl.jpg   (SUV grande compartido)
- *   - Privado:    suv premium.jpg (SUV elegante)
- *   - Envíos:     entrega.png   (paquete + conductor)
+ * Theme: ADAPTATIVO (light + dark) — usa useTheme() del provider raíz.
+ * Tokens semánticos para que ambos modos funcionen sin tocar lógica de
+ * componentes. La foto se ve bien en ambos modos porque siempre tiene
+ * overlay oscuro para legibilidad del eyebrow/icon flotante.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   useWindowDimensions, Animated, FlatList, StatusBar, Image,
@@ -36,31 +29,7 @@ import {
   analyticsOnboardingFinish,
   analyticsOnboardingSkip,
 } from '../../utils/analytics';
-
-// ── Tokens del design system "tech-noir" ─────────────────────
-const COLORS = {
-  bg:            '#0a0e1a',  // deep midnight blue
-  bgLayer:       '#0f1424',  // panel layer
-  glass:         'rgba(255,255,255,0.06)',
-  glassBorder:   'rgba(255,255,255,0.10)',
-
-  textPrimary:   '#ffffff',
-  textSecondary: 'rgba(255,255,255,0.72)',
-  textTertiary:  'rgba(255,255,255,0.42)',
-
-  // Acentos neon
-  neonCyan:      '#00d4ff',
-  neonBlue:      '#3b82f6',
-  neonPurple:    '#a855f7',
-
-  // Tier badges
-  confortBorder: 'rgba(255,255,255,0.25)',
-  lujoBorder:    '#FFD700',  // gold accent para Lujo
-  lujoTextDim:   'rgba(255,215,0,0.85)',
-
-  // Brand red (logo, CTA secundario)
-  brandRed:      '#ff4c41',
-};
+import { useTheme, type ThemeTokens } from '../../theme';
 
 const ONBOARDING_KEY = 'going_onboarding_done';
 
@@ -69,8 +38,8 @@ type Slide = {
   id: 'compartido' | 'privado' | 'envios';
   photo: any;
   icon: React.ComponentProps<typeof Ionicons>['name'];
-  eyebrow: string;                // pequeña categoría arriba del titulo
-  headline: string;               // título grande (puede incluir \n)
+  eyebrow: string;
+  headline: string;
   subtitle: string;
   tiers?: Array<{ name: 'Confort' | 'Lujo'; subline: string }>;
   stat: { value: string; label: string };
@@ -119,6 +88,9 @@ type Nav = NativeStackNavigationProp<AuthStackParamList>;
 export function OnboardingScreen() {
   const navigation = useNavigation<Nav>();
   const { width, height } = useWindowDimensions();
+  const { tokens, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList<Slide>>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -149,45 +121,48 @@ export function OnboardingScreen() {
 
   const isLast = currentIndex === SLIDES.length - 1;
 
+  // ── Logo brand: blanco sobre dark, negro sobre light ─────
+  const logoSource = isDark
+    ? require('../../../assets/going-logo-white.png')
+    : require('../../../assets/going-logo-white.png'); // TODO: cuando exista going-logo-dark.png, usar ese acá. Por ahora blanco siempre (legible en ambos modos gracias al overlay oscuro sobre la foto).
+
   // ── Render de slide ────────────────────────────────────────
   const renderSlide: ListRenderItem<Slide> = ({ item }) => (
     <View style={[styles.slide, { width }]}>
-      {/* Photo backdrop — top 55% del slide */}
+      {/* Photo backdrop — top 55%. SIEMPRE tiene overlay oscuro para
+          legibilidad del eyebrow/icon flotantes, sin importar el theme. */}
       <View style={[styles.photoWrap, { height: height * 0.55 }]}>
         <Image source={item.photo} style={styles.photo} resizeMode="cover" />
 
-        {/* Stacked dark gradient (simulado con 3 Views de alpha distinta).
-            Sin expo-linear-gradient: usamos 3 overlays que crean el efecto
-            de degradado transparente-arriba → negro-abajo. */}
+        {/* Stacked dark gradient simulado */}
         <View pointerEvents="none" style={[styles.photoOverlay, styles.photoOverlayTop]} />
         <View pointerEvents="none" style={[styles.photoOverlay, styles.photoOverlayMid]} />
         <View pointerEvents="none" style={[styles.photoOverlay, styles.photoOverlayBot]} />
 
-        {/* Tech grid corners (esquinas con líneas neon, vibe HUD) */}
+        {/* HUD corners neon — solo decoración */}
         <View pointerEvents="none" style={[styles.hudCorner, styles.hudTopLeft]} />
         <View pointerEvents="none" style={[styles.hudCorner, styles.hudTopRight]} />
 
-        {/* Eyebrow flotante sobre la foto */}
+        {/* Eyebrow chip */}
         <View style={styles.eyebrowChip}>
           <View style={styles.eyebrowDot} />
           <Text style={styles.eyebrowText}>{item.eyebrow}</Text>
         </View>
 
-        {/* Icon glow en bottom-left de la foto */}
+        {/* Icon glow */}
         <View style={styles.iconBadge}>
           <View style={styles.iconBadgeGlow} />
-          <Ionicons name={item.icon} size={26} color={COLORS.neonCyan} />
+          <Ionicons name={item.icon} size={26} color={tokens.neonCyan} />
         </View>
       </View>
 
-      {/* Glass card — bottom 45% del slide */}
+      {/* Glass card */}
       <View style={[styles.card, { minHeight: height * 0.42 }]}>
         <View style={styles.cardBorderTop} />
 
         <Text style={styles.headline}>{item.headline}</Text>
         <Text style={styles.subtitle}>{item.subtitle}</Text>
 
-        {/* Tier badges si aplica (Compartido y Privado tienen tiers) */}
         {item.tiers && (
           <View style={styles.tierRow}>
             {item.tiers.map((t) => (
@@ -200,7 +175,7 @@ export function OnboardingScreen() {
               >
                 <View style={styles.tierLabelRow}>
                   {t.name === 'Lujo' && (
-                    <Ionicons name="diamond" size={11} color={COLORS.lujoBorder} />
+                    <Ionicons name="diamond" size={11} color={tokens.lujoBorder} />
                   )}
                   <Text
                     style={[
@@ -217,7 +192,7 @@ export function OnboardingScreen() {
           </View>
         )}
 
-        {/* Stat highlight */}
+        {/* Stat */}
         <View style={styles.statRow}>
           <View style={styles.statBar} />
           <View style={styles.statTexts}>
@@ -231,18 +206,22 @@ export function OnboardingScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        translucent
+        backgroundColor="transparent"
+      />
 
-      {/* Logo Going — fijo arriba-izquierda */}
+      {/* Logo Going — siempre blanco porque vive sobre la foto con overlay oscuro */}
       <View style={styles.logoOverlay} pointerEvents="none">
         <Image
-          source={require('../../../assets/going-logo-white.png')}
+          source={logoSource}
           style={styles.onboardingLogo}
           resizeMode="contain"
         />
       </View>
 
-      {/* Slides con swipe HABILITADO (antes scrollEnabled=false) */}
+      {/* Slides con swipe HABILITADO */}
       <Animated.FlatList
         ref={flatListRef}
         data={SLIDES}
@@ -265,9 +244,8 @@ export function OnboardingScreen() {
         scrollEventThrottle={16}
       />
 
-      {/* Bottom bar absoluto (sobre el slide). Glass + acciones. */}
+      {/* Bottom bar */}
       <View style={styles.bottomBar}>
-        {/* Indicador animado (pill que se estira sobre el slide activo) */}
         <View style={styles.dotsRow}>
           {SLIDES.map((_, i) => {
             const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
@@ -290,7 +268,6 @@ export function OnboardingScreen() {
           })}
         </View>
 
-        {/* Botones */}
         <View style={styles.btnRow}>
           {!isLast ? (
             <>
@@ -307,7 +284,7 @@ export function OnboardingScreen() {
                 accessibilityLabel="Siguiente"
               >
                 <Text style={styles.nextBtnText}>Siguiente</Text>
-                <Ionicons name="arrow-forward" size={18} color="#0a0e1a" />
+                <Ionicons name="arrow-forward" size={18} color={tokens.textInverse} />
               </TouchableOpacity>
             </>
           ) : (
@@ -325,7 +302,7 @@ export function OnboardingScreen() {
                 accessibilityLabel="Comenzar y crear cuenta"
               >
                 <Text style={styles.registerBtnText}>Comenzar</Text>
-                <Ionicons name="arrow-forward" size={16} color="#fff" />
+                <Ionicons name="arrow-forward" size={16} color={tokens.textInverse} />
               </TouchableOpacity>
             </View>
           )}
@@ -337,258 +314,256 @@ export function OnboardingScreen() {
 
 export { ONBOARDING_KEY };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+// ─────────────────────────────────────────────────────────────
+// Styles factory — recibe tokens del theme actual + flag isDark.
+// Memoizado en el componente con useMemo([tokens, isDark]).
+// ─────────────────────────────────────────────────────────────
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.bg },
 
-  // Logo overlay (encima de las slides)
-  logoOverlay: {
-    position: 'absolute',
-    top: 48,
-    left: 20,
-    zIndex: 10,
-  },
-  onboardingLogo: {
-    width: 100,
-    height: 40,
-  },
+    logoOverlay: {
+      position: 'absolute',
+      top: 48,
+      left: 20,
+      zIndex: 10,
+    },
+    onboardingLogo: {
+      width: 100,
+      height: 40,
+    },
 
-  // Slide
-  slide: { flex: 1, backgroundColor: COLORS.bg },
+    slide: { flex: 1, backgroundColor: t.bg },
 
-  // ── Photo backdrop ──────────────────────────────────────
-  photoWrap: {
-    width: '100%',
-    backgroundColor: COLORS.bgLayer,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  photo: { width: '100%', height: '100%' },
+    // ── Photo backdrop ──────────────────────────────────────
+    photoWrap: {
+      width: '100%',
+      backgroundColor: t.bgLayer,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    photo: { width: '100%', height: '100%' },
 
-  // Stacked dark gradient simulado (no expo-linear-gradient).
-  // 3 capas con distinto alpha y altura crean el efecto suave.
-  photoOverlay: { position: 'absolute', left: 0, right: 0 },
-  photoOverlayTop: {
-    top: 0, height: 80,
-    backgroundColor: 'rgba(10,14,26,0.55)',  // top vignette para legibilidad del logo
-  },
-  photoOverlayMid: {
-    bottom: 90, height: 120,
-    backgroundColor: 'rgba(10,14,26,0.45)',
-  },
-  photoOverlayBot: {
-    bottom: 0, height: 90,
-    backgroundColor: COLORS.bg,  // hard cut al color del card para "fusión" sin gradient
-  },
+    // Overlay siempre con tono oscuro para legibilidad del eyebrow/icon,
+    // sin importar el modo del theme (las fotos en sí son a color natural).
+    photoOverlay: { position: 'absolute', left: 0, right: 0 },
+    photoOverlayTop: {
+      top: 0, height: 80,
+      backgroundColor: 'rgba(10,14,26,0.55)',
+    },
+    photoOverlayMid: {
+      bottom: 90, height: 120,
+      backgroundColor: 'rgba(10,14,26,0.45)',
+    },
+    // Hard cut al color del card — fusión sin gradient
+    photoOverlayBot: {
+      bottom: 0, height: 90,
+      backgroundColor: t.bg,
+    },
 
-  // HUD corners (líneas neon en esquinas top de la foto, vibe tech)
-  hudCorner: {
-    position: 'absolute',
-    width: 28, height: 28,
-    borderColor: COLORS.neonCyan,
-    opacity: 0.55,
-  },
-  hudTopLeft: {
-    top: 110, left: 20,
-    borderTopWidth: 1.5, borderLeftWidth: 1.5,
-  },
-  hudTopRight: {
-    top: 110, right: 20,
-    borderTopWidth: 1.5, borderRightWidth: 1.5,
-  },
+    hudCorner: {
+      position: 'absolute',
+      width: 28, height: 28,
+      borderColor: t.neonCyan,
+      opacity: isDark ? 0.55 : 0.75,
+    },
+    hudTopLeft: {
+      top: 110, left: 20,
+      borderTopWidth: 1.5, borderLeftWidth: 1.5,
+    },
+    hudTopRight: {
+      top: 110, right: 20,
+      borderTopWidth: 1.5, borderRightWidth: 1.5,
+    },
 
-  // Eyebrow chip (Producto · 01)
-  eyebrowChip: {
-    position: 'absolute',
-    top: 110, left: '50%',
-    transform: [{ translateX: -52 }],
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(0,212,255,0.10)',
-    borderWidth: 1, borderColor: 'rgba(0,212,255,0.30)',
-    paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 999,
-  },
-  eyebrowDot: {
-    width: 6, height: 6, borderRadius: 3,
-    backgroundColor: COLORS.neonCyan,
-  },
-  eyebrowText: {
-    fontSize: 10, fontWeight: '700', letterSpacing: 1.5,
-    color: COLORS.neonCyan, textTransform: 'uppercase',
-  },
+    eyebrowChip: {
+      position: 'absolute',
+      top: 110, left: '50%',
+      transform: [{ translateX: -52 }],
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: 'rgba(0,0,0,0.45)',  // siempre dark — sobre foto
+      borderWidth: 1, borderColor: `${t.neonCyan}55`,
+      paddingHorizontal: 10, paddingVertical: 4,
+      borderRadius: 999,
+    },
+    eyebrowDot: {
+      width: 6, height: 6, borderRadius: 3,
+      backgroundColor: t.neonCyan,
+    },
+    eyebrowText: {
+      fontSize: 10, fontWeight: '700', letterSpacing: 1.5,
+      color: t.neonCyan, textTransform: 'uppercase',
+    },
 
-  // Icon badge en la foto (glow cyan)
-  iconBadge: {
-    position: 'absolute',
-    bottom: 110, left: 24,
-    width: 56, height: 56,
-    borderRadius: 16,
-    backgroundColor: 'rgba(10,14,26,0.85)',
-    borderWidth: 1, borderColor: 'rgba(0,212,255,0.40)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  iconBadgeGlow: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0,212,255,0.06)',
-  },
+    iconBadge: {
+      position: 'absolute',
+      bottom: 110, left: 24,
+      width: 56, height: 56,
+      borderRadius: 16,
+      backgroundColor: 'rgba(10,14,26,0.85)',  // siempre dark sobre la foto
+      borderWidth: 1, borderColor: `${t.neonCyan}66`,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    iconBadgeGlow: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 16,
+      backgroundColor: `${t.neonCyan}10`,
+    },
 
-  // ── Glass card (bottom 45%) ─────────────────────────────
-  card: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 160,  // dejar espacio para bottomBar
-  },
-  cardBorderTop: {
-    position: 'absolute',
-    top: 0, left: '20%', right: '20%',
-    height: 1,
-    backgroundColor: 'rgba(0,212,255,0.35)',
-  },
+    // ── Glass card ─────────────────────────────────────────
+    card: {
+      flex: 1,
+      backgroundColor: t.bg,
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      paddingBottom: 160,
+    },
+    cardBorderTop: {
+      position: 'absolute',
+      top: 0, left: '20%', right: '20%',
+      height: 1,
+      backgroundColor: `${t.neonCyan}55`,
+    },
 
-  headline: {
-    fontSize: 32, fontWeight: '900',
-    color: COLORS.textPrimary,
-    lineHeight: 38,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14, lineHeight: 21,
-    color: COLORS.textSecondary,
-    marginTop: 12,
-  },
+    headline: {
+      fontSize: 32, fontWeight: '900',
+      color: t.textPrimary,
+      lineHeight: 38,
+      letterSpacing: -0.5,
+    },
+    subtitle: {
+      fontSize: 14, lineHeight: 21,
+      color: t.textSecondary,
+      marginTop: 12,
+    },
 
-  // Tier badges
-  tierRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 20,
-  },
-  tierBadge: {
-    flex: 1,
-    backgroundColor: COLORS.glass,
-    borderWidth: 1,
-    borderColor: COLORS.confortBorder,
-    borderRadius: 12,
-    paddingHorizontal: 12, paddingVertical: 10,
-  },
-  tierBadgeLujo: {
-    borderColor: COLORS.lujoBorder,
-    backgroundColor: 'rgba(255,215,0,0.06)',
-  },
-  tierLabelRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-  },
-  tierName: {
-    fontSize: 13, fontWeight: '800',
-    color: COLORS.textPrimary,
-    letterSpacing: 0.5,
-  },
-  tierNameLujo: {
-    color: COLORS.lujoTextDim,
-  },
-  tierSubline: {
-    fontSize: 10, fontWeight: '500',
-    color: COLORS.textTertiary,
-    marginTop: 2,
-  },
+    tierRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 20,
+    },
+    tierBadge: {
+      flex: 1,
+      backgroundColor: t.confortBg,
+      borderWidth: 1,
+      borderColor: t.confortBorder,
+      borderRadius: 12,
+      paddingHorizontal: 12, paddingVertical: 10,
+    },
+    tierBadgeLujo: {
+      borderColor: t.lujoBorder,
+      backgroundColor: t.lujoBg,
+    },
+    tierLabelRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+    },
+    tierName: {
+      fontSize: 13, fontWeight: '800',
+      color: t.textPrimary,
+      letterSpacing: 0.5,
+    },
+    tierNameLujo: {
+      color: t.lujoText,
+    },
+    tierSubline: {
+      fontSize: 10, fontWeight: '500',
+      color: t.textTertiary,
+      marginTop: 2,
+    },
 
-  // Stat row
-  statRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 24,
-  },
-  statBar: {
-    width: 3, height: 40,
-    backgroundColor: COLORS.neonCyan,
-    borderRadius: 2,
-  },
-  statTexts: { flex: 1 },
-  statValue: {
-    fontSize: 22, fontWeight: '900',
-    color: COLORS.textPrimary,
-    letterSpacing: -0.5,
-  },
-  statLabel: {
-    fontSize: 11, fontWeight: '500',
-    color: COLORS.textTertiary,
-    textTransform: 'lowercase',
-    marginTop: 2,
-  },
+    statRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 24,
+    },
+    statBar: {
+      width: 3, height: 40,
+      backgroundColor: t.neonCyan,
+      borderRadius: 2,
+    },
+    statTexts: { flex: 1 },
+    statValue: {
+      fontSize: 22, fontWeight: '900',
+      color: t.textPrimary,
+      letterSpacing: -0.5,
+    },
+    statLabel: {
+      fontSize: 11, fontWeight: '500',
+      color: t.textTertiary,
+      textTransform: 'lowercase',
+      marginTop: 2,
+    },
 
-  // ── Bottom bar absoluto ───────────────────────────────────
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    paddingHorizontal: 24, paddingTop: 16, paddingBottom: 36,
-    backgroundColor: COLORS.bg,
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-    marginBottom: 20,
-  },
-  dot: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.neonCyan,
-  },
+    // ── Bottom bar ─────────────────────────────────────────
+    bottomBar: {
+      position: 'absolute',
+      bottom: 0, left: 0, right: 0,
+      paddingHorizontal: 24, paddingTop: 16, paddingBottom: 36,
+      backgroundColor: t.bg,
+    },
+    dotsRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 6,
+      marginBottom: 20,
+    },
+    dot: {
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: t.neonCyan,
+    },
 
-  // Buttons
-  btnRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  skipBtn: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  skipText: {
-    color: COLORS.textTertiary,
-    fontSize: 14, fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  nextBtn: {
-    flex: 2, flexDirection: 'row',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: COLORS.neonCyan,
-    paddingVertical: 16, borderRadius: 14,
-    shadowColor: COLORS.neonCyan,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 12,
-    elevation: 6,
-  },
-  nextBtnText: {
-    fontSize: 15, fontWeight: '900',
-    color: COLORS.bg,  // texto oscuro sobre botón cyan para contraste máximo
-    letterSpacing: 0.3,
-  },
+    btnRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    skipBtn: { flex: 1, paddingVertical: 14, alignItems: 'center' },
+    skipText: {
+      color: t.textTertiary,
+      fontSize: 14, fontWeight: '600',
+      letterSpacing: 0.3,
+    },
+    nextBtn: {
+      flex: 2, flexDirection: 'row',
+      alignItems: 'center', justifyContent: 'center', gap: 8,
+      backgroundColor: t.neonCyan,
+      paddingVertical: 16, borderRadius: 14,
+      shadowColor: t.neonCyan,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4, shadowRadius: 12,
+      elevation: 6,
+    },
+    nextBtnText: {
+      fontSize: 15, fontWeight: '900',
+      color: t.textInverse,
+      letterSpacing: 0.3,
+    },
 
-  // Last slide buttons
-  lastBtns: { flex: 1, gap: 12 },
-  loginBtn: {
-    paddingVertical: 14, borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: COLORS.glassBorder,
-  },
-  loginBtnText: {
-    color: COLORS.textSecondary,
-    fontSize: 14, fontWeight: '700',
-  },
-  registerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: COLORS.neonCyan,
-    paddingVertical: 16, borderRadius: 14,
-    shadowColor: COLORS.neonCyan,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4, shadowRadius: 12,
-    elevation: 6,
-  },
-  registerBtnText: {
-    color: COLORS.bg,
-    fontSize: 16, fontWeight: '900',
-    letterSpacing: 0.3,
-  },
-});
+    lastBtns: { flex: 1, gap: 12 },
+    loginBtn: {
+      paddingVertical: 14, borderRadius: 14,
+      alignItems: 'center',
+      borderWidth: 1.5,
+      borderColor: t.glassBorder,
+    },
+    loginBtnText: {
+      color: t.textSecondary,
+      fontSize: 14, fontWeight: '700',
+    },
+    registerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center', justifyContent: 'center', gap: 8,
+      backgroundColor: t.neonCyan,
+      paddingVertical: 16, borderRadius: 14,
+      shadowColor: t.neonCyan,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4, shadowRadius: 12,
+      elevation: 6,
+    },
+    registerBtnText: {
+      color: t.textInverse,
+      fontSize: 16, fontWeight: '900',
+      letterSpacing: 0.3,
+    },
+  });
+}
