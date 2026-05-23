@@ -22,6 +22,7 @@ packages:
   - 'billing-service'
   - 'analytics-service'
   - 'customer-support-service'
+  - 'emergency-service'
   - 'ratings-service'
   - 'ar-service'
   - 'blockchain-service'
