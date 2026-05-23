@@ -11,6 +11,10 @@ import { initSentry, registerSentryFastify } from './sentry.config';
 import { AllExceptionsFilter } from '@going-monorepo-clean/shared-infrastructure';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyRateLimit from '@fastify/rate-limit';
+import * as net from 'net';
+import * as tls from 'tls';
+import { IncomingMessage } from 'http';
+import { Socket } from 'net';
 
 async function bootstrap() {
   // Initialize Sentry first
@@ -215,6 +219,104 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   await app.listen(port, '0.0.0.0');
+
+  // ── WS UPGRADE PROXY: /voice/ws → customer-support-service ────────────
+  // El proxy HTTP de proxy.module.ts NO maneja el handshake WS (HTTP upgrade
+  // requiere control raw del socket TCP, no funciona en middleware Fastify).
+  // Acá enganchamos un listener al `upgrade` event del httpServer subyacente
+  // y abrimos un socket TLS/TCP al upstream, piping bidi una vez negociado.
+  //
+  // Por qué no http-proxy / http-proxy-middleware: probado en prod hace meses
+  // (ver comment en proxy.module.ts) — hangs silentes en Cloud Run con HTTP/2.
+  // El pipe raw es lo que mejor funciona en este stack.
+  const customerSupportUrl = process.env.CUSTOMER_SUPPORT_SERVICE_URL;
+  if (customerSupportUrl) {
+    const wsLogger = new Logger('VoiceWsProxy');
+    const target = new URL(customerSupportUrl);
+    const isHttps = target.protocol === 'https:';
+    const upstreamPort = target.port
+      ? parseInt(target.port, 10)
+      : (isHttps ? 443 : 80);
+    const upstreamHost = target.hostname;
+
+    const httpServer = (fastifyInstance as any).server;
+    httpServer.on('upgrade', (req: IncomingMessage, clientSocket: Socket, head: Buffer) => {
+      const reqUrl = new URL(req.url || '/', 'http://localhost');
+      // SOLO interceptamos /voice/ws. Cualquier otro upgrade lo dejamos
+      // pasar al siguiente handler (si Fastify registra alguno en el futuro)
+      // o destruimos el socket si no hay nadie escuchando.
+      if (reqUrl.pathname !== '/voice/ws') {
+        // No other upgrade handlers registered → reject cleanly
+        clientSocket.write('HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n');
+        clientSocket.destroy();
+        return;
+      }
+
+      wsLogger.log(`upgrade ${req.url} -> ${target.host} from ${req.socket.remoteAddress}`);
+
+      const upstreamSocket = isHttps
+        ? tls.connect({
+            host: upstreamHost,
+            port: upstreamPort,
+            servername: upstreamHost,
+            ALPNProtocols: ['http/1.1'],
+          })
+        : net.connect({ host: upstreamHost, port: upstreamPort });
+
+      const onUpstreamReady = () => {
+        // Reconstruir request-line + headers preservando todo lo que mandó el
+        // cliente (Sec-WebSocket-Key, Sec-WebSocket-Version, Sec-WebSocket-
+        // Protocol, Origin, etc.) excepto el Host que apunta al api.goingec
+        // y necesita ser el del upstream para que Cloud Run rutee.
+        const lines: string[] = [`${req.method} ${req.url} HTTP/1.1`];
+        for (const [name, value] of Object.entries(req.headers)) {
+          if (!name || value === undefined) continue;
+          if (name.toLowerCase() === 'host') continue;
+          if (Array.isArray(value)) {
+            for (const v of value) lines.push(`${name}: ${v}`);
+          } else {
+            lines.push(`${name}: ${value}`);
+          }
+        }
+        lines.push(`Host: ${target.host}`);
+        upstreamSocket.write(lines.join('\r\n') + '\r\n\r\n');
+        // Cualquier byte recibido tras los headers (improbable en handshake
+        // WS, pero posible) lo reenviamos al upstream.
+        if (head && head.length > 0) upstreamSocket.write(head);
+
+        // Pipe bidireccional. A partir de acá Cloud Run responde con
+        // 101 Switching Protocols y el cliente ↔ customer-support fluyen
+        // frames WS directamente, transparente para nosotros.
+        upstreamSocket.pipe(clientSocket);
+        clientSocket.pipe(upstreamSocket);
+      };
+
+      if (isHttps) upstreamSocket.once('secureConnect', onUpstreamReady);
+      else upstreamSocket.once('connect', onUpstreamReady);
+
+      upstreamSocket.on('error', (err: Error) => {
+        wsLogger.error(`upstream WS error: ${err.message}`);
+        try {
+          clientSocket.write('HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n');
+        } catch { /* socket may already be torn down */ }
+        try { clientSocket.destroy(); } catch { /* ignore */ }
+      });
+      clientSocket.on('error', (err: Error) => {
+        wsLogger.warn(`client WS error: ${err.message}`);
+        try { upstreamSocket.destroy(); } catch { /* ignore */ }
+      });
+    });
+
+    Logger.log(
+      `🎙️ WS proxy /voice/ws → ${target.href}`,
+      'Bootstrap'
+    );
+  } else {
+    Logger.warn(
+      `WS proxy /voice/ws DISABLED — CUSTOMER_SUPPORT_SERVICE_URL no configurada`,
+      'Bootstrap'
+    );
+  }
 
   Logger.log(
     `🚀 API Gateway (Fastify) running on http://localhost:${port}`,
