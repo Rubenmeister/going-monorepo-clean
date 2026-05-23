@@ -2,117 +2,120 @@
  * SplashScreen — Going Ecuador
  * Fiel al diseño Stitch: https://stitch.withgoogle.com/projects/12141521556713894233
  *
- * SETUP:
- *   • Foto de fondo: mobile-user-app/assets/splash-bg.png
- *   • Sonido de escape: mobile-user-app/assets/sounds/splash-rev.wav
- *     Reemplaza el WAV placeholder con tu archivo real de audio
+ * Comportamiento:
+ *   • Animación de ~2.8s (logo born → tagline+stamp en paralelo → fade-out)
+ *   • Tap-to-skip: cualquier toque acelera el fade-out (UX para repeat-users)
+ *   • Versión + build en esquina inferior izquierda (útil para soporte)
  *
- * Animaciones (replica logo-born / fade-in-up / pulse-glow del HTML):
- *   1. Glow pulsante detrás del logo (4s loop)
- *   2. Logo "born": scale 0.3+rotate(-10°) → scale 1.1 → scale 1
- *   3. "Nos movemos contigo": fade-in-up (delay 1.2s)
- *   4. "EST. MMXXVI": fade-in-up (delay 1.8s)
+ * Assets:
+ *   • Foto de fondo: mobile-user-app/assets/splash-bg.png
+ *
+ * NOTA: el sonido de splash (splash-rev.wav) fue removido cuando se quitó
+ * expo-av del build. Si se quiere reintroducir, usar expo-audio (no expo-av).
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   Animated,
-  Dimensions,
+  useWindowDimensions,
   StatusBar,
   Image,
   ImageBackground,
   Text,
+  Pressable,
 } from 'react-native';
-// expo-av removed — splash runs without sound
-
-const { width, height } = Dimensions.get('window');
+import Constants from 'expo-constants';
 
 // ── Tokens del diseño Stitch ───────────────────────────────
 const BG          = '#0a0f1d';   // background
 const ON_BG       = '#faf8ff';   // on-background
-const PRIMARY     = '#b71416';   // primary (glow)
 const VIBRANT_RED = '#FF2D2D';   // vibrant-red (logo drop-shadow)
+
+// Versión leída del expo-config inyectado al bundle.
+const APP_VERSION  = Constants.expoConfig?.version || '';
+const BUILD_NUMBER =
+  Constants.expoConfig?.android?.versionCode ??
+  (Constants.expoConfig as any)?.ios?.buildNumber ??
+  '';
 
 interface Props { onFinish: () => void; appMode?: 'viajero' | 'conductor'; }
 
 export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
-
-  const [bgLoaded, setBgLoaded] = useState(false);
-  const soundRef = useRef<{ unloadAsync?: () => void } | null>(null);
+  const { width } = useWindowDimensions();
+  const finishedRef = useRef(false);
 
   // ── Animated values ───────────────────────────────────────
   // Logo born: scale 0.3 → 1.15 → 1  +  rotate -10° → 0°
-  const logoScale  = useRef(new Animated.Value(0.3)).current;
-  const logoOp     = useRef(new Animated.Value(0)).current;
-  const logoRot    = useRef(new Animated.Value(-10)).current;   // grados
+  const logoScale = useRef(new Animated.Value(0.3)).current;
+  const logoOp    = useRef(new Animated.Value(0)).current;
+  const logoRot   = useRef(new Animated.Value(-10)).current;   // grados
 
-  // Tagline "Nos movemos contigo" — delay 1.2s
-  const tagOp      = useRef(new Animated.Value(0)).current;
-  const tagY       = useRef(new Animated.Value(20)).current;
-
-  // Bottom "EST. MMXXVI" — delay 1.8s
-  const stampOp    = useRef(new Animated.Value(0)).current;
-  const stampY     = useRef(new Animated.Value(20)).current;
+  // Tagline "Nos movemos contigo" + stamp en paralelo (antes secuencial)
+  const tagOp     = useRef(new Animated.Value(0)).current;
+  const tagY      = useRef(new Animated.Value(20)).current;
+  const stampOp   = useRef(new Animated.Value(0)).current;
+  const stampY    = useRef(new Animated.Value(20)).current;
 
   // Exit fade-out
-  const exitOp     = useRef(new Animated.Value(1)).current;
+  const exitOp    = useRef(new Animated.Value(1)).current;
 
-  // Sonido de splash deshabilitado (expo-av eliminado del build)
-  useEffect(() => {
-    return () => { soundRef.current?.unloadAsync?.(); };
-  }, []);
+  /**
+   * finishOnce: garantiza que `onFinish()` solo se llame una vez aunque
+   * el usuario toque la pantalla en medio de la animación final.
+   */
+  const finishOnce = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    Animated.timing(exitOp, { toValue: 0, duration: 250, useNativeDriver: true })
+      .start(() => onFinish());
+  }, [exitOp, onFinish]);
 
   useEffect(() => {
-    // ── Secuencia principal ───────────────────────────────
+    // ── Secuencia principal (~2.8s total, antes ~5.3s) ────────
+    // Fase 1: logo born (1.2s, antes 1.8s)
+    // Fase 2: tagline + stamp EN PARALELO (0.9s, antes secuencial 1.1s)
+    // Fase 3: hold corto (0.4s, antes 0.9s)
+    // Fase 4: fade-out (0.3s, antes 0.5s)
     Animated.sequence([
-
-      // Logo born (1.8s, cubic-bezier aproximado con spring)
+      // Logo born
       Animated.parallel([
-        Animated.timing(logoOp, { toValue: 1, duration: 400, useNativeDriver: true }),
-        Animated.timing(logoRot, {
-          toValue: 0, duration: 1800,
-          useNativeDriver: true,
-        }),
-        // Fase 1: escala rápida hasta overshoot 1.15
+        Animated.timing(logoOp,  { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.timing(logoRot, { toValue: 0, duration: 1200, useNativeDriver: true }),
         Animated.sequence([
           Animated.spring(logoScale, {
-            toValue: 1.15,
-            friction: 4,
-            tension: 50,
-            useNativeDriver: true,
+            toValue: 1.15, friction: 4, tension: 60, useNativeDriver: true,
           }),
-          // Fase 2: settle a 1
           Animated.spring(logoScale, {
-            toValue: 1,
-            friction: 6,
-            tension: 60,
-            useNativeDriver: true,
+            toValue: 1, friction: 6, tension: 80, useNativeDriver: true,
           }),
         ]),
       ]),
 
-      // Tagline fade-in-up (delay 1.2s desde inicio → ~0.4s tras logo)
-      Animated.delay(0),
+      // Tagline + stamp en paralelo — antes corrían secuenciales con delay
       Animated.parallel([
-        Animated.timing(tagOp, { toValue: 1, duration: 1000, useNativeDriver: true }),
-        Animated.timing(tagY,  { toValue: 0, duration: 1000, useNativeDriver: true }),
-      ]),
-
-      // EST. MMXXVI fade-in-up (delay 0.6s adicional)
-      Animated.delay(200),
-      Animated.parallel([
-        Animated.timing(stampOp, { toValue: 1, duration: 900, useNativeDriver: true }),
-        Animated.timing(stampY,  { toValue: 0, duration: 900, useNativeDriver: true }),
+        Animated.timing(tagOp,   { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(tagY,    { toValue: 0, duration: 700, useNativeDriver: true }),
+        Animated.sequence([
+          Animated.delay(150),
+          Animated.parallel([
+            Animated.timing(stampOp, { toValue: 1, duration: 700, useNativeDriver: true }),
+            Animated.timing(stampY,  { toValue: 0, duration: 700, useNativeDriver: true }),
+          ]),
+        ]),
       ]),
 
       // Hold
-      Animated.delay(900),
+      Animated.delay(400),
 
-      // Fade out
-      Animated.timing(exitOp, { toValue: 0, duration: 500, useNativeDriver: true }),
-
-    ]).start(() => onFinish());
+      // Fade out (más rápido que antes)
+      Animated.timing(exitOp, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => {
+      if (!finishedRef.current) {
+        finishedRef.current = true;
+        onFinish();
+      }
+    });
   }, []);
 
   const logoRotDeg = logoRot.interpolate({
@@ -124,7 +127,6 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
   const content = (
     <>
       {/* Cinematic vignette overlay */}
-      <View style={styles.vignette} pointerEvents="none" />
       <View style={styles.overlayMult} pointerEvents="none" />
 
       {/* ─── Logo + tagline ─────────────────────────────── */}
@@ -140,10 +142,9 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
             ],
           }}
         >
-          {/* Logo color: G rojo + "Going" negro — igual que screenshot Stitch */}
           <Image
             source={require('../../../assets/going-logo-splash.png')}
-            style={styles.logo}
+            style={[styles.logo, { width: width * 0.42, height: width * 0.44 }]}
             resizeMode="contain"
           />
         </Animated.View>
@@ -152,10 +153,7 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
         <Animated.Text
           style={[
             styles.tagline,
-            {
-              opacity: tagOp,
-              transform: [{ translateY: tagY }],
-            },
+            { opacity: tagOp, transform: [{ translateY: tagY }] },
           ]}
         >
           Nos movemos contigo
@@ -180,13 +178,10 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
           { opacity: stampOp, transform: [{ translateY: stampY }] },
         ]}
       >
-        {/* Línea con degradado rojo */}
         <View style={styles.stampLine}>
           <View style={styles.stampLineFull} />
-          {/* Gradiente simulado con Views */}
           <View style={[StyleSheet.absoluteFill, styles.stampLineGrad]} />
         </View>
-        {/* Stamp */}
         <View style={styles.estRow}>
           <View style={styles.estDash} />
           <Text style={styles.estText}>EST. MMXXVI</Text>
@@ -197,32 +192,49 @@ export default function SplashScreen({ onFinish, appMode = 'viajero' }: Props) {
       {/* ─── Corner accents ─────────────────────────────── */}
       <View style={[styles.corner, styles.topLeft]}  pointerEvents="none" />
       <View style={[styles.corner, styles.botRight]} pointerEvents="none" />
+
+      {/* ─── Version stamp (esquina inferior izquierda) ──────
+        Discreto pero leíble. Útil para soporte: el cliente reporta un bug
+        y se le pide capturar el splash para identificar exactamente qué
+        build tiene instalado. Aparece junto con el stamp principal. */}
+      {APP_VERSION ? (
+        <Animated.Text style={[styles.versionStamp, { opacity: stampOp }]}>
+          v{APP_VERSION}{BUILD_NUMBER ? ` (${BUILD_NUMBER})` : ''}
+        </Animated.Text>
+      ) : null}
     </>
   );
 
   return (
-    <Animated.View style={[styles.root, { opacity: exitOp }]}>
-      <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
+    <Pressable
+      style={styles.pressableRoot}
+      onPress={finishOnce}
+      accessibilityRole="button"
+      accessibilityLabel="Saltar pantalla de inicio"
+    >
+      <Animated.View style={[styles.root, { opacity: exitOp }]}>
+        <StatusBar backgroundColor="transparent" barStyle="light-content" translucent />
 
-      {/* Intentar cargar foto — si falla, usa fondo oscuro puro */}
-      <ImageBackground
-        source={require('../../../assets/splash-bg.png')}
-        style={styles.bg}
-        imageStyle={styles.bgImg}
-        onLoad={() => setBgLoaded(true)}
-        onError={() => { /* fondo oscuro del root */}}
-      >
-        {content}
-      </ImageBackground>
-    </Animated.View>
+        {/* Intentar cargar foto — si falla, usa fondo oscuro puro */}
+        <ImageBackground
+          source={require('../../../assets/splash-bg.png')}
+          style={styles.bg}
+          imageStyle={styles.bgImg}
+        >
+          {content}
+        </ImageBackground>
+      </Animated.View>
+    </Pressable>
   );
 }
 
 // ─────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  pressableRoot: {
+    ...StyleSheet.absoluteFillObject,
+  },
   root: {
-    position: 'absolute',
-    top: 0, left: 0, width, height,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: BG,
     overflow: 'hidden',
   },
@@ -232,35 +244,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bgImg: {
-    // scale-110 opacity-70 brightness-110 (Stitch spec)
+    // scale-110 opacity-70 (Stitch spec)
     transform: [{ scale: 1.10 }],
     opacity: 0.70,
   },
 
-  // Cinematic vignette: radial-gradient center transparent → BG/60%
-  vignette: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-    // Aproximación con sombra interna (box-shadow no existe en RN)
-    // Se usa una View con opacidad en los bordes
-  },
   overlayMult: {
     ...StyleSheet.absoluteFillObject,
     // bg-background/10 mix-blend-multiply
     backgroundColor: 'rgba(10,15,29,0.28)',
   },
 
-  // Cuatro "cuñas" de vignette en las esquinas
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Logo horizontal blanco — sin fondo
+  // Logo horizontal — sin fondo. Dimensiones inyectadas en el JSX desde
+  // useWindowDimensions (responde a rotación / split-screen).
   logo: {
-    width: width * 0.42,
-    height: width * 0.44,
     shadowColor: VIBRANT_RED,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.30,
@@ -296,7 +299,7 @@ const styles = StyleSheet.create({
     bottom: 64,
     alignSelf: 'center',
     alignItems: 'center',
-    gap: 12,  // gap-6 → 24px aprox. pero reducido por espacio
+    gap: 12,
   },
   stampLine: {
     width: 96, height: 1,
@@ -307,8 +310,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(250,248,255,0.20)',
   },
   stampLineGrad: {
-    // bg-gradient-to-r from-transparent via-vibrant-red/60 to-transparent
-    // Simulado con View central
     left: '25%', right: '25%',
     backgroundColor: 'rgba(255,45,45,0.60)',
   },
@@ -344,5 +345,17 @@ const styles = StyleSheet.create({
     bottom: 48, right: 48,
     borderBottomWidth: 1, borderRightWidth: 1,
     borderColor: ON_BG,
+  },
+
+  // Version + build en esquina inferior izquierda. Anclada al lado opuesto
+  // del corner accent botRight para no chocar visualmente.
+  versionStamp: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    fontSize: 9,
+    color: 'rgba(250,248,255,0.28)',
+    fontWeight: '600',
+    letterSpacing: 1,
   },
 });
