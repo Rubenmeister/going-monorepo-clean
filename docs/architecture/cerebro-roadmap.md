@@ -621,5 +621,144 @@ Cuando vuelvas a esta rama después de la pausa:
 
 ---
 
-**Última actualización**: 2026-05-08, después de validación end-to-end del
-primer evento llegando al cerebro.
+---
+
+## 8. Update 2026-05-23 — Código completo, faltan deploys
+
+### Qué cambió desde 2026-05-08
+
+- **mycortex-service**: skeleton de mayo se llenó. ReasoningLoopService (@Cron 30 min)
+  + AnthropicClient + PromptBuilder + IntentionsParser + MemoryRollup + CortexConfig
+  todo cableado. cloudbuild.yaml listo. Compila limpio.
+- **orchestrator-service**: implementado de cero. MyCortexPollerService (@Cron 5 min)
+  + RulesEngineService + DispatcherService con safety-levels (Cat 1/2/3) +
+  TelegramApprovalService + AgentBridgeClient + DecisionRepository. Compila limpio.
+- **agent-bridge-service**: implementado. BridgeController (POST /agents/:id/command) +
+  CloudRunJobsClient (Google Cloud Run Jobs API) + HttpServiceClient + agent-registry
+  (mapping agentId → cloud-run-job | http-service). Compila limpio.
+- **2 agentes nuevos** en el contrato: `mobile-agent` y `frontend-agent` ya están en
+  AGENT_IDS y en bootstrap-pubsub.sh (8 topics totales).
+- **Capa cerebro/agentes entera buildea**: `nx build` verde en todos los servicios y
+  agentes de esta capa (commit `ebd4e501` + `7b262c01` del 2026-05-22).
+- **DiffDetectorService cableado** al WorldModelService (era el bug pendiente #6 del
+  snapshot 2026-05-08 — ya no solo loggea, ahora poblá `changedSinceLast` en cada
+  snapshot).
+
+### Bloqueo actual: deploys
+
+El runtime end-to-end no fluye porque mycortex / orchestrator / bridge no están
+desplegados todavía. Cerebro y los publishers sí (desde mayo).
+
+### Secuencia de deploy (copy-paste, en orden)
+
+```bash
+# ──────────────────────────────────────────────────────────────────────
+# 0. Re-correr bootstrap (agrega los 2 topics nuevos mobile+frontend
+#    + IAM bindings; es idempotente)
+# ──────────────────────────────────────────────────────────────────────
+bash scripts/cerebro/bootstrap-pubsub.sh --project going-5d1ae
+
+# ──────────────────────────────────────────────────────────────────────
+# 1. Mycortex (Fase 4 v0) — leer mundo, razonar, reportar a Telegram
+#    (sin ejecutar nada todavía)
+# ──────────────────────────────────────────────────────────────────────
+# 1a. Crear SA
+gcloud iam service-accounts create mycortex-service-sa \
+  --display-name='MyCortex Service' --project=going-5d1ae
+gcloud projects add-iam-policy-binding going-5d1ae \
+  --member='serviceAccount:mycortex-service-sa@going-5d1ae.iam.gserviceaccount.com' \
+  --role='roles/secretmanager.secretAccessor' --condition=None
+
+# 1b. ANTHROPIC_API_KEY debe existir en Secret Manager (verificar):
+gcloud secrets list --project=going-5d1ae | grep ANTHROPIC
+
+# 1c. Build + deploy
+gcloud builds submit . --config=mycortex-service/cloudbuild.yaml --project=going-5d1ae
+
+# 1d. Activar reasoning loop
+gcloud run services update mycortex-service \
+  --update-env-vars=MYCORTEX_REASONING_ENABLED=true \
+  --project=going-5d1ae --region=us-central1
+
+# 1e. Disparar primer ciclo manual
+MYCORTEX_URL=$(gcloud run services describe mycortex-service \
+  --region=us-central1 --project=going-5d1ae --format='value(status.url)')
+curl -X POST "$MYCORTEX_URL/mycortex/run-now"
+
+# Verificación: Telegram debe recibir el reporte; GET /mycortex/intentions devuelve N
+# Observar 1 semana — si las propuestas son específicas y accionables, seguir.
+
+# ──────────────────────────────────────────────────────────────────────
+# 2. Orchestrator + bridge (Fase 3) — dormant primero, después gradual
+# ──────────────────────────────────────────────────────────────────────
+# 2a. Crear SAs
+for sa in orchestrator-service-sa agent-bridge-service-sa; do
+  gcloud iam service-accounts create $sa \
+    --display-name="${sa%-sa}" --project=going-5d1ae
+done
+
+# 2b. Bridge necesita poder triggerar Cloud Run Jobs:
+gcloud projects add-iam-policy-binding going-5d1ae \
+  --member='serviceAccount:agent-bridge-service-sa@going-5d1ae.iam.gserviceaccount.com' \
+  --role='roles/run.developer' --condition=None
+
+# 2c. Orchestrator necesita mandar a Telegram (Cat 3 acks):
+gcloud projects add-iam-policy-binding going-5d1ae \
+  --member='serviceAccount:orchestrator-service-sa@going-5d1ae.iam.gserviceaccount.com' \
+  --role='roles/secretmanager.secretAccessor' --condition=None
+
+# 2d. Build + deploy ambos
+gcloud builds submit . --config=agent-bridge-service/cloudbuild.yaml --project=going-5d1ae
+gcloud builds submit . --config=orchestrator-service/cloudbuild.yaml --project=going-5d1ae
+
+# 2e. Verificar dormant (sin ejecutar nada todavía)
+ORCH_URL=$(gcloud run services describe orchestrator-service \
+  --region=us-central1 --project=going-5d1ae --format='value(status.url)')
+curl "$ORCH_URL/orchestrator/decisions?limit=10" | jq
+# Debería ver decisions con dormantReason='execute_disabled' o similar — el poller
+# corre pero el dispatcher no ejecuta.
+
+# ──────────────────────────────────────────────────────────────────────
+# 3. Activación gradual del orchestrator (script ya existe)
+# ──────────────────────────────────────────────────────────────────────
+bash scripts/cerebro/activate-orchestrator.sh 1   # Cat 1 (info-only). Observar 2-3 días.
+bash scripts/cerebro/activate-orchestrator.sh 2   # + Cat 2 (reversibles). Observar 1 semana.
+bash scripts/cerebro/activate-orchestrator.sh 3   # + Cat 3 (irreversibles, ack Telegram). Total fase A completa.
+
+# Kill switch en cualquier momento:
+bash scripts/cerebro/activate-orchestrator.sh 0   # desactiva todo, vuelve a dormant
+```
+
+### Verificación end-to-end después del deploy
+
+```bash
+# Cerebro recibió eventos
+curl https://cerebro-service-780842550857.us-central1.run.app/cerebro/state | jq '.agents'
+
+# Mycortex produjo intenciones
+curl "$MYCORTEX_URL/mycortex/intentions?limit=5" | jq
+
+# Orchestrator decidió algo
+curl "$ORCH_URL/orchestrator/decisions?limit=10" | jq
+
+# Bridge tiene los 7 agentes registrados
+BRIDGE_URL=$(gcloud run services describe agent-bridge-service \
+  --region=us-central1 --project=going-5d1ae --format='value(status.url)')
+curl "$BRIDGE_URL/agents" | jq
+```
+
+### Riesgos conocidos al desplegar
+
+- **Cat 3 con ACK Telegram**: requiere `OPERATOR_TELEGRAM_CHAT_IDS` poblado en
+  orchestrator-service. El snapshot de 2026-05-08 detectó esta var vacía en producción
+  (handoffs caían en limbo). Verificar antes de subir a level 3.
+- **MYCORTEX_REASONING_ENABLED redeploy reset**: Cloud Run resetea
+  `--update-env-vars` después de cada deploy. Re-aplicar después de cada build (bug
+  operacional #8 del snapshot anterior).
+- **Costo Claude**: $50-100/mes con Sonnet 4.5 a 30-min cron. Si el costo molesta,
+  bajar frecuencia (CRON expr) o evaluar Haiku 4.5.
+
+---
+
+**Última actualización**: 2026-05-23, capa cerebro/agentes íntegra compilando, esperando
+secuencia de deploys de mycortex → orchestrator → bridge.
