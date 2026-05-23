@@ -39,7 +39,7 @@ async function main(): Promise<void> {
   const cmd = parseCommandFromEnv();
   if (cmd) {
     const result = await runCommandMode(cmd, {
-      driver_bonus_zone: async (c) => {
+      driver_bonus_zone: async (c: any) => {
         const r = await driverBonusZone(c.payload);
         if (!r.ok) throw new Error(r.error || 'driver_bonus_zone failed');
       },
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
         },
       };
 
-      await publishAgentRunEvent(event).catch(e =>
+      await publishAgentRunEvent(event).catch((e: any) =>
         console.error('[marketing-agent] publish failed (non-fatal):', e),
       );
     }
