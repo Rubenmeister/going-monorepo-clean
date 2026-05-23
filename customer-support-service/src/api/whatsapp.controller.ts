@@ -260,10 +260,11 @@ export class WhatsAppController {
         // Fallback: si por alguna razón no tenemos sttLang, detectamos del reply text.
         const lang   = sttLang ?? detectLanguage(reply || '');
         const gender = conv.agentGender;
-        const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender) : null;
+        // voicePreference: si el usuario eligió una voz específica, gana sobre default-por-género.
+        const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender, conv.voicePreference) : null;
         const sent   = audio ? await this.whatsappService.sendAudio(from, audio) : false;
         if (sent) {
-          this.logger.log(`Audio reply sent to ${from} (${lang}-${gender})`);
+          this.logger.log(`Audio reply sent to ${from} (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
         } else {
           // Fallback to text if TTS/upload fails
           await this.whatsappService.sendText(from, reply);

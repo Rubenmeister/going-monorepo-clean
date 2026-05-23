@@ -49,17 +49,24 @@ const LANG: Record<SupportedLang, LangConfig> = {
 };
 
 /**
- * Chirp 3 HD voice persona — UN SOLO nombre cross-language para consistencia
- * de marca.
+ * Chirp 3 HD voice persona — cada voz es un nombre que mantiene la misma
+ * identidad sonora en los 5 idiomas (multilingual nativa).
  *
  * Test A/B 2026-05-17 con 7 voces (Aoede, Leda, Kore, Despina, Sulafat,
- * Charon, Algenib) sobre frase típica Going. Resultados:
- *   - Femenina elegida: **Kore** (más neutral, menos acento mexicano que
- *     Aoede). Despina también aceptable como backup.
- *   - Masculina elegida: **Charon** (mantiene, suena formal/neutral).
- *     Algenib también aceptable.
+ * Charon, Algenib) sobre frase típica Going. Las 4 seleccionadas (2 fem +
+ * 2 masc) están disponibles para que el cliente elija en Settings; si no
+ * elige, se usa la default del género asignado por conversation.service.
  */
-const CHIRP3_PERSONA: Record<AgentGender, string> = {
+export type VoiceName = 'Kore' | 'Despina' | 'Charon' | 'Algenib';
+
+/** Voces disponibles agrupadas por género (para UI de selección). */
+export const VOICES_BY_GENDER: Record<AgentGender, VoiceName[]> = {
+  female: ['Kore', 'Despina'],  // Kore: neutral, amigable · Despina: más formal
+  male:   ['Charon', 'Algenib'], // Charon: formal, autoritativa · Algenib: cálido
+};
+
+/** Voz por defecto cuando no hay preferencia explícita del usuario. */
+const DEFAULT_VOICE: Record<AgentGender, VoiceName> = {
   female: 'Kore',
   male:   'Charon',
 };
@@ -312,10 +319,12 @@ export class VoiceService {
     text: string,
     lang: SupportedLang | string,
     gender: AgentGender,
+    voiceOverride?: VoiceName,
   ): Promise<Buffer | null> {
     const langKey = normalizeLang(lang);
     const langCfg = LANG[langKey];
-    const personaName = CHIRP3_PERSONA[gender];
+    // Si el usuario eligió una voz específica, gana sobre la default-por-género.
+    const personaName = voiceOverride ?? DEFAULT_VOICE[gender];
 
     try {
       if (!this.ttsClient) this.ttsClient = new TextToSpeechClient();

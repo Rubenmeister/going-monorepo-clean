@@ -35,6 +35,17 @@ export class ConversationEntity {
   @Prop()
   priority?: string;
 
+  /**
+   * Voz Chirp 3 HD preferida del usuario. Si está set, override la default
+   * por género. Valores: 'Kore' | 'Despina' (fem) | 'Charon' | 'Algenib' (masc).
+   * Sin valor → conversation.service usa la voz default del agentGender.
+   */
+  @Prop({
+    type: String,
+    enum: ['Kore', 'Despina', 'Charon', 'Algenib'],
+  })
+  voicePreference?: 'Kore' | 'Despina' | 'Charon' | 'Algenib';
+
   @Prop({ type: Date, default: Date.now, index: true })
   createdAt: Date;
 
