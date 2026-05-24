@@ -1,0 +1,46 @@
+{
+  "name": "@going-platform/voice-call-service",
+  "version": "0.1.0",
+  "description": "GOING Voice Call Service — Uyari (escuchar/oír en kichwa). Atención de llamadas telefónicas 24/7 via Twilio Voice + OpenAI Realtime API. Bridge bidi audio cliente↔AI. Publica eventos al cerebro (Pacha) para monitoreo y reacción de mycortex/orchestrator.",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "node dist/main.js",
+    "dev": "nx serve voice-call-service"
+  },
+  "dependencies": {
+    "@going-platform/cerebro-contracts": "workspace:*",
+    "@google-cloud/pubsub": "^4.7.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/mongoose": "^10.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/schedule": "^4.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.8",
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "going-platform",
+    "voice",
+    "twilio",
+    "openai-realtime",
+    "uyari"
+  ],
+  "author": "Going Platform Team"
+}

@@ -33,6 +33,7 @@ packages:
   - 'mycortex-service'
   - 'orchestrator-service'
   - 'agent-bridge-service'
+  - 'voice-call-service'
 
   # Agents (cron-triggered Cloud Run Jobs, comparten libs/cerebro-contracts)
   - 'ops-agent'

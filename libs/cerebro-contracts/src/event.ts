@@ -15,6 +15,10 @@ export const AGENT_IDS = [
   'customer-support-service',
   'mobile-agent',
   'frontend-agent',
+  // HTTP services que también publican al cerebro (no son agents Cloud Run
+  // Jobs sino services always-on, pero participan del mismo contrato
+  // AgentRunEvent — patrón ya establecido por customer-support-service).
+  'voice-call-service',
 ] as const;
 
 export type AgentId = (typeof AGENT_IDS)[number];

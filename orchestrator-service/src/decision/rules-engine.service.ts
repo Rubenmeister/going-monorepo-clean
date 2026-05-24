@@ -98,6 +98,39 @@ export const RULES: Record<string, ActionRule | 'human_only'> = {
     }),
   },
 
+  // ── Voice call (Uyari) — triggers de patrones telefónicos ────
+  // Reactivo a eventos publicados por voice-call-service. STUB de mapeo
+  // que ya queda en RULES para que cuando Uyari empiece a publicar
+  // eventos reales, mycortex pueda emitir Intentions y Wayra las dispatchee.
+
+  // Caller spam/fraud — Cat 2 reversible (bloqueo temporal con TTL).
+  'block_voice_caller': {
+    agent:       'voice-call-service',
+    action:      'block_caller_temporarily',
+    safetyLevel: 2,
+    buildArgs: (intent) => ({
+      from: intent.target,
+      durationMinutes: (intent.data?.durationMinutes as number) ?? 60,
+    }),
+  },
+
+  // Forzar handoff de una call en curso a humano. Cat 2 (reversible —
+  // el operador puede devolver la call al AI si era falsa alarma).
+  'force_handoff_voice_call': {
+    agent:       'voice-call-service',
+    action:      'force_handoff_current_call',
+    safetyLevel: 2,
+    buildArgs: (intent) => ({
+      callId: intent.target,
+      reason: (intent.data?.reason as string) ?? 'mycortex_requested',
+    }),
+  },
+
+  // Revisar prompts del voice agent — human_only porque requiere creatividad
+  // y entendimiento del negocio. Mycortex puede sugerirlo pero la edición
+  // del prompt va por humano.
+  'review_voice_agent_prompts': 'human_only',
+
   // ── human_only — Orchestrator NO ejecuta, solo reporta ────
   'replicate_viral_format':         'human_only', // requiere creatividad
   'add_more_operators':             'human_only', // contratación, no auto

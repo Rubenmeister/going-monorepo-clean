@@ -72,6 +72,16 @@ export const AGENT_REGISTRY: Record<string, AgentConfig> = {
                  'https://cerebro-service-780842550857.us-central1.run.app',
     commandPath: '/cerebro/command',
   },
+
+  // Uyari — voice-call-service: acepta comandos como block_caller_temporarily,
+  // update_voice_agent_prompt, force_handoff_current_call (todos en scaffold
+  // hoy — implementar cuando se active el feature Twilio).
+  'voice-call-service': {
+    kind:        'http-service',
+    serviceUrl:  process.env.VOICE_CALL_SERVICE_URL ||
+                 'https://voice-call-service-780842550857.us-central1.run.app',
+    commandPath: '/voice/command',
+  },
 };
 
 export function lookupAgent(agentId: string): AgentConfig | null {

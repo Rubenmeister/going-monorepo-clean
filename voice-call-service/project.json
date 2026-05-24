@@ -1,0 +1,20 @@
+{
+  "name": "voice-call-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "voice-call-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/voice-call-service",
+        "main": "voice-call-service/src/main.ts",
+        "tsConfig": "voice-call-service/tsconfig.app.json",
+        "webpackConfig": "voice-call-service/webpack.config.js"
+      }
+    }
+  }
+}

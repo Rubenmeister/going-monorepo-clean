@@ -67,6 +67,13 @@ export const BRAIN_LAYERS: Record<string, ServiceIdentity> = {
     layer:       'adapter',
     role:        'Adapter stateless — rutea comandos a Cloud Run Jobs o HTTP services',
   },
+  'voice-call-service': {
+    serviceId:   'voice-call-service',
+    displayName: 'Uyari',
+    meaning:     'escuchar, oír (kichwa) — el que atiende cuando alguien habla',
+    layer:       'adapter',
+    role:        'Atención de llamadas telefónicas 24/7 — bridge Twilio Voice ↔ OpenAI Realtime, publica eventos al cerebro',
+  },
 };
 
 /**
