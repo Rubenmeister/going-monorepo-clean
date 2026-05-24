@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -29,16 +29,9 @@ import { analyticsShareTracking, analyticsRideCompleted, analyticsScreen } from 
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
 import type { CallSession } from '../../utils/agoraCall';
 import { InCallOverlay } from '../../components/InCallOverlay';
+import { useTheme, type ThemeTokens } from '../../theme';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
-
-// Brand colors canónicos (Going). Mantenemos como constantes simples
-// para no romper el flujo crítico de socket.io / Agora / Mapbox de este
-// screen. Theme adaptive completo (light + dark + useTheme) queda como
-// TODO task — requiere refactor más profundo del componente (944 LOC).
-const GOING_BLUE   = '#0033A0';   // brand cobalt (matches mockup #3 Login)
-const GOING_YELLOW = '#FFCD00';   // brand yellow
-const GOING_RED    = '#FF4C41';   // brand coral (logo + destructivos)
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 type RideStatus = 'searching' | 'driver_assigned' | 'arriving' | 'arrived' | 'in_progress' | 'completed';
@@ -54,14 +47,28 @@ interface DriverInfo {
   location?: { latitude: number; longitude: number };
 }
 
-const STATUS_CONFIG: Record<RideStatus, { label: string; color: string; icon: string }> = {
-  searching:       { label: 'Buscando conductor…',           color: GOING_YELLOW, icon: 'search-outline' },
-  driver_assigned: { label: 'Conductor asignado',             color: GOING_BLUE,   icon: 'person-outline' },
-  arriving:        { label: 'Tu conductor está en camino',    color: '#fb923c',    icon: 'car-sport-outline' },
-  arrived:         { label: '¡Tu conductor llegó! 👋',        color: '#16a34a',    icon: 'checkmark-circle-outline' },
-  in_progress:     { label: 'Viaje en curso',                 color: '#4ade80',    icon: 'navigate-outline' },
-  completed:       { label: 'Viaje completado ✓',             color: GOING_BLUE,   icon: 'checkmark-circle-outline' },
-};
+/**
+ * STATUS_CONFIG por tokens — el bg de la status bar y el color del icono /
+ * texto se derivan del theme. Usamos:
+ *  - searching → brandYellow + textOnYellow (CTA-like, demanda atención sin alarmar)
+ *  - driver_assigned / completed → brandNavy + textOnNavy (estado neutral confirmado)
+ *  - arriving → semantic warning (algo en curso, prestar atención)
+ *  - arrived → semantic success
+ *  - in_progress → semantic success (viaje sano)
+ */
+function makeStatusConfig(t: ThemeTokens): Record<
+  RideStatus,
+  { label: string; bg: string; fg: string; icon: string }
+> {
+  return {
+    searching:       { label: 'Buscando conductor…',        bg: t.brandYellow, fg: t.textOnYellow, icon: 'search-outline' },
+    driver_assigned: { label: 'Conductor asignado',          bg: t.brandNavy,   fg: t.textOnNavy,   icon: 'person-outline' },
+    arriving:        { label: 'Tu conductor está en camino', bg: t.warning,     fg: '#ffffff',      icon: 'car-sport-outline' },
+    arrived:         { label: '¡Tu conductor llegó! 👋',     bg: t.success,     fg: '#ffffff',      icon: 'checkmark-circle-outline' },
+    in_progress:     { label: 'Viaje en curso',              bg: t.success,     fg: '#ffffff',      icon: 'navigate-outline' },
+    completed:       { label: 'Viaje completado ✓',          bg: t.brandNavy,   fg: t.textOnNavy,   icon: 'checkmark-circle-outline' },
+  };
+}
 
 // ── Pasos del viaje ────────────────────────────────────────────────────────
 const STEPS = [
@@ -89,6 +96,12 @@ export function ActiveRideScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<RouteProp<{ params: ActiveRideParams }, 'params'>>();
   const { rideId, origin, destination, vehicleType, tripMode, category, price, pickupToken, shareUrl } = route.params;
+
+  // Theme adaptive — light/dark + brand tokens. Sin re-render cuando cambia
+  // datos del viaje porque tokens/isDark son referencias estables.
+  const { tokens, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
+  const STATUS_CONFIG = useMemo(() => makeStatusConfig(tokens), [tokens]);
 
   const [status, setStatus] = useState<RideStatus>('searching');
   const [driver, setDriver] = useState<DriverInfo | null>(null);
@@ -453,7 +466,10 @@ export function ActiveRideScreen() {
     <Fragment>
     <View style={styles.container}>
       {/* ── MAPA ── */}
-      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Street}>
+      <MapboxGL.MapView
+        style={styles.map}
+        styleURL={isDark ? MapboxGL.StyleURL.Dark : MapboxGL.StyleURL.Street}
+      >
         <MapboxGL.Camera
           ref={cameraRef}
           zoomLevel={13}
@@ -479,7 +495,7 @@ export function ActiveRideScreen() {
             <MapboxGL.LineLayer
               id="routeLine"
               style={{
-                lineColor: status === 'in_progress' ? GOING_BLUE : '#60A5FA',
+                lineColor: status === 'in_progress' ? tokens.brandNavy : tokens.neonBlue,
                 lineWidth: 5,
                 lineJoin: 'round',
                 lineCap: 'round',
@@ -552,24 +568,26 @@ export function ActiveRideScreen() {
       <View style={styles.panel}>
 
         {/* Status bar */}
-        <View style={[styles.statusBar, { backgroundColor: statusConfig.color }]}>
+        <View style={[styles.statusBar, { backgroundColor: statusConfig.bg }]}>
           {status === 'searching' ? (
             <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <Ionicons name={statusConfig.icon as any} size={18} color={status === 'searching' ? GOING_BLUE : '#fff'} />
+              <Ionicons name={statusConfig.icon as any} size={18} color={statusConfig.fg} />
             </Animated.View>
           ) : (
-            <Ionicons name={statusConfig.icon as any} size={18} color="#fff" />
+            <Ionicons name={statusConfig.icon as any} size={18} color={statusConfig.fg} />
           )}
-          <Text style={[styles.statusText, status === 'searching' && { color: GOING_BLUE }]}>
+          <Text style={[styles.statusText, { color: statusConfig.fg }]}>
             {statusConfig.label}
           </Text>
           {eta && status !== 'completed' && (
-            <Text style={[styles.etaText, status === 'searching' && { color: GOING_BLUE }]}>
+            <Text style={[styles.etaText, { color: statusConfig.fg, opacity: 0.85 }]}>
               ~{eta} min
             </Text>
           )}
           {status === 'in_progress' && (
-            <Text style={styles.timerText}>{formatTime(elapsedTime)}</Text>
+            <Text style={[styles.timerText, { color: statusConfig.fg }]}>
+              {formatTime(elapsedTime)}
+            </Text>
           )}
         </View>
 
@@ -577,14 +595,14 @@ export function ActiveRideScreen() {
         {status === 'in_progress' && (etaTotal || progressPercent != null) && (
           <View style={styles.etaContainer}>
             <View style={styles.etaLabelRow}>
-              <Ionicons name="navigate-circle-outline" size={14} color={GOING_BLUE} />
+              <Ionicons name="navigate-circle-outline" size={14} color={tokens.brandNavy} />
               <Text style={styles.etaRemainingText}>
                 {progressPercent != null
                   ? `${progressPercent}% completado`
                   : etaTotal ? formatRemaining(etaTotal, elapsedTime) : ''}
               </Text>
               <TouchableOpacity style={styles.shareBtn} onPress={handleShareTracking}>
-                <Ionicons name="share-social-outline" size={16} color={GOING_BLUE} />
+                <Ionicons name="share-social-outline" size={16} color={tokens.brandNavy} />
                 <Text style={styles.shareBtnText}>Compartir ruta</Text>
               </TouchableOpacity>
             </View>
@@ -599,7 +617,7 @@ export function ActiveRideScreen() {
                     }),
                     backgroundColor: etaProgressAnim.interpolate({
                       inputRange: [0, 0.6, 0.85, 1],
-                      outputRange: [GOING_BLUE, GOING_BLUE, '#fb923c', GOING_RED],
+                      outputRange: [tokens.brandNavy, tokens.brandNavy, tokens.warning, tokens.brandRed],
                     }),
                   },
                 ]}
@@ -611,7 +629,7 @@ export function ActiveRideScreen() {
         {/* Botón compartir (cuando hay conductor pero no está en progreso) */}
         {status !== 'in_progress' && status !== 'searching' && status !== 'completed' && (
           <TouchableOpacity style={styles.shareBtnStandalone} onPress={handleShareTracking}>
-            <Ionicons name="share-social-outline" size={16} color={GOING_BLUE} />
+            <Ionicons name="share-social-outline" size={16} color={tokens.brandNavy} />
             <Text style={styles.shareBtnStandaloneText}>Compartir mi ubicación en tiempo real</Text>
           </TouchableOpacity>
         )}
@@ -646,7 +664,7 @@ export function ActiveRideScreen() {
                 {driver.vehicleModel} · {driver.vehiclePlate}
               </Text>
               <View style={styles.ratingRow}>
-                <Ionicons name="star" size={12} color={GOING_YELLOW} />
+                <Ionicons name="star" size={12} color={tokens.brandYellow} />
                 <Text style={styles.ratingText}>{driver.rating?.toFixed(1) ?? '—'}</Text>
               </View>
             </View>
@@ -660,14 +678,14 @@ export function ActiveRideScreen() {
                 })
               }
             >
-              <Ionicons name="chatbubble-ellipses" size={20} color={GOING_BLUE} />
+              <Ionicons name="chatbubble-ellipses" size={20} color={tokens.brandNavy} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.callBtn, callLoading && { opacity: 0.5 }]}
               onPress={handleCallDriver}
               disabled={callLoading}
             >
-              <Ionicons name={callLoading ? 'hourglass-outline' : 'call'} size={20} color={GOING_BLUE} />
+              <Ionicons name={callLoading ? 'hourglass-outline' : 'call'} size={20} color={tokens.brandNavy} />
             </TouchableOpacity>
           </View>
         )}
@@ -675,12 +693,12 @@ export function ActiveRideScreen() {
         {/* Detalle de ruta */}
         <View style={styles.routeDetail}>
           <View style={styles.routeRow}>
-            <View style={[styles.routeDot, { backgroundColor: '#4ade80' }]} />
+            <View style={[styles.routeDot, { backgroundColor: tokens.success }]} />
             <Text style={styles.routeAddress} numberOfLines={1}>{origin.address}</Text>
           </View>
           <View style={styles.routeLine} />
           <View style={styles.routeRow}>
-            <View style={[styles.routeDot, { backgroundColor: GOING_RED }]} />
+            <View style={[styles.routeDot, { backgroundColor: tokens.brandRed }]} />
             <Text style={styles.routeAddress} numberOfLines={1}>{destination.address}</Text>
           </View>
         </View>
@@ -689,22 +707,22 @@ export function ActiveRideScreen() {
         <View style={styles.tripInfo}>
           {routeDistance && (
             <View style={styles.tripTag}>
-              <Ionicons name="map-outline" size={12} color={GOING_BLUE} />
+              <Ionicons name="map-outline" size={12} color={tokens.brandNavy} />
               <Text style={styles.tripTagText}>{routeDistance} km</Text>
             </View>
           )}
           <View style={styles.tripTag}>
-            <Ionicons name="car-sport-outline" size={12} color={GOING_BLUE} />
+            <Ionicons name="car-sport-outline" size={12} color={tokens.brandNavy} />
             <Text style={styles.tripTagText}>{vehicleType}</Text>
           </View>
           <View style={styles.tripTag}>
-            <Ionicons name={tripMode === 'compartido' ? 'people-outline' : 'person-outline'} size={12} color={GOING_BLUE} />
+            <Ionicons name={tripMode === 'compartido' ? 'people-outline' : 'person-outline'} size={12} color={tokens.brandNavy} />
             <Text style={styles.tripTagText}>{tripMode === 'compartido' ? 'Compartido' : 'Privado'}</Text>
           </View>
           {category === 'premium' && (
-            <View style={[styles.tripTag, { backgroundColor: `${GOING_YELLOW}30` }]}>
-              <Ionicons name="diamond-outline" size={12} color={GOING_BLUE} />
-              <Text style={styles.tripTagText}>Premium</Text>
+            <View style={[styles.tripTag, styles.tripTagPremium]}>
+              <Ionicons name="diamond-outline" size={12} color={tokens.premiumText} />
+              <Text style={[styles.tripTagText, { color: tokens.premiumText }]}>Premium</Text>
             </View>
           )}
           <Text style={styles.tripPrice}>${price.toFixed(2)}</Text>
@@ -728,7 +746,7 @@ export function ActiveRideScreen() {
       <View style={styles.qrOverlay}>
         <View style={styles.qrCard}>
           <View style={styles.qrHeader}>
-            <Ionicons name="qr-code-outline" size={28} color={GOING_BLUE} />
+            <Ionicons name="qr-code-outline" size={28} color={tokens.brandNavy} />
             <Text style={styles.qrTitle}>Muestra este código al conductor</Text>
           </View>
           <Text style={styles.qrSubtitle}>El conductor lo escaneará para confirmar que es tu viaje</Text>
@@ -740,7 +758,7 @@ export function ActiveRideScreen() {
                   key={i}
                   style={[
                     styles.qrCell,
-                    { backgroundColor: char.charCodeAt(0) % 2 === 0 ? GOING_BLUE : GOING_YELLOW },
+                    { backgroundColor: char.charCodeAt(0) % 2 === 0 ? tokens.brandNavy : tokens.brandYellow },
                   ]}
                 />
               ))}
@@ -766,196 +784,213 @@ export function ActiveRideScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { flex: 1 },
+// ─────────────────────────────────────────────────────────────
+// Styles factory — todo el screen consume tokens del theme activo.
+// Mantenemos algunos colores hardcoded donde son intencionales:
+//   - '#fff' en iconos sobre superficies de marca (rojo SOS, marcadores)
+//   - 'rgba(0,0,0,...)' en sombras y backdrops modales
+//   - 'rgba(255,255,255,...)' en borde del SOS sobre coral
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.bg },
+    map: { flex: 1 },
 
-  // Marcadores
-  originMarker: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: '#4ade80',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff',
-  },
-  destMarker: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: GOING_RED,
-    justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff',
-  },
-  driverMarker: {
-    width: 36, height: 36, borderRadius: 18, backgroundColor: GOING_BLUE,
-    justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: GOING_YELLOW,
-  },
+    // Marcadores
+    originMarker: {
+      width: 32, height: 32, borderRadius: 16, backgroundColor: t.success,
+      justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff',
+    },
+    destMarker: {
+      width: 32, height: 32, borderRadius: 16, backgroundColor: t.brandRed,
+      justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#fff',
+    },
+    driverMarker: {
+      width: 36, height: 36, borderRadius: 18, backgroundColor: t.brandNavy,
+      justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: t.brandYellow,
+    },
 
-  // Logo sobre el mapa
-  mapLogoOverlay: {
-    position: 'absolute',
-    top: 52,
-    left: 16,
-    zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.88)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  mapLogo: { width: 110, height: 47 },
+    // Logo sobre el mapa — fondo semi-translúcido adaptado al theme para que
+    // el logo siempre quede legible (light: white-ish; dark: oscuro-ish).
+    mapLogoOverlay: {
+      position: 'absolute',
+      top: 52,
+      left: 16,
+      zIndex: 10,
+      backgroundColor: isDark ? 'rgba(15,20,36,0.85)' : 'rgba(255,255,255,0.88)',
+      borderRadius: 10,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    mapLogo: { width: 110, height: 47 },
 
-  // Panel inferior
-  panel: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    paddingHorizontal: 20, paddingBottom: 36, paddingTop: 0,
-    shadowColor: '#000', shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.12, shadowRadius: 10, elevation: 12,
-  },
+    // Panel inferior
+    panel: {
+      position: 'absolute', bottom: 0, left: 0, right: 0,
+      backgroundColor: t.bgLayer,
+      borderTopLeftRadius: 24, borderTopRightRadius: 24,
+      paddingHorizontal: 20, paddingBottom: 36, paddingTop: 0,
+      shadowColor: '#000', shadowOffset: { width: 0, height: -3 },
+      shadowOpacity: isDark ? 0.4 : 0.12, shadowRadius: 10, elevation: 12,
+    },
 
-  // Status bar
-  statusBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingVertical: 12, paddingHorizontal: 16,
-    borderRadius: 14, marginTop: -20, marginBottom: 14,
-  },
-  statusText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#fff' },
-  etaText: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.8)' },
-  timerText: { fontSize: 14, fontWeight: '800', color: '#fff', fontVariant: ['tabular-nums'] },
+    // Status bar — color de fondo y texto vienen del STATUS_CONFIG (inline).
+    statusBar: {
+      flexDirection: 'row', alignItems: 'center', gap: 8,
+      paddingVertical: 12, paddingHorizontal: 16,
+      borderRadius: 14, marginTop: -20, marginBottom: 14,
+    },
+    statusText: { flex: 1, fontSize: 14, fontWeight: '700' },
+    etaText: { fontSize: 13, fontWeight: '700' },
+    timerText: { fontSize: 14, fontWeight: '800', fontVariant: ['tabular-nums'] },
 
-  // ETA progress bar
-  etaContainer: { marginBottom: 12 },
-  etaLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  etaRemainingText: { flex: 1, fontSize: 12, fontWeight: '700', color: GOING_BLUE },
-  etaBarBg: {
-    height: 8, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden',
-  },
-  etaBarFill: { height: 8, borderRadius: 4 },
+    // ETA progress bar
+    etaContainer: { marginBottom: 12 },
+    etaLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+    etaRemainingText: { flex: 1, fontSize: 12, fontWeight: '700', color: t.brandNavy },
+    etaBarBg: {
+      height: 8, borderRadius: 4, backgroundColor: t.border, overflow: 'hidden',
+    },
+    etaBarFill: { height: 8, borderRadius: 4 },
 
-  // Share buttons
-  shareBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
-    backgroundColor: `${GOING_BLUE}12`,
-  },
-  shareBtnText: { fontSize: 11, fontWeight: '700', color: GOING_BLUE },
-  shareBtnStandalone: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, borderRadius: 10,
-    backgroundColor: `${GOING_BLUE}10`,
-    borderWidth: 1, borderColor: `${GOING_BLUE}25`,
-    marginBottom: 12,
-  },
-  shareBtnStandaloneText: { fontSize: 13, fontWeight: '600', color: GOING_BLUE },
+    // Share buttons — chip suave con tinte navy
+    shareBtn: {
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+      paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8,
+      backgroundColor: isDark ? 'rgba(42,58,110,0.25)' : 'rgba(29,46,88,0.08)',
+    },
+    shareBtnText: { fontSize: 11, fontWeight: '700', color: t.brandNavy },
+    shareBtnStandalone: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+      paddingVertical: 8, borderRadius: 10,
+      backgroundColor: isDark ? 'rgba(42,58,110,0.2)' : 'rgba(29,46,88,0.06)',
+      borderWidth: 1, borderColor: isDark ? 'rgba(42,58,110,0.4)' : 'rgba(29,46,88,0.18)',
+      marginBottom: 12,
+    },
+    shareBtnStandaloneText: { fontSize: 13, fontWeight: '600', color: t.brandNavy },
 
-  // Progress steps
-  stepsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, paddingHorizontal: 4 },
-  stepItem: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  stepDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#E5E7EB' },
-  stepDotDone: { backgroundColor: GOING_BLUE },
-  stepDotActive: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: GOING_YELLOW },
-  stepLine: { flex: 1, height: 2, backgroundColor: '#E5E7EB', marginHorizontal: 2 },
-  stepLineDone: { backgroundColor: GOING_BLUE },
+    // Progress steps
+    stepsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, paddingHorizontal: 4 },
+    stepItem: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    stepDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: t.border },
+    stepDotDone: { backgroundColor: t.brandNavy },
+    stepDotActive: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: t.brandYellow },
+    stepLine: { flex: 1, height: 2, backgroundColor: t.border, marginHorizontal: 2 },
+    stepLineDone: { backgroundColor: t.brandNavy },
 
-  // Driver card
-  driverCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 12, borderRadius: 14, backgroundColor: '#F9FAFB',
-    borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 12,
-  },
-  driverAvatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: GOING_BLUE,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  driverInitials: { color: '#fff', fontWeight: '800', fontSize: 16 },
-  driverInfo: { flex: 1 },
-  driverName: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  driverVehicle: { fontSize: 12, color: '#6B7280', marginTop: 1 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  ratingText: { fontSize: 12, fontWeight: '600', color: '#374151' },
-  chatBtn: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: `${GOING_YELLOW}30`,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  callBtn: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: `${GOING_BLUE}10`,
-    justifyContent: 'center', alignItems: 'center',
-  },
+    // Driver card
+    driverCard: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      padding: 12, borderRadius: 14, backgroundColor: t.bg,
+      borderWidth: 1, borderColor: t.border, marginBottom: 12,
+    },
+    driverAvatar: {
+      width: 44, height: 44, borderRadius: 22, backgroundColor: t.brandNavy,
+      justifyContent: 'center', alignItems: 'center',
+    },
+    driverInitials: { color: t.textOnNavy, fontWeight: '800', fontSize: 16 },
+    driverInfo: { flex: 1 },
+    driverName: { fontSize: 14, fontWeight: '700', color: t.textPrimary },
+    driverVehicle: { fontSize: 12, color: t.textSecondary, marginTop: 1 },
+    ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
+    ratingText: { fontSize: 12, fontWeight: '600', color: t.textPrimary },
+    chatBtn: {
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: isDark ? 'rgba(255,205,0,0.18)' : 'rgba(255,205,0,0.25)',
+      justifyContent: 'center', alignItems: 'center',
+    },
+    callBtn: {
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: isDark ? 'rgba(42,58,110,0.25)' : 'rgba(29,46,88,0.08)',
+      justifyContent: 'center', alignItems: 'center',
+    },
 
-  // Route detail
-  routeDetail: { marginBottom: 12, paddingLeft: 4 },
-  routeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  routeDot: { width: 10, height: 10, borderRadius: 5 },
-  routeLine: { width: 2, height: 16, backgroundColor: '#D1D5DB', marginLeft: 4, marginVertical: 2 },
-  routeAddress: { fontSize: 13, color: '#374151', flex: 1 },
+    // Route detail
+    routeDetail: { marginBottom: 12, paddingLeft: 4 },
+    routeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    routeDot: { width: 10, height: 10, borderRadius: 5 },
+    routeLine: { width: 2, height: 16, backgroundColor: t.border, marginLeft: 4, marginVertical: 2 },
+    routeAddress: { fontSize: 13, color: t.textPrimary, flex: 1 },
 
-  // Trip info tags
-  tripInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
-  tripTag: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-  },
-  tripTagText: { fontSize: 11, fontWeight: '600', color: GOING_BLUE },
-  tripPrice: { fontSize: 16, fontWeight: '900', color: GOING_BLUE, marginLeft: 'auto' },
+    // Trip info tags
+    tripInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
+    tripTag: {
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+      paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
+      backgroundColor: t.glass,
+    },
+    tripTagText: { fontSize: 11, fontWeight: '600', color: t.brandNavy },
+    tripTagPremium: {
+      backgroundColor: t.premiumBg,
+      borderWidth: 1, borderColor: t.premiumBorder,
+    },
+    tripPrice: { fontSize: 16, fontWeight: '900', color: t.brandNavy, marginLeft: 'auto' },
 
-  // Buttons
-  // Botón SOS flotante sobre el mapa — ícono warning + label "SOS"
-  // Usa GOING_RED (brand coral) para alinear con identidad. Sombra fuerte
-  // y elevation alta para que destaque sobre el mapa siempre.
-  sosBtn: {
-    position: 'absolute',
-    top: 56,
-    right: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    minWidth: 64,
-    borderRadius: 22,
-    backgroundColor: GOING_RED,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    shadowColor: GOING_RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.55,
-    shadowRadius: 10,
-    elevation: 10,
-    zIndex: 10,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.4)',
-  },
-  sosBtnText: {
-    color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 1,
-  },
+    // Botón SOS flotante sobre el mapa — ícono warning + label "SOS"
+    // Usa brandRed (coral del logo) para alinear con identidad. Sombra fuerte
+    // y elevation alta para que destaque sobre el mapa siempre.
+    sosBtn: {
+      position: 'absolute',
+      top: 56,
+      right: 16,
+      paddingHorizontal: 14,
+      paddingVertical: 9,
+      minWidth: 64,
+      borderRadius: 22,
+      backgroundColor: t.brandRed,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      shadowColor: t.brandRed,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.55,
+      shadowRadius: 10,
+      elevation: 10,
+      zIndex: 10,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.4)',
+    },
+    sosBtnText: {
+      color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 1,
+    },
 
-  cancelBtn: {
-    paddingVertical: 14, borderRadius: 12, alignItems: 'center',
-    borderWidth: 1.5, borderColor: GOING_RED, backgroundColor: `${GOING_RED}08`,
-  },
-  cancelBtnText: { color: GOING_RED, fontSize: 15, fontWeight: '700' },
-  finishBtn: {
-    paddingVertical: 14, borderRadius: 12, alignItems: 'center',
-    backgroundColor: GOING_BLUE,
-  },
-  finishBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+    cancelBtn: {
+      paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+      borderWidth: 1.5, borderColor: t.brandRed,
+      backgroundColor: isDark ? 'rgba(255,76,65,0.10)' : 'rgba(255,76,65,0.05)',
+    },
+    cancelBtnText: { color: t.brandRed, fontSize: 15, fontWeight: '700' },
+    finishBtn: {
+      paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+      backgroundColor: t.brandNavy,
+    },
+    finishBtnText: { color: t.textOnNavy, fontSize: 15, fontWeight: '700' },
 
-  // QR de identidad
-  qrOverlay: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 100,
-  },
-  qrCard: {
-    backgroundColor: '#fff', borderRadius: 24, padding: 24,
-    width: '85%', alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16,
-  },
-  qrHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  qrTitle: { fontSize: 17, fontWeight: '800', color: '#111827', flex: 1 },
-  qrSubtitle: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginBottom: 20 },
-  qrBox: { alignItems: 'center', marginBottom: 20 },
-  qrGrid: {
-    width: 120, height: 120, flexDirection: 'row', flexWrap: 'wrap',
-    borderWidth: 3, borderColor: GOING_BLUE, borderRadius: 8, overflow: 'hidden',
-  },
-  qrCell: { width: 30, height: 30 },
-  qrCode: { marginTop: 10, fontSize: 18, fontWeight: '900', letterSpacing: 4, color: GOING_BLUE },
-  qrDismiss: {
-    paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12,
-    backgroundColor: '#F3F4F6',
-  },
-  qrDismissText: { fontSize: 14, fontWeight: '700', color: '#374151' },
-});
+    // QR de identidad — el backdrop modal queda oscuro siempre (es overlay,
+    // no superficie del theme). El card sí usa surface del theme.
+    qrOverlay: {
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 100,
+    },
+    qrCard: {
+      backgroundColor: t.bgLayer, borderRadius: 24, padding: 24,
+      width: '85%', alignItems: 'center',
+      shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16,
+    },
+    qrHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+    qrTitle: { fontSize: 17, fontWeight: '800', color: t.textPrimary, flex: 1 },
+    qrSubtitle: { fontSize: 13, color: t.textSecondary, textAlign: 'center', marginBottom: 20 },
+    qrBox: { alignItems: 'center', marginBottom: 20 },
+    qrGrid: {
+      width: 120, height: 120, flexDirection: 'row', flexWrap: 'wrap',
+      borderWidth: 3, borderColor: t.brandNavy, borderRadius: 8, overflow: 'hidden',
+    },
+    qrCell: { width: 30, height: 30 },
+    qrCode: { marginTop: 10, fontSize: 18, fontWeight: '900', letterSpacing: 4, color: t.brandNavy },
+    qrDismiss: {
+      paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12,
+      backgroundColor: t.glass,
+    },
+    qrDismissText: { fontSize: 14, fontWeight: '700', color: t.textPrimary },
+  });
+}
