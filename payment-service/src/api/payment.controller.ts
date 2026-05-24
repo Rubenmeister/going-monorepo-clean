@@ -49,11 +49,21 @@ export class PaymentController {
   }
 
   /**
+   * @deprecated Usar POST /payments/quote.
+   *
    * Estimate fare — versión legacy: el caller pasa `distanceKm` ya calculado.
    * POST /payments/estimate
    *
-   * Preferido: usar POST /payments/quote que calcula distancia REAL por
-   * carretera + aplica recargos + canje de puntos.
+   * IMPORTANTE: este endpoint es PÚBLICO (sin JWT) — siempre devuelve
+   * precio público. NO aplica el +25% corporativo aunque el caller sea
+   * una empresa, porque no tenemos identidad para confiar. Si una empresa
+   * necesita el quote real con su recargo, debe usar POST /payments/quote
+   * (acepta clientSegment en el body con validación) o llamar
+   * autenticado a POST /bookings/estimate del booking-service.
+   *
+   * Mantenido por compatibilidad con clientes externos legacy (ops dashboards
+   * que cotizaban sin pasar por la app). Será removido cuando podamos
+   * confirmar que nadie externo lo consume (~1 trimestre de telemetría).
    */
   @Post('estimate')
   estimateFare(@Body() body: any) {
