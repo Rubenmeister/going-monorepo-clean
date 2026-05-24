@@ -73,7 +73,9 @@ export class WhatsAppService {
     if (!this.phoneNumberId || !this.accessToken) return false;
 
     try {
-      // 1. Upload media
+      // 1. Upload media (Meta Graph API — tiende a ser el step más lento
+      //    del envío porque sube el binario completo). Timing separado del
+      //    send para identificar si el cuello es la subida o el dispatch.
       const formData = new FormData();
       formData.append('messaging_product', 'whatsapp');
       formData.append('type', 'audio/ogg');
@@ -83,15 +85,17 @@ export class WhatsAppService {
         'reply.ogg',
       );
 
+      const tUpload = Date.now();
       const uploadRes = await fetch(`${META_GRAPH}/${this.phoneNumberId}/media`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${this.accessToken}` },
         body: formData,
       });
+      const dtUpload = Date.now() - tUpload;
 
       if (!uploadRes.ok) {
         const err = await uploadRes.text();
-        this.logger.error(`Meta media upload failed: ${uploadRes.status} ${err}`);
+        this.logger.error(`[wa-upload] failed in ${dtUpload}ms: ${uploadRes.status} ${err}`);
         return false;
       }
 
@@ -99,7 +103,9 @@ export class WhatsAppService {
       const mediaId = uploadData.id;
       if (!mediaId) return false;
 
-      // 2. Send audio message referenciando el mediaId
+      // 2. Send audio message referenciando el mediaId (sin payload pesado —
+      //    solo el ID + metadata). Suele ser <500ms.
+      const tSend = Date.now();
       const sendRes = await fetch(`${META_GRAPH}/${this.phoneNumberId}/messages`, {
         method: 'POST',
         headers: {
@@ -113,12 +119,14 @@ export class WhatsAppService {
           audio: { id: mediaId },
         }),
       });
+      const dtSend = Date.now() - tSend;
 
       if (!sendRes.ok) {
         const err = await sendRes.text();
-        this.logger.error(`Meta send audio failed: ${sendRes.status} ${err}`);
+        this.logger.error(`[wa-send] failed in ${dtSend}ms: ${sendRes.status} ${err}`);
         return false;
       }
+      this.logger.log(`[wa-audio] ${audioBuffer.length}B → mediaId=${mediaId} (upload=${dtUpload}ms, send=${dtSend}ms, total=${dtUpload + dtSend}ms)`);
       return true;
     } catch (err) {
       this.logger.error('sendAudio error', err);

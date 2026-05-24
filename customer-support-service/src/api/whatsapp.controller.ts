@@ -192,6 +192,11 @@ export class WhatsAppController {
       // por Cloud STT (5 idiomas — Item 6 Fase 8). Lo pasamos al AgentService
       // para que (a) responda en ese idioma, (b) TTS use el mismo lang para voz.
       let sttLang: import('../knowledge-base/system-prompt').SupportedLang | undefined;
+      // Timestamp del flow completo de voz (Meta delivery → audio enviado).
+      // Se inicializa cuando wasAudio=true para medir la latencia perceived
+      // por el usuario y descomponer dónde se va el tiempo (download + STT +
+      // LLM + TTS + upload + send).
+      let voiceFlowStart = 0;
 
       this.logger.log(`[webhook] type=${msg.type} from=${from} msgId=${msg.id}`);
 
@@ -203,6 +208,7 @@ export class WhatsAppController {
         this.logger.log(`GPS location from ${from}: ${latitude},${longitude}`);
       } else if (msg.type === 'audio' || msg.type === 'voice') {
         wasAudio = true;
+        voiceFlowStart = Date.now();
         // Meta entrega voice notes con type='audio' y msg.audio.id como mediaId.
         // Algunas SDK refieren a msg.voice; fallback a msg.id solo si nada hay.
         const audioMediaId = msg.audio?.id || msg.voice?.id || msg.id;
@@ -219,14 +225,18 @@ export class WhatsAppController {
           this.logger.warn(`[audio] ack send failed: ${(err as Error).message}`),
         );
 
+        // downloadMedia hace 2 round-trips a Meta: 1) GET /media/:id → URL,
+        // 2) GET de la URL signed. Total típico 500ms-3s según red.
+        const tDownload = Date.now();
         const audioBuffer = await this.whatsappService.downloadMedia(audioMediaId);
+        const dtDownload = Date.now() - tDownload;
         if (audioBuffer) {
-          this.logger.log(`[audio] buffer ${audioBuffer.length} bytes, calling STT`);
+          this.logger.log(`[audio] downloadMedia ${audioBuffer.length}B en ${dtDownload}ms, calling STT`);
           const stt = await this.voiceService.transcribe(audioBuffer);
           messageText = stt.transcript;
           sttLang = stt.lang;
         } else {
-          this.logger.warn(`[audio] downloadMedia returned null for ${audioMediaId}`);
+          this.logger.warn(`[audio] downloadMedia returned null in ${dtDownload}ms for ${audioMediaId}`);
         }
         if (!messageText) {
           this.logger.warn(`[audio] empty transcript from ${from}, sending fallback`);
@@ -263,9 +273,14 @@ export class WhatsAppController {
         // voicePreference: si el usuario eligió una voz específica, gana sobre default-por-género.
         const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender, conv.voicePreference) : null;
         const sent   = audio ? await this.whatsappService.sendAudio(from, audio) : false;
+        // Latencia total del flow voz = receive → reply audio enviado.
+        // Combina [audio download + STT + LLM + TTS + sendAudio]. Cada
+        // sub-step ya loggea su propio timing — esto es el techo perceived.
+        const dtTotal = voiceFlowStart ? Date.now() - voiceFlowStart : 0;
         if (sent) {
-          this.logger.log(`Audio reply sent to ${from} (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
+          this.logger.log(`[voice-flow] reply sent to ${from} in ${dtTotal}ms (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
         } else {
+          this.logger.warn(`[voice-flow] audio failed after ${dtTotal}ms — fallback a texto para ${from}`);
           // Fallback to text if TTS/upload fails
           await this.whatsappService.sendText(from, reply);
         }
