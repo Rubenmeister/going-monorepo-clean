@@ -22,6 +22,10 @@ interface AnswerTwimlInput {
   mediaStreamUrl: string;
   /** runId interno para correlación con cerebro events */
   runId:          string;
+  /** E.164 del caller — lo pasamos como custom param del Stream para que el
+   *  gateway lo tenga al recibir el 'start' event sin necesidad de mantener
+   *  state extra fuera de la WS. Permite que el bridge → handoff lo use. */
+  from:           string;
 }
 
 /**
@@ -41,6 +45,7 @@ export function buildAnswerTwiml(input: AnswerTwimlInput): string {
   const url   = escapeAttr(input.mediaStreamUrl);
   const cid   = escapeAttr(input.callId);
   const rid   = escapeAttr(input.runId);
+  const from  = escapeAttr(input.from);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -49,8 +54,46 @@ export function buildAnswerTwiml(input: AnswerTwimlInput): string {
     <Stream url="${url}">
       <Parameter name="callId" value="${cid}"/>
       <Parameter name="runId" value="${rid}"/>
+      <Parameter name="from" value="${from}"/>
     </Stream>
   </Connect>
+</Response>`;
+}
+
+interface HandoffTwimlInput {
+  /** E.164 del operador (HANDOFF_OPERATOR_PHONE). Si vacío, modo callback. */
+  operatorPhone: string;
+  /** Frase opcional a decir antes de transferir/colgar. */
+  spokenIntro?: string;
+}
+
+/**
+ * TwiML para handoff:
+ *  - Si tenemos operatorPhone: <Say> + <Dial> al operador (transferencia PSTN).
+ *  - Si NO: <Say> "te vamos a llamar" + <Hangup/> (modo callback async — el
+ *    operador notificado por Telegram devuelve la llamada manualmente).
+ */
+export function buildHandoffTwiml(input: HandoffTwimlInput): string {
+  const intro = (input.spokenIntro ?? 'Te paso con un agente del equipo Going. No cuelgues.')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  if (input.operatorPhone) {
+    const phone = input.operatorPhone.replace(/[^+0-9]/g, ''); // sanity
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Lupe" language="es-MX">${intro}</Say>
+  <Dial timeout="20" answerOnBridge="true">${phone}</Dial>
+  <Say voice="Polly.Lupe" language="es-MX">No pudimos conectarte ahora. Te vamos a llamar en breve. Gracias por llamar a Going.</Say>
+  <Hangup/>
+</Response>`;
+  }
+
+  // Modo callback async: avisamos y colgamos. El handoff notifier ya alertó
+  // al operador via Telegram con info contextual + número del caller.
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Lupe" language="es-MX">Listo. Un agente del equipo Going te va a llamar en pocos minutos. Gracias por llamar.</Say>
+  <Hangup/>
 </Response>`;
 }
 

@@ -119,6 +119,7 @@ export class TwilioMediaStreamGateway
     let streamSid:  string | null = null;
     let callSid:    string | null = null;
     let runId:      string | null = null;
+    let from:       string | null = null;
     let mediaCount = 0;
     const startTime = Date.now();
 
@@ -144,8 +145,9 @@ export class TwilioMediaStreamGateway
           streamSid = msg.start?.streamSid ?? null;
           callSid   = msg.start?.callSid   ?? null;
           // customParameters vienen del TwiML <Parameter> en twiml-builder.
-          // Los usamos para correlación con nuestra VoiceCallEntity.
+          // Los usamos para correlación con nuestra VoiceCallEntity + handoff.
           runId = msg.start?.customParameters?.runId ?? null;
+          from  = msg.start?.customParameters?.from  ?? null;
           if (streamSid) this.streamsBySid.set(streamSid, ws);
 
           this.logger.log(
@@ -169,6 +171,7 @@ export class TwilioMediaStreamGateway
               streamSid,
               callId: callSid,
               runId:  runId ?? undefined,
+              from:   from  ?? undefined,
               sendAudioBack: (b64) => this.sendAudioToStream(streamSid!, b64),
               clearAudioBack: () => this.clearStream(streamSid!),
             }).catch((err) =>
