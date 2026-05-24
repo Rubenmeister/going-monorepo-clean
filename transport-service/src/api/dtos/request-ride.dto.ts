@@ -33,21 +33,28 @@ export class RequestRideDto {
    * Tier brand del viaje (calidad de servicio). Valores aceptados:
    *   - 'confort' (default, reemplaza el legacy 'standard')
    *   - 'premium' (gama alta, +50% multiplier)
-   *   - 'empresa' (B2B corporativo, -30% multiplier — visible si user.companyId)
+   *   - 'empresa' (B2B corporativo, multiplier 1.0 — el +25% viene del
+   *     clientSegment derivado del JWT, no de aquí; ver libs/pricing/
+   *     service-tier.ts)
    *
    * Backward-compat: builds pre-v66 envían 'standard' → backend lo
    * normaliza a 'confort' vía normalizeServiceTier() de libs/pricing.
    *
    * NOTA: el RequestRideUseCase ACTUALMENTE trata este campo como vehicle
    * type (suv default), no como tier. Es deuda técnica conocida — separar
-   * en `tier` (calidad) vs `vehicleType` (tamaño) está en task #28
-   * follow-up. Mientras tanto el campo acepta ambos contextos.
+   * en `tier` (calidad) vs `vehicleType` (tamaño) está pendiente. Mientras
+   * tanto el campo acepta ambos contextos.
    */
   @IsOptional()
   @IsString()
   serviceType?: string;
 
-  /** Empleado corporativo → despacho de alta prioridad (SLA) en el matching. */
+  /**
+   * @deprecated Server-side enforcement (audit #29): el backend deriva
+   * isCorporate desde `user.companyId` del JWT, ignorando este campo salvo
+   * que el caller sea admin. Mantenido en el DTO solo por compatibilidad
+   * con mobile builds antiguos — los nuevos NO deben enviarlo.
+   */
   @IsOptional()
   @IsBoolean()
   isCorporate?: boolean;

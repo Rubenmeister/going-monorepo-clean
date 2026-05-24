@@ -36,12 +36,15 @@ export interface RefreshTokenData {
  */
 export interface ITokenManager {
   /**
-   * Create a new token pair (access + refresh) for login
+   * Create a new token pair (access + refresh) for login.
+   * `companyId` opcional — se firma en el access token cuando el usuario
+   * pertenece a una empresa (auditoría #29: server-side trust del segment).
    */
   createTokenPair(
     userId: UUID,
     email: string,
     roles: string[],
+    companyId?: string,
   ): Promise<Result<TokenPair, Error>>;
 
   /**

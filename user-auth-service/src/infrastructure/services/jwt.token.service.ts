@@ -30,35 +30,39 @@ export class JwtTokenService implements ITokenService {
    * Generate both access and refresh tokens (backward compatibility)
    * @deprecated Use generateAccessToken instead for new implementations
    */
-  generateAuthToken(userId: UUID, email: string, roles: string[]): string {
+  generateAuthToken(userId: UUID, email: string, roles: string[], companyId?: string): string {
     // For now, generate access token for backward compatibility
-    return this.generateAccessToken(userId, email, roles);
+    return this.generateAccessToken(userId, email, roles, companyId);
   }
 
   /**
-   * Generate short-lived access token (15 minutes)
-   * Contains user identity and roles for authorization
+   * Generate short-lived access token (15 minutes).
+   * Contains user identity, roles y opcionalmente companyId (auditoría #29
+   * — derivar clientSegment server-side en downstream services sin trust
+   * en el body del request).
    */
   generateAccessToken(
     userId: UUID,
     email: string,
     roles: string[],
+    companyId?: string,
   ): string {
     const jti = uuidv4(); // JWT ID for revocation tracking
-    const payload = {
+    const payload: Record<string, unknown> = {
       jti,
       sub: userId,
       email,
       roles,
       type: 'access',
     };
+    if (companyId) payload.companyId = companyId;
 
     const token = this.jwtService.sign(payload, {
       expiresIn: this.accessTokenExpiration as any,
     });
 
     this.logger.debug(
-      `Generated access token for user ${email} with jti ${jti}`,
+      `Generated access token for user ${email} with jti ${jti}${companyId ? ` (company=${companyId})` : ''}`,
     );
     return token;
   }

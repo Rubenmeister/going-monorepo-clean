@@ -346,6 +346,7 @@ export class AuthController {
           result.user.id,
           result.user.email,
           result.user.roles ?? [],
+          (result.user as any).companyId || undefined,
         );
         if (tokenPairResult.isOk()) {
           refreshToken = tokenPairResult.value.refreshToken;

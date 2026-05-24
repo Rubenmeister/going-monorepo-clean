@@ -62,10 +62,14 @@ export class LoginUserUseCase {
     }
 
     const roles = user.roles.map((r) => r.toPrimitives());
+    // companyId del user (si tiene) se firma en el JWT para enforcement
+    // server-side del clientSegment corporativo (auditoría #29).
+    const companyId: string | undefined = (user as any).companyId || undefined;
     const accessToken = this.tokenService.generateAuthToken(
       user.id,
       user.email,
-      roles
+      roles,
+      companyId,
     );
 
     return {

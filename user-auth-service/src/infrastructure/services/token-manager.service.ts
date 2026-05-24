@@ -38,19 +38,24 @@ export class TokenManagerService implements ITokenManager {
   ) {}
 
   /**
-   * Create a new token pair (access + refresh) for login
+   * Create a new token pair (access + refresh) for login.
+   * `companyId` se firma en el access token si está presente — permite a
+   * downstream services derivar `clientSegment='corporate'` server-side
+   * (auditoría #29).
    */
   async createTokenPair(
     userId: UUID,
     email: string,
-    roles: string[]
+    roles: string[],
+    companyId?: string,
   ): Promise<Result<TokenPair, Error>> {
     try {
       // 1. Generate access token (15 minutes)
       const accessToken = this.tokenService.generateAccessToken(
         userId,
         email,
-        roles
+        roles,
+        companyId,
       );
 
       // 2. Generate refresh token (opaque, 7 days)
@@ -172,12 +177,17 @@ export class TokenManagerService implements ITokenManager {
         : userPrim.role
           ? [userPrim.role]
           : [];
+      const userCompanyId: string | undefined = userPrim.companyId || undefined;
 
-      // 4. Generate new access token con datos FRESCOS del DB
+      // 4. Generate new access token con datos FRESCOS del DB.
+      // companyId se incluye si el user pertenece a una empresa — re-firmado
+      // en cada refresh para que cambios de empresa (raros) se propaguen al
+      // próximo refresh sin necesidad de re-login.
       const newAccessToken = this.tokenService.generateAccessToken(
         storedToken.userId,
         userEmail,
         userRoles,
+        userCompanyId,
       );
 
       // 5. Optionally rotate refresh token if < 1 day remaining

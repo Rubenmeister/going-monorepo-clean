@@ -31,6 +31,13 @@ export interface JwtPayload {
   email:   string;
   roles?:  string[];
   role?:   string;
+  /**
+   * Empresa corporativa a la que pertenece este usuario. Set por user-auth-
+   * service al login si el user tiene companyId asociado. Permite a los
+   * downstream services derivar `clientSegment='corporate'` server-side sin
+   * trust en el body del request (auditoría #29).
+   */
+  companyId?: string;
   iat?:    number;
   exp?:    number;
 }
@@ -43,6 +50,8 @@ export interface AuthenticatedUser {
   roles:  string[];
   /** First role — convenience shorthand */
   role:   string;
+  /** Empresa corporativa del usuario. Undefined → B2C. Origen: JWT (server-trust). */
+  companyId?: string;
 }
 
 @Injectable()
@@ -70,6 +79,7 @@ export class BaseJwtStrategy extends PassportStrategy(Strategy) {
       email: payload.email,
       roles,
       role:  roles[0] ?? 'user',
+      companyId: payload.companyId,
     };
   }
 }

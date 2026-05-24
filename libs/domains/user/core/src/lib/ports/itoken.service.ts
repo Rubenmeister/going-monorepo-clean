@@ -19,15 +19,19 @@ export interface ITokenService {
    * Generate both access and refresh tokens (login)
    * @deprecated Use generateAccessToken + generateRefreshToken separately
    */
-  generateAuthToken(userId: UUID, email: string, roles: string[]): string;
+  generateAuthToken(userId: UUID, email: string, roles: string[], companyId?: string): string;
 
   /**
-   * Generate short-lived access token (15 minutes)
+   * Generate short-lived access token (15 minutes).
+   * `companyId` se incluye si el usuario pertenece a una empresa corporativa
+   * — permite a downstream services derivar clientSegment='corporate'
+   * server-side sin confiar en el body del request (auditoría #29).
    */
   generateAccessToken(
     userId: UUID,
     email: string,
     roles: string[],
+    companyId?: string,
   ): string;
 
   /**
