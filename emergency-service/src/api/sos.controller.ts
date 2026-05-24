@@ -21,11 +21,15 @@ import { SosService } from '../sos/sos.service';
 class LocationDto {
   // @IsDefined explícito porque @IsLatitude() solo valida si lat existe —
   // undefined pasaría silenciosamente y explotaría más adelante con TypeError.
-  @IsDefined({ message: 'location.lat is required' })
+  //
+  // Mensajes SIN el prefijo "location." — class-validator lo agrega solo
+  // cuando reporta nested errors via @ValidateNested(). Si lo escribiéramos
+  // explícito el path saldría duplicado: "location.location.lat is required".
+  @IsDefined({ message: 'lat is required' })
   @IsLatitude()
   lat: number;
 
-  @IsDefined({ message: 'location.lng is required' })
+  @IsDefined({ message: 'lng is required' })
   @IsLongitude()
   lng: number;
 }
