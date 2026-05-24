@@ -47,7 +47,7 @@ export class TwilioVerifyService {
 
   /**
    * Envía el código OTP por SMS al número dado.
-   * @param phoneE164 Número en formato E.164 — ej: +593992781751
+   * @param phoneE164 Número en formato E.164 — ej: +593984037949
    */
   async sendCode(phoneE164: string): Promise<{ sent: boolean; channel: string }> {
     if (!this.client) {
@@ -101,7 +101,7 @@ export class TwilioVerifyService {
   private normalizePhone(phone: string): string {
     const cleaned = phone.replace(/\s|-|\(|\)/g, '');
     if (cleaned.startsWith('0') && !cleaned.startsWith('+')) {
-      return `+593${cleaned.slice(1)}`; // 0992781751 → +593992781751
+      return `+593${cleaned.slice(1)}`; // 0984037949 → +593984037949
     }
     if (!cleaned.startsWith('+')) {
       return `+${cleaned}`;
