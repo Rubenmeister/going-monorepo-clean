@@ -1,176 +1,581 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
+/**
+ * ProfileScreen — Hub de perfil + cuenta (Mockup #16).
+ *
+ * Estructura:
+ *   - Hero navy con avatar + name + email + level badge
+ *   - Stats row (Viajes / Puntos / Rating)
+ *   - Going Rewards card (link a #17 Puntos)
+ *   - 3 secciones de menú:
+ *     · MI CUENTA: Editar, Direcciones, Métodos pago, Wallet
+ *     · ACTIVIDAD: Historial, Puntos, Envíos, Empresas (condicional)
+ *     · CONFIGURACIÓN: Apariencia, Voz, Notif, Seguridad, Soporte, Legal
+ *   - Logout
+ *
+ * Theme adaptative. Hero navy se MANTIENE (identity del perfil).
+ *
+ * REFIT 2026-05-23:
+ *   - Theme tokens (antes hardcoded NAVY/GOLD)
+ *   - Stats reales del user.rideCount/points/rating si vienen del backend
+ *     (fallback 0 marcado como TODO endpoint /users/me/stats)
+ *   - Level calculado real (Explorador/Viajero/Aventurero según puntos)
+ *   - Versión desde Constants.expoConfig (antes "v2.0.0" hardcoded)
+ *   - Modal APARIENCIA funcional (Sistema/Claro/Oscuro) — wire al
+ *     ThemeProvider.setMode con persistencia AsyncStorage
+ *   - Entry VOZ GOING agregada (honest stub — TODO VoiceSettingsScreen)
+ *   - Going Empresas condicional: visible solo si user.companyId
+ *
+ * TODOs declarados:
+ *   - Endpoint backend /users/me/stats para rideCount/points/rating reales
+ *   - VoiceSettingsScreen con picker Kore/Despina/Charon/Algenib +
+ *     persistencia AsyncStorage + sync con customer-support al iniciar voz
+ *   - "Vincular empresa" flow si user no tiene companyId
+ */
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView,
+  Modal,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
+import Constants from 'expo-constants';
 import { useAuthStore } from '@store/useAuthStore';
 import { authAPI } from '@services/api';
-
-const NAVY = '#0033A0';
-const GOLD = '#FFCD00';
+import { useTheme, type ThemeTokens, type ThemeMode } from '../../theme';
+import { hapticLight } from '../../utils/haptics';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-const MENU_SECTIONS = [
-  {
-    title: 'MI CUENTA',
-    items: [
-      { icon: 'person-outline',        label: 'Editar perfil',         screen: 'EditProfile',           color: NAVY },
-      { icon: 'location-outline',      label: 'Mis direcciones',       screen: 'SavedAddresses',        color: NAVY },
-      { icon: 'card-outline',          label: 'Métodos de pago',       screen: 'PaymentMethods',        color: NAVY },
-      { icon: 'wallet-outline',        label: 'Mi billetera Going',    screen: 'Wallet',                color: NAVY },
-    ],
-  },
-  {
-    title: 'ACTIVIDAD',
-    items: [
-      { icon: 'time-outline',          label: 'Historial de viajes',   screen: 'Historial',             color: '#059669' },
-      { icon: 'star-outline',          label: 'Mis puntos Going',      screen: 'Puntos',                color: '#D97706' },
-      { icon: 'cube-outline',          label: 'Mis envíos',            screen: 'Envios',                color: '#ff4c41' },
-      { icon: 'business-outline',      label: 'Going Empresas',        screen: 'Corporate',             color: '#7C3AED' },
-    ],
-  },
-  {
-    title: 'CONFIGURACIÓN',
-    items: [
-      { icon: 'notifications-outline', label: 'Notificaciones',        screen: 'NotificationSettings',  color: NAVY },
-      { icon: 'shield-outline',        label: 'Seguridad',             screen: 'Security',              color: NAVY },
-      { icon: 'help-circle-outline',   label: 'Ayuda y soporte',       screen: 'UserSupport',           color: NAVY },
-      { icon: 'document-text-outline', label: 'Términos y condiciones',screen: 'Terms',                 color: NAVY },
-      { icon: 'shield-checkmark-outline',label: 'Política de privacidad',screen: 'Privacy',             color: NAVY },
-    ],
-  },
-];
+// ── Tier rules (matches mockup #17 Puntos) ────────────────────────────────────
+function tierFromPoints(points: number): { name: string; nextAt?: number } {
+  if (points >= 1000) return { name: 'Aventurero' };
+  if (points >= 100)  return { name: 'Viajero', nextAt: 1000 };
+  return { name: 'Explorador', nextAt: 100 };
+}
+
+// ── Versión de la app desde expo-constants ────────────────────────────────────
+const APP_VERSION  = Constants.expoConfig?.version || '';
+const BUILD_NUMBER =
+  Constants.expoConfig?.android?.versionCode ??
+  (Constants.expoConfig as any)?.ios?.buildNumber ??
+  '';
+
+type MenuItem = {
+  icon:    React.ComponentProps<typeof Ionicons>['name'];
+  label:   string;
+  /** Si está, navega al route. Si no, dispara onPress. */
+  screen?: keyof MainStackParamList | string;
+  onPress?: () => void;
+  /** Solo se renderiza si esta función devuelve true (default: siempre). */
+  visible?: () => boolean;
+  /** Color hint del ícono (default: brandNavy). */
+  accent?: 'navy' | 'success' | 'warning' | 'red' | 'purple';
+};
+
+type MenuSection = {
+  title: string;
+  items: MenuItem[];
+};
 
 export function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, logout, setUser } = useAuthStore();
+  const { tokens, isDark, mode, setMode } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
+  const [showAppearance, setShowAppearance] = useState(false);
+
+  // Refrescar perfil al abrir
   useEffect(() => {
-    authAPI.me().then(({ data }) => { if (data && setUser) setUser(data); }).catch(() => {});
+    authAPI.me()
+      .then(({ data }) => { if (data && setUser) setUser(data); })
+      .catch(() => {});
   }, []);
 
-  const handleLogout = () => {
+  // Stats: si el backend manda en user, los usamos; sino default 0.
+  // TODO: endpoint /users/me/stats explícito con counts agregados.
+  const rideCount = (user as any)?.rideCount ?? 0;
+  const points    = (user as any)?.points ?? 0;
+  const rating    = (user as any)?.rating ?? 5.0;
+  const tier      = tierFromPoints(points);
+  const hasCompany = !!(user as any)?.companyId;
+
+  const initials = useMemo(() => {
+    if (!user) return 'GO';
+    const f = user.firstName?.[0] ?? '';
+    const l = user.lastName?.[0]  ?? '';
+    return `${f}${l}`.toUpperCase() || 'GO';
+  }, [user]);
+
+  // ── Handlers ──────────────────────────────────────────────
+  const handleLogout = useCallback(() => {
     Alert.alert('Cerrar sesión', '¿Estás seguro?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Salir', style: 'destructive', onPress: logout },
     ]);
+  }, [logout]);
+
+  const handleVoiceSettings = useCallback(() => {
+    hapticLight();
+    Alert.alert(
+      'Voz Going — Próximamente',
+      'Pronto podrás elegir la voz del asistente Going entre Kore (femenina), Despina (femenina), Charon (masculino) o Algenib (masculino) cuando uses chat o llamada de voz.',
+      [{ text: 'OK' }],
+    );
+  }, []);
+
+  const handleEmpresas = useCallback(() => {
+    hapticLight();
+    if (hasCompany) {
+      navigation.navigate('Corporate');
+    } else {
+      Alert.alert(
+        'Vincular empresa',
+        '¿Tu empresa tiene cuenta corporativa Going? Contacta a tu administrador o escribe a empresas@goingec.com para vincular tu correo y acceder a precios B2B.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Contactar', onPress: () => {} }, // TODO: open mailto
+        ],
+      );
+    }
+  }, [hasCompany, navigation]);
+
+  // ── Menu sections ──────────────────────────────────────────
+  const MENU_SECTIONS: MenuSection[] = useMemo(() => [
+    {
+      title: 'Mi cuenta',
+      items: [
+        { icon: 'person-outline',   label: 'Editar perfil',      screen: 'EditProfile',    accent: 'navy' },
+        { icon: 'location-outline', label: 'Mis direcciones',    screen: 'SavedAddresses', accent: 'navy' },
+        { icon: 'card-outline',     label: 'Métodos de pago',    screen: 'PaymentMethods', accent: 'navy' },
+        { icon: 'wallet-outline',   label: 'Mi billetera Going', screen: 'Wallet',         accent: 'navy' },
+      ],
+    },
+    {
+      title: 'Actividad',
+      items: [
+        { icon: 'time-outline',     label: 'Historial de viajes', screen: 'Historial', accent: 'success' },
+        { icon: 'star-outline',     label: 'Mis puntos Going',    screen: 'Puntos',    accent: 'warning' },
+        { icon: 'cube-outline',     label: 'Mis envíos',          screen: 'Envios',    accent: 'red'     },
+        {
+          icon: 'business-outline',
+          label: hasCompany ? 'Going Empresas' : 'Vincular empresa',
+          onPress: handleEmpresas,
+          accent: 'purple',
+        },
+      ],
+    },
+    {
+      title: 'Configuración',
+      items: [
+        {
+          icon: isDark ? 'moon-outline' : 'sunny-outline',
+          label: `Apariencia · ${mode === 'system' ? 'Sistema' : mode === 'dark' ? 'Oscuro' : 'Claro'}`,
+          onPress: () => { hapticLight(); setShowAppearance(true); },
+          accent: 'navy',
+        },
+        {
+          icon: 'mic-outline',
+          label: 'Voz Going',
+          onPress: handleVoiceSettings,
+          accent: 'navy',
+        },
+        { icon: 'notifications-outline',   label: 'Notificaciones',         screen: 'NotificationSettings', accent: 'navy' },
+        { icon: 'shield-outline',          label: 'Seguridad',              screen: 'Security',            accent: 'navy' },
+        { icon: 'help-circle-outline',     label: 'Ayuda y soporte',        screen: 'UserSupport',         accent: 'navy' },
+        { icon: 'document-text-outline',   label: 'Términos y condiciones', screen: 'Terms',               accent: 'navy' },
+        { icon: 'shield-checkmark-outline',label: 'Política de privacidad', screen: 'Privacy',             accent: 'navy' },
+      ],
+    },
+  ], [hasCompany, handleEmpresas, handleVoiceSettings, isDark, mode]);
+
+  // Map accent → token color
+  const accentColor = (a?: MenuItem['accent']) => {
+    switch (a) {
+      case 'success': return tokens.success;
+      case 'warning': return tokens.warning;
+      case 'red':     return tokens.brandRed;
+      case 'purple':  return '#7C3AED';  // Going Empresas — color marcador único
+      case 'navy':
+      default:        return tokens.brandNavy;
+    }
   };
 
-  const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}` : 'GO';
-
+  // ─────────────────────────────────────────────────────────
   return (
-    <ScrollView style={s.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-      {/* HERO */}
-      <View style={s.hero}>
-        <View style={s.heroTop}>
-          <Image source={require('../../../assets/going-logo-horizontal-white.png')} style={s.logo} resizeMode="contain" />
-        </View>
-        <TouchableOpacity style={s.avatar} onPress={() => navigation.navigate('EditProfile')}>
-          <Text style={s.avatarText}>{initials.toUpperCase()}</Text>
-          <View style={s.editBadge}><Ionicons name="pencil" size={10} color={NAVY} /></View>
+      {/* ── HERO NAVY ──────────────────────────────────────── */}
+      <View style={styles.hero}>
+        <TouchableOpacity
+          style={styles.avatar}
+          onPress={() => navigation.navigate('EditProfile')}
+          activeOpacity={0.85}
+          accessibilityLabel="Editar perfil"
+        >
+          <Text style={styles.avatarText}>{initials}</Text>
+          <View style={styles.editBadge}>
+            <Ionicons name="pencil" size={10} color={tokens.brandNavy} />
+          </View>
         </TouchableOpacity>
-        <Text style={s.name}>{user ? `${user.firstName} ${user.lastName}` : 'Viajero Going'}</Text>
-        <Text style={s.email}>{user?.email ?? ''}</Text>
-        <View style={s.levelBadge}>
-          <Ionicons name="star" size={11} color={GOLD} />
-          <Text style={s.levelText}>Explorador · Nivel 1</Text>
+        <Text style={styles.name}>
+          {user ? `${user.firstName} ${user.lastName}` : 'Viajero Going'}
+        </Text>
+        <Text style={styles.email}>{user?.email ?? ''}</Text>
+        <View style={styles.levelBadge}>
+          <Ionicons name="star" size={11} color={tokens.brandYellow} />
+          <Text style={styles.levelText}>{tier.name}</Text>
         </View>
       </View>
 
-      {/* STATS */}
-      <View style={s.statsRow}>
-        <View style={s.statItem}>
-          <Text style={s.statVal}>0</Text>
-          <Text style={s.statLbl}>Viajes</Text>
+      {/* ── STATS ──────────────────────────────────────────── */}
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statVal}>{rideCount}</Text>
+          <Text style={styles.statLbl}>Viajes</Text>
         </View>
-        <View style={s.statDivider} />
-        <View style={s.statItem}>
-          <Text style={s.statVal}>0</Text>
-          <Text style={s.statLbl}>Puntos</Text>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statVal}>{points}</Text>
+          <Text style={styles.statLbl}>Puntos</Text>
         </View>
-        <View style={s.statDivider} />
-        <View style={s.statItem}>
-          <Text style={s.statVal}>5.0</Text>
-          <Text style={s.statLbl}>Rating</Text>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statVal}>{rating.toFixed(1)}</Text>
+          <Text style={styles.statLbl}>Rating</Text>
         </View>
       </View>
 
-      {/* REWARDS CARD */}
-      <TouchableOpacity style={s.rewardsCard} onPress={() => navigation.navigate('Puntos')}>
-        <View>
-          <Text style={s.rewardsLabel}>GOING REWARDS</Text>
-          <Text style={s.rewardsPoints}>0 <Text style={s.rewardsPtText}>puntos</Text></Text>
+      {/* ── REWARDS CARD ───────────────────────────────────── */}
+      <TouchableOpacity
+        style={styles.rewardsCard}
+        onPress={() => navigation.navigate('Puntos')}
+        activeOpacity={0.85}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={styles.rewardsLabel}>GOING REWARDS</Text>
+          <Text style={styles.rewardsPoints}>
+            {points} <Text style={styles.rewardsPtText}>pts</Text>
+          </Text>
+          {tier.nextAt && (
+            <Text style={styles.rewardsTier}>
+              {tier.nextAt - points} pts para subir a {tier.nextAt >= 1000 ? 'Aventurero' : 'Viajero'}
+            </Text>
+          )}
         </View>
         <Ionicons name="medal-outline" size={36} color="rgba(255,255,255,0.30)" />
       </TouchableOpacity>
 
-      {/* MENU SECTIONS */}
+      {/* ── MENU SECTIONS ──────────────────────────────────── */}
       {MENU_SECTIONS.map(section => (
-        <View key={section.title} style={s.section}>
-          <Text style={s.sectionTitle}>{section.title}</Text>
-          <View style={s.sectionCard}>
-            {section.items.map((item, i) => (
-              <TouchableOpacity
-                key={item.label}
-                style={[s.menuItem, i < section.items.length - 1 && s.menuItemBorder]}
-                onPress={() => navigation.navigate(item.screen as any)}
-                activeOpacity={0.7}
-              >
-                <View style={[s.menuIcon, { backgroundColor: `${item.color}12` }]}>
-                  <Ionicons name={item.icon as any} size={19} color={item.color} />
-                </View>
-                <Text style={s.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
-              </TouchableOpacity>
-            ))}
+        <View key={section.title} style={styles.section}>
+          <Text style={styles.sectionTitle}>{section.title}</Text>
+          <View style={styles.sectionCard}>
+            {section.items.map((item, i) => {
+              const isLast = i === section.items.length - 1;
+              const ac = accentColor(item.accent);
+              return (
+                <TouchableOpacity
+                  key={item.label}
+                  style={[styles.menuItem, !isLast && styles.menuItemBorder]}
+                  onPress={() => {
+                    if (item.onPress) item.onPress();
+                    else if (item.screen) (navigation.navigate as any)(item.screen);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityLabel={item.label}
+                >
+                  <View style={[styles.menuIcon, { backgroundColor: `${ac}14` }]}>
+                    <Ionicons name={item.icon} size={19} color={ac} />
+                  </View>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Ionicons name="chevron-forward" size={16} color={tokens.textTertiary} />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       ))}
 
-      {/* LOGOUT */}
-      <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={18} color="#DC2626" />
-        <Text style={s.logoutText}>Cerrar sesión</Text>
+      {/* ── LOGOUT ─────────────────────────────────────────── */}
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={handleLogout}
+        accessibilityLabel="Cerrar sesión"
+      >
+        <Ionicons name="log-out-outline" size={18} color={tokens.error} />
+        <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
-      <Text style={s.version}>Going Ecuador v2.0.0</Text>
+      <Text style={styles.version}>
+        Going Ecuador {APP_VERSION ? `v${APP_VERSION}` : ''}{BUILD_NUMBER ? ` (${BUILD_NUMBER})` : ''}
+      </Text>
       <View style={{ height: 40 }} />
+
+      {/* ── Modal APARIENCIA ───────────────────────────────── */}
+      <Modal
+        visible={showAppearance}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowAppearance(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowAppearance(false)}
+        >
+          <View style={styles.modalSheet}>
+            <TouchableOpacity activeOpacity={1}>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>Apariencia</Text>
+              <Text style={styles.modalSub}>
+                Cómo se ve la app. Cambia al instante.
+              </Text>
+              {([
+                { id: 'system' as ThemeMode, label: 'Sistema', desc: 'Sigue el modo del dispositivo', icon: 'phone-portrait-outline' as const },
+                { id: 'light'  as ThemeMode, label: 'Claro',   desc: 'Fondo blanco, mejor con sol',     icon: 'sunny-outline' as const },
+                { id: 'dark'   as ThemeMode, label: 'Oscuro',  desc: 'Fondo negro, menos fatiga',       icon: 'moon-outline' as const },
+              ]).map(opt => {
+                const active = mode === opt.id;
+                return (
+                  <TouchableOpacity
+                    key={opt.id}
+                    style={[styles.appearOpt, active && styles.appearOptActive]}
+                    onPress={async () => {
+                      hapticLight();
+                      await setMode(opt.id);
+                      setShowAppearance(false);
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[styles.appearIcon, active && styles.appearIconActive]}>
+                      <Ionicons
+                        name={opt.icon}
+                        size={20}
+                        color={active ? tokens.textOnNavy : tokens.brandNavy}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.appearLbl, active && styles.appearLblActive]}>
+                        {opt.label}
+                      </Text>
+                      <Text style={styles.appearDesc}>{opt.desc}</Text>
+                    </View>
+                    {active && (
+                      <Ionicons name="checkmark-circle" size={22} color={tokens.brandNavy} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F2F5' },
-  hero: { backgroundColor: NAVY, alignItems: 'center', paddingBottom: 28 },
-  heroTop: { width: '100%', alignItems: 'flex-end', paddingTop: 52, paddingRight: 20, paddingBottom: 12 },
-  logo: { width: 110, height: 38 },
-  avatar: { width: 84, height: 84, borderRadius: 42, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', marginBottom: 12, borderWidth: 3, borderColor: 'rgba(255,255,255,0.25)', position: 'relative' },
-  avatarText: { fontSize: 30, fontWeight: '900', color: NAVY },
-  editBadge: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: NAVY },
-  name: { fontSize: 22, fontWeight: '900', color: '#fff', marginBottom: 4 },
-  email: { fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 10 },
-  levelBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 5 },
-  levelText: { fontSize: 12, fontWeight: '700', color: GOLD },
-  statsRow: { flexDirection: 'row', backgroundColor: '#fff', marginHorizontal: 16, marginTop: -1, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
-  statItem: { flex: 1, alignItems: 'center' },
-  statVal: { fontSize: 22, fontWeight: '900', color: NAVY },
-  statLbl: { fontSize: 11, color: '#9CA3AF', marginTop: 2, fontWeight: '600' },
-  statDivider: { width: 1, backgroundColor: '#F3F4F6', marginVertical: 4 },
-  rewardsCard: { marginHorizontal: 16, marginTop: 14, backgroundColor: '#1E3A5F', borderRadius: 16, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  rewardsLabel: { fontSize: 10, fontWeight: '800', color: GOLD, letterSpacing: 1.5, marginBottom: 4 },
-  rewardsPoints: { fontSize: 28, fontWeight: '900', color: '#fff' },
-  rewardsPtText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.6)' },
-  section: { marginTop: 20, paddingHorizontal: 16 },
-  sectionTitle: { fontSize: 10, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1.5, marginBottom: 8, marginLeft: 4 },
-  sectionCard: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, gap: 12 },
-  menuItemBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  menuLabel: { flex: 1, fontSize: 14, color: '#374151', fontWeight: '600' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FEF2F2', marginHorizontal: 16, marginTop: 20, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#FECACA' },
-  logoutText: { fontSize: 14, fontWeight: '700', color: '#DC2626' },
-  version: { textAlign: 'center', fontSize: 12, color: '#D1D5DB', marginTop: 16 },
-});
+// ─────────────────────────────────────────────────────────────
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.bg },
+
+    // ── HERO navy ──────────────────────────────────────────
+    hero: {
+      backgroundColor: t.brandNavy,
+      alignItems: 'center',
+      paddingTop: 60,
+      paddingBottom: 28,
+      paddingHorizontal: 16,
+    },
+    avatar: {
+      width: 84, height: 84, borderRadius: 42,
+      backgroundColor: t.brandYellow,
+      alignItems: 'center', justifyContent: 'center',
+      marginBottom: 12,
+      borderWidth: 3, borderColor: 'rgba(255,255,255,0.25)',
+      position: 'relative',
+    },
+    avatarText: {
+      fontSize: 30, fontWeight: '900', color: t.textOnYellow,
+    },
+    editBadge: {
+      position: 'absolute', bottom: 0, right: 0,
+      width: 22, height: 22, borderRadius: 11,
+      backgroundColor: '#fff',
+      alignItems: 'center', justifyContent: 'center',
+      borderWidth: 2, borderColor: t.brandNavy,
+    },
+    name: {
+      fontSize: 22, fontWeight: '900',
+      color: t.textOnNavy, marginBottom: 4, letterSpacing: -0.3,
+    },
+    email: {
+      fontSize: 13, color: 'rgba(255,255,255,0.70)',
+      marginBottom: 10,
+    },
+    levelBadge: {
+      flexDirection: 'row', alignItems: 'center', gap: 5,
+      backgroundColor: 'rgba(255,255,255,0.14)',
+      borderRadius: 20,
+      paddingHorizontal: 14, paddingVertical: 5,
+    },
+    levelText: {
+      fontSize: 12, fontWeight: '800',
+      color: t.brandYellow, letterSpacing: 0.3,
+    },
+
+    // ── Stats row (overlaps hero slightly) ─────────────────
+    statsRow: {
+      flexDirection: 'row',
+      backgroundColor: t.bgLayer,
+      marginHorizontal: 16, marginTop: -1,
+      borderRadius: 16, padding: 16,
+      borderWidth: 1, borderColor: t.glassBorder,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDark ? 0.3 : 0.08,
+      shadowRadius: 8, elevation: 3,
+    },
+    statItem: { flex: 1, alignItems: 'center' },
+    statVal: {
+      fontSize: 22, fontWeight: '900',
+      color: t.brandNavy, letterSpacing: -0.5,
+    },
+    statLbl: {
+      fontSize: 11, color: t.textTertiary,
+      marginTop: 2, fontWeight: '700',
+      textTransform: 'uppercase', letterSpacing: 0.5,
+    },
+    statDivider: {
+      width: 1, backgroundColor: t.border, marginVertical: 4,
+    },
+
+    // ── Rewards card ───────────────────────────────────────
+    rewardsCard: {
+      marginHorizontal: 16, marginTop: 14,
+      backgroundColor: t.brandNavyDark,
+      borderRadius: 16, padding: 18,
+      flexDirection: 'row', alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    rewardsLabel: {
+      fontSize: 10, fontWeight: '900',
+      color: t.brandYellow, letterSpacing: 1.5,
+      marginBottom: 4,
+    },
+    rewardsPoints: {
+      fontSize: 28, fontWeight: '900',
+      color: t.textOnNavy, letterSpacing: -0.5,
+    },
+    rewardsPtText: {
+      fontSize: 14, fontWeight: '700',
+      color: 'rgba(255,255,255,0.6)',
+    },
+    rewardsTier: {
+      fontSize: 11, fontWeight: '600',
+      color: 'rgba(255,255,255,0.65)',
+      marginTop: 4,
+    },
+
+    // ── Menu sections ──────────────────────────────────────
+    section: { marginTop: 20, paddingHorizontal: 16 },
+    sectionTitle: {
+      fontSize: 11, fontWeight: '800',
+      color: t.textTertiary,
+      letterSpacing: 1.2, textTransform: 'uppercase',
+      marginBottom: 8, marginLeft: 4,
+    },
+    sectionCard: {
+      backgroundColor: t.bgLayer,
+      borderRadius: 16, overflow: 'hidden',
+      borderWidth: 1, borderColor: t.glassBorder,
+    },
+    menuItem: {
+      flexDirection: 'row', alignItems: 'center',
+      paddingVertical: 14, paddingHorizontal: 16, gap: 12,
+    },
+    menuItemBorder: {
+      borderBottomWidth: 1, borderBottomColor: t.border,
+    },
+    menuIcon: {
+      width: 36, height: 36, borderRadius: 10,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    menuLabel: {
+      flex: 1, fontSize: 14, fontWeight: '700',
+      color: t.textPrimary,
+    },
+
+    // ── Logout ─────────────────────────────────────────────
+    logoutBtn: {
+      flexDirection: 'row', alignItems: 'center',
+      justifyContent: 'center', gap: 10,
+      backgroundColor: `${t.error}10`,
+      marginHorizontal: 16, marginTop: 20,
+      borderRadius: 14, padding: 14,
+      borderWidth: 1, borderColor: `${t.error}30`,
+    },
+    logoutText: {
+      fontSize: 14, fontWeight: '800',
+      color: t.error,
+    },
+
+    version: {
+      textAlign: 'center', fontSize: 11,
+      color: t.textTertiary, marginTop: 16,
+      fontWeight: '600',
+    },
+
+    // ── Modal Apariencia ──────────────────────────────────
+    modalBackdrop: {
+      flex: 1, justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalSheet: {
+      backgroundColor: t.bg,
+      borderTopLeftRadius: 24, borderTopRightRadius: 24,
+      padding: 20, paddingBottom: 36,
+    },
+    modalHandle: {
+      width: 40, height: 4, borderRadius: 2,
+      backgroundColor: t.border,
+      alignSelf: 'center', marginBottom: 16,
+    },
+    modalTitle: {
+      fontSize: 20, fontWeight: '900',
+      color: t.textPrimary, letterSpacing: -0.3,
+    },
+    modalSub: {
+      fontSize: 13, color: t.textTertiary,
+      marginTop: 4, marginBottom: 18,
+    },
+    appearOpt: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      paddingVertical: 14, paddingHorizontal: 14,
+      borderRadius: 14, marginBottom: 8,
+      borderWidth: 1.5, borderColor: t.border,
+      backgroundColor: t.bgLayer,
+    },
+    appearOptActive: {
+      borderColor: t.brandNavy,
+      backgroundColor: `${t.brandNavy}08`,
+    },
+    appearIcon: {
+      width: 40, height: 40, borderRadius: 12,
+      backgroundColor: t.glass,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    appearIconActive: { backgroundColor: t.brandNavy },
+    appearLbl: {
+      fontSize: 15, fontWeight: '800',
+      color: t.textPrimary,
+    },
+    appearLblActive: { color: t.brandNavy },
+    appearDesc: {
+      fontSize: 12, color: t.textTertiary,
+      marginTop: 2, fontWeight: '500',
+    },
+  });
+}
