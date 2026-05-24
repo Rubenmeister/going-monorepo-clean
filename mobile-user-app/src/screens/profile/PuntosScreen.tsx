@@ -1,116 +1,240 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+/**
+ * PuntosScreen — Going Rewards (Mockup #17).
+ *
+ * Estructura:
+ *   - Hero navy con back btn + título + tarjeta puntos + progress
+ *   - Levels strip (4 tiers, current destacado)
+ *   - Cómo ganar (6 reglas)
+ *   - Qué puedes canjear (4 beneficios — canje stub TODO)
+ *
+ * Theme adaptativo. Hero navy mantiene identity.
+ *
+ * REFIT 2026-05-23:
+ *   - Theme tokens (antes hardcoded NAVY/GOLD/GREEN)
+ *   - Puntos reales del user store (antes `userPoints = 0` hardcoded)
+ *   - LEVELS extraídos a catalog/rewards.ts (single source of truth)
+ *     consistente con ProfileScreen #16 — antes había 4 niveles acá vs
+ *     3 en Profile (bug detectado, ahora alineados a 4 tiers canónicos)
+ *   - Canje de beneficios ahora con visual de "disponible" vs "te faltan
+ *     X pts" — antes todos seleccionables sin validar
+ *
+ * TODO declarado:
+ *   - Endpoint backend /users/me/rewards (puntos, canjes, bonos activos)
+ *   - Flujo de canje real (transport-service POST /rewards/redeem)
+ *   - Historial de canjes
+ */
+import React, { useMemo, useCallback } from 'react';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '@navigation/MainNavigator';
+import { useAuthStore } from '@store/useAuthStore';
+import {
+  REWARDS_LEVELS,
+  HOW_TO_EARN,
+  BENEFITS,
+  tierFromPoints,
+  type Benefit,
+} from '../../catalog';
+import { useTheme, type ThemeTokens } from '../../theme';
+import { hapticLight } from '../../utils/haptics';
 
-const NAVY = '#0033A0';
-const GOLD = '#FFCD00';
-const GREEN = '#059669';
-
-const LEVELS = [
-  { name: 'Explorador',   min: 0,    max: 499,   icon: '🌱', color: '#059669' },
-  { name: 'Viajero',      min: 500,  max: 1499,  icon: '🚗', color: '#0033A0' },
-  { name: 'Aventurero',   min: 1500, max: 2999,  icon: '⭐', color: '#7C3AED' },
-  { name: 'Embajador',    min: 3000, max: 99999, icon: '👑', color: '#D97706' },
-];
-
-const BENEFITS = [
-  { pts: 100,  label: '$1.00 de descuento en tu próximo viaje', icon: 'car-outline',   color: NAVY },
-  { pts: 250,  label: 'Asiento delantero gratis',               icon: 'medal-outline', color: '#7C3AED' },
-  { pts: 500,  label: '1 envío gratis (paquete pequeño)',        icon: 'cube-outline',  color: '#ff4c41' },
-  { pts: 1000, label: 'Viaje Compartido gratis',                 icon: 'gift-outline',  color: '#D97706' },
-];
-
-const HOW_TO_EARN = [
-  { label: 'Por cada viaje Compartido',  pts: '+10 pts', icon: 'people-outline'  },
-  { label: 'Por cada viaje Privado',     pts: '+20 pts', icon: 'lock-closed-outline' },
-  { label: 'Por cada envío',             pts: '+5 pts',  icon: 'cube-outline'    },
-  { label: 'Reservar tu regreso',        pts: '+50 pts', icon: 'refresh-outline' },
-  { label: 'Calificar un viaje',         pts: '+2 pts',  icon: 'star-outline'    },
-  { label: 'Referir un amigo',           pts: '+100 pts',icon: 'person-add-outline' },
-];
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 export function PuntosScreen() {
-  const navigation = useNavigation<any>();
-  const userPoints = 0;
-  const currentLevel = LEVELS.find(l => userPoints >= l.min && userPoints <= l.max) ?? LEVELS[0];
-  const nextLevel = LEVELS[LEVELS.indexOf(currentLevel) + 1];
-  const progress = nextLevel ? (userPoints - currentLevel.min) / (nextLevel.min - currentLevel.min) : 1;
+  const navigation = useNavigation<Nav>();
+  const { user } = useAuthStore();
+  const { tokens, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
+  // Puntos reales del user. TODO: endpoint /users/me/rewards autoritativo.
+  const userPoints = (user as any)?.points ?? 0;
+  const { current: currentLevel, next: nextLevel, progress } = tierFromPoints(userPoints);
+
+  // ── Handler: intentar canjear beneficio ───────────────────
+  const handleRedeem = useCallback((b: Benefit) => {
+    hapticLight();
+    if (userPoints < b.pts) {
+      Alert.alert(
+        'Puntos insuficientes',
+        `Necesitas ${b.pts - userPoints} pts más para canjear "${b.label}". Sigue viajando para sumar puntos.`,
+      );
+      return;
+    }
+    Alert.alert(
+      'Canjear beneficio',
+      `¿Confirmas el canje de ${b.pts} pts por "${b.label}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Canjear',
+          style: 'default',
+          onPress: () => {
+            // TODO: POST /rewards/redeem con benefit.id → backend descuenta
+            // pts y agrega bono activo al user (aplica al próximo viaje).
+            Alert.alert(
+              'Próximamente',
+              'El canje real se habilitará cuando el backend exponga el endpoint /rewards/redeem.',
+            );
+          },
+        },
+      ],
+    );
+  }, [userPoints]);
+
+  // Accent color por benefit
+  const accentColor = (a: Benefit['accent']) => {
+    switch (a) {
+      case 'success': return tokens.success;
+      case 'warning': return tokens.warning;
+      case 'red':     return tokens.brandRed;
+      case 'purple':  return '#7C3AED';
+      case 'navy':
+      default:        return tokens.brandNavy;
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
   return (
-    <ScrollView style={s.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
 
-      {/* HERO */}
-      <View style={s.hero}>
-        <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <View style={styles.hero}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel="Volver"
+        >
+          <Ionicons name="chevron-back" size={22} color={tokens.textOnNavy} />
         </TouchableOpacity>
-        <Text style={s.heroTitle}>Going Rewards</Text>
-        <Text style={s.heroSub}>Viaja, acumula, canjea</Text>
-        <View style={s.pointsCard}>
-          <View>
-            <Text style={s.pointsLabel}>TUS PUNTOS</Text>
-            <Text style={s.pointsValue}>{userPoints.toLocaleString()}</Text>
+        <Text style={styles.heroTitle}>Going Rewards</Text>
+        <Text style={styles.heroSub}>Viaja, acumula, canjea</Text>
+
+        {/* Card de puntos + tier actual */}
+        <View style={styles.pointsCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.pointsLabel}>TUS PUNTOS</Text>
+            <Text style={styles.pointsValue}>{userPoints.toLocaleString('es-EC')}</Text>
           </View>
-          <View style={s.levelBadge}>
-            <Text style={s.levelIcon}>{currentLevel.icon}</Text>
-            <Text style={s.levelName}>{currentLevel.name}</Text>
+          <View style={styles.levelBadge}>
+            <Text style={styles.levelIcon}>{currentLevel.icon}</Text>
+            <Text style={styles.levelName}>{currentLevel.name}</Text>
           </View>
         </View>
+
+        {/* Progress al siguiente tier */}
         {nextLevel && (
-          <View style={s.progressSection}>
-            <View style={s.progressBar}>
-              <View style={[s.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+          <View style={styles.progressSection}>
+            <View style={styles.progressBar}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${Math.round(progress * 100)}%` },
+                ]}
+              />
             </View>
-            <Text style={s.progressText}>
-              {nextLevel.min - userPoints} pts para llegar a {nextLevel.name} {nextLevel.icon}
+            <Text style={styles.progressText}>
+              {(nextLevel.min - userPoints).toLocaleString('es-EC')} pts para llegar a {nextLevel.name} {nextLevel.icon}
+            </Text>
+          </View>
+        )}
+        {!nextLevel && (
+          <View style={styles.progressSection}>
+            <Text style={styles.progressText}>
+              ¡Eres {currentLevel.name}! Nivel máximo alcanzado. 🎉
             </Text>
           </View>
         )}
       </View>
 
-      {/* NIVELES */}
-      <View style={s.section}>
-        <Text style={s.secTitle}>NIVELES</Text>
-        <View style={s.levelsRow}>
-          {LEVELS.map((l, i) => (
-            <View key={l.name} style={[s.levelCard, currentLevel.name === l.name && s.levelCardActive]}>
-              <Text style={s.levelCardIcon}>{l.icon}</Text>
-              <Text style={[s.levelCardName, currentLevel.name === l.name && { color: l.color }]}>{l.name}</Text>
-              <Text style={s.levelCardPts}>{l.min === 0 ? '0' : `${l.min}+`}</Text>
-            </View>
-          ))}
+      {/* ── NIVELES ────────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.secTitle}>Niveles</Text>
+        <View style={styles.levelsRow}>
+          {REWARDS_LEVELS.map(l => {
+            const isCurrent = currentLevel.id === l.id;
+            return (
+              <View
+                key={l.id}
+                style={[styles.levelCard, isCurrent && styles.levelCardActive]}
+              >
+                <Text style={styles.levelCardIcon}>{l.icon}</Text>
+                <Text style={[styles.levelCardName, isCurrent && styles.levelCardNameActive]}>
+                  {l.name}
+                </Text>
+                <Text style={styles.levelCardPts}>
+                  {l.min === 0 ? '0' : `${l.min.toLocaleString('es-EC')}+`}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       </View>
 
-      {/* CÓMO GANAR */}
-      <View style={s.section}>
-        <Text style={s.secTitle}>CÓMO GANAR PUNTOS</Text>
-        <View style={s.card}>
-          {HOW_TO_EARN.map((item, i) => (
-            <View key={item.label} style={[s.earnRow, i < HOW_TO_EARN.length - 1 && s.earnBorder]}>
-              <Ionicons name={item.icon as any} size={18} color={NAVY} />
-              <Text style={s.earnLabel}>{item.label}</Text>
-              <Text style={s.earnPts}>{item.pts}</Text>
-            </View>
-          ))}
+      {/* ── CÓMO GANAR ─────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.secTitle}>Cómo ganar puntos</Text>
+        <View style={styles.card}>
+          {HOW_TO_EARN.map((item, i) => {
+            const isLast = i === HOW_TO_EARN.length - 1;
+            return (
+              <View key={item.id} style={[styles.earnRow, !isLast && styles.earnBorder]}>
+                <View style={styles.earnIcon}>
+                  <Ionicons name={item.icon} size={16} color={tokens.brandNavy} />
+                </View>
+                <Text style={styles.earnLabel}>{item.label}</Text>
+                <Text style={styles.earnPts}>+{item.pts}</Text>
+              </View>
+            );
+          })}
         </View>
       </View>
 
-      {/* BENEFICIOS */}
-      <View style={s.section}>
-        <Text style={s.secTitle}>QUÉ PUEDES CANJEAR</Text>
-        {BENEFITS.map(b => (
-          <TouchableOpacity key={b.label} style={s.benefitCard}>
-            <View style={[s.benefitIcon, { backgroundColor: `${b.color}12` }]}>
-              <Ionicons name={b.icon as any} size={20} color={b.color} />
-            </View>
-            <Text style={s.benefitLabel}>{b.label}</Text>
-            <View style={s.benefitPts}>
-              <Text style={s.benefitPtsText}>{b.pts} pts</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+      {/* ── BENEFICIOS ─────────────────────────────────────── */}
+      <View style={styles.section}>
+        <Text style={styles.secTitle}>Qué puedes canjear</Text>
+        {BENEFITS.map(b => {
+          const canRedeem = userPoints >= b.pts;
+          const ac = accentColor(b.accent);
+          return (
+            <TouchableOpacity
+              key={b.id}
+              style={[styles.benefitCard, !canRedeem && styles.benefitCardLocked]}
+              onPress={() => handleRedeem(b)}
+              activeOpacity={0.85}
+              accessibilityLabel={`Canjear ${b.label} por ${b.pts} puntos`}
+            >
+              <View style={[styles.benefitIcon, { backgroundColor: `${ac}14` }]}>
+                <Ionicons
+                  name={canRedeem ? b.icon : 'lock-closed-outline'}
+                  size={20}
+                  color={canRedeem ? ac : tokens.textTertiary}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.benefitLabel, !canRedeem && styles.benefitLabelLocked]}>
+                  {b.label}
+                </Text>
+                {!canRedeem && (
+                  <Text style={styles.benefitMissing}>
+                    Te faltan {(b.pts - userPoints).toLocaleString('es-EC')} pts
+                  </Text>
+                )}
+              </View>
+              <View style={[styles.benefitPts, canRedeem && styles.benefitPtsAvailable]}>
+                <Text style={[
+                  styles.benefitPtsText,
+                  canRedeem && styles.benefitPtsTextAvailable,
+                ]}>
+                  {b.pts} pts
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <View style={{ height: 40 }} />
@@ -118,38 +242,163 @@ export function PuntosScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F2F5' },
-  hero: { backgroundColor: '#1E3A5F', paddingTop: 52, paddingHorizontal: 20, paddingBottom: 24 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  heroTitle: { fontSize: 24, fontWeight: '900', color: '#fff', marginBottom: 2 },
-  heroSub: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 20 },
-  pointsCard: { backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
-  pointsLabel: { fontSize: 10, fontWeight: '700', color: GOLD, letterSpacing: 1.5, marginBottom: 4 },
-  pointsValue: { fontSize: 40, fontWeight: '900', color: '#fff' },
-  levelBadge: { alignItems: 'center', gap: 4 },
-  levelIcon: { fontSize: 28 },
-  levelName: { fontSize: 13, fontWeight: '800', color: GOLD },
-  progressSection: { marginTop: 16 },
-  progressBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
-  progressFill: { height: '100%', backgroundColor: GOLD, borderRadius: 3 },
-  progressText: { fontSize: 11, color: 'rgba(255,255,255,0.6)', textAlign: 'center' },
-  section: { paddingHorizontal: 16, paddingTop: 20 },
-  secTitle: { fontSize: 10, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1.5, marginBottom: 10 },
-  levelsRow: { flexDirection: 'row', gap: 8 },
-  levelCard: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 10, alignItems: 'center', gap: 4, borderWidth: 2, borderColor: '#E5E7EB' },
-  levelCardActive: { borderColor: NAVY, backgroundColor: '#EFF6FF' },
-  levelCardIcon: { fontSize: 20 },
-  levelCardName: { fontSize: 10, fontWeight: '800', color: '#374151' },
-  levelCardPts: { fontSize: 9, color: '#9CA3AF', fontWeight: '600' },
-  card: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
-  earnRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  earnBorder: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  earnLabel: { flex: 1, fontSize: 13, color: '#374151', fontWeight: '500' },
-  earnPts: { fontSize: 13, fontWeight: '900', color: '#D97706' },
-  benefitCard: { backgroundColor: '#fff', borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
-  benefitIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  benefitLabel: { flex: 1, fontSize: 13, color: '#374151', fontWeight: '600' },
-  benefitPts: { backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: '#FDE68A' },
-  benefitPtsText: { fontSize: 11, fontWeight: '800', color: '#92400E' },
-});
+// ─────────────────────────────────────────────────────────────
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.bg },
+
+    // ── Hero ───────────────────────────────────────────────
+    hero: {
+      backgroundColor: t.brandNavyDark,
+      paddingTop: 52, paddingHorizontal: 20, paddingBottom: 24,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      alignItems: 'center', justifyContent: 'center',
+      marginBottom: 16,
+    },
+    heroTitle: {
+      fontSize: 24, fontWeight: '900',
+      color: t.textOnNavy, marginBottom: 2, letterSpacing: -0.3,
+    },
+    heroSub: {
+      fontSize: 13, color: 'rgba(255,255,255,0.65)',
+      marginBottom: 20, fontWeight: '600',
+    },
+
+    pointsCard: {
+      backgroundColor: 'rgba(255,255,255,0.08)',
+      borderRadius: 18, padding: 18,
+      flexDirection: 'row', alignItems: 'center',
+      justifyContent: 'space-between',
+      borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    },
+    pointsLabel: {
+      fontSize: 10, fontWeight: '900',
+      color: t.brandYellow, letterSpacing: 1.5, marginBottom: 4,
+    },
+    pointsValue: {
+      fontSize: 40, fontWeight: '900',
+      color: t.textOnNavy, letterSpacing: -1,
+    },
+    levelBadge: { alignItems: 'center', gap: 4 },
+    levelIcon: { fontSize: 28 },
+    levelName: {
+      fontSize: 13, fontWeight: '900',
+      color: t.brandYellow, letterSpacing: 0.3,
+    },
+
+    progressSection: { marginTop: 16 },
+    progressBar: {
+      height: 6,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      borderRadius: 3, overflow: 'hidden', marginBottom: 6,
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: t.brandYellow,
+      borderRadius: 3,
+    },
+    progressText: {
+      fontSize: 11, color: 'rgba(255,255,255,0.7)',
+      textAlign: 'center', fontWeight: '600',
+    },
+
+    // ── Section common ─────────────────────────────────────
+    section: { paddingHorizontal: 16, paddingTop: 20 },
+    secTitle: {
+      fontSize: 11, fontWeight: '800',
+      color: t.textTertiary,
+      letterSpacing: 1.2, textTransform: 'uppercase',
+      marginBottom: 10, marginLeft: 4,
+    },
+
+    // ── Levels strip ───────────────────────────────────────
+    levelsRow: { flexDirection: 'row', gap: 8 },
+    levelCard: {
+      flex: 1,
+      backgroundColor: t.bgLayer,
+      borderRadius: 14, padding: 10,
+      alignItems: 'center', gap: 4,
+      borderWidth: 2, borderColor: t.border,
+    },
+    levelCardActive: {
+      borderColor: t.brandNavy,
+      backgroundColor: `${t.brandNavy}08`,
+    },
+    levelCardIcon: { fontSize: 22 },
+    levelCardName: {
+      fontSize: 10, fontWeight: '800',
+      color: t.textSecondary,
+    },
+    levelCardNameActive: { color: t.brandNavy },
+    levelCardPts: {
+      fontSize: 9, color: t.textTertiary, fontWeight: '700',
+    },
+
+    // ── Cómo ganar card ────────────────────────────────────
+    card: {
+      backgroundColor: t.bgLayer,
+      borderRadius: 16, overflow: 'hidden',
+      borderWidth: 1, borderColor: t.glassBorder,
+    },
+    earnRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      padding: 14,
+    },
+    earnBorder: {
+      borderBottomWidth: 1, borderBottomColor: t.border,
+    },
+    earnIcon: {
+      width: 32, height: 32, borderRadius: 10,
+      backgroundColor: `${t.brandNavy}12`,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    earnLabel: {
+      flex: 1, fontSize: 13,
+      color: t.textPrimary, fontWeight: '600',
+    },
+    earnPts: {
+      fontSize: 14, fontWeight: '900',
+      color: t.warning,
+    },
+
+    // ── Beneficios ────────────────────────────────────────
+    benefitCard: {
+      backgroundColor: t.bgLayer,
+      borderRadius: 14, padding: 14,
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      marginBottom: 8,
+      borderWidth: 1, borderColor: t.glassBorder,
+    },
+    benefitCardLocked: { opacity: 0.6 },
+    benefitIcon: {
+      width: 40, height: 40, borderRadius: 12,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    benefitLabel: {
+      fontSize: 13, color: t.textPrimary, fontWeight: '700',
+    },
+    benefitLabelLocked: { color: t.textSecondary },
+    benefitMissing: {
+      fontSize: 11, color: t.textTertiary,
+      marginTop: 2, fontWeight: '600',
+    },
+    benefitPts: {
+      backgroundColor: t.glass,
+      borderRadius: 20,
+      paddingHorizontal: 10, paddingVertical: 4,
+      borderWidth: 1, borderColor: t.glassBorder,
+    },
+    benefitPtsAvailable: {
+      backgroundColor: `${t.brandYellow}25`,
+      borderColor: t.brandYellow,
+    },
+    benefitPtsText: {
+      fontSize: 11, fontWeight: '900',
+      color: t.textTertiary, letterSpacing: 0.3,
+    },
+    benefitPtsTextAvailable: { color: t.brandYellowDark },
+  });
+}

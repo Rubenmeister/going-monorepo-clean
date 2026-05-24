@@ -11,3 +11,4 @@ export * from './routes';
 export * from './vehicles';
 export * from './pricing';
 export * from './recent-routes';
+export * from './rewards';
