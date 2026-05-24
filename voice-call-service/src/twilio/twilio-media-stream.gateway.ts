@@ -10,7 +10,7 @@ import type { IncomingMessage } from 'http';
 import type { Socket } from 'net';
 import WebSocket, { WebSocketServer } from 'ws';
 import { VoiceCallService } from '../voice/voice-call.service';
-import { mulawToPcm16, pcm16ToMulaw } from './audio-codec';
+import { RealtimeBridgeService } from '../voice/realtime-bridge.service';
 
 /**
  * TwilioMediaStreamGateway — WebSocket endpoint que Twilio conecta tras el
@@ -55,6 +55,7 @@ export class TwilioMediaStreamGateway
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: ConfigService,
     private readonly voice: VoiceCallService,
+    private readonly bridge: RealtimeBridgeService,
   ) {
     // Modo loopback para tests de wiring sin OpenAI. Si está activo,
     // cada chunk de audio del usuario se devuelve tal cual (eco) — verifica
@@ -152,10 +153,26 @@ export class TwilioMediaStreamGateway
           );
 
           // Marcar la call como "answered" — primer audio out se emitirá
-          // pronto (ya sea por loopback o por el adapter OpenAI cuando esté).
+          // pronto (ya sea por loopback o por el bridge OpenAI).
           if (callSid) {
             await this.voice.onCallAnswered(callSid).catch((err) =>
               this.logger.warn(`[twilio-stream] onCallAnswered fallo: ${(err as Error).message}`),
+            );
+          }
+
+          // ── MODO REAL (task #51): arrancar bridge OpenAI Realtime ──
+          // Si no estamos en loopback, abrimos sesión Realtime para esta
+          // call. El bridge maneja todo el ciclo de vida (tools, transcript,
+          // outcome) y nos provee callbacks para enviar audio back via la WS.
+          if (!this.loopbackEnabled && streamSid && callSid) {
+            await this.bridge.startCallSession({
+              streamSid,
+              callId: callSid,
+              runId:  runId ?? undefined,
+              sendAudioBack: (b64) => this.sendAudioToStream(streamSid!, b64),
+              clearAudioBack: () => this.clearStream(streamSid!),
+            }).catch((err) =>
+              this.logger.error(`[twilio-stream] bridge.startCallSession fallo: ${(err as Error).message}`),
             );
           }
           break;
@@ -180,17 +197,12 @@ export class TwilioMediaStreamGateway
             return;
           }
 
-          // ── MODO REAL (TODO task #51) ──
-          // Aquí debe ir el bridge a OpenAI Realtime:
-          //   1. const pcm16 = mulawToPcm16(Buffer.from(payloadB64, 'base64'));
-          //      (o, si configuramos OpenAI con inputAudioFormat='g711_ulaw',
-          //       pasamos directo el buffer μ-law sin decodificar)
-          //   2. realtimeSession.sendAudio(buffer)
-          //   3. session.on('audio.delta', chunk => { send media event de vuelta })
-          //
-          // Por ahora silencio: el AI no responde sin el adapter wireado.
-          // Los logs van a mostrar "received N media frames" pero el cliente
-          // escucha silencio. Esto es OK para validar el wiring por etapas.
+          // ── MODO REAL: forward al bridge OpenAI Realtime ──
+          // El bridge tiene la session abierta (creada en 'start') con
+          // inputAudioFormat='g711_ulaw' — pasamos bytes raw sin convertir.
+          if (streamSid) {
+            this.bridge.forwardCallerAudio(streamSid, payloadB64);
+          }
 
           // Log cada 50 frames (1 seg de audio) para no inundar.
           if (mediaCount % 50 === 0) {
@@ -211,9 +223,12 @@ export class TwilioMediaStreamGateway
           this.logger.log(
             `[twilio-stream] stop streamSid=${streamSid?.slice(0, 12)} duration=${Date.now() - startTime}ms frames=${mediaCount}`,
           );
-          // Cleanup; el cierre del call vía VoiceCallService lo dispara
-          // también el status-callback de Twilio (camino más confiable que
-          // este event que puede no llegar si la conexión se cae mal).
+          // Cerrar la sesión Realtime + persistir transcript + outcome.
+          // El bridge maneja la idempotencia — si el status-callback de
+          // Twilio también dispara el endCallSession, el segundo es no-op.
+          if (streamSid && !this.loopbackEnabled) {
+            await this.bridge.endCallSession(streamSid, { reason: 'twilio-stop' }).catch(() => {/* best-effort */});
+          }
           if (streamSid) this.streamsBySid.delete(streamSid);
           try { ws.close(1000, 'twilio-stop'); } catch { /* ignore */ }
           break;
@@ -227,6 +242,12 @@ export class TwilioMediaStreamGateway
       this.logger.log(
         `[twilio-stream] WS closed code=${code} reason=${reason.toString() || '-'} streamSid=${streamSid?.slice(0, 12) ?? 'none'} frames=${mediaCount}`,
       );
+      // Defensa contra cierres "sucios" sin 'stop' event — el bridge cierra
+      // su session OpenAI + persiste lo que haya. Idempotente con el 'stop'
+      // handler arriba (cualquiera de los 2 que llegue primero gana).
+      if (streamSid && !this.loopbackEnabled) {
+        this.bridge.endCallSession(streamSid, { reason: `ws-close-${code}` }).catch(() => {/* best-effort */});
+      }
       if (streamSid) this.streamsBySid.delete(streamSid);
     });
 

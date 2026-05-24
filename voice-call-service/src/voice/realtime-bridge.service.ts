@@ -1,0 +1,308 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  OpenAIRealtimeAdapter,
+  RealtimeSession,
+} from '../realtime/openai-realtime.adapter';
+import {
+  VOICE_TOOLS_PHONE,
+  executeGetQuotePhone,
+  executeHandoffPhone,
+  executeSendFollowupSms,
+} from '../realtime/voice-tools-phone';
+import { VoiceCallService } from './voice-call.service';
+
+/**
+ * RealtimeBridgeService — orquesta el ciclo de vida de una sesión Realtime
+ * por llamada Twilio. Es el "pegamento" entre Twilio Media Streams y
+ * OpenAI Realtime API.
+ *
+ * Lifecycle por call:
+ *
+ *   Twilio 'start'  → bridge.startCallSession(streamSid, callId, ...)
+ *                     ├── crea RealtimeSession con g711_ulaw both sides
+ *                     ├── registra tools VOICE_TOOLS_PHONE
+ *                     └── hookea audio.delta → enviar Twilio media event
+ *
+ *   Twilio 'media'  → bridge.forwardCallerAudio(streamSid, mulawB64)
+ *                     └── session.sendAudio(Buffer.from(b64, 'base64'))
+ *                         (NO conversión — g711_ulaw nativo end-to-end)
+ *
+ *   OpenAI 'audio.delta' → gateway.sendAudioToStream(streamSid, b64)
+ *                          (chunk ya viene en μ-law, lo pasamos crudo)
+ *
+ *   OpenAI 'tool.call'   → ejecuta handler local → session.sendToolResult(...)
+ *
+ *   OpenAI 'input.transcript.done' / 'response.done' → acumular transcript
+ *
+ *   Twilio 'stop' o WS close → bridge.endCallSession(streamSid)
+ *                              ├── session.close()
+ *                              ├── voice.onCallEnded(callId, outcome, transcript, ...)
+ *                              └── publica evento al cerebro vía publisher
+ *
+ * Note: el bridge mantiene 1:1 con streamSid (cada call tiene su session
+ * independiente — no se reusan). El estado se libera al endCallSession.
+ *
+ * Configuración OpenAI Realtime para Twilio:
+ *  - inputAudioFormat:  'g711_ulaw' (Twilio entrega μ-law 8kHz nativo)
+ *  - outputAudioFormat: 'g711_ulaw' (OpenAI puede generar μ-law directo)
+ *  - turnDetection: server_vad (OpenAI detecta silencio para responder)
+ *  - voice: por config (default 'shimmer' equivale a 'Kore' female warm)
+ *
+ * Sin esta configuración, deberíamos convertir cada chunk con audio-codec.ts
+ * — funciona pero agrega ~5-10ms por chunk + complejidad. g711 nativo es
+ * la elección obvia para WhatsApp/teléfono.
+ */
+@Injectable()
+export class RealtimeBridgeService {
+  private readonly logger = new Logger(RealtimeBridgeService.name);
+  private readonly defaultVoice: string;
+  private readonly defaultLanguage: string;
+  /**
+   * Sessions activas indexadas por streamSid de Twilio. Cada sesión es
+   * 1 llamada — al cerrar la WS de Twilio, removemos la entry.
+   */
+  private readonly sessions = new Map<string, BridgeContext>();
+
+  constructor(
+    private readonly config: ConfigService,
+    private readonly adapter: OpenAIRealtimeAdapter,
+    private readonly voice: VoiceCallService,
+  ) {
+    this.defaultVoice    = this.config.get<string>('VOICE_REALTIME_DEFAULT_VOICE') || 'shimmer';
+    this.defaultLanguage = this.config.get<string>('VOICE_REALTIME_DEFAULT_LANG')  || 'es';
+  }
+
+  /**
+   * Inicia una sesión Realtime para una llamada Twilio recién conectada.
+   * El caller (TwilioMediaStreamGateway) le pasa un `sendAudioBack` que
+   * permite al bridge enviar audio de respuesta hacia Twilio sin tener
+   * referencia directa al WS.
+   *
+   * Si OpenAI no está configurado o falla connect, marca la call como
+   * failed y retorna null — el caller debe cerrar la WS limpiamente.
+   */
+  async startCallSession(input: {
+    streamSid:        string;
+    callId:           string;
+    runId?:           string;
+    sendAudioBack:    (mulawPayloadB64: string) => boolean;
+    clearAudioBack?:  () => void;
+  }): Promise<BridgeContext | null> {
+    if (!this.adapter.isConfigured()) {
+      this.logger.error(
+        `[bridge] OpenAI no configurado — no podemos atender call ${input.callId}`,
+      );
+      return null;
+    }
+
+    if (this.sessions.has(input.streamSid)) {
+      this.logger.warn(`[bridge] streamSid ${input.streamSid} ya tiene sesión activa — devolviendo la existente`);
+      return this.sessions.get(input.streamSid)!;
+    }
+
+    const systemPrompt = this.buildSystemPrompt(input.callId);
+
+    const session = this.adapter.createSession({
+      voice:              this.defaultVoice as any,
+      instructions:       systemPrompt,
+      tools:              VOICE_TOOLS_PHONE,
+      inputAudioFormat:   'g711_ulaw',
+      outputAudioFormat:  'g711_ulaw',
+      turnDetection:      { type: 'server_vad', threshold: 0.5, silenceDurationMs: 600 },
+      modalities:         ['audio', 'text'],
+      inputTranscriptionLanguage: this.defaultLanguage,
+      temperature:        0.7,
+    });
+
+    // Acumular transcript para persistir al cierre.
+    const transcript: Array<{ role: 'user' | 'assistant'; text: string; t: number }> = [];
+    const t0 = Date.now();
+    const pushTranscript = (role: 'user' | 'assistant', text: string) => {
+      if (!text || !text.trim()) return;
+      transcript.push({ role, text: text.trim(), t: Math.round((Date.now() - t0) / 1000) });
+    };
+
+    // ── Wire events ────────────────────────────────────────────
+    session.on('session.ready', () => {
+      this.logger.log(`[bridge] session ready callId=${input.callId} streamSid=${input.streamSid.slice(0, 12)}`);
+    });
+
+    session.on('audio.delta', (chunk: Buffer) => {
+      // chunk ya viene en g711_ulaw porque configuramos outputAudioFormat=g711_ulaw.
+      // Twilio acepta exactamente este shape — pasamos base64 crudo.
+      input.sendAudioBack(chunk.toString('base64'));
+    });
+
+    session.on('input.transcript.done', (text: string) => {
+      pushTranscript('user', text);
+      this.logger.debug(`[bridge] user said: "${text.slice(0, 80)}"`);
+    });
+
+    session.on('text.done', (text: string) => {
+      pushTranscript('assistant', text);
+      this.logger.debug(`[bridge] assistant said: "${text.slice(0, 80)}"`);
+    });
+
+    session.on('tool.call', async ({ callId: toolCallId, name, argumentsJson }) => {
+      const args = (() => { try { return JSON.parse(argumentsJson); } catch { return {}; } })();
+      this.logger.log(`[bridge] tool.call name=${name} args=${JSON.stringify(args).slice(0, 200)}`);
+
+      let result: unknown;
+      try {
+        switch (name) {
+          case 'get_quote_phone':       result = executeGetQuotePhone(args); break;
+          case 'request_handoff_phone': result = executeHandoffPhone(args);  break;
+          case 'send_followup_sms':     result = executeSendFollowupSms(args); break;
+          default:                      result = { ok: false, error: 'unknown_tool', name };
+        }
+      } catch (err) {
+        this.logger.error(`[bridge] tool ${name} threw: ${(err as Error).message}`);
+        result = { ok: false, error: 'tool_exception', message: (err as Error).message };
+      }
+      session.sendToolResult(toolCallId, JSON.stringify(result));
+    });
+
+    session.on('error', (err) => {
+      this.logger.error(`[bridge] OpenAI error callId=${input.callId}: ${err.code} ${err.message}`);
+    });
+
+    session.on('closed', (info) => {
+      this.logger.log(
+        `[bridge] session closed callId=${input.callId} code=${info.code} reason=${info.reason} clean=${info.clean}`,
+      );
+    });
+
+    // ── Connect ─────────────────────────────────────────────
+    try {
+      await session.connect();
+    } catch (err) {
+      this.logger.error(`[bridge] session.connect fallo callId=${input.callId}: ${(err as Error).message}`);
+      // Marcar la call como failed_technical para que mycortex pueda razonar
+      // sobre tasa de fallos del bridge.
+      await this.voice.onCallEnded(input.callId, {
+        outcome: 'failed_technical',
+        escalationReason: `OpenAI session connect failed: ${(err as Error).message.slice(0, 200)}`,
+      }).catch(() => {/* best-effort */});
+      return null;
+    }
+
+    const ctx: BridgeContext = {
+      streamSid:    input.streamSid,
+      callId:       input.callId,
+      runId:        input.runId,
+      session,
+      transcript,
+      startedAt:    t0,
+      handoffRequested: false,
+    };
+    this.sessions.set(input.streamSid, ctx);
+    return ctx;
+  }
+
+  /**
+   * Forward de un chunk de audio del usuario (recibido de Twilio) a la
+   * sesión Realtime. Pasa bytes crudos sin conversión porque la session
+   * está configurada con inputAudioFormat='g711_ulaw'.
+   */
+  forwardCallerAudio(streamSid: string, mulawPayloadB64: string): void {
+    const ctx = this.sessions.get(streamSid);
+    if (!ctx) return;
+    try {
+      ctx.session.sendAudio(Buffer.from(mulawPayloadB64, 'base64'));
+    } catch (err) {
+      this.logger.warn(`[bridge] sendAudio fallido streamSid=${streamSid.slice(0, 12)}: ${(err as Error).message}`);
+    }
+  }
+
+  /**
+   * Cierra la sesión Realtime + persiste transcript + dispara onCallEnded.
+   * Idempotente: si ya se cerró, no rompe.
+   */
+  async endCallSession(streamSid: string, opts?: { reason?: string }): Promise<void> {
+    const ctx = this.sessions.get(streamSid);
+    if (!ctx) return;
+    this.sessions.delete(streamSid);
+
+    try {
+      ctx.session.close();
+    } catch { /* ignore */ }
+
+    // Determinar outcome basado en flags del ctx. handoffRequested se setea
+    // cuando el tool request_handoff_phone fue invocado durante la sesión.
+    const outcome = ctx.handoffRequested
+      ? 'escalated' as const
+      : ctx.transcript.length === 0
+        ? 'abandoned_by_caller' as const
+        : 'resolved_by_ai' as const;
+
+    await this.voice.onCallEnded(ctx.callId, {
+      outcome,
+      transcript:       ctx.transcript,
+      escalationReason: opts?.reason,
+    }).catch((err) =>
+      this.logger.warn(`[bridge] onCallEnded fallo callId=${ctx.callId}: ${(err as Error).message}`),
+    );
+
+    this.logger.log(
+      `[bridge] call ended callId=${ctx.callId} outcome=${outcome} ` +
+      `turns=${ctx.transcript.length} duration=${Math.round((Date.now() - ctx.startedAt) / 1000)}s`,
+    );
+  }
+
+  /**
+   * Marca el bridge para que al cerrar la session el outcome sea 'escalated'.
+   * Lo invoca el handler del tool request_handoff_phone (vía el switch en
+   * tool.call). Hoy NO transfiere físicamente la call — la implementación
+   * real de la transferencia (TwiML <Dial>) queda como pending del task #52.
+   */
+  markHandoffRequested(streamSid: string, reason: string): void {
+    const ctx = this.sessions.get(streamSid);
+    if (!ctx) return;
+    ctx.handoffRequested = true;
+    this.logger.warn(`[bridge] handoff marked callId=${ctx.callId}: ${reason}`);
+  }
+
+  // ── Sistema prompt ────────────────────────────────────────
+
+  /**
+   * System prompt minimal para el agente telefónico. NO inyectamos FARES
+   * ni catalogos completos aquí — el cliente llama get_quote_phone cuando
+   * necesita un precio. Mantener el prompt corto baja la latencia del
+   * primer token.
+   *
+   * TODO: agregar lookups dinámicos por hora/canton si vemos en logs que
+   * el AI se confunde con preguntas no-quote (horarios, ubicaciones, etc).
+   */
+  private buildSystemPrompt(callId: string): string {
+    return [
+      'Sos Uyari, el agente telefónico de Going Ecuador — una empresa de transporte',
+      'compartido (carpooling) y privado intercantonal. Atendés llamadas en español',
+      'ecuatoriano (cordial pero directo, sin "vosotros").',
+      '',
+      'REGLAS:',
+      '- Respondé corto (1-3 frases máx). El cliente está al teléfono.',
+      '- Para precios: SIEMPRE usá la tool get_quote_phone (nunca inventes).',
+      '  Leé el campo spoken_price + spoken_surcharges + spoken_unit (ya están en palabras).',
+      '- Si te piden "hablar con persona" o detectás emergencia/frustración: usá request_handoff_phone.',
+      '- Si necesitan info que no pueden tomar nota: ofrecé send_followup_sms.',
+      '- NO menciones URLs ni dirijas a apps — el cliente está en una llamada de voz.',
+      '- Si no entendés algo, pedí que repita (no asumas).',
+      '',
+      `CallId interno (para tu contexto, no lo menciones al cliente): ${callId.slice(0, 16)}.`,
+    ].join('\n');
+  }
+}
+
+// ─── Estado interno por sesión ────────────────────────────
+
+interface BridgeContext {
+  streamSid:        string;
+  callId:           string;
+  runId?:           string;
+  session:          RealtimeSession;
+  transcript:       Array<{ role: 'user' | 'assistant'; text: string; t: number }>;
+  startedAt:        number;
+  /** True cuando el LLM invocó request_handoff_phone durante la sesión. */
+  handoffRequested: boolean;
+}

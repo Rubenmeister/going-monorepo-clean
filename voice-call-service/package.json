@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@going-platform/cerebro-contracts": "workspace:*",
+    "@going-platform/pricing": "workspace:*",
     "@google-cloud/pubsub": "^4.7.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^3.3.0",
