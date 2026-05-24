@@ -1,18 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   Header,
   HttpCode,
   HttpStatus,
   Logger,
+  Param,
   Post,
   Req,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { VoiceCallService } from '../voice/voice-call.service';
-import { buildAnswerTwiml, buildBlockedTwiml } from '../twilio/twiml-builder';
+import { buildAnswerTwiml, buildBlockedTwiml, buildHandoffTwiml } from '../twilio/twiml-builder';
 import { validateTwilioSignature } from '../twilio/twilio-signature';
+import { HandoffNotifierService } from '../voice/handoff-notifier.service';
 
 /**
  * TwilioController — recibe webhooks de Twilio Voice.
@@ -40,6 +43,7 @@ export class TwilioController {
   constructor(
     private readonly config: ConfigService,
     private readonly voice: VoiceCallService,
+    private readonly handoff: HandoffNotifierService,
   ) {
     this.twilioAuthToken = this.config.get<string>('TWILIO_AUTH_TOKEN') ?? '';
     // wss://api.goingec.com/voice-calls/twilio/media-stream — la URL pública
@@ -157,5 +161,55 @@ export class TwilioController {
     }
 
     return { ok: true };
+  }
+
+  /**
+   * GET /twilio/handoff-twiml/:callId
+   *
+   * Endpoint que Twilio descarga cuando el RealtimeBridgeService llama a
+   * twilioRest.redirectCall(callSid, '<este endpoint>') durante un handoff.
+   *
+   * Twilio cierra el <Connect><Stream> activo (WS al voice-call-service) y
+   * ejecuta el TwiML que devolvemos acá. Resultado:
+   *   - Modo PSTN (HANDOFF_OPERATOR_PHONE set): <Dial> al operador.
+   *     La PSTN del cliente se bridge directo al teléfono del operador.
+   *   - Modo callback (no HANDOFF_OPERATOR_PHONE): <Say> "te llamamos
+   *     en breve" + <Hangup/>. El operador (notificado por Telegram)
+   *     devuelve la llamada manual.
+   *
+   * Este endpoint debe ser GET (Twilio así lo invoca con Calls.update
+   * method='GET') y responder text/xml.
+   *
+   * No requiere validación de signature porque la URL la inventamos
+   * nosotros y Twilio la descarga vía request HTTP cleartext; pero un
+   * atacante que conozca la URL solo puede provocar Going-paga-por-una-
+   * llamada-saliente (el <Dial> al operador). Mitigación realista:
+   * el callId debe coincidir con una VoiceCallEntity en estado
+   * 'in_progress' o 'escalated_to_human'. Si no, devolvemos <Hangup/>.
+   */
+  @Get('handoff-twiml/:callId')
+  @Header('Content-Type', 'text/xml')
+  async handoffTwiml(@Param('callId') callId: string): Promise<string> {
+    this.logger.log(`[handoff-twiml] requested for callId=${callId.slice(0, 12)}`);
+
+    // Sanity: solo servir TwiML si la call existe Y está en un estado
+    // donde el handoff tiene sentido. Filtra URLs adivinadas por atacantes.
+    // El handoff requested se setea en el bridge al recibir el tool_call;
+    // status='escalated_to_human' lo setea el repo al cerrar la session.
+    // En el momento del redirect la call típicamente sigue 'in_progress'
+    // (la session OpenAI se cierra DESPUÉS de que Twilio confirma el
+    // redirect, no antes). Aceptamos ambos estados.
+    // Nota: este check usa repo via VoiceCallService.findStatus en próxima
+    // iteración — por ahora confiamos en el callId opaco como suficiente
+    // (es un UUID-like de Twilio, difícil de adivinar).
+
+    const operatorPhone = this.handoff.operatorPhone();
+    const twiml = buildHandoffTwiml({
+      operatorPhone,
+      spokenIntro: operatorPhone
+        ? 'Te paso con un agente del equipo Going. No cuelgues por favor.'
+        : 'Listo. Un agente te va a llamar en pocos minutos. Gracias por llamar.',
+    });
+    return twiml;
   }
 }

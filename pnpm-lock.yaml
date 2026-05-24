@@ -3217,6 +3217,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      twilio:
+        specifier: ^5.4.0
+        version: 5.13.1
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -15829,6 +15832,10 @@ packages:
 
   twilio@4.23.0:
     resolution: {integrity: sha512-LdNBQfOe0dY2oJH2sAsrxazpgfFQo5yXGxe96QA8UWB5uu+433PrUbkv8gQ5RmrRCqUTPQ0aOrIyAdBr1aB03Q==}
+    engines: {node: '>=14.0'}
+
+  twilio@5.13.1:
+    resolution: {integrity: sha512-sT+PkhptF4Mf7t8eXFFvPQx4w5VHnBIPXbltGPMFRe+R2GxfRdMuFbuNA/cEm0aQR6LFQOn33+fhClg+TjRVqQ==}
     engines: {node: '>=14.0'}
 
   type-check@0.4.0:
@@ -33257,6 +33264,19 @@ snapshots:
       qs: 6.15.0
       scmp: 2.1.0
       url-parse: 1.5.10
+      xmlbuilder: 13.0.2
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
+  twilio@5.13.1:
+    dependencies:
+      axios: 1.13.5
+      dayjs: 1.11.19
+      https-proxy-agent: 5.0.1
+      jsonwebtoken: 9.0.3
+      qs: 6.15.0
+      scmp: 2.1.0
       xmlbuilder: 13.0.2
     transitivePeerDependencies:
       - debug

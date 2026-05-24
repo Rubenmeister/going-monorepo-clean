@@ -12,6 +12,7 @@ import {
 } from '../realtime/voice-tools-phone';
 import { VoiceCallService } from './voice-call.service';
 import { HandoffNotifierService } from './handoff-notifier.service';
+import { TwilioRestClient } from '../twilio/twilio-rest.client';
 
 /**
  * RealtimeBridgeService — orquesta el ciclo de vida de una sesión Realtime
@@ -60,6 +61,13 @@ export class RealtimeBridgeService {
   private readonly defaultVoice: string;
   private readonly defaultLanguage: string;
   /**
+   * Base URL pública del voice-call-service (donde Twilio descarga el
+   * handoff-twiml). Necesaria solo para el modo PSTN transfer real.
+   * Default: el Cloud Run URL del service. Override via env si está detrás
+   * de un custom domain o load balancer.
+   */
+  private readonly publicBaseUrl: string;
+  /**
    * Sessions activas indexadas por streamSid de Twilio. Cada sesión es
    * 1 llamada — al cerrar la WS de Twilio, removemos la entry.
    */
@@ -70,9 +78,12 @@ export class RealtimeBridgeService {
     private readonly adapter: OpenAIRealtimeAdapter,
     private readonly voice: VoiceCallService,
     private readonly handoff: HandoffNotifierService,
+    private readonly twilioRest: TwilioRestClient,
   ) {
     this.defaultVoice    = this.config.get<string>('VOICE_REALTIME_DEFAULT_VOICE') || 'shimmer';
     this.defaultLanguage = this.config.get<string>('VOICE_REALTIME_DEFAULT_LANG')  || 'es';
+    this.publicBaseUrl   = this.config.get<string>('VOICE_CALL_PUBLIC_BASE_URL') ||
+      'https://voice-call-service-780842550857.us-central1.run.app';
   }
 
   /**
@@ -207,6 +218,33 @@ export class RealtimeBridgeService {
       );
     });
 
+    // Hook al fin de cada turn del assistant. Si markHandoffRequested fue
+    // invocado durante el turn (handoff tool fue llamado), AHORA es el
+    // momento de redirigir la PSTN — el AI ya terminó de decir "te paso..."
+    // Esperar a response.done evita cortar el audio a mitad de frase.
+    //
+    // Idempotente: solo se dispara una vez por ctx.handoffRequested+pending.
+    session.on('response.done', async () => {
+      const ctx = this.sessions.get(input.streamSid);
+      if (!ctx || !ctx.handoffRequested || ctx.handoffTransferred) return;
+      ctx.handoffTransferred = true; // marcamos antes del await para evitar dobles redirects en race
+
+      const handoffUrl = `${this.publicBaseUrl}/twilio/handoff-twiml/${encodeURIComponent(input.callId)}`;
+      this.logger.log(`[bridge] dispatching handoff redirect callId=${input.callId} → ${handoffUrl}`);
+      const ok = await this.twilioRest.redirectCall(input.callId, handoffUrl);
+      if (!ok) {
+        // Si el redirect falla (creds Twilio no configuradas o API down),
+        // degradamos a callback mode: cerramos la session y al WS-close
+        // Twilio cuelga la llamada. El operador ya está notificado por
+        // Telegram y devolverá la llamada manual.
+        this.logger.warn(`[bridge] redirectCall fallido callId=${input.callId} — fallback a callback mode`);
+      }
+      // Cerramos la session OpenAI — el TwiML nuevo de Twilio toma control
+      // de la PSTN. Si twilioRest falló, igual cerramos (no sirve mantener
+      // OpenAI esperando bytes que ya no van a llegar).
+      try { ctx.session.close(); } catch { /* ignore */ }
+    });
+
     // ── Connect ─────────────────────────────────────────────
     try {
       await session.connect();
@@ -228,7 +266,8 @@ export class RealtimeBridgeService {
       session,
       transcript,
       startedAt:    t0,
-      handoffRequested: false,
+      handoffRequested:   false,
+      handoffTransferred: false,
     };
     this.sessions.set(input.streamSid, ctx);
     return ctx;
@@ -338,5 +377,8 @@ interface BridgeContext {
   transcript:       Array<{ role: 'user' | 'assistant'; text: string; t: number }>;
   startedAt:        number;
   /** True cuando el LLM invocó request_handoff_phone durante la sesión. */
-  handoffRequested: boolean;
+  handoffRequested:  boolean;
+  /** True después de que disparamos el twilioRest.redirectCall — evita
+   *  doble redirect en caso de race entre múltiples response.done. */
+  handoffTransferred: boolean;
 }
