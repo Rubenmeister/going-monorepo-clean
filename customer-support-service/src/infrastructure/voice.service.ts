@@ -333,6 +333,7 @@ export class VoiceService {
       // Intentar Chirp 3 HD primero (calidad superior, voz consistente cross-lang)
       const chirpVoiceName = `${langCfg.ttsLangCode}-Chirp3-HD-${personaName}`;
       try {
+        const t0 = Date.now();
         const [response] = await ttsClient.synthesizeSpeech({
           input: { text },
           voice: {
@@ -345,18 +346,21 @@ export class VoiceService {
             pitch: 0,
           },
         });
+        const dt = Date.now() - t0;
         if (response.audioContent) {
-          this.logger.log(`[tts] chirp3 ${chirpVoiceName} ok (${text.length} chars → audio)`);
+          const audioBytes = (response.audioContent as Uint8Array).length;
+          this.logger.log(`[tts-chirp3] ${chirpVoiceName} ok (${text.length} chars → ${audioBytes}B audio, ${dt}ms)`);
           return Buffer.from(response.audioContent as Uint8Array);
         }
       } catch (chirpErr) {
         this.logger.warn(
-          `[tts] chirp3 ${chirpVoiceName} no disponible (${(chirpErr as Error).message.slice(0, 100)}) — fallback Neural2`,
+          `[tts-chirp3] ${chirpVoiceName} no disponible (${(chirpErr as Error).message.slice(0, 100)}) — fallback Neural2`,
         );
       }
 
       // Fallback: Neural2 (compatible legacy, todas las regiones)
       const fallbackVoice = this.neural2Fallback(langKey, gender);
+      const t0 = Date.now();
       const [response] = await ttsClient.synthesizeSpeech({
         input: { text },
         voice: {
@@ -369,8 +373,10 @@ export class VoiceService {
           pitch: 0,
         },
       });
+      const dt = Date.now() - t0;
       if (!response.audioContent) return null;
-      this.logger.log(`[tts] neural2 ${fallbackVoice.name} ok`);
+      const audioBytes = (response.audioContent as Uint8Array).length;
+      this.logger.log(`[tts-neural2] ${fallbackVoice.name} ok (${text.length} chars → ${audioBytes}B audio, ${dt}ms)`);
       return Buffer.from(response.audioContent as Uint8Array);
     } catch (err) {
       this.logger.error('TTS synthesize error', err);
