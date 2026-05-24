@@ -21,7 +21,7 @@ import { HandoffNotifierService } from '../voice/handoff-notifier.service';
  * TwilioController — recibe webhooks de Twilio Voice.
  *
  * Flujo:
- *  1. Cliente llama al número Going +593 99 278 1751
+ *  1. Cliente llama al número Going de voz (TWILIO_VOICE_NUMBER en env)
  *  2. Twilio dispara POST /twilio/voice-webhook con CallSid, From, To
  *  3. Validamos firma X-Twilio-Signature (anti-spoof) — ⚠️ STUB
  *  4. VoiceCallService.onCallInitiated() persiste + publica al cerebro
@@ -118,7 +118,7 @@ export class TwilioController {
     if (suspicious) {
       this.logger.warn(`[twilio] blocking suspicious caller ${from}`);
       return buildBlockedTwiml(
-        'Detectamos llamadas repetidas desde este número. Por favor escribe a WhatsApp +593 99 278 1751 o intenta más tarde.',
+        'Detectamos llamadas repetidas desde este número. Por favor escribe a WhatsApp +593 98 403 7949 o intenta más tarde.',
       );
     }
 

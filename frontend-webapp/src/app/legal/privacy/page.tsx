@@ -21,8 +21,8 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-2">
               Para consultas relacionadas con privacidad y protección de datos puede contactarnos
-              al correo <strong>rubenmeister@gmail.com</strong> o al teléfono&nbsp;
-              <strong>+593 992 781 751</strong>.
+              al correo <strong>privacidad@goingec.com</strong> o por WhatsApp al&nbsp;
+              <strong>+593 98 403 7949</strong>.
             </p>
           </section>
 

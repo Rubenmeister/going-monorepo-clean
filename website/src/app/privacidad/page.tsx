@@ -16,8 +16,8 @@ const SECTIONS = [
     content: `Thorn Ai Technologies S.A.S., titular de la marca Going (en adelante "Going" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going Pasajero y Going Conductor.
 
 Contacto del Delegado de Protección de Datos (DPD):
-• Correo: rubenmeister@gmail.com
-• Teléfono: +593 992 781 751
+• Correo: privacidad@goingec.com
+• WhatsApp: +593 98 403 7949
 • Horario: lunes a viernes, 09h00 – 17h00
 
 Esta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.`,
