@@ -33,6 +33,15 @@ export interface BookingProps {
   clientSegment?: ClientSegment;
   /** Default 'immediate'. 'corporate_monthly' agrupa en la factura del mes. */
   paymentMode?: PaymentMode;
+  /**
+   * rideId disparado por BookingDispatcher para serviceType='transport' con
+   * startDate futuro. Sin valor → el booking aún no fue convertido a ride
+   * real. Marca idempotencia: si está set, no re-disparar (evita rides
+   * duplicados si el cron corre 2 veces antes de persistir).
+   */
+  triggeredRideId?: UUID;
+  /** Timestamp del dispatch (info para ops). */
+  triggeredAt?: Date;
 }
 
 export class Booking {
@@ -49,6 +58,8 @@ export class Booking {
   readonly companyId?: UUID;
   readonly clientSegment?: ClientSegment;
   readonly paymentMode?: PaymentMode;
+  readonly triggeredRideId?: UUID;
+  readonly triggeredAt?: Date;
 
   private constructor(props: BookingProps) {
     this.id = props.id;
@@ -64,6 +75,8 @@ export class Booking {
     this.companyId = props.companyId;
     this.clientSegment = props.clientSegment;
     this.paymentMode = props.paymentMode;
+    this.triggeredRideId = props.triggeredRideId;
+    this.triggeredAt = props.triggeredAt;
   }
 
   // Factory method to create a new booking
@@ -112,6 +125,8 @@ export class Booking {
       companyId: this.companyId,
       clientSegment: this.clientSegment,
       paymentMode: this.paymentMode,
+      triggeredRideId: this.triggeredRideId,
+      triggeredAt: this.triggeredAt?.toISOString(),
     };
   }
 
@@ -122,7 +137,29 @@ export class Booking {
       startDate: new Date(props.startDate),
       endDate: props.endDate ? new Date(props.endDate) : undefined,
       createdAt: new Date(props.createdAt),
+      triggeredAt: props.triggeredAt ? new Date(props.triggeredAt) : undefined,
     });
+  }
+
+  /**
+   * Marca el booking como ride-disparado. Usado por BookingDispatcher
+   * (cron en booking-service) cuando convierte un scheduled corporate
+   * booking en un ride real vía transport-service.
+   *
+   * Idempotente: si ya tiene rideId, retorna error (no re-disparar).
+   */
+  public markRideTriggered(rideId: UUID): Result<void, Error> {
+    if (this.triggeredRideId) {
+      return err(new Error(`Booking ${this.id} ya tiene ride ${this.triggeredRideId} disparado`));
+    }
+    if (this.status === 'cancelled' || this.status === 'completed') {
+      return err(new Error(`No se puede disparar ride para booking ${this.status}`));
+    }
+    (this as any).triggeredRideId = rideId;
+    (this as any).triggeredAt = new Date();
+    // Auto-confirma si estaba pending
+    if (this.status === 'pending') (this as any).status = 'confirmed';
+    return ok(undefined);
   }
 
   // Business logic methods

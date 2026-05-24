@@ -87,6 +87,33 @@ export class MongooseBookingRepository implements IBookingRepository {
     }
   }
 
+  async findDispatchReady(
+    beforeDate: Date,
+    limit = 100,
+  ): Promise<Result<Booking[], Error>> {
+    try {
+      const docs = await this.model
+        .find({
+          serviceType: 'transport',
+          status: { $in: ['pending', 'confirmed'] },
+          startDate: { $lte: beforeDate },
+          // Idempotencia: solo bookings sin ride disparado todavía. El
+          // partial index del schema acelera esta query (lo definimos
+          // exactamente con este shape).
+          $or: [
+            { triggeredRideId: { $exists: false } },
+            { triggeredRideId: null },
+          ],
+        })
+        .sort({ startDate: 1 })  // primero los más urgentes
+        .limit(limit)
+        .exec();
+      return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error((error as Error).message));
+    }
+  }
+
   async findByUserIdPaginated(
     userId: UUID,
     pagination?: PaginationDto

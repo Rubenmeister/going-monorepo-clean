@@ -78,6 +78,16 @@ export class BookingModelSchema {
     default: 'immediate',
   })
   paymentMode?: 'immediate' | 'corporate_monthly';
+
+  // ── Dispatch a ride real (BookingDispatcher cron) ─────────────────────
+  // Cuando un booking transport con startDate futuro llega cerca de su
+  // horario, el BookingDispatcher lo dispara como ride real en transport-
+  // service y guarda el rideId aquí para idempotencia.
+  @Prop({ sparse: true, index: true })
+  triggeredRideId?: string;
+
+  @Prop()
+  triggeredAt?: Date;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(BookingModelSchema);
@@ -100,3 +110,18 @@ BookingSchema.index({ createdAt: -1 });
 // Corporate listings: query principal de corporate-service (stats, factura, etc.).
 BookingSchema.index({ companyId: 1, createdAt: -1 });
 BookingSchema.index({ companyId: 1, status: 1, createdAt: -1 });
+
+// Dispatch query — BookingDispatcher cron usa este index para encontrar
+// rápido los bookings transport listos para disparar como rides reales.
+// Filtra por serviceType + status + startDate + triggeredRideId null.
+// Partial index para minimizar tamaño (solo bookings sin ride disparado).
+BookingSchema.index(
+  { serviceType: 1, status: 1, startDate: 1 },
+  {
+    partialFilterExpression: {
+      serviceType: 'transport',
+      status: { $in: ['pending', 'confirmed'] },
+      triggeredRideId: null,
+    },
+  },
+);

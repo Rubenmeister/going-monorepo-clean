@@ -16,6 +16,19 @@ export interface IBookingRepository {
     companyId: UUID,
     opts?: { status?: string; limit?: number; skip?: number },
   ): Promise<Result<Booking[], Error>>;
+  /**
+   * Bookings transport listos para ser disparados como rides reales por el
+   * BookingDispatcher cron.
+   *
+   * Criterios:
+   *   - serviceType = 'transport'
+   *   - status in ('pending', 'confirmed')
+   *   - startDate <= beforeDate (típicamente now + threshold de 15-30 min)
+   *   - triggeredRideId == null (no disparado todavía — idempotencia)
+   *
+   * Ordenado por startDate asc para procesar primero los más urgentes.
+   */
+  findDispatchReady(beforeDate: Date, limit?: number): Promise<Result<Booking[], Error>>;
 }
 
 export const IBookingRepository = Symbol('IBookingRepository');
