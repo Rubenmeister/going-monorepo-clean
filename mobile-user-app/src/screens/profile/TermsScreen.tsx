@@ -17,12 +17,12 @@ const SECTIONS = [
   {
     number: '1',
     title: 'Objeto y Aceptación',
-    body: 'Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going, operada por THORN AI TECHNOLOGIES S.A.S. (titular de la marca "Going", RUC: 1793176925001), con domicilio en Echeverría N2-170, Quito, Ecuador.\n\nAl registrarte, acceder o usar la aplicación Going, declaras haber leído, comprendido y aceptado íntegramente estos Términos. Si no estás de acuerdo, debes abstenerte de usar el servicio.\n\nEsta aceptación constituye un contrato vinculante entre tú y THORN AI TECHNOLOGIES S.A.S., de conformidad con el Código Civil ecuatoriano y la Ley de Comercio Electrónico (Ley No. 2002-67).',
+    body: 'Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going, operada por THORN AI TECHNOLOGIES (titular de la marca "Going", RUC: 1793176925001), con domicilio en Echeverría N2-170, Quito, Ecuador.\n\nAl registrarte, acceder o usar la aplicación Going, declaras haber leído, comprendido y aceptado íntegramente estos Términos. Si no estás de acuerdo, debes abstenerte de usar el servicio.\n\nEsta aceptación constituye un contrato vinculante entre tú y THORN AI TECHNOLOGIES, de conformidad con el Código Civil ecuatoriano y la Ley de Comercio Electrónico (Ley No. 2002-67).',
   },
   {
     number: '2',
     title: 'Naturaleza del Servicio',
-    body: 'Going Ecuador es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.\n\nTHORN AI TECHNOLOGIES S.A.S. NO es una empresa de transporte. Los conductores son prestadores independientes que actúan conforme a la Ley Orgánica de Transporte Terrestre, Tránsito y Seguridad Vial (LOTTTSV) y sus reglamentos.\n\nGoing opera bajo las categorías: (i) Viajes interurbanos e intercantonal en vehículos SUV, VAN y BUS; (ii) Envíos y mensajería urbana e interurbana; (iii) Tours turísticos con operadores certificados; (iv) Alojamiento y experiencias (próximamente).',
+    body: 'Going Ecuador es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.\n\nTHORN AI TECHNOLOGIES NO es una empresa de transporte. Los conductores son prestadores independientes que actúan conforme a la Ley Orgánica de Transporte Terrestre, Tránsito y Seguridad Vial (LOTTTSV) y sus reglamentos.\n\nGoing opera bajo las categorías: (i) Viajes interurbanos e intercantonal en vehículos SUV, VAN y BUS; (ii) Envíos y mensajería urbana e interurbana; (iii) Tours turísticos con operadores certificados; (iv) Alojamiento y experiencias (próximamente).',
   },
   {
     number: '3',
@@ -52,7 +52,7 @@ const SECTIONS = [
   {
     number: '8',
     title: 'Responsabilidad y Limitaciones',
-    body: 'THORN AI TECHNOLOGIES S.A.S. actúa exclusivamente como intermediario tecnológico y no asume responsabilidad directa por:\n\n• Accidentes de tránsito (responsabilidad del conductor y su seguro SOAT).\n• Pérdida, daño o robo de bienes personales durante el viaje.\n• Retrasos causados por condiciones del tráfico, clima adverso o fuerza mayor.\n• Conducta de los conductores fuera del contexto del servicio contratado.\n• Interrupciones del servicio por mantenimiento, actualizaciones o causas técnicas.\n\nEn los casos en que Going sea declarado responsable por resolución judicial firme, la responsabilidad máxima estará limitada al valor pagado por el servicio específico que originó el daño.\n\nGoing mantiene un proceso de verificación de antecedentes para conductores, pero no garantiza la exactitud o vigencia de dicha información.',
+    body: 'THORN AI TECHNOLOGIES actúa exclusivamente como intermediario tecnológico y no asume responsabilidad directa por:\n\n• Accidentes de tránsito (responsabilidad del conductor y su seguro SOAT).\n• Pérdida, daño o robo de bienes personales durante el viaje.\n• Retrasos causados por condiciones del tráfico, clima adverso o fuerza mayor.\n• Conducta de los conductores fuera del contexto del servicio contratado.\n• Interrupciones del servicio por mantenimiento, actualizaciones o causas técnicas.\n\nEn los casos en que Going sea declarado responsable por resolución judicial firme, la responsabilidad máxima estará limitada al valor pagado por el servicio específico que originó el daño.\n\nGoing mantiene un proceso de verificación de antecedentes para conductores, pero no garantiza la exactitud o vigencia de dicha información.',
   },
   {
     number: '9',
@@ -62,7 +62,7 @@ const SECTIONS = [
   {
     number: '10',
     title: 'Propiedad Intelectual',
-    body: 'Todos los derechos de propiedad intelectual de la aplicación Going, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de THORN AI TECHNOLOGIES S.A.S. y están protegidos por la Ley de Propiedad Intelectual del Ecuador (Código Orgánico de la Economía Social de los Conocimientos) y los tratados internacionales aplicables.\n\nSe prohíbe expresamente: reproducir, distribuir, modificar, crear obras derivadas, realizar ingeniería inversa, descompilar o desensamblar cualquier parte de la aplicación sin autorización escrita previa de THORN AI TECHNOLOGIES S.A.S.\n\nEl usuario recibe únicamente una licencia personal, no exclusiva, intransferible y revocable para usar la aplicación de acuerdo con estos Términos.',
+    body: 'Todos los derechos de propiedad intelectual de la aplicación Going, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de THORN AI TECHNOLOGIES y están protegidos por la Ley de Propiedad Intelectual del Ecuador (Código Orgánico de la Economía Social de los Conocimientos) y los tratados internacionales aplicables.\n\nSe prohíbe expresamente: reproducir, distribuir, modificar, crear obras derivadas, realizar ingeniería inversa, descompilar o desensamblar cualquier parte de la aplicación sin autorización escrita previa de THORN AI TECHNOLOGIES\n\nEl usuario recibe únicamente una licencia personal, no exclusiva, intransferible y revocable para usar la aplicación de acuerdo con estos Términos.',
   },
   {
     number: '11',
@@ -72,7 +72,7 @@ const SECTIONS = [
   {
     number: '12',
     title: 'Modificaciones de los Términos',
-    body: 'THORN AI TECHNOLOGIES S.A.S. se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.\n\nEn caso de cambios sustanciales, se notificará al usuario con al menos 15 días de anticipación mediante: notificación push en la aplicación, correo electrónico a la dirección registrada, y aviso destacado en la pantalla de inicio.\n\nEl uso continuado de la aplicación tras el período de notificación constituye aceptación de los términos modificados. Si no aceptas los cambios, debes dejar de usar el servicio y solicitar la eliminación de tu cuenta escribiendo a legal@goingec.com.',
+    body: 'THORN AI TECHNOLOGIES se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.\n\nEn caso de cambios sustanciales, se notificará al usuario con al menos 15 días de anticipación mediante: notificación push en la aplicación, correo electrónico a la dirección registrada, y aviso destacado en la pantalla de inicio.\n\nEl uso continuado de la aplicación tras el período de notificación constituye aceptación de los términos modificados. Si no aceptas los cambios, debes dejar de usar el servicio y solicitar la eliminación de tu cuenta escribiendo a legal@goingec.com.',
   },
   {
     number: '13',
@@ -90,7 +90,7 @@ export function TermsScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.companyTag}>THORN AI TECHNOLOGIES S.A.S.</Text>
+        <Text style={styles.companyTag}>THORN AI TECHNOLOGIES</Text>
         <Text style={styles.headerTitle}>Términos y{'\n'}Condiciones de Uso</Text>
         <View style={styles.versionRow}>
           <View style={styles.versionBadge}>
