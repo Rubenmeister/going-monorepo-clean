@@ -9,6 +9,8 @@ import { HealthController } from './api/health.controller';
 // Voice flow
 import { VoiceCallService } from './voice/voice-call.service';
 import { CerebroPublisherService } from './voice/cerebro-publisher.service';
+// Twilio media stream WS gateway
+import { TwilioMediaStreamGateway } from './twilio/twilio-media-stream.gateway';
 // Infra
 import { VoiceCallRepository } from './infrastructure/persistence/voice-call.repository';
 import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
@@ -43,6 +45,10 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     VoiceCallService,
     CerebroPublisherService,
     VoiceCallRepository,
+    // Gateway WS — se auto-hookea al httpServer en OnApplicationBootstrap.
+    // No expone HTTP routes (no es un Controller), por eso va solo en
+    // providers. Inyecta HttpAdapterHost del core de NestJS.
+    TwilioMediaStreamGateway,
   ],
 })
 export class AppModule {}
