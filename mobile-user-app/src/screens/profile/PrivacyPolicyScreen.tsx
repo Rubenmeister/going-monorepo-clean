@@ -17,7 +17,7 @@ const SECTIONS = [
   {
     number: '1',
     title: 'Responsable del Tratamiento',
-    body: 'THORN AI TECHNOLOGIES (titular de la marca "Going", en adelante "Going"), con RUC: 1793176925001, domicilio en Echeverría N2-170, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales.\n\nContacto del Delegado de Protección de Datos (DPD):\n• Correo: privacidad@goingec.com\n• Teléfono / WhatsApp: +593 99 278 1751\n• Horario: lunes a viernes, 09h00 – 17h00\n\nEsta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.',
+    body: 'THORN AI TECHNOLOGIES (titular de la marca "Going", en adelante "Going"), con RUC: 1793176925001, domicilio en Echeverría N2-170, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales.\n\nContacto del Delegado de Protección de Datos (DPD):\n• Correo: privacidad@goingec.com\n• WhatsApp: +593 98 403 7949\n• Horario: lunes a viernes, 09h00 – 17h00\n\nEsta Política de Privacidad cumple con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP, Registro Oficial No. 459 del 26 de mayo de 2021) y su Reglamento.',
   },
   {
     number: '2',
