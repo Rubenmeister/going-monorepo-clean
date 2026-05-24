@@ -35,7 +35,7 @@ export interface BucketState {
 
 @Injectable()
 export class TokenBucketService {
-  private redisClient: Redis.RedisClient;
+  private redisClient: any;
   private readonly prefix = 'rate_limit';
 
   // Default rate limit configurations
@@ -47,7 +47,7 @@ export class TokenBucketService {
     'api:rides': { capacity: 30, refillRate: 0.5, window: 60 }, // 30 per min
   };
 
-  constructor(@Inject('REDIS_CLIENT') redisClient: Redis.RedisClient) {
+  constructor(@Inject('REDIS_CLIENT') redisClient: any) {
     this.redisClient = redisClient;
   }
 
