@@ -30,3 +30,6 @@ export * from './lib/cities';
 export * from './lib/corridors';
 // Configuración de asientos de carpooling (SUV/SUV XL, grupo, delantero).
 export * from './lib/seats';
+// ServiceTier brand (Confort | Premium | Empresa) + normalizer con
+// backward-compat para builds antiguos que envían 'standard'.
+export * from './lib/service-tier';

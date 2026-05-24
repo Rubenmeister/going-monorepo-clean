@@ -37,7 +37,7 @@ describe.skip('Ride Matching API Integration Tests (requires running service)', 
       pickupLongitude: -74.006,
       dropoffLatitude: 40.758,
       dropoffLongitude: -73.9855,
-      serviceType: 'standard',
+      serviceType: 'confort',
     };
 
     it('should request a ride successfully with valid data', async () => {

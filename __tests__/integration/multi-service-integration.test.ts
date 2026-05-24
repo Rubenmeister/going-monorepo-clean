@@ -40,7 +40,7 @@ describe.skip('Multi-Service Integration Tests (requires multiple running servic
           pickupLongitude: -74.006,
           dropoffLatitude: 40.758,
           dropoffLongitude: -73.9855,
-          serviceType: 'standard',
+          serviceType: 'confort',
         }),
       });
 
@@ -88,7 +88,7 @@ describe.skip('Multi-Service Integration Tests (requires multiple running servic
           pickupLongitude: -74.006,
           dropoffLatitude: 40.758,
           dropoffLongitude: -73.9855,
-          serviceType: 'standard',
+          serviceType: 'confort',
         }),
       });
 
@@ -112,7 +112,7 @@ describe.skip('Multi-Service Integration Tests (requires multiple running servic
           pickupLongitude: -74.006,
           dropoffLatitude: 40.758,
           dropoffLongitude: -73.9855,
-          serviceType: 'standard',
+          serviceType: 'confort',
         }),
       });
 

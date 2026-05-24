@@ -104,7 +104,12 @@ export class BookingService implements OnModuleInit {
     phoneNumber: string,
     origin: Coords,
     destination: Coords,
-    serviceType = 'standard',
+    /**
+     * Default 'confort' (rename brand 2026-05-23 desde 'standard').
+     * Si el caller pasa 'standard' explícito, el backend transport-service
+     * lo normaliza via libs/pricing/normalizeServiceTier.
+     */
+    serviceType = 'confort',
     scheduledAt?: Date,
   ): Promise<BookingResult> {
     // FIX 7: Use environment variable for transport service URL, no hardcoded Cloud Run URL
