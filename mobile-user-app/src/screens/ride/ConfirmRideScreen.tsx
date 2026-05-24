@@ -1,15 +1,33 @@
 /**
- * ConfirmRideScreen — Confirmación y Pago de Viaje
+ * ConfirmRideScreen — Confirmación y Pago de Viaje (Mockup #9).
  *
  * Pantalla unificada para Compartido y Privado.
+ *
  * Flujo:
- *  1. Resumen del viaje (ruta, hora, vehículo)
- *  2. Selección de asiento (solo Compartido: trasero/delantero +$3)
- *  3. Método de pago: Tarjeta (Datafast) / QR DeUna / Efectivo
- *  4. Desglose de precio
- *  5. Confirmar y pagar → navega a ActiveRide o espera confirmación
+ *  1. Resumen del viaje (ruta, hora, vehículo, tier, asientos)
+ *  2. Selección de asiento (solo Compartido cuando seats=1: trasero/delantero +$3)
+ *  3. Método de pago: Efectivo (único activo) · Datafast (próximamente) · DeUna (próximamente)
+ *  4. Desglose de precio transparente
+ *  5. CTA sticky bottom "Pagar $X.XX"
+ *
+ * Theme adaptativo light + dark.
+ *
+ * REFIT 2026-05-23:
+ *   - Datafast + DeUna ahora muestran badge "Próximamente" DESHABILITADOS
+ *     en lugar de stub silencioso (Alert "próximamente" después del tap)
+ *   - Efectivo pre-seleccionado por default (único método funcional hoy)
+ *   - Respeta params.seats + params.tier del booking previo
+ *   - CTA sticky bottom (antes al final del scroll)
+ *   - Theme adaptativo (antes hardcoded NAVY/YELLOW/GREEN/RED/PURPLE)
+ *
+ * TODO declarado:
+ *   - Wire frontend a payment-service Datafast (POST /payments/datafast/session)
+ *     + WebBrowser flow + webhook callback. El BACKEND ya lo tiene
+ *     implementado (DatafastGateway.ts), falta el frontend pegarse a la API.
+ *   - Wire DeUna QR (mismo patrón)
+ *   - Cuando wired, remover badge "Próximamente" y el disabled state.
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, ActivityIndicator,
@@ -19,140 +37,123 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
-import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore } from '@store/useAuthStore';
 import { transportAPI } from '../../services/api';
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../utils/haptics';
-
-// ── Colores ───────────────────────────────────────────────────────────────────
-const NAVY    = '#0033A0';
-const YELLOW  = '#FFCD00';
-const GREEN   = '#059669';
-const RED     = '#C0101A';
-const PURPLE  = '#7C3AED';
+import { useTheme, type ThemeTokens } from '../../theme';
+import type { Category } from '../../catalog';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 export type ConfirmRideParams = {
   type:           'compartido' | 'privado';
   tripId?:        string;
   origin:         string;
-  /** Coordenadas de origen. Si falta, se toma del GPS al reservar. */
   originCoords?:  { lat: number; lng: number };
   destination:    string;
-  /** Coordenadas del destino seleccionado en LocationPicker. */
   destCoords?:    { lat: number; lng: number };
   departureTime?: string;
   date?:          string;
   vehicle:        string;
   vehicleId?:     string;
   pricePerSeat?:  number;   // Compartido
-  totalPrice?:    number;   // Privado
+  totalPrice?:    number;   // Privado (o total Compartido seats × price)
   frontSeat?:     boolean;
   zone?:          string;
+  seats?:         number;
   category?:      string;
+  tier?:          Category;  // 'confort' | 'premium' | 'empresa'
+  categoryId?:    Category;
   capacity?:      number;
 };
 
-type PaymentMethod = 'card' | 'qr' | 'cash';
+type PaymentMethodId = 'datafast' | 'deuna' | 'cash';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-// ── Métodos de pago ───────────────────────────────────────────────────────────
-const PAYMENT_METHODS = [
+// ── Métodos de pago. `enabled: false` muestra badge "Próximamente" y bloquea ──
+const PAYMENT_METHODS: ReadonlyArray<{
+  id:      PaymentMethodId;
+  label:   string;
+  sub:     string;
+  icon:    React.ComponentProps<typeof Ionicons>['name'];
+  enabled: boolean;
+}> = [
   {
-    id:    'card' as PaymentMethod,
-    label: 'Tarjeta de crédito / débito',
-    sub:   'Visa · Mastercard · Amex · Diners',
-    icon:  'card-outline',
-    color: NAVY,
-    bg:    '#EFF6FF',
+    id:      'cash',
+    label:   'Efectivo',
+    sub:     'Pagas al conductor cuando termina el viaje',
+    icon:    'cash-outline',
+    enabled: true,
   },
   {
-    id:    'qr' as PaymentMethod,
-    label: 'Transferencia QR',
-    sub:   'De Una · PayPhone · Banco Pichincha',
-    icon:  'qr-code-outline',
-    color: PURPLE,
-    bg:    '#F5F3FF',
+    id:      'datafast',
+    label:   'Tarjeta · Datafast',
+    sub:     'Visa · Mastercard · Amex · Diners',
+    icon:    'card-outline',
+    enabled: false,
   },
   {
-    id:    'cash' as PaymentMethod,
-    label: 'Efectivo',
-    sub:   'Pagas directamente al conductor',
-    icon:  'cash-outline',
-    color: GREEN,
-    bg:    '#F0FDF4',
+    id:      'deuna',
+    label:   'QR · De Una',
+    sub:     'Transferencia instantánea Banco Pichincha',
+    icon:    'qr-code-outline',
+    enabled: false,
   },
-] as const;
+];
 
-// ─────────────────────────────────────────────────────────────────────────────
+const DEFAULT_PAYMENT: PaymentMethodId = 'cash';
 
+// ── Component ────────────────────────────────────────────────────────────────
 export function ConfirmRideScreen() {
   const navigation = useNavigation<Nav>();
   const route      = useRoute<RouteProp<{ params: ConfirmRideParams }, 'params'>>();
   const { user }   = useAuthStore();
-  const params     = route.params;
+  const { tokens, isDark } = useTheme();
+  const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
+  const params = route.params;
   const isCompartido = params.type === 'compartido';
+  const seats = params.seats ?? 1;
+  const tier  = params.tier ?? params.categoryId ?? 'confort';
 
-  const [frontSeat,    setFrontSeat]    = useState(params.frontSeat ?? false);
-  const [payMethod,    setPayMethod]    = useState<PaymentMethod>('card');
-  const [loading,      setLoading]      = useState(false);
+  // ── State ──────────────────────────────────────────────────
+  // frontSeat solo se aplica si compartido + 1 asiento (no se vende delantero
+  // a grupos). El booking screen ya lo asegura, pero defensivo.
+  const [frontSeat, setFrontSeat] = useState((params.frontSeat ?? false) && isCompartido && seats === 1);
+  const [payMethod, setPayMethod] = useState<PaymentMethodId>(DEFAULT_PAYMENT);
+  const [loading,   setLoading]   = useState(false);
 
-  // ── Cálculo de precio ──────────────────────────────────────────────────────
+  // ── Cálculo precio ────────────────────────────────────────
+  // Compartido: pricePerSeat × seats (+ extra delantero ya viene en pricePerSeat
+  // si frontSeat=true desde el booking screen). Para mantener la flexibilidad,
+  // recalculamos el extra acá si el usuario cambia frontSeat en este screen.
+  const seatExtra  = (frontSeat && !(params.frontSeat ?? false)) ? 3 : 0;
   const basePrice  = isCompartido
-    ? (params.pricePerSeat ?? 10) + (frontSeat ? 3 : 0)
+    ? ((params.pricePerSeat ?? 10) * seats) + seatExtra
     : (params.totalPrice ?? 30);
 
-  // IVA: transporte de pasajeros está exento en Ecuador (Art. 56 LRTI)
-  // Aplica 0% IVA — se envía como BASE0 a Datafast
-  const ivaAmount   = 0;
+  // IVA: transporte de pasajeros está exento en Ecuador (Art. 56 LRTI).
+  // Aplica 0% — se envía como BASE0 a Datafast cuando se wire.
   const totalAmount = basePrice;
 
-  const dateLabel = params.date
-    ? new Date(params.date).toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })
-    : 'Hoy';
+  const dateLabel = useMemo(() => {
+    if (!params.date || params.date === 'today') return 'Hoy';
+    if (params.date === 'tomorrow') return 'Mañana';
+    try {
+      return new Date(params.date).toLocaleDateString('es-EC', {
+        weekday: 'short', day: 'numeric', month: 'short',
+      });
+    } catch { return 'Hoy'; }
+  }, [params.date]);
 
-  // ── Confirmar reserva ──────────────────────────────────────────────────────
-  const handleConfirm = async () => {
-    hapticMedium();
+  const tierLabel = useMemo(() => {
+    if (tier === 'premium') return 'Premium';
+    if (tier === 'empresa') return 'Empresa';
+    return 'Confort';
+  }, [tier]);
 
-    if (payMethod === 'card') {
-      await handleCardPayment();
-    } else if (payMethod === 'qr') {
-      await handleQrPayment();
-    } else {
-      await handleCashBooking();
-    }
-  };
-
-  // Pago con tarjeta — Datafast Dataweb.
-  // Backend aún no expone POST /payments/session para Datafast; dejamos el UI
-  // intacto pero mostramos aviso para que el usuario pague en efectivo hoy.
-  const handleCardPayment = async () => {
-    hapticError();
-    Alert.alert(
-      'Pago con tarjeta — próximamente',
-      'Estamos activando Datafast en los próximos días. Por ahora reserva con pago en efectivo al conductor.',
-      [{ text: 'Entendido' }],
-    );
-  };
-
-  // Pago QR — DeUna. Igual que Datafast, falta el endpoint de sesión.
-  const handleQrPayment = async () => {
-    hapticError();
-    Alert.alert(
-      'Pago con DeUna — próximamente',
-      'El pago por DeUna se habilita muy pronto. Por ahora reserva con pago en efectivo al conductor.',
-      [{ text: 'Entendido' }],
-    );
-  };
-
-  /**
-   * Obtiene las coordenadas de origen para crear la solicitud:
-   *   1. Si el booking screen las pasó (params.originCoords) → usar esas.
-   *   2. Si no, solicitar GPS en foreground con permiso.
-   */
-  const getOriginCoords = async (): Promise<{ lat: number; lng: number } | null> => {
+  // ── Handlers ──────────────────────────────────────────────
+  const getOriginCoords = useCallback(async (): Promise<{ lat: number; lng: number } | null> => {
     if (params.originCoords) return params.originCoords;
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -161,13 +162,10 @@ export function ConfirmRideScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
       return { lat: loc.coords.latitude, lng: loc.coords.longitude };
-    } catch {
-      return null;
-    }
-  };
+    } catch { return null; }
+  }, [params.originCoords]);
 
-  // Reserva en efectivo — crea el trip real en transport-service.
-  const handleCashBooking = async () => {
+  const handleCashBooking = useCallback(async () => {
     if (!user?.id) {
       hapticError();
       Alert.alert('Sesión expirada', 'Vuelve a iniciar sesión para reservar.');
@@ -176,8 +174,6 @@ export function ConfirmRideScreen() {
 
     setLoading(true);
     try {
-      // 1. Coordenadas. Si falta alguna, bloqueamos con mensaje claro —
-      //    nunca enviamos request inválido al backend.
       const destCoords = params.destCoords;
       if (!destCoords) {
         Alert.alert(
@@ -196,9 +192,6 @@ export function ConfirmRideScreen() {
         return;
       }
 
-      // 2. Crear viaje real vía transportAPI (POST /rides/request).
-      //    Capturamos el rideId del response para navegar a ActiveRide y
-      //    que el pasajero vea tracking en tiempo real con su conductor.
       const response = await transportAPI.requestRide({
         userId: user.id,
         origin: {
@@ -218,9 +211,7 @@ export function ConfirmRideScreen() {
       const rideId = (response.data as { rideId?: string })?.rideId;
 
       if (rideId) {
-        // Caso normal: tenemos rideId del backend, abrimos ActiveRide para
-        // que socket.io se conecte al room ride:{rideId} y muestre tracking.
-        navigation.replace('ActiveRide', {
+        navigation.replace('ActiveRide' as never, {
           rideId,
           origin: {
             latitude:  originCoords.lat,
@@ -236,13 +227,13 @@ export function ConfirmRideScreen() {
           tripMode:    params.type,
           category:    params.zone ?? '',
           price:       totalAmount,
-        });
+        } as never);
       } else {
-        // Fallback defensivo si el backend cambia la shape — no perdemos al usuario.
+        // Fallback defensivo — backend no devolvió rideId
         Alert.alert(
           '¡Reserva confirmada!',
           `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} en efectivo al conductor.`,
-          [{ text: 'Ver mis viajes', onPress: () => navigation.navigate('Historial' as any) }],
+          [{ text: 'Ver mis viajes', onPress: () => (navigation.navigate as any)('Historial') }],
         );
       }
     } catch (err: any) {
@@ -252,31 +243,55 @@ export function ConfirmRideScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, params, totalAmount, getOriginCoords, navigation]);
 
-  // Datafast se abre en WebBrowser del sistema — no se necesita WebView modal
+  const handleConfirm = useCallback(() => {
+    hapticMedium();
+    if (payMethod === 'cash') {
+      handleCashBooking();
+    } else {
+      // Defensivo — los métodos no-cash deberían estar deshabilitados
+      hapticError();
+      Alert.alert(
+        'Método no disponible aún',
+        'Por ahora solo está activo el pago en efectivo. Datafast y De Una se habilitan próximamente.',
+      );
+    }
+  }, [payMethod, handleCashBooking]);
 
-  // ── Render principal ───────────────────────────────────────────────────────
+  const handleSelectPayment = useCallback((id: PaymentMethodId) => {
+    const method = PAYMENT_METHODS.find(m => m.id === id);
+    if (!method?.enabled) {
+      hapticError();
+      // No mostramos Alert pesado — el badge "Próximamente" ya comunica visualmente
+      return;
+    }
+    setPayMethod(id);
+    hapticLight();
+  }, []);
+
+  // ── Render ────────────────────────────────────────────────
   return (
     <View style={styles.container}>
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color={tokens.textOnNavy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Confirmar viaje</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── Resumen del viaje ─────────────────────────────────────────── */}
+        {/* ── Resumen del viaje ───────────────────────────────── */}
         <View style={styles.tripCard}>
           <View style={styles.tripCardHeader}>
             <Text style={styles.tripCardTitle}>Resumen del viaje</Text>
             <View style={[styles.typeBadge, isCompartido ? styles.badgeShared : styles.badgePrivate]}>
-              <Text style={[styles.typeBadgeText, isCompartido ? { color: NAVY } : { color: '#fff' }]}>
-                {isCompartido ? '🤝 Compartido' : '🔒 Privado'}
+              <Text style={[styles.typeBadgeText, isCompartido ? styles.badgeSharedText : styles.badgePrivateText]}>
+                {isCompartido ? 'Compartido' : 'Privado'}
               </Text>
             </View>
           </View>
@@ -284,7 +299,7 @@ export function ConfirmRideScreen() {
           {/* Ruta */}
           <View style={styles.routeSection}>
             <View style={styles.routeRow}>
-              <View style={[styles.routeDot, { backgroundColor: NAVY }]} />
+              <View style={[styles.routeDot, { backgroundColor: tokens.brandNavy }]} />
               <View style={styles.routeInfo}>
                 <Text style={styles.routeLabel}>ORIGEN</Text>
                 <Text style={styles.routeCity}>{params.origin}</Text>
@@ -297,7 +312,7 @@ export function ConfirmRideScreen() {
             </View>
             <View style={styles.routeLine} />
             <View style={styles.routeRow}>
-              <View style={[styles.routeDot, { backgroundColor: '#E5E7EB', borderWidth: 2, borderColor: '#9CA3AF' }]} />
+              <View style={[styles.routeDot, styles.routeDotDest]} />
               <View style={styles.routeInfo}>
                 <Text style={styles.routeLabel}>DESTINO</Text>
                 <Text style={styles.routeCity}>{params.destination}</Text>
@@ -306,85 +321,115 @@ export function ConfirmRideScreen() {
             </View>
           </View>
 
-          {/* Detalles */}
+          {/* Detalles meta */}
           <View style={styles.detailsRow}>
             <View style={styles.detailItem}>
-              <Ionicons name="car-outline" size={16} color="#6B7280" />
+              <Ionicons name="car-sport-outline" size={14} color={tokens.textTertiary} />
               <Text style={styles.detailText}>{params.vehicle}</Text>
             </View>
-            {params.category && (
+            <View style={styles.detailItem}>
+              <Ionicons
+                name={tier === 'premium' ? 'diamond-outline' : tier === 'empresa' ? 'business-outline' : 'shield-checkmark-outline'}
+                size={14}
+                color={tokens.textTertiary}
+              />
+              <Text style={styles.detailText}>{tierLabel}</Text>
+            </View>
+            {isCompartido ? (
               <View style={styles.detailItem}>
-                <Ionicons name="diamond-outline" size={16} color="#6B7280" />
-                <Text style={styles.detailText}>{params.category}</Text>
+                <Ionicons name="person-outline" size={14} color={tokens.textTertiary} />
+                <Text style={styles.detailText}>{seats} asiento{seats !== 1 ? 's' : ''}</Text>
               </View>
-            )}
-            {isCompartido && params.pricePerSeat && (
+            ) : params.capacity ? (
               <View style={styles.detailItem}>
-                <Ionicons name="person-outline" size={16} color="#6B7280" />
-                <Text style={styles.detailText}>1 asiento</Text>
-              </View>
-            )}
-            {!isCompartido && params.capacity && (
-              <View style={styles.detailItem}>
-                <Ionicons name="people-outline" size={16} color="#6B7280" />
+                <Ionicons name="people-outline" size={14} color={tokens.textTertiary} />
                 <Text style={styles.detailText}>Hasta {params.capacity} pax</Text>
               </View>
-            )}
+            ) : null}
           </View>
         </View>
 
-        {/* ── Selección de asiento (solo Compartido) ───────────────────── */}
-        {isCompartido && (
+        {/* ── Asiento (Compartido + 1 asiento solamente) ──────── */}
+        {isCompartido && seats === 1 && (
           <View style={styles.section}>
-            <Text style={styles.secTitle}>ELIGE TU ASIENTO</Text>
+            <Text style={styles.secTitle}>Selección de asiento</Text>
             <View style={styles.seatRow}>
               <TouchableOpacity
                 style={[styles.seatOpt, !frontSeat && styles.seatOptActive]}
                 onPress={() => { setFrontSeat(false); hapticLight(); }}
+                activeOpacity={0.85}
               >
-                {!frontSeat && <View style={styles.seatCheck}><Ionicons name="checkmark" size={12} color="#fff" /></View>}
-                <Text style={styles.seatIcon}>💺</Text>
-                <Text style={[styles.seatName, !frontSeat && { color: NAVY }]}>Trasero</Text>
+                {!frontSeat && (
+                  <View style={styles.seatCheck}>
+                    <Ionicons name="checkmark" size={11} color={tokens.textOnNavy} />
+                  </View>
+                )}
+                <Ionicons name="person-outline" size={26} color={!frontSeat ? tokens.brandNavy : tokens.textTertiary} />
+                <Text style={[styles.seatName, !frontSeat && styles.seatNameActive]}>Trasero</Text>
                 <Text style={styles.seatPrice}>Precio base</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.seatOpt, frontSeat && styles.seatOptActive]}
                 onPress={() => { setFrontSeat(true); hapticLight(); }}
+                activeOpacity={0.85}
               >
-                {frontSeat && <View style={styles.seatCheck}><Ionicons name="checkmark" size={12} color="#fff" /></View>}
-                <Text style={styles.seatIcon}>🪑</Text>
-                <Text style={[styles.seatName, frontSeat && { color: NAVY }]}>Delantero</Text>
-                <Text style={[styles.seatPrice, frontSeat && { color: NAVY, fontWeight: '700' }]}>+$3.00</Text>
+                {frontSeat && (
+                  <View style={styles.seatCheck}>
+                    <Ionicons name="checkmark" size={11} color={tokens.textOnNavy} />
+                  </View>
+                )}
+                <Ionicons name="star-outline" size={26} color={frontSeat ? tokens.brandNavy : tokens.textTertiary} />
+                <Text style={[styles.seatName, frontSeat && styles.seatNameActive]}>Delantero</Text>
+                <Text style={[styles.seatPrice, frontSeat && styles.seatPriceActive]}>+$3.00</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        {/* ── Método de pago ────────────────────────────────────────────── */}
+        {/* ── Método de pago ──────────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={styles.secTitle}>MÉTODO DE PAGO</Text>
-          {PAYMENT_METHODS.map(m => (
-            <TouchableOpacity
-              key={m.id}
-              style={[styles.payCard, payMethod === m.id && { borderColor: m.color, backgroundColor: m.bg }]}
-              onPress={() => { setPayMethod(m.id); hapticLight(); }}
-              activeOpacity={0.85}
-            >
-              <View style={[styles.payIcon, { backgroundColor: m.bg }]}>
-                <Ionicons name={m.icon as any} size={22} color={m.color} />
-              </View>
-              <View style={styles.payInfo}>
-                <Text style={[styles.payLabel, payMethod === m.id && { color: m.color }]}>{m.label}</Text>
-                <Text style={styles.paySub}>{m.sub}</Text>
-              </View>
-              <View style={[styles.payRadio, payMethod === m.id && { borderColor: m.color }]}>
-                {payMethod === m.id && <View style={[styles.payDot, { backgroundColor: m.color }]} />}
-              </View>
-            </TouchableOpacity>
-          ))}
+          <Text style={styles.secTitle}>Método de pago</Text>
+          {PAYMENT_METHODS.map(m => {
+            const active = payMethod === m.id;
+            const dim    = !m.enabled;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                style={[
+                  styles.payCard,
+                  active && styles.payCardActive,
+                  dim && styles.payCardDim,
+                ]}
+                onPress={() => handleSelectPayment(m.id)}
+                activeOpacity={dim ? 1 : 0.85}
+              >
+                <View style={[styles.payIcon, active && styles.payIconActive]}>
+                  <Ionicons
+                    name={m.icon}
+                    size={22}
+                    color={dim ? tokens.textTertiary : active ? tokens.brandNavy : tokens.textPrimary}
+                  />
+                </View>
+                <View style={styles.payInfo}>
+                  <View style={styles.payTitleRow}>
+                    <Text style={[styles.payLabel, dim && styles.payLabelDim]}>{m.label}</Text>
+                    {!m.enabled && (
+                      <View style={styles.soonBadge}>
+                        <Text style={styles.soonBadgeText}>Próximamente</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.paySub, dim && styles.paySubDim]}>{m.sub}</Text>
+                </View>
+                <View style={[styles.payRadio, active && styles.payRadioActive]}>
+                  {active && <View style={styles.payDot} />}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
           {payMethod === 'cash' && (
             <View style={styles.cashNote}>
-              <Ionicons name="information-circle-outline" size={14} color="#92400E" />
+              <Ionicons name="information-circle-outline" size={14} color={tokens.warning} />
               <Text style={styles.cashNoteText}>
                 El conductor confirmará el pago en efectivo al finalizar el viaje.
               </Text>
@@ -392,17 +437,23 @@ export function ConfirmRideScreen() {
           )}
         </View>
 
-        {/* ── Desglose de precio ────────────────────────────────────────── */}
+        {/* ── Desglose de precio ──────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={styles.secTitle}>DESGLOSE DE PRECIO</Text>
+          <Text style={styles.secTitle}>Desglose de precio</Text>
           <View style={styles.priceBox}>
             {isCompartido ? (
               <>
                 <View style={styles.priceRow}>
-                  <Text style={styles.priceLbl}>Asiento {frontSeat ? 'delantero' : 'trasero'}</Text>
+                  <Text style={styles.priceLbl}>Asiento ({tierLabel})</Text>
                   <Text style={styles.priceVal}>${(params.pricePerSeat ?? 10).toFixed(2)}</Text>
                 </View>
-                {frontSeat && (
+                {seats > 1 && (
+                  <View style={styles.priceRow}>
+                    <Text style={styles.priceLbl}>× {seats} asientos</Text>
+                    <Text style={styles.priceVal}>${((params.pricePerSeat ?? 10) * seats).toFixed(2)}</Text>
+                  </View>
+                )}
+                {frontSeat && seats === 1 && (
                   <View style={styles.priceRow}>
                     <Text style={styles.priceLbl}>Asiento delantero</Text>
                     <Text style={styles.priceVal}>+$3.00</Text>
@@ -411,69 +462,47 @@ export function ConfirmRideScreen() {
               </>
             ) : (
               <View style={styles.priceRow}>
-                <Text style={styles.priceLbl}>{params.vehicle} ({params.capacity} pax)</Text>
+                <Text style={styles.priceLbl}>Vehículo {params.vehicle} ({tierLabel})</Text>
                 <Text style={styles.priceVal}>${(params.totalPrice ?? 30).toFixed(2)}</Text>
               </View>
             )}
             <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>IVA (exento · transporte)</Text>
-              <Text style={[styles.priceVal, { color: GREEN }]}>$0.00</Text>
+              <Text style={styles.priceLbl}>IVA</Text>
+              <Text style={[styles.priceVal, { color: tokens.success }]}>exento</Text>
             </View>
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>Servicio Going</Text>
-              <Text style={[styles.priceVal, { color: GREEN }]}>incluido</Text>
-            </View>
-            <View style={styles.priceTotalRow}>
-              <Text style={styles.priceTotalLbl}>
-                {isCompartido ? 'Total por persona' : 'Total vehículo completo'}
-              </Text>
+            <View style={[styles.priceRow, styles.priceTotalRow]}>
+              <Text style={styles.priceTotalLbl}>Total</Text>
               <Text style={styles.priceTotalVal}>${totalAmount.toFixed(2)}</Text>
             </View>
+            <Text style={styles.priceNote}>
+              Transporte de pasajeros exento de IVA (Art. 56 LRTI).
+            </Text>
           </View>
         </View>
 
-        {/* ── Promo regreso ─────────────────────────────────────────────── */}
-        <TouchableOpacity style={styles.returnPromo} activeOpacity={0.85}>
-          <Text style={{ fontSize: 20 }}>🔄</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.returnTitle}>¿Reservas el regreso?</Text>
-            <Text style={styles.returnSub}>Gana +50 Going Points en tu vuelta</Text>
-          </View>
-          <View style={styles.pointsBadge}><Text style={styles.pointsText}>+50 pts</Text></View>
-        </TouchableOpacity>
-
-        {/* Nota legal */}
-        <Text style={styles.legalNote}>
-          Al confirmar aceptas los Términos y Condiciones de Going Ecuador.
-          El pago se procesa de forma segura con certificación PCI-DSS.
-        </Text>
-
-        <View style={{ height: 32 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* ── BOTÓN CONFIRMAR ──────────────────────────────────────────────── */}
-      <View style={styles.footer}>
+      {/* ── CTA sticky bottom ────────────────────────────────── */}
+      <View style={styles.ctaBar}>
+        <View style={styles.ctaTotal}>
+          <Text style={styles.ctaTotalLabel}>A pagar</Text>
+          <Text style={styles.ctaTotalValue}>${totalAmount.toFixed(2)}</Text>
+        </View>
         <TouchableOpacity
-          style={[styles.confirmBtn, loading && { opacity: 0.7 }]}
+          style={[styles.ctaBtn, loading && { opacity: 0.7 }]}
           onPress={handleConfirm}
           disabled={loading}
-          activeOpacity={0.85}
+          activeOpacity={0.88}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={tokens.textOnYellow} />
           ) : (
             <>
-              <View>
-                <Text style={styles.confirmBtnText}>
-                  {payMethod === 'cash' ? 'Confirmar reserva' : `Pagar $${totalAmount.toFixed(2)}`}
-                </Text>
-                <Text style={styles.confirmBtnSub}>
-                  {payMethod === 'card' ? '🔒 Pago seguro Datafast'
-                    : payMethod === 'qr' ? '📱 Pago QR De Una'
-                    : '💵 Pago en efectivo al conductor'}
-                </Text>
-              </View>
-              <Ionicons name="arrow-forward-circle" size={26} color={YELLOW} />
+              <Text style={styles.ctaBtnText}>
+                {payMethod === 'cash' ? 'Reservar' : `Pagar`}
+              </Text>
+              <Ionicons name="lock-closed" size={14} color={tokens.textOnYellow} />
             </>
           )}
         </TouchableOpacity>
@@ -483,150 +512,215 @@ export function ConfirmRideScreen() {
   );
 }
 
-// ─── Estilos ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0F2F5' },
+// ─────────────────────────────────────────────────────────────
+function makeStyles(t: ThemeTokens, isDark: boolean) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.bg },
 
-  // Header
-  header: {
-    backgroundColor: NAVY, paddingTop: 52,
-    paddingBottom: 16, paddingHorizontal: 20,
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-  },
-  backBtn: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#fff' },
+    // Header
+    header: {
+      backgroundColor: t.brandNavy,
+      paddingTop: 52, paddingHorizontal: 20, paddingBottom: 16,
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      alignItems: 'center', justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1, textAlign: 'center',
+      fontSize: 17, fontWeight: '900',
+      color: t.textOnNavy,
+      letterSpacing: -0.2,
+    },
 
-  // Scroll
-  scroll: { flex: 1 },
-  section: { paddingHorizontal: 16, paddingTop: 16 },
-  secTitle: { fontSize: 10, fontWeight: '700', color: '#9CA3AF', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 },
+    // Scroll
+    scroll: { flex: 1 },
 
-  // Trip card
-  tripCard: {
-    margin: 16, backgroundColor: '#fff', borderRadius: 18,
-    padding: 16, borderWidth: 1.5, borderColor: '#E5E7EB',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
-  },
-  tripCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  tripCardTitle: { fontSize: 14, fontWeight: '800', color: '#111827' },
-  typeBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  badgeShared: { backgroundColor: '#EFF6FF' },
-  badgePrivate: { backgroundColor: NAVY },
-  typeBadgeText: { fontSize: 11, fontWeight: '800' },
+    // Trip summary card
+    tripCard: {
+      marginHorizontal: 16, marginTop: 16,
+      backgroundColor: t.bgLayer,
+      borderRadius: 18, padding: 16,
+      borderWidth: 1, borderColor: t.glassBorder,
+    },
+    tripCardHeader: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    tripCardTitle: { fontSize: 13, fontWeight: '900', color: t.textPrimary, letterSpacing: -0.2 },
+    typeBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+    badgeShared: { backgroundColor: t.brandYellow },
+    badgeSharedText: { color: t.textOnYellow, fontWeight: '900' },
+    badgePrivate: { backgroundColor: t.brandNavy },
+    badgePrivateText: { color: t.textOnNavy, fontWeight: '900' },
+    typeBadgeText: { fontSize: 10, letterSpacing: 0.5 },
 
-  routeSection: { marginBottom: 14 },
-  routeRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  routeDot: { width: 10, height: 10, borderRadius: 5, marginTop: 4, flexShrink: 0 },
-  routeInfo: { flex: 1 },
-  routeLabel: { fontSize: 9, color: '#9CA3AF', fontWeight: '700', letterSpacing: 0.5 },
-  routeCity: { fontSize: 16, fontWeight: '900', color: '#111827', marginTop: 1 },
-  routeDate: { fontSize: 11, color: '#6B7280', marginTop: 2 },
-  routeLine: { width: 2, height: 20, backgroundColor: '#BFDBFE', marginLeft: 4, marginVertical: 4 },
-  timeBadge: {
-    backgroundColor: NAVY, borderRadius: 20,
-    paddingHorizontal: 12, paddingVertical: 5,
-  },
-  timeBadgeText: { fontSize: 13, fontWeight: '900', color: '#fff' },
+    // Route
+    routeSection: { gap: 4 },
+    routeRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    routeDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
+    routeDotDest: {
+      backgroundColor: 'transparent',
+      borderWidth: 2, borderColor: t.textTertiary,
+    },
+    routeInfo: { flex: 1 },
+    routeLabel: { fontSize: 9, color: t.textTertiary, fontWeight: '700', letterSpacing: 0.5 },
+    routeCity: { fontSize: 14, fontWeight: '800', color: t.textPrimary, marginTop: 1 },
+    routeDate: { fontSize: 11, color: t.textTertiary, marginTop: 2, textTransform: 'capitalize' },
+    routeLine: {
+      width: 2, height: 18, backgroundColor: t.border, marginLeft: 4,
+    },
+    timeBadge: {
+      backgroundColor: `${t.brandNavy}14`,
+      borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4,
+    },
+    timeBadgeText: { fontSize: 12, fontWeight: '900', color: t.brandNavy },
 
-  detailsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  detailItem: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#F9FAFB', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
-  detailText: { fontSize: 12, fontWeight: '600', color: '#374151' },
+    // Details meta
+    detailsRow: {
+      flexDirection: 'row', flexWrap: 'wrap', gap: 14,
+      marginTop: 16, paddingTop: 14,
+      borderTopWidth: 1, borderTopColor: t.border,
+    },
+    detailItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    detailText: { fontSize: 12, color: t.textSecondary, fontWeight: '600' },
 
-  // Seat selection
-  seatRow: { flexDirection: 'row', gap: 10 },
-  seatOpt: {
-    flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 14,
-    alignItems: 'center', gap: 6, borderWidth: 2, borderColor: '#E5E7EB',
-    position: 'relative',
-  },
-  seatOptActive: { borderColor: NAVY, backgroundColor: '#EFF6FF' },
-  seatCheck: {
-    position: 'absolute', top: 8, right: 8,
-    width: 20, height: 20, borderRadius: 10,
-    backgroundColor: NAVY, alignItems: 'center', justifyContent: 'center',
-  },
-  seatIcon: { fontSize: 26 },
-  seatName: { fontSize: 13, fontWeight: '900', color: '#374151' },
-  seatPrice: { fontSize: 11, color: '#9CA3AF', fontWeight: '600' },
+    // Section common
+    section: { paddingHorizontal: 16, paddingTop: 22 },
+    secTitle: {
+      fontSize: 11, fontWeight: '800', color: t.textTertiary,
+      letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10,
+    },
 
-  // Payment methods
-  payCard: {
-    backgroundColor: '#fff', borderRadius: 16, padding: 14, marginBottom: 10,
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    borderWidth: 2, borderColor: '#E5E7EB',
-  },
-  payIcon: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  payInfo: { flex: 1 },
-  payLabel: { fontSize: 14, fontWeight: '800', color: '#111827' },
-  paySub: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
-  payRadio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#D1D5DB', alignItems: 'center', justifyContent: 'center' },
-  payDot: { width: 10, height: 10, borderRadius: 5 },
-  cashNote: {
-    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    backgroundColor: '#FFFBEB', borderRadius: 12, padding: 12,
-    borderWidth: 1, borderColor: '#FDE68A',
-  },
-  cashNoteText: { flex: 1, fontSize: 11, color: '#92400E', lineHeight: 16 },
+    // Seat row
+    seatRow: { flexDirection: 'row', gap: 10 },
+    seatOpt: {
+      flex: 1,
+      backgroundColor: t.bgLayer, borderRadius: 14, padding: 14,
+      alignItems: 'center', gap: 6,
+      borderWidth: 2, borderColor: t.border,
+      position: 'relative',
+    },
+    seatOptActive: {
+      borderColor: t.brandNavy,
+      backgroundColor: `${t.brandNavy}08`,
+    },
+    seatCheck: {
+      position: 'absolute', top: 8, right: 8,
+      width: 18, height: 18, borderRadius: 9,
+      backgroundColor: t.brandNavy,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    seatName: { fontSize: 13, fontWeight: '800', color: t.textPrimary },
+    seatNameActive: { color: t.brandNavy },
+    seatPrice: { fontSize: 11, color: t.textTertiary, fontWeight: '600' },
+    seatPriceActive: { color: t.brandNavy, fontWeight: '800' },
 
-  // Price box
-  priceBox: {
-    backgroundColor: '#fff', borderRadius: 16, padding: 16,
-    borderWidth: 1.5, borderColor: '#E5E7EB',
-  },
-  priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  priceLbl: { fontSize: 13, color: '#6B7280' },
-  priceVal: { fontSize: 13, fontWeight: '700', color: '#111827' },
-  priceTotalRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingTop: 12, marginTop: 4, borderTopWidth: 1, borderTopColor: '#F3F4F6',
-  },
-  priceTotalLbl: { fontSize: 14, fontWeight: '800', color: '#111827' },
-  priceTotalVal: { fontSize: 24, fontWeight: '900', color: NAVY },
+    // Payment card
+    payCard: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      backgroundColor: t.bgLayer,
+      borderWidth: 1.5, borderColor: t.border,
+      borderRadius: 14, padding: 14, marginBottom: 10,
+    },
+    payCardActive: {
+      borderColor: t.brandNavy,
+      backgroundColor: `${t.brandNavy}08`,
+    },
+    payCardDim: { opacity: 0.6 },
+    payIcon: {
+      width: 44, height: 44, borderRadius: 12,
+      backgroundColor: t.glass,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    payIconActive: { backgroundColor: `${t.brandNavy}14` },
+    payInfo: { flex: 1 },
+    payTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    payLabel: { fontSize: 14, fontWeight: '800', color: t.textPrimary },
+    payLabelDim: { color: t.textSecondary },
+    paySub: { fontSize: 11, color: t.textTertiary, marginTop: 2 },
+    paySubDim: {},
+    soonBadge: {
+      backgroundColor: t.glass,
+      borderWidth: 1, borderColor: t.glassBorder,
+      borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2,
+    },
+    soonBadgeText: {
+      fontSize: 9, fontWeight: '800',
+      color: t.textTertiary, letterSpacing: 0.3,
+    },
+    payRadio: {
+      width: 22, height: 22, borderRadius: 11,
+      borderWidth: 2, borderColor: t.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    payRadioActive: { borderColor: t.brandNavy },
+    payDot: {
+      width: 10, height: 10, borderRadius: 5,
+      backgroundColor: t.brandNavy,
+    },
+    cashNote: {
+      flexDirection: 'row', alignItems: 'flex-start', gap: 6,
+      backgroundColor: `${t.warning}10`,
+      borderRadius: 10, padding: 10, marginTop: 4,
+    },
+    cashNoteText: {
+      flex: 1, fontSize: 11,
+      color: t.textSecondary, lineHeight: 16,
+    },
 
-  // Return promo
-  returnPromo: {
-    marginHorizontal: 16, marginTop: 14,
-    backgroundColor: '#F0FDF4', borderRadius: 14, borderWidth: 1.5, borderColor: '#BBF7D0',
-    flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14,
-  },
-  returnTitle: { fontSize: 13, fontWeight: '900', color: '#065F46' },
-  returnSub: { fontSize: 10, color: '#059669', marginTop: 2 },
-  pointsBadge: { backgroundColor: '#059669', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
-  pointsText: { fontSize: 9, fontWeight: '900', color: '#fff' },
+    // Price box
+    priceBox: {
+      backgroundColor: t.bgLayer, borderRadius: 14, padding: 16,
+      borderWidth: 1, borderColor: t.border,
+    },
+    priceRow: {
+      flexDirection: 'row', justifyContent: 'space-between',
+      alignItems: 'center', marginBottom: 8,
+    },
+    priceLbl: { fontSize: 12, color: t.textSecondary },
+    priceVal: { fontSize: 13, fontWeight: '800', color: t.textPrimary },
+    priceTotalRow: {
+      paddingTop: 12, marginTop: 4,
+      borderTopWidth: 1, borderTopColor: t.border, marginBottom: 0,
+    },
+    priceTotalLbl: { fontSize: 14, fontWeight: '900', color: t.textPrimary },
+    priceTotalVal: { fontSize: 22, fontWeight: '900', color: t.brandNavy, letterSpacing: -0.5 },
+    priceNote: {
+      fontSize: 10, color: t.textTertiary,
+      marginTop: 10, fontStyle: 'italic', lineHeight: 14,
+    },
 
-  // Legal
-  legalNote: {
-    marginHorizontal: 16, marginTop: 12,
-    fontSize: 10, color: '#9CA3AF', textAlign: 'center', lineHeight: 15,
-  },
-
-  // Footer
-  footer: {
-    padding: 16, paddingBottom: 32, backgroundColor: '#fff',
-    borderTopWidth: 1, borderTopColor: '#F3F4F6',
-  },
-  confirmBtn: {
-    backgroundColor: NAVY, borderRadius: 16, padding: 16,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    shadowColor: NAVY, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30, shadowRadius: 12, elevation: 6,
-  },
-  confirmBtnText: { fontSize: 16, fontWeight: '900', color: '#fff' },
-  confirmBtnSub: { fontSize: 11, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
-
-  // WebView
-  wvContainer: { flex: 1, backgroundColor: '#fff' },
-  wvHeader: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingTop: 52, paddingBottom: 16, paddingHorizontal: 20,
-    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-  },
-  wvTitle: { flex: 1, fontSize: 16, fontWeight: '800', color: NAVY },
-  wvSecure: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0FDF4', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
-  wvSecureText: { fontSize: 11, fontWeight: '700', color: GREEN },
-});
+    // CTA sticky bottom
+    ctaBar: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      paddingHorizontal: 20, paddingTop: 12, paddingBottom: 28,
+      backgroundColor: t.bg,
+      borderTopWidth: 1, borderTopColor: t.border,
+    },
+    ctaTotal: { flex: 1 },
+    ctaTotalLabel: {
+      fontSize: 10, fontWeight: '700', color: t.textTertiary,
+      textTransform: 'uppercase', letterSpacing: 0.5,
+    },
+    ctaTotalValue: {
+      fontSize: 22, fontWeight: '900', color: t.textPrimary,
+      marginTop: 2, letterSpacing: -0.5,
+    },
+    ctaBtn: {
+      flexDirection: 'row', alignItems: 'center', gap: 8,
+      backgroundColor: t.brandYellow,
+      paddingHorizontal: 22, paddingVertical: 14,
+      borderRadius: 14,
+      shadowColor: t.brandYellowDark,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+    },
+    ctaBtnText: {
+      fontSize: 15, fontWeight: '900',
+      color: t.textOnYellow, letterSpacing: 0.3,
+    },
+  });
+}
