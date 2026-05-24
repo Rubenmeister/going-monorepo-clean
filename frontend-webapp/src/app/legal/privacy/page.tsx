@@ -163,7 +163,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-3">
               Para ejercer estos derechos, el usuario debe enviar una solicitud escrita a
-              <strong> rubenmeister@gmail.com</strong>. Going responderá en un plazo máximo de
+              <strong> privacidad@goingec.com</strong>. Going responderá en un plazo máximo de
               <strong> 15 días hábiles</strong>.
             </p>
           </section>
