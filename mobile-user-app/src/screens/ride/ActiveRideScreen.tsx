@@ -32,9 +32,13 @@ import { InCallOverlay } from '../../components/InCallOverlay';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
-const GOING_BLUE   = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
-const GOING_RED    = '#ff4c41';
+// Brand colors canónicos (Going). Mantenemos como constantes simples
+// para no romper el flujo crítico de socket.io / Agora / Mapbox de este
+// screen. Theme adaptive completo (light + dark + useTheme) queda como
+// TODO task — requiere refactor más profundo del componente (944 LOC).
+const GOING_BLUE   = '#0033A0';   // brand cobalt (matches mockup #3 Login)
+const GOING_YELLOW = '#FFCD00';   // brand yellow
+const GOING_RED    = '#FF4C41';   // brand coral (logo + destructivos)
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 type RideStatus = 'searching' | 'driver_assigned' | 'arriving' | 'arrived' | 'in_progress' | 'completed';
@@ -509,11 +513,12 @@ export function ActiveRideScreen() {
         )}
       </MapboxGL.MapView>
 
-      {/* ── Botón SOS flotante ── */}
+      {/* ── Botón SOS flotante (mockup #13 — escala completa post-tap) ── */}
       {status !== 'completed' && status !== 'searching' && (
         <TouchableOpacity
           style={styles.sosBtn}
-          onPress={() =>
+          onPress={() => {
+            hapticHeavy();
             navigation.navigate('Sos', {
               rideId,
               driverName:  driver ? `${driver.firstName} ${driver.lastName}` : undefined,
@@ -523,10 +528,13 @@ export function ActiveRideScreen() {
               destinationAddress: destination.address,
               currentLat:  driverLocation?.[1] ?? origin.latitude,
               currentLng:  driverLocation?.[0] ?? origin.longitude,
-            })
-          }
-          activeOpacity={0.85}
+            });
+          }}
+          activeOpacity={0.75}
+          accessibilityLabel="Botón de emergencia SOS"
+          accessibilityHint="Abre opciones de emergencia: ECU 911, contactos, soporte Going"
         >
+          <Ionicons name="warning" size={18} color="#fff" />
           <Text style={styles.sosBtnText}>SOS</Text>
         </TouchableOpacity>
       )}
@@ -885,25 +893,34 @@ const styles = StyleSheet.create({
   tripPrice: { fontSize: 16, fontWeight: '900', color: GOING_BLUE, marginLeft: 'auto' },
 
   // Buttons
-  // Botón SOS flotante sobre el mapa
+  // Botón SOS flotante sobre el mapa — ícono warning + label "SOS"
+  // Usa GOING_RED (brand coral) para alinear con identidad. Sombra fuerte
+  // y elevation alta para que destaque sobre el mapa siempre.
   sosBtn: {
     position: 'absolute',
     top: 56,
     right: 16,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#ef4444',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    minWidth: 64,
+    borderRadius: 22,
+    backgroundColor: GOING_RED,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 8,
+    gap: 4,
+    shadowColor: GOING_RED,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.55,
+    shadowRadius: 10,
+    elevation: 10,
     zIndex: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
-  sosBtnText: { color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 0.5 },
+  sosBtnText: {
+    color: '#fff', fontWeight: '900', fontSize: 13, letterSpacing: 1,
+  },
 
   cancelBtn: {
     paddingVertical: 14, borderRadius: 12, alignItems: 'center',
