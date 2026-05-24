@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist/voice-call-service"
+  },
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

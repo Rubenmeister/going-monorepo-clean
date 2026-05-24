@@ -201,6 +201,7 @@ export class ProxyModule implements NestModule {
       social: this.configService.get<string>('SOCIAL_SERVICE_URL', 'http://localhost:3019'),
       corporate: this.configService.get<string>('CORPORATE_SERVICE_URL', 'http://localhost:3022'),
       emergency: this.configService.get<string>('EMERGENCY_SERVICE_URL', ''),
+      voice:     this.configService.get<string>('VOICE_CALL_SERVICE_URL', ''),
     };
 
     this.logger.log(`Proxy ready → auth: ${svc.auth}`);
@@ -297,6 +298,12 @@ export class ProxyModule implements NestModule {
     guard('sos', svc.emergency);
     guard('incidents', svc.emergency);
 
+    // /voice-calls → voice-call-service (Uyari). Solo audit endpoints
+    // (GET /voice-calls, GET /:id, /active, /stats) — expone transcripts PII.
+    // El path /twilio/* (webhooks) NO va por el gateway — Twilio llama
+    // directo al service URL configurado en la Twilio console.
+    guard('voice-calls', svc.voice);
+
     // --- Exact-collection roots ---
     // NestJS 11 + Fastify 5: el patrón `prefix/*path` NO matchea la raíz
     // exacta `/prefix` (porque `*path` requiere ≥1 segmento). Para rutas
@@ -327,8 +334,9 @@ export class ProxyModule implements NestModule {
     guardExact('social', svc.social, allMethods);
     // /sos es solo POST; /incidents soporta GET (lista) y PATCH no aplica al
     // root sino a /incidents/:id (cubierto por el `guard('incidents', ...)`).
-    guardExact('sos',       svc.emergency, [RequestMethod.POST]);
-    guardExact('incidents', svc.emergency, [RequestMethod.GET]);
+    guardExact('sos',         svc.emergency, [RequestMethod.POST]);
+    guardExact('incidents',   svc.emergency, [RequestMethod.GET]);
+    guardExact('voice-calls', svc.voice,     [RequestMethod.GET]);
 
     // --- PUBLIC: /support/* → customer-support-service (WhatsApp webhook + web chat, no JWT) ---
     if (svc.support) {
