@@ -1,11 +1,16 @@
 /**
- * ServiceTier — calidad de servicio del viaje (decisión brand 2026-05-23).
+ * ServiceTier — calidad de servicio del viaje (decisión brand 2026-05-23,
+ * corregida 2026-05-24 audit #29).
  *
  * Convención brand:
  *   - 'confort'  → SUV estándar (default para B2C). Reemplaza el legacy 'standard'.
  *   - 'premium'  → SUV gama alta. +50% sobre precio base.
- *   - 'empresa'  → Facturación corporativa B2B. -30% sobre precio base.
- *                  Solo visible/usable si el user tiene companyId asociado.
+ *   - 'empresa'  → Tier visual B2B en mobile. NO afecta precio aquí — el
+ *                  recargo corporativo se aplica vía `clientSegment='corporate'`
+ *                  en pricing.service (+25%, no descuento). Es servicio premium,
+ *                  no oferta de descuento: vehículo top, conductor calificado,
+ *                  espera sin cobro, facturación diferida.
+ *                  Multiplier 1.0 — el +25% viene del clientSegment, no del tier.
  *
  * NO confundir con `vehicleType` (suv/suv_xl/van/van_xl/bus) que es el
  * tamaño físico del vehículo. Tier y vehicleType son ORTOGONALES — un SUV
@@ -60,12 +65,18 @@ export function normalizeServiceTier(raw?: string | null): ServiceTier {
 
 /**
  * Multiplicador de precio por tier — aplicado sobre el precio base del
- * vehículo. Empresa = descuento corporativo, Premium = upcharge.
+ * vehículo.
+ *
+ * IMPORTANTE: 'empresa' es 1.0 (no descuento). El recargo +25% corporativo
+ * NO viene de aquí — viene del `clientSegment='corporate'` derivado server-
+ * side desde el JWT en pricing.service.applyDynamicPricing(). Empresa es
+ * SERVICIO PREMIUM con factura diferida, no descuento (regla de memoria
+ * persistente, confirmada en audit #29).
  */
 export const TIER_MULTIPLIER: Record<ServiceTier, number> = {
   confort: 1.0,
   premium: 1.5,
-  empresa: 0.7,
+  empresa: 1.0,
 };
 
 /** Label human-readable del tier para UI (matches brand vocabulary). */

@@ -51,6 +51,9 @@ interface AuthUser {
   id: string;
   email: string;
   role: 'user' | 'driver' | 'admin';
+  roles?: string[];
+  /** Empresa corporativa del usuario (audit #29). Set si el JWT lleva companyId. */
+  companyId?: string;
 }
 
 /**
@@ -90,6 +93,14 @@ export class RideController {
     @CurrentUser() user: AuthUser,
     @Body() dto: RequestRideDto
   ): Promise<RideResponseDto> {
+    // Server-side enforcement (audit #29): isCorporate se DERIVA del JWT
+    // (user.companyId), no del body del cliente. Admin puede sobreescribir
+    // para testear/auditar; resto de roles ignoran dto.isCorporate.
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    const isCorporate = isAdmin
+      ? (dto.isCorporate ?? !!user.companyId)
+      : !!user.companyId;
+
     const ride = await this.requestRideUseCase.execute({
       userId: user.id,
       pickupLatitude: dto.pickupLatitude,
@@ -110,7 +121,7 @@ export class RideController {
         dropoffLongitude: dto.dropoffLongitude,
         vehicleType: dto.serviceType || 'ANY',
         maxRadius: 10,
-        isCorporate: dto.isCorporate,
+        isCorporate,
       })
       .then((result) => {
         if (result.isOk() && result.value.matches.length > 0) {

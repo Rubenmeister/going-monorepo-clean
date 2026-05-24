@@ -27,6 +27,9 @@ interface AuthUser {
   id: string;
   email: string;
   role: 'user' | 'driver' | 'admin';
+  roles?: string[];
+  /** Empresa corporativa del usuario (audit #29). Del JWT (server-trust). */
+  companyId?: string;
 }
 
 @Controller('bookings')
@@ -53,14 +56,54 @@ export class BookingController {
 
   /**
    * POST /api/bookings
-   * userId always comes from the JWT — never trusted from body
+   *
+   * Server-side enforcement (audit #29):
+   *  - `userId` siempre se toma del JWT (nunca del body)
+   *  - Si el JWT lleva `companyId` (usuario corporativo), forzamos
+   *    `companyId` + `clientSegment='corporate'` + `paymentMode='corporate_monthly'`
+   *    en el booking — el cliente NO puede evitar el +25% omitiendo el flag,
+   *    NI puede cobrarle a otra empresa inyectando un companyId ajeno.
+   *  - B2C (sin companyId en JWT): no permitimos que el cliente se auto-marque
+   *    corporate. Esos valores se anulan a defaults b2c.
+   *  - Admins son la excepción: respetamos los valores del body para que ops
+   *    pueda crear bookings de pruebas/correcciones manuales en cualquier
+   *    contexto.
+   *
+   * El path corporate-portal pasa por corporate-service, que YA setea estos
+   * campos correctamente; este enforcement protege llamadas directas al
+   * booking-service desde mobile/web sin la mediación del portal.
    */
   @Post()
   async createBooking(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreateBookingDto,
   ): Promise<any> {
-    return this.createBookingUseCase.execute({ ...dto, userId: user.id });
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    let companyId = dto.companyId;
+    let clientSegment = dto.clientSegment;
+    let paymentMode = dto.paymentMode;
+
+    if (!isAdmin) {
+      if (user.companyId) {
+        // Usuario corporativo — forzar enforcement (ignorar lo que mande el body).
+        companyId = user.companyId;
+        clientSegment = 'corporate';
+        paymentMode = paymentMode === 'immediate' ? 'immediate' : 'corporate_monthly';
+      } else {
+        // Usuario B2C — no permitimos que se auto-marquen corporate.
+        companyId = undefined;
+        clientSegment = 'b2c';
+        paymentMode = 'immediate';
+      }
+    }
+
+    return this.createBookingUseCase.execute({
+      ...dto,
+      userId: user.id,
+      companyId,
+      clientSegment,
+      paymentMode,
+    });
   }
 
   /**
