@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { DispatcherService } from '../decision/dispatcher.service';
 import { MyCortexPollerService } from '../decision/mycortex-poller.service';
 import { RulesEngineService } from '../decision/rules-engine.service';
+import { AgentOverrideService } from '../decision/agent-override.service';
 import { DecisionStatus } from '../infrastructure/schemas/decision.schema';
 import { RULES, ActionRule } from '../decision/rules-engine.service';
 import { safetyMeta } from '../decision/safety-levels';
@@ -28,6 +29,7 @@ export class OrchestratorController {
     private readonly poller:     MyCortexPollerService,
     private readonly rules:      RulesEngineService,
     private readonly config:     ConfigService,
+    private readonly overrides:  AgentOverrideService,
   ) {}
 
   @Get('decisions')
@@ -150,5 +152,109 @@ export class OrchestratorController {
       rejectionReason: body.reason,
     });
     return { ok: true, status: 'rejected' };
+  }
+
+  // ── Agent overrides (kill-switch granular, task #31) ────────────────
+  //
+  // GET  /orchestrator/agents/overrides        — todos los overrides (auditoría)
+  // GET  /orchestrator/agents/overrides/paused — solo pausados (UI hot-list)
+  // POST /orchestrator/agents/:id/pause        — pausar { pausedBy, reason }
+  // POST /orchestrator/agents/:id/unpause      — despausar { unpausedBy }
+
+  /**
+   * Devuelve el estado de TODOS los agentes conocidos (derivados de RULES)
+   * con su flag paused + auditoría. Si un agente nunca fue tocado, devuelve
+   * `paused: false` por default. La UI usa este endpoint para el toggle.
+   */
+  @Get('agents/overrides')
+  async listOverrides() {
+    const overrides = await this.overrides.listAll();
+    const overrideByAgent = new Map(overrides.map((o) => [o.agentId, o]));
+
+    // Agentes únicos derivados de RULES (los que el orchestrator puede invocar).
+    const knownAgents = new Set<string>();
+    for (const rule of Object.values(RULES)) {
+      if (rule !== 'human_only' && typeof rule === 'object') {
+        knownAgents.add(rule.agent);
+      }
+    }
+
+    // Merge: lista todos los conocidos, con override si tienen uno.
+    const merged = Array.from(knownAgents).sort().map((agentId) => {
+      const ov = overrideByAgent.get(agentId);
+      return {
+        agentId,
+        paused:      ov?.paused ?? false,
+        pausedAt:    ov?.pausedAt,
+        pausedBy:    ov?.pausedBy,
+        pauseReason: ov?.pauseReason,
+        unpausedAt:  ov?.unpausedAt,
+        unpausedBy:  ov?.unpausedBy,
+      };
+    });
+
+    return { total: merged.length, agents: merged };
+  }
+
+  /** Solo los pausados — hotlist para que la UI muestre el banner de alerta. */
+  @Get('agents/overrides/paused')
+  async listPaused() {
+    const list = await this.overrides.listPaused();
+    return { count: list.length, agents: list };
+  }
+
+  /**
+   * Pausa un agente. Idempotente — re-pausar uno ya pausado solo refresca
+   * pausedBy/pausedAt/reason. El dispatcher empieza a rechazar despachos
+   * a este agente en ≤30s (TTL del cache).
+   */
+  @Post('agents/:id/pause')
+  @HttpCode(200)
+  async pauseAgent(
+    @Param('id') agentId: string,
+    @Body() body: { pausedBy?: string; reason?: string },
+  ) {
+    if (!agentId || agentId.length > 80) {
+      throw new BadRequestException('agentId requerido (max 80 chars)');
+    }
+    const result = await this.overrides.pause(
+      agentId,
+      body.pausedBy || 'unknown',
+      body.reason || '',
+    );
+    return {
+      ok: true,
+      agentId,
+      paused: result.paused,
+      pausedAt: result.pausedAt,
+      pausedBy: result.pausedBy,
+    };
+  }
+
+  /**
+   * Despausa un agente. Si nunca estuvo pausado devolvemos 200 igual con
+   * `wasPaused: false` — no rompemos el flujo del cliente (idempotente).
+   */
+  @Post('agents/:id/unpause')
+  @HttpCode(200)
+  async unpauseAgent(
+    @Param('id') agentId: string,
+    @Body() body: { unpausedBy?: string },
+  ) {
+    if (!agentId || agentId.length > 80) {
+      throw new BadRequestException('agentId requerido (max 80 chars)');
+    }
+    const result = await this.overrides.unpause(
+      agentId,
+      body.unpausedBy || 'unknown',
+    );
+    return {
+      ok: true,
+      agentId,
+      wasPaused: result !== null,
+      paused: result?.paused ?? false,
+      unpausedAt: result?.unpausedAt,
+      unpausedBy: result?.unpausedBy,
+    };
   }
 }

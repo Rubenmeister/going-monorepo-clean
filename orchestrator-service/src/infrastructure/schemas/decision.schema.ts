@@ -71,7 +71,8 @@ export class DecisionEntity {
    * Si la decision quedó en status='dormant', acá va el motivo:
    *   - 'execute_disabled'      → ORCHESTRATOR_EXECUTE_ENABLED=false (master switch)
    *   - 'above_auto_level:N'    → safetyLevel > ORCHESTRATOR_MAX_AUTO_LEVEL (rollout gradual)
-   * Útil para que admin-dashboard distinga "dormant por config" vs por nivel.
+   *   - 'agent_paused'          → ops pausó este agente desde la UI (task #31)
+   * Útil para que admin-dashboard distinga los modos de dormant.
    */
   @Prop({ type: String })
   dormantReason?: string;

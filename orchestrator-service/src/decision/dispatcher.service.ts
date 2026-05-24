@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { RulesEngineService, ActionRule } from './rules-engine.service';
 import { safetyMeta } from './safety-levels';
+import { AgentOverrideService } from './agent-override.service';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { AgentBridgeClient } from '../infrastructure/agent-bridge.client';
 import { TelegramApprovalService } from '../infrastructure/telegram-approval.service';
@@ -31,12 +32,13 @@ export class DispatcherService {
   private readonly logger = new Logger(DispatcherService.name);
 
   constructor(
-    private readonly config:   ConfigService,
-    private readonly rules:    RulesEngineService,
-    private readonly repo:     DecisionRepository,
-    private readonly bridge:   AgentBridgeClient,
-    private readonly telegram: TelegramApprovalService,
-    private readonly mycortex: MycortexClient,
+    private readonly config:    ConfigService,
+    private readonly rules:     RulesEngineService,
+    private readonly repo:      DecisionRepository,
+    private readonly bridge:    AgentBridgeClient,
+    private readonly telegram:  TelegramApprovalService,
+    private readonly mycortex:  MycortexClient,
+    private readonly overrides: AgentOverrideService,
   ) {}
 
   private get executeEnabled(): boolean {
@@ -143,6 +145,21 @@ export class DispatcherService {
       const created = await this.repo.create(baseDecision);
       this.logger.log(
         `[DORMANT/level-gate] decision ${decisionId.slice(0, 8)} Cat ${action.safetyLevel} > MAX_AUTO=${this.maxAutoLevel} — ${intent.type} → ${action.agent}/${action.action}`,
+      );
+      return created.toObject();
+    }
+
+    // 5b. Override granular por agente (audit/UI admin task #31).
+    //     Si ops pausó este agente desde la UI, dormant inmediato — no
+    //     toca el bridge, no notifica Telegram. La razón se guarda para
+    //     que la UI lo distinga de los otros tipos de dormant.
+    const isPaused = await this.overrides.isPaused(action.agent);
+    if (isPaused) {
+      baseDecision.status        = 'dormant';
+      baseDecision.dormantReason = 'agent_paused';
+      const created = await this.repo.create(baseDecision);
+      this.logger.log(
+        `[DORMANT/agent-paused] decision ${decisionId.slice(0, 8)} → ${action.agent} pausado por ops — skip ${intent.type}/${action.action}`,
       );
       return created.toObject();
     }
