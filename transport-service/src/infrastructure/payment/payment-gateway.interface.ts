@@ -47,6 +47,16 @@ export interface InitiatePaymentInput {
     cvv:         string;
     holderName:  string;
   };
+  taxableAmount?: number;
+  customerDocId?: string;
+  customerFirstName?: string;
+  customerMiddleName?: string;
+  customerLastName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerIp?: string;
+  billingAddress?: string;
+  shippingAddress?: string;
 }
 
 export interface InitiatePaymentResult {
@@ -56,6 +66,7 @@ export interface InitiatePaymentResult {
   redirectUrl?:   string;
   token?:         string;
   checkoutJsUrl?: string;
+  checkoutHtml?:  string;   // HTML para cargar widget en WebView
   // QR (DeUna)
   qrCodeUrl?:     string;   // URL de la imagen QR
   qrPaymentLink?: string;   // Link de pago para app móvil
@@ -110,6 +121,7 @@ export interface PaymentStatusResult {
   paidAt?:       Date;
   amount?:       number;
   error?:        string;
+  raw?:          any;       // Respuesta cruda del proveedor para debug/conciliación
 }
 
 // ─── Webhook ──────────────────────────────────────────────────────────────────

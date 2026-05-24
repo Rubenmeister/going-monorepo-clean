@@ -12,6 +12,7 @@ import {
   NotFoundException,
   Query,
   Res,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
@@ -38,6 +39,7 @@ interface AuthUser { id: string; email: string; role: string; }
  */
 @Controller('payments')
 export class PaymentController {
+  private readonly logger = new Logger(PaymentController.name);
   private readonly appBaseUrl: string;
 
   constructor(
