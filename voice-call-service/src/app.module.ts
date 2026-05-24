@@ -17,6 +17,8 @@ import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
 import { TelegramService } from './infrastructure/telegram.service';
 // Twilio media stream WS gateway
 import { TwilioMediaStreamGateway } from './twilio/twilio-media-stream.gateway';
+// Twilio REST client (Calls.update para PSTN transfer en handoff)
+import { TwilioRestClient } from './twilio/twilio-rest.client';
 // Infra
 import { VoiceCallRepository } from './infrastructure/persistence/voice-call.repository';
 import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
@@ -59,6 +61,9 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // Handoff a operador humano (Telegram alert + opcional PSTN transfer).
     TelegramService,
     HandoffNotifierService,
+    // Twilio REST client — usado por el bridge para hacer Calls.update y
+    // redirigir la PSTN al TwiML handoff cuando el AI invoca handoff tool.
+    TwilioRestClient,
     // Gateway WS — se auto-hookea al httpServer en OnApplicationBootstrap.
     // No expone HTTP routes (no es un Controller), por eso va solo en
     // providers. Inyecta HttpAdapterHost del core de NestJS.
