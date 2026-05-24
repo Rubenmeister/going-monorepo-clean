@@ -44,15 +44,9 @@ import { useAuthStore } from '@store/useAuthStore';
 import { authAPI } from '@services/api';
 import { useTheme, type ThemeTokens, type ThemeMode } from '../../theme';
 import { hapticLight } from '../../utils/haptics';
+import { tierFromPoints } from '../../catalog';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
-
-// ── Tier rules (matches mockup #17 Puntos) ────────────────────────────────────
-function tierFromPoints(points: number): { name: string; nextAt?: number } {
-  if (points >= 1000) return { name: 'Aventurero' };
-  if (points >= 100)  return { name: 'Viajero', nextAt: 1000 };
-  return { name: 'Explorador', nextAt: 100 };
-}
 
 // ── Versión de la app desde expo-constants ────────────────────────────────────
 const APP_VERSION  = Constants.expoConfig?.version || '';
@@ -98,7 +92,8 @@ export function ProfileScreen() {
   const rideCount = (user as any)?.rideCount ?? 0;
   const points    = (user as any)?.points ?? 0;
   const rating    = (user as any)?.rating ?? 5.0;
-  const tier      = tierFromPoints(points);
+  // tier viene del catalog canónico (consistente con PuntosScreen #17)
+  const { current: tierCurrent, next: tierNext } = tierFromPoints(points);
   const hasCompany = !!(user as any)?.companyId;
 
   const initials = useMemo(() => {
@@ -224,8 +219,8 @@ export function ProfileScreen() {
         </Text>
         <Text style={styles.email}>{user?.email ?? ''}</Text>
         <View style={styles.levelBadge}>
-          <Ionicons name="star" size={11} color={tokens.brandYellow} />
-          <Text style={styles.levelText}>{tier.name}</Text>
+          <Text style={styles.levelIcon}>{tierCurrent.icon}</Text>
+          <Text style={styles.levelText}>{tierCurrent.name}</Text>
         </View>
       </View>
 
@@ -258,9 +253,9 @@ export function ProfileScreen() {
           <Text style={styles.rewardsPoints}>
             {points} <Text style={styles.rewardsPtText}>pts</Text>
           </Text>
-          {tier.nextAt && (
+          {tierNext && (
             <Text style={styles.rewardsTier}>
-              {tier.nextAt - points} pts para subir a {tier.nextAt >= 1000 ? 'Aventurero' : 'Viajero'}
+              {(tierNext.min - points).toLocaleString('es-EC')} pts para subir a {tierNext.name}
             </Text>
           )}
         </View>
@@ -416,11 +411,12 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       marginBottom: 10,
     },
     levelBadge: {
-      flexDirection: 'row', alignItems: 'center', gap: 5,
+      flexDirection: 'row', alignItems: 'center', gap: 6,
       backgroundColor: 'rgba(255,255,255,0.14)',
       borderRadius: 20,
       paddingHorizontal: 14, paddingVertical: 5,
     },
+    levelIcon: { fontSize: 14 },
     levelText: {
       fontSize: 12, fontWeight: '800',
       color: t.brandYellow, letterSpacing: 0.3,
