@@ -3172,6 +3172,9 @@ importers:
       '@going-platform/cerebro-contracts':
         specifier: workspace:*
         version: link:../libs/cerebro-contracts
+      '@going-platform/pricing':
+        specifier: workspace:*
+        version: link:../libs/pricing
       '@google-cloud/pubsub':
         specifier: ^4.7.0
         version: 4.11.0(encoding@0.1.13)

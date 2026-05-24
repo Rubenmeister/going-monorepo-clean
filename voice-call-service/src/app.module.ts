@@ -9,6 +9,9 @@ import { HealthController } from './api/health.controller';
 // Voice flow
 import { VoiceCallService } from './voice/voice-call.service';
 import { CerebroPublisherService } from './voice/cerebro-publisher.service';
+import { RealtimeBridgeService } from './voice/realtime-bridge.service';
+// OpenAI Realtime
+import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
 // Twilio media stream WS gateway
 import { TwilioMediaStreamGateway } from './twilio/twilio-media-stream.gateway';
 // Infra
@@ -45,6 +48,11 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     VoiceCallService,
     CerebroPublisherService,
     VoiceCallRepository,
+    // OpenAI Realtime adapter + bridge.
+    // Adapter es factory (createSession). Bridge mantiene una session por
+    // call indexada por streamSid.
+    OpenAIRealtimeAdapter,
+    RealtimeBridgeService,
     // Gateway WS — se auto-hookea al httpServer en OnApplicationBootstrap.
     // No expone HTTP routes (no es un Controller), por eso va solo en
     // providers. Inyecta HttpAdapterHost del core de NestJS.
