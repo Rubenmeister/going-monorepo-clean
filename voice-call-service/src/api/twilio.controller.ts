@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { VoiceCallService } from '../voice/voice-call.service';
 import { buildAnswerTwiml, buildBlockedTwiml } from '../twilio/twiml-builder';
+import { validateTwilioSignature } from '../twilio/twilio-signature';
 
 /**
  * TwilioController — recibe webhooks de Twilio Voice.
@@ -34,6 +35,7 @@ export class TwilioController {
   private readonly logger = new Logger(TwilioController.name);
   private readonly twilioAuthToken: string;
   private readonly publicWsUrl: string;
+  private readonly publicWebhookUrl: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -44,6 +46,11 @@ export class TwilioController {
     // del WS que Twilio conecta. En dev puede sobreescribirse con ngrok.
     this.publicWsUrl = this.config.get<string>('TWILIO_MEDIA_STREAM_WSS_URL') ??
       'wss://api.goingec.com/voice-calls/twilio/media-stream';
+    // URL EXACTA que el webhook está expuesto en la consola Twilio. Twilio
+    // firma el HMAC sobre ESTA url (incluyendo el host y path), no la
+    // interna del container. Por defecto asumimos la del Cloud Run direct.
+    this.publicWebhookUrl = this.config.get<string>('TWILIO_WEBHOOK_PUBLIC_URL') ??
+      'https://voice-call-service-780842550857.us-central1.run.app/twilio/voice-webhook';
 
     if (!this.twilioAuthToken) {
       this.logger.warn(
@@ -64,11 +71,28 @@ export class TwilioController {
     @Req() req: Request,
   ): Promise<string> {
     // ── 1. Validación de firma anti-spoof ──
-    // TODO: implementar validación X-Twilio-Signature con twilio.validateRequest()
-    // del SDK oficial. Hoy stub — confiar en network ACL hasta que se active.
+    // Twilio firma cada webhook con HMAC-SHA1 sobre la URL + sortedParams.
+    // Sin esto, cualquiera podría disparar llamadas falsas y gastar el
+    // budget de OpenAI Realtime con webhooks fabricados. Crítico para prod.
     const signature = req.headers['x-twilio-signature'] as string | undefined;
-    if (this.twilioAuthToken && !signature) {
-      this.logger.warn(`[twilio] webhook sin X-Twilio-Signature — rechazando`);
+    if (this.twilioAuthToken) {
+      const valid = validateTwilioSignature({
+        url:       this.publicWebhookUrl,
+        params:    (body ?? {}) as Record<string, string>,
+        signature,
+        authToken: this.twilioAuthToken,
+      });
+      if (!valid) {
+        this.logger.warn(
+          `[twilio] firma inválida from ${req.socket?.remoteAddress} — sig=${signature?.slice(0, 12)}... — rechazando`,
+        );
+        return buildBlockedTwiml('Solicitud no autorizada.');
+      }
+    } else if (!signature) {
+      // Sin AUTH_TOKEN configurado, en dev al menos exigimos que vengan
+      // ALGUN signature header (rechaza scripts que prueban /twilio/voice-webhook
+      // a ciegas). En prod siempre va a haber AUTH_TOKEN.
+      this.logger.warn(`[twilio] webhook sin X-Twilio-Signature ni AUTH_TOKEN — rechazando`);
       return buildBlockedTwiml('No autorizado.');
     }
 
@@ -98,13 +122,13 @@ export class TwilioController {
     const call = await this.voice.onCallInitiated({ callId, from, to });
 
     // ── 5. Responder TwiML para conectar al media stream WS ──
-    // El WS gateway (TODO en /twilio/twilio-media-stream.gateway.ts) hace el
-    // bridge bidi con OpenAI Realtime. Twilio reenvía audio frames y
-    // recibe los frames de respuesta del AI.
+    // El WS gateway hace el bridge bidi con OpenAI Realtime. Twilio reenvía
+    // audio frames y recibe los frames de respuesta del AI.
     return buildAnswerTwiml({
       callId,
       mediaStreamUrl: this.publicWsUrl,
       runId:          call.runId,
+      from,
     });
   }
 

@@ -11,6 +11,7 @@ import {
   executeSendFollowupSms,
 } from '../realtime/voice-tools-phone';
 import { VoiceCallService } from './voice-call.service';
+import { HandoffNotifierService } from './handoff-notifier.service';
 
 /**
  * RealtimeBridgeService — orquesta el ciclo de vida de una sesión Realtime
@@ -68,6 +69,7 @@ export class RealtimeBridgeService {
     private readonly config: ConfigService,
     private readonly adapter: OpenAIRealtimeAdapter,
     private readonly voice: VoiceCallService,
+    private readonly handoff: HandoffNotifierService,
   ) {
     this.defaultVoice    = this.config.get<string>('VOICE_REALTIME_DEFAULT_VOICE') || 'shimmer';
     this.defaultLanguage = this.config.get<string>('VOICE_REALTIME_DEFAULT_LANG')  || 'es';
@@ -86,6 +88,8 @@ export class RealtimeBridgeService {
     streamSid:        string;
     callId:           string;
     runId?:           string;
+    /** E.164 del caller — necesario para notificar al operador en handoff. */
+    from?:            string;
     sendAudioBack:    (mulawPayloadB64: string) => boolean;
     clearAudioBack?:  () => void;
   }): Promise<BridgeContext | null> {
@@ -151,10 +155,40 @@ export class RealtimeBridgeService {
       let result: unknown;
       try {
         switch (name) {
-          case 'get_quote_phone':       result = executeGetQuotePhone(args); break;
-          case 'request_handoff_phone': result = executeHandoffPhone(args);  break;
-          case 'send_followup_sms':     result = executeSendFollowupSms(args); break;
-          default:                      result = { ok: false, error: 'unknown_tool', name };
+          case 'get_quote_phone':
+            result = executeGetQuotePhone(args);
+            break;
+
+          case 'request_handoff_phone': {
+            // Marcamos el ctx para que el outcome al cerrar la call sea
+            // 'escalated' + notificamos al operador via Telegram. La
+            // transferencia PSTN real (TwiML <Dial>) se hace al cerrar la
+            // session — el AI dice su "te paso con alguien" y cuando termina
+            // de hablar, cerramos la session y devolvemos el TwiML al stream.
+            const handoffResult = executeHandoffPhone(args);
+            this.markHandoffRequested(input.streamSid, handoffResult.reason);
+            // Fire-and-forget: notif a Telegram operadores. NO bloqueamos
+            // el tool result que el LLM está esperando para responder.
+            this.handoff.notify({
+              callId:            input.callId,
+              from:              input.from ?? 'unknown',
+              priority:          handoffResult.priority,
+              reason:            handoffResult.reason,
+              callbackRequested: handoffResult.callback_requested,
+              transcript:        transcript.slice(-5).map((t) => ({ role: t.role, text: t.text })),
+            }).catch((err) =>
+              this.logger.warn(`[bridge] handoff.notify fallo: ${(err as Error).message}`),
+            );
+            result = handoffResult;
+            break;
+          }
+
+          case 'send_followup_sms':
+            result = executeSendFollowupSms(args);
+            break;
+
+          default:
+            result = { ok: false, error: 'unknown_tool', name };
         }
       } catch (err) {
         this.logger.error(`[bridge] tool ${name} threw: ${(err as Error).message}`);

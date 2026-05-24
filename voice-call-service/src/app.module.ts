@@ -10,8 +10,11 @@ import { HealthController } from './api/health.controller';
 import { VoiceCallService } from './voice/voice-call.service';
 import { CerebroPublisherService } from './voice/cerebro-publisher.service';
 import { RealtimeBridgeService } from './voice/realtime-bridge.service';
+import { HandoffNotifierService } from './voice/handoff-notifier.service';
 // OpenAI Realtime
 import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
+// Telegram (mínimo para handoff alerts)
+import { TelegramService } from './infrastructure/telegram.service';
 // Twilio media stream WS gateway
 import { TwilioMediaStreamGateway } from './twilio/twilio-media-stream.gateway';
 // Infra
@@ -53,6 +56,9 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // call indexada por streamSid.
     OpenAIRealtimeAdapter,
     RealtimeBridgeService,
+    // Handoff a operador humano (Telegram alert + opcional PSTN transfer).
+    TelegramService,
+    HandoffNotifierService,
     // Gateway WS — se auto-hookea al httpServer en OnApplicationBootstrap.
     // No expone HTTP routes (no es un Controller), por eso va solo en
     // providers. Inyecta HttpAdapterHost del core de NestJS.
