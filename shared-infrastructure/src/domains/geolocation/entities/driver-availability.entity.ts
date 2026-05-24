@@ -26,7 +26,10 @@ export class DriverAvailability {
     this.status = props.status;
     this.currentLocation = props.currentLocation;
     this.availableSeats = props.availableSeats;
-    this.serviceTypes = props.serviceTypes || ['standard'];
+    // Default tier brand 'confort' (rename 2026-05-23 desde 'standard').
+    // Drivers nuevos sin tier explícito quedan en confort hasta que ops
+    // los promueva a premium (mejor vehículo / mejor rating).
+    this.serviceTypes = props.serviceTypes || ['confort'];
     this.lastUpdate = props.lastUpdate || new Date();
   }
 

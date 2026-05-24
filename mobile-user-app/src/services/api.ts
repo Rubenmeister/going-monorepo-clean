@@ -87,9 +87,10 @@ export const transportAPI = {
       dropoffLatitude:  data.destination.latitude,
       dropoffLongitude: data.destination.longitude,
       // serviceType formato `<vehicleType>_<category>` igual que web
+      // Default 'confort' (rename brand 2026-05-23 desde 'standard').
       serviceType: data.vehicleType && data.category
         ? `${data.vehicleType}_${data.category}`
-        : (data.vehicleType ?? 'standard'),
+        : (data.vehicleType ?? 'confort'),
     }),
 
   /** Cancelar viaje activo */

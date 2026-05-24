@@ -29,9 +29,23 @@ export class RequestRideDto {
   @Max(180)
   dropoffLongitude: number;
 
+  /**
+   * Tier brand del viaje (calidad de servicio). Valores aceptados:
+   *   - 'confort' (default, reemplaza el legacy 'standard')
+   *   - 'premium' (gama alta, +50% multiplier)
+   *   - 'empresa' (B2B corporativo, -30% multiplier — visible si user.companyId)
+   *
+   * Backward-compat: builds pre-v66 envían 'standard' → backend lo
+   * normaliza a 'confort' vía normalizeServiceTier() de libs/pricing.
+   *
+   * NOTA: el RequestRideUseCase ACTUALMENTE trata este campo como vehicle
+   * type (suv default), no como tier. Es deuda técnica conocida — separar
+   * en `tier` (calidad) vs `vehicleType` (tamaño) está en task #28
+   * follow-up. Mientras tanto el campo acepta ambos contextos.
+   */
   @IsOptional()
   @IsString()
-  serviceType?: string; // standard, premium, economy
+  serviceType?: string;
 
   /** Empleado corporativo → despacho de alta prioridad (SLA) en el matching. */
   @IsOptional()

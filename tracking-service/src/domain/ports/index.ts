@@ -203,7 +203,8 @@ export class DriverAvailability {
     this.status = props.status;
     this.currentLocation = props.currentLocation;
     this.availableSeats = props.availableSeats;
-    this.serviceTypes = props.serviceTypes || ['standard'];
+    // Default tier brand 'confort' (rename 2026-05-23 desde 'standard').
+    this.serviceTypes = props.serviceTypes || ['confort'];
     this.vehicleClass = props.vehicleClass || 'suv';
     this.lastUpdate = props.lastUpdate || new Date();
   }

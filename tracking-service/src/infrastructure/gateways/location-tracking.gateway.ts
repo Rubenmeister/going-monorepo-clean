@@ -148,7 +148,7 @@ export class LocationTrackingGateway
       status: 'online',
       currentLocation: location,
       availableSeats: 4,
-      serviceTypes: ['standard'],
+      serviceTypes: ['confort'],   // rename brand 2026-05-23 desde 'standard'
       lastUpdate: new Date(),
     });
 
