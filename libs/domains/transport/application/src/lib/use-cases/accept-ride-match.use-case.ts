@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import { IRideMatchRepository } from '@going-monorepo-clean/domains-transport-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
@@ -24,7 +24,10 @@ export class AcceptRideMatchUseCase {
 
   constructor(
     @Inject(IRideMatchRepository)
-    private readonly rideMatchRepo: IRideMatchRepository
+    private readonly rideMatchRepo: IRideMatchRepository,
+    @Optional()
+    @Inject('IRideRepository')
+    private readonly rideRepo?: any
   ) {}
 
   async execute(
@@ -48,6 +51,37 @@ export class AcceptRideMatchUseCase {
         `Driver ${dto.driverId} attempted to accept match for different driver`
       );
       return err(new Error('Driver ID mismatch'));
+    }
+
+    // Step 2b: Overlap Wellness Gate check
+    // If the driver manually accepts a real-time (on-demand) ride, we verify that they do not have
+    // an upcoming scheduled ride/trip in the next 2 hours. If they do, we block the acceptance.
+    if (this.rideRepo) {
+      try {
+        const currentRide = await this.rideRepo.findById(match.rideId);
+        // Only enforce overlap gate if accepting a real-time ride (no scheduledAt set)
+        if (currentRide && !currentRide.scheduledAt) {
+          const activeRides = await this.rideRepo.findActiveByDriverId(dto.driverId);
+          const hasUpcomingScheduled = activeRides?.some((ride: any) => {
+            if (!ride.scheduledAt) return false;
+            const scheduledTime = new Date(ride.scheduledAt).getTime();
+            const now = Date.now();
+            const twoHoursMs = 2 * 60 * 60 * 1000;
+            return scheduledTime >= now && scheduledTime <= now + twoHoursMs;
+          });
+
+          if (hasUpcomingScheduled) {
+            this.logger.warn(
+              `Blocking accept for driver ${dto.driverId}: Driver has an upcoming scheduled ride within the 2-hour buffer window.`
+            );
+            return err(new Error('Cannot accept: Scheduled intercity carpool starts in less than 2 hours'));
+          }
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Failed to check scheduled ride overlap during acceptance for driver ${dto.driverId}: ${(e as Error).message}`
+        );
+      }
     }
 
     // Step 3: Accept the match (validates it's still pending)
