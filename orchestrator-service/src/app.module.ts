@@ -15,12 +15,15 @@ import { HealthController } from './api/health.controller';
 import { OrchestratorController } from './api/orchestrator.controller';
 import { DecisionSchema } from './infrastructure/schemas/decision.schema';
 import { DecisionRepository } from './infrastructure/persistence/decision.repository';
+import { AgentOverrideSchema } from './infrastructure/schemas/agent-override.schema';
+import { AgentOverrideRepository } from './infrastructure/persistence/agent-override.repository';
 import { AgentBridgeClient } from './infrastructure/agent-bridge.client';
 import { TelegramApprovalService } from './infrastructure/telegram-approval.service';
 import { MycortexClient } from './infrastructure/mycortex.client';
 import { RulesEngineService } from './decision/rules-engine.service';
 import { DispatcherService } from './decision/dispatcher.service';
 import { MyCortexPollerService } from './decision/mycortex-poller.service';
+import { AgentOverrideService } from './decision/agent-override.service';
 
 @Module({
   imports: [
@@ -41,6 +44,7 @@ import { MyCortexPollerService } from './decision/mycortex-poller.service';
     ),
     MongooseModule.forFeature([
       { name: 'Decision', schema: DecisionSchema },
+      { name: 'AgentOverride', schema: AgentOverrideSchema },
     ]),
   ],
   controllers: [
@@ -49,12 +53,14 @@ import { MyCortexPollerService } from './decision/mycortex-poller.service';
   ],
   providers: [
     DecisionRepository,
+    AgentOverrideRepository,
     AgentBridgeClient,
     TelegramApprovalService,
     MycortexClient,
     RulesEngineService,
     DispatcherService,
     MyCortexPollerService,
+    AgentOverrideService,
   ],
 })
 export class AppModule {}

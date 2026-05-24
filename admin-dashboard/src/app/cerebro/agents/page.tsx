@@ -6,28 +6,52 @@ import { AdminLayout, StatCard } from '../../components';
 
 // ─── Tipos ─────────────────────────────────────────────────────
 //
-// agent-bridge-service expone GET /agents:
-//   {
-//     total: number,
-//     agents: [
-//       { agentId, kind: 'cloud-run-job' | 'http-service', target: string }
-//     ]
-//   }
+// agent-bridge-service GET /agents:
+//   { total, agents: [{ agentId, kind, target }] }
+//
+// orchestrator-service GET /orchestrator/agents/overrides (task #31):
+//   { total, agents: [{ agentId, paused, pausedAt, pausedBy, pauseReason, ... }] }
+//
+// Mergeamos por agentId: bridge da kind+target (qué es), orchestrator da
+// estado pausado + auditoría. Source-of-truth para "está activo": override.
 
-interface AgentEntry {
+interface BridgeAgent {
   agentId: string;
   kind:    'cloud-run-job' | 'http-service';
   target:  string;
 }
 
-interface AgentsResponse {
+interface BridgeResponse {
   total:  number;
-  agents: AgentEntry[];
+  agents: BridgeAgent[];
+}
+
+interface OverrideAgent {
+  agentId:      string;
+  paused:       boolean;
+  pausedAt?:    string;
+  pausedBy?:    string;
+  pauseReason?: string;
+  unpausedAt?:  string;
+  unpausedBy?:  string;
+}
+
+interface OverridesResponse {
+  total:  number;
+  agents: OverrideAgent[];
+}
+
+interface MergedAgent extends BridgeAgent, Partial<Omit<OverrideAgent, 'agentId'>> {
+  /** True si está en RULES pero NO en bridge (huérfano en RULES) */
+  orphanInBridge?: boolean;
 }
 
 const BRIDGE_URL =
   process.env.NEXT_PUBLIC_AGENT_BRIDGE_URL ||
   'https://agent-bridge-service-780842550857.us-central1.run.app';
+const ORCHESTRATOR_URL =
+  process.env.NEXT_PUBLIC_ORCHESTRATOR_URL ||
+  'https://orchestrator-service-780842550857.us-central1.run.app';
 
 const KIND_STYLES = {
   'cloud-run-job': {
@@ -48,19 +72,38 @@ const KIND_STYLES = {
   },
 } as const;
 
+function timeAgo(iso?: string): string {
+  if (!iso) return '';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 60_000)          return 'hace <1min';
+  if (ms < 3_600_000)       return `hace ${Math.floor(ms / 60_000)}min`;
+  if (ms < 86_400_000)      return `hace ${Math.floor(ms / 3_600_000)}h`;
+  return `hace ${Math.floor(ms / 86_400_000)}d`;
+}
+
 export default function AgentsPage() {
-  const [data, setData]       = useState<AgentsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [bridgeData, setBridgeData]       = useState<BridgeResponse | null>(null);
+  const [overrideData, setOverrideData]   = useState<OverridesResponse | null>(null);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
+  const [actioning, setActioning]         = useState<string | null>(null);
+
+  // Modal pause
+  const [pauseTarget, setPauseTarget]     = useState<string | null>(null);
+  const [pauseReason, setPauseReason]     = useState('');
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${BRIDGE_URL}/agents`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`agent-bridge ${res.status}`);
-      const json = (await res.json()) as AgentsResponse;
-      setData(json);
+      const [bridgeRes, overrideRes] = await Promise.all([
+        fetch(`${BRIDGE_URL}/agents`,                          { cache: 'no-store' }),
+        fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/overrides`, { cache: 'no-store' }),
+      ]);
+      if (!bridgeRes.ok)   throw new Error(`agent-bridge ${bridgeRes.status}`);
+      if (!overrideRes.ok) throw new Error(`orchestrator ${overrideRes.status}`);
+      setBridgeData(await bridgeRes.json());
+      setOverrideData(await overrideRes.json());
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -72,29 +115,86 @@ export default function AgentsPage() {
     load();
   }, []);
 
+  /** Quién hace la acción — del JWT del admin (cambiar a contexto real cuando exista). */
+  const adminId = (typeof window !== 'undefined' && localStorage.getItem('userEmail')) || 'admin';
+
+  const confirmPause = async () => {
+    if (!pauseTarget) return;
+    setActioning(pauseTarget);
+    try {
+      const res = await fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/${pauseTarget}/pause`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pausedBy: adminId, reason: pauseReason }),
+      });
+      if (!res.ok) throw new Error(`pause ${res.status}`);
+      setPauseTarget(null);
+      setPauseReason('');
+      await load();
+    } catch (e) {
+      alert(`Error pausando: ${(e as Error).message}`);
+    } finally {
+      setActioning(null);
+    }
+  };
+
+  const handleUnpause = async (agentId: string) => {
+    if (!confirm(`¿Despausar ${agentId}? El orchestrator volverá a despachar a este agente.`)) return;
+    setActioning(agentId);
+    try {
+      const res = await fetch(`${ORCHESTRATOR_URL}/orchestrator/agents/${agentId}/unpause`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unpausedBy: adminId }),
+      });
+      if (!res.ok) throw new Error(`unpause ${res.status}`);
+      await load();
+    } catch (e) {
+      alert(`Error despausando: ${(e as Error).message}`);
+    } finally {
+      setActioning(null);
+    }
+  };
+
+  // Merge bridge + overrides por agentId. La lista de bridge define el shape
+  // (kind + target); overrides añade el estado pausado.
+  const merged: MergedAgent[] = useMemo(() => {
+    const overrideByAgent = new Map(
+      (overrideData?.agents ?? []).map((o) => [o.agentId, o]),
+    );
+    return (bridgeData?.agents ?? []).map((b) => {
+      const ov = overrideByAgent.get(b.agentId);
+      return {
+        ...b,
+        paused:      ov?.paused ?? false,
+        pausedAt:    ov?.pausedAt,
+        pausedBy:    ov?.pausedBy,
+        pauseReason: ov?.pauseReason,
+        unpausedAt:  ov?.unpausedAt,
+        unpausedBy:  ov?.unpausedBy,
+      };
+    });
+  }, [bridgeData, overrideData]);
+
+  const pausedCount = merged.filter((a) => a.paused).length;
+
   const grouped = useMemo(() => {
-    const out: Record<'cloud-run-job' | 'http-service', AgentEntry[]> = {
+    const out: Record<'cloud-run-job' | 'http-service', MergedAgent[]> = {
       'cloud-run-job': [],
       'http-service':  [],
     };
-    for (const a of data?.agents ?? []) {
-      out[a.kind].push(a);
-    }
+    for (const a of merged) out[a.kind].push(a);
     return out;
-  }, [data]);
+  }, [merged]);
 
   return (
     <AdminLayout>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🤖 Agent Registry</h1>
+          <h1 className="text-2xl font-bold text-gray-900">🤖 Agent Registry & Overrides</h1>
           <p className="text-sm text-gray-500">
-            Agentes que el Orchestrator puede invocar via{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded text-xs">agent-bridge-service</code>.
-            Lectura solamente — para registrar nuevos, editar{' '}
-            <code className="font-mono bg-gray-100 px-1 rounded text-xs">
-              agent-bridge-service/src/infrastructure/agent-registry.ts
-            </code>.
+            Agentes que el Orchestrator (<code className="font-mono bg-gray-100 px-1 rounded text-xs">Wayra</code>)
+            puede invocar. Pausa un agente para freezar despachos en ≤30s sin tocar el master switch.
           </p>
         </div>
         <button
@@ -111,25 +211,31 @@ export default function AgentsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        <StatCard
-          title="Total registrados"
-          value={(data?.total ?? 0).toString()}
-          icon="🤖"
-        />
-        <StatCard
-          title="Cron Jobs"
-          value={grouped['cloud-run-job'].length.toString()}
-          icon="⏰"
-        />
-        <StatCard
-          title="HTTP Services"
-          value={grouped['http-service'].length.toString()}
-          icon="🌐"
-        />
+      {pausedCount > 0 && (
+        <div className="mb-4 p-4 rounded-xl bg-orange-50 border-2 border-orange-300 flex items-start gap-3">
+          <span className="text-2xl">⏸️</span>
+          <div className="flex-1">
+            <p className="font-bold text-orange-900">
+              {pausedCount} {pausedCount === 1 ? 'agente pausado' : 'agentes pausados'} —
+              el orchestrator NO despacha a {pausedCount === 1 ? 'él' : 'ellos'}.
+            </p>
+            <p className="text-sm text-orange-700 mt-1">
+              Las decisiones que apunten a {pausedCount === 1 ? 'este agente' : 'estos agentes'}
+              quedan como <code className="font-mono bg-orange-100 px-1 rounded">dormant</code>
+              {' '}(reason: <code className="font-mono bg-orange-100 px-1 rounded">agent_paused</code>).
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+        <StatCard title="Total registrados" value={(bridgeData?.total ?? 0).toString()} icon="🤖" />
+        <StatCard title="Cron Jobs"          value={grouped['cloud-run-job'].length.toString()} icon="⏰" />
+        <StatCard title="HTTP Services"      value={grouped['http-service'].length.toString()}  icon="🌐" />
+        <StatCard title="Pausados"           value={pausedCount.toString()}                     icon="⏸️" />
       </div>
 
-      {!loading && data && data.total === 0 && (
+      {!loading && bridgeData && bridgeData.total === 0 && (
         <div className="p-8 rounded-2xl border-2 border-dashed border-gray-300 text-center">
           <div className="text-5xl mb-3">🤖</div>
           <p className="text-gray-600">Sin agentes registrados.</p>
@@ -151,48 +257,138 @@ export default function AgentsPage() {
               </span>
             </div>
             <div className="space-y-2">
-              {list.map((a) => (
-                <div
-                  key={a.agentId}
-                  className={`p-4 rounded-xl bg-white border-2 border-gray-100 border-l-4 ${style.border} flex items-center justify-between gap-3 flex-wrap`}
-                >
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-mono text-sm font-bold text-gray-900">
-                      {a.agentId}
-                    </span>
+              {list.map((a) => {
+                const isPaused = a.paused === true;
+                const isWorking = actioning === a.agentId;
+                return (
+                  <div
+                    key={a.agentId}
+                    className={`p-4 rounded-xl bg-white border-2 ${isPaused ? 'border-orange-300' : 'border-gray-100'} border-l-4 ${isPaused ? 'border-l-orange-500' : style.border}`}
+                  >
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-mono text-sm font-bold text-gray-900">
+                          {a.agentId}
+                        </span>
+                        {isPaused ? (
+                          <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-xs font-bold border border-orange-300">
+                            ⏸️ PAUSADO
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium border border-green-200">
+                            ▶ activo
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isPaused ? (
+                          <button
+                            onClick={() => handleUnpause(a.agentId)}
+                            disabled={isWorking}
+                            className="px-3 py-1 text-xs font-bold rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                          >
+                            {isWorking ? '…' : '▶ Despausar'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setPauseTarget(a.agentId)}
+                            disabled={isWorking}
+                            className="px-3 py-1 text-xs font-bold rounded-lg bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50"
+                          >
+                            ⏸ Pausar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <code className="text-xs font-mono text-gray-500 block mt-2 truncate" title={a.target}>
+                      {a.target}
+                    </code>
+                    {isPaused && (
+                      <div className="mt-2 p-2 rounded-lg bg-orange-50 text-xs text-orange-900">
+                        <strong>{a.pausedBy ?? 'unknown'}</strong> pausó {timeAgo(a.pausedAt)}
+                        {a.pauseReason && <> — &ldquo;{a.pauseReason}&rdquo;</>}
+                      </div>
+                    )}
+                    {!isPaused && a.unpausedAt && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        Último unpause: {a.unpausedBy} {timeAgo(a.unpausedAt)}
+                        {a.pausedBy && (
+                          <> · pausa anterior por {a.pausedBy}
+                          {a.pauseReason && <> (&ldquo;{a.pauseReason}&rdquo;)</>}</>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <code className="text-xs font-mono text-gray-500 truncate max-w-[60%]" title={a.target}>
-                    {a.target}
-                  </code>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         );
       })}
 
+      {/* Modal: razón de la pausa */}
+      {pauseTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setPauseTarget(null)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              ⏸️ Pausar <code className="font-mono text-orange-700">{pauseTarget}</code>
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              El orchestrator dejará de despachar a este agente en ≤30s. Las decisiones
+              pendientes quedarán como <code className="font-mono text-xs">dormant</code>.
+            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Razón (opcional pero recomendado)
+            </label>
+            <textarea
+              value={pauseReason}
+              onChange={(e) => setPauseReason(e.target.value)}
+              placeholder='ej. "alarmas falsas desde el deploy de hoy"'
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              rows={3}
+              maxLength={500}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => { setPauseTarget(null); setPauseReason(''); }}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmPause}
+                disabled={actioning === pauseTarget}
+                className="px-4 py-2 text-sm font-bold rounded-lg bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50"
+              >
+                {actioning === pauseTarget ? 'Pausando…' : 'Pausar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700">
-        <strong>Cómo agregar un agent nuevo:</strong>
-        <ol className="list-decimal ml-5 mt-2 space-y-1">
+        <strong>Notas:</strong>
+        <ul className="list-disc ml-5 mt-2 space-y-1">
           <li>
-            Si es cron job: agregalo a{' '}
-            <code className="font-mono bg-white px-1 rounded text-xs">AGENT_REGISTRY</code> con{' '}
-            <code className="font-mono bg-white px-1 rounded text-xs">kind: 'cloud-run-job'</code>
-            {' '}+ <code className="font-mono bg-white px-1 rounded text-xs">jobName</code>.
+            La pausa entra en efecto en ≤30s (TTL del cache del dispatcher). Para corte
+            inmediato total, usar el kill-switch global:{' '}
+            <code className="font-mono bg-white px-1 rounded text-xs">
+              gcloud run services update orchestrator-service --update-env-vars=ORCHESTRATOR_EXECUTE_ENABLED=false
+            </code>
           </li>
           <li>
-            Si es HTTP service: agregalo con{' '}
-            <code className="font-mono bg-white px-1 rounded text-xs">kind: 'http-service'</code>
-            {' '}+ <code className="font-mono bg-white px-1 rounded text-xs">serviceUrl</code> +{' '}
-            <code className="font-mono bg-white px-1 rounded text-xs">commandPath</code>, y exponé un
-            endpoint POST que acepte <code className="font-mono bg-white px-1 rounded text-xs">{`{ decisionId, action, payload }`}</code>.
+            Las pausas se persisten en Mongo (DB <code className="font-mono text-xs">going-orchestrator</code>,
+            collection <code className="font-mono text-xs">orchestrator_agent_overrides</code>). Sobreviven a
+            redeploys.
           </li>
           <li>
-            Agregá las reglas correspondientes en{' '}
-            <a href="/cerebro/rules" className="underline font-medium">/cerebro/rules</a>{' '}
-            apuntando a este agentId.
+            La lista de agentes viene de{' '}
+            <code className="font-mono bg-white px-1 rounded text-xs">agent-bridge AGENT_REGISTRY</code>.
+            Las reglas que apuntan a cada agentId viven en{' '}
+            <a href="/cerebro/rules" className="underline font-medium">/cerebro/rules</a>.
           </li>
-        </ol>
+        </ul>
       </div>
     </AdminLayout>
   );
