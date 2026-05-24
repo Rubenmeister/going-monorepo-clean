@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { BookingController } from './api/booking.controller';
 import { HealthController } from './api/health.controller';
@@ -14,6 +15,7 @@ import {
 } from '@going-monorepo-clean/domains-booking-application';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { PricingService } from 'pricing';
+import { BookingDispatcherService } from './application/booking-dispatcher.service';
 
 @Module({
   imports: [
@@ -35,6 +37,9 @@ import { PricingService } from 'pricing';
       }),
     }),
     InfrastructureModule,
+    // Habilita @Cron en BookingDispatcherService — corre cada 5 min y
+    // convierte scheduled corporate bookings en rides reales (task #28).
+    ScheduleModule.forRoot(),
   ],
   controllers: [BookingController, HealthController],
   providers: [
@@ -44,6 +49,7 @@ import { PricingService } from 'pricing';
     CancelBookingUseCase,
     JwtStrategy,
     PricingService,
+    BookingDispatcherService,
   ],
 })
 export class AppModule {}
