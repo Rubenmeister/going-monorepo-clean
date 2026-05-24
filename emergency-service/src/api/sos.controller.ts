@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, HttpException, HttpStatus, Logger, Post, Re
 import { ConfigService } from '@nestjs/config';
 import {
   IsBoolean,
+  IsDefined,
   IsIn,
   IsLatitude,
   IsLongitude,
@@ -18,18 +19,24 @@ import * as jwt from 'jsonwebtoken';
 import { SosService } from '../sos/sos.service';
 
 class LocationDto {
+  // @IsDefined explícito porque @IsLatitude() solo valida si lat existe —
+  // undefined pasaría silenciosamente y explotaría más adelante con TypeError.
+  @IsDefined({ message: 'location.lat is required' })
   @IsLatitude()
   lat: number;
 
+  @IsDefined({ message: 'location.lng is required' })
   @IsLongitude()
   lng: number;
 }
 
 class SosDto {
+  @IsDefined({ message: 'userId is required' })
   @IsString()
   @MaxLength(128)
   userId: string;
 
+  @IsDefined({ message: 'channel is required' })
   @IsIn(['mobile', 'web', 'whatsapp', 'telegram', 'voice', 'api'])
   channel: 'mobile' | 'web' | 'whatsapp' | 'telegram' | 'voice' | 'api';
 
@@ -37,6 +44,12 @@ class SosDto {
   @IsIn(['medical', 'accident', 'robbery', 'harassment', 'vehicle_breakdown', 'other'])
   emergencyType?: 'medical' | 'accident' | 'robbery' | 'harassment' | 'vehicle_breakdown' | 'other';
 
+  // @IsDefined necesario aquí: @ValidateNested solo valida la estructura
+  // INTERNA cuando el campo existe; undefined pasa el pipe sin error y luego
+  // explota con TypeError al hacer body.location.lat en el handler.
+  // Esto pasaba con clientes que mandaban {currentLat, currentLng} flat
+  // (shape del transport-service /rides/:id/sos legacy) en vez del nested.
+  @IsDefined({ message: 'location is required (shape: { lat, lng })' })
   @ValidateNested()
   @Type(() => LocationDto)
   location: LocationDto;
