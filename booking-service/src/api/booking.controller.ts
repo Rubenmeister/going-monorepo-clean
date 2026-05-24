@@ -21,7 +21,8 @@ import {
 import { IBookingRepository } from '@going-monorepo-clean/domains-booking-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
-import { PricingService } from 'pricing';
+import { PricingService, getClientSurchargeRate, type ClientSegment } from 'pricing';
+import { EstimateFareDto } from './dtos/estimate-fare.dto';
 
 interface AuthUser {
   id: string;
@@ -47,11 +48,65 @@ export class BookingController {
 
   /**
    * POST /api/bookings/estimate
-   * Calculates dynamic pricing / rates for local envíos, intercity envíos, or rides
+   *
+   * Cotización rápida para preview UI. Aplica el recargo corporativo +25%
+   * sobre transport/shared cuando el caller pertenece a una empresa
+   * (clientSegment derivado del JWT, audit #29 — el cliente NO puede pasar
+   * clientSegment en el body).
+   *
+   * Para envío/fixed/shared_route el +25% NO aplica: son tarifas fijas de
+   * catálogo donde el segment está implícito en el precio acordado
+   * (corporate-portal puede negociar tarifas separadas).
+   *
+   * Para cotizaciones autoritativas de rides (con surge dinámico de hora
+   * pico / feriado / clima), preferir POST /search del transport-service —
+   * este endpoint es solo preview rápido.
    */
   @Post('estimate')
-  async estimateFare(@Body() body: any): Promise<any> {
-    return this.pricingService.calculate(body);
+  async estimateFare(
+    @CurrentUser() user: AuthUser,
+    @Body() body: EstimateFareDto,
+  ): Promise<any> {
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    const clientSegment: ClientSegment = isAdmin
+      ? (user.companyId ? 'corporate' : 'public')
+      : (user.companyId ? 'corporate' : 'public');
+
+    // calculate() devuelve el precio "limpio" — sin recargo corporativo.
+    // El cast a any es necesario porque EstimateFareDto es un union shape
+    // permisivo; PricingService valida los campos requeridos internamente.
+    const base = this.pricingService.calculate(body as any);
+
+    // Recargo corporativo solo para viajes dinámicos (no envíos/fixed).
+    const SEGMENT_SURCHARGE_APPLIES: ReadonlyArray<EstimateFareDto['serviceType']> = [
+      'transport',
+      'shared',
+    ];
+    if (
+      clientSegment === 'corporate' &&
+      SEGMENT_SURCHARGE_APPLIES.includes(body.serviceType)
+    ) {
+      const rate = getClientSurchargeRate(clientSegment); // 0.25
+      const adjusted = Math.round(base.subtotal * (1 + rate) * 100) / 100;
+      const platformFee = Math.round(adjusted * 0.2 * 100) / 100;
+      const providerAmount = Math.round((adjusted - platformFee) * 100) / 100;
+      return {
+        ...base,
+        subtotal: adjusted,
+        total: adjusted,
+        platformFee,
+        providerAmount,
+        clientSegment,
+        clientSurchargeRate: rate,
+        breakdown: {
+          ...base.breakdown,
+          basePriceBeforeCorpSurcharge: base.subtotal,
+          corpSurcharge: Math.round((adjusted - base.subtotal) * 100) / 100,
+        },
+      };
+    }
+
+    return { ...base, clientSegment, clientSurchargeRate: 0 };
   }
 
   /**
