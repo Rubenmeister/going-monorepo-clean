@@ -104,15 +104,50 @@ export const transportAPI = {
     api.get(`/transport/user/${userId}/history`),
 
   /**
-   * Activar SOS / emergencia para un viaje activo.
-   * POST /rides/:rideId/sos — backend logea, emite WS a admins, y siempre
-   * retorna 201 (no falla aunque side-effects internos fallen, porque la
-   * pantalla SOS ya mostró confirmación al pasajero).
+   * @deprecated Usar emergencyAPI.createSos() — el endpoint nuevo POST /sos
+   * en emergency-service tiene más capacidades (emergencyType, GPS accuracy,
+   * emergencyDialerTriggered tracking, persistencia en collection 'incidents'
+   * + notificación a ops Telegram con priority RED). Este endpoint legacy se
+   * mantiene en caso de necesitar fallback, pero NO debería seguir en uso.
    */
   sosAlert: (
     rideId: string,
     data: { currentLat?: number; currentLng?: number; message?: string },
   ) => api.post(`/rides/${rideId}/sos`, data),
+};
+
+// ── Emergency Service ──────────────────────────────────────────────────────
+/**
+ * Cliente del emergency-service nuevo (Cloud Run service desplegado
+ * 2026-05-23). POST /sos via api-gateway → emergency-service /sos.
+ *
+ * Backend persiste el incident en MongoDB collection 'incidents' y dispara
+ * fire-and-forget la notificación a los operadores via Telegram con
+ * priority RED + ubicación nativa + link Google Maps.
+ *
+ * SLA backend: <300ms (Mongo síncrono, Telegram async).
+ */
+export const emergencyAPI = {
+  /**
+   * Crear alerta SOS. Backend valida JWT + matchea body.userId === jwt.sub
+   * para evitar impersonation.
+   *
+   * Response: 201 { id, status:'open', priority:'RED', createdAt,
+   *                 shouldDial911: boolean }
+   *
+   * shouldDial911=true es un hint: si el channel es mobile y el cliente
+   * aún no llamó al 911 explícitamente, recomendar la llamada.
+   */
+  createSos: (data: {
+    userId:        string;
+    channel:       'mobile' | 'web' | 'whatsapp' | 'telegram' | 'voice' | 'api';
+    emergencyType?: 'medical' | 'accident' | 'robbery' | 'harassment' | 'vehicle_breakdown' | 'other';
+    description?:  string;
+    location:      { lat: number; lng: number };
+    accuracyM?:    number;
+    rideId?:       string;
+    emergencyDialerTriggered?: boolean;
+  }) => api.post('/sos', data),
 };
 
 // ── Bookings ─────────────────────────────────────────────────────────────────
