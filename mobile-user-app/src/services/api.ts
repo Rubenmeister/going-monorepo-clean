@@ -287,4 +287,36 @@ export const paymentAPI = {
 
   getPaymentStatus: (paymentId: string) =>
     api.get(`/payments/${paymentId}/status`),
+
+  /**
+   * Crear intent de pago digital Ecuador (Datafast tarjeta / DeUna QR).
+   *
+   * Backend (payment-service /payments/ec/intent) rutea al gateway
+   * correspondiente, crea el intent en OPPWA (Datafast) o en la API DeUna,
+   * y devuelve el clientSecret + URL para abrir en WebBrowser / mostrar QR.
+   *
+   * Flow mobile típico:
+   *   1. const { checkoutUrl, paymentLink } = await paymentAPI.createEcuadorIntent({ method: 'datafast', amount: 13.50, metadata: { tripId } })
+   *   2. Datafast → Linking.openURL(checkoutUrl) → user paga en navegador
+   *      DeUna    → mostrar QR del paymentLink + opción "abrir app DeUna"
+   *   3. Webhook backend confirma → status payment cambia a 'completed'
+   *   4. Mobile pollea getPaymentStatus o recibe push notif
+   *
+   * Errores:
+   *   503 ServiceUnavailable → gateway no configurado (env vars faltan).
+   *                            Mobile debe fallback a efectivo.
+   *   400 BadRequest         → method inválido o amount < 0.50.
+   */
+  createEcuadorIntent: (data: {
+    method:    'datafast' | 'deuna';
+    amount:    number;
+    currency?: string;            // default 'USD'
+    metadata?: Record<string, unknown>;
+  }) => api.post<{
+    method:          'datafast' | 'deuna';
+    paymentIntentId: string;
+    clientSecret:    string;
+    checkoutUrl?:    string;   // present si method='datafast'
+    paymentLink?:    string;   // present si method='deuna'
+  }>('/payments/ec/intent', data),
 };

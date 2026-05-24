@@ -33,12 +33,13 @@ import {
   Alert, ActivityIndicator,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@navigation/MainNavigator';
 import { useAuthStore } from '@store/useAuthStore';
-import { transportAPI } from '../../services/api';
+import { transportAPI, paymentAPI } from '../../services/api';
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../utils/haptics';
 import { useTheme, type ThemeTokens } from '../../theme';
 import type { Category } from '../../catalog';
@@ -70,7 +71,10 @@ type PaymentMethodId = 'datafast' | 'deuna' | 'cash';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-// ── Métodos de pago. `enabled: false` muestra badge "Próximamente" y bloquea ──
+// ── Métodos de pago.
+// Wire Datafast + DeUna (task #46 completed 2026-05-23): backend payment-
+// service expone POST /payments/ec/intent. Si el gateway no tiene env
+// vars configuradas, devuelve 503 y mobile cae automático a Efectivo.
 const PAYMENT_METHODS: ReadonlyArray<{
   id:      PaymentMethodId;
   label:   string;
@@ -90,14 +94,14 @@ const PAYMENT_METHODS: ReadonlyArray<{
     label:   'Tarjeta · Datafast',
     sub:     'Visa · Mastercard · Amex · Diners',
     icon:    'card-outline',
-    enabled: false,
+    enabled: true,   // wired (Día 8 — 2026-05-23)
   },
   {
     id:      'deuna',
     label:   'QR · De Una',
     sub:     'Transferencia instantánea Banco Pichincha',
     icon:    'qr-code-outline',
-    enabled: false,
+    enabled: true,   // wired (Día 8 — 2026-05-23)
   },
 ];
 
@@ -245,19 +249,150 @@ export function ConfirmRideScreen() {
     }
   }, [user, params, totalAmount, getOriginCoords, navigation]);
 
+  /**
+   * Crea el ride + intent de pago digital. Flujo:
+   *   1. Reservar el ride en transport-service (mismo flujo que cash)
+   *   2. Crear payment intent en payment-service (POST /payments/ec/intent)
+   *   3. Abrir el checkoutUrl (Datafast) o paymentLink (DeUna) con Linking
+   *   4. Después de pagar, el webhook confirma y mobile pollea / push notif
+   *
+   * Si el gateway no está configurado (503), Alert con opción de cambiar
+   * a Efectivo en lugar de bloquear al usuario.
+   */
+  const handleDigitalPayment = useCallback(async (
+    method: 'datafast' | 'deuna',
+  ) => {
+    if (!user?.id) {
+      hapticError();
+      Alert.alert('Sesión expirada', 'Vuelve a iniciar sesión para reservar.');
+      return;
+    }
+    if (!params.destCoords) {
+      Alert.alert(
+        'Destino sin ubicación',
+        'Vuelve atrás y selecciona el destino en el mapa para continuar.',
+      );
+      return;
+    }
+    const originCoords = await getOriginCoords();
+    if (!originCoords) {
+      Alert.alert(
+        'Ubicación requerida',
+        'Necesitamos tu ubicación actual. Concede permiso de ubicación e intenta de nuevo.',
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Reservar ride
+      const rideResp = await transportAPI.requestRide({
+        userId: user.id,
+        origin: {
+          address:   params.origin,
+          latitude:  originCoords.lat,
+          longitude: originCoords.lng,
+        },
+        destination: {
+          address:   params.destination,
+          latitude:  params.destCoords.lat,
+          longitude: params.destCoords.lng,
+        },
+        price: { amount: totalAmount, currency: 'USD' },
+      });
+      const rideId = (rideResp.data as { rideId?: string })?.rideId;
+      if (!rideId) {
+        throw new Error('Reserva creada pero sin rideId — revisa más tarde.');
+      }
+
+      // 2. Crear intent digital
+      const intentResp = await paymentAPI.createEcuadorIntent({
+        method,
+        amount: totalAmount,
+        metadata: { tripId: rideId, userId: user.id },
+      });
+      const { checkoutUrl, paymentLink } = intentResp.data;
+      const url = method === 'datafast' ? checkoutUrl : paymentLink;
+      if (!url) {
+        throw new Error(`Backend no devolvió URL para ${method}`);
+      }
+
+      hapticSuccess();
+
+      // 3. Abrir checkout/QR link. Para Datafast es el OPPWA hosted checkout
+      //    (carrito web). Para DeUna es el paymentLink (QR o link de pago).
+      //    TODO: cuando integremos expo-web-browser y deep links, el flow
+      //    será modal in-app + auto-return on completion.
+      const opened = await Linking.canOpenURL(url);
+      if (opened) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(
+          'No se pudo abrir el pago',
+          `URL: ${url}\n\nCopiala y abrila en tu navegador, o paga en efectivo.`,
+        );
+        return;
+      }
+
+      // 4. Mientras el webhook confirma, navegar al ride activo. El
+      //    ActiveRide socket recibirá ride:payment_confirmed cuando llegue.
+      navigation.replace('ActiveRide' as never, {
+        rideId,
+        origin: {
+          latitude:  originCoords.lat,
+          longitude: originCoords.lng,
+          address:   params.origin,
+        },
+        destination: {
+          latitude:  params.destCoords!.lat,
+          longitude: params.destCoords!.lng,
+          address:   params.destination,
+        },
+        vehicleType: params.vehicle,
+        tripMode:    params.type,
+        category:    params.zone ?? '',
+        price:       totalAmount,
+        paymentMethod: method,
+      } as never);
+    } catch (err: any) {
+      hapticError();
+      const status = err?.response?.status;
+      if (status === 503) {
+        // Gateway no configurado — sugerir efectivo
+        Alert.alert(
+          'Pago digital no disponible',
+          `${method === 'datafast' ? 'Datafast' : 'De Una'} está temporalmente no disponible. ¿Reservar con pago en efectivo?`,
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Pagar en efectivo',
+              onPress: () => {
+                setPayMethod('cash');
+                handleCashBooking();
+              },
+            },
+          ],
+        );
+        return;
+      }
+      const msg = err?.response?.data?.message || err?.message || 'Intenta de nuevo.';
+      Alert.alert('Error', `No se pudo completar la reserva: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, params, totalAmount, getOriginCoords, navigation, handleCashBooking]);
+
   const handleConfirm = useCallback(() => {
     hapticMedium();
     if (payMethod === 'cash') {
       handleCashBooking();
+    } else if (payMethod === 'datafast' || payMethod === 'deuna') {
+      handleDigitalPayment(payMethod);
     } else {
-      // Defensivo — los métodos no-cash deberían estar deshabilitados
       hapticError();
-      Alert.alert(
-        'Método no disponible aún',
-        'Por ahora solo está activo el pago en efectivo. Datafast y De Una se habilitan próximamente.',
-      );
+      Alert.alert('Método desconocido', `Método ${payMethod} no soportado.`);
     }
-  }, [payMethod, handleCashBooking]);
+  }, [payMethod, handleCashBooking, handleDigitalPayment]);
 
   const handleSelectPayment = useCallback((id: PaymentMethodId) => {
     const method = PAYMENT_METHODS.find(m => m.id === id);
