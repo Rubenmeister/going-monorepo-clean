@@ -10,6 +10,7 @@ import {
   IsArray,
   IsOptional,
   IsEnum,
+  IsDefined,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -108,14 +109,23 @@ export class CreateInvoiceDto {
   @IsString()
   clientId: string;
 
+  // @IsDefined necesario: @ValidateNested solo valida estructura INTERNA si
+  // el campo existe — undefined pasa el pipe sin error y luego company.name
+  // explota con TypeError 500 (audit sistémico tras SOS bug).
+  @IsDefined({ message: 'company is required' })
   @ValidateNested()
   @Type(() => CompanyInfoDto)
   company: CompanyInfoDto;
 
+  @IsDefined({ message: 'client is required' })
   @ValidateNested()
   @Type(() => ClientInfoDto)
   client: ClientInfoDto;
 
+  // Para arrays: @IsArray rechaza undefined automáticamente (necesita ser
+  // array iterable) — pero solo si va antes/después de @ValidateNested. Con
+  // @IsDefined explícito el mensaje de error es más claro al cliente.
+  @IsDefined({ message: 'lineItems is required (array of items)' })
   @ValidateNested({ each: true })
   @Type(() => LineItemDto)
   @IsArray()

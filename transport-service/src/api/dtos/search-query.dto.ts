@@ -6,6 +6,7 @@ import {
   IsString,
   IsEnum,
   IsDateString,
+  IsDefined,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -43,10 +44,15 @@ export class GeoPointDto {
  * `userId` nunca viene del body — se toma del JWT en el controller.
  */
 export class SearchQueryDto {
+  // @IsDefined necesario: @ValidateNested solo valida estructura INTERNA si
+  // el campo existe — undefined pasa el pipe sin error y luego pickup.lat
+  // explota con TypeError 500 (audit sistémico tras SOS bug).
+  @IsDefined({ message: 'pickup is required (shape: { lat, lng })' })
   @ValidateNested()
   @Type(() => GeoPointDto)
   pickup: GeoPointDto;
 
+  @IsDefined({ message: 'destination is required (shape: { lat, lng })' })
   @ValidateNested()
   @Type(() => GeoPointDto)
   destination: GeoPointDto;

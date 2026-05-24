@@ -34,6 +34,7 @@ import { TransportClientService } from '../infrastructure/services/transport-cli
 import { PricingService, classifyRoute } from 'pricing';
 import {
   IsNumber,
+  IsDefined,
   IsLatitude,
   IsLongitude,
   IsOptional,
@@ -58,7 +59,12 @@ class QuoteGeoPoint {
 
 /** Cuerpo de POST /parcels/quote — cotización autoritativa antes de crear. */
 export class QuoteEnvioDto {
+  // @IsDefined necesario: @ValidateNested solo valida estructura INTERNA si
+  // el campo existe — undefined pasa el pipe sin error y luego origin.lat
+  // explota con TypeError 500 (mismo patrón del bug SOS, audit sistémico).
+  @IsDefined({ message: 'origin is required (shape: { lat, lng })' })
   @ValidateNested() @Type(() => QuoteGeoPoint) origin: QuoteGeoPoint;
+  @IsDefined({ message: 'destination is required (shape: { lat, lng })' })
   @ValidateNested() @Type(() => QuoteGeoPoint) destination: QuoteGeoPoint;
   @IsOptional() @IsIn(['small', 'medium', 'large']) packageSize?: 'small' | 'medium' | 'large';
   @IsOptional() @IsNumber() @Min(0) weightKg?: number;
