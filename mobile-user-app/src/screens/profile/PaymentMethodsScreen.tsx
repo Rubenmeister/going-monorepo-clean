@@ -171,6 +171,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { padding: 16 },
+  // contentContainerStyle de la FlatList cuando está vacía — fuerza al View
+  // `empty` (alignItems center) a ocupar la pantalla completa y centrarse
+  // verticalmente. Sin esto, el empty state aparece pegado al top.
+  emptyContainer: { flexGrow: 1, justifyContent: 'center' },
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,

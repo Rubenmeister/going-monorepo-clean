@@ -19,8 +19,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { MainStackParamList } from '@navigation/MainNavigator';
 import { useAuthStore } from '../../store/useAuthStore';
 import { api } from '../../services/api';
+
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 const GOING_BLUE   = '#0033A0';
 const GOING_YELLOW = '#FFCD00';
@@ -35,7 +39,7 @@ const BENEFITS = [
 ];
 
 export function CorporateScreen() {
-  const navigation   = useNavigation();
+  const navigation   = useNavigation<Nav>();
   const { user }     = useAuthStore();
   const isCorporate  = (user as any)?.corporateAccount?.active === true;
   const corporate    = (user as any)?.corporateAccount;

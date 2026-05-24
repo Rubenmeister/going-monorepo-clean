@@ -35,18 +35,21 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
   const displayAmount = `$${amount.toFixed(2)}`;
 
   // ── Pago con DATAFAST (pasarela oficial Ecuador) ──────────────────────────
+  // Usa el endpoint nuevo /payments/ec/intent (task #46) que rutea al gateway
+  // Datafast OPPWA. El amount va en dólares (no centavos) — el backend hace
+  // la conversión interna. Devuelve checkoutUrl para abrir en navegador.
   const handleDatafast = async () => {
     setLoading(true);
     try {
-      const response = await paymentAPI.createPaymentIntent({
-        amount: Math.round(amount * 100), // centavos
+      const response = await paymentAPI.createEcuadorIntent({
+        method:   'datafast',
+        amount,                                    // dólares (e.g. 15.00)
         currency: 'USD',
-        provider: 'datafast',
-        referenceId: bookingId ?? rideId,
+        metadata: { bookingId, rideId, description },
       });
 
-      const checkoutUrl: string =
-        response.data?.redirectUrl ?? response.data?.clientSecret;
+      const checkoutUrl: string | undefined =
+        response.data?.checkoutUrl ?? response.data?.clientSecret;
 
       if (!checkoutUrl) throw new Error('No se recibió URL de pago.');
 
@@ -64,19 +67,21 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
     }
   };
 
-  // ── Pago con DE UNA (transferencia bancaria Pichincha) ───────────────────
+  // ── Pago con DE UNA (Pichincha QR / transferencia) ───────────────────────
+  // Mismo endpoint que Datafast (/payments/ec/intent) con method='deuna'.
+  // Devuelve paymentLink (deep link a app DeUna / QR) en vez de checkoutUrl.
   const handleDeUna = async () => {
     setLoading(true);
     try {
-      const response = await paymentAPI.createPaymentIntent({
-        amount: Math.round(amount * 100),
+      const response = await paymentAPI.createEcuadorIntent({
+        method:   'deuna',
+        amount,
         currency: 'USD',
-        provider: 'deuna',
-        referenceId: bookingId ?? rideId,
+        metadata: { bookingId, rideId, description },
       });
 
-      const checkoutUrl: string =
-        response.data?.redirectUrl ?? response.data?.clientSecret;
+      const checkoutUrl: string | undefined =
+        response.data?.paymentLink ?? response.data?.clientSecret;
 
       if (!checkoutUrl) throw new Error('No se recibió URL de pago.');
 
