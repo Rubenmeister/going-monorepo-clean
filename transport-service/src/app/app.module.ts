@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
@@ -81,6 +82,7 @@ import {
 import { SearchController } from '../api/search.controller';
 import { ScheduledTripController } from '../api/scheduled-trip.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
+import { DriverHybridTransitionCronService } from '../application/driver-hybrid-transition.cron';
 import { PricingService } from 'pricing';
 import { TokenService } from '../infrastructure/token.service';
 import { MulterModule } from '@nestjs/platform-express';
@@ -143,6 +145,8 @@ import { MulterModule } from '@nestjs/platform-express';
       { name: DriverPushTokenModelSchema.name, schema: DriverPushTokenSchema },
     ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
+    // Habilita @Cron decorators (DriverHybridTransitionCronService).
+    ScheduleModule.forRoot(),
   ],
   controllers: [
     AppController,
@@ -195,6 +199,7 @@ import { MulterModule } from '@nestjs/platform-express';
       provide: IDriverHybridContextRepository,
       useClass: MongooseDriverHybridContextRepository,
     },
+    DriverHybridTransitionCronService,
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,
     DeleteDriverBaseUseCase,
