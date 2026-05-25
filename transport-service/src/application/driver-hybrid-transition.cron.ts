@@ -5,6 +5,7 @@ import {
   IDriverHybridContextRepository,
   DriverHybridContext,
 } from '@going-monorepo-clean/domains-transport-core';
+import { DriverHybridLifecycleService } from '@going-monorepo-clean/domains-transport-application';
 
 /**
  * DriverHybridTransitionCronService — dispara las dos transiciones
@@ -48,6 +49,7 @@ export class DriverHybridTransitionCronService {
     private readonly config: ConfigService,
     @Inject(IDriverHybridContextRepository)
     private readonly repo: IDriverHybridContextRepository,
+    private readonly lifecycle: DriverHybridLifecycleService,
   ) {}
 
   private isEnabled(): boolean {
@@ -83,10 +85,11 @@ export class DriverHybridTransitionCronService {
     let transitioned = 0;
     let failed = 0;
     for (const ctx of ready) {
-      const ok = await this.applyTransition(ctx, {
+      // endLocalMode también desactiva la DriverBase temporal asociada.
+      const result = await this.lifecycle.endLocalMode(ctx, {
         kind: 'rest_window_entered',
       });
-      if (ok) transitioned++;
+      if (result.isOk()) transitioned++;
       else failed++;
     }
 

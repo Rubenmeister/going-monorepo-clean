@@ -79,6 +79,7 @@ import {
   CompleteRideUseCase,
   UnifiedSearchUseCase,
 } from '../application/use-cases';
+import { DriverHybridLifecycleService } from '@going-monorepo-clean/domains-transport-application';
 import { SearchController } from '../api/search.controller';
 import { ScheduledTripController } from '../api/scheduled-trip.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
@@ -199,6 +200,7 @@ import { MulterModule } from '@nestjs/platform-express';
       provide: IDriverHybridContextRepository,
       useClass: MongooseDriverHybridContextRepository,
     },
+    DriverHybridLifecycleService,
     DriverHybridTransitionCronService,
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,

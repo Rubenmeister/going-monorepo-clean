@@ -9,6 +9,7 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
 const driverId = '11111111-1111-1111-1111-111111111111' as UUID;
 const outboundTripId = '22222222-2222-2222-2222-222222222222' as UUID;
 const returnTripId = '33333333-3333-3333-3333-333333333333' as UUID;
+const tempBaseId = '44444444-4444-4444-4444-444444444444' as UUID;
 
 /** Helper: crea un contexto en un estado específico para testear transiciones aisladas. */
 function ctxIn(state: DriverHybridState, overrides: Partial<Parameters<typeof DriverHybridContext.fromPrimitives>[0]> = {}) {
@@ -27,6 +28,8 @@ function ctxIn(state: DriverHybridState, overrides: Partial<Parameters<typeof Dr
       ? null
       : new Date('2026-06-01T14:15:00Z'),
     restBufferMinutes: DEFAULT_REST_BUFFER_MINUTES,
+    temporalLocalBaseId:
+      state === 'AVAILABLE_LOCAL' || state === 'BLOCKED_REST' ? tempBaseId : null,
     lastTransitionReason: null,
     createdAt: now,
     updatedAt: now,
@@ -87,6 +90,7 @@ describe('DriverHybridContext', () => {
           destinationCity: 'santo_domingo',
           returnScheduledTripId: returnTripId,
           nextLongTripStartTime: nextLongTrip,
+          temporalLocalBaseId: tempBaseId,
         },
         now,
       );
@@ -111,6 +115,7 @@ describe('DriverHybridContext', () => {
           destinationCity: 'santo_domingo',
           returnScheduledTripId: returnTripId,
           nextLongTripStartTime: nextLongTrip,
+          temporalLocalBaseId: tempBaseId,
         },
         now,
       );
@@ -128,6 +133,7 @@ describe('DriverHybridContext', () => {
           destinationCity: 'ibarra',
           returnScheduledTripId: returnTripId,
           nextLongTripStartTime: nextLongTrip,
+          temporalLocalBaseId: tempBaseId,
           restBufferMinutes: 30, // operador "express" con buffer reducido
         },
         now,
@@ -287,10 +293,12 @@ describe('DriverHybridContext', () => {
           destinationCity: 'santo_domingo',
           returnScheduledTripId: returnTripId,
           nextLongTripStartTime: new Date('2026-06-01T15:00:00Z'),
+          temporalLocalBaseId: tempBaseId,
         },
         new Date('2026-06-01T10:00:00Z'),
       )._unsafeUnwrap();
       expect(ctx.state).toBe('AVAILABLE_LOCAL');
+      expect(ctx.temporalLocalBaseId).toBe(tempBaseId);
       expect(ctx.canAcceptLocalRide(30, new Date('2026-06-01T10:00:00Z'))).toBe(true);
 
       // 3. Llegan las 14:15, cron dispara rest window

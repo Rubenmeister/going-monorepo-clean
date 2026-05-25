@@ -3,6 +3,7 @@ import { Result, ok, err } from 'neverthrow';
 import {
   RideMatch,
   IRideMatchRepository,
+  IDriverHybridContextRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Redis } from 'ioredis';
@@ -93,7 +94,36 @@ export class MatchAvailableDriversUseCase {
     @Optional()
     @Inject('IRideRepository')
     private readonly rideRepo?: any,
+    /**
+     * Opcional — Hybrid Mode (Fase D). Si está disponible, drivers en
+     * AVAILABLE_LOCAL son filtrados con `canAcceptLocalRide` para evitar
+     * que tomen carreras cuyo tiempo total supere su ventana hasta el
+     * retorno. Drivers en LONG_TRIP_OUTBOUND / BLOCKED_REST /
+     * LONG_TRIP_RETURN se excluyen completamente.
+     */
+    @Optional()
+    @Inject(IDriverHybridContextRepository)
+    private readonly hybridRepo?: IDriverHybridContextRepository,
   ) {}
+
+  /**
+   * Distancia haversine en km entre dos puntos.
+   * Usado para estimar duración del viaje pickup→dropoff cuando hay
+   * que filtrar drivers híbridos (necesitamos tiempo total = ETA al
+   * pickup + tiempo de la carrera).
+   */
+  private haversineKm(
+    lat1: number, lng1: number, lat2: number, lng2: number,
+  ): number {
+    const R = 6371;
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
 
   async execute(
     dto: MatchAvailableDriversDto
@@ -209,6 +239,50 @@ export class MatchAvailableDriversUseCase {
 
       const distanceKm = parseFloat(distStr);
       const etaMinutes = Math.ceil((distanceKm / AVERAGE_SPEED_KMH) * 60);
+
+      // Hybrid Mode filter (Fase D):
+      // - Drivers en AVAILABLE_LOCAL solo aceptan carreras cuyo tiempo total
+      //   (ETA + duración carrera) cabe en su ventana antes del rest buffer.
+      // - Drivers en LONG_TRIP_OUTBOUND/BLOCKED_REST/LONG_TRIP_RETURN: excluidos.
+      // - Drivers IDLE o sin contexto: pass-through.
+      if (this.hybridRepo) {
+        try {
+          const ctxResult = await this.hybridRepo.findActiveByDriverId(driverId as UUID);
+          if (ctxResult.isOk() && ctxResult.value) {
+            const ctx = ctxResult.value;
+            if (ctx.state !== 'AVAILABLE_LOCAL') {
+              // Driver en LONG_TRIP_* o BLOCKED_REST: no aceptamos carreras locales.
+              this.logger.debug(
+                `Hybrid gate: driver ${driverId} en estado ${ctx.state} — excluido`,
+              );
+              continue;
+            }
+            // En AVAILABLE_LOCAL: verificar que la carrera cabe en la ventana.
+            let tripDurationMin = 30; // fallback conservador si no hay dropoff
+            if (dto.dropoffLatitude !== undefined && dto.dropoffLongitude !== undefined) {
+              const tripDistKm = this.haversineKm(
+                dto.pickupLatitude, dto.pickupLongitude,
+                dto.dropoffLatitude, dto.dropoffLongitude,
+              );
+              tripDurationMin = Math.ceil((tripDistKm / AVERAGE_SPEED_KMH) * 60);
+            }
+            const totalMin = etaMinutes + tripDurationMin;
+            if (!ctx.canAcceptLocalRide(totalMin)) {
+              this.logger.log(
+                `Hybrid gate: driver ${driverId} en AVAILABLE_LOCAL pero carrera (${totalMin}min total) ` +
+                  `no cabe antes del rest window — excluido`,
+              );
+              continue;
+            }
+          }
+          // Sin contexto activo o IDLE → pass-through
+        } catch (e) {
+          // Degradación gentil: si el repo falla, no bloqueamos matching
+          this.logger.warn(
+            `Hybrid gate check failed for driver ${driverId}: ${(e as Error).message}`,
+          );
+        }
+      }
 
       // Overlap Wellness Gate check:
       // If matching a real-time local ride, and the driver has an upcoming scheduled intercity carpool/ride

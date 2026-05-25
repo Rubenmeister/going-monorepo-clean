@@ -20,3 +20,6 @@ export * from './lib/use-cases/driver-base/find-drivers-near-base.use-case';
 // Fairness counter (Fase 3) use cases
 export * from './lib/use-cases/fairness/record-driver-acceptance.use-case';
 export * from './lib/use-cases/fairness/get-driver-fairness.use-case';
+
+// Hybrid Mode lifecycle (Fase D)
+export * from './lib/use-cases/hybrid/driver-hybrid-lifecycle.service';
