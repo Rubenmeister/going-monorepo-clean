@@ -3,7 +3,7 @@
  *
  * Uso (PowerShell):
  *   $env:USER_DB_URL="mongodb+srv://..."
- *   node scripts/reset-admin.js rubenmeister@gmail.com MiPasswordNuevo123!
+ *   node scripts/reset-admin.js admin@goingec.com MiPasswordNuevo123!
  *
  * Si el usuario existe: le pone passwordHash nuevo, agrega rol 'admin' y status 'active'.
  * Si no existe: lo crea con nombre Admin Root.

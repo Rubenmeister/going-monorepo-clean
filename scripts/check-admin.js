@@ -3,7 +3,7 @@
  *
  * Uso (PowerShell):
  *   $env:USER_DB_URL="mongodb+srv://rubenmeister_db_user:***REMOVED-CREDENTIAL***@going-cluster.vy28mpj.mongodb.net/?appName=GOING-CLUSTER"
- *   node scripts/check-admin.js rubenmeister@gmail.com ***REMOVED-CREDENTIAL***!
+ *   node scripts/check-admin.js admin@goingec.com ***REMOVED-CREDENTIAL***!
  *
  * Qué hace:
  *   1. Conecta a la DB 'going-user-auth', colección 'usermodelschemas'.

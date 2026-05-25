@@ -112,8 +112,8 @@ Implementación pendiente — solicitar a Claude Code en sesión nueva:
 
 > "En cada agente, después de enviar a Telegram, si la respuesta es 4xx/5xx
 > o timeout, hacer fallback a email usando GMAIL_APP_PASSWORD. Destinatario
-> en env var FALLBACK_EMAIL (default rubentorcob@gmail.com). Implementar
-> como utilidad compartida en `libs/shared-notification/`."
+> en env var FALLBACK_EMAIL (default goingappecuador@gmail.com — inbox Going
+> compartido). Implementar como utilidad compartida en `libs/shared-notification/`."
 
 Tiempo estimado: 1 día de implementación + tests.
 
