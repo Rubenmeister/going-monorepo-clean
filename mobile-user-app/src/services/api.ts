@@ -58,7 +58,95 @@ export const authAPI = {
 };
 
 // ── Transport ────────────────────────────────────────────────────────────────
+
+/** Punto geográfico (origen / destino) — shape canónico del backend SearchQueryDto. */
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+  address?: string;
+}
+
+/** Body del POST /search. Espejo del SearchQueryDto del transport-service. */
+export interface SearchRideQuery {
+  pickup: GeoPoint;
+  destination: GeoPoint;
+  /** 'immediate' (default) busca viajes ya / 'scheduled' busca cupos compartidos para un horario futuro. */
+  temporalPreference?: 'immediate' | 'scheduled';
+  /** ISO 8601 — obligatorio si temporalPreference='scheduled'. */
+  scheduledDateTime?: string;
+  /** Hint de vehículo para cotización interurbano privado. */
+  vehicleType?: 'suv' | 'suv_xl' | 'van' | 'van_xl' | 'minibus' | 'bus';
+}
+
+export interface SearchRouteInfo {
+  routeClass: 'urban_within_city' | 'intercity_corridor' | 'airport_corridor' | string;
+  isIntercity: boolean;
+  isAirportCorridor: boolean;
+  originCity: string | null;
+  originLabel: string | null;
+  destinationCity: string | null;
+  destinationLabel: string | null;
+  distanceKm: number;
+  estimatedDurationMinutes: number;
+  inCoverage: boolean;
+}
+
+export interface OnDemandOption {
+  serviceType: 'urban_ride' | 'intercity_private_immediate' | 'airport_transfer';
+  label: string;
+  description: string;
+  price: number;
+  currency: string;
+  estimatedEtaMinutes: number;
+  vehicleType?: string;
+  breakdown?: Record<string, number>;
+}
+
+export interface ScheduledOption {
+  scheduledTripId: string;
+  driverId: string;
+  corridorId: string;
+  routeLabel: string;
+  departureTime: string;
+  availableSeats: number;
+  pricePerSeat: number;
+  vehicleModel?: string;
+  driver?: { name?: string; rating?: number };
+}
+
+export interface AlternativeSchedule extends ScheduledOption {
+  recommendationReason: 'same_day_different_time' | 'adjacent_day';
+}
+
+export interface SearchRideResponse {
+  searchId: string;
+  route: SearchRouteInfo;
+  temporalPreference: 'immediate' | 'scheduled';
+  onDemandOptions: OnDemandOption[];
+  scheduledOptions?: ScheduledOption[];
+  alternativeSchedules?: AlternativeSchedule[];
+  notices: string[];
+}
+
 export const transportAPI = {
+  /**
+   * Buscador unificado de viajes (POST /search en transport-service).
+   *
+   * Resuelve automáticamente urbano / interurbano / corredor aeropuerto a
+   * partir de coords, y devuelve OPCIONES de ride-hailing (onDemand) +
+   * carpooling (scheduled) en una sola respuesta. El segment corporate/+25%
+   * se deriva del JWT del backend — no es input del cliente (audit #29).
+   *
+   * Si scheduledOptions viene vacío pero alternativeSchedules tiene, la UI
+   * debe mostrar el fallback "no hay cupo en tu horario exacto pero sí en
+   * estos cercanos".
+   *
+   * Usar para nuevo flujo unificado (BookingOptionsScreen). El requestRide
+   * legacy queda mientras tanto para compatibilidad.
+   */
+  searchUnified: (query: SearchRideQuery) =>
+    api.post<SearchRideResponse>('/search', query),
+
   /**
    * Crear viaje. Migrado del legacy POST /transport/request al sistema
    * unificado POST /rides/request, que dispara MatchAvailableDriversUseCase
