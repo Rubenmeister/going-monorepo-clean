@@ -29,10 +29,12 @@ import {
 import {
   IZoneRepository,
   IDriverBaseRepository,
+  IDriverHybridContextRepository,
   IFairnessCounterRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { MongooseZoneRepository } from '../infrastructure/persistence/mongoose-zone.repository';
 import { MongooseDriverBaseRepository } from '../infrastructure/persistence/mongoose-driver-base.repository';
+import { MongooseDriverHybridContextRepository } from '../infrastructure/persistence/mongoose-driver-hybrid-context.repository';
 import { RedisFairnessCounterRepository } from '../infrastructure/persistence/redis-fairness-counter.repository';
 import {
   ZoneModelSchema,
@@ -42,6 +44,10 @@ import {
   DriverBaseModelSchema,
   DriverBaseSchema,
 } from '../infrastructure/persistence/schemas/driver-base.schema';
+import {
+  DriverHybridContextModelSchema,
+  DriverHybridContextSchema,
+} from '../infrastructure/persistence/schemas/driver-hybrid-context.schema';
 import {
   DriverPushTokenModelSchema,
   DriverPushTokenSchema,
@@ -133,6 +139,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MongooseModule.forFeature([
       { name: ZoneModelSchema.name, schema: ZoneSchema },
       { name: DriverBaseModelSchema.name, schema: DriverBaseSchema },
+      { name: DriverHybridContextModelSchema.name, schema: DriverHybridContextSchema },
       { name: DriverPushTokenModelSchema.name, schema: DriverPushTokenSchema },
     ]),
     MulterModule.register({ limits: { fileSize: 10 * 1024 * 1024 } }), // 10MB max
@@ -184,6 +191,10 @@ import { MulterModule } from '@nestjs/platform-express';
     FindZonesContainingPointUseCase,
     // DriverBase — Fase 2 asignación de conductores
     { provide: IDriverBaseRepository, useClass: MongooseDriverBaseRepository },
+    {
+      provide: IDriverHybridContextRepository,
+      useClass: MongooseDriverHybridContextRepository,
+    },
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,
     DeleteDriverBaseUseCase,
