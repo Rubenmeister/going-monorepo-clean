@@ -515,4 +515,19 @@ export class RideEventsGateway
       error,
     });
   }
+
+  /**
+   * Notifica al pasajero que el conductor asignado no se presentó al pickup
+   * dentro de la ventana esperada (driver no-show). Usado por
+   * RideNoShowCronService. La app del pasajero debería mostrar un banner
+   * "El conductor no llegó" + CTA "Pedir otro viaje".
+   */
+  notifyNoShow(rideId: string, payload: {
+    rideId: string;
+    driverId: string;
+    reason: string;
+    timestamp: string;
+  }) {
+    this.server.to(`ride:${rideId}`).emit('ride:driver_no_show', payload);
+  }
 }
