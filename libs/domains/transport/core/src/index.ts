@@ -3,6 +3,7 @@ export * from './libs/entities/trip.entity';
 export * from './libs/entities/ride-match.entity';
 export * from './libs/entities/zone.entity';
 export * from './libs/entities/driver-base.entity';
+export * from './libs/entities/driver-hybrid-context.entity';
 
 // Exporta los puertos (interfaces y symbols)
 export * from './libs/ports/itrip.repository';
