@@ -32,7 +32,7 @@ inmediato, es burocrático).
 
 ### 1. Crear cuenta Google empresarial dedicada (15 min)
 
-Si todavía estás usando `rubenmeister@gmail.com`, esto puede traerte
+Si todavía estás usando un Gmail personal del founder, esto puede traerte
 problemas más adelante. Recomendado: crear `play@goingec.com` (Google
 Workspace) y migrar.
 

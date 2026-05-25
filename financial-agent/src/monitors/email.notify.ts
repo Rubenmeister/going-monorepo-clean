@@ -5,7 +5,7 @@
  * Variables de entorno requeridas:
  *   GMAIL_FROM         = goingappecuador@gmail.com
  *   GMAIL_APP_PASSWORD = contraseña de app de Google
- *   NOTIFICATION_EMAIL = rubenmeister@gmail.com
+ *   NOTIFICATION_EMAIL = goingappecuador@gmail.com (ó dirección del operador ops)
  */
 
 import * as nodemailer from 'nodemailer';
@@ -68,10 +68,10 @@ export async function sendGmail(html: string): Promise<void> {
   }
 
   const from    = process.env.GMAIL_FROM    || 'goingappecuador@gmail.com';
-  const to      = process.env.NOTIFICATION_EMAIL || 'rubenmeister@gmail.com';
+  const to      = process.env.NOTIFICATION_EMAIL || 'goingappecuador@gmail.com';
 
   if (!process.env.NOTIFICATION_EMAIL) {
-    console.warn('[email-notify] NOTIFICATION_EMAIL not set, using default: rubenmeister@gmail.com');
+    console.warn('[email-notify] NOTIFICATION_EMAIL not set, using default: goingappecuador@gmail.com');
   }
 
   const subject = extractSubject(html);
