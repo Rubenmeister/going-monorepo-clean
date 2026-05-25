@@ -26,6 +26,11 @@ substitutions:
   #   _EXTRA_ENV_VARS='TRANSPORT_SERVICE_URL=https://...|DISPATCH_LEAD_TIME_MINUTES=30'
   # Dejar vacío si el servicio no necesita env extras.
   _EXTRA_ENV_VARS: ''
+  # _EXTRA_SECRETS: secrets adicionales del Secret Manager por servicio.
+  # Formato comma-separated 'ENV_NAME=SECRET_NAME:latest'. Ejemplo voice-call:
+  #   _EXTRA_SECRETS='TWILIO_ACCOUNT_SID=TWILIO_ACCOUNT_SID:latest,TWILIO_AUTH_TOKEN=TWILIO_AUTH_TOKEN:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest'
+  # Se concatenan a los secrets base (JWT_SECRET, MONGO_URL, etc.).
+  _EXTRA_SECRETS: ''
 
 steps:
   # Step -1: Pre-pull latest image for Docker layer cache (best-effort).
@@ -81,6 +86,12 @@ steps:
         else
           ENV_VARS="$${BASE_ENV}"
         fi
+        BASE_SECRETS="JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,BOOKING_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest"
+        if [ -n "${_EXTRA_SECRETS}" ]; then
+          ALL_SECRETS="$${BASE_SECRETS},${_EXTRA_SECRETS}"
+        else
+          ALL_SECRETS="$${BASE_SECRETS}"
+        fi
         gcloud run deploy ${_SERVICE_NAME} \
           --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG} \
           --region us-central1 \
@@ -95,7 +106,7 @@ steps:
           --vpc-connector=going-connector \
           --vpc-egress=all-traffic \
           --update-env-vars="^|^$${ENV_VARS}" \
-          --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest,USER_DB_URL=MONGO_URL-prod:latest,BOOKING_DB_URL=MONGO_URL-prod:latest,REDIS_URL=redis-url:latest,GMAIL_APP_PASSWORD=GMAIL_APP_PASSWORD:latest
+          --update-secrets="$${ALL_SECRETS}"
         echo "=== Deploy complete for ${_SERVICE_NAME} ==="
 
 images:
