@@ -18,9 +18,11 @@ import { WebEventController } from './api/web-event.controller';
 import { AgentEventSchema } from './infrastructure/schemas/agent-event.schema';
 import { WorldSnapshotSchema } from './infrastructure/schemas/world-snapshot.schema';
 import { WebEventSchema } from './infrastructure/schemas/web-event.schema';
+import { AlertStateSchema } from './infrastructure/schemas/alert-state.schema';
 import { AgentEventRepository } from './infrastructure/persistence/agent-event.repository';
 import { WorldSnapshotRepository } from './infrastructure/persistence/world-snapshot.repository';
 import { WebEventRepository } from './infrastructure/persistence/web-event.repository';
+import { AlertStateRepository } from './infrastructure/persistence/alert-state.repository';
 import { EventHandlerService } from './infrastructure/event-handler.service';
 import { PubSubSubscriberService } from './infrastructure/pubsub-subscriber.service';
 import { TelegramAlertService } from './infrastructure/telegram-alert.service';
@@ -48,6 +50,7 @@ import { HealthMonitorService } from './world-model/health-monitor.service';
       { name: 'AgentEvent',    schema: AgentEventSchema },
       { name: 'WorldSnapshot', schema: WorldSnapshotSchema },
       { name: 'WebEvent',      schema: WebEventSchema },
+      { name: 'AlertState',    schema: AlertStateSchema },
     ]),
   ],
   controllers: [
@@ -60,6 +63,7 @@ import { HealthMonitorService } from './world-model/health-monitor.service';
     AgentEventRepository,
     WorldSnapshotRepository,
     WebEventRepository,
+    AlertStateRepository,
     EventHandlerService,
     PubSubSubscriberService,
     TelegramAlertService,

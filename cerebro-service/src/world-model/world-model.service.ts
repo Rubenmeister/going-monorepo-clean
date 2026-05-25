@@ -320,6 +320,7 @@ export class WorldModelService {
         'customer-support-service': 40,
         'mobile-agent': 60 * 24,         // cron cada 6h → stale >24h
         'frontend-agent': 60 * 24,       // cron cada 6h → stale >24h (futuro)
+        'voice-call-service': 60 * 24 * 30, // event-driven (publica solo cuando hay llamada). Threshold 30d para que nunca lo marque stale.
       };
       return a.ageMinutes > (staleThresholds[a.agentId] ?? 120);
     });
