@@ -57,6 +57,9 @@ export type DriverHybridEvent =
       destinationCity: string;
       returnScheduledTripId: UUID;
       nextLongTripStartTime: Date;
+      /** Id de la DriverBase temporal recién creada en destinationCity.
+       *  El caller (lifecycle service) la crea antes de aplicar este evento. */
+      temporalLocalBaseId: UUID;
       /** Override opcional del buffer default (45 min). */
       restBufferMinutes?: number;
     }
@@ -82,6 +85,9 @@ export interface DriverHybridContextProps {
   restWindowStartsAt: Date | null;
   /** Cuánto buffer se aplicó al calcular restWindowStartsAt (audit). */
   restBufferMinutes: number;
+  /** DriverBase temporal creada en destinationCity. Null cuando state==IDLE.
+   *  El caller la desactiva al salir de AVAILABLE_LOCAL via lifecycle service. */
+  temporalLocalBaseId: UUID | null;
   /** Razón cuando la entrada IDLE viene de abort/cancel (audit). */
   lastTransitionReason: string | null;
   createdAt: Date;
@@ -114,6 +120,7 @@ export class DriverHybridContext {
   readonly nextLongTripStartTime: Date | null;
   readonly restWindowStartsAt: Date | null;
   readonly restBufferMinutes: number;
+  readonly temporalLocalBaseId: UUID | null;
   readonly lastTransitionReason: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
@@ -128,6 +135,7 @@ export class DriverHybridContext {
     this.nextLongTripStartTime = props.nextLongTripStartTime;
     this.restWindowStartsAt = props.restWindowStartsAt;
     this.restBufferMinutes = props.restBufferMinutes;
+    this.temporalLocalBaseId = props.temporalLocalBaseId;
     this.lastTransitionReason = props.lastTransitionReason;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
@@ -151,6 +159,7 @@ export class DriverHybridContext {
         nextLongTripStartTime: null,
         restWindowStartsAt: null,
         restBufferMinutes: DEFAULT_REST_BUFFER_MINUTES,
+        temporalLocalBaseId: null,
         lastTransitionReason: null,
         createdAt: now,
         updatedAt: now,
@@ -183,6 +192,7 @@ export class DriverHybridContext {
           destinationCity: null,
           nextLongTripStartTime: null,
           restWindowStartsAt: null,
+          temporalLocalBaseId: null,
           lastTransitionReason: `abort: ${event.reason}`,
           updatedAt: now,
         }),
@@ -221,6 +231,7 @@ export class DriverHybridContext {
               nextLongTripStartTime: event.nextLongTripStartTime,
               restWindowStartsAt: restStartsAt,
               restBufferMinutes: buffer,
+              temporalLocalBaseId: event.temporalLocalBaseId,
               lastTransitionReason: null,
               updatedAt: now,
             }),
@@ -246,6 +257,7 @@ export class DriverHybridContext {
               destinationCity: null,
               nextLongTripStartTime: null,
               restWindowStartsAt: null,
+              temporalLocalBaseId: null,
               lastTransitionReason: 'return_cancelled by passenger or ops',
               updatedAt: now,
             }),
@@ -271,6 +283,7 @@ export class DriverHybridContext {
               destinationCity: null,
               nextLongTripStartTime: null,
               restWindowStartsAt: null,
+              temporalLocalBaseId: null,
               lastTransitionReason: 'return_cancelled during rest',
               updatedAt: now,
             }),
@@ -288,6 +301,7 @@ export class DriverHybridContext {
               destinationCity: null,
               nextLongTripStartTime: null,
               restWindowStartsAt: null,
+              temporalLocalBaseId: null,
               lastTransitionReason: null,
               updatedAt: now,
             }),
@@ -352,6 +366,7 @@ export class DriverHybridContext {
       nextLongTripStartTime: this.nextLongTripStartTime,
       restWindowStartsAt: this.restWindowStartsAt,
       restBufferMinutes: this.restBufferMinutes,
+      temporalLocalBaseId: this.temporalLocalBaseId,
       lastTransitionReason: this.lastTransitionReason,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

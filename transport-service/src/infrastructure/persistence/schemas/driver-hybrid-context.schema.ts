@@ -49,6 +49,9 @@ export class DriverHybridContextModelSchema {
   restBufferMinutes: number;
 
   @Prop({ type: String, default: null })
+  temporalLocalBaseId: string | null;
+
+  @Prop({ type: String, default: null })
   lastTransitionReason: string | null;
 
   @Prop({ type: Date })
