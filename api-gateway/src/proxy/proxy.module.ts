@@ -277,6 +277,10 @@ export class ProxyModule implements NestModule {
     guard('drivers', svc.transport);
     // /driver-bases/* — bases priorizadas (FASE 2)
     guard('driver-bases', svc.transport);
+    // /driver-hybrid/* — Hybrid Mode (Fase E): driver en intercity acepta
+    // carreras locales en destino. Endpoints: start-local-mode, complete-return,
+    // cancel, me. JWT-guarded, valida role en cada handler.
+    guard('driver-hybrid', svc.transport);
     guard('payments', svc.payments);
     guard('tours', svc.tours);
     guard('accommodations', svc.accommodations);
