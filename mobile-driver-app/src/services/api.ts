@@ -50,3 +50,56 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+// ── Driver Hybrid Mode ────────────────────────────────────────────────
+//
+// Endpoints del transport-service para que el conductor combine viajes
+// interurbanos con carreras locales en la ciudad destino sin riesgo de
+// llegar tarde al retorno (45 min buffer obligatorio).
+//
+// Ver docs del backend en transport-service/src/api/driver-hybrid.controller.ts
+
+export type DriverHybridState =
+  | 'IDLE'
+  | 'LONG_TRIP_OUTBOUND'
+  | 'AVAILABLE_LOCAL'
+  | 'BLOCKED_REST'
+  | 'LONG_TRIP_RETURN';
+
+export interface DriverHybridStateResponse {
+  state: DriverHybridState;
+  active: boolean;
+  destinationCity?: string | null;
+  nextLongTripStartTime?: string | null;
+  restWindowStartsAt?: string | null;
+  restBufferMinutes?: number;
+  minutesUntilRestWindow?: number | null;
+  acceptingLocalRides?: boolean;
+}
+
+export interface StartLocalModeInput {
+  destinationCity: string;
+  destLat: number;
+  destLng: number;
+  outboundScheduledTripId: string;
+  returnScheduledTripId: string;
+  nextLongTripStartTime: string; // ISO 8601
+  localRadiusKm?: number;
+  restBufferMinutes?: number;
+}
+
+export const driverHybridAPI = {
+  /** Estado actual del modo híbrido del conductor (poll cada ~30s). */
+  getMyState: () => api.get<DriverHybridStateResponse>('/driver-hybrid/me'),
+
+  /** Driver llegó al destino del intercity y quiere modo local activo. */
+  startLocalMode: (input: StartLocalModeInput) =>
+    api.post<DriverHybridStateResponse>('/driver-hybrid/start-local-mode', input),
+
+  /** Driver completó el retorno → IDLE. */
+  completeReturn: () =>
+    api.post<DriverHybridStateResponse>('/driver-hybrid/complete-return'),
+
+  /** Opt-out o cancelación del retorno. */
+  cancel: () => api.post<DriverHybridStateResponse>('/driver-hybrid/cancel'),
+};
