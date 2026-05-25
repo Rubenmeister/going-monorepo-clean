@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { WorldSnapshotRepository } from '../infrastructure/persistence/world-snapshot.repository';
+import { AlertStateRepository } from '../infrastructure/persistence/alert-state.repository';
 import { TelegramAlertService } from '../infrastructure/telegram-alert.service';
 
 /**
@@ -17,20 +18,27 @@ import { TelegramAlertService } from '../infrastructure/telegram-alert.service';
  *   - Recovery: cuando un alert activo "se resuelve" (e.g. el agent vuelve
  *     a publicar dentro de ventana), manda "✅ resuelto".
  *
- * State in-memory:
+ * State persistido en Mongo (collection `cerebro_alert_state`):
  *   - activeAlerts: Set<string> con los IDs de alerts encendidos.
- *   - Restart pierde state → posible re-alert en startup. Aceptable.
+ *   - Se hidrata en onModuleInit y se persiste tras cada @Cron evaluate.
+ *   - Esto evita re-spam de Telegram cuando cerebro-service se recicla
+ *     (min-instances=0): el nuevo container carga el set previo y solo
+ *     dispara `:new` para transiciones reales, no para state preexistente.
  *
- * No throws — best-effort. Si Telegram falla, log y seguir. Si el cron del
- * world model freeza, este monitor SÍ debe alertar (lectura directa del
- * Mongo snapshot, no depende del world model service en runtime).
+ * No throws — best-effort. Si Telegram o Mongo fallan, log y seguir. Si el
+ * cron del world model freeza, este monitor SÍ debe alertar (lectura directa
+ * del Mongo snapshot, no depende del world model service en runtime).
  */
 @Injectable()
-export class HealthMonitorService {
+export class HealthMonitorService implements OnModuleInit {
   private readonly logger = new Logger(HealthMonitorService.name);
 
-  /** Alerts activos por ID. Reset al restart del container. */
+  /** Alerts activos por ID. Hidratado desde Mongo en onModuleInit. */
   private readonly activeAlerts = new Set<string>();
+
+  /** True una vez que onModuleInit terminó de hidratar desde Mongo (o se
+   *  rindió tras un error). Hasta entonces, check() skipea el ciclo. */
+  private alertsHydrated = false;
 
   /** Para "ya envié bienvenida"; evita un spam masivo al startup. */
   private hasSentStartupBanner = false;
@@ -52,10 +60,33 @@ export class HealthMonitorService {
   private readonly SNAPSHOT_STALE_MIN = 30;
 
   constructor(
-    private readonly config:    ConfigService,
-    private readonly snapshots: WorldSnapshotRepository,
-    private readonly telegram:  TelegramAlertService,
+    private readonly config:     ConfigService,
+    private readonly snapshots:  WorldSnapshotRepository,
+    private readonly alertState: AlertStateRepository,
+    private readonly telegram:   TelegramAlertService,
   ) {}
+
+  /**
+   * Hidrata activeAlerts desde Mongo al arrancar el container. Si Mongo
+   * falla, arrancamos con set vacío y aceptamos posible re-alert en el
+   * próximo ciclo (mejor que bloquear startup del servicio entero).
+   */
+  async onModuleInit(): Promise<void> {
+    try {
+      const ids = await this.alertState.getActiveIds();
+      for (const id of ids) this.activeAlerts.add(id);
+      this.logger.log(
+        `Hidratado desde Mongo: ${ids.length} alerts activos (${ids.join(', ') || '∅'})`,
+      );
+    } catch (e) {
+      this.logger.warn(
+        `No se pudo hidratar activeAlerts de Mongo: ${(e as Error).message} ` +
+        `— arranco con set vacío`,
+      );
+    } finally {
+      this.alertsHydrated = true;
+    }
+  }
 
   /**
    * Toggle: CEREBRO_HEALTH_ALERTS_ENABLED=false desactiva todo. Default true.
@@ -68,6 +99,13 @@ export class HealthMonitorService {
   @Cron(CronExpression.EVERY_10_MINUTES, { name: 'cerebro-health-monitor' })
   async check(): Promise<void> {
     if (!this.isEnabled()) return;
+
+    // Defensivo: si onModuleInit aún no terminó de cargar state de Mongo,
+    // skipear este ciclo (mejor que firarse `:new` sobre state stale).
+    if (!this.alertsHydrated) {
+      this.logger.warn('check skipped — activeAlerts aún no hidratados de Mongo');
+      return;
+    }
 
     let snapshot;
     try {
@@ -102,6 +140,12 @@ export class HealthMonitorService {
         this.logger.warn(`Telegram send falló: ${(e as Error).message}`);
       }
     }
+
+    // ── Persistir state post-evaluate ─────────────────────
+    // evaluate() ya actualizó this.activeAlerts in-place. Lo guardamos a
+    // Mongo para que el próximo restart no re-emita `:new` sobre alerts
+    // que ya estaban activos. Best-effort: si Mongo falla, log y seguir.
+    await this.alertState.setActiveIds([...this.activeAlerts]);
   }
 
   /**
