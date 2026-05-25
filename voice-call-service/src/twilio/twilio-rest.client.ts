@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import twilio from 'twilio';
-import type { Twilio } from 'twilio';
+// twilio v5 NO expone default export invocable como function — el
+// `import twilio from 'twilio'` típico de v4 falla con "twilio_1.default
+// is not a function" en runtime. Usar el named export Twilio + new.
+import { Twilio } from 'twilio';
 
 /**
  * TwilioRestClient — wrapper liviano del SDK oficial twilio para las
@@ -38,7 +40,7 @@ export class TwilioRestClient {
       );
       this.client = null;
     } else {
-      this.client = twilio(this.accountSid, authToken);
+      this.client = new Twilio(this.accountSid, authToken);
       this.logger.log(`[twilio-rest] cliente inicializado (SID=${this.accountSid.slice(0, 10)}...)`);
     }
   }
