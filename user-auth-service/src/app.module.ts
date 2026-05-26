@@ -6,6 +6,7 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { AuthController } from './api/auth.controller';
 import { HealthController } from './api/health.controller';
 import { AdminController } from './api/admin.controller';
+import { MfaController } from './api/mfa.controller';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -14,6 +15,7 @@ import {
 import { AuditModule } from './audit/audit.module';
 import { AccountLockoutService } from './application/account-lockout.service';
 import { LoyaltyPointsService } from './application/loyalty-points.service';
+import { MfaService } from './application/mfa.service';
 import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
 
 @Module({
@@ -37,8 +39,15 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
     InfrastructureModule,
     AuditModule,
   ],
-  controllers: [AuthController, HealthController, AdminController],
-  providers: [RegisterUserUseCase, LoginUserUseCase, OAuthLoginUseCase, AccountLockoutService, LoyaltyPointsService],
+  controllers: [AuthController, HealthController, AdminController, MfaController],
+  providers: [
+    RegisterUserUseCase,
+    LoginUserUseCase,
+    OAuthLoginUseCase,
+    AccountLockoutService,
+    LoyaltyPointsService,
+    MfaService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -170,10 +170,18 @@ export function useAuthRedirect(redirectTo: string = "/empresas/auth/login") {
  * Este cliente solo guarda token + user info en localStorage para usar en
  * Authorization headers de subsiguientes requests al backend.
  */
+export interface SignInResult {
+  success: boolean;
+  error?: string;
+  /** Si el user tiene MFA activado, hay que llamar verifyMfaLogin con este token + el code TOTP/recovery. */
+  mfaRequired?: boolean;
+  mfaToken?: string;
+}
+
 export async function signIn(
   email: string,
   password: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<SignInResult> {
   try {
     const res = await fetch(`/api/empresas/auth/login`, {
       method: "POST",
@@ -196,42 +204,82 @@ export async function signIn(
     }
 
     const data = await res.json();
-    // data: { accessToken, refreshToken, expiresIn, user, companyId, companyName }
 
-    if (typeof window === "undefined") return { success: false, error: "Sin acceso a localStorage" };
-
-    localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
-
-    if (data.refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    // MFA challenge: el backend devuelve { mfaRequired: true, mfaToken }
+    // en lugar de los tokens reales. El caller debe pedir TOTP code y
+    // llamar a verifyMfaLogin().
+    if (data?.mfaRequired && data?.mfaToken) {
+      return { success: false, mfaRequired: true, mfaToken: data.mfaToken };
     }
 
-    // Guardamos info del usuario para readSession()
-    const user = data.user ?? {};
-    localStorage.setItem(
-      USER_INFO_KEY,
-      JSON.stringify({
-        id: user.id,
-        email: user.email,
-        nombre: user.firstName ?? user.nombre ?? "",
-        apellido: user.lastName ?? user.apellido ?? "",
-        companyId: data.companyId ?? user.companyId ?? "",
-        companyName: data.companyName ?? user.companyName ?? "",
-        roles: user.roles ?? [],
-        tipoCuenta: user.tipoCuenta ?? null,
-        activo: user.activo ?? true,
-      })
-    );
+    // data: { accessToken, refreshToken, expiresIn, user, companyId, companyName }
+    if (typeof window === "undefined") return { success: false, error: "Sin acceso a localStorage" };
 
-    // La cookie httpOnly going_empresas_session ya fue seteada por el proxy
-    // /api/empresas/auth/login server-side. No tocar document.cookie acá
-    // (httpOnly la oculta de JS).
-
+    persistSessionFromResponse(data);
     return { success: true };
   } catch (error) {
     console.error("Sign in error:", error);
     return { success: false, error: "No se pudo conectar con el servidor." };
   }
+}
+
+/**
+ * Segundo paso del login cuando el user tiene MFA activado.
+ * Llama al proxy /api/empresas/auth/mfa-verify-login con { mfaToken, code }.
+ * Si OK, guarda la sesión exactamente igual que signIn() exitoso.
+ */
+export async function verifyMfaLogin(
+  mfaToken: string,
+  code: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const res = await fetch(`/api/empresas/auth/mfa-verify-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mfaToken, code }),
+    });
+    if (res.status === 401) {
+      return { success: false, error: "Código inválido. Intenta de nuevo." };
+    }
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      return { success: false, error: body.message ?? "Error verificando código." };
+    }
+    const data = await res.json();
+    if (typeof window === "undefined") return { success: false, error: "Sin acceso a localStorage" };
+    persistSessionFromResponse(data);
+    return { success: true };
+  } catch (error) {
+    console.error("verifyMfaLogin error:", error);
+    return { success: false, error: "No se pudo conectar con el servidor." };
+  }
+}
+
+/**
+ * Guarda accessToken + refreshToken + userInfo en localStorage. Helper
+ * compartido entre signIn() y verifyMfaLogin().
+ */
+function persistSessionFromResponse(data: any): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+  if (data.refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+  }
+  const user = data.user ?? {};
+  localStorage.setItem(
+    USER_INFO_KEY,
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      nombre: user.firstName ?? user.nombre ?? "",
+      apellido: user.lastName ?? user.apellido ?? "",
+      companyId: data.companyId ?? user.companyId ?? "",
+      companyName: data.companyName ?? user.companyName ?? "",
+      roles: user.roles ?? [],
+      tipoCuenta: user.tipoCuenta ?? null,
+      activo: user.activo ?? true,
+    })
+  );
 }
 
 /**

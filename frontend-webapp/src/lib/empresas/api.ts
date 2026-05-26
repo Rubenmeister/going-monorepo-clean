@@ -443,6 +443,48 @@ export async function searchExperiences(
   return Array.isArray(res) ? res : (res as any).experiences ?? [];
 }
 
+// ── MFA / 2FA (Camino 2A-D) ──────────────────────────────────────────────────
+
+export interface MfaStatus {
+  enabled: boolean;
+  activatedAt?: string;
+}
+
+export interface MfaSetupResponse {
+  qrDataUrl: string;
+  manualEntryCode: string;
+  recoveryCodes: string[];
+}
+
+export async function fetchMfaStatus(token: string): Promise<MfaStatus> {
+  return corpFetch<MfaStatus>("/auth/mfa/status", token);
+}
+
+export async function setupMfa(token: string): Promise<MfaSetupResponse> {
+  return corpFetch<MfaSetupResponse>("/auth/mfa/setup", token, { method: "POST" });
+}
+
+export async function enableMfa(token: string, code: string): Promise<{ enabled: true; activatedAt: string }> {
+  return corpFetch("/auth/mfa/enable", token, {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}
+
+export async function disableMfa(token: string, password: string, code: string): Promise<{ enabled: false }> {
+  return corpFetch("/auth/mfa/disable", token, {
+    method: "POST",
+    body: JSON.stringify({ password, code }),
+  });
+}
+
+export async function regenerateMfaCodes(token: string, code: string): Promise<{ recoveryCodes: string[] }> {
+  return corpFetch("/auth/mfa/regenerate-codes", token, {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}
+
 // ── PDF de facturas (Gap #3) ─────────────────────────────────────────────────
 
 /**
