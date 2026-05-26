@@ -91,9 +91,27 @@ function GoingHeaderLogo() {
 }
 
 // ── Param lists ───────────────────────────────────────────────────────────────
+/** Wizard de inicio de viaje (Mobile #60 MVP):
+ *  Home se reusa como hub del wizard. Al tap en "Compartido"/"Privado":
+ *    1. Home navega a LocationPicker(returnScreen=Home, paramKey=pickup).
+ *    2. LocationPicker vuelve a Home con `pickup` y `tripMode` set.
+ *    3. Home (en useEffect) detecta pickup pero no destination → navega a
+ *       LocationPicker para destination.
+ *    4. LocationPicker vuelve a Home con `destination` set.
+ *    5. Home detecta pickup + destination → navega a BookingOptions con
+ *       las coords + vehicleType derivado de tripMode.
+ *
+ *  Este patrón evita crear una pantalla wizard separada (TripStartScreen).
+ */
+export type HomeWizardParams = {
+  pickup?: { latitude: number; longitude: number; address?: string };
+  destination?: { latitude: number; longitude: number; address?: string };
+  tripMode?: 'compartido' | 'privado';
+};
+
 export type MainStackParamList = {
   // Core
-  Home:               undefined;
+  Home:               HomeWizardParams | undefined;
   Search:             undefined;
   // Bookings / History
   Historial:          undefined;

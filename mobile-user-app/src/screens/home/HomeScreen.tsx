@@ -30,7 +30,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@store/useAuthStore';
 import type { MainStackParamList } from '@navigation/MainNavigator';
@@ -62,6 +62,14 @@ type ProductCard = {
   navigate: (nav: Nav) => void;
 };
 
+/**
+ * Mobile #60 MVP wire: en lugar de SharedRideBooking/PrivateRideBooking
+ * (pricing hardcoded client-side), Compartido/Privado disparan el wizard
+ * de Home → LocationPicker(origen) → LocationPicker(destino) → BookingOptions
+ * (consume /search del backend → onDemand + scheduled options).
+ *
+ * Envíos sigue su flujo dedicado (no usa /search).
+ */
 const PRODUCTS: ProductCard[] = [
   {
     id: 'compartido',
@@ -69,14 +77,33 @@ const PRODUCTS: ProductCard[] = [
     subtitle: 'Paga solo tu asiento',
     icon: 'people',
     popular: true,
-    navigate: (nav) => nav.navigate('SharedRideBooking', {}),
+    navigate: (nav) => {
+      // Inicia el wizard pidiendo el pickup. Marcamos tripMode='compartido'
+      // para que después del destination escojamos vehicleType apropiado.
+      nav.navigate('LocationPicker', {
+        title: '¿Dónde te recogemos?',
+        mode: 'origin',
+        returnScreen: 'Home',
+        paramKey: 'pickup',
+      } as any);
+      // tripMode no se puede pasar al picker — lo seteamos en Home a través
+      // de un truco: se pone en navigate.params del setParams previo. En su
+      // lugar usamos un global stash via useState en Home (más abajo).
+    },
   },
   {
     id: 'privado',
     title: 'Viaje Privado',
     subtitle: 'Vehículo exclusivo',
     icon: 'car-sport',
-    navigate: (nav) => nav.navigate('PrivateRideBooking', {}),
+    navigate: (nav) => {
+      nav.navigate('LocationPicker', {
+        title: '¿Dónde te recogemos?',
+        mode: 'origin',
+        returnScreen: 'Home',
+        paramKey: 'pickup',
+      } as any);
+    },
   },
   {
     id: 'envios',
@@ -89,21 +116,60 @@ const PRODUCTS: ProductCard[] = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<Nav>();
+  const route = useRoute<RouteProp<MainStackParamList, 'Home'>>();
   const { user } = useAuthStore();
   const { tokens, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
   const [recentRoutes, setRecentRoutes] = useState<RecentRoute[]>([]);
+  /** Modo del wizard activo. Se setea al tap en el card y se limpia al
+   *  navegar a BookingOptions o al cancelar (no implementado en MVP). */
+  const [tripMode, setTripMode] = useState<'compartido' | 'privado' | null>(null);
+
   useEffect(() => {
     loadRecentRoutes().then(setRecentRoutes);
     analyticsScreen('Home');
   }, []);
+
+  // ── Wizard handler: detecta params del LocationPicker y avanza al siguiente paso ──
+  const pickup = route.params?.pickup;
+  const destination = route.params?.destination;
+  useEffect(() => {
+    if (pickup && !destination) {
+      // Volvió del primer LocationPicker → abrir segundo para destination.
+      navigation.navigate('LocationPicker', {
+        title: '¿A dónde vas?',
+        mode: 'destination',
+        returnScreen: 'Home',
+        paramKey: 'destination',
+        // Conservamos pickup en stack — al volver Home tendrá ambos.
+        // LocationPicker hace `navigate(returnScreen, { [paramKey]: location })`,
+        // lo que MERGE con params previos por defecto en react-navigation v6+.
+      } as any);
+    } else if (pickup && destination) {
+      // Tenemos ambos → ir a BookingOptions y limpiar params del wizard.
+      const vehicleHint =
+        tripMode === 'privado' ? ('suv' as const) : undefined;
+      navigation.navigate('BookingOptions', {
+        pickup,
+        destination,
+        temporalPreference: 'immediate',
+        vehicleType: vehicleHint,
+      });
+      // Limpiar params para no re-disparar el wizard si el user vuelve al Home.
+      navigation.setParams({ pickup: undefined, destination: undefined } as any);
+      setTripMode(null);
+    }
+  }, [pickup, destination, navigation, tripMode]);
 
   const greeting = useMemo(timeOfDayGreeting, []);
   const firstName = user?.firstName ?? 'viajero';
 
   const handleProductTap = useCallback((product: ProductCard) => {
     hapticLight();
+    if (product.id === 'compartido' || product.id === 'privado') {
+      setTripMode(product.id);
+    }
     product.navigate(navigation);
   }, [navigation]);
 
