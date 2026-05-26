@@ -4,6 +4,7 @@ import {
   RideMatch,
   IRideMatchRepository,
   IDriverHybridContextRepository,
+  IDriverComplianceRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { Redis } from 'ioredis';
@@ -104,6 +105,16 @@ export class MatchAvailableDriversUseCase {
     @Optional()
     @Inject(IDriverHybridContextRepository)
     private readonly hybridRepo?: IDriverHybridContextRepository,
+    /**
+     * Opcional — Driver Compliance Gate (Fase D del Compliance System).
+     * Si está disponible, drivers con complianceStatus != 'verified' son
+     * excluidos del pool ANTES del scoring. Degradación gentil: si el repo
+     * falla, no bloquea el matching (el cron de vencimientos sigue marcando
+     * docs expirados aunque el gate del matching no esté activo en ese momento).
+     */
+    @Optional()
+    @Inject(IDriverComplianceRepository)
+    private readonly complianceRepo?: IDriverComplianceRepository,
   ) {}
 
   /**
@@ -205,12 +216,46 @@ export class MatchAvailableDriversUseCase {
       return err(new Error('No available drivers found nearby'));
     }
 
+    // Step 1b: Driver Compliance Gate (Fase D del Compliance System)
+    // Excluye drivers que NO tengan complianceStatus='verified'. Batch lookup
+    // (1 query Mongo para los N candidatos) para evitar N+1.
+    let compliantSet: Set<string> | null = null;
+    if (this.complianceRepo) {
+      try {
+        const driverIds = nearbyRaw.map((r) => r[0]);
+        const statuses = await this.complianceRepo.getStatusesForDrivers(driverIds);
+        compliantSet = new Set<string>();
+        for (const [id, status] of statuses) {
+          if (status === 'verified') compliantSet.add(id);
+        }
+        const excluded = driverIds.length - compliantSet.size;
+        if (excluded > 0) {
+          this.logger.log(
+            `Compliance gate: ride ${dto.rideId} — excluidos ${excluded}/${driverIds.length} drivers por compliance`,
+          );
+        }
+      } catch (e) {
+        this.logger.warn(
+          `Compliance gate check failed for ride ${dto.rideId}: ${(e as Error).message} — sin gate (degradación gentil)`,
+        );
+        compliantSet = null;
+      }
+    }
+
     // Step 2: Load availability data and filter by rating + vehicle type
     const minRating = 4.0; // Minimum acceptable driver rating
     const filteredDrivers: DriverInfo[] = [];
 
     for (const [driverId, distStr] of nearbyRaw) {
       if (filteredDrivers.length >= limit) break;
+
+      // Compliance gate (Fase D): skip drivers no verified.
+      if (compliantSet && !compliantSet.has(driverId)) {
+        this.logger.debug(
+          `Compliance gate: skipping driver ${driverId} (status != 'verified')`,
+        );
+        continue;
+      }
 
       const availability = await this.redis.hgetall(
         `${AVAILABILITY_KEY}:${driverId}`

@@ -11,4 +11,5 @@ export * from './libs/ports/iride-match.repository';
 export * from './libs/ports/izone.repository';
 export * from './libs/ports/idriver-base.repository';
 export * from './libs/ports/idriver-hybrid-context.repository';
+export * from './libs/ports/idriver-compliance.repository';
 export * from './libs/ports/ifairness-counter.repository';
