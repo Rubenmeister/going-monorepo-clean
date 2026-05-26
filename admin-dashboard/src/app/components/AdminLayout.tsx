@@ -22,10 +22,11 @@ const NAV_SECTIONS = [
   {
     title: 'Operaciones',
     items: [
-      { label: 'Conductores',  href: '/drivers',     icon: '🚗' },
-      { label: 'Onboarding',   href: '/onboarding',  icon: '🎓' },
-      { label: 'Vehículos',    href: '/vehicles',    icon: '🚙' },
-      { label: 'Reservas',     href: '/bookings',    icon: '📅' },
+      { label: 'Conductores',  href: '/drivers',             icon: '🚗' },
+      { label: 'Compliance',   href: '/drivers/compliance',  icon: '📋' },
+      { label: 'Onboarding',   href: '/onboarding',          icon: '🎓' },
+      { label: 'Vehículos',    href: '/vehicles',            icon: '🚙' },
+      { label: 'Reservas',     href: '/bookings',            icon: '📅' },
     ],
   },
   {
