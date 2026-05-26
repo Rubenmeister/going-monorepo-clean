@@ -1,9 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { RulesEngineService, ActionRule } from './rules-engine.service';
 import { safetyMeta } from './safety-levels';
 import { AgentOverrideService } from './agent-override.service';
+import { ActionVerifierService } from './action-verifier.service';
+import { findAutonomousEntry } from './autonomous-allowlist';
 import { DecisionRepository } from '../infrastructure/persistence/decision.repository';
 import { AgentBridgeClient } from '../infrastructure/agent-bridge.client';
 import { TelegramApprovalService } from '../infrastructure/telegram-approval.service';
@@ -39,6 +41,7 @@ export class DispatcherService {
     private readonly telegram:  TelegramApprovalService,
     private readonly mycortex:  MycortexClient,
     private readonly overrides: AgentOverrideService,
+    @Optional() private readonly verifier?: ActionVerifierService,
   ) {}
 
   private get executeEnabled(): boolean {
@@ -176,7 +179,59 @@ export class DispatcherService {
       return created.toObject();
     }
 
-    // 7. Cat 1 / Cat 2 — ejecutar directo
+    // 7. Fase B autonomous allowlist (cerebro autónomo verificable).
+    //    La allowlist es ADITIVA: si el intent.type está acá, requiere
+    //    minUrgency + verifier post-acción. Si NO está, ejecuta como antes
+    //    (comportamiento legacy preservado para no romper otras reglas).
+    //    Cuando confiemos en el verifier, podemos hacer la allowlist STRICT
+    //    (todo Cat ≥2 debe estar en allowlist o queda dormant).
+    const allowEntry = findAutonomousEntry(intent.type);
+    if (allowEntry) {
+      if ((intent.urgency ?? 0) < allowEntry.minUrgency) {
+        baseDecision.status        = 'dormant';
+        baseDecision.dormantReason = `urgency_below_threshold:${allowEntry.minUrgency}`;
+        const dormant = await this.repo.create(baseDecision);
+        this.logger.log(
+          `[DORMANT/urgency-gate] decision ${decisionId.slice(0, 8)} ${intent.type} ` +
+            `urgency=${intent.urgency ?? 0} < ${allowEntry.minUrgency}`,
+        );
+        return dormant.toObject();
+      }
+
+      // Path autonomous con verifier — snapshot pre → execute → schedule post.
+      const created = await this.repo.create(baseDecision);
+      let verificationId: string | null = null;
+      if (this.verifier) {
+        try {
+          const snap = await this.verifier.snapshotBefore({
+            decisionId,
+            entry: allowEntry,
+          });
+          verificationId = snap.verificationId;
+          this.logger.log(
+            `[verify] snapshot pre decision=${decisionId.slice(0, 8)} ` +
+              `metric=${allowEntry.verify.verifierKey} before=${snap.metricBefore}`,
+          );
+        } catch (e) {
+          // Si el snapshot falla (Mongo down, métrica no implementada),
+          // continuamos con el dispatch — el verifier es best-effort,
+          // no debe bloquear acciones críticas.
+          this.logger.warn(
+            `[verify] snapshotBefore fallo decision=${decisionId.slice(0, 8)}: ${(e as Error).message}`,
+          );
+        }
+      }
+
+      await this.executeNow(created.toObject(), action);
+
+      if (this.verifier && verificationId) {
+        this.verifier.scheduleVerification({ verificationId, entry: allowEntry });
+      }
+
+      return (await this.repo.findById(decisionId)) ?? created.toObject();
+    }
+
+    // 8. Cat 1 / Cat 2 fuera de allowlist — ejecutar directo (sin verifier)
     const created = await this.repo.create(baseDecision);
     await this.executeNow(created.toObject(), action);
     return (await this.repo.findById(decisionId)) ?? created.toObject();

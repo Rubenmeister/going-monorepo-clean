@@ -156,6 +156,26 @@ export class MongoConversationRepository {
   }
 
   /**
+   * Cerebro Fase B — métrica para ActionVerifier del orchestrator.
+   * Cuenta conversations status='handoff' + priority='RED' + sin asignar
+   * operador, más viejas que `olderThanH` horas. Es la métrica que el
+   * cleanup_stale_customer_handoffs debe reducir.
+   */
+  async countRedHandoffsOlderThan(olderThanH: number): Promise<number> {
+    const cutoff = new Date(Date.now() - olderThanH * 3600 * 1000);
+    return this.conversationModel.countDocuments({
+      status: 'handoff',
+      priority: 'RED',
+      createdAt: { $lt: cutoff },
+      $or: [
+        { operatorId: { $exists: false } },
+        { operatorId: null },
+        { operatorId: '' },
+      ],
+    });
+  }
+
+  /**
    * Edad de la handoff RED/ORANGE más vieja sin atender (status=handoff).
    * Devuelve el `createdAt` o null si la cola está limpia.
    */

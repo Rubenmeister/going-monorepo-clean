@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AutonomousEntry } from './autonomous-allowlist';
@@ -29,6 +30,7 @@ export class ActionVerifierService {
   constructor(
     @InjectModel(ActionVerification.name)
     private readonly verifModel: Model<ActionVerificationDocument>,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -136,39 +138,81 @@ export class ActionVerifierService {
   }
 
   /**
-   * Registry de cómo medir cada métrica. Hardcodeado para Fase A.
-   * Devuelve un número que el verifier compara antes vs después.
+   * Registry de cómo medir cada métrica. Las llamadas van por HTTP a
+   * endpoints admin de los agents para mantener la separación de bounded
+   * contexts (el orchestrator no toca Mongos ajenas).
    *
-   * Esto vive acá (en orchestrator) y NO en customer-support-service
-   * porque queremos que el cerebro verifique INDEPENDIENTEMENTE — sin
-   * depender de que el agente reporte correctamente que "hizo cleanup".
-   * El cerebro mide la métrica real con sus propios ojos.
+   * Fallback: si HTTP falla o el endpoint no responde, retorna -1
+   * (sentinel "no medible"). El verifier marca status='failed_to_converge'
+   * y persiste el error — el operador lo ve en el dashboard.
+   *
+   * Por qué medir desde orchestrator vs delegar al agent: queremos que
+   * el cerebro verifique INDEPENDIENTEMENTE — sin depender de que el
+   * agente reporte correctamente "hice cleanup". El cerebro mide con
+   * sus propios ojos contra el endpoint admin.
    */
   private async measureMetric(key: string): Promise<number> {
     switch (key) {
       case 'pending_red_handoffs':
-        // TODO Fase A.1: conectar al Mongo de customer-support (DB
-        // 'going-support', col 'conversations'). Por ahora retorna -1
-        // como sentinel "no implementado" — el verifier debe saber
-        // tratar esto como "no verificable, omitir convergence check".
-        //
-        // Implementación real:
-        //   import { MongoClient } from 'mongodb';
-        //   const c = new MongoClient(process.env.CUSTOMER_SUPPORT_MONGO_URL);
-        //   await c.connect();
-        //   const cnt = await c.db('going-support').collection('conversations')
-        //     .countDocuments({
-        //       status: 'handoff',
-        //       priority: 'RED',
-        //       createdAt: { $lt: new Date(Date.now() - 24*60*60*1000) },
-        //     });
-        //   await c.close();
-        //   return cnt;
-        return -1;
+        return this.fetchCustomerSupportMetric('pending-red-handoffs', 24);
 
       default:
         this.logger.warn(`[verify] verifierKey desconocido: ${key}`);
         return -1;
+    }
+  }
+
+  /**
+   * Fetch a customer-support-service /support/metrics/:path?olderThanH=X.
+   * Auth: X-Internal-Token (mismo secret que el dispatcher usa para
+   * llamar al agent-bridge). Timeout 5s — la verificación corre en
+   * background así que no es crítico.
+   */
+  private async fetchCustomerSupportMetric(
+    metricPath: string,
+    olderThanH: number,
+  ): Promise<number> {
+    const base = this.config.get<string>('CUSTOMER_SUPPORT_SERVICE_URL');
+    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+    if (!base) {
+      this.logger.warn(
+        '[verify] CUSTOMER_SUPPORT_SERVICE_URL no configurado — métrica no medible',
+      );
+      return -1;
+    }
+    if (!token) {
+      this.logger.warn(
+        '[verify] INTERNAL_SERVICE_TOKEN no configurado — sin auth, no medimos',
+      );
+      return -1;
+    }
+    const url = `${base.replace(/\/$/, '')}/support/metrics/${metricPath}?olderThanH=${olderThanH}`;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'x-internal-token': token },
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        this.logger.warn(
+          `[verify] customer-support metric HTTP ${res.status} en ${url}`,
+        );
+        return -1;
+      }
+      const data = (await res.json()) as { count?: number };
+      if (typeof data.count !== 'number') {
+        this.logger.warn(`[verify] customer-support response sin count: ${JSON.stringify(data).slice(0, 80)}`);
+        return -1;
+      }
+      return data.count;
+    } catch (e) {
+      this.logger.warn(
+        `[verify] customer-support metric fallo: ${(e as Error).message}`,
+      );
+      return -1;
     }
   }
 }

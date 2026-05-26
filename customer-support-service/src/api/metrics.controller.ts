@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { MetricsService } from '../infrastructure/metrics.service';
+import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
 import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
 
 /**
@@ -16,7 +17,10 @@ import { AdminOrInternalGuard } from '../infrastructure/auth/jwt.guard';
  */
 @Controller('support')
 export class MetricsController {
-  constructor(private readonly metrics: MetricsService) {}
+  constructor(
+    private readonly metrics: MetricsService,
+    private readonly convRepo: MongoConversationRepository,
+  ) {}
 
   /**
    * GET /support/metrics?windowMinutes=10
@@ -32,5 +36,30 @@ export class MetricsController {
     const w = parseInt(windowMinutes || '10', 10);
     const safeWindow = Number.isFinite(w) && w > 0 && w <= 1440 ? w : 10;
     return this.metrics.snapshot(safeWindow);
+  }
+
+  /**
+   * GET /support/metrics/pending-red-handoffs?olderThanH=24
+   *
+   * Cerebro Fase B — métrica observable para ActionVerifier del
+   * orchestrator. Cuenta handoffs RED sin operador asignado más viejos
+   * que N horas. La acción `cleanup_stale_customer_handoffs` debería
+   * reducirla a 0 (o ≤1) tras ejecutar.
+   *
+   * Auth: admin JWT O X-Internal-Token. El orchestrator usa el segundo.
+   */
+  @Get('metrics/pending-red-handoffs')
+  @UseGuards(AdminOrInternalGuard)
+  async getPendingRedHandoffs(
+    @Query('olderThanH') olderThanH?: string,
+  ): Promise<{ count: number; olderThanH: number; asOf: string }> {
+    const h = parseInt(olderThanH || '24', 10);
+    const safeH = Number.isFinite(h) && h > 0 && h <= 720 ? h : 24;
+    const count = await this.convRepo.countRedHandoffsOlderThan(safeH);
+    return {
+      count,
+      olderThanH: safeH,
+      asOf: new Date().toISOString(),
+    };
   }
 }
