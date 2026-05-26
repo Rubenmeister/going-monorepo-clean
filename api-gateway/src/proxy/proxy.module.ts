@@ -293,6 +293,10 @@ export class ProxyModule implements NestModule {
     guard('notifications', svc.notifications);
     guard('tracking', svc.tracking);
     guard('bookings', svc.bookings);
+    // /recurring-trips/* — viajes recurrentes corporativos (Gap #1). Endpoints
+    // CRUD + pause/resume en booking-service. JWT requerido + companyId
+    // validated en cada handler.
+    guard('recurring-trips', svc.bookings);
     guard('invoices', svc.invoices);
     guard('analytics', svc.analytics);
     guard('social', svc.social);
@@ -331,6 +335,7 @@ export class ProxyModule implements NestModule {
     guardExact('driver-bases', svc.transport, allMethods);
     guardExact('parcels', svc.parcels, allMethods);
     guardExact('bookings', svc.bookings, allMethods);
+    guardExact('recurring-trips', svc.bookings, allMethods);
     guardExact('payments', svc.payments, allMethods);
     guardExact('tours', svc.tours, allMethods);
     guardExact('accommodations', svc.accommodations, allMethods);
