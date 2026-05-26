@@ -31,11 +31,13 @@ import {
   IZoneRepository,
   IDriverBaseRepository,
   IDriverHybridContextRepository,
+  IDriverComplianceRepository,
   IFairnessCounterRepository,
 } from '@going-monorepo-clean/domains-transport-core';
 import { MongooseZoneRepository } from '../infrastructure/persistence/mongoose-zone.repository';
 import { MongooseDriverBaseRepository } from '../infrastructure/persistence/mongoose-driver-base.repository';
 import { MongooseDriverHybridContextRepository } from '../infrastructure/persistence/mongoose-driver-hybrid-context.repository';
+import { MongoDriverComplianceRepository } from '../infrastructure/persistence/mongo-driver-compliance.repository';
 import { RedisFairnessCounterRepository } from '../infrastructure/persistence/redis-fairness-counter.repository';
 import {
   ZoneModelSchema,
@@ -205,6 +207,10 @@ import { MulterModule } from '@nestjs/platform-express';
     {
       provide: IDriverHybridContextRepository,
       useClass: MongooseDriverHybridContextRepository,
+    },
+    {
+      provide: IDriverComplianceRepository,
+      useClass: MongoDriverComplianceRepository,
     },
     DriverHybridLifecycleService,
     DriverHybridTransitionCronService,
