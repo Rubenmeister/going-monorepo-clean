@@ -42,6 +42,10 @@ import {
   type ScheduledOption,
   type AlternativeSchedule,
 } from '../../services/api';
+import {
+  buildConfirmRideFromOnDemand,
+  buildSeatReservationParams,
+} from './booking-options.builders';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
@@ -110,46 +114,28 @@ export function BookingOptionsScreen() {
   const handleOnDemand = useCallback(
     (opt: OnDemandOption) => {
       hapticLight();
-      const eta = new Date(Date.now() + opt.estimatedEtaMinutes * 60_000);
-      navigation.navigate('ConfirmRide', {
-        type:          'privado', // on-demand = vehículo dedicado (ride-hailing/privado)
-        origin:        pickup.address ?? 'Origen',
-        originCoords:  { lat: pickup.latitude, lng: pickup.longitude },
-        destination:   destination.address ?? 'Destino',
-        destCoords:    { lat: destination.latitude, lng: destination.longitude },
-        departureTime: eta.toISOString(),
-        vehicle:       opt.vehicleType ?? opt.label,
-        vehicleId:     opt.vehicleType,
-        totalPrice:    opt.price,
-      });
+      navigation.navigate(
+        'ConfirmRide',
+        buildConfirmRideFromOnDemand(opt, pickup, destination),
+      );
     },
     [navigation, pickup, destination],
   );
 
   /**
-   * Fase 2: tap en opción scheduled (carpool) → navega a ConfirmRide en
-   * modo 'compartido' con tripId del ScheduledTrip + pricePerSeat. La
-   * confirmación final (reservar asiento via POST /scheduled-trips/:id/
-   * reserve) se hace dentro de ConfirmRideScreen tras seleccionar payment.
-   *
-   * Default seats = 1; ConfirmRide permite ajustar antes de confirmar.
+   * Fase 2: tap en opción scheduled (carpool) → navega a la pantalla
+   * intermedia ScheduledSeatReservationScreen para escoger # asientos +
+   * frontSeat. Esa pantalla luego navega a ConfirmRide con los datos
+   * normalizados, y ConfirmRide invoca POST /scheduled-trips/:id/reserve
+   * antes del payment.
    */
   const handleScheduled = useCallback(
     (opt: ScheduledOption | AlternativeSchedule) => {
       hapticLight();
-      navigation.navigate('ConfirmRide', {
-        type:          'compartido',
-        tripId:        opt.scheduledTripId,
-        origin:        pickup.address ?? opt.routeLabel,
-        originCoords:  { lat: pickup.latitude, lng: pickup.longitude },
-        destination:   destination.address ?? opt.routeLabel,
-        destCoords:    { lat: destination.latitude, lng: destination.longitude },
-        departureTime: opt.departureTime,
-        vehicle:       opt.vehicleModel ?? 'Compartido',
-        pricePerSeat:  opt.pricePerSeat,
-        seats:         1,
-        capacity:      opt.availableSeats,
-      });
+      navigation.navigate(
+        'ScheduledSeatReservation',
+        buildSeatReservationParams(opt, pickup, destination),
+      );
     },
     [navigation, pickup, destination],
   );

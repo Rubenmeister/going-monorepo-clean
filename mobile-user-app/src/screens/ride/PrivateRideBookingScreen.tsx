@@ -191,30 +191,76 @@ export function PrivateRideBookingScreen() {
     });
   }, [navigation, tokens]);
 
+  /**
+   * Mobile #60 gap C — antes navegaba a ConfirmRide con totalPrice
+   * calculado client-side (pricing hardcoded). Ahora navega a
+   * BookingOptionsScreen para que el backend (/search) devuelva el
+   * precio AUTORITATIVO según hora pico, surge, corredor, segment.
+   *
+   * El user ve las opciones reales del backend y escoge — si el
+   * scheduledDateTime cae en una ventana con scheduled trips disponibles,
+   * el cascade del backend muestra también esos cupos como sugerencia.
+   *
+   * Requisitos: destCoords (lat/lng del destination LocationPicker) y
+   * pickup coords. Pickup hoy lo derivamos del centro de la zone
+   * seleccionada (mapeo Quito → coords del distrito). Cuando todo el
+   * tráfico pase por HomeScreen wizard, esta pantalla se puede borrar.
+   */
   const handleReserve = useCallback(() => {
-    if (!destination) {
+    if (!destination || !destCoords) {
       hapticMedium();
-      Alert.alert('Destino requerido', 'Ingresa el destino antes de continuar.');
+      Alert.alert(
+        'Destino requerido',
+        'Selecciona el destino en el mapa antes de continuar.',
+      );
       return;
     }
     hapticMedium();
-    (navigation.navigate as any)('ConfirmRide', {
-      type:          'privado',
-      origin:        originCity,
-      destination,
-      destCoords:    destCoords ?? undefined,
-      vehicle:       vehicle.label,
-      vehicleId:    vehicle.id,
-      capacity:      vehicle.capacity,
-      category:      category.label,
-      categoryId:    category.id,
-      tier:          category.id,
-      zone:          selectedZone,
-      departureTime: timeSlot,
-      date:          dateOption,
-      totalPrice,
+
+    // Pickup coords: centro de la zone elegida — placeholder hasta que el
+    // wizard de HomeScreen reemplace este flujo.
+    const ZONE_CENTERS: Record<string, { lat: number; lng: number }> = {
+      quito_norte:    { lat: -0.1380, lng: -78.4880 },
+      quito_centro:   { lat: -0.2299, lng: -78.5249 },
+      quito_sur:      { lat: -0.2820, lng: -78.5450 },
+      quito_valles:   { lat: -0.2050, lng: -78.4000 },
+      cumbaya:        { lat: -0.2050, lng: -78.4283 },
+      aeropuerto:     { lat: -0.1413, lng: -78.4881 },
+    };
+    const pickupCoords = ZONE_CENTERS[selectedZone] ?? ZONE_CENTERS.quito_centro;
+
+    // Scheduled date construction — combinamos dateOption + timeSlot
+    let scheduledDateTime: string | undefined;
+    let temporalPreference: 'immediate' | 'scheduled' = 'immediate';
+    if (dateOption !== 'today' || timeSlot !== '08:00') {
+      // Para reservas no inmediatas (mañana o tarde del día)
+      const d = new Date();
+      if (dateOption === 'tomorrow') d.setDate(d.getDate() + 1);
+      const [h, m] = timeSlot.split(':').map(Number);
+      d.setHours(h, m, 0, 0);
+      // Solo enviamos scheduled si la hora es futura > 30min
+      if (d.getTime() - Date.now() > 30 * 60_000) {
+        scheduledDateTime = d.toISOString();
+        temporalPreference = 'scheduled';
+      }
+    }
+
+    navigation.navigate('BookingOptions', {
+      pickup: {
+        latitude:  pickupCoords.lat,
+        longitude: pickupCoords.lng,
+        address:   originCity,
+      },
+      destination: {
+        latitude:  destCoords.lat,
+        longitude: destCoords.lng,
+        address:   destination,
+      },
+      temporalPreference,
+      scheduledDateTime,
+      vehicleType: vehicle.id as any, // 'suv' | 'suv_xl' | 'van' | etc
     });
-  }, [destination, originCity, destCoords, vehicle, category, selectedZone, timeSlot, dateOption, totalPrice, navigation]);
+  }, [destination, destCoords, originCity, vehicle, selectedZone, timeSlot, dateOption, navigation]);
 
   // ── Render ────────────────────────────────────────────────
   return (
