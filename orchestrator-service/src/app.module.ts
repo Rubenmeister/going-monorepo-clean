@@ -24,6 +24,8 @@ import { RulesEngineService } from './decision/rules-engine.service';
 import { DispatcherService } from './decision/dispatcher.service';
 import { MyCortexPollerService } from './decision/mycortex-poller.service';
 import { AgentOverrideService } from './decision/agent-override.service';
+import { ActionVerifierService } from './decision/action-verifier.service';
+import { ActionVerificationSchema } from './infrastructure/schemas/action-verification.schema';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { AgentOverrideService } from './decision/agent-override.service';
     MongooseModule.forFeature([
       { name: 'Decision', schema: DecisionSchema },
       { name: 'AgentOverride', schema: AgentOverrideSchema },
+      { name: 'ActionVerification', schema: ActionVerificationSchema },
     ]),
   ],
   controllers: [
@@ -61,6 +64,10 @@ import { AgentOverrideService } from './decision/agent-override.service';
     DispatcherService,
     MyCortexPollerService,
     AgentOverrideService,
+    // Fase B cerebro autónomo — verifica métricas post-acción para los
+    // intent.type listados en autonomous-allowlist.ts. El dispatcher lo
+    // inyecta como @Optional, así que si está deshabilitado no rompe.
+    ActionVerifierService,
   ],
 })
 export class AppModule {}
