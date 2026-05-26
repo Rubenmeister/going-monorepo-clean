@@ -1,53 +1,143 @@
 /**
- * Slots de viajes compartidos. Se usa en dos lugares:
- *  1. RideRequestForm: acordeón "Ver otras salidas hoy" cuando el usuario
- *     elige modo compartido y una fecha.
- *  2. RideTrackingPanel: vista no_driver, como fallback real cuando no hay
- *     conductor disponible en el modo privado pedido.
+ * Slots de viajes compartidos (carpool intercity).
  *
- * Si el endpoint del backend falla, devolvemos slots base con precio variado
- * — preferible a no mostrar nada.
+ * USA el endpoint unificado `/search` de transport-service
+ * (UnifiedSearchUseCase). El response trae `scheduledOptions[]` con los
+ * trips programados que matchean el corridor (origen → destino) en la
+ * ventana de la fecha pedida. Cada option es un ScheduledTrip real con
+ * cupos disponibles.
+ *
+ * Lo consume:
+ *  1. RideRequestForm acordeón "Ver otras salidas hoy".
+ *  2. RideTrackingPanel vista no_driver (fallback compartido).
+ *
+ * Cambio histórico (2026-05-26): este servicio antes llamaba a
+ * `/transport/shared/schedules` (endpoint que NO existe en el backend
+ * desplegado). Caía al catch y devolvía mocks hardcodeados — los precios
+ * y horarios mostrados al usuario eran inventados, lo cual rompía el
+ * flujo de reserva (intent al "Reservar" iba a un trip inexistente).
+ * Ahora consume el endpoint real `/search` y si no hay viajes
+ * disponibles devolvemos array vacío (UI muestra "no hay viajes
+ * disponibles" — honesto).
  */
 
 export interface TimeSlot {
+  /** scheduledTripId real (lo necesita el caller para reservar). */
   id: string;
   time: string;         // "08:00"
   seatsLeft: number;
   price: number;
   label?: string;       // "Recomendado", "Último asiento"
+  /** city IDs FARES (los pasa el backend en cada ScheduledOption). */
+  originCity?: string;
+  destCity?: string;
+  /** ISO 8601 completo del departureTime — útil si el caller necesita armar el booking. */
+  departureTime?: string;
 }
 
-const BASE_SLOTS: Omit<TimeSlot, 'id' | 'price'>[] = [
-  { time: '05:30', seatsLeft: 4 },
-  { time: '07:00', seatsLeft: 3, label: 'Recomendado' },
-  { time: '09:00', seatsLeft: 2 },
-  { time: '11:00', seatsLeft: 4 },
-  { time: '13:30', seatsLeft: 1, label: 'Último asiento' },
-  { time: '15:00', seatsLeft: 3 },
-  { time: '17:00', seatsLeft: 4, label: 'Tarde' },
-  { time: '19:30', seatsLeft: 2 },
-];
+export interface SearchLocation {
+  address: string;
+  lat: number;
+  lon: number;
+}
 
+/**
+ * Helper: marca etiquetas legibles para UX (Recomendado / Último asiento).
+ * Ordena por seatsLeft + criterio de hora.
+ */
+function decorateLabels(slots: TimeSlot[]): TimeSlot[] {
+  if (slots.length === 0) return slots;
+  // Encontrar el "más recomendado" — mid-morning con >=3 cupos.
+  const recIdx = slots.findIndex((s) => {
+    const h = parseInt(s.time.slice(0, 2), 10);
+    return h >= 7 && h <= 10 && s.seatsLeft >= 3;
+  });
+  return slots.map((s, i) => {
+    if (s.seatsLeft === 1) return { ...s, label: 'Último asiento' };
+    if (i === recIdx) return { ...s, label: 'Recomendado' };
+    const h = parseInt(s.time.slice(0, 2), 10);
+    if (h >= 17) return { ...s, label: 'Tarde' };
+    return s;
+  });
+}
+
+/**
+ * Consulta horarios de carpool para una ruta + fecha.
+ * Si pickup/destination no tienen coords reales (lat/lon = 0) devolvemos
+ * [] sin llamar al backend — la UI muestra "selecciona origen y destino".
+ */
 export async function fetchSharedSlots(
-  origin: string, destination: string, date: string, basePrice: number,
+  pickup: SearchLocation,
+  destination: SearchLocation,
+  date: string,
+  _basePriceUnused: number,
 ): Promise<TimeSlot[]> {
+  if (!pickup?.lat || !pickup?.lon || !destination?.lat || !destination?.lon) {
+    return [];
+  }
+
   try {
-    const API = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.goingec.com';
-    const params = new URLSearchParams({ origin, destination, date });
-    const res = await fetch(`${API}/transport/shared/schedules?${params}`, { signal: AbortSignal.timeout(4000) });
-    if (!res.ok) throw new Error('api_error');
-    const data = await res.json() as Array<{ id?: string; departureTime?: string; time?: string; seatsAvailable?: number; seatsLeft?: number; price?: number }>;
-    return data.map((s, i) => ({
-      id:        s.id ?? `slot-${i}`,
-      time:      (s.departureTime ?? s.time ?? '').slice(0, 5),
-      seatsLeft: s.seatsAvailable ?? s.seatsLeft ?? 3,
-      price:     s.price ?? basePrice,
-    }));
-  } catch {
-    return BASE_SLOTS.map((s, i) => ({
-      ...s,
-      id:    `slot-${i}`,
-      price: Math.round((basePrice * (0.9 + Math.random() * 0.2)) / 5) * 5,
-    }));
+    const API = process.env.NEXT_PUBLIC_API_BASE_URL ||
+                process.env.NEXT_PUBLIC_API_URL ||
+                'https://api.goingec.com';
+    // El backend espera ISO 8601 con hora; usamos medianoche del día pedido.
+    // El UnifiedSearchUseCase cascadea horarios del día + ±1 día.
+    const scheduledDateTime = `${date}T00:00:00.000Z`;
+    const res = await fetch(`${API}/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pickup: { lat: pickup.lat, lng: pickup.lon, address: pickup.address },
+        destination: { lat: destination.lat, lng: destination.lon, address: destination.address },
+        temporalPreference: 'scheduled',
+        scheduledDateTime,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      // 401: el endpoint requiere JWT — el caller debe loguearse.
+      // Otros: error del backend. En ambos casos devolvemos [].
+      // eslint-disable-next-line no-console
+      console.warn(`[sharedSlots] /search ${res.status}`);
+      return [];
+    }
+    const data = await res.json() as {
+      scheduledOptions?: Array<{
+        scheduledTripId: string;
+        routeLabel?: string;
+        originCity?: string;
+        destCity?: string;
+        departureTime: string;
+        availableSeats: number;
+        pricePerSeat: number;
+      }>;
+      alternativeSchedules?: Array<any>;
+    };
+    const combined = [
+      ...(data.scheduledOptions ?? []),
+      ...(data.alternativeSchedules ?? []),
+    ];
+    const slots: TimeSlot[] = combined.map((s) => {
+      // departureTime ISO → "HH:MM" en zona local del browser. Para EC (UTC-5)
+      // el backend ya retorna timestamps que pueden estar en UTC; el
+      // Date local del browser hace la conversión automática.
+      const d = new Date(s.departureTime);
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return {
+        id: s.scheduledTripId,
+        time: `${hh}:${mm}`,
+        seatsLeft: s.availableSeats,
+        price: s.pricePerSeat,
+        originCity: s.originCity,
+        destCity: s.destCity,
+        departureTime: s.departureTime,
+      };
+    });
+    return decorateLabels(slots);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[sharedSlots] fetch fallo:', (e as Error).message);
+    return [];
   }
 }
