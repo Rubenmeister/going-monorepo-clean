@@ -302,10 +302,10 @@ export interface HandoffPhoneResult {
 }
 
 /**
- * Handler de request_handoff_phone. NO transfiere la llamada todavía —
- * solo registra el intent. La transferencia real (TwiML <Dial> al número
- * del operador) la dispara el bridge tras recibir tool.call y antes de
- * cerrar la session OpenAI. STUB hoy — implementar en task #52.
+ * Handler de request_handoff_phone. Sintetiza la respuesta hablable; el
+ * bridge dispara la transferencia REAL (twilioRest.redirectCall) tras
+ * recibir el tool.call. La separación permite testear esta parte sin
+ * depender de Twilio REST.
  */
 export function executeHandoffPhone(args: any): HandoffPhoneResult {
   const reason   = String(args?.reason || 'sin razón').slice(0, 200);
@@ -334,9 +334,10 @@ export interface SendSmsResult {
 }
 
 /**
- * Handler de send_followup_sms. Igual que el handoff — STUB que solo
- * registra el intent. El SMS real se enviará desde un job que lee de
- * la cola persistida (próxima iteración).
+ * Handler de send_followup_sms. Sintetiza la confirmación hablable + el
+ * payload SMS. El envío real lo dispara el bridge (twilioRest.sendSms)
+ * usando el `from` E.164 del caller. Si Twilio REST no está configurado,
+ * el bridge degrada gracefully — el LLM igual lee spoken_confirmation.
  */
 export function executeSendFollowupSms(args: any): SendSmsResult {
   const topic   = String(args?.topic   || '').slice(0, 80);

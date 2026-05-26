@@ -443,6 +443,30 @@ export async function searchExperiences(
   return Array.isArray(res) ? res : (res as any).experiences ?? [];
 }
 
+// ── Voice preference (Voice Sem 3) ───────────────────────────────────────────
+
+export type VoiceLanguage = "es" | "en" | "qu";
+
+export interface VoicePreference {
+  language: VoiceLanguage;
+  voice: string | null;
+  configured: boolean;
+}
+
+export async function fetchVoicePreference(token: string): Promise<VoicePreference> {
+  return corpFetch<VoicePreference>("/auth/me/voice-preference", token);
+}
+
+export async function updateVoicePreference(
+  token: string,
+  data: { language?: VoiceLanguage; voice?: string | null },
+): Promise<VoicePreference> {
+  return corpFetch<VoicePreference>("/auth/me/voice-preference", token, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 // ── MFA / 2FA (Camino 2A-D) ──────────────────────────────────────────────────
 
 export interface MfaStatus {

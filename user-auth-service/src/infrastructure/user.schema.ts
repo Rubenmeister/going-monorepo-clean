@@ -98,6 +98,37 @@ export class UserModelSchema {
    */
   @Prop({ type: [String], default: [], select: false })
   mfaRecoveryCodes: string[];
+
+  // ── Voice preference (Voice Sem 3A) ───────────────────────────────────
+  /**
+   * Idioma preferido del usuario para canales de voz (phone Twilio, in-app
+   * Realtime, WhatsApp/Telegram TTS). Defaults se detectan por phone
+   * country code (EC=es, US/CA=en) al primer contacto. El usuario puede
+   * sobrescribir desde su perfil.
+   *
+   *   es — Español (default Ecuador)
+   *   en — English (default turistas internacionales)
+   *   qu — Kichwa (identidad Going, opt-in)
+   *
+   * Sin voicePreference set → service usa env defaults
+   * (VOICE_REALTIME_DEFAULT_LANG/VOICE).
+   */
+  @Prop({ enum: ['es', 'en', 'qu'] })
+  voiceLanguage?: 'es' | 'en' | 'qu';
+
+  /**
+   * Voz OpenAI Realtime preferida. Valid values (al 2026-05):
+   *   alloy, shimmer, ash, coral, sage, verse, ballad, marin, cedar
+   *
+   * Si no se setea, voice-call-service deriva una buena default por
+   * idioma (ej. español→shimmer, inglés→sage, kichwa→shimmer).
+   */
+  @Prop()
+  voiceName?: string;
+
+  /** Última vez que el usuario cambió su preferencia (audit). */
+  @Prop()
+  voicePreferenceUpdatedAt?: Date;
 }
 
 export type UserDocument = UserModelSchema & Document;
