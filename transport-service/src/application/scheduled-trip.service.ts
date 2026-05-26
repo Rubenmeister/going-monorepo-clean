@@ -196,6 +196,12 @@ export class ScheduledTripService {
           driverId: t.driverId,
           corridorId: corridor.id,
           routeLabel,
+          // originCity / destCity normalizados (claves FARES) — necesarios
+          // para que el cliente pueda llamar POST /scheduled-trips/:id/reserve
+          // sin tener que parsear el routeLabel. Sin estos, mobile no podía
+          // completar la reserva del scheduled.
+          originCity,
+          destCity,
           departureAt: boarding,
           departureTime: boarding.toISOString(),
           availableSeats: Math.max(0, t.seatsTotal - t.seatsReserved),

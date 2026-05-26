@@ -113,6 +113,13 @@ export interface ScheduledOption {
   driverId: string;
   corridorId: string;
   routeLabel: string;
+  /**
+   * city IDs normalizados (claves FARES). Necesarios para que el cliente
+   * pueda llamar POST /scheduled-trips/:id/reserve sin parsear routeLabel.
+   * Agregados 2026-05-26 (Mobile #60 gap A).
+   */
+  originCity: string;
+  destCity: string;
   departureTime: string;
   availableSeats: number;
   pricePerSeat: number;

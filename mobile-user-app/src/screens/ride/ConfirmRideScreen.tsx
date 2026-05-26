@@ -65,6 +65,13 @@ export type ConfirmRideParams = {
   tier?:          Category;  // 'confort' | 'premium' | 'empresa'
   categoryId?:    Category;
   capacity?:      number;
+  /**
+   * IDs FARES normalizados — solo aplica a 'compartido' con tripId set.
+   * Necesarios para POST /scheduled-trips/:id/reserve.
+   * Vienen del /search response (ScheduledOption.originCity/destCity).
+   */
+  originCity?:    string;
+  destCity?:      string;
 };
 
 type PaymentMethodId = 'datafast' | 'deuna' | 'cash';
@@ -169,6 +176,51 @@ export function ConfirmRideScreen() {
     } catch { return null; }
   }, [params.originCoords]);
 
+  /**
+   * Si el booking es 'compartido' con tripId set, reservamos el asiento en
+   * el ScheduledTrip ANTES de crear ride/payment. Si falla (sin cupo →
+   * 409), abortamos el flow y mostramos error.
+   *
+   * Si type='privado' o no tiene tripId, retorna ok sin hacer nada.
+   *
+   * Necesita params.originCity + params.destCity (los pasa BookingOptions
+   * desde el response /search).
+   */
+  const reserveScheduledIfNeeded = useCallback(
+    async (): Promise<{ ok: boolean; error?: string }> => {
+      if (params.type !== 'compartido' || !params.tripId) {
+        return { ok: true };
+      }
+      if (!params.originCity || !params.destCity) {
+        // Sin cities normalizadas no podemos reservar. Quizá vino de un
+        // entry-point legacy (SharedRideBookingScreen) que aún no pasa
+        // originCity/destCity. Skip + warn — el flujo continúa como
+        // ride normal (el backend del scheduled no se decrementa).
+        return { ok: true };
+      }
+      try {
+        const res = await transportAPI.reserveScheduledTrip(params.tripId, {
+          originCity: params.originCity,
+          destCity: params.destCity,
+          seats: seats,
+          isGroup: seats > 1,
+          wantsFrontExclusive: frontSeat,
+        });
+        // Backend retorna {bookingId, totalPrice, ...}. No es crítico
+        // capturar el bookingId aquí — el flow continúa al ride/payment.
+        return { ok: true };
+      } catch (err: any) {
+        const status = err?.response?.status;
+        const msg = err?.response?.data?.message || err?.message || 'Error reservando asiento';
+        if (status === 409) {
+          return { ok: false, error: 'Ya no quedan cupos en ese viaje. Vuelve a buscar opciones.' };
+        }
+        return { ok: false, error: msg };
+      }
+    },
+    [params.type, params.tripId, params.originCity, params.destCity, seats, frontSeat],
+  );
+
   const handleCashBooking = useCallback(async () => {
     if (!user?.id) {
       hapticError();
@@ -193,6 +245,15 @@ export function ConfirmRideScreen() {
           'Ubicación requerida',
           'Necesitamos tu ubicación actual para asignar un conductor. Concede permiso de ubicación e intenta de nuevo.',
         );
+        return;
+      }
+
+      // Reserva del asiento en ScheduledTrip si aplica (Mobile #60 gap A).
+      // Si falla (sin cupo), abortamos antes de crear ride.
+      const reservation = await reserveScheduledIfNeeded();
+      if (!reservation.ok) {
+        hapticError();
+        Alert.alert('No se pudo reservar', reservation.error ?? 'Intenta de nuevo');
         return;
       }
 
@@ -285,6 +346,15 @@ export function ConfirmRideScreen() {
 
     setLoading(true);
     try {
+      // 0. Reserva del asiento en ScheduledTrip si aplica (gap A).
+      //    Antes de crear payment intent — si no hay cupo, abortamos.
+      const reservation = await reserveScheduledIfNeeded();
+      if (!reservation.ok) {
+        hapticError();
+        Alert.alert('No se pudo reservar', reservation.error ?? 'Intenta de nuevo');
+        return;
+      }
+
       // 1. Reservar ride
       const rideResp = await transportAPI.requestRide({
         userId: user.id,

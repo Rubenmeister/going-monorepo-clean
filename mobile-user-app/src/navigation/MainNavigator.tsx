@@ -45,6 +45,8 @@ import { PrivateRideBookingScreen } from '@screens/ride/PrivateRideBookingScreen
 import type { PrivateRideBookingParams } from '@screens/ride/PrivateRideBookingScreen';
 import { BookingOptionsScreen } from '@screens/ride/BookingOptionsScreen';
 import type { BookingOptionsParams } from '@screens/ride/BookingOptionsScreen';
+import { ScheduledSeatReservationScreen } from '@screens/ride/ScheduledSeatReservationScreen';
+import type { ScheduledSeatReservationParams } from '@screens/ride/ScheduledSeatReservationScreen';
 import { ConfirmRideScreen } from '@screens/ride/ConfirmRideScreen';
 import type { ConfirmRideParams } from '@screens/ride/ConfirmRideScreen';
 import { TripSummaryScreen } from '@screens/ride/TripSummaryScreen';
@@ -150,6 +152,8 @@ export type MainStackParamList = {
   /** Nuevo flujo unificado (carpool + ride-hailing). Reemplaza progresivamente
    *  a SharedRideBooking + PrivateRideBooking via el endpoint /search. */
   BookingOptions:      BookingOptionsParams;
+  /** Detalle del scheduled trip + selector de asientos antes de ConfirmRide. */
+  ScheduledSeatReservation: ScheduledSeatReservationParams;
   ConfirmRide:         ConfirmRideParams;
   TripSummary:         TripSummaryParams;
   LocationPicker:      LocationPickerParams;
@@ -221,6 +225,11 @@ function MainStack() {
         name="BookingOptions"
         component={BookingOptionsScreen}
         options={{ title: 'Opciones de viaje' }}
+      />
+      <Stack.Screen
+        name="ScheduledSeatReservation"
+        component={ScheduledSeatReservationScreen}
+        options={{ title: 'Reservar asiento' }}
       />
       <Stack.Screen
         name="ConfirmRide"

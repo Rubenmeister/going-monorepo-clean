@@ -107,6 +107,9 @@ export interface ScheduledOption {
   driverId: string;
   corridorId: string;
   routeLabel: string;
+  /** city IDs normalizados (claves FARES). Necesarios para reserve. */
+  originCity: string;
+  destCity: string;
   departureTime: string;
   availableSeats: number;
   pricePerSeat: number;
@@ -146,6 +149,25 @@ export const transportAPI = {
    */
   searchUnified: (query: SearchRideQuery) =>
     api.post<SearchRideResponse>('/search', query),
+
+  /**
+   * Reserva un asiento en un ScheduledTrip (carpooling). Backend valida
+   * cupos atómicamente; si OK retorna {bookingId, seatsReserved, perSeatPrice,
+   * totalPrice}. Si no hay cupo, 409 Conflict.
+   *
+   * Llamado desde ConfirmRideScreen cuando type='compartido' + tripId set,
+   * ANTES de createPaymentIntent. Si esto falla, no creamos payment.
+   */
+  reserveScheduledTrip: (
+    tripId: string,
+    body: {
+      originCity: string;
+      destCity: string;
+      seats: number;
+      isGroup?: boolean;
+      wantsFrontExclusive?: boolean;
+    },
+  ) => api.post(`/scheduled-trips/${tripId}/reserve`, body),
 
   /**
    * Crear viaje. Migrado del legacy POST /transport/request al sistema
