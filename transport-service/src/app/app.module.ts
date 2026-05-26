@@ -74,6 +74,7 @@ import { PaymentController } from '../api/payment.controller';
 import { DriverController } from '../api/driver.controller';
 import { DriverScheduleController } from '../api/driver-schedule.controller';
 import { DriverHybridController } from '../api/driver-hybrid.controller';
+import { DriverComplianceAdminController } from '../api/driver-compliance-admin.controller';
 import {
   RequestRideUseCase,
   AcceptRideUseCase,
@@ -166,6 +167,7 @@ import { MulterModule } from '@nestjs/platform-express';
     SearchController,
     ScheduledTripController,
     DriverHybridController,
+    DriverComplianceAdminController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

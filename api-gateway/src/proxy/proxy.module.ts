@@ -281,6 +281,10 @@ export class ProxyModule implements NestModule {
     // carreras locales en destino. Endpoints: start-local-mode, complete-return,
     // cancel, me. JWT-guarded, valida role en cada handler.
     guard('driver-hybrid', svc.transport);
+    // /compliance/* — Driver Compliance System (Fase C): ops aprueba/rechaza
+    // documentos regulatorios via admin-dashboard. JWT + role='admin' enforced
+    // dentro de cada handler del controller (transport-service).
+    guard('compliance', svc.transport);
     guard('payments', svc.payments);
     guard('tours', svc.tours);
     guard('accommodations', svc.accommodations);
