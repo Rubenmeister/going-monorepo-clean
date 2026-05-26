@@ -154,6 +154,28 @@ export class CorporateController {
     return this.svc.updateSettings(companyId, body);
   }
 
+  /**
+   * GET /corporate/policy — Política de viajes vigente (Gap #2).
+   * Si nunca se configuró, retorna defaults (enabled=false, sin restricciones).
+   */
+  @Get('policy')
+  async getTravelPolicy(@Req() req: Request) {
+    const companyId = this.extractCompanyId(req);
+    return this.svc.getTravelPolicy(companyId);
+  }
+
+  /**
+   * PUT /corporate/policy — Actualiza la política. Valida coherencia
+   * (autoApprove < requireApproval < maxPerTrip) y audita changedBy/changedAt.
+   * Scope: global a la empresa.
+   */
+  @Put('policy')
+  async updateTravelPolicy(@Req() req: Request, @Body() body: any) {
+    const companyId = this.extractCompanyId(req);
+    const changedBy = this.extractUserId(req);
+    return this.svc.updateTravelPolicy(companyId, changedBy, body);
+  }
+
   /** GET /corporate/employees */
   @Get('employees')
   async listEmployees(@Req() req: Request) {
