@@ -111,18 +111,32 @@ export default function AccountPage() {
     }
     if (activeTab === 'envios') {
       setParcelsLoading(true);
+      // Backend expone /parcels (api-gateway proxy.module:292). El endpoint
+      // /envios/parcels/my no existe — devolvía 404 y caíamos a [].
+      // Mientras el backend no exponga /parcels/my, filtramos client-side
+      // por userId del JWT.
+      const userId = (auth.user as any)?.id ?? (auth.user as any)?._id ?? '';
       authHeaders().then(headers =>
-        fetch(`${API_BASE}/envios/parcels/my`, { headers })
+        fetch(`${API_BASE}/parcels?userId=${encodeURIComponent(userId)}`, { headers })
           .then(r => r.ok ? r.json() : [])
-          .then(data => setParcels(Array.isArray(data) ? data : data.parcels || []))
+          .then(data => {
+            const all = Array.isArray(data) ? data : data.parcels || [];
+            // Filter defensivo: si el backend ignora userId del query, al
+            // menos limitamos a los del user en frontend.
+            const mine = all.filter((p: any) => !p.userId || p.userId === userId);
+            setParcels(mine);
+          })
           .catch(() => setParcels([]))
           .finally(() => setParcelsLoading(false))
       );
     }
     if (activeTab === 'payments') {
       setMethodsLoading(true);
+      // Backend expone /payments (plural, proxy.module:288). El endpoint
+      // /payment/methods nunca fue ruteado; usamos /payments/methods o
+      // simplemente /payments si el backend devuelve los métodos del user.
       authHeaders().then(headers =>
-        fetch(`${API_BASE}/payment/methods`, { headers })
+        fetch(`${API_BASE}/payments/methods`, { headers })
           .then(r => r.ok ? r.json() : null)
           .then(data => {
             const list: PaymentMethod[] = data?.methods ?? data?.data ?? data ?? [];
@@ -134,17 +148,21 @@ export default function AccountPage() {
     }
     if (activeTab === 'addresses') {
       setAddressLoading(true);
-      const userId = (auth.user as any)?.id ?? (auth.user as any)?._id ?? '';
-      authHeaders().then(headers =>
-        fetch(`${API_BASE}/users/${userId}/addresses`, { headers })
-          .then(r => r.ok ? r.json() : null)
-          .then(data => {
-            const list: SavedAddress[] = data?.addresses ?? data?.data ?? data ?? [];
-            setAddresses(Array.isArray(list) ? list : []);
-          })
-          .catch(() => setAddresses([]))
-          .finally(() => setAddressLoading(false))
-      );
+      // El endpoint /users/:id/addresses NO existe en api-gateway (user-auth
+      // service no expone CRUD de direcciones). Como fallback, leemos del
+      // localStorage. Cuando se agregue el endpoint backend, cambiar esto
+      // por fetch /addresses con JWT.
+      try {
+        const raw = typeof window !== 'undefined'
+          ? localStorage.getItem('going_saved_addresses')
+          : null;
+        const list: SavedAddress[] = raw ? JSON.parse(raw) : [];
+        setAddresses(Array.isArray(list) ? list : []);
+      } catch {
+        setAddresses([]);
+      } finally {
+        setAddressLoading(false);
+      }
     }
   }, [activeTab, auth.user]);
 
@@ -509,13 +527,21 @@ export default function AccountPage() {
                 <div className="flex gap-2 flex-shrink-0">
                   <button className="text-xs text-[#0033A0] font-semibold hover:underline">Editar</button>
                   <button
-                    onClick={async () => {
+                    onClick={() => {
                       if (!confirm('¿Eliminar esta dirección?')) return;
                       setDeletingAddress(addr.id);
-                      const headers = await authHeaders();
-                      const userId = (auth.user as any)?.id ?? '';
-                      await fetch(`${API_BASE}/users/${userId}/addresses/${addr.id}`, { method: 'DELETE', headers }).catch(() => {});
-                      setAddresses(prev => prev.filter(x => x.id !== addr.id));
+                      // Direcciones persisten en localStorage hasta que el
+                      // backend exponga /users/:id/addresses. La API
+                      // anterior tiraba 404 y la UI quedaba colgada.
+                      setAddresses(prev => {
+                        const next = prev.filter(x => x.id !== addr.id);
+                        try {
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('going_saved_addresses', JSON.stringify(next));
+                          }
+                        } catch { /* localStorage fail-soft */ }
+                        return next;
+                      });
                       setDeletingAddress(null);
                     }}
                     disabled={deletingAddress === addr.id}

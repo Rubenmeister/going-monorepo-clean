@@ -35,7 +35,9 @@ export default function AccommodationPage() {
   const [guests, setGuests]   = useState(1);
 
   useEffect(() => {
-    fetch(`${API_URL}/accommodation`)
+    // Backend expone /accommodations (plural). Antes esto pegaba a
+    // /accommodation (singular) que devolvía 404 y caíamos a FALLBACK.
+    fetch(`${API_URL}/accommodations`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const list = data?.accommodations ?? data?.data ?? data ?? [];

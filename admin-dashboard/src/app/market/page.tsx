@@ -84,8 +84,18 @@ export default function MarketPage() {
     setLoading(true);
     const token = localStorage.getItem('authToken') ?? '';
     try {
-      /* Real: cities from transport stats */
-      const citiesRes = await fetch(`${API}/admin/stats/transport/cities`, {
+      /* Real: cities from transport stats.
+       * El endpoint /admin/stats/transport/cities NO está ruteado en
+       * api-gateway todavía — el backend no expone esa agregación. Por
+       * ahora la página de Mercado queda con `cities=[]` y muestra el
+       * estado vacío en lugar de crashear. Cuando se agregue al backend
+       * (analytics-service o transport-service stats), esto seguirá
+       * funcionando sin cambios.
+       *
+       * TODO backend: GET /analytics/transport/cities → [{city, province,
+       * trips, activeDrivers, trend, services}].
+       */
+      const citiesRes = await fetch(`${API}/analytics/transport/cities`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then(r => r.ok ? r.json() : null).catch(() => null);
 

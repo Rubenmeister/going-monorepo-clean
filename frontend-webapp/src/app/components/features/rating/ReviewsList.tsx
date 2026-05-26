@@ -30,9 +30,18 @@ export function ReviewsList() {
 
   const fetchReviews = async () => {
     try {
+      // El endpoint /reviews/public no está ruteado en api-gateway todavía
+      // (reviews vive en customer-support pero no se expuso públicamente).
+      // Cuando se exponga, esto seguirá funcionando — mientras tanto, el
+      // catch nos da fallback testimonios.
       const res = await fetch(`${API_BASE}/reviews/public?limit=6`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setReviews(Array.isArray(data) ? data : data?.reviews ?? []);
+      const list = Array.isArray(data) ? data : data?.reviews ?? [];
+      // Si el backend responde 200 pero array vacío, también caemos al
+      // fallback para no mostrar "0 reseñas" — más amigable para launch.
+      if (list.length === 0) throw new Error('empty');
+      setReviews(list);
     } catch {
       // Fallback con datos de ejemplo
       setReviews([
