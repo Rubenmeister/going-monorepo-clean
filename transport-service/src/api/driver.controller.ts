@@ -32,32 +32,20 @@ import { Model }           from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document as MongoDocument } from 'mongoose';
 import { RideModelSchema, RideDocument } from '../infrastructure/persistence/schemas/ride.schema';
+import {
+  DriverDocumentModel,
+  DriverDocumentDocument,
+  DriverDocumentSchema,
+  DRIVER_DOCUMENT_TYPES,
+  type DriverDocumentType,
+} from '../infrastructure/persistence/schemas/driver-document.schema';
 
-// ── DriverDocument inline schema ─────────────────────────────────────────────
-// Se define aquí para no crear un módulo entero solo para esto.
+// Re-export del schema externo para no romper imports existentes (app.module + infra)
+export { DriverDocumentModel, DriverDocumentSchema };
+export type { DriverDocumentDocument };
 
-const VALID_DOC_TYPES = [
-  'cedula',
-  'licencia',
-  'matricula',
-  'soat',
-  'foto_vehiculo',
-] as const;
-type DocType = typeof VALID_DOC_TYPES[number];
-
-@Schema({ timestamps: true, collection: 'driver_documents' })
-export class DriverDocumentModel {
-  @Prop({ required: true, index: true }) driverId:    string;
-  @Prop({ required: true })             type:        string;
-  @Prop({ required: true })             url:         string;
-  @Prop({ required: true })             filename:    string;
-  @Prop({ default: 'pending_review' })  status:      string; // pending_review | approved | rejected
-  @Prop()                               rejectedReason?: string;
-  @Prop({ default: () => new Date() })  uploadedAt:  Date;
-}
-
-export type DriverDocumentDocument = DriverDocumentModel & MongoDocument;
-export const DriverDocumentSchema = SchemaFactory.createForClass(DriverDocumentModel);
+const VALID_DOC_TYPES = DRIVER_DOCUMENT_TYPES;
+type DocType = DriverDocumentType;
 
 // ── DriverRating inline schema ────────────────────────────────────────────────
 // Los pasajeros califican al conductor al finalizar el viaje.
@@ -183,13 +171,17 @@ export class DriverController {
   async getDocuments(@CurrentUser('userId') driverId: string) {
     const docs = await this.docModel
       .find({ driverId })
-      .select('type url status rejectedReason uploadedAt')
+      .select(
+        // Legacy: rejectedReason. Nuevos: rejectionReason, expiresAt, documentNumber, issuingAuthority, issuedAt, reviewedAt
+        'type url status rejectedReason rejectionReason ' +
+        'documentNumber issuingAuthority issuedAt expiresAt reviewedAt uploadedAt',
+      )
       .sort({ uploadedAt: -1 })
       .lean();
 
     // Añadir los tipos que faltan como "not_uploaded"
-    const uploadedTypes = new Set(docs.map(d => d.type));
-    const missing = VALID_DOC_TYPES.filter(t => !uploadedTypes.has(t)).map(t => ({
+    const uploadedTypes = new Set(docs.map((d) => d.type));
+    const missing = VALID_DOC_TYPES.filter((t) => !uploadedTypes.has(t)).map((t) => ({
       type:   t,
       status: 'not_uploaded',
       url:    null,
