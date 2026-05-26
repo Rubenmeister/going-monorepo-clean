@@ -443,6 +443,37 @@ export async function searchExperiences(
   return Array.isArray(res) ? res : (res as any).experiences ?? [];
 }
 
+// ── PDF de facturas (Gap #3) ─────────────────────────────────────────────────
+
+/**
+ * Descarga una factura como PDF. Backend: GET /invoices/:id/pdf en
+ * billing-service (via api-gateway). Triggerea descarga en el browser usando
+ * un <a download> temporal — necesario porque fetch retorna un Blob, no un
+ * stream que el browser pueda salvar automáticamente.
+ */
+export async function downloadInvoicePdf(
+  token: string,
+  invoiceId: string,
+  invoiceNumber?: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/invoices/${invoiceId}/pdf`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(`PDF download failed (${res.status}): ${text}`);
+  }
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `factura-${invoiceNumber ?? invoiceId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
+
 // ── Viajes Recurrentes ───────────────────────────────────────────────────────
 
 export interface RecurringTrip {

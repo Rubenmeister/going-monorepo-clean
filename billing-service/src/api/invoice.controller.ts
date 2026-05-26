@@ -19,10 +19,13 @@ import {
   NotFoundException,
   UnauthorizedException,
   Req,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { InvoiceService } from '../application/services/invoice.service';
 import { InvoiceRepository } from '../infrastructure/persistence/invoice.repository';
 import { InvoiceEmailService } from '../application/services/invoice-email.service';
+import { PdfGeneratorService } from '../application/services/pdf-generator.service';
 import { CreateInvoiceDto } from './dtos/create-invoice.dto';
 import { UpdateInvoiceDto } from './dtos/update-invoice.dto';
 import { RecordPaymentDto } from './dtos/record-payment.dto';
@@ -41,7 +44,8 @@ export class InvoiceController {
   constructor(
     private readonly invoiceService: InvoiceService,
     private readonly invoiceRepository: InvoiceRepository,
-    private readonly invoiceEmailService: InvoiceEmailService
+    private readonly invoiceEmailService: InvoiceEmailService,
+    private readonly pdfGenerator: PdfGeneratorService
   ) {}
 
   /**
@@ -85,6 +89,36 @@ export class InvoiceController {
     }
 
     return this.toResponseDto(invoice);
+  }
+
+  /**
+   * Download invoice as PDF
+   * GET /api/invoices/:id/pdf
+   * Devuelve application/pdf con Content-Disposition: attachment.
+   * RBAC: el repository ya filtra por companyId del JWT — un usuario solo
+   * puede descargar facturas de su propia empresa.
+   */
+  @Get(':id/pdf')
+  async downloadInvoicePdf(
+    @Param('id') invoiceId: string,
+    @Req() req: any,
+    @Res() res: Response
+  ): Promise<void> {
+    const companyId = req.user.companyId;
+    const invoice = await this.invoiceRepository.findById(invoiceId, companyId);
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.pdfGenerator.generateInvoicePdf(invoice as any);
+    const safeNumber = invoice.invoiceNumber.replace(/[^A-Za-z0-9_-]/g, '_');
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="invoice-${safeNumber}.pdf"`,
+      'Content-Length': String(buffer.length),
+      'Cache-Control': 'private, no-cache',
+    });
+    res.end(buffer);
   }
 
   /**
