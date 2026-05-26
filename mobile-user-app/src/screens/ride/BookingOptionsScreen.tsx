@@ -28,7 +28,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -103,31 +102,56 @@ export function BookingOptionsScreen() {
     void fetchOptions();
   }, [fetchOptions]);
 
-  /** Fase 1: log + Alert. Fase 2: navigation real al flow de confirmación. */
+  /**
+   * Fase 2: tap en opción on-demand → navega a ConfirmRide con todos los
+   * datos necesarios. ConfirmRide se encarga del flow de payment + create
+   * booking. El usuario puede ajustar paymentMethod ahí.
+   */
   const handleOnDemand = useCallback(
     (opt: OnDemandOption) => {
       hapticLight();
-      Alert.alert(
-        opt.label,
-        `${opt.description}\n\nPrecio: $${opt.price.toFixed(2)} ${opt.currency}\nETA: ${opt.estimatedEtaMinutes} min\n\n[Fase 2: aquí redirige a ConfirmRide]`,
-      );
+      const eta = new Date(Date.now() + opt.estimatedEtaMinutes * 60_000);
+      navigation.navigate('ConfirmRide', {
+        type:          'privado', // on-demand = vehículo dedicado (ride-hailing/privado)
+        origin:        pickup.address ?? 'Origen',
+        originCoords:  { lat: pickup.latitude, lng: pickup.longitude },
+        destination:   destination.address ?? 'Destino',
+        destCoords:    { lat: destination.latitude, lng: destination.longitude },
+        departureTime: eta.toISOString(),
+        vehicle:       opt.vehicleType ?? opt.label,
+        vehicleId:     opt.vehicleType,
+        totalPrice:    opt.price,
+      });
     },
-    [],
+    [navigation, pickup, destination],
   );
 
+  /**
+   * Fase 2: tap en opción scheduled (carpool) → navega a ConfirmRide en
+   * modo 'compartido' con tripId del ScheduledTrip + pricePerSeat. La
+   * confirmación final (reservar asiento via POST /scheduled-trips/:id/
+   * reserve) se hace dentro de ConfirmRideScreen tras seleccionar payment.
+   *
+   * Default seats = 1; ConfirmRide permite ajustar antes de confirmar.
+   */
   const handleScheduled = useCallback(
     (opt: ScheduledOption | AlternativeSchedule) => {
       hapticLight();
-      const isAlt = 'recommendationReason' in opt;
-      Alert.alert(
-        'Viaje compartido',
-        `${opt.routeLabel}\nSale: ${new Date(opt.departureTime).toLocaleString('es-EC')}\n` +
-          `Cupos: ${opt.availableSeats} · $${opt.pricePerSeat.toFixed(2)}/asiento\n` +
-          (isAlt ? `\n(Sugerencia: ${(opt as AlternativeSchedule).recommendationReason})\n` : '') +
-          `\n[Fase 2: reservar asiento via /scheduled-trips/:id/reserve]`,
-      );
+      navigation.navigate('ConfirmRide', {
+        type:          'compartido',
+        tripId:        opt.scheduledTripId,
+        origin:        pickup.address ?? opt.routeLabel,
+        originCoords:  { lat: pickup.latitude, lng: pickup.longitude },
+        destination:   destination.address ?? opt.routeLabel,
+        destCoords:    { lat: destination.latitude, lng: destination.longitude },
+        departureTime: opt.departureTime,
+        vehicle:       opt.vehicleModel ?? 'Compartido',
+        pricePerSeat:  opt.pricePerSeat,
+        seats:         1,
+        capacity:      opt.availableSeats,
+      });
     },
-    [],
+    [navigation, pickup, destination],
   );
 
   // ── Render ────────────────────────────────────────────────────────────
