@@ -86,6 +86,7 @@ import { ScheduledTripController } from '../api/scheduled-trip.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
 import { DriverHybridTransitionCronService } from '../application/driver-hybrid-transition.cron';
 import { RideNoShowCronService } from '../application/ride-no-show.cron';
+import { DriverComplianceCronService } from '../application/driver-compliance.cron';
 import { PricingService } from 'pricing';
 import { TokenService } from '../infrastructure/token.service';
 import { MulterModule } from '@nestjs/platform-express';
@@ -206,6 +207,7 @@ import { MulterModule } from '@nestjs/platform-express';
     DriverHybridLifecycleService,
     DriverHybridTransitionCronService,
     RideNoShowCronService,
+    DriverComplianceCronService,
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,
     DeleteDriverBaseUseCase,
