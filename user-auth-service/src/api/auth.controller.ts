@@ -40,6 +40,8 @@ import { FacebookOauthGuard } from '../infrastructure/oauth/facebook-oauth.guard
 import { OauthStateService } from '../infrastructure/oauth/oauth-state.service';
 import { UserDocument, UserModelSchema } from '../infrastructure/user.schema';
 import { LoyaltyPointsService } from '../application/loyalty-points.service';
+import { MfaService } from '../application/mfa.service';
+import * as jwt from 'jsonwebtoken';
 
 /**
  * Auth Controller
@@ -70,6 +72,7 @@ export class AuthController {
     @InjectModel(UserModelSchema.name)
     private readonly userModel: Model<UserDocument>,
     private readonly loyaltyPointsService: LoyaltyPointsService,
+    private readonly mfaService: MfaService,
   ) {}
 
   // ────────────────────────────────────────────────
@@ -636,6 +639,33 @@ export class AuthController {
 
       await this.accountLockoutService.recordSuccessfulLogin(tempUserId);
 
+      // MFA challenge: si el user tiene mfaEnabled, NO devolvemos los tokens
+      // reales — devolvemos un mfaToken efímero (5min) que el frontend debe
+      // intercambiar en POST /auth/mfa/verify-login junto con el código TOTP.
+      const userMfa = await this.userModel
+        .findOne({ id: result.user.id })
+        .select('mfaEnabled')
+        .lean();
+      if (userMfa?.mfaEnabled) {
+        const mfaToken = jwt.sign(
+          {
+            sub: result.user.id,
+            email: dto.email,
+            purpose: 'mfa-challenge',
+            companyId: (result.user as any).companyId ?? null,
+            roles,
+          },
+          process.env.JWT_SECRET ?? '',
+          { expiresIn: '5m' },
+        );
+        this.auditLogService.recordSuccess(
+          result.user.id, 'user-auth-service', ip, 'CORPORATE_LOGIN',
+          'auth', result.user.id, Date.now() - startTime, undefined,
+          { email: dto.email, mfaRequired: true },
+        );
+        return { mfaRequired: true, mfaToken };
+      }
+
       this.auditLogService.recordSuccess(
         result.user.id, 'user-auth-service', ip, 'CORPORATE_LOGIN',
         'auth', result.user.id, Date.now() - startTime, undefined,
@@ -664,6 +694,94 @@ export class AuthController {
       );
       throw error;
     }
+  }
+
+  /**
+   * MFA verify-login — segundo paso del login cuando el user tiene MFA activado.
+   * POST /auth/mfa/verify-login
+   * Body: { mfaToken, code }
+   *
+   * El mfaToken viene del paso anterior (POST /auth/corporate/login con
+   * response { mfaRequired:true, mfaToken }). Es un JWT efímero (5min) que
+   * solo se acepta aquí. Validamos su firma + purpose='mfa-challenge', después
+   * verificamos el code TOTP o recovery contra el user, y emitimos los
+   * tokens reales de sesión.
+   */
+  @Post('mfa/verify-login')
+  @HttpCode(200)
+  async mfaVerifyLogin(
+    @Body() body: { mfaToken?: string; code?: string },
+    @Req() req: Request,
+  ): Promise<any> {
+    const startTime = Date.now();
+    const ip = this.extractIp(req);
+    if (!body?.mfaToken) throw new BadRequestException('mfaToken requerido');
+    if (!body?.code) throw new BadRequestException('code requerido');
+
+    // 1. Validar mfaToken (firma + purpose + exp)
+    let payload: any;
+    try {
+      payload = jwt.verify(body.mfaToken, process.env.JWT_SECRET ?? '');
+    } catch {
+      throw new UnauthorizedException('mfaToken inválido o expirado');
+    }
+    if (payload?.purpose !== 'mfa-challenge') {
+      throw new UnauthorizedException('mfaToken no es un challenge MFA');
+    }
+    const userId = String(payload.sub);
+    const email = String(payload.email ?? '');
+
+    // 2. Verificar el code (TOTP o recovery one-time)
+    const result = await this.mfaService.verifyChallenge(userId, body.code);
+    if (!result.valid) {
+      // Trato como failed login attempt (rate limiting)
+      const tempUserId = `email:${email}`;
+      await this.accountLockoutService.recordFailedAttempt(tempUserId, email, ip);
+      this.auditLogService.recordFailure(
+        userId, 'user-auth-service', ip, 'LOGIN',
+        'users', userId, Date.now() - startTime, 'Invalid MFA code',
+      );
+      throw new UnauthorizedException('Código MFA inválido');
+    }
+
+    // 3. Cargar user real y emitir tokens
+    const user = await this.userModel.findOne({ id: userId }).lean();
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    const tokenResult = await this.tokenManager.createTokenPair(
+      user.id as any,
+      user.email,
+      (user.roles ?? []) as any,
+      (user as any).companyId || undefined,
+    );
+    if (tokenResult.isErr()) {
+      throw new UnauthorizedException(tokenResult.error.message);
+    }
+
+    this.auditLogService.recordSuccess(
+      user.id, 'user-auth-service', ip, 'LOGIN',
+      'users', user.id, Date.now() - startTime, undefined,
+      { email: user.email, mfaVerified: true },
+    );
+
+    const tokens = tokenResult.value as any;
+    return {
+      token: tokens.accessToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        roles: user.roles,
+        companyId: user.companyId ?? null,
+        companyName: user.companyName ?? null,
+      },
+      companyId: user.companyId ?? null,
+      companyName: user.companyName ?? null,
+    };
   }
 
   /**

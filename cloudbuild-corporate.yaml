@@ -1,0 +1,71 @@
+steps:
+  # corporate-service tiene su propio Dockerfile self-contained (no NX).
+  # Build context: ./corporate-service (no monorepo root).
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'docker pull gcr.io/$PROJECT_ID/corporate-service:latest || exit 0'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - 'gcr.io/$PROJECT_ID/corporate-service:latest'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/corporate-service:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/corporate-service:latest'
+      - '-f'
+      - 'corporate-service/Dockerfile'
+      - 'corporate-service'
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/corporate-service:$BUILD_ID']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/corporate-service:latest']
+
+  # Deploy a Cloud Run con discover dinámico de service URLs
+  # corporate-service necesita: BOOKING_SERVICE_URL, BILLING_SERVICE_URL,
+  # ANALYTICS_SERVICE_URL, USER_AUTH_SERVICE_URL (para inter-service calls)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        REGION=us-central1
+        get_url() {
+          gcloud run services describe "$$1" \
+            --region $$REGION --platform managed \
+            --format 'value(status.url)' 2>/dev/null || echo ""
+        }
+
+        USER_AUTH_URL=$$(get_url user-auth-service)
+        BOOKING_URL=$$(get_url booking-service)
+        BILLING_URL=$$(get_url billing-service)
+        ANALYTICS_URL=$$(get_url analytics-service)
+
+        gcloud run deploy corporate-service \
+          --image "gcr.io/$PROJECT_ID/corporate-service:$BUILD_ID" \
+          --region "$$REGION" \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3022 \
+          --memory 512Mi \
+          --cpu 1 \
+          --min-instances 0 \
+          --max-instances 5 \
+          --timeout 60 \
+          --update-secrets=JWT_SECRET=JWT_SECRET-prod:latest,MONGO_URL=MONGO_URL-prod:latest \
+          --set-env-vars "^|^NODE_ENV=production|USER_AUTH_SERVICE_URL=$${USER_AUTH_URL}|BOOKING_SERVICE_URL=$${BOOKING_URL}|BILLING_SERVICE_URL=$${BILLING_URL}|ANALYTICS_SERVICE_URL=$${ANALYTICS_URL}"
+
+images:
+  - 'gcr.io/$PROJECT_ID/corporate-service:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/corporate-service:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

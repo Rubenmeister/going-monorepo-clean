@@ -73,6 +73,31 @@ export class UserModelSchema {
   /** Timestamp del último movimiento de puntos (para auditoría). */
   @Prop()
   loyaltyPointsUpdatedAt?: Date;
+
+  // ── MFA / TOTP (Camino 2A) ────────────────────────────────────────────
+  /** Si true, el login normal pide TOTP/recovery code después de password. */
+  @Prop({ default: false, index: true })
+  mfaEnabled: boolean;
+
+  /**
+   * Secret TOTP base32 (formato compatible con Google Authenticator / Authy).
+   * NUNCA se devuelve por API — solo se usa server-side para validar codes.
+   * Si en el futuro queremos rotación, agregamos `mfaSecretPrev` con TTL.
+   */
+  @Prop({ select: false })
+  mfaSecret?: string;
+
+  /** Cuando el usuario activó MFA (al completar verify del primer code). */
+  @Prop()
+  mfaActivatedAt?: Date;
+
+  /**
+   * 8 códigos de recuperación one-time, almacenados HASHEADOS (bcrypt) para
+   * que un dump de la DB no exponga códigos reutilizables. Cuando se usa
+   * uno, se remueve del array. `select: false` para no devolver por API.
+   */
+  @Prop({ type: [String], default: [], select: false })
+  mfaRecoveryCodes: string[];
 }
 
 export type UserDocument = UserModelSchema & Document;
