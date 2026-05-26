@@ -1,39 +1,34 @@
 /**
  * Página de Solicitudes Recurrentes
- * Ruta: /empresas/recurrentes
+ * Ruta: /empresas/panel/recurrentes
  *
  * Programa viajes que se repiten automáticamente.
- * Se persisten en localStorage (going_recurrentes_<userId>)
- * y se envían a POST /bookings/schedule cuando haya soporte backend.
+ * Persistencia en backend: /recurring-trips (booking-service via api-gateway).
+ * Un cron diario @02:00 ECT genera bookings concretos para los próximos
+ * 30 días según frequency/weekDays/dayOfMonth.
  */
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuthRedirect } from "@/lib/empresas/auth";
+import { AUTH_TOKEN_KEY } from "@/lib/empresas/constants";
+import {
+  fetchRecurringTrips,
+  createRecurringTrip,
+  updateRecurringTrip,
+  deleteRecurringTrip,
+  pauseRecurringTrip,
+  resumeRecurringTrip,
+  type RecurringTrip,
+  type RecurringTripInput,
+} from "@/lib/empresas/api";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 type Frequency  = "daily" | "weekly" | "monthly";
 type ServiceType = "transport" | "parcel";
 type WeekDay    = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-interface RecurringTrip {
-  id:          string;
-  name:        string;
-  serviceType: ServiceType;
-  frequency:   Frequency;
-  weekDays?:   WeekDay[];     // para frequency=weekly
-  dayOfMonth?: number;        // para frequency=monthly
-  time:        string;        // HH:MM
-  origin:      string;
-  destination: string;
-  vehicleType: string;
-  notes?:      string;
-  active:      boolean;
-  createdAt:   string;
-  nextRun?:    string;        // ISO calculado
-}
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -48,15 +43,7 @@ const WEEKDAY_LABELS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const INPUT  = "w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white placeholder:text-slate-400";
 const SELECT = INPUT + " cursor-pointer";
 
-// ─── Helpers localStorage ──────────────────────────────────────────────────────
-
-function storageKey(uid: string) { return `going_recurrentes_${uid}`; }
-function load(uid: string): RecurringTrip[] {
-  try { return JSON.parse(localStorage.getItem(storageKey(uid)) ?? "[]"); } catch { return []; }
-}
-function save(uid: string, items: RecurringTrip[]) {
-  localStorage.setItem(storageKey(uid), JSON.stringify(items));
-}
+// ─── Helpers UI ───────────────────────────────────────────────────────────────
 
 function nextRunLabel(trip: RecurringTrip): string {
   const now = new Date();
@@ -70,7 +57,7 @@ function nextRunLabel(trip: RecurringTrip): string {
   if (trip.frequency === "weekly" && trip.weekDays?.length) {
     const todayDay = now.getDay() as WeekDay;
     const sorted = [...trip.weekDays].sort((a, b) => a - b);
-    const next = sorted.find((d) => d > todayDay) ?? sorted[0];
+    const next = (sorted.find((d) => d > todayDay) ?? sorted[0]) as WeekDay;
     const diff = next > todayDay ? next - todayDay : 7 - todayDay + next;
     const nextDate = new Date(now);
     nextDate.setDate(nextDate.getDate() + diff);
@@ -87,8 +74,8 @@ function nextRunLabel(trip: RecurringTrip): string {
 // ─── Modal de edición ─────────────────────────────────────────────────────────
 
 interface ModalProps {
-  initial?: Partial<RecurringTrip>;
-  onSave:  (data: Omit<RecurringTrip, "id" | "createdAt" | "active">) => void;
+  initial?: RecurringTrip;
+  onSave:  (data: RecurringTripInput) => Promise<void>;
   onClose: () => void;
 }
 
@@ -96,13 +83,15 @@ function RecurringModal({ initial, onSave, onClose }: ModalProps) {
   const [name,        setName]        = useState(initial?.name        ?? "");
   const [serviceType, setServiceType] = useState<ServiceType>(initial?.serviceType ?? "transport");
   const [frequency,   setFrequency]   = useState<Frequency>(initial?.frequency ?? "daily");
-  const [weekDays,    setWeekDays]    = useState<WeekDay[]>(initial?.weekDays ?? [1]);
+  const [weekDays,    setWeekDays]    = useState<WeekDay[]>((initial?.weekDays ?? [1]) as WeekDay[]);
   const [dayOfMonth,  setDayOfMonth]  = useState(String(initial?.dayOfMonth ?? 1));
   const [time,        setTime]        = useState(initial?.time        ?? "08:00");
-  const [origin,      setOrigin]      = useState(initial?.origin      ?? "");
-  const [destination, setDestination] = useState(initial?.destination ?? "");
+  const [origin,      setOrigin]      = useState(initial?.origin.address ?? "");
+  const [destination, setDestination] = useState(initial?.destination.address ?? "");
   const [vehicleType, setVehicleType] = useState(initial?.vehicleType ?? "sedan");
   const [notes,       setNotes]       = useState(initial?.notes       ?? "");
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
 
   function toggleDay(d: WeekDay) {
     setWeekDays((prev) =>
@@ -110,9 +99,29 @@ function RecurringModal({ initial, onSave, onClose }: ModalProps) {
     );
   }
 
+  async function handleSubmit() {
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave({
+        name, serviceType, frequency,
+        weekDays:   frequency === "weekly"  ? weekDays : undefined,
+        dayOfMonth: frequency === "monthly" ? parseInt(dayOfMonth) : undefined,
+        time,
+        origin:      { address: origin },
+        destination: { address: destination },
+        vehicleType: serviceType === "transport" ? vehicleType : undefined,
+        notes: notes || undefined,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al guardar");
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-y-auto"
-      onClick={(e) => e.target === e.currentTarget && onClose()}>
+      onClick={(e) => e.target === e.currentTarget && !saving && onClose()}>
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 my-4 space-y-4">
         <h3 className="text-base font-bold text-slate-900">
           {initial?.id ? "Editar recurrente" : "Nueva solicitud recurrente"}
@@ -200,19 +209,22 @@ function RecurringModal({ initial, onSave, onClose }: ModalProps) {
           <input className={INPUT} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Requerimientos especiales…" />
         </div>
 
+        {error && (
+          <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          <button onClick={onClose} disabled={saving} className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">
             Cancelar
           </button>
           <button
-            onClick={() => onSave({ name, serviceType, frequency,
-              weekDays: frequency === "weekly" ? weekDays : undefined,
-              dayOfMonth: frequency === "monthly" ? parseInt(dayOfMonth) : undefined,
-              time, origin, destination, vehicleType, notes })}
-            disabled={!name.trim() || !origin.trim() || !destination.trim() || !time}
+            onClick={handleSubmit}
+            disabled={!name.trim() || !origin.trim() || !destination.trim() || !time || saving}
             className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-60"
           >
-            Guardar
+            {saving ? "Guardando…" : "Guardar"}
           </button>
         </div>
       </div>
@@ -225,28 +237,71 @@ function RecurringModal({ initial, onSave, onClose }: ModalProps) {
 export default function RecurrentesPage() {
   const { session } = useAuthRedirect();
   const [trips,       setTrips]       = useState<RecurringTrip[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState<string | null>(null);
   const [showModal,   setShowModal]   = useState(false);
   const [editTarget,  setEditTarget]  = useState<RecurringTrip | null>(null);
   const [confirmDel,  setConfirmDel]  = useState<string | null>(null);
 
-  const userId = session?.user.id ?? "";
+  const reload = useCallback(async () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) ?? "" : "";
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const items = await fetchRecurringTrips(token);
+      setTrips(items);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error cargando recurrentes");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { if (userId) setTrips(load(userId)); }, [userId]);
+  useEffect(() => {
+    if (session?.user.id) void reload();
+  }, [session?.user.id, reload]);
+
   if (!session) return null;
 
-  function persist(items: RecurringTrip[]) { setTrips(items); save(userId, items); }
-
-  function handleSave(data: Omit<RecurringTrip, "id" | "createdAt" | "active">) {
-    if (editTarget) {
-      persist(trips.map((t) => t.id === editTarget.id ? { ...editTarget, ...data } : t));
-    } else {
-      persist([{ ...data, id: crypto.randomUUID(), createdAt: new Date().toISOString(), active: true }, ...trips]);
-    }
-    setShowModal(false); setEditTarget(null);
+  function getToken(): string {
+    return typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) ?? "" : "";
   }
 
-  function toggleActive(id: string) {
-    persist(trips.map((t) => t.id === id ? { ...t, active: !t.active } : t));
+  async function handleSave(data: RecurringTripInput) {
+    const token = getToken();
+    if (editTarget) {
+      const updated = await updateRecurringTrip(token, editTarget.id, data);
+      setTrips((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } else {
+      const created = await createRecurringTrip(token, data);
+      setTrips((prev) => [created, ...prev]);
+    }
+    setShowModal(false);
+    setEditTarget(null);
+  }
+
+  async function handleToggleActive(t: RecurringTrip) {
+    const token = getToken();
+    try {
+      const updated = t.active
+        ? await pauseRecurringTrip(token, t.id)
+        : await resumeRecurringTrip(token, t.id);
+      setTrips((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al cambiar estado");
+    }
+  }
+
+  async function handleDelete(id: string) {
+    const token = getToken();
+    try {
+      await deleteRecurringTrip(token, id);
+      setTrips((prev) => prev.filter((x) => x.id !== id));
+      setConfirmDel(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al eliminar");
+    }
   }
 
   return (
@@ -264,12 +319,26 @@ export default function RecurrentesPage() {
 
       {/* Banner informativo */}
       <div className="mb-5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        Going programará automáticamente la solicitud de servicio en cada fecha calculada según la recurrencia.
-        Puedes pausar o eliminar cualquier recurrencia en cualquier momento.
+        Going programa automáticamente cada viaje según la frecuencia definida. Los bookings
+        aparecen en <strong>Viajes</strong> con 30 días de anticipación. Puedes pausar
+        o eliminar cualquier recurrencia en cualquier momento.
       </div>
 
+      {error && (
+        <div className="mb-4 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && (
+        <div className="bg-white rounded-lg border border-slate-200 p-12 text-center shadow-sm">
+          <p className="text-slate-500 text-sm">Cargando recurrentes…</p>
+        </div>
+      )}
+
       {/* Vacío */}
-      {trips.length === 0 && (
+      {!loading && trips.length === 0 && (
         <div className="bg-white rounded-lg border border-slate-200 p-12 text-center shadow-sm">
           <p className="text-3xl mb-3">🔄</p>
           <p className="text-slate-700 font-medium mb-1">Sin solicitudes recurrentes</p>
@@ -284,7 +353,7 @@ export default function RecurrentesPage() {
       )}
 
       {/* Lista */}
-      {trips.length > 0 && (
+      {!loading && trips.length > 0 && (
         <div className="space-y-3">
           {trips.map((t) => (
             <div key={t.id} className={`bg-white rounded-lg border p-5 shadow-sm transition-opacity ${t.active ? "" : "opacity-60"}`}
@@ -300,7 +369,7 @@ export default function RecurrentesPage() {
                       <span className="px-2 py-0.5 bg-slate-200 text-slate-500 text-xs rounded-full">Pausada</span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-500 mt-1">{t.origin} → {t.destination}</p>
+                  <p className="text-sm text-slate-500 mt-1">{t.origin.address} → {t.destination.address}</p>
                   <div className="flex flex-wrap gap-3 mt-1.5 text-xs text-slate-400">
                     <span>🕐 {t.time}</span>
                     {t.frequency === "weekly" && t.weekDays && (
@@ -309,14 +378,16 @@ export default function RecurrentesPage() {
                     {t.frequency === "monthly" && t.dayOfMonth && (
                       <span>Día {t.dayOfMonth} de cada mes</span>
                     )}
-                    <span className="text-blue-500 font-medium">
-                      Próxima: {nextRunLabel(t)}
-                    </span>
+                    {t.active && (
+                      <span className="text-blue-500 font-medium">
+                        Próxima: {nextRunLabel(t)}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {/* Toggle activo */}
-                  <button onClick={() => toggleActive(t.id)}
+                  <button onClick={() => handleToggleActive(t)}
                     className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${t.active ? "bg-blue-600" : "bg-slate-300"}`}>
                     <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${t.active ? "translate-x-5" : "translate-x-1"}`} />
                   </button>
@@ -326,7 +397,7 @@ export default function RecurrentesPage() {
                   </button>
                   {confirmDel === t.id ? (
                     <div className="flex gap-1">
-                      <button onClick={() => { persist(trips.filter((x) => x.id !== t.id)); setConfirmDel(null); }}
+                      <button onClick={() => handleDelete(t.id)}
                         className="px-2.5 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg">Eliminar</button>
                       <button onClick={() => setConfirmDel(null)}
                         className="px-2.5 py-1 border border-slate-200 text-xs text-slate-500 rounded-lg">No</button>

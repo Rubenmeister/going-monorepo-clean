@@ -443,7 +443,80 @@ export async function searchExperiences(
   return Array.isArray(res) ? res : (res as any).experiences ?? [];
 }
 
-// TODO: Implementar endpoints reales en backend (Fase 1)
+// ── Viajes Recurrentes ───────────────────────────────────────────────────────
+
+export interface RecurringTrip {
+  id:          string;
+  userId:      string;
+  companyId:   string;
+  name:        string;
+  serviceType: "transport" | "parcel";
+  frequency:   "daily" | "weekly" | "monthly";
+  weekDays?:   number[];     // 0..6 (domingo=0)
+  dayOfMonth?: number;       // 1..28
+  time:        string;       // HH:MM
+  origin:      { address: string; latitude?: number; longitude?: number };
+  destination: { address: string; latitude?: number; longitude?: number };
+  vehicleType?: string;
+  notes?:      string;
+  active:      boolean;
+  createdAt:   string;
+  updatedAt?:  string;
+  expandedUntil?: string;
+}
+
+export type RecurringTripInput = Omit<
+  RecurringTrip,
+  "id" | "userId" | "companyId" | "active" | "createdAt" | "updatedAt" | "expandedUntil"
+>;
+
+export async function fetchRecurringTrips(token: string): Promise<RecurringTrip[]> {
+  return corpFetch<RecurringTrip[]>("/recurring-trips", token);
+}
+
+export async function createRecurringTrip(
+  token: string,
+  data: RecurringTripInput,
+): Promise<RecurringTrip> {
+  return corpFetch<RecurringTrip>("/recurring-trips", token, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRecurringTrip(
+  token: string,
+  id: string,
+  data: Partial<RecurringTripInput> & { active?: boolean },
+): Promise<RecurringTrip> {
+  return corpFetch<RecurringTrip>(`/recurring-trips/${id}`, token, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRecurringTrip(token: string, id: string): Promise<void> {
+  await corpFetch(`/recurring-trips/${id}`, token, { method: "DELETE" });
+}
+
+export async function pauseRecurringTrip(
+  token: string,
+  id: string,
+): Promise<RecurringTrip> {
+  return corpFetch<RecurringTrip>(`/recurring-trips/${id}/pause`, token, {
+    method: "POST",
+  });
+}
+
+export async function resumeRecurringTrip(
+  token: string,
+  id: string,
+): Promise<RecurringTrip> {
+  return corpFetch<RecurringTrip>(`/recurring-trips/${id}/resume`, token, {
+    method: "POST",
+  });
+}
+
 // TODO: Validar y tipificar todas las responses (Fase 2)
 // TODO: Agregar retry logic y circuit breaker (Fase 2)
 // TODO: Implementar cache y revalidation (Fase 2)

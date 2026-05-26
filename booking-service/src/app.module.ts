@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { BookingController } from './api/booking.controller';
 import { HealthController } from './api/health.controller';
+import { RecurringTripController } from './api/recurring-trip.controller';
 import {
   CreateBookingUseCase,
   FindBookingsByUserUseCase,
@@ -16,6 +17,7 @@ import {
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { PricingService } from 'pricing';
 import { BookingDispatcherService } from './application/booking-dispatcher.service';
+import { RecurringTripExpanderService } from './application/recurring-trip-expander.service';
 
 @Module({
   imports: [
@@ -41,7 +43,7 @@ import { BookingDispatcherService } from './application/booking-dispatcher.servi
     // convierte scheduled corporate bookings en rides reales (task #28).
     ScheduleModule.forRoot(),
   ],
-  controllers: [BookingController, HealthController],
+  controllers: [BookingController, HealthController, RecurringTripController],
   providers: [
     CreateBookingUseCase,
     FindBookingsByUserUseCase,
@@ -50,6 +52,7 @@ import { BookingDispatcherService } from './application/booking-dispatcher.servi
     JwtStrategy,
     PricingService,
     BookingDispatcherService,
+    RecurringTripExpanderService,
   ],
 })
 export class AppModule {}
