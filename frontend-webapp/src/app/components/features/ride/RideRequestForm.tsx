@@ -14,6 +14,7 @@ import {
   getRoadDistance,
 } from '@/services/ride/fareCalculator';
 import { fetchSharedSlots, type TimeSlot } from '@/services/ride/sharedSlots';
+import { getStoredToken } from '@/lib/providers/auth-client';
 
 // ── Inline SVG icons — sin emojis ─────────────────────────────────────────
 const IcoPin = () => (
@@ -144,6 +145,13 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const [slots,        setSlots]        = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [noTimeMatch,  setNoTimeMatch]  = useState(false); // hora seleccionada sin disponibilidad
+  /**
+   * Slot de carpool seleccionado por el user (con scheduledTripId real).
+   * Necesario para llamar POST /scheduled-trips/:id/reserve al confirmar.
+   * Si null, el flujo es ride-hailing on-demand (no scheduled).
+   */
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [reserveError, setReserveError] = useState<string | null>(null);
 
   // Compartido → bloquea a SUV
   useEffect(() => {
@@ -234,8 +242,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     let cancelled = false;
     setLoadingSlots(true);
     fetchSharedSlots(
-      pickupLocation!.address,
-      dropoffLocation!.address,
+      pickupLocation!,
+      dropoffLocation!,
       scheduledDate,
       localFare ?? 15,
     ).then(data => {
@@ -267,11 +275,70 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     setIsScheduled(true);
     setShowSlots(false);
     setNoTimeMatch(false);
+    setSelectedSlot(slot);
+    setReserveError(null);
+  };
+
+  /**
+   * Si el user eligió un slot scheduled, reservar el asiento en backend
+   * ANTES de avanzar al payment. Idempotente: si /reserve falla por
+   * sin-cupo (409), abortamos y mostramos error.
+   */
+  const reserveScheduledSeat = async (): Promise<boolean> => {
+    if (!selectedSlot?.id || !selectedSlot.originCity || !selectedSlot.destCity) {
+      // No es scheduled o el backend no devolvió cities — flujo ride-hailing normal.
+      return true;
+    }
+    try {
+      const API = process.env.NEXT_PUBLIC_API_BASE_URL ||
+                  process.env.NEXT_PUBLIC_API_URL ||
+                  'https://api.goingec.com';
+      const token = getStoredToken();
+      if (!token) {
+        setReserveError('Inicia sesión para reservar el asiento.');
+        return false;
+      }
+      const res = await fetch(`${API}/scheduled-trips/${selectedSlot.id}/reserve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          originCity: selectedSlot.originCity,
+          destCity:   selectedSlot.destCity,
+          seats:      passengers,
+          isGroup:    passengers > 1,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.status === 409) {
+        setReserveError('Ya no quedan cupos en este viaje. Elige otro horario.');
+        return false;
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setReserveError(body.message || `Error reservando asiento (${res.status})`);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      setReserveError(e instanceof Error ? e.message : 'No se pudo reservar el asiento.');
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickupLocation || !dropoffLocation) return;
+    setReserveError(null);
+
+    // Si es un slot scheduled, reservar asiento ANTES de crear ride.
+    if (selectedSlot) {
+      const ok = await reserveScheduledSeat();
+      if (!ok) return;
+    }
+
     await createRide(
       vehicleType,
       tier,
@@ -287,13 +354,25 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const hasValidRoute = hasRoute && pickupLocation!.lat !== 0 && dropoffLocation!.lat !== 0;
   const showSlotsSection = mode === 'compartido' && hasValidRoute && scheduledDate;
   const scheduleOk    = (!scheduledDate && !scheduledTime) || (scheduledDate && scheduledTime);
-  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk;
+  /**
+   * Si es compartido + hay fecha pero el slot seleccionado NO existe en el
+   * backend (noTimeMatch = true y no hay selectedSlot), no permitimos
+   * confirmar. Antes el botón quedaba activo aunque el aviso decía "no
+   * hay viajes a las HH:MM" — confuso y rompía reserve.
+   */
+  const carpoolBlocked = mode === 'compartido' && scheduledDate && noTimeMatch && !selectedSlot;
+  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk && !carpoolBlocked;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-sm">{error}</div>
+      )}
+      {reserveError && (
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-sm">
+          ⚠️ {reserveError}
+        </div>
       )}
 
       {/* ── TARJETA PRINCIPAL ─────────────────────────────────────────── */}

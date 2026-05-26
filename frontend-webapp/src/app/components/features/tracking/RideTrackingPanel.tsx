@@ -133,17 +133,17 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
   /* ── Slots compartidos reales como fallback en no_driver ── */
   useEffect(() => {
     if (activeRide?.status !== 'no_driver') return;
-    const origin = activeRide.pickup?.address;
-    const destination = activeRide.dropoff?.address;
-    if (!origin || !destination) return;
+    if (!activeRide.pickup || !activeRide.dropoff) return;
+    // Sin coords reales no podemos consultar /search del backend.
+    if (!activeRide.pickup.lat || !activeRide.dropoff.lat) return;
     let cancelled = false;
     setLoadingNoDriverSlots(true);
     const today = new Date().toISOString().slice(0, 10);
-    fetchSharedSlots(origin, destination, today, activeRide.estimatedFare ?? 15)
+    fetchSharedSlots(activeRide.pickup, activeRide.dropoff, today, activeRide.estimatedFare ?? 15)
       .then(s => { if (!cancelled) setNoDriverSlots(s); })
       .finally(() => { if (!cancelled) setLoadingNoDriverSlots(false); });
     return () => { cancelled = true; };
-  }, [activeRide?.status, activeRide?.pickup?.address, activeRide?.dropoff?.address, activeRide?.estimatedFare]);
+  }, [activeRide?.status, activeRide?.pickup, activeRide?.dropoff, activeRide?.estimatedFare]);
 
   /* ── Agregar parada extra ── */
   const handleAddStop = () => {
