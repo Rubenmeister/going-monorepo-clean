@@ -84,6 +84,44 @@ export class TwilioRestClient {
   }
 
   /**
+   * Envía un SMS al número `to`. Lo usa el tool send_followup_sms cuando
+   * el AI ofrece mandar info por mensaje al cliente (precios, link de
+   * tracking, instrucciones de pago, etc.).
+   *
+   * Requiere `from` set en env TWILIO_SMS_NUMBER (si no está, fallback a
+   * TWILIO_VOICE_NUMBER — algunos operadores tienen ambos en el mismo).
+   * Retorna { ok, sid? } — sid presente solo si Twilio aceptó el envío.
+   */
+  async sendSms(to: string, body: string): Promise<{ ok: boolean; sid?: string; error?: string }> {
+    if (!this.client) {
+      return { ok: false, error: 'client_not_configured' };
+    }
+    const from =
+      this.config.get<string>('TWILIO_SMS_NUMBER') ??
+      this.config.get<string>('TWILIO_VOICE_NUMBER') ??
+      '';
+    if (!from) {
+      this.logger.warn('[twilio-rest] sendSms skipped — TWILIO_SMS_NUMBER/VOICE_NUMBER no configurado');
+      return { ok: false, error: 'no_sms_from_configured' };
+    }
+    const t0 = Date.now();
+    try {
+      const msg = await this.client.messages.create({ to, from, body: body.slice(0, 1000) });
+      const dt = Date.now() - t0;
+      this.logger.log(
+        `[twilio-rest] sendSms to=${to.slice(0, 4)}... sid=${msg.sid?.slice(0, 12)} (${dt}ms)`,
+      );
+      return { ok: true, sid: msg.sid };
+    } catch (err) {
+      const dt = Date.now() - t0;
+      this.logger.error(
+        `[twilio-rest] sendSms fallo to=${to.slice(0, 4)}... after ${dt}ms: ${(err as Error).message}`,
+      );
+      return { ok: false, error: (err as Error).message };
+    }
+  }
+
+  /**
    * Cuelga una call activa. Útil cuando algo sale mal y queremos cortar
    * limpiamente sin esperar al timeout natural. Twilio acepta status:
    *   'completed' = colgar normalmente (cliente escucha tono de fin)

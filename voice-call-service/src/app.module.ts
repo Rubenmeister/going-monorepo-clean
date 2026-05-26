@@ -11,6 +11,7 @@ import { VoiceCallService } from './voice/voice-call.service';
 import { CerebroPublisherService } from './voice/cerebro-publisher.service';
 import { RealtimeBridgeService } from './voice/realtime-bridge.service';
 import { HandoffNotifierService } from './voice/handoff-notifier.service';
+import { VoicePreferenceClient } from './voice/voice-preference.client';
 // OpenAI Realtime
 import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
 // Telegram (mínimo para handoff alerts)
@@ -58,6 +59,10 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // call indexada por streamSid.
     OpenAIRealtimeAdapter,
     RealtimeBridgeService,
+    // Voice preference lookup (Sem 3B) — consulta GET /auth/internal/voice-
+    // preference?phone= al user-auth-service para resolver lang+voz por
+    // caller. Cache en memoria 30min. Fallback a defaults si HTTP falla.
+    VoicePreferenceClient,
     // Handoff a operador humano (Telegram alert + opcional PSTN transfer).
     TelegramService,
     HandoffNotifierService,

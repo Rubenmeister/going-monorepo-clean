@@ -54,8 +54,33 @@ export class CerebroPublisherService {
     startedAt: string;
   }): Promise<void> {
     this.logger.log(`[cerebro] call_started callId=${input.callId} from=${input.from} runId=${input.runId.slice(0, 8)}`);
-    // TODO Fase 4: si CEREBRO_PUBLISH_ENABLED, publicar evento inmediato.
-    // Por ahora se incluye en el snapshot batch del cron.
+    if (!this.enabled) return;
+
+    // Evento informativo inmediato — Pacha lo agrega a su world model
+    // (curva horaria de demanda). Sin anomalies/actions.
+    const now = new Date();
+    const event: AgentRunEvent = {
+      agentId:    'voice-call-service' as any,
+      runId:      input.runId,
+      startedAt:  input.startedAt,
+      finishedAt: now.toISOString(),
+      durationMs: 0,
+      status:     'success',
+      metrics: {
+        eventType: 'call_started',
+        callId:    input.callId,
+        from:      input.from,
+      },
+      anomalies:       [],
+      actionsTaken:    [],
+      actionsProposed: [],
+      meta:            { runEnv: 'production' },
+    };
+    try {
+      await publishAgentRunEvent(event, { projectId: this.projectId });
+    } catch (err) {
+      this.logger.warn(`[cerebro] publishCallStarted fallo: ${(err as Error).message}`);
+    }
   }
 
   /**
@@ -76,7 +101,73 @@ export class CerebroPublisherService {
       `[cerebro] call_ended callId=${input.callId} outcome=${input.outcome} ` +
       `duration=${input.durationSeconds}s intent=${input.intentDetected ?? 'none'}`,
     );
-    // TODO Fase 4: publicar inmediato si outcome=escalated o sentiment<-0.5.
+    if (!this.enabled) return;
+
+    // Solo publicamos inmediato los outcomes ACCIONABLES: escalado a operador
+    // o sentiment muy negativo. El resto (resolved_by_ai, abandoned_by_caller,
+    // failed_technical) entra al snapshot batch del cron para no saturar
+    // Pub/Sub con tráfico mundano.
+    const isUrgent =
+      input.outcome === 'escalated' ||
+      (typeof input.sentimentScore === 'number' && input.sentimentScore < -0.5);
+    if (!isUrgent) return;
+
+    const anomalies: Anomaly[] = [];
+    const actionsProposed: ActionProposed[] = [];
+
+    if (input.outcome === 'escalated') {
+      anomalies.push({
+        type:     'voice_call_escalated_to_operator',
+        severity: 'info',
+        message:  `Call escalada — AI no resolvió. Intent: ${input.intentDetected ?? 'desconocido'}. ${input.escalationReason ?? ''}`.trim(),
+        data:     { callId: input.callId, intent: input.intentDetected, reason: input.escalationReason },
+      });
+      if (input.intentDetected) {
+        actionsProposed.push({
+          type:    'review_voice_agent_intent_handler',
+          target:  input.intentDetected,
+          reason:  `Intent ${input.intentDetected} fue escalado — falta cobertura del AI`,
+          urgency: 0.4,
+          data:    { intent: input.intentDetected, callId: input.callId },
+        });
+      }
+    }
+    if (typeof input.sentimentScore === 'number' && input.sentimentScore < -0.5) {
+      anomalies.push({
+        type:     'voice_call_negative_sentiment',
+        severity: 'warning',
+        message:  `Sentiment ${input.sentimentScore.toFixed(2)} en call ${input.callId} — frustración detectada`,
+        data:     { callId: input.callId, sentiment: input.sentimentScore },
+      });
+    }
+
+    const now = new Date();
+    const event: AgentRunEvent = {
+      agentId:    'voice-call-service' as any,
+      runId:      input.runId,
+      startedAt:  new Date(now.getTime() - input.durationSeconds * 1000).toISOString(),
+      finishedAt: now.toISOString(),
+      durationMs: input.durationSeconds * 1000,
+      status:     input.outcome === 'failed_technical' ? 'error' : 'success',
+      metrics: {
+        eventType:       'call_ended',
+        callId:          input.callId,
+        outcome:         input.outcome,
+        durationSeconds: input.durationSeconds,
+        intent:          input.intentDetected,
+        sentiment:       input.sentimentScore,
+      },
+      anomalies,
+      actionsTaken:    [],
+      actionsProposed,
+      meta: { runEnv: 'production' },
+    };
+
+    try {
+      await publishAgentRunEvent(event, { projectId: this.projectId });
+    } catch (err) {
+      this.logger.error(`[cerebro] publishCallEnded fallo: ${(err as Error).message}`);
+    }
   }
 
   /**

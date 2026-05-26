@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Body,
   UseGuards,
   HttpCode,
@@ -809,6 +810,124 @@ export class AuthController {
     };
   }
 
+  // ─── Voice preference (Voice Sem 3A) ────────────────────────────────────
+
+  /**
+   * GET /auth/internal/voice-preference?phone=<E.164> — endpoint service-to-
+   * service (consumido por voice-call-service al inicio de cada llamada
+   * Twilio). NO retorna PII — solo language + voice. Protegido por
+   * X-Internal-Token (legacy, mismo patrón que /auth/internal/points/award)
+   * o HMAC middleware (vía RequestSignatureMiddleware en /internal/*).
+   *
+   * Si no encuentra user con ese phone, retorna defaults inferred por
+   * country code. Esto permite voice-call-service tener idioma correcto
+   * incluso para non-users (primera llamada).
+   */
+  @Get('internal/voice-preference')
+  @HttpCode(200)
+  async internalGetVoicePreference(
+    @Req() req: Request,
+    @Body() _body?: unknown,
+  ): Promise<{ language: 'es' | 'en' | 'qu'; voice: string | null }> {
+    // Auth: X-Internal-Token o middleware HMAC ya validó /auth/internal/*.
+    const expected = process.env.INTERNAL_SERVICE_TOKEN;
+    const provided = req.headers['x-internal-token'] as string | undefined;
+    if (expected && provided) {
+      const a = Buffer.from(provided, 'utf8');
+      const b = Buffer.from(expected, 'utf8');
+      if (a.length !== b.length || !timingSafeEqual(a, b)) {
+        throw new UnauthorizedException('Internal token inválido');
+      }
+    } else if (expected) {
+      // Si hay token configurado y no vino en el request → 401
+      throw new UnauthorizedException('Internal token requerido');
+    }
+    // Si no hay INTERNAL_SERVICE_TOKEN configurado, asumimos que el
+    // middleware HMAC ya validó el request (fail-closed allá).
+
+    const phone = String(req.query?.phone ?? '').trim();
+    if (!phone) {
+      throw new BadRequestException('phone (E.164) requerido');
+    }
+
+    const user = await this.userModel
+      .findOne({ phone })
+      .select('voiceLanguage voiceName phone')
+      .lean();
+
+    if (user) {
+      return {
+        language: (user.voiceLanguage ?? inferLanguageFromPhone(user.phone)) as 'es' | 'en' | 'qu',
+        voice: user.voiceName ?? null,
+      };
+    }
+    // No user encontrado — fallback por country code del phone.
+    return { language: inferLanguageFromPhone(phone), voice: null };
+  }
+
+  /**
+   * GET /auth/me/voice-preference — devuelve { language, voice } del user
+   * actual. Si no se ha configurado, retorna defaults derivados del país
+   * detectado por el phone (EC→es, US→en, fallback es).
+   */
+  @Get('me/voice-preference')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async getVoicePreference(@CurrentUser('userId') userId: UUID) {
+    const u = await this.userModel
+      .findOne({ id: userId })
+      .select('voiceLanguage voiceName phone')
+      .lean();
+    if (!u) throw new UnauthorizedException('Usuario no encontrado');
+    return {
+      language: u.voiceLanguage ?? inferLanguageFromPhone(u.phone),
+      voice: u.voiceName ?? null,
+      configured: !!u.voiceLanguage,
+    };
+  }
+
+  /**
+   * PUT /auth/me/voice-preference — actualiza { language?, voice? }.
+   * `voice` opcional; si se envía debe estar en VALID_VOICES.
+   */
+  @Put('me/voice-preference')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async updateVoicePreference(
+    @CurrentUser('userId') userId: UUID,
+    @Body() body: { language?: string; voice?: string | null },
+  ) {
+    const VALID_LANGS = ['es', 'en', 'qu'] as const;
+    const VALID_VOICES = ['alloy', 'shimmer', 'ash', 'coral', 'sage', 'verse', 'ballad', 'marin', 'cedar'];
+
+    const update: Record<string, unknown> = { voicePreferenceUpdatedAt: new Date() };
+    if (body.language !== undefined) {
+      if (!VALID_LANGS.includes(body.language as any)) {
+        throw new BadRequestException(`language debe ser uno de: ${VALID_LANGS.join(', ')}`);
+      }
+      update.voiceLanguage = body.language;
+    }
+    if (body.voice !== undefined) {
+      if (body.voice === null || body.voice === '') {
+        update.voiceName = undefined; // reset a default
+      } else if (!VALID_VOICES.includes(body.voice)) {
+        throw new BadRequestException(`voice inválida. Opciones: ${VALID_VOICES.join(', ')}`);
+      } else {
+        update.voiceName = body.voice;
+      }
+    }
+    await this.userModel.updateOne({ id: userId }, { $set: update });
+    const u = await this.userModel
+      .findOne({ id: userId })
+      .select('voiceLanguage voiceName phone')
+      .lean();
+    return {
+      language: u?.voiceLanguage ?? inferLanguageFromPhone(u?.phone),
+      voice: u?.voiceName ?? null,
+      configured: !!u?.voiceLanguage,
+    };
+  }
+
   // ─── Loyalty Points (Tipo B) ───────────────────────────────────────────────
 
   /**
@@ -1136,4 +1255,26 @@ export class AuthController {
 
     this.logger.log(`Reset email enviado a ${to} (messageId=${info.messageId})`);
   }
+}
+
+/**
+ * Helper para Voice Sem 3A: infiere idioma por country code del phone.
+ * EC (+593), CO, PE, MX, ES, AR, CL → 'es'
+ * US, CA, GB, AU, NZ, IE → 'en'
+ * Fallback → 'es' (mercado primario Going).
+ *
+ * NO incluye 'qu' (kichwa) — eso requiere opt-in explícito del usuario,
+ * no se asume por geografía.
+ */
+function inferLanguageFromPhone(phone?: string | null): 'es' | 'en' {
+  if (!phone) return 'es';
+  const p = phone.replace(/[^\d+]/g, '');
+  // Sin '+' al inicio asumimos que ya viene normalizado con código país.
+  if (p.startsWith('+1')) return 'en';   // US/CA
+  if (p.startsWith('+44')) return 'en';  // UK
+  if (p.startsWith('+61')) return 'en';  // AU
+  if (p.startsWith('+64')) return 'en';  // NZ
+  if (p.startsWith('+353')) return 'en'; // IE
+  // Todo lo demás (incluyendo +593 EC) → es
+  return 'es';
 }

@@ -13,6 +13,10 @@ import {
 import { VoiceCallService } from './voice-call.service';
 import { HandoffNotifierService } from './handoff-notifier.service';
 import { TwilioRestClient } from '../twilio/twilio-rest.client';
+import {
+  VoicePreferenceClient,
+  defaultVoiceForLanguage,
+} from './voice-preference.client';
 
 /**
  * RealtimeBridgeService — orquesta el ciclo de vida de una sesión Realtime
@@ -79,6 +83,7 @@ export class RealtimeBridgeService {
     private readonly voice: VoiceCallService,
     private readonly handoff: HandoffNotifierService,
     private readonly twilioRest: TwilioRestClient,
+    private readonly voicePref: VoicePreferenceClient,
   ) {
     this.defaultVoice    = this.config.get<string>('VOICE_REALTIME_DEFAULT_VOICE') || 'shimmer';
     this.defaultLanguage = this.config.get<string>('VOICE_REALTIME_DEFAULT_LANG')  || 'es';
@@ -116,17 +121,37 @@ export class RealtimeBridgeService {
       return this.sessions.get(input.streamSid)!;
     }
 
-    const systemPrompt = this.buildSystemPrompt(input.callId);
+    // Voice Sem 3B: resolver preferencia de idioma/voz del caller.
+    // Si user-auth-service responde con preferencia configurada, usar.
+    // Si no, fallback a defaults env.
+    let language = this.defaultLanguage;
+    let voice = this.defaultVoice;
+    try {
+      const pref = await this.voicePref.resolveByPhone(input.from);
+      if (pref) {
+        language = pref.language;
+        voice = pref.voice ?? defaultVoiceForLanguage(language);
+        this.logger.log(
+          `[bridge] voice-pref resolved callId=${input.callId} lang=${language} voice=${voice}`,
+        );
+      }
+    } catch (e) {
+      this.logger.warn(
+        `[bridge] voice-pref lookup fallo: ${e instanceof Error ? e.message : e}; usando defaults`,
+      );
+    }
+
+    const systemPrompt = this.buildSystemPrompt(input.callId, language);
 
     const session = this.adapter.createSession({
-      voice:              this.defaultVoice as any,
+      voice:              voice as any,
       instructions:       systemPrompt,
       tools:              VOICE_TOOLS_PHONE,
       inputAudioFormat:   'g711_ulaw',
       outputAudioFormat:  'g711_ulaw',
       turnDetection:      { type: 'server_vad', threshold: 0.5, silenceDurationMs: 600 },
       modalities:         ['audio', 'text'],
-      inputTranscriptionLanguage: this.defaultLanguage,
+      inputTranscriptionLanguage: language,
       temperature:        0.7,
     });
 
@@ -194,9 +219,30 @@ export class RealtimeBridgeService {
             break;
           }
 
-          case 'send_followup_sms':
-            result = executeSendFollowupSms(args);
+          case 'send_followup_sms': {
+            // Sintetiza la frase hablable + dispara el SMS real (best-effort)
+            // contra el `from` del caller. Si Twilio REST no está configurado
+            // o el envío falla, el tool result indica error pero el LLM
+            // ya puede leer spoken_confirmation y cerrar el turno.
+            const baseResult = executeSendFollowupSms(args);
+            const smsBody = `Going: ${baseResult.topic ? baseResult.topic + '. ' : ''}${baseResult.details ?? ''}`.trim();
+            if (input.from && smsBody) {
+              this.twilioRest
+                .sendSms(input.from, smsBody)
+                .then((r) => {
+                  if (!r.ok) {
+                    this.logger.warn(
+                      `[bridge] send_followup_sms fallo to=${input.from?.slice(0, 4)}...: ${r.error}`,
+                    );
+                  }
+                })
+                .catch((err) =>
+                  this.logger.warn(`[bridge] send_followup_sms threw: ${(err as Error).message}`),
+                );
+            }
+            result = baseResult;
             break;
+          }
 
           default:
             result = { ok: false, error: 'unknown_tool', name };
@@ -347,7 +393,45 @@ export class RealtimeBridgeService {
    * TODO: agregar lookups dinámicos por hora/canton si vemos en logs que
    * el AI se confunde con preguntas no-quote (horarios, ubicaciones, etc).
    */
-  private buildSystemPrompt(callId: string): string {
+  private buildSystemPrompt(callId: string, language: string = 'es'): string {
+    if (language === 'en') {
+      return [
+        'You are Uyari, the phone agent for Going Ecuador — a shared (carpooling) and',
+        'private intercity transportation company. You answer calls in friendly,',
+        'natural English (the caller is likely a tourist or expat in Ecuador).',
+        '',
+        'RULES:',
+        '- Keep replies short (1-3 sentences max). The caller is on the phone.',
+        '- For prices: ALWAYS use the get_quote_phone tool (never make up prices).',
+        '  Read the spoken_price + spoken_surcharges + spoken_unit fields (already in words).',
+        '- If the caller asks for a human, or you detect distress: use request_handoff_phone.',
+        '- If they need info they cannot write down: offer send_followup_sms.',
+        '- NEVER mention URLs or redirect to apps — they are on a voice call.',
+        '- If you do not understand, ask them to repeat (do not assume).',
+        '',
+        `Internal callId (for your context, never say it aloud): ${callId.slice(0, 16)}.`,
+      ].join('\n');
+    }
+    if (language === 'qu') {
+      // Kichwa unificado / quichua ecuatoriano del Chimborazo. Backup en español
+      // para que la conversación nunca quede sin respuesta si el caller mezcla.
+      return [
+        'Kanka Uyariimi kanki, Going Ecuador kompañiyapak teléfono yanapakuk —',
+        'compartido (carpooling) shukpacha intercantonal transporte kompañiya.',
+        'Kichwa shimipi ñukanchik runakunata yanapanki. Mishu shimipi tapurikpika,',
+        'mishu shimipi kutichinki (mana yanllachu).',
+        '',
+        'KAMACHIKKUNA:',
+        '- Uchilla willapaylla kutichinki (1-3 frases). Llakta teléfono ukupimi.',
+        '- Chanikunamantaka, get_quote_phone niska tool-ta ñankunata (ama yallinkichu).',
+        '- Runa-yanapakta munakpi, mana alli tukukpi: request_handoff_phone.',
+        '- Killkana ushashpaka: send_followup_sms.',
+        '- AMA URL-kunata rimaychu — voice call ukupimi.',
+        '',
+        `Internal callId (kampak yuyaypak, ama riman): ${callId.slice(0, 16)}.`,
+      ].join('\n');
+    }
+    // Default español ecuatoriano
     return [
       'Sos Uyari, el agente telefónico de Going Ecuador — una empresa de transporte',
       'compartido (carpooling) y privado intercantonal. Atendés llamadas en español',
