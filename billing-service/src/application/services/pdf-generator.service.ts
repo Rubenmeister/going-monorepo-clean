@@ -1,368 +1,345 @@
 /**
- * PDF Generator Service
- * Generates professional PDF invoices from invoice data
+ * PdfGeneratorService — genera el PDF real de una factura usando pdfkit.
+ *
+ * Decisión Gap #3: pdfkit (≈3MB) preferido sobre puppeteer (≈150MB) porque
+ * Cloud Run cobra por tamaño de imagen y arranque en frío. Layout
+ * programático (no HTML→PDF) — más controlable y predecible.
+ *
+ * Estructura del PDF:
+ *   - Header: razón social emisor + nº factura + estado
+ *   - Bloque emisor/cliente (lado a lado)
+ *   - Tabla de items con totales por línea (descripción, qty, unit, IVA, total)
+ *   - Bloque de totales: subtotal, descuento, IVA, TOTAL
+ *   - Datos bancarios (si la factura los tiene)
+ *   - Notas / términos (si están)
+ *
+ * Idioma: invoice.language → 'es' | 'en'. Cambia labels.
+ * Moneda: formato 'USD $X.XX' (Going opera en USD en Ecuador).
  */
-
 import { Injectable, Logger } from '@nestjs/common';
+import PDFDocument from 'pdfkit';
 import { Invoice, InvoiceLanguage } from '../../domain/models/invoice.model';
-import { TaxCalculatorService } from './tax-calculator.service';
+
+type L10n = Record<string, string>;
+
+const L10N_ES: L10n = {
+  invoice: 'FACTURA',
+  number: 'Número',
+  status: 'Estado',
+  from: 'Emisor',
+  billTo: 'Cliente',
+  taxId: 'RUC',
+  phone: 'Teléfono',
+  email: 'Email',
+  issueDate: 'Fecha emisión',
+  dueDate: 'Fecha vencimiento',
+  description: 'Descripción',
+  qty: 'Cant.',
+  unit: 'Precio unit.',
+  tax: 'IVA %',
+  lineTotal: 'Subtotal',
+  taxAmount: 'IVA',
+  subtotal: 'Subtotal',
+  discount: 'Descuento',
+  total: 'TOTAL',
+  bankDetails: 'Datos bancarios',
+  bankHolder: 'Titular',
+  bankName: 'Banco',
+  accountNumber: 'Nº de cuenta',
+  iban: 'IBAN',
+  swift: 'SWIFT',
+  notes: 'Notas',
+  terms: 'Términos y condiciones',
+};
+
+const L10N_EN: L10n = {
+  invoice: 'INVOICE',
+  number: 'Number',
+  status: 'Status',
+  from: 'From',
+  billTo: 'Bill to',
+  taxId: 'Tax ID',
+  phone: 'Phone',
+  email: 'Email',
+  issueDate: 'Issue date',
+  dueDate: 'Due date',
+  description: 'Description',
+  qty: 'Qty',
+  unit: 'Unit price',
+  tax: 'Tax %',
+  lineTotal: 'Subtotal',
+  taxAmount: 'Tax',
+  subtotal: 'Subtotal',
+  discount: 'Discount',
+  total: 'TOTAL',
+  bankDetails: 'Bank details',
+  bankHolder: 'Account holder',
+  bankName: 'Bank',
+  accountNumber: 'Account number',
+  iban: 'IBAN',
+  swift: 'SWIFT',
+  notes: 'Notes',
+  terms: 'Terms and conditions',
+};
 
 @Injectable()
 export class PdfGeneratorService {
   private readonly logger = new Logger(PdfGeneratorService.name);
 
-  constructor(private readonly taxCalculator: TaxCalculatorService) {}
-
   /**
-   * Generate PDF buffer from invoice
-   * @param invoice Invoice data
-   * @returns PDF buffer (bytes)
+   * Genera el buffer PDF de una factura.
+   * Usa pdfkit en modo streaming: recolecta chunks en un array y los
+   * concatena cuando termina (evita escribir a disco).
    */
   async generateInvoicePdf(invoice: Invoice): Promise<Buffer> {
-    try {
-      // Get HTML template based on language
-      const htmlTemplate = this.getTemplate(invoice.language);
+    return new Promise((resolve, reject) => {
+      try {
+        const doc = new PDFDocument({
+          size: 'A4',
+          margin: 50,
+          info: {
+            Title: `Invoice ${invoice.invoiceNumber}`,
+            Author: invoice.company?.name ?? 'Going',
+            Subject: `Invoice ${invoice.invoiceNumber}`,
+          },
+        });
 
-      // Generate HTML content
-      const htmlContent = this.generateHtmlContent(invoice, htmlTemplate);
+        const chunks: Buffer[] = [];
+        doc.on('data', (c: Buffer) => chunks.push(c));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
 
-      // TODO: Convert HTML to PDF using a library like pdfkit or puppeteer
-      // For now, return a placeholder buffer
-      this.logger.log(`PDF generated for invoice ${invoice.invoiceNumber}`);
-
-      return Buffer.from(htmlContent, 'utf-8');
-    } catch (error) {
-      this.logger.error(`Failed to generate PDF: ${error}`);
-      throw error;
-    }
+        this.renderInvoice(doc, invoice);
+        doc.end();
+      } catch (err) {
+        this.logger.error(`PDF generation failed: ${(err as Error).message}`);
+        reject(err);
+      }
+    });
   }
 
-  /**
-   * Get HTML template for invoice
-   * @param language Invoice language
-   * @returns HTML template
-   */
-  private getTemplate(language: InvoiceLanguage): string {
-    const templates = {
-      [InvoiceLanguage.SPANISH]: this.getSpanishTemplate(),
-      [InvoiceLanguage.ENGLISH]: this.getEnglishTemplate(),
-    };
+  // ── Render ──────────────────────────────────────────────────────────
 
-    return templates[language] || templates[InvoiceLanguage.ENGLISH];
-  }
+  private renderInvoice(doc: PDFKit.PDFDocument, invoice: Invoice): void {
+    const t = invoice.language === InvoiceLanguage.SPANISH ? L10N_ES : L10N_EN;
+    const currency = (invoice as any).currency ?? 'USD';
 
-  /**
-   * Generate HTML content for invoice
-   * @param invoice Invoice data
-   * @param template HTML template
-   * @returns Filled HTML content
-   */
-  private generateHtmlContent(invoice: Invoice, template: string): string {
-    let html = template;
+    // Header
+    doc
+      .fontSize(20)
+      .fillColor('#111')
+      .text(t.invoice, { align: 'right' });
+    doc
+      .fontSize(10)
+      .fillColor('#555')
+      .text(`${t.number}: ${invoice.invoiceNumber}`, { align: 'right' })
+      .text(`${t.status}: ${invoice.status}`, { align: 'right' });
+    doc.moveDown(2);
 
-    // Replace company info
-    html = html.replace('{{company.name}}', invoice.company.name || '');
-    html = html.replace(
-      '{{company.address}}',
-      `${invoice.company.address.street}, ${invoice.company.address.city} ${invoice.company.address.zipCode}`
-    );
-    html = html.replace('{{company.phone}}', invoice.company.phone || '');
-    html = html.replace('{{company.email}}', invoice.company.email || '');
-    html = html.replace('{{company.taxId}}', invoice.company.taxId || '');
-    html = html.replace('{{company.website}}', invoice.company.website || '');
+    // Bloques From / Bill to (lado a lado)
+    const topY = doc.y;
+    this.drawPartyBlock(doc, t.from, invoice.company, 50, topY, t);
+    this.drawPartyBlock(doc, t.billTo, invoice.client, 320, topY, t);
+    doc.moveDown(8);
 
-    // Replace client info
-    html = html.replace('{{client.name}}', invoice.client.name || '');
-    html = html.replace(
-      '{{client.address}}',
-      `${invoice.client.address.street}, ${invoice.client.address.city} ${invoice.client.address.zipCode}`
-    );
-    html = html.replace('{{client.phone}}', invoice.client.phone || '');
-    html = html.replace('{{client.email}}', invoice.client.email || '');
-    html = html.replace('{{client.taxId}}', invoice.client.taxId || '');
-
-    // Replace invoice details
-    html = html.replace('{{invoiceNumber}}', invoice.invoiceNumber);
-    html = html.replace(
-      '{{issueDate}}',
-      new Date(invoice.issueDate).toLocaleDateString(
-        this.getLocale(invoice.language)
+    // Fechas
+    const localeFn = invoice.language === InvoiceLanguage.SPANISH ? 'es-EC' : 'en-US';
+    doc
+      .fontSize(10)
+      .fillColor('#111')
+      .text(
+        `${t.issueDate}: ${new Date(invoice.issueDate).toLocaleDateString(localeFn)}`,
+        50,
+        doc.y,
       )
-    );
-    html = html.replace(
-      '{{dueDate}}',
-      new Date(invoice.dueDate).toLocaleDateString(
-        this.getLocale(invoice.language)
-      )
-    );
+      .text(
+        `${t.dueDate}: ${new Date(invoice.dueDate).toLocaleDateString(localeFn)}`,
+        50,
+        doc.y,
+      );
+    doc.moveDown(1.5);
 
-    // Replace line items
-    const lineItemsHtml = invoice.lineItems
-      .map(
-        (item) => `
-      <tr>
-        <td>${item.description}</td>
-        <td align="right">${item.quantity}</td>
-        <td align="right">${this.formatPrice(item.unitPrice)}</td>
-        <td align="right">${item.taxRate}%</td>
-        <td align="right">${this.formatPrice(item.total)}</td>
-        <td align="right">${this.formatPrice(item.taxAmount)}</td>
-      </tr>
-    `
-      )
-      .join('');
+    // Tabla de items
+    this.drawLineItemsTable(doc, invoice, t, currency);
 
-    html = html.replace('{{lineItems}}', lineItemsHtml);
+    // Totales
+    doc.moveDown(1);
+    this.drawTotals(doc, invoice, t, currency);
 
-    // Replace totals
-    html = html.replace('{{subtotal}}', this.formatPrice(invoice.subtotal));
-    html = html.replace('{{taxAmount}}', this.formatPrice(invoice.taxAmount));
-    html = html.replace(
-      '{{discountAmount}}',
-      this.formatPrice(invoice.discountAmount || 0)
-    );
-    html = html.replace('{{total}}', this.formatPrice(invoice.total));
-
-    // Replace payment info
+    // Datos bancarios
     if (invoice.bankDetails) {
-      html = html.replace(
-        '{{bankAccountHolder}}',
-        invoice.bankDetails.accountHolder
-      );
-      html = html.replace(
-        '{{bankAccountNumber}}',
-        invoice.bankDetails.accountNumber
-      );
-      html = html.replace('{{bankName}}', invoice.bankDetails.bankName);
-      html = html.replace(
-        '{{bankSwiftCode}}',
-        invoice.bankDetails.swiftCode || ''
-      );
-      html = html.replace('{{bankIban}}', invoice.bankDetails.iban || '');
+      doc.moveDown(2);
+      doc
+        .fontSize(11)
+        .fillColor('#111')
+        .text(t.bankDetails, { underline: true });
+      doc.moveDown(0.3);
+      doc.fontSize(9).fillColor('#444');
+      if (invoice.bankDetails.accountHolder)
+        doc.text(`${t.bankHolder}: ${invoice.bankDetails.accountHolder}`);
+      if (invoice.bankDetails.bankName)
+        doc.text(`${t.bankName}: ${invoice.bankDetails.bankName}`);
+      if (invoice.bankDetails.accountNumber)
+        doc.text(`${t.accountNumber}: ${invoice.bankDetails.accountNumber}`);
+      if (invoice.bankDetails.iban)
+        doc.text(`${t.iban}: ${invoice.bankDetails.iban}`);
+      if (invoice.bankDetails.swiftCode)
+        doc.text(`${t.swift}: ${invoice.bankDetails.swiftCode}`);
     }
 
-    // Replace notes and terms
-    html = html.replace('{{notes}}', invoice.notes || '');
-    html = html.replace('{{terms}}', invoice.terms || '');
+    // Notas
+    if (invoice.notes) {
+      doc.moveDown(1.5);
+      doc
+        .fontSize(11)
+        .fillColor('#111')
+        .text(t.notes, { underline: true });
+      doc.moveDown(0.3);
+      doc.fontSize(9).fillColor('#444').text(invoice.notes);
+    }
 
-    return html;
+    // Términos
+    if (invoice.terms) {
+      doc.moveDown(1);
+      doc
+        .fontSize(11)
+        .fillColor('#111')
+        .text(t.terms, { underline: true });
+      doc.moveDown(0.3);
+      doc.fontSize(9).fillColor('#444').text(invoice.terms);
+    }
   }
 
-  /**
-   * Get Spanish invoice template
-   */
-  private getSpanishTemplate(): string {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Factura {{invoiceNumber}}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .company-info { float: left; width: 45%; }
-    .client-info { float: right; width: 45%; }
-    .clearfix { clear: both; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background-color: #f0f0f0; padding: 10px; text-align: left; border-bottom: 2px solid #333; }
-    td { padding: 10px; border-bottom: 1px solid #ddd; }
-    .totals { text-align: right; margin-top: 20px; }
-    .total-row { font-weight: bold; font-size: 16px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>FACTURA</h1>
-    <p>Número: {{invoiceNumber}}</p>
-  </div>
+  private drawPartyBlock(
+    doc: PDFKit.PDFDocument,
+    label: string,
+    party: { name?: string; email?: string; phone?: string; taxId?: string; address?: any },
+    x: number,
+    y: number,
+    t: L10n,
+  ): void {
+    doc
+      .fontSize(10)
+      .fillColor('#888')
+      .text(label.toUpperCase(), x, y);
 
-  <div class="company-info">
-    <h3>Empresa:</h3>
-    <p><strong>{{company.name}}</strong></p>
-    <p>{{company.address}}</p>
-    <p>Teléfono: {{company.phone}}</p>
-    <p>Email: {{company.email}}</p>
-    <p>CIF: {{company.taxId}}</p>
-  </div>
-
-  <div class="client-info">
-    <h3>Cliente:</h3>
-    <p><strong>{{client.name}}</strong></p>
-    <p>{{client.address}}</p>
-    <p>Teléfono: {{client.phone}}</p>
-    <p>Email: {{client.email}}</p>
-    <p>CIF: {{client.taxId}}</p>
-  </div>
-
-  <div class="clearfix"></div>
-
-  <p><strong>Fecha de Emisión:</strong> {{issueDate}}</p>
-  <p><strong>Fecha de Vencimiento:</strong> {{dueDate}}</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Descripción</th>
-        <th>Cantidad</th>
-        <th>Precio Unitario</th>
-        <th>IVA</th>
-        <th>Subtotal</th>
-        <th>Impuesto</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{lineItems}}
-    </tbody>
-  </table>
-
-  <div class="totals">
-    <p><strong>Subtotal:</strong> {{subtotal}}</p>
-    <p><strong>Impuesto (IVA):</strong> {{taxAmount}}</p>
-    <p><strong>Descuento:</strong> -{{discountAmount}}</p>
-    <p class="total-row"><strong>TOTAL:</strong> {{total}}</p>
-  </div>
-
-  {{#if bankDetails}}
-  <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
-    <h3>Datos Bancarios:</h3>
-    <p><strong>Titular:</strong> {{bankAccountHolder}}</p>
-    <p><strong>Banco:</strong> {{bankName}}</p>
-    <p><strong>Cuenta:</strong> {{bankAccountNumber}}</p>
-    <p><strong>IBAN:</strong> {{bankIban}}</p>
-    <p><strong>SWIFT:</strong> {{bankSwiftCode}}</p>
-  </div>
-  {{/if}}
-
-  {{#if notes}}
-  <div style="margin-top: 20px;">
-    <h3>Notas:</h3>
-    <p>{{notes}}</p>
-  </div>
-  {{/if}}
-</body>
-</html>
-    `;
+    doc.fontSize(11).fillColor('#111').text(party.name ?? '—', x, y + 14);
+    let cursor = y + 30;
+    if (party.address) {
+      const addr = party.address;
+      const line1 = [addr.street].filter(Boolean).join(', ');
+      const line2 = [addr.city, addr.zipCode, addr.country].filter(Boolean).join(', ');
+      if (line1) {
+        doc.fontSize(9).fillColor('#444').text(line1, x, cursor);
+        cursor += 12;
+      }
+      if (line2) {
+        doc.fontSize(9).fillColor('#444').text(line2, x, cursor);
+        cursor += 12;
+      }
+    }
+    if (party.phone) {
+      doc.fontSize(9).fillColor('#444').text(`${t.phone}: ${party.phone}`, x, cursor);
+      cursor += 12;
+    }
+    if (party.email) {
+      doc.fontSize(9).fillColor('#444').text(`${t.email}: ${party.email}`, x, cursor);
+      cursor += 12;
+    }
+    if (party.taxId) {
+      doc.fontSize(9).fillColor('#444').text(`${t.taxId}: ${party.taxId}`, x, cursor);
+    }
   }
 
-  /**
-   * Get English invoice template
-   */
-  private getEnglishTemplate(): string {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Invoice {{invoiceNumber}}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .company-info { float: left; width: 45%; }
-    .client-info { float: right; width: 45%; }
-    .clearfix { clear: both; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background-color: #f0f0f0; padding: 10px; text-align: left; border-bottom: 2px solid #333; }
-    td { padding: 10px; border-bottom: 1px solid #ddd; }
-    .totals { text-align: right; margin-top: 20px; }
-    .total-row { font-weight: bold; font-size: 16px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>INVOICE</h1>
-    <p>Number: {{invoiceNumber}}</p>
-  </div>
+  private drawLineItemsTable(
+    doc: PDFKit.PDFDocument,
+    invoice: Invoice,
+    t: L10n,
+    currency: string,
+  ): void {
+    const startX = 50;
+    const startY = doc.y;
+    const colW = { desc: 200, qty: 40, unit: 80, tax: 50, sub: 80, ivat: 50 };
 
-  <div class="company-info">
-    <h3>From:</h3>
-    <p><strong>{{company.name}}</strong></p>
-    <p>{{company.address}}</p>
-    <p>Phone: {{company.phone}}</p>
-    <p>Email: {{company.email}}</p>
-    <p>Tax ID: {{company.taxId}}</p>
-  </div>
+    // Header
+    doc
+      .fontSize(9)
+      .fillColor('#fff')
+      .rect(startX, startY, 500, 18)
+      .fill('#333')
+      .fillColor('#fff');
+    doc.text(t.description, startX + 5, startY + 5, { width: colW.desc });
+    doc.text(t.qty, startX + colW.desc + 5, startY + 5, { width: colW.qty, align: 'right' });
+    doc.text(t.unit, startX + colW.desc + colW.qty + 5, startY + 5, { width: colW.unit, align: 'right' });
+    doc.text(t.tax, startX + colW.desc + colW.qty + colW.unit + 5, startY + 5, { width: colW.tax, align: 'right' });
+    doc.text(t.lineTotal, startX + colW.desc + colW.qty + colW.unit + colW.tax + 5, startY + 5, { width: colW.sub, align: 'right' });
+    doc.text(t.taxAmount, startX + colW.desc + colW.qty + colW.unit + colW.tax + colW.sub + 5, startY + 5, { width: colW.ivat, align: 'right' });
 
-  <div class="client-info">
-    <h3>Bill To:</h3>
-    <p><strong>{{client.name}}</strong></p>
-    <p>{{client.address}}</p>
-    <p>Phone: {{client.phone}}</p>
-    <p>Email: {{client.email}}</p>
-    <p>Tax ID: {{client.taxId}}</p>
-  </div>
+    // Rows
+    let y = startY + 22;
+    doc.fillColor('#111').fontSize(9);
+    for (const item of invoice.lineItems) {
+      doc.text(item.description, startX + 5, y, { width: colW.desc });
+      doc.text(String(item.quantity), startX + colW.desc + 5, y, { width: colW.qty, align: 'right' });
+      doc.text(this.fmt(item.unitPrice, currency), startX + colW.desc + colW.qty + 5, y, { width: colW.unit, align: 'right' });
+      doc.text(`${item.taxRate}%`, startX + colW.desc + colW.qty + colW.unit + 5, y, { width: colW.tax, align: 'right' });
+      doc.text(this.fmt(item.total, currency), startX + colW.desc + colW.qty + colW.unit + colW.tax + 5, y, { width: colW.sub, align: 'right' });
+      doc.text(this.fmt(item.taxAmount, currency), startX + colW.desc + colW.qty + colW.unit + colW.tax + colW.sub + 5, y, { width: colW.ivat, align: 'right' });
+      y += 16;
+      // Hoja nueva si nos pasamos
+      if (y > 720) {
+        doc.addPage();
+        y = 50;
+      }
+    }
 
-  <div class="clearfix"></div>
-
-  <p><strong>Issue Date:</strong> {{issueDate}}</p>
-  <p><strong>Due Date:</strong> {{dueDate}}</p>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Description</th>
-        <th>Qty</th>
-        <th>Unit Price</th>
-        <th>Tax</th>
-        <th>Subtotal</th>
-        <th>Tax Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{lineItems}}
-    </tbody>
-  </table>
-
-  <div class="totals">
-    <p><strong>Subtotal:</strong> {{subtotal}}</p>
-    <p><strong>Tax:</strong> {{taxAmount}}</p>
-    <p><strong>Discount:</strong> -{{discountAmount}}</p>
-    <p class="total-row"><strong>TOTAL:</strong> {{total}}</p>
-  </div>
-
-  {{#if bankDetails}}
-  <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
-    <h3>Bank Details:</h3>
-    <p><strong>Account Holder:</strong> {{bankAccountHolder}}</p>
-    <p><strong>Bank Name:</strong> {{bankName}}</p>
-    <p><strong>Account Number:</strong> {{bankAccountNumber}}</p>
-    <p><strong>IBAN:</strong> {{bankIban}}</p>
-    <p><strong>SWIFT:</strong> {{bankSwiftCode}}</p>
-  </div>
-  {{/if}}
-
-  {{#if notes}}
-  <div style="margin-top: 20px;">
-    <h3>Notes:</h3>
-    <p>{{notes}}</p>
-  </div>
-  {{/if}}
-</body>
-</html>
-    `;
+    doc.moveTo(startX, y).lineTo(startX + 500, y).strokeColor('#ddd').stroke();
+    doc.y = y + 5;
   }
 
-  /**
-   * Format price for display
-   * @param priceInCents Price in cents
-   * @returns Formatted price (e.g., '€100.00')
-   */
-  private formatPrice(priceInCents: number): string {
-    const price = priceInCents / 100;
-    return `€${price.toFixed(2)}`;
+  private drawTotals(
+    doc: PDFKit.PDFDocument,
+    invoice: Invoice,
+    t: L10n,
+    currency: string,
+  ): void {
+    const rightX = 400;
+    const baseY = doc.y;
+    doc.fontSize(10).fillColor('#444');
+    doc.text(`${t.subtotal}: ${this.fmt(invoice.subtotal, currency)}`, rightX, baseY, { width: 150, align: 'right' });
+
+    let y = baseY + 14;
+    if (invoice.discountAmount && invoice.discountAmount > 0) {
+      doc.text(
+        `${t.discount}: -${this.fmt(invoice.discountAmount, currency)}`,
+        rightX,
+        y,
+        { width: 150, align: 'right' },
+      );
+      y += 14;
+    }
+    doc.text(
+      `${t.taxAmount}: ${this.fmt(invoice.taxAmount, currency)}`,
+      rightX,
+      y,
+      { width: 150, align: 'right' },
+    );
+    y += 18;
+
+    doc
+      .fontSize(13)
+      .fillColor('#111')
+      .text(
+        `${t.total}: ${this.fmt(invoice.total, currency)}`,
+        rightX,
+        y,
+        { width: 150, align: 'right' },
+      );
   }
 
-  /**
-   * Get locale from language
-   * @param language Language code
-   * @returns Locale string (e.g., 'es-ES', 'en-US')
-   */
-  private getLocale(language: InvoiceLanguage): string {
-    const locales: Record<InvoiceLanguage, string> = {
-      [InvoiceLanguage.SPANISH]: 'es-ES',
-      [InvoiceLanguage.ENGLISH]: 'en-US',
-    };
-
-    return locales[language];
+  /** Formatea centavos → "$X.XX" o "USD $X.XX" según moneda. */
+  private fmt(cents: number, currency: string): string {
+    const amount = (cents / 100).toFixed(2);
+    return `${currency === 'USD' ? '$' : currency + ' '}${amount}`;
   }
 }

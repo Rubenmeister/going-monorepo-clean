@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthRedirect } from "@/lib/empresas/auth";
-import { fetchInvoices } from "@/lib/empresas/api";
+import { fetchInvoices, downloadInvoicePdf } from "@/lib/empresas/api";
 import { getContexto } from "@/lib/empresas/permisos";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
@@ -86,6 +86,19 @@ export default function FacturacionPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(0);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function handleDownloadPdf(inv: Invoice) {
+    if (!session?.accessToken || downloadingId) return;
+    setDownloadingId(inv.id);
+    try {
+      await downloadInvoicePdf(session.accessToken, inv.id, inv.invoiceNumber);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo descargar el PDF");
+    } finally {
+      setDownloadingId(null);
+    }
+  }
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -235,6 +248,23 @@ export default function FacturacionPage() {
                     <p className={`text-xs ${PAY_STYLES[inv.paymentStatus] ?? "text-slate-500"}`}>
                       Por pagar: {fmtMoney(inv.amountDue, inv.currency)}
                     </p>
+                  )}
+                  {inv.status !== "DRAFT" && (
+                    <button
+                      onClick={() => handleDownloadPdf(inv)}
+                      disabled={downloadingId === inv.id}
+                      className="mt-1 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                      title="Descargar PDF"
+                    >
+                      {downloadingId === inv.id ? "Descargando…" : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                          </svg>
+                          PDF
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
               </div>
