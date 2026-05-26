@@ -17,7 +17,9 @@ import {
 import {
   buildApprovalChain,
   applyDecision,
+  evaluateTravelPolicy,
   type ApprovalLevelConfig,
+  type TravelPolicy,
 } from './approval.logic';
 
 function numOrNull(v: unknown): number | null {
@@ -114,16 +116,39 @@ export class CorporateService {
       );
     }
 
+    const settings = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
+
+    // ── Política de viajes (Gap #2) ─────────────────────────────────────
+    // Valida tope, servicios permitidos, justificación, horarios, días.
+    // Si policy.enabled=false → no aplica.
+    const policy = (settings as any)?.travelPolicy as TravelPolicy | undefined;
+    const policyResult = evaluateTravelPolicy(policy, {
+      amount,
+      serviceType: body.serviceType ?? body.type ?? 'transport',
+      startDate: body.startDate,
+      justification: body.justification,
+      isPersonal: !!body.isPersonal,
+      isInternational: !!body.isInternational,
+    });
+    if (!policyResult.allowed) {
+      throw new ForbiddenException(
+        `La reserva viola la política corporativa: ${policyResult.messages.join(' ')}`,
+      );
+    }
+
     const payload = {
       ...body,
       companyId,
       clientSegment: 'corporate', // +25% premium (sin descuentos)
       paymentMode: body.paymentMode ?? 'corporate_monthly', // cobro diferido a fin de mes
     };
-    const settings = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
-    const needsApproval =
+
+    // needsApproval ahora combina la lógica legacy (requireApproval + threshold)
+    // con la nueva política (requiresApproval por horario, día o monto).
+    const legacyNeedsApproval =
       (settings as any)?.requireApproval &&
       (payload.amount ?? payload.totalPrice ?? 0) >= ((settings as any)?.approvalThreshold ?? 0);
+    const needsApproval = legacyNeedsApproval || policyResult.requiresApproval;
 
     const booking = await this.postJson(`${this.bookingUrl}/bookings`, token, payload);
 
@@ -131,6 +156,9 @@ export class CorporateService {
       const chainAmount = payload.amount ?? payload.totalPrice ?? 0;
       const levels = ((settings as any)?.approvalLevels ?? []) as ApprovalLevelConfig[];
       const chain = buildApprovalChain(chainAmount, levels);
+      const policyNote = policyResult.requiresApproval
+        ? ` [política: ${policyResult.violations.join(', ')}]`
+        : '';
       await this.approvalRepo.create({
         companyId,
         bookingId: (booking as any).id,
@@ -138,7 +166,7 @@ export class CorporateService {
         requesterName: body.employeeName ?? '',
         serviceType: body.serviceType ?? body.type ?? '',
         amount: chainAmount,
-        description: `${body.serviceType ?? 'Booking'} — ${body.destination ?? ''}`,
+        description: `${body.serviceType ?? 'Booking'} — ${body.destination ?? ''}${policyNote}`,
         status: 'pending',
         approvalChain: chain as any,
         currentLevel: chain[0]?.level ?? 1,
@@ -262,6 +290,78 @@ export class CorporateService {
 
   async updateSettings(companyId: string, data: any) {
     return this.settingsRepo.upsert(companyId, { ...data, companyId });
+  }
+
+  // ── Travel Policy (Gap #2) ─────────────────────────────────────────────
+
+  /**
+   * GET /corporate/policy — devuelve la política de viajes vigente.
+   * Si nunca se configuró, retorna defaults conservadores (todo permitido).
+   */
+  async getTravelPolicy(companyId: string) {
+    const settings = await this.settingsRepo.findByCompanyId(companyId).catch(() => null);
+    const policy = (settings as any)?.travelPolicy;
+    if (policy && policy.enabled !== undefined) {
+      return policy;
+    }
+    // Defaults: política desactivada, sin restricciones, todo permitido.
+    return {
+      enabled: false,
+      maxFarePerTrip: 0,
+      maxFarePerDay: 0,
+      maxFarePerMonth: 0,
+      requireJustificationAbove: 0,
+      allowedServices: ['transport', 'tours', 'experiences', 'accommodation', 'parcels'],
+      allowedDays: [0, 1, 2, 3, 4, 5, 6],
+      allowedHoursFrom: '00:00',
+      allowedHoursTo: '23:59',
+      autoApproveBelow: 0,
+      requireApprovalAbove: 0,
+      allowPersonalUse: false,
+      allowInternational: false,
+    };
+  }
+
+  /**
+   * PUT /corporate/policy — actualiza la política de viajes.
+   * Valida coherencia: autoApprove < requireApproval < maxPerTrip.
+   * Audita: `policyChangedBy` + `policyChangedAt`.
+   */
+  async updateTravelPolicy(
+    companyId: string,
+    changedBy: string,
+    policy: Record<string, unknown>,
+  ) {
+    // Validación de coherencia básica.
+    const autoApprove = Number(policy.autoApproveBelow ?? 0);
+    const requireApproval = Number(policy.requireApprovalAbove ?? 0);
+    const maxPerTrip = Number(policy.maxFarePerTrip ?? 0);
+
+    if (autoApprove < 0 || requireApproval < 0 || maxPerTrip < 0) {
+      throw new BadRequestException(
+        'Los montos de la política no pueden ser negativos',
+      );
+    }
+    if (maxPerTrip > 0 && requireApproval > 0 && requireApproval >= maxPerTrip) {
+      throw new BadRequestException(
+        'requireApprovalAbove debe ser menor que maxFarePerTrip',
+      );
+    }
+    if (autoApprove > 0 && requireApproval > 0 && autoApprove >= requireApproval) {
+      throw new BadRequestException(
+        'autoApproveBelow debe ser menor que requireApprovalAbove',
+      );
+    }
+    if (Array.isArray(policy.allowedHoursFrom) || Array.isArray(policy.allowedHoursTo)) {
+      throw new BadRequestException('allowedHoursFrom/To deben ser strings HH:MM');
+    }
+
+    return this.settingsRepo.upsert(companyId, {
+      companyId,
+      travelPolicy: policy as any,
+      policyChangedBy: changedBy,
+      policyChangedAt: new Date(),
+    } as any);
   }
 
   // ── Employees ──────────────────────────────────────────────────────────

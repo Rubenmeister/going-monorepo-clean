@@ -146,3 +146,189 @@ export function deriveStatus(chain: ApprovalStep[]): WorkflowStatus {
   if (chain.length > 0 && chain.every((s) => s.status === 'approved')) return 'approved';
   return 'pending';
 }
+
+// ── Travel Policy Evaluator (Gap #2) ─────────────────────────────────────
+
+export interface TravelPolicy {
+  enabled: boolean;
+  maxFarePerTrip: number;
+  maxFarePerDay: number;
+  maxFarePerMonth: number;
+  requireJustificationAbove: number;
+  allowedServices: string[];
+  allowedDays: number[];
+  allowedHoursFrom: string;
+  allowedHoursTo: string;
+  autoApproveBelow: number;
+  requireApprovalAbove: number;
+  allowPersonalUse: boolean;
+  allowInternational: boolean;
+}
+
+export interface PolicyEvaluationInput {
+  amount: number;
+  serviceType: string;
+  /** ISO date del inicio del viaje (si está disponible). */
+  startDate?: string | Date;
+  /** Justificación enviada por el empleado. */
+  justification?: string;
+  /** Bandera explícita uso personal. */
+  isPersonal?: boolean;
+  /** Bandera explícita destino internacional. */
+  isInternational?: boolean;
+}
+
+export type PolicyViolation =
+  | 'amount_exceeds_max'
+  | 'service_not_allowed'
+  | 'outside_allowed_days'
+  | 'outside_allowed_hours'
+  | 'justification_required'
+  | 'personal_use_not_allowed'
+  | 'international_not_allowed';
+
+export interface PolicyEvaluationResult {
+  /** true si el booking puede crearse (puede o no requerir aprobación). */
+  allowed: boolean;
+  /** true si requiere aprobación del manager (no auto-approve). */
+  requiresApproval: boolean;
+  /** Razones (legibles) por las que el booking fue bloqueado. */
+  violations: PolicyViolation[];
+  /** Mensajes legibles para el usuario. */
+  messages: string[];
+}
+
+/**
+ * Evalúa un booking propuesto contra la política de viajes corporativa.
+ * Si `policy.enabled` es false, todo se permite y no requiere aprobación
+ * (la lógica de `requireApproval`/`approvalThreshold` legacy se aplica
+ * fuera de aquí). Si `enabled` es true, evalúa cada regla y devuelve un
+ * resultado consolidado.
+ */
+export function evaluateTravelPolicy(
+  policy: TravelPolicy | null | undefined,
+  input: PolicyEvaluationInput,
+): PolicyEvaluationResult {
+  const empty: PolicyEvaluationResult = {
+    allowed: true,
+    requiresApproval: false,
+    violations: [],
+    messages: [],
+  };
+  if (!policy || !policy.enabled) return empty;
+
+  const violations: PolicyViolation[] = [];
+  const messages: string[] = [];
+  let requiresApproval = false;
+
+  // 1. Tope absoluto.
+  if (policy.maxFarePerTrip > 0 && input.amount > policy.maxFarePerTrip) {
+    violations.push('amount_exceeds_max');
+    messages.push(
+      `El monto $${input.amount} supera el tope por viaje de $${policy.maxFarePerTrip}.`,
+    );
+  }
+
+  // 2. Servicio habilitado.
+  if (
+    policy.allowedServices.length > 0 &&
+    !policy.allowedServices.includes(input.serviceType)
+  ) {
+    violations.push('service_not_allowed');
+    messages.push(
+      `El servicio "${input.serviceType}" no está habilitado por la política.`,
+    );
+  }
+
+  // 3. Justificación obligatoria.
+  if (
+    policy.requireJustificationAbove > 0 &&
+    input.amount > policy.requireJustificationAbove &&
+    !(input.justification && input.justification.trim().length > 0)
+  ) {
+    violations.push('justification_required');
+    messages.push(
+      `Se requiere justificación para viajes mayores a $${policy.requireJustificationAbove}.`,
+    );
+  }
+
+  // 4. Uso personal.
+  if (input.isPersonal && !policy.allowPersonalUse) {
+    violations.push('personal_use_not_allowed');
+    messages.push('Uso personal de Going no está permitido por la política.');
+  }
+
+  // 5. Internacional.
+  if (input.isInternational && !policy.allowInternational) {
+    violations.push('international_not_allowed');
+    messages.push('Viajes internacionales no están permitidos por la política.');
+  }
+
+  // 6. Días / horas: si startDate viene, validamos. Si no, no se evalúa
+  //    (caller puede agregar la validación cuando dispatch resuelva la fecha).
+  if (input.startDate) {
+    const d = new Date(input.startDate);
+    if (!isNaN(d.getTime())) {
+      // Convertimos a zona ECT (UTC-5).
+      const ect = new Date(d.getTime() - 5 * 3_600_000);
+      const day = ect.getUTCDay();
+      const minutes = ect.getUTCHours() * 60 + ect.getUTCMinutes();
+
+      if (
+        policy.allowedDays &&
+        policy.allowedDays.length > 0 &&
+        !policy.allowedDays.includes(day)
+      ) {
+        // Fuera de días permitidos → no bloqueamos, pero requerimos aprobación.
+        requiresApproval = true;
+        violations.push('outside_allowed_days');
+        messages.push(
+          'El viaje cae fuera de los días laborables — requiere aprobación.',
+        );
+      }
+      if (policy.allowedHoursFrom && policy.allowedHoursTo) {
+        const [fh, fm] = policy.allowedHoursFrom.split(':').map(Number);
+        const [th, tm] = policy.allowedHoursTo.split(':').map(Number);
+        const fromMin = fh * 60 + fm;
+        const toMin = th * 60 + tm;
+        if (minutes < fromMin || minutes > toMin) {
+          requiresApproval = true;
+          violations.push('outside_allowed_hours');
+          messages.push(
+            `El viaje cae fuera del horario ${policy.allowedHoursFrom}–${policy.allowedHoursTo} — requiere aprobación.`,
+          );
+        }
+      }
+    }
+  }
+
+  // 7. Aprobación por monto.
+  if (
+    policy.requireApprovalAbove > 0 &&
+    input.amount >= policy.requireApprovalAbove
+  ) {
+    requiresApproval = true;
+  }
+
+  // Si auto-approve está configurado y el monto está debajo → no requiere aprobación.
+  if (
+    policy.autoApproveBelow > 0 &&
+    input.amount < policy.autoApproveBelow &&
+    !requiresApproval
+  ) {
+    // ok, auto-approve.
+  }
+
+  // Violaciones hard (no horarios): bloquean. Horarios/días solo escalan
+  // a approval — no son hard blocks.
+  const hardViolations = violations.filter(
+    (v) => v !== 'outside_allowed_days' && v !== 'outside_allowed_hours',
+  );
+
+  return {
+    allowed: hardViolations.length === 0,
+    requiresApproval,
+    violations,
+    messages,
+  };
+}
