@@ -148,7 +148,7 @@ export class CerebroPublisherService {
       startedAt:  new Date(now.getTime() - input.durationSeconds * 1000).toISOString(),
       finishedAt: now.toISOString(),
       durationMs: input.durationSeconds * 1000,
-      status:     input.outcome === 'failed_technical' ? 'error' : 'success',
+      status:     input.outcome === 'failed_technical' ? 'failure' : 'success',
       metrics: {
         eventType:       'call_ended',
         callId:          input.callId,
