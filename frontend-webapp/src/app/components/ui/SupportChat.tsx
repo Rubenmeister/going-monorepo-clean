@@ -20,12 +20,16 @@ function getSessionId(): string {
   return id;
 }
 
-// Si hay URL directa al servicio → /chat/message
-// Si solo hay API Gateway → /support/chat/message (el gateway hace proxy)
+// Backend: customer-support-service expone DOS endpoints de chat:
+//   - /support/message         → autenticado (JwtAuthGuard, ChatController)
+//   - /support/public/message  → anónimo (PublicChatController) ← USAMOS ÉSTE
+// El widget de la home es para visitantes sin login, por eso el público.
+// Cuando el user se loguee podemos migrar a /support/message para que el
+// history se asocie al userId real.
 const SUPPORT_DIRECT = process.env.NEXT_PUBLIC_SUPPORT_SERVICE_URL || '';
 const CHAT_ENDPOINT = SUPPORT_DIRECT
-  ? `${SUPPORT_DIRECT}/chat/message`
-  : `${process.env.NEXT_PUBLIC_API_URL || ''}/support/chat/message`;
+  ? `${SUPPORT_DIRECT}/support/public/message`
+  : `${process.env.NEXT_PUBLIC_API_URL || ''}/support/public/message`;
 
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
