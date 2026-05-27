@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { WhatsAppController } from './api/whatsapp.controller';
 import { TelegramController } from './api/telegram.controller';
 import { ChatController } from './api/chat.controller';
+import { PublicChatController } from './api/public-chat.controller';
 import { HealthController } from './api/health.controller';
 import { MetricsController } from './api/metrics.controller';
 import { CommandController } from './api/command.controller';
@@ -52,6 +53,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
     WhatsAppController,
     TelegramController,
     ChatController,
+    PublicChatController,
     HealthController,
     MetricsController,
     CommandController,
