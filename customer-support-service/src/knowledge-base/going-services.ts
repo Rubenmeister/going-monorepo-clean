@@ -1,50 +1,60 @@
 /**
  * GOING Services Knowledge Base
- * Fuente de verdad para el agente de atención al cliente
+ * Fuente de verdad para los agentes de Going (chat soporte + voice phone agent).
+ *
+ * Política: SOLO afirmar lo que es verdad operativa hoy. Productos en
+ * desarrollo (turismo, tours, alojamiento) NO deben anunciarse como activos.
+ * Para precios: SIEMPRE delegar a la función get_quote / get_quote_phone.
+ * NUNCA mostrar tarifas estáticas en respuestas al usuario.
  */
 export const GOING_SERVICES_KB = {
-  summary_es: 'GOING es la plataforma ecuatoriana de transporte interurbano y turismo. Conecta pasajeros con conductores verificados para viajes compartidos, privados, y ofrece paquetes de tours y alojamiento en todo el Ecuador.',
-  summary_en: 'GOING is Ecuador\'s intercity transportation and tourism platform. It connects passengers with verified drivers for shared and private rides, and offers tour packages and accommodation throughout Ecuador.',
+  summary_es: 'Going es la app de movilidad del Ecuador: viajes dentro de la ciudad, viajes compartidos y privados entre ciudades, y envío de paquetes puerta a puerta. Conductoras y conductores verificados, tracking en vivo y precio fijo antes de viajar.',
+  summary_en: 'Going is Ecuador\'s mobility app: rides within the city, shared and private rides between cities, and door-to-door parcel delivery. Verified drivers, live tracking, and fixed prices before the trip.',
 
+  // Productos ACTIVOS hoy (los que el agente puede ofrecer)
   services_es: [
-    'Viaje Compartido (Carpooling): Comparte el viaje con otros pasajeros en la misma ruta — más económico',
-    'Viaje Privado: Vehículo exclusivo para ti y tu grupo — más rápido y cómodo',
-    'Paquetes Turísticos: Tours organizados a destinos populares del Ecuador',
-    'Alojamiento: Reserva de hospedaje en destinos turísticos',
-    'Envíos: Envío de paquetes y encomiendas entre ciudades',
-    'Transporte Corporativo: Servicio para empresas con facturación y reportes',
+    'Viaje Compartido: Comparte un SUV o VAN entre ciudades con otras personas que van a la misma ruta — pagas solo tu asiento',
+    'Viaje Privado: Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo, dentro o entre ciudades (de 1 a 30 personas)',
+    'Envíos: Envío de sobres, documentos y paquetes puerta a puerta, dentro de la ciudad o entre ciudades',
+    'Transporte Corporativo: Servicio para empresas con facturación consolidada, política y reportes',
   ],
 
   services_en: [
-    'Shared Ride (Carpooling): Share the trip with other passengers on the same route — more affordable',
-    'Private Ride: Exclusive vehicle for you and your group — faster and more comfortable',
-    'Tour Packages: Organized tours to popular destinations in Ecuador',
-    'Accommodation: Hotel and lodging bookings at tourist destinations',
-    'Parcel Delivery: Sending packages and parcels between cities',
-    'Corporate Transport: Business service with invoicing and reports',
+    'Shared Ride: Share a SUV or VAN with other passengers on the same intercity route — pay only your seat',
+    'Private Ride: Auto, SUV, VAN, Minibus or Bus exclusive for you and your group, within or between cities (1 to 30 people)',
+    'Parcel Delivery: Door-to-door delivery of envelopes, documents and packages, within the city or between cities',
+    'Corporate Transport: Business service with consolidated invoicing, policy and reports',
+  ],
+
+  // Productos en desarrollo — NO ofrecer como disponibles
+  services_coming_soon_es: [
+    'Tours y Experiencias',
+    'Alojamiento',
   ],
 
   payments_es: [
-    'Pago en efectivo al conductor',
-    'Tarjeta de crédito/débito en la app',
-    'Transferencia bancaria',
+    'Tarjeta de crédito o débito en la app',
+    'Datafast (pago seguro Ecuador)',
+    'DeUna (pago instantáneo Ecuador)',
     'Precio fijo antes del viaje — sin sorpresas',
+    // Going opera sin efectivo: el cobro siempre va por la app.
   ],
 
   safety_es: [
-    'Todos los conductores tienen licencia profesional verificada',
-    'Seguro de viajero incluido en cada trayecto',
-    'Rastreo GPS en tiempo real compartible con familia',
-    'Calificación de conductores por pasajeros anteriores',
-    'Botón de emergencia SOS en la app',
+    'Todas las conductoras y conductores Going tienen documentación verificada (licencia profesional, matrícula, antecedentes)',
+    'Tracking GPS en tiempo real, compartible con familia y soporte',
+    'Calificación de conductoras/conductores por pasajeras/pasajeros anteriores',
+    'Botón de emergencia SOS en la app — conecta directo con operador',
+    'Soporte 24/7 humano + IA dentro de la app',
   ],
 
   faq_es: [
-    { q: '¿Cómo reservo un viaje?', a: 'Descarga la app GOING, crea tu cuenta, elige tu destino y selecciona el tipo de viaje. ¡Listo!' },
-    { q: '¿Puedo cancelar?', a: 'Sí, puedes cancelar hasta 30 minutos antes sin costo. Cancelaciones tardías pueden tener una tarifa mínima.' },
-    { q: '¿Qué pasa si el conductor no llega?', a: 'Contáctanos por WhatsApp o en la app. Te asignamos otro conductor o te hacemos el reembolso completo.' },
-    { q: '¿Aceptan mascotas?', a: 'Algunos conductores aceptan mascotas pequeñas en carrier. Puedes indicarlo al reservar y te asignamos un conductor compatible.' },
-    { q: '¿Tienen servicio a las islas Galápagos?', a: 'Tenemos servicio en las islas principales. Te recomendamos reservar con anticipación por alta demanda.' },
+    { q: '¿Cómo reservo un viaje?', a: 'Descarga la app Going desde Google Play, crea tu cuenta, escribe origen y destino y elige Compartido o Privado. También puedes reservar desde app.goingec.com.' },
+    { q: '¿Puedo cancelar?', a: 'Sí. Las políticas de cancelación dependen del tipo de viaje y de cuánto falta para la salida. Te las muestra la app antes de confirmar.' },
+    { q: '¿Qué pasa si el conductor no llega?', a: 'Contáctanos por la app o por WhatsApp. Te asignamos otro vehículo o procesamos el reembolso si corresponde.' },
+    { q: '¿Aceptan mascotas?', a: 'Algunas conductoras y conductores aceptan mascotas pequeñas en transportadora. Indícalo al reservar y te asignamos un vehículo compatible.' },
+    { q: '¿Pagan en efectivo?', a: 'No. Going opera sin efectivo: pagas con tarjeta, Datafast o DeUna dentro de la app. Esto da seguridad a pasajeras, pasajeros y conductoras/conductores.' },
+    { q: '¿Tienen servicio a Galápagos?', a: 'Going opera por carretera en Ecuador continental. Para Galápagos te recomendamos coordinar con la aerolínea y el operador local de las islas.' },
   ],
 
   // ── Rutas activas de GOING ────────────────────────────────────────────────
@@ -165,10 +175,31 @@ export const GOING_SERVICES_KB = {
   },
 
   contact: {
-    whatsapp: '+593 99 XXX XXXX',
+    // Línea operativa Going (NO usar el teléfono personal del fundador en
+    // ninguna respuesta — esto es para Going, no para Thorn AI).
+    whatsapp: '+593 98 403 7949',
     email: 'soporte@goingec.com',
-    website: 'https://going.com.ec',
-    app_ios: 'https://apps.apple.com/going-ec',
-    app_android: 'https://play.google.com/going-ec',
+    website: 'https://app.goingec.com',
+    business_website: 'https://empresas.goingec.com',
+    app_ios: null, // pendiente de Apple Developer account
+    app_android: 'https://play.google.com/store/apps/details?id=com.thornai.goingmobile',
+    privacy: 'privacidad@goingec.com',
+  },
+
+  /**
+   * Identidad del agente — usado por system prompts.
+   * Going es ecuatoriana: usar tú (no vos, no usted).
+   * Lenguaje claro, cálido, sin tecnicismos como "carpooling".
+   */
+  agent_identity: {
+    name_male_es:   'Carlos',
+    name_female_es: 'Sofía',
+    name_male_en:   'James',
+    name_female_en: 'Sarah',
+    name_phone:     'Uyari', // agente telefónico
+    register_es:    'español ecuatoriano (tú, no vos). Cálido, directo, sin "vosotros" ni "che".',
+    register_en:    'natural English, friendly and concise.',
+    /** Frase de marca — repetir solo cuando corresponde, no en cada respuesta. */
+    tagline_es:     'Nos movemos contigo.',
   },
 };
