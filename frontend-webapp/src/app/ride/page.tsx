@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useRideStore } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { getStoredToken } from '@/lib/providers/auth-client';
+import { COLORS } from '../components/design-tokens';
+import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';
 
 /* ─── Lazy-loaded heavy components ─────────────────────────────────── */
 const RideRequestForm = dynamic(
@@ -62,78 +64,79 @@ function RideStepper({ step }: { step: Step }) {
   );
 }
 
-/* ─── Service Picker (entry cards, igual que móvil) ────────────────── */
+/* ─── Service Picker (entry cards, igual que móvil) ──────────────────
+   Brand-aligned (Hero v6): mismos colores que la home para consistencia
+   visual end-to-end.
+     Compartido → rojo  · más popular
+     Privado    → amarillo
+     Envíos     → negro
+*/
 function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 'envios') => void }) {
   return (
     <div className="space-y-3">
       {/* Bienvenida */}
       <div className="pb-1">
-        <h2 className="text-2xl font-black text-gray-900">¿Cómo quieres viajar?</h2>
+        <h2 className="text-2xl font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>¿Cómo quieres viajar?</h2>
         <p className="text-sm text-gray-500 mt-0.5">Elige el tipo de servicio que necesitas</p>
       </div>
 
-      {/* Viaje Compartido */}
+      {/* Viaje Compartido — rojo Going */}
       <button
         onClick={() => onSelect('compartido')}
-        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#0033A0]/30 hover:bg-blue-50/50 active:scale-[0.98] transition-all text-left"
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-red-50/50 active:scale-[0.98] transition-all text-left"
+        style={{ borderColor: COLORS.gray[100] }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = COLORS.brand.red + '4D')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = COLORS.gray[100])}
       >
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EFF6FF' }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0033A0" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+          <IconUsers size={22} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-base font-black text-gray-900">Viaje Compartido</span>
-            <span className="text-xs font-black px-2 py-0.5 rounded-full bg-[#0033A0] text-white">★ MÁS POPULAR</span>
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span className="text-base font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Viaje Compartido</span>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full text-white uppercase tracking-wider" style={{ backgroundColor: COLORS.brand.red }}>
+              Más popular
+            </span>
           </div>
-          <p className="text-sm text-gray-500">Paga solo tu asiento · SUV entre ciudades</p>
+          <p className="text-sm text-gray-500">Paga solo tu asiento · entre ciudades</p>
         </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <IconArrowRight size={18} className="text-gray-300" />
       </button>
 
-      {/* Viaje Privado */}
+      {/* Viaje Privado — amarillo Going */}
       <button
         onClick={() => onSelect('privado')}
-        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#ff4c41]/30 hover:bg-red-50/50 active:scale-[0.98] transition-all text-left"
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-yellow-50/50 active:scale-[0.98] transition-all text-left"
+        style={{ borderColor: COLORS.gray[100] }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = COLORS.brand.yellow + '80')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = COLORS.gray[100])}
       >
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFF0EF' }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4c41" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
+          <IconVan size={22} />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-base font-black text-gray-900 block mb-0.5">Viaje Privado</span>
-          <p className="text-sm text-gray-500">Vehículo exclusivo · SUV, VAN o BUS</p>
+          <span className="text-base font-black text-gray-900 block mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Viaje Privado</span>
+          <p className="text-sm text-gray-500">Auto, SUV, VAN, Minibús o Bus · de 1 a 30 personas</p>
         </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <IconArrowRight size={18} className="text-gray-300" />
       </button>
 
-      {/* Envíos */}
+      {/* Envíos — negro Going */}
       <button
         onClick={() => onSelect('envios')}
-        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:border-[#059669]/30 hover:bg-green-50/50 active:scale-[0.98] transition-all text-left"
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all text-left"
+        style={{ borderColor: COLORS.gray[100] }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = COLORS.brand.black + '4D')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = COLORS.gray[100])}
       >
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F0FDF4' }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L11 21.73a2 2 0 0 0 2 0L20 17.73A2 2 0 0 0 21 16z"/>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-            <line x1="12" y1="22.08" x2="12" y2="12"/>
-          </svg>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.gray[100], color: COLORS.brand.black }}>
+          <IconPackage size={22} />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-base font-black text-gray-900 block mb-0.5">Envíos</span>
-          <p className="text-sm text-gray-500">De punto a punto · Rastreo · Registro de entrega</p>
+          <span className="text-base font-black text-gray-900 block mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Envíos</span>
+          <p className="text-sm text-gray-500">Puerta a puerta · rastreo en vivo · comprobante de entrega</p>
         </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <IconArrowRight size={18} className="text-gray-300" />
       </button>
     </div>
   );
@@ -248,10 +251,11 @@ function ConfirmationPanel({
         </p>
       </div>
 
-      {/* ── Continuar a pago ── */}
+      {/* ── Continuar a pago — CTA principal rojo Going ── */}
       <button
         onClick={onContinue}
-        className="w-full bg-[#0033A0] text-white font-bold text-base py-4 rounded-2xl shadow-lg hover:bg-[#002280] active:scale-[0.98] transition-all"
+        className="w-full text-white font-bold text-base py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all hover:opacity-90"
+        style={{ backgroundColor: COLORS.brand.red }}
       >
         Continuar al pago →
       </button>
