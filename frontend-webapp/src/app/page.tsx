@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, ReactElement } from 'react';
+import { useState, useEffect, useRef, type ReactElement } from 'react';
 import Link from 'next/link';
 import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
@@ -10,7 +10,7 @@ import {
   IconStar, IconBell, IconChat, IconShield, IconMap, IconCalendar, IconUser,
   IconPackage, IconLightning, IconSignal, IconMoney, IconCamera, IconArrowRight,
   IconSearch, IconUsers, IconCheckCircle, IconGraduation, IconRoute, IconPhone,
-  IconHeadphones, IconBook,
+  IconHeadphones, IconBook, IconChevronDown,
 } from './components/icons';
 
 /* ── useInView ──────────────────────────────────────────────── */
@@ -38,18 +38,16 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
 }
 
 /* ── Data ───────────────────────────────────────────────────── *
- * SLIDES y REGIONS son las 4 regiones turísticas de Ecuador. Los
- * colores acá NO son de marca Going — son tokens de identidad geográfica
- * (Sierra=morado andino, Costa=azul mar, Amazonía=verde selva,
- * Galápagos=ámbar). Es legítimo que estén fuera de la paleta de marca.
+ * REGIONS son las 4 regiones turísticas de Ecuador. Los colores acá NO son
+ * de marca Going — son tokens de identidad geográfica (Sierra=morado andino,
+ * Costa=azul mar, Amazonía=verde selva, Galápagos=ámbar). Es legítimo que
+ * estén fuera de la paleta de marca.
+ *
+ * El antiguo carousel de SLIDES del hero quedó obsoleto cuando el hero se
+ * reorientó a transporte (la marca es sobre movimiento, no turismo —
+ * Branding Guidelines 2024). El listado regional ahora vive solo en la
+ * sección #destinos más abajo.
  */
-const SLIDES = [
-  { region: 'Sierra',    subtitle: 'Andes · Volcanes · Cultura',         img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg' },
-  { region: 'Costa',     subtitle: 'Mar · Playas · Atardeceres',          img: '/images/costa.png' },
-  { region: 'Amazonía',  subtitle: 'Selva · Biodiversidad · Aventura',    img: '/images/Orellana Pañacocha Laguna.jpg' },
-  { region: 'Galápagos', subtitle: 'Islas únicas en el mundo',            img: '/images/galàpagos.png' },
-];
-
 const REGIONS = {
   Sierra: {
     color: '#6366F1',
@@ -181,79 +179,159 @@ export default function HomePage() {
   // false durante SSR y antes de hidratar para evitar mismatch.
   const isLoggedIn = useIsAuthenticated();
 
-  // Carousel
-  const [slide, setSlide] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 5000);
-    return () => clearInterval(id);
-  }, []);
-
   // Destinos
   const [activeRegion, setActiveRegion] = useState<keyof typeof REGIONS>('Sierra');
 
   return (
     <>
-      {/* ── Hero Carousel ─────────────────────────────────── */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: '100vh', backgroundColor: '#111' }}>
-        {SLIDES.map((s, i) => (
-          <div
-            key={s.region}
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('${s.img}')`,
-              opacity: i === slide ? 1 : 0,
-              transition: 'opacity 1.2s ease',
-              transform: i === slide ? 'scale(1.04)' : 'scale(1)',
-              transitionProperty: 'opacity, transform',
-              transitionDuration: '1.2s, 8s',
-            }}
-          />
-        ))}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.8) 100%)' }} />
+      {/* ══ HERO Going — Transporte primero, no turismo ════════════════════════
+         La marca Going es sobre MOVIMIENTO y transporte compartido (guía
+         oficial 2024). El hero anterior era un carousel de paisajes de Ecuador
+         que se sentía como sitio de turismo. Esta versión deja claro desde la
+         primera mirada: viaje compartido, ruta, conductoras y conductores.
+      */}
+      <section
+        className="relative w-full overflow-hidden"
+        style={{
+          minHeight: '100vh',
+          background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a1a1a 50%, ${COLORS.brand.red} 130%)`,
+        }}
+      >
+        {/* Patrón sutil de vías de fondo (alusión a "patrón de vías y tejido
+            urbano" mencionado en la guía de marca p.12). */}
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 1px, transparent 14px)',
+          }}
+        />
 
-        {/* Hero content */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6" style={{ minHeight: '100vh' }}>
-          <div className="mb-4">
-            <span className="inline-block text-white text-sm font-semibold uppercase tracking-[0.2em] opacity-70 mb-3">Ecuador · {SLIDES[slide].subtitle}</span>
-          </div>
-          <h1 className="text-white font-black mb-4" style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', lineHeight: 1.05, textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            {SLIDES[slide].region}
-          </h1>
-          <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center" style={{ minHeight: '100vh' }}>
 
-          {/* Slide dots */}
-          <div className="absolute bottom-10 flex gap-3">
-            {SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setSlide(i)}
-                className="rounded-full transition-all"
-                style={{ width: i === slide ? 28 : 8, height: 8, backgroundColor: i === slide ? COLORS.brand.red : 'rgba(255,255,255,0.5)' }}
-                aria-label={`Slide ${i + 1}`}
+          {/* ── Lado izquierdo: titular + CTA ── */}
+          <FadeIn dir="up" className="text-white">
+            {/* Logo Going */}
+            <img
+              src="/going-logo-white-h.png"
+              alt="Going"
+              className="h-12 mb-8"
+              style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
+            />
+
+            {/* Eyebrow */}
+            <span className="inline-block text-xs sm:text-sm font-bold uppercase tracking-[0.25em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
+              Transporte compartido · Ecuador
+            </span>
+
+            {/* Titular principal */}
+            <h1 className="font-black mb-5 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+              Nos movemos<br />
+              <span style={{ color: COLORS.brand.red }}>contigo.</span>
+            </h1>
+
+            {/* Subtítulo */}
+            <p className="text-lg sm:text-xl text-white/80 mb-8 max-w-xl leading-relaxed">
+              Reserva tu viaje compartido o privado entre ciudades del Ecuador.
+              Conductoras y conductores verificados, tracking en vivo y precio
+              fijo desde la app.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-3 mb-8">
+              <Link
+                href="/ride"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 font-black text-base rounded-2xl transition-all hover:scale-[1.03] shadow-xl text-white"
+                style={{ backgroundColor: COLORS.brand.red }}
+              >
+                <IconSearch size={20} />
+                Buscar viaje
+                <IconArrowRight size={20} />
+              </Link>
+              <Link
+                href="#destinos"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 font-bold text-base rounded-2xl border-2 border-white/30 text-white hover:bg-white/10 transition-all"
+              >
+                Ver rutas y destinos
+              </Link>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs sm:text-sm text-white/70">
+              <span className="inline-flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                  <IconShield size={14} />
+                </span>
+                Conductoras y conductores verificados
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                  <IconPin size={14} />
+                </span>
+                Tracking en vivo
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                  <IconCard size={14} />
+                </span>
+                Pago sin efectivo
+              </span>
+            </div>
+          </FadeIn>
+
+          {/* ── Lado derecho: imagen viaje compartido ── */}
+          <FadeIn dir="right" className="relative hidden lg:block">
+            <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl" style={{ border: '3px solid rgba(255,255,255,0.1)' }}>
+              <img
+                src="/images/viaje compartido .png"
+                alt="Viaje compartido Going entre ciudades del Ecuador"
+                className="w-full h-full object-cover"
               />
-            ))}
+              {/* Overlay con badge "EN VIVO" estilo mockup mobile */}
+              <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md text-white text-xs font-bold" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: COLORS.brand.red }} />
+                EN RUTA · QUITO → AMBATO
+              </div>
+              {/* Stat card flotante abajo */}
+              <div className="absolute bottom-5 left-5 right-5 rounded-2xl p-4 backdrop-blur-md flex items-center justify-between" style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}>
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold">PRÓXIMA SALIDA</p>
+                  <p className="text-lg font-black text-gray-900">08:30 AM · SUV</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500 font-semibold">DESDE</p>
+                  <p className="text-2xl font-black" style={{ color: COLORS.brand.red }}>$10</p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Slide dots ahora navegan a la sección de destinos */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-xs text-white/50">
+            <span>Conocé Ecuador con Going</span>
+            <IconChevronDown size={16} />
           </div>
         </div>
       </section>
 
-      {/* ── Search Card ───────────────────────────────────── */}
-      {/* Card simplificada: el form completo (origen, destino, fecha, hora)
-          vive en /ride. Aquí ofrecemos un solo CTA prominente para llevar
-          al usuario al flujo real sin duplicar inputs. */}
-      <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4" style={{ marginTop: -64 }}>
+      {/* ── Search Card ───────────────────────────────────── *
+         Search card mantenida pero menos prominente — el CTA principal ya
+         vive en el hero. Acá es una segunda oportunidad para el user que
+         scrolleó sin clickear.
+      */}
+      <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4 -mt-12 mb-16">
         <FadeIn>
-          <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
-            <h2 className="text-gray-900 font-black text-2xl mb-2">¿A dónde viajas hoy?</h2>
-            <p className="text-gray-500 text-sm mb-6">Encuentra tu próxima ruta en segundos.</p>
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 text-center border border-gray-100">
+            <h2 className="text-gray-900 font-black text-xl sm:text-2xl mb-1">¿A dónde viajas hoy?</h2>
+            <p className="text-gray-500 text-sm mb-5">Encuentra tu próxima ruta en segundos.</p>
             <Link
               href="/ride"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-10 py-4 text-white font-black text-lg rounded-2xl transition-all hover:opacity-90 hover:scale-[1.01] shadow-lg"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-white font-black rounded-2xl transition-all hover:opacity-90 hover:scale-[1.02] shadow-lg"
               style={{ backgroundColor: COLORS.brand.red }}
             >
-              <IconSearch size={22} />
+              <IconSearch size={18} />
               Buscar viaje
-              <IconArrowRight size={22} />
+              <IconArrowRight size={18} />
             </Link>
           </div>
         </FadeIn>
