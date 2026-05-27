@@ -209,4 +209,81 @@ export class AdminStubsController {
     this.logger.log(`Surge rule ${id} deleted`);
     return { deleted: true, id };
   }
+
+  // ── /payouts ───────────────────────────────────────────────────────────
+  // Liquidaciones a proveedores (drivers, anfitriones, guías, mensajeros).
+  // Cuando se separe el payouts-service o se cablee al payment-service para
+  // procesar pagos reales, este stub se migra.
+
+  private readonly payouts: Array<{
+    id: string;
+    providerType: 'driver' | 'host' | 'guide' | 'courier';
+    providerId: string;
+    providerName?: string;
+    amount: number;
+    currency: string;
+    status: 'pending' | 'paid' | 'failed';
+    periodStart?: string;
+    periodEnd?: string;
+    paidAt?: string;
+    createdAt: string;
+  }> = [];
+
+  @Get('payouts')
+  async listPayouts(): Promise<{ data: typeof this.payouts; total: number }> {
+    return { data: this.payouts, total: this.payouts.length };
+  }
+
+  @Patch('payouts/:id/mark-paid')
+  async markPayoutPaid(@Param('id') id: string) {
+    const p = this.payouts.find((x) => x.id === id);
+    if (!p) throw new BadRequestException(`Payout ${id} not found`);
+    p.status = 'paid';
+    p.paidAt = new Date().toISOString();
+    return p;
+  }
+
+  // ── /notifications/history + /notifications/broadcast ──────────────────
+  // El admin/push page los llama directamente, pero notifications-service
+  // tiene /notifications/send y /notifications/user/:id sin estos endpoints.
+  // Como ambos son admin-facing y este controller ya está atendiendo otros
+  // admin stubs, los expongo aquí. El forward es /notifications/* → gateway →
+  // notifications-service, pero los paths history/broadcast no matchean
+  // ningún handler real allá, así que los exponemos en transport-service.
+
+  private readonly broadcasts: Array<{
+    id: string;
+    title: string;
+    body: string;
+    audience: 'all' | 'drivers' | 'users' | 'corporate';
+    sentAt: string;
+    deliveredCount: number;
+  }> = [];
+
+  @Get('notifications/history')
+  async getNotificationsHistory(): Promise<{ history: typeof this.broadcasts }> {
+    return { history: this.broadcasts };
+  }
+
+  @Post('notifications/broadcast')
+  async sendBroadcast(@Body() body: {
+    title: string;
+    body: string;
+    audience?: 'all' | 'drivers' | 'users' | 'corporate';
+  }) {
+    if (!body?.title || !body?.body) {
+      throw new BadRequestException('title and body are required');
+    }
+    const broadcast = {
+      id: `bc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      title: body.title,
+      body: body.body,
+      audience: body.audience ?? 'all',
+      sentAt: new Date().toISOString(),
+      deliveredCount: 0, // se calcula cuando se cablee a Expo Push / FCM
+    };
+    this.broadcasts.unshift(broadcast);
+    this.logger.log(`Broadcast ${broadcast.id} sent to audience=${broadcast.audience}`);
+    return broadcast;
+  }
 }

@@ -272,6 +272,8 @@ export class ProxyModule implements NestModule {
     guard('dashcam', svc.transport);
     // /pricing/* — admin: reglas de surge pricing (transport-service AdminStubsController)
     guard('pricing', svc.transport);
+    // /payouts/* — admin: liquidaciones a proveedores (transport-service AdminStubsController)
+    guard('payouts', svc.transport);
 
     // /drivers/me/wallet|earnings|earnings/history|withdraw → payment-service
     // (DriverEarningsController). Estas rutas conviven con el prefix /drivers
@@ -383,6 +385,7 @@ export class ProxyModule implements NestModule {
     guardExact('vehicles', svc.transport, allMethods);
     guardExact('dashcam',  svc.transport, allMethods);
     guardExact('pricing',  svc.transport, allMethods);
+    guardExact('payouts',  svc.transport, allMethods);
     guardExact('drivers', svc.transport, allMethods);
     guardExact('driver-bases', svc.transport, allMethods);
     guardExact('parcels', svc.parcels, allMethods);
