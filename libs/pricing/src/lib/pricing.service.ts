@@ -6,10 +6,14 @@ import { classifyRoute } from './cities';
 // ── Envíos: tamaño de paquete → peso representativo (tiers de calcEnvio) ──────
 // El cliente elige tamaño; el backend lo mapea a peso para cotizar de forma
 // autoritativa. Valores provisionales.
+// Tope de peso por tier (kg). Cortes oficiales Going:
+//   small  → 0–5 kg
+//   medium → 6–15 kg
+//   large  → 16–30 kg
 export const PACKAGE_SIZE_WEIGHT_KG: Record<'small' | 'medium' | 'large', number> = {
   small: 5,
   medium: 15,
-  large: 25,
+  large: 30,
 };
 
 export function sizeToWeightKg(size?: 'small' | 'medium' | 'large'): number {
@@ -315,23 +319,24 @@ const RATES = {
   experience: { platformFeePct: 0.15 },
 };
 
-// ── Envío URBANO: dinámico por distancia + tamaño, acotado a [$3, $10] ─────────
-// En ciudades grandes el precio varía con la distancia punto a punto; el tamaño
-// (3 tiers) suma un recargo. Valores PROVISIONALES — ajustables en un solo lugar.
-const URBAN_ENVIO = {
-  baseFare: 3,   // mínimo (envío corto, pequeño)
-  perKm: 0.35,   // recargo por km recorrido
-  maxFare: 10,   // tope urbano
-  sizeSurcharge: { small: 0, medium: 1.5, large: 3 } as Record<
-    'small' | 'medium' | 'large',
-    number
-  >,
+// ── Envío URBANO: tarifa fija por tier de peso (oficial Going) ──────────────
+//   Pequeño  (0–5 kg)   → $8
+//   Mediano  (6–15 kg)  → $12
+//   Grande   (16–30 kg) → $15
+// Históricamente esto era dinámico por distancia + recargo de tamaño con tope
+// $10; el negocio decidió simplificar a precio fijo para que el usuario sepa
+// cuánto va a pagar al instante (sin sorpresas por km). Cuando se quiera
+// volver a tarifa variable, este es el único lugar a tocar.
+const URBAN_ENVIO_FIXED: Record<'small' | 'medium' | 'large', number> = {
+  small:  8,
+  medium: 12,
+  large:  15,
 };
 
-/** Tamaño del envío derivado del peso (mismos cortes que los tiers interurbanos). */
+/** Tamaño del envío derivado del peso. Cortes alineados con PACKAGE_SIZE_WEIGHT_KG. */
 function weightToEnvioSize(weightKg: number): 'small' | 'medium' | 'large' {
-  if (weightKg <= 10) return 'small';
-  if (weightKg <= 20) return 'medium';
+  if (weightKg <= 5)  return 'small';
+  if (weightKg <= 15) return 'medium';
   return 'large';
 }
 
@@ -428,20 +433,15 @@ export class PricingService {
     const breakdown: Record<string, number> = {};
 
     if (!input.isIntercity) {
-      // Urbano DINÁMICO: base + distancia + recargo por tamaño, acotado [3, 10].
+      // Urbano FIJO por tier de peso (oficial Going):
+      //   small (0–5 kg) $8 · medium (6–15 kg) $12 · large (16–30 kg) $15
       const size = weightToEnvioSize(input.weightKg);
-      const distanceComponent = URBAN_ENVIO.perKm * (input.distanceKm ?? 0);
-      const sizeSurcharge = URBAN_ENVIO.sizeSurcharge[size];
-      const raw = URBAN_ENVIO.baseFare + distanceComponent + sizeSurcharge;
-      subtotal = Math.min(
-        URBAN_ENVIO.maxFare,
-        Math.max(URBAN_ENVIO.baseFare, round(raw)),
-      );
-      breakdown.baseFare = URBAN_ENVIO.baseFare;
+      subtotal = URBAN_ENVIO_FIXED[size];
+      breakdown.urbanFlatRate = subtotal;
+      breakdown.tierSmall = size === 'small' ? 1 : 0;
+      breakdown.tierMedium = size === 'medium' ? 1 : 0;
+      breakdown.tierLarge = size === 'large' ? 1 : 0;
       breakdown.distanceKm = round(input.distanceKm ?? 0);
-      breakdown.distanceComponent = round(distanceComponent);
-      breakdown.sizeSurcharge = sizeSurcharge;
-      breakdown.urbanDynamic = 1;
     } else {
       // Intercity Same-Day Door-to-Door
       if (input.isOverVolume) {

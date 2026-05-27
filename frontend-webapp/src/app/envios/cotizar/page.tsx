@@ -9,11 +9,16 @@ const RED   = '#ff4c41';
 const GREEN = '#059669';
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
+// Tarifas oficiales Going (urbano flat). Para envíos interurbanos el backend
+// /parcels/quote sobrescribe con tarifa real por corredor — los precios acá
+// son el fallback / estimado urbano.
+//   pequeño  ≤5 kg     → $8
+//   mediano  6–15 kg   → $12
+//   grande   16–30 kg  → $15
 const PACKAGE_TYPES = [
-  { id: 'small',    label: 'Pequeño',   desc: 'hasta 5 kg',  price: 5  },
-  { id: 'medium',   label: 'Mediano',   desc: '5–20 kg',     price: 8  },
-  { id: 'large',    label: 'Grande',    desc: '20+ kg',      price: 12 },
-  { id: 'document', label: 'Documento', desc: 'sobres/docs', price: 3  },
+  { id: 'small',  label: 'Pequeño', desc: '0–5 kg',   price: 8  },
+  { id: 'medium', label: 'Mediano', desc: '6–15 kg',  price: 12 },
+  { id: 'large',  label: 'Grande',  desc: '16–30 kg', price: 15 },
 ] as const;
 type PkgId = typeof PACKAGE_TYPES[number]['id'];
 type ScreenView = 'form' | 'tracking' | 'delivered';
@@ -59,9 +64,66 @@ function generateRef() {
   return `ENV-${Date.now().toString(36).toUpperCase().slice(-6)}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
 }
 
+// ── Saved Addresses (localStorage) ───────────────────────────────────────────
+// Compatible con el store que usa /account → 'going_saved_addresses'.
+// Cada vez que el user selecciona una dirección via geocoding la persistimos
+// para auto-llenado posterior. Máximo 10 entradas (rotación LRU).
+interface SavedAddress {
+  label?: string;          // ej. "Casa", "Oficina" si lo nombró en /account
+  display_name: string;
+  lat: number;
+  lon: number;
+  usedAt: number;          // epoch ms — para ordenar por más reciente
+}
+
+const SAVED_ADDRESSES_KEY = 'going_saved_addresses';
+
+function loadSavedAddresses(): SavedAddress[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(SAVED_ADDRESSES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as SavedAddress[];
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+
+function persistAddress(addr: { display_name: string; lat: number; lon: number; label?: string }) {
+  if (typeof window === 'undefined') return;
+  const current = loadSavedAddresses();
+  // Dedup por display_name normalizado
+  const norm = addr.display_name.trim().toLowerCase();
+  const filtered = current.filter(a => a.display_name.trim().toLowerCase() !== norm);
+  const next: SavedAddress[] = [
+    { ...addr, usedAt: Date.now() },
+    ...filtered,
+  ].slice(0, 10);
+  try { localStorage.setItem(SAVED_ADDRESSES_KEY, JSON.stringify(next)); } catch {}
+}
+
+// ── Reverse geocoding GPS → dirección legible ────────────────────────────────
+async function reverseGeocode(lat: number, lon: number): Promise<Suggestion | null> {
+  try {
+    if (MAPBOX_TOKEN) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?country=ec&language=es&access_token=${MAPBOX_TOKEN}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const f = json.features?.[0];
+      if (f) return { display_name: f.place_name, lat: String(lat), lon: String(lon) };
+    }
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18`,
+      { headers: { 'User-Agent': 'GoingApp/1.0' } },
+    );
+    const json = await res.json();
+    if (json?.display_name) return { display_name: json.display_name, lat: String(lat), lon: String(lon) };
+  } catch { /* swallow */ }
+  return null;
+}
+
 // ── Location Input ────────────────────────────────────────────────────────────
 function LocationInput({
-  label, placeholder, value, onChange, onSelect, accent = RED,
+  label, placeholder, value, onChange, onSelect, accent = RED, allowGps = false,
 }: {
   label: string;
   placeholder: string;
@@ -69,10 +131,20 @@ function LocationInput({
   onChange: (v: string) => void;
   onSelect: (s: Suggestion) => void;
   accent?: string;
+  /** Si true, muestra botón "📍 Usar mi ubicación" (solo en origen, no destino). */
+  allowGps?: boolean;
 }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [open, setOpen] = useState(false);
+  const [saved,       setSaved]       = useState<SavedAddress[]>([]);
+  const [open,        setOpen]        = useState(false);
+  const [gpsLoading,  setGpsLoading]  = useState(false);
+  const [gpsError,    setGpsError]    = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  // Cargar direcciones guardadas al montar
+  useEffect(() => {
+    setSaved(loadSavedAddresses());
+  }, []);
 
   const handleChange = (v: string) => {
     onChange(v);
@@ -83,6 +155,58 @@ function LocationInput({
       setOpen(s.length > 0);
     }, 300);
   };
+
+  const handleSelectAndPersist = (s: Suggestion) => {
+    const lat = parseFloat(s.lat);
+    const lon = parseFloat(s.lon);
+    persistAddress({ display_name: s.display_name, lat, lon });
+    onSelect(s);
+    setSaved(loadSavedAddresses());
+    setSuggestions([]);
+    setOpen(false);
+  };
+
+  const handleUseGps = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGpsError('Tu navegador no soporta geolocalización');
+      return;
+    }
+    setGpsLoading(true);
+    setGpsError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const result = await reverseGeocode(latitude, longitude);
+        if (result) {
+          handleSelectAndPersist(result);
+        } else {
+          // Si reverse geocoding falla, igual usamos las coords sin label fancy
+          handleSelectAndPersist({
+            display_name: `Mi ubicación (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`,
+            lat: String(latitude),
+            lon: String(longitude),
+          });
+        }
+        setGpsLoading(false);
+      },
+      (err) => {
+        setGpsLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsError('Permiso de ubicación denegado. Habilítalo en ajustes del navegador.');
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGpsError('No pudimos detectar tu ubicación. Intenta escribirla manualmente.');
+        } else {
+          setGpsError('Tardó demasiado. Intenta escribir la dirección.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    );
+  };
+
+  // Muestra panel inicial con saved + GPS si el input está vacío y al foco;
+  // suggestions de typing al escribir.
+  const showSavedPanel = open && !value && saved.length > 0;
+  const showSuggestionsPanel = open && suggestions.length > 0;
 
   return (
     <div className="relative">
@@ -98,8 +222,8 @@ function LocationInput({
           placeholder={placeholder}
           value={value}
           onChange={e => handleChange(e.target.value)}
-          onFocus={() => suggestions.length > 0 && setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
           className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none font-medium"
         />
         {value && (
@@ -107,11 +231,57 @@ function LocationInput({
             className="text-gray-300 hover:text-gray-500 text-xs font-bold">✕</button>
         )}
       </div>
-      {open && suggestions.length > 0 && (
+
+      {/* Botón GPS (solo origen) — fuera del input, debajo */}
+      {allowGps && (
+        <div className="flex items-center gap-2 mt-1.5">
+          <button
+            type="button"
+            onClick={handleUseGps}
+            disabled={gpsLoading}
+            className="text-xs font-bold flex items-center gap-1 px-2 py-1 rounded-lg transition-colors hover:bg-gray-100 disabled:opacity-60"
+            style={{ color: accent }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="2" x2="12" y2="4"/>
+              <line x1="12" y1="20" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="4" y2="12"/>
+              <line x1="20" y1="12" x2="22" y2="12"/>
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+            {gpsLoading ? 'Detectando…' : 'Usar mi ubicación actual'}
+          </button>
+          {gpsError && <span className="text-xs text-amber-700">{gpsError}</span>}
+        </div>
+      )}
+
+      {/* Panel: direcciones guardadas (sin texto en input) */}
+      {showSavedPanel && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          <p className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide bg-gray-50 border-b">
+            Direcciones recientes
+          </p>
+          {saved.slice(0, 6).map((a, i) => (
+            <button key={i} type="button"
+              onMouseDown={() => handleSelectAndPersist({ display_name: a.display_name, lat: String(a.lat), lon: String(a.lon) })}
+              className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 border-b last:border-b-0 flex items-center gap-2">
+              <span className="text-gray-400 text-base">📍</span>
+              <span className="flex-1 truncate">
+                {a.label && <span className="font-bold text-gray-900 mr-2">{a.label}</span>}
+                <span className="text-gray-600">{a.display_name}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Panel: sugerencias de typing */}
+      {showSuggestionsPanel && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
           {suggestions.map((s, i) => (
             <button key={i} type="button"
-              onMouseDown={() => { onSelect(s); setSuggestions([]); setOpen(false); }}
+              onMouseDown={() => handleSelectAndPersist(s)}
               className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 border-b last:border-b-0">
               {s.display_name}
             </button>
@@ -184,7 +354,7 @@ export default function EnviosCotizarPage() {
       return;
     }
     const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
-    const size = pkgType === 'document' ? 'small' : pkgType;
+    const size = pkgType; // ya es 'small' | 'medium' | 'large'
     let cancelled = false;
     fetch(`${API}/parcels/quote`, {
       method: 'POST',
@@ -247,7 +417,7 @@ export default function EnviosCotizarPage() {
           recipientName,
           recipientPhone,
           price: { amount: totalPrice, currency: 'USD' as const },
-          packageSize: pkgType === 'document' ? 'small' : pkgType,
+          packageSize: pkgType,
           paymentMethod: apiPayment.paymentMethod,
           payerRole:     apiPayment.payerRole,
         }),
@@ -509,6 +679,7 @@ export default function EnviosCotizarPage() {
             onChange={setSenderAddr}
             onSelect={s => { setSenderAddr(s.display_name); setSenderLat(parseFloat(s.lat)); setSenderLon(parseFloat(s.lon)); }}
             accent={RED}
+            allowGps  // ← botón "Usar mi ubicación" en origen
           />
         </SectionCard>
 
@@ -552,22 +723,22 @@ export default function EnviosCotizarPage() {
 
         {/* EL PAQUETE */}
         <SectionCard icon={<IcoCube />} title="El paquete">
-          {/* Tipo */}
-          <div className="grid grid-cols-4 gap-2">
+          {/* Tipo — 3 categorías por peso (oficial Going) */}
+          <div className="grid grid-cols-3 gap-2">
             {PACKAGE_TYPES.map(p => (
               <button key={p.id} type="button"
                 onClick={() => setPkgType(p.id)}
-                className="rounded-xl p-2.5 text-center border-2 transition-all"
+                className="rounded-xl p-3 text-center border-2 transition-all"
                 style={{
                   borderColor:      pkgType === p.id ? RED : '#F3F4F6',
                   backgroundColor:  pkgType === p.id ? '#FFF0EF' : '#F9FAFB',
                 }}>
-                <div className="text-xl mb-1">
-                  {p.id === 'small' ? '📦' : p.id === 'medium' ? '🗃️' : p.id === 'large' ? '📫' : '📄'}
+                <div className="text-2xl mb-1">
+                  {p.id === 'small' ? '📦' : p.id === 'medium' ? '🗃️' : '📫'}
                 </div>
                 <p className="text-xs font-black" style={{ color: pkgType === p.id ? RED : '#374151' }}>{p.label}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{p.desc}</p>
-                <p className="text-xs font-black mt-1" style={{ color: pkgType === p.id ? RED : '#374151' }}>${p.price}</p>
+                <p className="text-sm font-black mt-1" style={{ color: pkgType === p.id ? RED : '#374151' }}>${p.price}</p>
               </button>
             ))}
           </div>
