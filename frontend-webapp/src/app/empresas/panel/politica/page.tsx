@@ -67,17 +67,18 @@ export default function PoliticaPage() {
   const [saved,    setSaved]    = useState(false);
   const [tab,      setTab]      = useState<'gasto' | 'horarios' | 'aprobaciones' | 'servicios'>('gasto');
 
-  if (!session) return null;
-
   const fetchPolicy = useCallback(async () => {
+    if (!session?.accessToken) return;
     try {
-      const data = await corpFetch<TravelPolicy>('/corporate/policy', session!.accessToken);
+      const data = await corpFetch<TravelPolicy>('/corporate/policy', session.accessToken);
       if (data) setPolicy({ ...DEFAULT_POLICY, ...data });
     } catch {}
     setLoading(false);
-  }, [session!.accessToken]);
+  }, [session?.accessToken]);
 
   useEffect(() => { fetchPolicy(); }, [fetchPolicy]);
+
+  if (!session) return null;
 
   async function savePolicy() {
     setSaving(true);

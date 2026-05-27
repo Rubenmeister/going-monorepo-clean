@@ -103,15 +103,14 @@ export default function SeguridadEmpresaPage() {
   const [requesting, setRequesting] = useState<string | null>(null);
   const [toast,      setToast]      = useState('');
 
-  if (!session) return null;
-
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const fetchData = useCallback(async () => {
+    if (!session?.accessToken) return;
     try {
       const [tripsData, incData] = await Promise.all([
-        corpFetch<any>('/corporate/trips/safety', session!.accessToken),
-        corpFetch<any>('/corporate/dashcam/incidents', session!.accessToken),
+        corpFetch<any>('/corporate/trips/safety', session.accessToken),
+        corpFetch<any>('/corporate/dashcam/incidents', session.accessToken),
       ]);
       const tRaw: any[] = Array.isArray(tripsData) ? tripsData : tripsData?.data ?? [];
       const iRaw: any[] = Array.isArray(incData) ? incData : incData?.data ?? [];
@@ -122,9 +121,11 @@ export default function SeguridadEmpresaPage() {
       setIncidents(DEMO_INCIDENTS);
     }
     setLoading(false);
-  }, [session!.accessToken]);
+  }, [session?.accessToken]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  if (!session) return null;
 
   async function requestClip(tripId: string) {
     setRequesting(tripId);

@@ -98,8 +98,6 @@ export default function MapaEmpresaPage() {
   const [deptFilter,   setDeptFilter]   = useState<string>('all');
   const [selected,     setSelected]     = useState<string | null>(null);
 
-  if (!session) return null;
-
   // ── Cargar Leaflet ────────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -125,7 +123,8 @@ export default function MapaEmpresaPage() {
 
   // ── Fetch viajes + ubicaciones ────────────────────────────────────────────
   const fetchData = useCallback(async () => {
-    const data = await safeGet<any>('/corporate/bookings/active', session!.accessToken);
+    if (!session?.accessToken) return;
+    const data = await safeGet<any>('/corporate/bookings/active', session.accessToken);
     let list: ActiveTrip[] = [];
 
     if (data) {
@@ -214,6 +213,8 @@ export default function MapaEmpresaPage() {
       return () => clearInterval(id);
     }
   }, [leafletReady, fetchData]);
+
+  if (!session) return null;
 
   // ── Computed ──────────────────────────────────────────────────────────────
   const departments = Array.from(new Set(trips.map(t => t.department).filter(Boolean))) as string[];
