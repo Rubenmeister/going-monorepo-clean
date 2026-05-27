@@ -266,6 +266,12 @@ export class ProxyModule implements NestModule {
     }
     // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)
     guard('scheduled-trips', svc.transport);
+    // /vehicles/* — admin: lista de vehículos derivada de drivers (transport-service AdminStubsController)
+    guard('vehicles', svc.transport);
+    // /dashcam/* — admin: incidentes detectados por dashcam (transport-service AdminStubsController)
+    guard('dashcam', svc.transport);
+    // /pricing/* — admin: reglas de surge pricing (transport-service AdminStubsController)
+    guard('pricing', svc.transport);
 
     // /drivers/me/wallet|earnings|earnings/history|withdraw → payment-service
     // (DriverEarningsController). Estas rutas conviven con el prefix /drivers
@@ -296,9 +302,26 @@ export class ProxyModule implements NestModule {
     // dentro de cada handler del controller (transport-service).
     guard('compliance', svc.transport);
     guard('payments', svc.payments);
-    guard('tours', svc.tours);
-    guard('accommodations', svc.accommodations);
-    guard('experiences', svc.experiences);
+    // /tours, /accommodations, /experiences — PÚBLICO para browse anónimo
+    // (catálogo de turismo). El frontend-webapp muestra estas listas en
+    // /tours, /accommodation, /experiences sin requerir login. POST/PATCH
+    // que requieren auth deben validarse en el service (los GET son
+    // browseables; CRUD operativo lo restringen las controllers vía RBAC).
+    if (svc.tours) {
+      consumer
+        .apply(makeForwardMiddleware(svc.tours, 'tours'))
+        .forRoutes({ path: 'tours/*path', method: RequestMethod.ALL });
+    }
+    if (svc.accommodations) {
+      consumer
+        .apply(makeForwardMiddleware(svc.accommodations, 'accommodations'))
+        .forRoutes({ path: 'accommodations/*path', method: RequestMethod.ALL });
+    }
+    if (svc.experiences) {
+      consumer
+        .apply(makeForwardMiddleware(svc.experiences, 'experiences'))
+        .forRoutes({ path: 'experiences/*path', method: RequestMethod.ALL });
+    }
     // /parcels/quote — PÚBLICO (mismo razonamiento que /search: un usuario
     // anónimo debe poder ver el precio del envío antes de registrarse).
     // El envios-service.ParcelController.quote() está decorado @Public()
@@ -357,15 +380,29 @@ export class ProxyModule implements NestModule {
         .apply(makeForwardMiddleware(svc.transport, 'search'))
         .forRoutes(...searchRoutes);
     }
+    guardExact('vehicles', svc.transport, allMethods);
+    guardExact('dashcam',  svc.transport, allMethods);
+    guardExact('pricing',  svc.transport, allMethods);
     guardExact('drivers', svc.transport, allMethods);
     guardExact('driver-bases', svc.transport, allMethods);
     guardExact('parcels', svc.parcels, allMethods);
     guardExact('bookings', svc.bookings, allMethods);
     guardExact('recurring-trips', svc.bookings, allMethods);
     guardExact('payments', svc.payments, allMethods);
-    guardExact('tours', svc.tours, allMethods);
-    guardExact('accommodations', svc.accommodations, allMethods);
-    guardExact('experiences', svc.experiences, allMethods);
+    // tours/accommodations/experiences ya están públicos arriba (ver bloque)
+    // — registramos también la raíz exacta sin auth para el catálogo browseable.
+    if (svc.tours) {
+      const routes = allMethods.map((method) => ({ path: 'tours', method }));
+      consumer.apply(makeForwardMiddleware(svc.tours, 'tours')).forRoutes(...routes);
+    }
+    if (svc.accommodations) {
+      const routes = allMethods.map((method) => ({ path: 'accommodations', method }));
+      consumer.apply(makeForwardMiddleware(svc.accommodations, 'accommodations')).forRoutes(...routes);
+    }
+    if (svc.experiences) {
+      const routes = allMethods.map((method) => ({ path: 'experiences', method }));
+      consumer.apply(makeForwardMiddleware(svc.experiences, 'experiences')).forRoutes(...routes);
+    }
     guardExact('tracking', svc.tracking, allMethods);
     guardExact('notifications', svc.notifications, allMethods);
     guardExact('invoices', svc.invoices, allMethods);

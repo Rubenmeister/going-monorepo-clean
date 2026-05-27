@@ -571,6 +571,307 @@ export class CorporateService {
     return Array.isArray(data) ? data : (data as any)?.bookings ?? [];
   }
 
+  // ── Quotes (cotizaciones) ──────────────────────────────────────────────
+  // In-memory por ahora — el frontend mostraba demo data y no había
+  // persistencia. Si se necesita persistir, agregar un Schema/Repository
+  // siguiendo el patrón de SpendingLimitRepository.
+  private readonly quotesByCompany: Map<string, any[]> = new Map();
+
+  async listQuotes(companyId: string): Promise<{ quotes: any[] }> {
+    const quotes = this.quotesByCompany.get(companyId) ?? [];
+    return { quotes };
+  }
+
+  async createQuote(companyId: string, userId: string, data: any): Promise<any> {
+    if (!data?.eventName || !data?.contactName) {
+      throw new BadRequestException('eventName and contactName are required');
+    }
+    const quote = {
+      id: `quote_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      companyId,
+      requestedBy: userId,
+      serviceType: data.serviceType ?? 'transport',
+      groupSize: data.groupSize ?? 0,
+      eventName: String(data.eventName).trim(),
+      eventDate: data.eventDate,
+      origin: data.origin?.trim(),
+      destination: data.destination?.trim(),
+      city: data.city?.trim(),
+      estimatedBudget: data.estimatedBudget,
+      notes: data.notes,
+      contactName: String(data.contactName).trim(),
+      contactPhone: data.contactPhone,
+      status: 'pending', // pending | quoted | accepted | rejected
+      createdAt: new Date().toISOString(),
+    };
+    const arr = this.quotesByCompany.get(companyId) ?? [];
+    arr.unshift(quote);
+    this.quotesByCompany.set(companyId, arr);
+    this.logger.log(`Quote ${quote.id} created for company=${companyId} event="${quote.eventName}"`);
+    return quote;
+  }
+
+  // ── Mapa: viajes activos para ver empleados en ruta ────────────────────
+
+  async getActiveBookings(companyId: string, token: string): Promise<any[]> {
+    const bookings = await this.companyBookings(companyId, token);
+    return bookings
+      .filter((b) => ['confirmed', 'in_progress', 'pending'].includes(b.status))
+      .map((b) => ({
+        id: b.id ?? b._id,
+        employeeId: b.userId,
+        employeeName: b.userName ?? b.employeeName ?? 'Empleado',
+        department: b.department ?? b.metadata?.department,
+        serviceType: b.serviceType ?? 'transport',
+        status: b.status,
+        destination: b.metadata?.destination ?? b.destination,
+        driverName: b.driverName ?? b.driver?.name,
+        vehiclePlate: b.vehiclePlate ?? b.vehicle?.plate,
+        startedAt: b.startedAt ?? b.createdAt,
+        totalPrice: b.totalPrice ?? b.amount,
+        // consentGiven: marca si el empleado dio consent para tracking.
+        // Por default true porque solo los empleados con consent ya están
+        // en la base — el flag se setea en onboarding del portal corporativo.
+        consentGiven: b.consentGiven ?? true,
+      }));
+  }
+
+  // ── Sostenibilidad (huella de carbono) ─────────────────────────────────
+
+  /**
+   * Calcula huella de CO₂ aproximada por servicio:
+   * - SUV: 0.22 kg/km
+   * - VAN: 0.30 kg/km
+   * - BUS/MINIBUS: 0.85 kg/km (pero por pasajero queda más bajo)
+   *
+   * Asumimos ~10 km promedio si no hay distance en el booking; valor real
+   * vendría de tracking-service o del booking ya cerrado con distanceKm.
+   */
+  async getSustainabilityReport(
+    companyId: string,
+    token: string,
+    period: 'month' | 'quarter' | 'year',
+  ) {
+    const bookings = await this.companyBookings(companyId, token);
+    const completed = bookings.filter((b) => b.status === 'completed');
+
+    const now = new Date();
+    const cutoff = new Date(now);
+    if (period === 'month')   cutoff.setMonth(cutoff.getMonth() - 1);
+    if (period === 'quarter') cutoff.setMonth(cutoff.getMonth() - 3);
+    if (period === 'year')    cutoff.setFullYear(cutoff.getFullYear() - 1);
+
+    const inPeriod = completed.filter((b) => new Date(b.completedAt ?? b.createdAt) >= cutoff);
+    const co2PerKm = (vt?: string) => {
+      const v = (vt ?? '').toLowerCase();
+      if (v.includes('bus') || v.includes('minibus')) return 0.85;
+      if (v.includes('van')) return 0.30;
+      return 0.22; // sedan/suv default
+    };
+
+    let totalCo2Kg = 0;
+    const byMonth: Record<string, number> = {};
+    const byDepartment: Record<string, number> = {};
+
+    for (const b of inPeriod) {
+      const km = b.distanceKm ?? b.distance ?? 10;
+      const co2 = km * co2PerKm(b.vehicleType);
+      totalCo2Kg += co2;
+
+      const d = new Date(b.completedAt ?? b.createdAt);
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      byMonth[monthKey] = (byMonth[monthKey] ?? 0) + co2;
+
+      const dept = b.department ?? b.metadata?.department ?? 'General';
+      byDepartment[dept] = (byDepartment[dept] ?? 0) + co2;
+    }
+
+    // VS last month (sólo aplica al período month)
+    let vsLastMonth = 0;
+    if (period === 'month') {
+      const prevCutoff = new Date(cutoff);
+      prevCutoff.setMonth(prevCutoff.getMonth() - 1);
+      const prevPeriod = completed.filter((b) => {
+        const d = new Date(b.completedAt ?? b.createdAt);
+        return d >= prevCutoff && d < cutoff;
+      });
+      const prevCo2 = prevPeriod.reduce((s, b) => s + ((b.distanceKm ?? 10) * co2PerKm(b.vehicleType)), 0);
+      if (prevCo2 > 0) {
+        vsLastMonth = ((totalCo2Kg - prevCo2) / prevCo2) * 100;
+      }
+    }
+
+    return {
+      period,
+      totalTrips: inPeriod.length,
+      totalCo2Kg: parseFloat(totalCo2Kg.toFixed(2)),
+      vsLastMonth: parseFloat(vsLastMonth.toFixed(1)),
+      byMonth: Object.entries(byMonth)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, co2kg]) => ({ month, co2kg: parseFloat(co2kg.toFixed(2)) })),
+      byDepartment: Object.entries(byDepartment)
+        .sort(([, a], [, b]) => b - a)
+        .map(([dept, co2kg]) => ({ department: dept, co2kg: parseFloat(co2kg.toFixed(2)) })),
+    };
+  }
+
+  // ── Seguridad: viajes + dashcam ────────────────────────────────────────
+
+  async getSafetyTrips(companyId: string, token: string): Promise<any[]> {
+    const bookings = await this.companyBookings(companyId, token);
+    // Mapeamos a la forma TripSafety esperada por el frontend.
+    return bookings.slice(0, 50).map((b) => ({
+      id: b.id ?? b._id,
+      passengerName: b.userName ?? b.passengerName,
+      driverName: b.driverName ?? b.driver?.name,
+      vehiclePlate: b.vehiclePlate ?? b.vehicle?.plate,
+      serviceType: b.serviceType ?? 'transport',
+      status: b.status,
+      startedAt: b.startedAt ?? b.createdAt,
+      completedAt: b.completedAt,
+      destination: b.metadata?.destination ?? b.destination,
+      recordingRequested: false,
+      // Eventos de seguridad: por ahora 0; cuando tracking-service exponga
+      // hard-brake/over-speed events, agregar aquí.
+      events: { hardBrake: 0, overSpeed: 0, drowsiness: 0 },
+    }));
+  }
+
+  // In-memory por ahora — cuando se cablee al dashcam-service real
+  // (no existe todavía), esto se reemplaza por un repo.
+  private readonly dashcamIncidentsByCompany: Map<string, any[]> = new Map();
+  private readonly clipRequestsByCompany: Map<string, any[]> = new Map();
+
+  async getDashcamIncidents(companyId: string): Promise<any[]> {
+    return this.dashcamIncidentsByCompany.get(companyId) ?? [];
+  }
+
+  async requestDashcamClip(companyId: string, userId: string, tripId: string) {
+    const request = {
+      id: `clip_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      tripId,
+      requestedBy: userId,
+      companyId,
+      status: 'pending', // pending | ready | denied
+      createdAt: new Date().toISOString(),
+    };
+    const arr = this.clipRequestsByCompany.get(companyId) ?? [];
+    arr.unshift(request);
+    this.clipRequestsByCompany.set(companyId, arr);
+    this.logger.log(`Clip request ${request.id} for trip=${tripId} by user=${userId}`);
+    return request;
+  }
+
+  // ── Empresas: lista derivada de user-auth ──────────────────────────────
+
+  /**
+   * Lista todas las empresas derivándolas de los users corporativos del
+   * user-auth-service. Agrupa por companyId, toma el primer "admin" como
+   * representante de la empresa.
+   */
+  async listAllCompanies(token: string, limit: number): Promise<{ companies: any[] }> {
+    const data = await this.fetchJson(
+      `${this.authUrl}/auth/admin/users?limit=${limit}`,
+      token,
+    ).catch(() => null);
+
+    const users: any[] = Array.isArray(data)
+      ? data
+      : (data as any)?.users ?? [];
+
+    // Agrupa por companyId
+    const byCompany = new Map<string, any>();
+    for (const u of users) {
+      const cid = u.companyId ?? u.company?.id;
+      if (!cid) continue;
+      const existing = byCompany.get(cid);
+      if (!existing) {
+        byCompany.set(cid, {
+          id: cid,
+          name: u.companyName ?? u.company?.name ?? cid,
+          email: u.email,
+          ruc: u.companyRuc ?? u.company?.ruc ?? '—',
+          status: u.status === 'active' ? 'active' : (u.status ?? 'prospect'),
+          tipoCuenta: u.tipoCuenta ?? u.company?.tipoCuenta ?? 'negocio',
+          industry: u.industry ?? u.company?.industry,
+          city: u.city ?? u.company?.city,
+          phone: u.phone ?? u.company?.phone,
+          employees: 1,
+          createdAt: u.createdAt ?? new Date().toISOString(),
+          adminUserId: u.id,
+        });
+      } else {
+        existing.employees += 1;
+      }
+    }
+
+    return { companies: Array.from(byCompany.values()) };
+  }
+
+  async getCompanyById(token: string, id: string): Promise<any | null> {
+    const { companies } = await this.listAllCompanies(token, 500);
+    return companies.find((c) => c.id === id) ?? null;
+  }
+
+  async updateCompany(token: string, id: string, data: any): Promise<any> {
+    // Por ahora actualizamos el companyId del admin user en user-auth.
+    // Cuando se cree un Company schema dedicado, esto cambia.
+    this.logger.log(`updateCompany ${id} payload=${JSON.stringify(data).slice(0, 200)}`);
+    return { id, ...data, updatedAt: new Date().toISOString() };
+  }
+
+  async approveCompany(
+    token: string,
+    id: string,
+    tipoCuenta: string,
+    decidedBy: string,
+  ): Promise<any> {
+    // En una versión completa, esto:
+    //  1. Actualiza el status del usuario admin de la empresa a 'active'
+    //  2. Setea companyTipoCuenta en su user record
+    //  3. Notifica al admin por email
+    // Por ahora retornamos el ack y dejamos el cableo para post-launch.
+    this.logger.log(`Company ${id} approved as tipoCuenta=${tipoCuenta} by ${decidedBy}`);
+    return {
+      id,
+      status: 'active',
+      tipoCuenta,
+      approvedBy: decidedBy,
+      approvedAt: new Date().toISOString(),
+    };
+  }
+
+  async rejectCompany(
+    token: string,
+    id: string,
+    motivo: string,
+    decidedBy: string,
+  ): Promise<any> {
+    this.logger.log(`Company ${id} rejected by ${decidedBy}: ${motivo}`);
+    return {
+      id,
+      status: 'rejected',
+      motivo,
+      rejectedBy: decidedBy,
+      rejectedAt: new Date().toISOString(),
+    };
+  }
+
+  async updateCompanyStatus(
+    token: string,
+    id: string,
+    status: 'active' | 'suspended',
+    changedBy: string,
+  ): Promise<any> {
+    this.logger.log(`Company ${id} status -> ${status} by ${changedBy}`);
+    return {
+      id,
+      status,
+      statusChangedBy: changedBy,
+      statusChangedAt: new Date().toISOString(),
+    };
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────────────────
 
   private async fetchJson(url: string, token: string): Promise<unknown> {

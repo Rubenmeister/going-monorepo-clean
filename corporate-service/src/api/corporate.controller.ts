@@ -184,6 +184,185 @@ export class CorporateController {
     return this.svc.listEmployees(companyId, token);
   }
 
+  // ── Quotes (cotizaciones corporativas para eventos / grupos) ───────────
+
+  /**
+   * GET /corporate/quotes — Lista cotizaciones de la empresa.
+   * Usado por /empresas/panel/cotizacion para mostrar histórico.
+   */
+  @Get('quotes')
+  async listQuotes(@Req() req: Request) {
+    const companyId = this.extractCompanyId(req);
+    return this.svc.listQuotes(companyId);
+  }
+
+  /**
+   * POST /corporate/quotes — Crea una nueva solicitud de cotización
+   * (grupos, eventos, traslados especiales). El equipo ops la revisa
+   * y responde por email/WhatsApp.
+   */
+  @Post('quotes')
+  async createQuote(@Req() req: Request, @Body() body: any) {
+    const companyId = this.extractCompanyId(req);
+    const userId = this.extractUserId(req);
+    return this.svc.createQuote(companyId, userId, body);
+  }
+
+  // ── Mapa / tracking en vivo de empleados ────────────────────────────────
+
+  /**
+   * GET /corporate/bookings/active — Viajes corporativos en curso o programados
+   * próximos. Usado por /empresas/panel/mapa para mostrar empleados en ruta.
+   * Solo retorna viajes donde el empleado dio consent (consentGiven=true).
+   */
+  @Get('bookings/active')
+  async getActiveBookings(@Req() req: Request) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.getActiveBookings(companyId, token);
+  }
+
+  // ── Sostenibilidad (ESG) ────────────────────────────────────────────────
+
+  /**
+   * GET /corporate/sustainability?period=month|quarter|year — Huella de
+   * carbono y agregados ESG. Usado por /empresas/panel/sostenibilidad.
+   */
+  @Get('sustainability')
+  async getSustainabilityReport(
+    @Req() req: Request,
+    @Query('period') period: 'month' | 'quarter' | 'year' = 'month',
+  ) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.getSustainabilityReport(companyId, token, period);
+  }
+
+  // ── Seguridad (trips + dashcam) ─────────────────────────────────────────
+
+  /**
+   * GET /corporate/trips/safety — Viajes recientes con métricas de
+   * seguridad (eventos: frenado brusco, exceso velocidad, etc.).
+   * Usado por /empresas/panel/seguridad.
+   */
+  @Get('trips/safety')
+  async getSafetyTrips(@Req() req: Request) {
+    const companyId = this.extractCompanyId(req);
+    const token = this.extractToken(req);
+    return this.svc.getSafetyTrips(companyId, token);
+  }
+
+  /**
+   * GET /corporate/dashcam/incidents — Incidentes detectados por dashcam
+   * (colisión, frenadas, somnolencia conductor, etc.).
+   */
+  @Get('dashcam/incidents')
+  async getDashcamIncidents(@Req() req: Request) {
+    const companyId = this.extractCompanyId(req);
+    return this.svc.getDashcamIncidents(companyId);
+  }
+
+  /**
+   * POST /corporate/dashcam/clip-request — Solicita el clip de video de
+   * un viaje específico para evidencia / análisis.
+   */
+  @Post('dashcam/clip-request')
+  async requestDashcamClip(@Req() req: Request, @Body() body: { tripId: string }) {
+    if (!body?.tripId) {
+      throw new BadRequestException('tripId required');
+    }
+    const companyId = this.extractCompanyId(req);
+    const userId = this.extractUserId(req);
+    return this.svc.requestDashcamClip(companyId, userId, body.tripId);
+  }
+
+  // ── Empresas (admin only — gestión de clientes corporativos) ────────────
+
+  /**
+   * GET /corporate/companies?limit=200 — Lista todas las empresas que usan
+   * Going (activas + solicitudes). Solo accesible por admin global.
+   * Derivado del user-auth-service: agrupa users con role=corporate por
+   * companyId para reconstruir la lista de empresas.
+   */
+  @Get('companies')
+  async listCompanies(@Req() req: Request, @Query('limit') limit = '200') {
+    const token = this.extractToken(req);
+    return this.svc.listAllCompanies(token, +limit);
+  }
+
+  /**
+   * GET /corporate/companies/:id — Detalle de una empresa.
+   */
+  @Get('companies/:id')
+  async getCompany(@Param('id') id: string, @Req() req: Request) {
+    const token = this.extractToken(req);
+    const company = await this.svc.getCompanyById(token, id);
+    if (!company) throw new NotFoundException(`Empresa ${id} no encontrada`);
+    return company;
+  }
+
+  /**
+   * PUT /corporate/companies/:id — Actualiza datos de la empresa (admin).
+   */
+  @Put('companies/:id')
+  async updateCompany(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Req() req: Request,
+  ) {
+    const token = this.extractToken(req);
+    return this.svc.updateCompany(token, id, body);
+  }
+
+  /**
+   * POST /corporate/companies/:id/approve — Aprueba la solicitud de alta
+   * de una empresa. Le asigna tipoCuenta (negocio | grande | agencia) y
+   * activa el acceso al portal corporativo.
+   */
+  @Post('companies/:id/approve')
+  async approveCompany(
+    @Param('id') id: string,
+    @Body() body: { tipoCuenta?: string },
+    @Req() req: Request,
+  ) {
+    const token = this.extractToken(req);
+    const userId = this.extractUserId(req);
+    return this.svc.approveCompany(token, id, body?.tipoCuenta ?? 'negocio', userId);
+  }
+
+  /**
+   * POST /corporate/companies/:id/reject — Rechaza la solicitud. Notifica
+   * al solicitante con el motivo.
+   */
+  @Post('companies/:id/reject')
+  async rejectCompany(
+    @Param('id') id: string,
+    @Body() body: { motivo?: string },
+    @Req() req: Request,
+  ) {
+    const token = this.extractToken(req);
+    const userId = this.extractUserId(req);
+    return this.svc.rejectCompany(token, id, body?.motivo ?? '', userId);
+  }
+
+  /**
+   * PATCH /corporate/companies/:id/status — Cambia el estado de una empresa
+   * activa (suspender / reactivar). El body lleva `{ status: 'active' | 'suspended' }`.
+   */
+  @Patch('companies/:id/status')
+  async updateCompanyStatus(
+    @Param('id') id: string,
+    @Body() body: { status: 'active' | 'suspended' },
+    @Req() req: Request,
+  ) {
+    if (!body?.status || !['active', 'suspended'].includes(body.status)) {
+      throw new BadRequestException('status must be "active" or "suspended"');
+    }
+    const token = this.extractToken(req);
+    const userId = this.extractUserId(req);
+    return this.svc.updateCompanyStatus(token, id, body.status, userId);
+  }
+
   // ── helpers ────────────────────────────────────────────────────────────
 
   private extractToken(req: Request): string {
