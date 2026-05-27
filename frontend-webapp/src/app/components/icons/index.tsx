@@ -538,3 +538,45 @@ export const IconLogo = (p: IconProps) => (
     <text x="12" y="16" textAnchor="middle" fontSize="11" fontWeight="900" fill="#fff" fontFamily="sans-serif">G</text>
   </Svg>
 );
+
+// ─── Tiendas de apps (logos oficiales simplificados) ─────────────────────
+
+/** Logo Google Play (triángulo dividido en 4 sectores). Color real es
+ *  multicolor pero acá lo dejamos en currentColor para que herede el
+ *  color del padre y se pueda usar tanto en oscuro como claro. */
+export const IconGooglePlay = (p: IconProps) => (
+  <Svg {...p} fill="currentColor" stroke="none">
+    <path d="M3 2.5v19a1 1 0 0 0 1.55.83l13-9.5a1 1 0 0 0 0-1.66l-13-9.5A1 1 0 0 0 3 2.5z" />
+    <path d="M14.5 12 3.5 22.5l-.05-.04 11-10.46.05-.05z" opacity="0.4" />
+  </Svg>
+);
+
+/** Apple logo — manzana mordida característica de la App Store. */
+export const IconApple = (p: IconProps) => (
+  <Svg {...p} fill="currentColor" stroke="none">
+    <path d="M17.05 20.28c-.98.95-2.05.86-3.08.42-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.42C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+  </Svg>
+);
+
+/** QR code icon — para representar "escaneá el código" */
+export const IconQrCode = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1"/>
+    <rect x="14" y="3" width="7" height="7" rx="1"/>
+    <rect x="3" y="14" width="7" height="7" rx="1"/>
+    <line x1="14" y1="14" x2="14" y2="14.01"/>
+    <line x1="20" y1="14" x2="20" y2="14.01"/>
+    <line x1="14" y1="20" x2="14" y2="20.01"/>
+    <line x1="20" y1="20" x2="20" y2="20.01"/>
+    <line x1="17" y1="17" x2="17" y2="17.01"/>
+  </Svg>
+);
+
+/** Download / flecha abajo en círculo */
+export const IconDownload = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </Svg>
+);
