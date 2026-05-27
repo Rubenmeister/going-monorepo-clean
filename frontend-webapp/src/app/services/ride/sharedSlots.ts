@@ -83,9 +83,20 @@ export async function fetchSharedSlots(
     // El backend espera ISO 8601 con hora; usamos medianoche del día pedido.
     // El UnifiedSearchUseCase cascadea horarios del día + ±1 día.
     const scheduledDateTime = `${date}T00:00:00.000Z`;
+    // /search está protegido por JwtAuthGuard — leemos token de localStorage
+    // si existe. Si el usuario NO está logueado, el backend devuelve 401 y
+    // mostramos lista vacía con CTA a login (el carpool browsing público
+    // requiere que el usuario se registre primero — aceptable porque
+    // /reserve también lo requiere).
+    // La key 'authToken' es la canónica (frontend-webapp/src/lib/providers/auth-client.ts).
+    const token = typeof window !== 'undefined'
+      ? localStorage.getItem('authToken') || ''
+      : '';
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(`${API}/search`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         pickup: { lat: pickup.lat, lng: pickup.lon, address: pickup.address },
         destination: { lat: destination.lat, lng: destination.lon, address: destination.address },

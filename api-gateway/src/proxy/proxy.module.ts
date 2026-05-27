@@ -252,8 +252,18 @@ export class ProxyModule implements NestModule {
     guard('rides', svc.transport);
     // /zones/* — geocercas (administradas por transport-service)
     guard('zones', svc.transport);
-    // /search/* — buscador unificado de viajes (transport-service)
-    guard('search', svc.transport);
+    // /search/* — buscador unificado de viajes (transport-service).
+    // PUBLIC: un usuario anónimo puede browsear horarios antes de loguearse
+    // (mejora la conversión — sin esto el listado de viajes en /ride sale
+    // vacío hasta que el user se registra). El transport-service.SearchController
+    // usa un JwtAuthGuard custom que retorna user=null en lugar de 401,
+    // y deriva clientSegment='public' por defecto. Si el header Authorization
+    // viene válido, el companyId del JWT se usa para corporate pricing.
+    if (svc.transport) {
+      consumer
+        .apply(makeForwardMiddleware(svc.transport, 'search'))
+        .forRoutes({ path: 'search/*path', method: RequestMethod.ALL });
+    }
     // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)
     guard('scheduled-trips', svc.transport);
 
@@ -330,7 +340,13 @@ export class ProxyModule implements NestModule {
       RequestMethod.DELETE,
     ];
     guardExact('zones', svc.transport, allMethods);
-    guardExact('search', svc.transport, allMethods);
+    // /search exact root — PÚBLICO (ver bloque arriba)
+    if (svc.transport) {
+      const searchRoutes = allMethods.map((method) => ({ path: 'search', method }));
+      consumer
+        .apply(makeForwardMiddleware(svc.transport, 'search'))
+        .forRoutes(...searchRoutes);
+    }
     guardExact('drivers', svc.transport, allMethods);
     guardExact('driver-bases', svc.transport, allMethods);
     guardExact('parcels', svc.parcels, allMethods);
