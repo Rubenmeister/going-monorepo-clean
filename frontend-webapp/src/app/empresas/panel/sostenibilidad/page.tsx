@@ -96,17 +96,18 @@ export default function SostenibilidadPage() {
   const [loading, setLoading] = useState(true);
   const [period,  setPeriod]  = useState<'month' | 'quarter' | 'year'>('month');
 
-  if (!session) return null;
-
   const fetchData = useCallback(async () => {
+    if (!session?.accessToken) return;
     try {
-      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session!.accessToken);
+      const res = await corpFetch<ESGSummary>(`/corporate/sustainability?period=${period}`, session.accessToken);
       if (res?.totalTrips) setData(res);
     } catch {}
     setLoading(false);
-  }, [session!.accessToken, period]);
+  }, [session?.accessToken, period]);
 
   useEffect(() => { setLoading(true); fetchData(); }, [fetchData]);
+
+  if (!session) return null;
 
   const eq = co2ToEquivalents(data.totalCo2Kg);
   const maxMonth = Math.max(...data.byMonth.map(m => m.co2kg));

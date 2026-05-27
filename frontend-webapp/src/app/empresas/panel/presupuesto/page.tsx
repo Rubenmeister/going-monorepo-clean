@@ -131,23 +131,22 @@ export default function PresupuestoPage() {
   const [saving, setSaving]         = useState(false);
   const [saveError, setSaveError]   = useState<string | null>(null);
 
-  if (!session) return null;
-
-  const isAdmin = session!.user.roles.includes("admin");
-  const isFinanciero = session!.user.roles.includes("financiero");
+  const isAdmin = session?.user.roles.includes("admin") ?? false;
+  const isFinanciero = session?.user.roles.includes("financiero") ?? false;
   const canEdit = isAdmin;
 
-  const companyId = session!.user.companyId;
+  const companyId = session?.user.companyId;
+  const accessToken = session?.accessToken ?? "";
 
   // ── Carga datos ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!companyId) return;
+    if (!accessToken || !companyId) return;
     setLoading(true);
     setError(null);
 
     Promise.allSettled([
-      fetchSpendingLimits(session!.accessToken, companyId),
-      fetchSpendingReport(session!.accessToken, companyId, month),
+      fetchSpendingLimits(accessToken, companyId),
+      fetchSpendingReport(accessToken, companyId, month),
     ]).then(([limitsRes, reportRes]) => {
       if (limitsRes.status === "fulfilled") setLimits(limitsRes.value);
       if (reportRes.status === "fulfilled") {
@@ -158,7 +157,9 @@ export default function PresupuestoPage() {
         setError("No se pudo cargar la información de presupuestos.");
       }
     }).finally(() => setLoading(false));
-  }, [session!.accessToken, companyId, month]);
+  }, [accessToken, companyId, month]);
+
+  if (!session) return null;
 
   // ── Combinamos límites + gastos reales ────────────────────────────────────
   const departments: DepartmentSpending[] = (() => {
@@ -189,6 +190,10 @@ export default function PresupuestoPage() {
 
   // ── Guardar límite ───────────────────────────────────────────────────────────
   async function handleSave(dept: string, monthly: number, daily?: number) {
+    if (!companyId) {
+      setSaveError("Falta companyId en la sesión.");
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     try {

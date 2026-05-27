@@ -95,18 +95,21 @@ export default function CotizacionPage() {
   const [contactName,   setContactName]   = useState("");
   const [contactPhone,  setContactPhone]  = useState("");
 
-  if (!session) return null;
   // Alias no-nullable para callbacks async (TS no puede estrechar dentro de
-  // closures async tras el early-return de arriba).
-  const accessToken = session!.accessToken;
+  // closures async tras el early-return de abajo). El useEffect early-returns
+  // si no hay token todavía.
+  const accessToken = session?.accessToken ?? "";
 
   // Cargar historial
   useEffect(() => {
+    if (!accessToken) return;
     corpFetch<Quote[] | { quotes: Quote[] }>("/corporate/quotes", accessToken)
       .then((res) => setQuotes(Array.isArray(res) ? res : (res as any).quotes ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [accessToken]);
+
+  if (!session) return null;
 
   // Enviar cotización
   async function handleSubmit(e: React.FormEvent) {

@@ -79,11 +79,12 @@ export default function TrackingPage() {
 
   const pollingRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
-  if (!session) return null;
+  const accessToken = session?.accessToken ?? "";
 
   // ── Cargar viajes activos del día ──────────────────────────────────────────
   useEffect(() => {
-    fetchBookings(session!.accessToken)
+    if (!accessToken) return;
+    fetchBookings(accessToken)
       .then((all) => {
         const active = (all as ActiveBooking[]).filter((b) => b.status === "in_progress");
         setBookings(active);
@@ -91,13 +92,14 @@ export default function TrackingPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [session!.accessToken]);
+  }, [accessToken]);
 
   // ── Polling de ubicación por viaje seleccionado ────────────────────────────
   const fetchLocation = useCallback(async (bookingId: string) => {
+    if (!accessToken) return;
     try {
       const loc = await corpFetch<DriverLocation>(
-        `/tracking/booking/${bookingId}`, session!.accessToken
+        `/tracking/booking/${bookingId}`, accessToken
       );
       setLocations((prev) => ({ ...prev, [bookingId]: loc }));
       setLastUpdate((prev) => ({ ...prev, [bookingId]: new Date().toISOString() }));
@@ -105,7 +107,7 @@ export default function TrackingPage() {
     } catch {
       setLocError((prev) => ({ ...prev, [bookingId]: "Sin datos de ubicación" }));
     }
-  }, [session!.accessToken]);
+  }, [accessToken]);
 
   useEffect(() => {
     if (!selected) return;
@@ -120,6 +122,8 @@ export default function TrackingPage() {
       delete pollingRef.current[selected];
     };
   }, [selected, fetchLocation]);
+
+  if (!session) return null;
 
   const selectedBooking  = bookings.find((b) => b.id === selected);
   const selectedLocation = selected ? locations[selected] : null;
