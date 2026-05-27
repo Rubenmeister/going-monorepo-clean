@@ -54,6 +54,8 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
   const [showVerify,    setShowVerify]    = useState(false);
   const [noDriverSlots,        setNoDriverSlots]        = useState<TimeSlot[]>([]);
   const [loadingNoDriverSlots, setLoadingNoDriverSlots] = useState(false);
+  /** Segundos transcurridos buscando conductor — driver del countdown UX. */
+  const [searchElapsed, setSearchElapsed] = useState(0);
 
   const rideId = activeRide?.tripId ?? '';
 
@@ -119,15 +121,29 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
     if (activeRide?.status === 'completed') onCompleted();
   }, [activeRide?.status, onCompleted]);
 
-  /* ── Failsafe: 130s sin conductor ── */
+  /* ── Failsafe: 90s sin conductor + countdown UX ──
+   * Antes 130s — demasiado para que el user se quede mirando un spinner sin
+   * feedback. 90s da margen real al matching y al user le mostramos el
+   * tiempo transcurrido + mensajes progresivos para que no sienta que la
+   * app está colgada. Si en 90s no hubo match, pasamos a no_driver con
+   * opciones (carpool, reintentar, cancelar).
+   */
   useEffect(() => {
-    if (activeRide?.status !== 'pending') return;
+    if (activeRide?.status !== 'pending') {
+      setSearchElapsed(0);
+      return;
+    }
+    // Cuenta visible cada 1s
+    const tick = setInterval(() => setSearchElapsed((e) => e + 1), 1000);
     const timer = setTimeout(() => {
       if (useRideStore.getState().activeRide?.status === 'pending') {
         useRideStore.getState().updateRideStatus(activeRide.tripId, 'no_driver' as never);
       }
-    }, 130_000);
-    return () => clearTimeout(timer);
+    }, 90_000);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(tick);
+    };
   }, [activeRide?.tripId, activeRide?.status]);
 
   /* ── Slots compartidos reales como fallback en no_driver ── */
@@ -279,7 +295,32 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
         driverInfo={activeRide.driverInfo}
         fare={currentFare}
         extraStops={extraStops.length}
+        searchElapsed={searchElapsed}
       />
+
+      {/* ══ ACCIONES TEMPRANAS EN PENDING ══
+         Antes solo había "Cancelar viaje" al final del panel y el user no
+         lo veía sin scrollear. Ahora exponemos ambas acciones inmediatamente
+         después del banner, mientras se busca conductor: el user puede
+         cambiar a un viaje compartido sin esperar el failsafe de 90s, o
+         cancelar de una si cambió de opinión. */}
+      {status === 'pending' && (
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => onSwitchToShared()}
+            className="py-3 rounded-2xl border-2 font-semibold text-sm transition-all hover:opacity-90"
+            style={{ borderColor: '#0033A0', color: '#0033A0', backgroundColor: '#EEF2FF' }}
+          >
+            🚐 Probar compartido
+          </button>
+          <button
+            onClick={handleCancel}
+            className="py-3 rounded-2xl border-2 border-red-300 text-red-600 font-semibold text-sm hover:bg-red-50 transition-colors"
+          >
+            ✕ Cancelar
+          </button>
+        </div>
+      )}
 
       {/* ══ BOARDING PASS: QR + PIN (pending y accepted) ══ */}
       {(status === 'pending' || status === 'accepted') && (
@@ -408,25 +449,41 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
 
 /* ── Banner de estado ── */
 function StatusBanner({
-  status, driverArrived, driverInfo, fare, extraStops,
+  status, driverArrived, driverInfo, fare, extraStops, searchElapsed = 0,
 }: {
   status: string;
   driverArrived: boolean;
   driverInfo?: { name: string };
   fare: number;
   extraStops: number;
+  /** Segundos transcurridos en estado 'pending' — para feedback de búsqueda. */
+  searchElapsed?: number;
 }) {
+  // Mensaje contextual progresivo en pending: vamos cambiando la copy según
+  // los segundos transcurridos, así el user nunca ve un texto estático
+  // durante 90 segundos y no piensa que la app se colgó.
+  const pendingMessage = (() => {
+    if (searchElapsed < 15) return 'Buscando conductor cerca de ti…';
+    if (searchElapsed < 40) return 'Ampliando búsqueda en tu zona…';
+    if (searchElapsed < 75) return 'Pocos conductores libres — seguimos intentando…';
+    return 'Aún sin match — falta poco para mostrarte alternativas';
+  })();
+  // mm:ss para el badge del countdown (siempre 0–1:30 en pending)
+  const elapsedLabel = `${Math.floor(searchElapsed / 60)}:${String(searchElapsed % 60).padStart(2, '0')}`;
+
   const configs: Record<string, { icon: string; label: string; color: string; bg: string }> = {
-    pending:     { icon: '🔍', label: 'Buscando conductor…',           color: '#6366f1', bg: '#EEF2FF' },
+    pending:     { icon: '🔍', label: pendingMessage,                  color: '#6366f1', bg: '#EEF2FF' },
     accepted:    { icon: '🚗', label: `${driverInfo?.name ?? 'Conductor'} en camino`, color: '#10b981', bg: '#ECFDF5' },
     in_progress: { icon: '🛣️', label: 'Viaje en curso',                color: '#ff4c41', bg: '#fff2f2' },
     completed:   { icon: '✅', label: 'Viaje completado',              color: '#10b981', bg: '#ECFDF5' },
     cancelled:   { icon: '❌', label: 'Viaje cancelado',               color: '#ef4444', bg: '#FEF2F2' },
   };
   const cfg = configs[status] || configs.pending;
+  const isPending = status === 'pending';
 
   return (
-    <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: cfg.bg }}>
+    <div className="rounded-2xl p-4" style={{ background: cfg.bg }}>
+      <div className="flex items-center gap-3">
       {status === 'pending' ? (
         <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl animate-pulse" style={{ background: cfg.color + '20' }}>
           {cfg.icon}
@@ -440,8 +497,10 @@ function StatusBanner({
         <p className="font-bold text-gray-900 text-sm">
           {driverArrived && status === 'accepted' ? '¡Conductor llegó! Verifica identidad' : cfg.label}
         </p>
-        {status === 'pending' && (
-          <p className="text-xs text-gray-400 mt-0.5">Conectando con conductores disponibles…</p>
+        {isPending && (
+          <p className="text-xs text-gray-500 mt-0.5">
+            Tiempo de búsqueda: <span className="font-mono font-bold" style={{ color: cfg.color }}>{elapsedLabel}</span>
+          </p>
         )}
       </div>
       <div className="text-right">
@@ -450,6 +509,21 @@ function StatusBanner({
           <p className="text-xs text-orange-500 font-medium">+{extraStops} parada{extraStops > 1 ? 's' : ''}</p>
         )}
       </div>
+      </div>
+      {/* Barra de progreso visible solo en pending — full width al cumplir 90s.
+         Da feedback continuo de que "algo se está moviendo" en lugar de un
+         spinner estático que mantiene la duda de si la app está colgada. */}
+      {isPending && (
+        <div className="mt-3 h-1.5 rounded-full overflow-hidden" style={{ background: cfg.color + '20' }}>
+          <div
+            className="h-full transition-all duration-1000 ease-linear"
+            style={{
+              width: `${Math.min((searchElapsed / 90) * 100, 100)}%`,
+              backgroundColor: cfg.color,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
