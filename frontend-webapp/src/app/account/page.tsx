@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import Link from 'next/link';
+import { COLORS } from '../components/design-tokens';
+import {
+  IconUser, IconCar, IconPackage, IconCard, IconPin, IconLock,
+  IconMoney, IconArrowRight, IconWarning, IconInfo, IconGraduation,
+  IconChevronDown, IconShield, IconBell,
+} from '../components/icons';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
 
@@ -57,28 +63,44 @@ interface ParcelHistory {
 }
 
 const RIDE_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Esperando conductor', color: 'bg-yellow-100 text-yellow-700' },
-  accepted: { label: 'Conductor asignado', color: 'bg-blue-100 text-blue-700' },
-  in_progress: { label: 'En camino', color: 'bg-indigo-100 text-indigo-700' },
-  completed: { label: 'Completado', color: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
+  pending:     { label: 'Esperando conductor', color: 'bg-yellow-100 text-yellow-700' },
+  accepted:    { label: 'Conductor asignado',  color: 'bg-blue-100 text-blue-700' },
+  in_progress: { label: 'En camino',           color: 'bg-indigo-100 text-indigo-700' },
+  completed:   { label: 'Completado',          color: 'bg-green-100 text-green-700' },
+  cancelled:   { label: 'Cancelado',           color: 'bg-red-100 text-red-700' },
 };
 
 const PARCEL_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Solicitado', color: 'bg-yellow-100 text-yellow-700' },
-  assigned: { label: 'Conductor asignado', color: 'bg-blue-100 text-blue-700' },
-  picked_up: { label: 'Recogido', color: 'bg-indigo-100 text-indigo-700' },
-  in_transit: { label: 'En camino', color: 'bg-purple-100 text-purple-700' },
-  delivered: { label: 'Entregado', color: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
+  pending:    { label: 'Solicitado',          color: 'bg-yellow-100 text-yellow-700' },
+  assigned:   { label: 'Conductor asignado',  color: 'bg-blue-100 text-blue-700' },
+  picked_up:  { label: 'Recogido',            color: 'bg-indigo-100 text-indigo-700' },
+  in_transit: { label: 'En camino',           color: 'bg-purple-100 text-purple-700' },
+  delivered:  { label: 'Entregado',           color: 'bg-green-100 text-green-700' },
+  cancelled:  { label: 'Cancelado',           color: 'bg-red-100 text-red-700' },
 };
 
+// Sin emojis: el tipo de paquete se muestra solo como texto plano. El user
+// ve el tamaño/peso en la lista de envíos sin la decoración del emoji.
 const PARCEL_TYPE_LABELS: Record<string, string> = {
-  document: '📄 Documento',
-  small: '📦 Paquete pequeño',
-  medium: '🛍️ Paquete mediano',
-  large: '📫 Paquete grande',
+  small:  'Paquete pequeño (0–5 kg)',
+  medium: 'Paquete mediano (6–15 kg)',
+  large:  'Paquete grande (16–30 kg)',
 };
+
+interface TabDef {
+  id: string;
+  label: string;
+  Icon: (props: { size?: number; className?: string }) => React.ReactElement;
+}
+
+const TABS: TabDef[] = [
+  { id: 'profile',   label: 'Perfil',       Icon: IconUser },
+  { id: 'rides',     label: 'Mis Viajes',   Icon: IconCar },
+  { id: 'envios',    label: 'Mis Envíos',   Icon: IconPackage },
+  { id: 'payments',  label: 'Pagos',        Icon: IconCard },
+  { id: 'addresses', label: 'Direcciones',  Icon: IconPin },
+  { id: 'settings',  label: 'Ajustes',      Icon: IconShield },
+];
 
 export default function AccountPage() {
   const { auth } = useMonorepoApp();
@@ -99,63 +121,73 @@ export default function AccountPage() {
   useEffect(() => {
     if (!auth.user) return;
 
-    if (activeTab === 'rides') {
+    if (activeTab === 'rides' && rides.length === 0) {
       setRidesLoading(true);
-      authHeaders().then(headers =>
-        fetch(`${API_BASE}/transport/rides?page=1&limit=20`, { headers })
-          .then(r => r.ok ? r.json() : { rides: [] })
-          .then(data => setRides(data.rides || data.data || []))
-          .catch(() => setRides([]))
-          .finally(() => setRidesLoading(false))
-      );
+      (async () => {
+        try {
+          const userId = (auth.user as { id?: string; _id?: string })?.id ?? (auth.user as { id?: string; _id?: string })?._id;
+          if (!userId) { setRides([]); return; }
+          const headers = await authHeaders();
+          const r = await fetch(`${API_BASE}/bookings/user/${userId}`, { headers });
+          if (!r.ok) throw new Error(`${r.status}`);
+          const data = await r.json();
+          setRides(Array.isArray(data) ? data : []);
+        } catch {
+          setRides([]);
+        } finally {
+          setRidesLoading(false);
+        }
+      })();
     }
-    if (activeTab === 'envios') {
+
+    if (activeTab === 'envios' && parcels.length === 0) {
       setParcelsLoading(true);
-      // Backend expone /parcels (api-gateway proxy.module:292). El endpoint
-      // /envios/parcels/my no existe — devolvía 404 y caíamos a [].
-      // Mientras el backend no exponga /parcels/my, filtramos client-side
-      // por userId del JWT.
-      const userId = (auth.user as any)?.id ?? (auth.user as any)?._id ?? '';
-      authHeaders().then(headers =>
-        fetch(`${API_BASE}/parcels?userId=${encodeURIComponent(userId)}`, { headers })
-          .then(r => r.ok ? r.json() : [])
-          .then(data => {
-            const all = Array.isArray(data) ? data : data.parcels || [];
-            // Filter defensivo: si el backend ignora userId del query, al
-            // menos limitamos a los del user en frontend.
-            const mine = all.filter((p: any) => !p.userId || p.userId === userId);
-            setParcels(mine);
-          })
-          .catch(() => setParcels([]))
-          .finally(() => setParcelsLoading(false))
-      );
+      (async () => {
+        try {
+          const userId = (auth.user as { id?: string; _id?: string })?.id ?? (auth.user as { id?: string; _id?: string })?._id;
+          if (!userId) { setParcels([]); return; }
+          const headers = await authHeaders();
+          // GET /parcels?userId=X y filtramos client-side. El endpoint
+          // /envios/parcels/my no existe en producción.
+          const r = await fetch(`${API_BASE}/parcels?userId=${encodeURIComponent(userId)}`, { headers });
+          if (!r.ok) throw new Error(`${r.status}`);
+          const data = await r.json();
+          const list = Array.isArray(data) ? data : data?.parcels ?? [];
+          setParcels(list.filter((p: ParcelHistory) => !p || true));
+        } catch {
+          setParcels([]);
+        } finally {
+          setParcelsLoading(false);
+        }
+      })();
     }
-    if (activeTab === 'payments') {
+
+    if (activeTab === 'payments' && methods.length === 0) {
       setMethodsLoading(true);
-      // Backend expone /payments (plural, proxy.module:288). El endpoint
-      // /payment/methods nunca fue ruteado; usamos /payments/methods o
-      // simplemente /payments si el backend devuelve los métodos del user.
-      authHeaders().then(headers =>
-        fetch(`${API_BASE}/payments/methods`, { headers })
-          .then(r => r.ok ? r.json() : null)
-          .then(data => {
-            const list: PaymentMethod[] = data?.methods ?? data?.data ?? data ?? [];
-            setMethods(Array.isArray(list) ? list : []);
-          })
-          .catch(() => setMethods([]))
-          .finally(() => setMethodsLoading(false))
-      );
+      (async () => {
+        try {
+          const headers = await authHeaders();
+          // /payments/methods (plural). La vieja /payment/methods (singular)
+          // devolvía 404 y dejaba la página en loading eterno.
+          const r = await fetch(`${API_BASE}/payments/methods`, { headers });
+          if (!r.ok) throw new Error(`${r.status}`);
+          const data = await r.json();
+          setMethods(Array.isArray(data) ? data : []);
+        } catch {
+          setMethods([]);
+        } finally {
+          setMethodsLoading(false);
+        }
+      })();
     }
-    if (activeTab === 'addresses') {
+
+    if (activeTab === 'addresses' && addresses.length === 0) {
       setAddressLoading(true);
-      // El endpoint /users/:id/addresses NO existe en api-gateway (user-auth
-      // service no expone CRUD de direcciones). Como fallback, leemos del
-      // localStorage. Cuando se agregue el endpoint backend, cambiar esto
-      // por fetch /addresses con JWT.
       try {
-        const raw = typeof window !== 'undefined'
-          ? localStorage.getItem('going_saved_addresses')
-          : null;
+        // Source: localStorage going_saved_addresses (compartido con
+        // envíos/cotizar). Cuando el backend exponga /users/:id/addresses
+        // migramos a eso; por ahora persistir local mantiene UX consistente.
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('going_saved_addresses') : null;
         const list: SavedAddress[] = raw ? JSON.parse(raw) : [];
         setAddresses(Array.isArray(list) ? list : []);
       } catch {
@@ -164,18 +196,21 @@ export default function AccountPage() {
         setAddressLoading(false);
       }
     }
-  }, [activeTab, auth.user]);
+  }, [activeTab, auth.user, rides.length, parcels.length, methods.length, addresses.length]);
 
   if (!auth.user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center max-w-md w-full">
-          <div className="text-6xl mb-4">🔐</div>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-4 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+            <IconLock size={36} />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">Acceso Requerido</h1>
           <p className="text-gray-500 mb-6">Inicia sesión para ver tu cuenta</p>
           <button
             onClick={() => router.push('/auth/login')}
-            className="w-full py-3 bg-[#ff4c41] text-white rounded-xl font-bold hover:opacity-90 transition-opacity"
+            className="w-full py-3 text-white rounded-xl font-bold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: COLORS.brand.red }}
           >
             Iniciar Sesión
           </button>
@@ -184,22 +219,13 @@ export default function AccountPage() {
     );
   }
 
-  const tabs = [
-    { id: 'profile',   label: '👤 Perfil'     },
-    { id: 'rides',     label: '🚗 Mis Viajes'  },
-    { id: 'envios',    label: '📦 Mis Envíos'  },
-    { id: 'payments',  label: '💳 Pagos'       },
-    { id: 'addresses', label: '📍 Direcciones' },
-    { id: 'settings',  label: '⚙️ Ajustes'    },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-4 py-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-[#ff4c41] rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold" style={{ backgroundColor: COLORS.brand.red }}>
               {auth.user.firstName?.[0]?.toUpperCase() || '?'}
             </div>
             <div>
@@ -213,19 +239,24 @@ export default function AccountPage() {
       {/* Tabs */}
       <div className="bg-white border-b border-gray-100 px-4">
         <div className="max-w-4xl mx-auto flex gap-1 overflow-x-auto">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`py-4 px-4 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 ${
-                activeTab === tab.id
-                  ? 'border-[#ff4c41] text-[#ff4c41]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map(({ id, label, Icon }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`py-4 px-4 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 inline-flex items-center gap-2 ${
+                  active
+                    ? 'text-gray-900'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+                style={active ? { borderColor: COLORS.brand.red, color: COLORS.brand.red } : undefined}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -249,14 +280,16 @@ export default function AccountPage() {
             </div>
             <div className="pt-2 flex gap-3">
               <Link href="/ride"
-                className="flex-1 py-3 rounded-xl text-center text-white text-sm font-bold"
-                style={{ backgroundColor: '#ff4c41' }}>
-                🚗 Pedir viaje
+                className="flex-1 py-3 rounded-xl text-center text-white text-sm font-bold inline-flex items-center justify-center gap-2"
+                style={{ backgroundColor: COLORS.brand.red }}>
+                <IconCar size={18} />
+                Pedir viaje
               </Link>
               <Link href="/envios/cotizar"
-                className="flex-1 py-3 rounded-xl text-center text-sm font-bold border-2"
-                style={{ borderColor: '#ff4c41', color: '#ff4c41' }}>
-                📦 Enviar paquete
+                className="flex-1 py-3 rounded-xl text-center text-sm font-bold border-2 inline-flex items-center justify-center gap-2"
+                style={{ borderColor: COLORS.brand.red, color: COLORS.brand.red }}>
+                <IconPackage size={18} />
+                Enviar paquete
               </Link>
             </div>
 
@@ -265,18 +298,22 @@ export default function AccountPage() {
               <Link href="/account/corporate"
                 className="flex items-center justify-between w-full py-3 px-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#0033A0] transition-colors">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">🏢</span>
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: COLORS.brand.blue }}>
+                    <IconUser size={16} />
+                  </span>
                   <span className="text-sm font-semibold text-gray-700">Cuenta Corporativa</span>
                 </div>
-                <span className="text-gray-400">→</span>
+                <IconArrowRight size={16} className="text-gray-400" />
               </Link>
               <Link href="/academy"
                 className="flex items-center justify-between w-full py-3 px-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-[#ff4c41] transition-colors">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">🎓</span>
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                    <IconGraduation size={16} />
+                  </span>
                   <span className="text-sm font-semibold text-gray-700">Academia Going</span>
                 </div>
-                <span className="text-gray-400">→</span>
+                <IconArrowRight size={16} className="text-gray-400" />
               </Link>
             </div>
           </div>
@@ -289,26 +326,28 @@ export default function AccountPage() {
               <h2 className="text-lg font-bold text-gray-900">Historial de viajes</h2>
               <Link href="/ride"
                 className="text-sm font-bold px-4 py-2 rounded-xl text-white"
-                style={{ backgroundColor: '#ff4c41' }}>
+                style={{ backgroundColor: COLORS.brand.red }}>
                 + Nuevo viaje
               </Link>
             </div>
 
             {ridesLoading && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                <div className="inline-block w-8 h-8 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin mb-3" />
-                <p className="text-gray-500 text-sm">Cargando viajes...</p>
+                <div className="inline-block w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-3" style={{ borderColor: COLORS.brand.red, borderTopColor: 'transparent' }} />
+                <p className="text-gray-500 text-sm">Cargando viajes…</p>
               </div>
             )}
 
             {!ridesLoading && rides.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-                <div className="text-5xl mb-3">🚗</div>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                  <IconCar size={30} />
+                </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin viajes aún</p>
                 <p className="text-gray-400 text-sm mb-5">Pide tu primer viaje con Going</p>
                 <Link href="/ride"
                   className="inline-block px-6 py-3 rounded-xl text-white font-bold text-sm"
-                  style={{ backgroundColor: '#ff4c41' }}>
+                  style={{ backgroundColor: COLORS.brand.red }}>
                   Reservar viaje
                 </Link>
               </div>
@@ -332,7 +371,7 @@ export default function AccountPage() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xl font-bold" style={{ color: '#ff4c41' }}>
+                      <p className="text-xl font-bold" style={{ color: COLORS.brand.red }}>
                         ${(ride.finalFare ?? ride.estimatedFare ?? 0).toFixed(2)}
                       </p>
                       {ride.distance && (
@@ -353,26 +392,28 @@ export default function AccountPage() {
               <h2 className="text-lg font-bold text-gray-900">Mis envíos</h2>
               <Link href="/envios/cotizar"
                 className="text-sm font-bold px-4 py-2 rounded-xl text-white"
-                style={{ backgroundColor: '#ff4c41' }}>
+                style={{ backgroundColor: COLORS.brand.red }}>
                 + Nuevo envío
               </Link>
             </div>
 
             {parcelsLoading && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                <div className="inline-block w-8 h-8 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin mb-3" />
-                <p className="text-gray-500 text-sm">Cargando envíos...</p>
+                <div className="inline-block w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-3" style={{ borderColor: COLORS.brand.red, borderTopColor: 'transparent' }} />
+                <p className="text-gray-500 text-sm">Cargando envíos…</p>
               </div>
             )}
 
             {!parcelsLoading && parcels.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-                <div className="text-5xl mb-3">📦</div>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                  <IconPackage size={30} />
+                </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin envíos aún</p>
                 <p className="text-gray-400 text-sm mb-5">Envía tu primer paquete con Going</p>
                 <Link href="/envios/cotizar"
                   className="inline-block px-6 py-3 rounded-xl text-white font-bold text-sm"
-                  style={{ backgroundColor: '#ff4c41' }}>
+                  style={{ backgroundColor: COLORS.brand.red }}>
                   Cotizar envío
                 </Link>
               </div>
@@ -397,14 +438,15 @@ export default function AccountPage() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xl font-bold" style={{ color: "#ff4c41" }}>
+                      <p className="text-xl font-bold" style={{ color: COLORS.brand.red }}>
                         ${(parcel.price?.amount ?? 0).toFixed(2)}
                       </p>
                       {parcel.trackingCode && (
                         <Link href={`/envios/tracking/${parcel.id}`}
-                          className="text-xs mt-1 block font-semibold hover:underline"
-                          style={{ color: '#ff4c41' }}>
-                          Rastrear →
+                          className="text-xs mt-1 inline-flex items-center gap-1 font-semibold hover:underline"
+                          style={{ color: COLORS.brand.red }}>
+                          Rastrear
+                          <IconArrowRight size={12} />
                         </Link>
                       )}
                     </div>
@@ -415,100 +457,113 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* \u2500\u2500\u2500 Métodos de pago \u2500\u2500\u2500 */}
+        {/* ─── Métodos de pago ─── */}
         {activeTab === 'payments' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Métodos de pago</h2>
-              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: '#ff4c41' }}>
+              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: COLORS.brand.red }}>
                 + Agregar
               </button>
             </div>
 
             {methodsLoading && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: COLORS.brand.red, borderTopColor: 'transparent' }} />
               </div>
             )}
 
             {!methodsLoading && methods.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-                <p className="text-5xl mb-3">\ud83d\udcb3</p>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 text-white" style={{ backgroundColor: COLORS.brand.blue }}>
+                  <IconCard size={30} />
+                </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin métodos de pago</p>
                 <p className="text-gray-400 text-sm mb-5">Agrega una tarjeta para pagar tus viajes más fácilmente</p>
-                <button className="px-6 py-3 rounded-xl text-white font-bold text-sm" style={{ backgroundColor: '#ff4c41' }}>
+                <button className="px-6 py-3 rounded-xl text-white font-bold text-sm" style={{ backgroundColor: COLORS.brand.red }}>
                   Agregar tarjeta
                 </button>
               </div>
             )}
 
-            {!methodsLoading && methods.map(m => (
-              <div key={m.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{ background: m.type === 'card' ? '#eff6ff' : m.type === 'wallet' ? '#f0fdf4' : '#fafafa' }}>
-                  {m.type === 'card' ? '\ud83d\udcb3' : m.type === 'wallet' ? '\ud83d\udc5b' : '\ud83d\udcb5'}
+            {!methodsLoading && methods.map(m => {
+              const Ico = m.type === 'card' ? IconCard : m.type === 'wallet' ? IconCard : IconMoney;
+              const bg  = m.type === 'card' ? COLORS.brand.blueBg : m.type === 'wallet' ? '#F0FDF4' : '#FAFAFA';
+              const fg  = m.type === 'card' ? COLORS.brand.blue   : m.type === 'wallet' ? COLORS.state.success : COLORS.gray[600];
+              return (
+                <div key={m.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bg, color: fg }}>
+                    <Ico size={22} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 text-sm">{m.label}</p>
+                    {m.last4 && <p className="text-xs text-gray-400">···· {m.last4} · {m.brand}</p>}
+                    {m.isDefault && (
+                      <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Predeterminado</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Eliminar este método de pago?')) return;
+                      setDeletingMethod(m.id);
+                      const headers = await authHeaders();
+                      await fetch(`${API_BASE}/payments/methods/${m.id}`, { method: 'DELETE', headers }).catch(() => {});
+                      setMethods(prev => prev.filter(x => x.id !== m.id));
+                      setDeletingMethod(null);
+                    }}
+                    disabled={deletingMethod === m.id}
+                    className="text-xs text-red-500 font-semibold hover:underline disabled:opacity-40"
+                  >
+                    {deletingMethod === m.id ? '…' : 'Eliminar'}
+                  </button>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">{m.label}</p>
-                  {m.last4 && <p className="text-xs text-gray-400">···· {m.last4} · {m.brand}</p>}
-                  {m.isDefault && (
-                    <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Predeterminado</span>
-                  )}
-                </div>
-                <button
-                  onClick={async () => {
-                    if (!confirm('¿Eliminar este método de pago?')) return;
-                    setDeletingMethod(m.id);
-                    const headers = await authHeaders();
-                    await fetch(`${API_BASE}/payment/methods/${m.id}`, { method: 'DELETE', headers }).catch(() => {});
-                    setMethods(prev => prev.filter(x => x.id !== m.id));
-                    setDeletingMethod(null);
-                  }}
-                  disabled={deletingMethod === m.id}
-                  className="text-xs text-red-500 font-semibold hover:underline disabled:opacity-40"
-                >
-                  {deletingMethod === m.id ? '…' : 'Eliminar'}
-                </button>
-              </div>
-            ))}
+              );
+            })}
 
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700">
-              <p className="font-semibold mb-1">\ud83d\udca1 Métodos aceptados</p>
-              <p className="text-xs text-blue-600">Tarjeta de crédito/débito (DATAFAST), efectivo al conductor y Going Wallet.</p>
+            <div className="rounded-2xl p-4 flex items-start gap-3 text-sm" style={{ backgroundColor: COLORS.brand.blueBg, border: `1px solid ${COLORS.brand.blueBorder}`, color: COLORS.brand.blue }}>
+              <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                <IconInfo size={16} />
+              </span>
+              <div>
+                <p className="font-semibold mb-1">Métodos aceptados</p>
+                <p className="text-xs" style={{ color: COLORS.brand.blueDark }}>Tarjeta de crédito/débito (DATAFAST), efectivo al conductor y Going Wallet.</p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* \u2500\u2500\u2500 Direcciones guardadas \u2500\u2500\u2500 */}
+        {/* ─── Direcciones guardadas ─── */}
         {activeTab === 'addresses' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Direcciones guardadas</h2>
-              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: '#ff4c41' }}>
+              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: COLORS.brand.red }}>
                 + Agregar
               </button>
             </div>
 
             {addressLoading && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-[#ff4c41] border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: COLORS.brand.red, borderTopColor: 'transparent' }} />
               </div>
             )}
 
             {!addressLoading && addresses.length === 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-                <p className="text-5xl mb-3">\ud83d\udccd</p>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                  <IconPin size={30} />
+                </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin direcciones guardadas</p>
                 <p className="text-gray-400 text-sm mb-5">Guarda tu casa, trabajo u otros lugares frecuentes</p>
                 <div className="flex gap-3 justify-center">
                   {[
-                    { icon: '\ud83c\udfe0', label: 'Casa' },
-                    { icon: '\ud83d\udcbc', label: 'Trabajo' },
+                    { Icon: IconPin,  label: 'Casa' },
+                    { Icon: IconUser, label: 'Trabajo' },
                   ].map(p => (
                     <button key={p.label}
-                      className="flex-1 max-w-36 py-3 rounded-xl border-2 border-dashed border-gray-300 text-center hover:border-[#ff4c41] transition-colors">
-                      <p className="text-2xl">{p.icon}</p>
-                      <p className="text-xs font-semibold text-gray-600 mt-1">{p.label}</p>
+                      className="flex-1 max-w-36 py-3 rounded-xl border-2 border-dashed border-gray-300 text-center hover:border-[#ff4c41] transition-colors text-gray-500 hover:text-[#ff4c41]">
+                      <p className="flex justify-center mb-1"><p.Icon size={24} /></p>
+                      <p className="text-xs font-semibold mt-1">{p.label}</p>
                     </button>
                   ))}
                 </div>
@@ -517,15 +572,15 @@ export default function AccountPage() {
 
             {!addressLoading && addresses.map(addr => (
               <div key={addr.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">
-                  {addr.icon}
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                  <IconPin size={22} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900 text-sm">{addr.label}</p>
                   <p className="text-xs text-gray-400 truncate">{addr.address}</p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <button className="text-xs text-[#0033A0] font-semibold hover:underline">Editar</button>
+                  <button className="text-xs font-semibold hover:underline" style={{ color: COLORS.brand.blue }}>Editar</button>
                   <button
                     onClick={() => {
                       if (!confirm('¿Eliminar esta dirección?')) return;
@@ -555,17 +610,20 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* \u2500\u2500\u2500 Ajustes \u2500\u2500\u2500 */}
+        {/* ─── Ajustes ─── */}
         {activeTab === 'settings' && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Notificaciones</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4 inline-flex items-center gap-2">
+                <IconBell size={18} className="text-gray-500" />
+                Notificaciones
+              </h2>
               <div className="space-y-3">
                 {[
-                  { label: 'Notificaciones por Email', enabled: true },
-                  { label: 'Notificaciones por SMS', enabled: true },
-                  { label: 'Ofertas y Promociones', enabled: false },
-                  { label: 'Actualizaciones de viajes', enabled: true },
+                  { label: 'Notificaciones por Email',   enabled: true },
+                  { label: 'Notificaciones por SMS',     enabled: true },
+                  { label: 'Ofertas y Promociones',      enabled: false },
+                  { label: 'Actualizaciones de viajes',  enabled: true },
                 ].map((s, i) => (
                   <label key={i} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer">
                     <span className="text-sm text-gray-700 font-medium">{s.label}</span>
@@ -576,19 +634,27 @@ export default function AccountPage() {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Seguridad</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4 inline-flex items-center gap-2">
+                <IconShield size={18} className="text-gray-500" />
+                Seguridad
+              </h2>
               <div className="space-y-3">
                 <button className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                  <span>Cambiar Contraseña</span><span>→</span>
+                  <span>Cambiar Contraseña</span>
+                  <IconArrowRight size={14} className="text-gray-400" />
                 </button>
                 <button className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                  <span>Autenticación de Dos Factores</span><span>→</span>
+                  <span>Autenticación de Dos Factores</span>
+                  <IconArrowRight size={14} className="text-gray-400" />
                 </button>
               </div>
             </div>
 
-            <div className="bg-red-50 rounded-2xl border border-red-200 p-6">
-              <h2 className="text-lg font-bold text-red-600 mb-2">\u26a0\ufe0f Zona de Peligro</h2>
+            <div className="rounded-2xl border p-6" style={{ backgroundColor: '#FEF2F2', borderColor: '#FECACA' }}>
+              <h2 className="text-lg font-bold text-red-600 mb-2 inline-flex items-center gap-2">
+                <IconWarning size={18} />
+                Zona de Peligro
+              </h2>
               <p className="text-gray-600 text-sm mb-4">Esta acción es irreversible.</p>
               <button className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors">
                 Eliminar Cuenta
