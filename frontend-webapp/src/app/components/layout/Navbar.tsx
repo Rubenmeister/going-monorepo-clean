@@ -1,12 +1,21 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ComponentType } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
+import { COLORS } from '../design-tokens';
+import {
+  IconPackage, IconMap, IconExperience, IconHotel,
+  IconCar, IconCompass, IconUsers, IconGraduation,
+  IconHome, IconBookmark, IconUser, IconStar, IconCard,
+  IconLogout, IconSearch as IconSearchSvg, IconChevronDown,
+} from '../icons';
+
+type IconComponent = ComponentType<{ size?: number; className?: string }>;
 
 /**
  * Navigation bar component
@@ -60,7 +69,7 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
           if (parent && !parent.querySelector('.logo-text-fallback')) {
             const span = document.createElement('span');
             span.className = 'logo-text-fallback';
-            span.style.cssText = 'color:#ff4c41;font-weight:900;font-size:22px;letter-spacing:-1px';
+            span.style.cssText = `color:${COLORS.brand.red};font-weight:900;font-size:22px;letter-spacing:-1px`;
             span.textContent = 'Going';
             parent.appendChild(span);
           }
@@ -71,20 +80,52 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
 }
 
 /**
- * Provider dropdown items
+ * Provider dropdown items — opciones de "Únete como proveedor"
  */
-const PROVIDER_ITEMS = [
-  { icon: '🚗', label: 'Conductores',        desc: 'Gana manejando',          href: '/conductores',        registro: '/conductores/registro',        color: '#16a34a' },
-  { icon: '🏡', label: 'Anfitriones',        desc: 'Publica tu espacio',      href: '/anfitriones',        registro: '/anfitriones/registro',        color: '#7c3aed' },
-  { icon: '🏺', label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/promotores-locales', registro: '/promotores-locales/registro', color: '#0891b2' },
-  { icon: '🧗', label: 'Operadores',         desc: 'Aventuras y actividades', href: '/operadores',         registro: '/operadores/registro',         color: '#d97706' },
+interface ProviderItem {
+  Icon: IconComponent;
+  label: string;
+  desc: string;
+  href: string;
+  registro: string;
+  color: string;
+}
+
+const PROVIDER_ITEMS: ProviderItem[] = [
+  { Icon: IconCar,     label: 'Conductores',        desc: 'Gana manejando',          href: '/conductores',        registro: '/conductores/registro',        color: COLORS.brand.red },
+  { Icon: IconHotel,   label: 'Anfitriones',        desc: 'Publica tu espacio',      href: '/anfitriones',        registro: '/anfitriones/registro',        color: COLORS.system.blue },
+  { Icon: IconCompass, label: 'Promotores Locales', desc: 'Ofrece tours únicos',     href: '/promotores-locales', registro: '/promotores-locales/registro', color: COLORS.state.success },
+  { Icon: IconUsers,   label: 'Operadores',         desc: 'Aventuras y actividades', href: '/operadores',         registro: '/operadores/registro',         color: COLORS.brand.yellowDark },
 ];
 
-const DISCOVER_ITEMS = [
-  { icon: '🗺️', label: 'Tours',         desc: 'Galápagos, Sierra, Costa…', href: '/tours',         color: '#10b981' },
-  { icon: '🎭', label: 'Experiencias',  desc: 'Aventura, cultura, gastronomía', href: '/experiences',   color: '#7c3aed' },
-  { icon: '🏨', label: 'Hospedaje',     desc: 'Hoteles, cabañas, glamping', href: '/accommodation', color: '#059669' },
-  { icon: '📦', label: 'Envíos',        desc: 'Express el mismo día',      href: '/envios',         color: '#f59e0b' },
+/**
+ * Discover dropdown items — categorías del producto Going.
+ *
+ * ORDEN DE NEGOCIO (decidido por user):
+ *   1. Envíos    → producto activo, prioritario en el catálogo
+ *   2. Tours          → próximamente
+ *   3. Experiencias   → próximamente
+ *   4. Alojamiento    → próximamente
+ *
+ * Los 3 marcados como `comingSoon: true` se siguen mostrando en el
+ * menú pero con badge "Próximamente" y opacity reducida; el click sí
+ * lleva a la página (que tiene contenido demo/fallback), para que el
+ * user pueda explorar lo que viene sin sentir que la app está rota.
+ */
+interface DiscoverItem {
+  Icon: IconComponent;
+  label: string;
+  desc: string;
+  href: string;
+  color: string;
+  comingSoon?: boolean;
+}
+
+const DISCOVER_ITEMS: DiscoverItem[] = [
+  { Icon: IconPackage,    label: 'Envíos',       desc: 'Express el mismo día · Activo',         href: '/envios',         color: COLORS.brand.red },
+  { Icon: IconMap,        label: 'Tours',        desc: 'Galápagos, Sierra, Costa…',             href: '/tours',          color: COLORS.gray[400], comingSoon: true },
+  { Icon: IconExperience, label: 'Experiencias', desc: 'Aventura, cultura, gastronomía',        href: '/experiences',    color: COLORS.gray[400], comingSoon: true },
+  { Icon: IconHotel,      label: 'Alojamiento',  desc: 'Hoteles, cabañas, glamping',            href: '/accommodation',  color: COLORS.gray[400], comingSoon: true },
 ];
 
 /**
@@ -107,7 +148,7 @@ function NavLinks({ t }: { t: (key: string) => string }) {
 
   return (
     <div className="hidden lg:flex gap-7 items-center">
-      <Link href="/" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+      <Link href="/" className="text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm">
         Inicio
       </Link>
 
@@ -115,22 +156,35 @@ function NavLinks({ t }: { t: (key: string) => string }) {
       <div className="relative" ref={discoverRef}>
         <button
           onClick={() => { setDiscoverOpen(v => !v); setProviderOpen(false); }}
-          className="flex items-center gap-1 text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
+          className="flex items-center gap-1 text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm"
         >
           Descubrir
-          <svg className={`w-3.5 h-3.5 transition-transform ${discoverOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-          </svg>
+          <IconChevronDown size={14} className={`transition-transform ${discoverOpen ? 'rotate-180' : ''}`} />
         </button>
         {discoverOpen && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
             {DISCOVER_ITEMS.map(item => (
               <Link key={item.href} href={item.href} onClick={() => setDiscoverOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
-                <span className="text-xl w-8 text-center flex-shrink-0">{item.icon}</span>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{item.label}</p>
-                  <p className="text-xs text-gray-400">{item.desc}</p>
+                className={`flex items-center gap-3 px-4 py-2.5 transition-colors ${item.comingSoon ? 'hover:bg-gray-50' : 'hover:bg-red-50'}`}>
+                <span
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    backgroundColor: item.comingSoon ? COLORS.gray[100] : COLORS.brand.redBg,
+                    color: item.color,
+                  }}
+                >
+                  <item.Icon size={18} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className={`font-semibold text-sm ${item.comingSoon ? 'text-gray-500' : 'text-gray-900'}`}>{item.label}</p>
+                    {item.comingSoon && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
+                        Próximamente
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 truncate">{item.desc}</p>
                 </div>
               </Link>
             ))}
@@ -138,12 +192,13 @@ function NavLinks({ t }: { t: (key: string) => string }) {
         )}
       </div>
 
-      <Link href="/quienes-somos" className="text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
+      <Link href="/quienes-somos" className="text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm">
         Quiénes somos
       </Link>
-      <Link href="/academy" className="flex items-center gap-1 text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm">
-        📚 Academia
-        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white ml-0.5" style={{ backgroundColor: '#ff4c41', fontSize: '9px' }}>
+      <Link href="/academy" className="inline-flex items-center gap-1.5 text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm">
+        <IconGraduation size={14} />
+        Academia
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white ml-0.5" style={{ backgroundColor: COLORS.brand.red }}>
           Gratis
         </span>
       </Link>
@@ -152,15 +207,13 @@ function NavLinks({ t }: { t: (key: string) => string }) {
       <div className="relative" ref={providerRef}>
         <button
           onClick={() => { setProviderOpen(v => !v); setDiscoverOpen(false); }}
-          className="flex items-center gap-1 text-gray-700 hover:text-[#ff4c41] transition-colors font-medium text-sm"
+          className="flex items-center gap-1 text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm"
         >
           Únete
-          <svg className={`w-3.5 h-3.5 transition-transform ${providerOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-          </svg>
+          <IconChevronDown size={14} className={`transition-transform ${providerOpen ? 'rotate-180' : ''}`} />
         </button>
         {providerOpen && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider px-4 pt-2 pb-1">
               Proveedores Going
             </p>
@@ -168,7 +221,12 @@ function NavLinks({ t }: { t: (key: string) => string }) {
               <div key={item.href} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors group">
                 <Link href={item.href} onClick={() => setProviderOpen(false)}
                   className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-xl w-8 text-center flex-shrink-0">{item.icon}</span>
+                  <span
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${item.color}15`, color: item.color }}
+                  >
+                    <item.Icon size={18} />
+                  </span>
                   <div className="min-w-0">
                     <div className="font-semibold text-gray-900 text-sm">{item.label}</div>
                     <div className="text-xs text-gray-400">{item.desc}</div>
@@ -191,6 +249,7 @@ function NavLinks({ t }: { t: (key: string) => string }) {
 /**
  * Right actions: búsqueda + CTA + user menu
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RightActions({ auth, t, onLoginClick }: { auth: any; t: (k: string) => string; onLoginClick: () => void }) {
   return (
     <div className="flex items-center gap-3">
@@ -198,11 +257,9 @@ function RightActions({ auth, t, onLoginClick }: { auth: any; t: (k: string) => 
 
       {/* Búsqueda */}
       <Link href="/search"
-        className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-[#ff4c41] transition-colors"
+        className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-[#FF4C41] transition-colors"
         title="Buscar">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
-        </svg>
+        <IconSearchSvg size={16} />
       </Link>
 
       {/* CTA "Reservar viaje" eliminado: el flujo de búsqueda vive
@@ -223,6 +280,22 @@ function RightActions({ auth, t, onLoginClick }: { auth: any; t: (k: string) => 
 /**
  * User dropdown menu
  */
+interface UserMenuItem {
+  Icon: IconComponent;
+  label: string;
+  href: string;
+}
+
+const USER_MENU_ITEMS: UserMenuItem[] = [
+  { Icon: IconHome,       label: 'Dashboard',    href: '/dashboard/pasajero' },
+  { Icon: IconBookmark,   label: 'Mis Reservas', href: '/bookings'           },
+  { Icon: IconUser,       label: 'Mi Cuenta',    href: '/account'            },
+  { Icon: IconStar,       label: 'Puntos Going', href: '/puntos'             },
+  { Icon: IconCard,       label: 'Wallet',       href: '/payment/wallet'     },
+  { Icon: IconGraduation, label: 'Academia',     href: '/academy'            },
+];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function UserMenu({ user, auth }: { user: any; auth: any }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -244,12 +317,10 @@ function UserMenu({ user, auth }: { user: any; auth: any }) {
     <div className="relative hidden md:block" ref={ref}>
       <button onClick={() => setOpen(v => !v)}
         className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-50 transition-colors">
-        <div className="w-9 h-9 rounded-full bg-[#ff4c41] flex items-center justify-center text-white font-bold text-sm">
+        <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: COLORS.brand.red }}>
           {user.firstName?.[0]?.toUpperCase() ?? 'U'}
         </div>
-        <svg className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        <IconChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
@@ -261,24 +332,19 @@ function UserMenu({ user, auth }: { user: any; auth: any }) {
           </div>
 
           {/* Links */}
-          {[
-            { icon: '🏠', label: 'Dashboard',       href: '/dashboard/pasajero' },
-            { icon: '🎫', label: 'Mis Reservas',    href: '/bookings'            },
-            { icon: '👤', label: 'Mi Cuenta',       href: '/account'             },
-            { icon: '⭐', label: 'Puntos Going',    href: '/puntos'              },
-            { icon: '💳', label: 'Wallet',          href: '/payment/wallet'      },
-            { icon: '🎓', label: 'Academia',        href: '/academy'             },
-          ].map(item => (
+          {USER_MENU_ITEMS.map(item => (
             <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-              <span>{item.icon}</span> {item.label}
+              <item.Icon size={16} className="text-gray-400" />
+              {item.label}
             </Link>
           ))}
 
           <div className="border-t border-gray-100 mt-1 pt-1">
             <button onClick={handleLogout}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-              <span>🚪</span> Cerrar sesión
+              <IconLogout size={16} />
+              Cerrar sesión
             </button>
           </div>
         </div>
