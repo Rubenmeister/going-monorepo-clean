@@ -1,19 +1,26 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ComponentType } from 'react';
 import Link from 'next/link';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { rideService } from '@/services/ride/rideService';
+import { COLORS } from '../components/design-tokens';
+import {
+  IconCar, IconHotel, IconMap, IconExperience, IconPackage,
+  IconArrowLeft, IconArrowRight, IconCheck, IconClose, IconClock,
+} from '../components/icons';
 
 /* ─── Tipos unificados ───────────────────────────────────────── */
 type BookingStatus = 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'in_progress';
 type BookingType   = 'ride' | 'accommodation' | 'tour' | 'experience' | 'parcel';
 
+type IconComponent = ComponentType<{ size?: number; className?: string }>;
+
 interface Booking {
   id:     string;
   type:   BookingType;
-  icon:   string;
+  Icon:   IconComponent;
   title:  string;
   detail: string;
   date:   string;
@@ -23,12 +30,12 @@ interface Booking {
   rawStatus: string;
 }
 
-const TYPE_ICONS: Record<BookingType, string> = {
-  ride:          '🚗',
-  accommodation: '🏨',
-  tour:          '🗺️',
-  experience:    '🎭',
-  parcel:        '📦',
+const TYPE_ICONS: Record<BookingType, IconComponent> = {
+  ride:          IconCar,
+  accommodation: IconHotel,
+  tour:          IconMap,
+  experience:    IconExperience,
+  parcel:        IconPackage,
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -39,12 +46,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled:   'bg-red-100 text-red-600',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  confirmed:   '✓ Confirmada',
-  pending:     '⏳ Pendiente',
-  in_progress: '▶ En curso',
-  completed:   '✓ Completada',
-  cancelled:   '✗ Cancelada',
+interface StatusLabel {
+  Icon: IconComponent;
+  text: string;
+}
+
+const STATUS_LABELS: Record<string, StatusLabel> = {
+  confirmed:   { Icon: IconCheck, text: 'Confirmada'   },
+  pending:     { Icon: IconClock, text: 'Pendiente'    },
+  in_progress: { Icon: IconClock, text: 'En curso'     },
+  completed:   { Icon: IconCheck, text: 'Completada'   },
+  cancelled:   { Icon: IconClose, text: 'Cancelada'    },
 };
 
 type FilterType = 'all' | 'upcoming' | 'completed' | 'cancelled';
@@ -68,6 +80,7 @@ function formatDate(iso: string): { date: string; time: string } {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rideToBooking(r: any): Booking {
   const { date, time } = formatDate(r.createdAt ?? r.requestedAt ?? r.scheduledAt);
   const pickup  = r.pickup?.address  ?? r.pickupAddress  ?? '—';
@@ -76,7 +89,7 @@ function rideToBooking(r: any): Booking {
   return {
     id:        r.tripId ?? r.rideId ?? r.id ?? '—',
     type:      'ride',
-    icon:      TYPE_ICONS.ride,
+    Icon:      TYPE_ICONS.ride,
     title:     'Transporte Going',
     detail:    `${pickup} → ${dropoff}`,
     date,
@@ -87,6 +100,7 @@ function rideToBooking(r: any): Booking {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function bookingToBooking(b: any, type: BookingType = 'accommodation'): Booking {
   const { date, time } = formatDate(b.scheduledAt ?? b.date ?? b.createdAt);
   const amount = b.totalPrice?.amount ?? b.amount ?? b.price ?? 0;
@@ -100,7 +114,7 @@ function bookingToBooking(b: any, type: BookingType = 'accommodation'): Booking 
   return {
     id:        b.id ?? b._id ?? '—',
     type,
-    icon:      TYPE_ICONS[type],
+    Icon:      TYPE_ICONS[type],
     title:     b.name ?? b.title ?? labels[type],
     detail:    b.description ?? b.detail ?? b.origin ?? '—',
     date,
@@ -111,13 +125,14 @@ function bookingToBooking(b: any, type: BookingType = 'accommodation'): Booking 
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parcelToBooking(p: any): Booking {
   const { date, time } = formatDate(p.createdAt ?? p.scheduledAt);
   const amount = p.price?.amount ?? p.amount ?? p.cost ?? 0;
   return {
     id:        p.id ?? p._id ?? '—',
     type:      'parcel',
-    icon:      TYPE_ICONS.parcel,
+    Icon:      TYPE_ICONS.parcel,
     title:     'Envío Express',
     detail:    `${p.origin ?? '—'} → ${p.destination ?? '—'}${p.weight ? ` · ${p.weight} kg` : ''}`,
     date,
@@ -137,6 +152,7 @@ export default function BookingsPage() {
   const [filter, setFilter]       = useState<FilterType>('all');
   const [cancelling, setCancelling] = useState<string | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (auth.user as any)?.id ?? (auth.user as any)?._id ?? '';
 
   const load = useCallback(async () => {
@@ -149,11 +165,14 @@ export default function BookingsPage() {
         userId ? domain.parcels.findByUser(userId)   : Promise.resolve([]),
       ]);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rides:    Booking[] = ridesRes.status    === 'fulfilled' ? (ridesRes.value    as any[]).map(rideToBooking)    : [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bkgs:     Booking[] = bookingsRes.status === 'fulfilled' ? (bookingsRes.value as any[]).map((b: any) => {
         const type = (['tour', 'experience', 'accommodation'].find(t => b.serviceType === t || b.type === t) ?? 'accommodation') as BookingType;
         return bookingToBooking(b, type);
       }) : [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const parcels:  Booking[] = parcelsRes.status  === 'fulfilled' ? (parcelsRes.value  as any[]).map(parcelToBooking)  : [];
 
       // Combinar y ordenar por fecha descendente
@@ -168,12 +187,13 @@ export default function BookingsPage() {
       if (all.length === 0 && ridesRes.status === 'rejected') {
         setError('No se pudo conectar al servidor. Revisa tu conexión.');
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(e.message ?? 'Error al cargar reservas');
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, domain.bookings, domain.parcels]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -187,6 +207,7 @@ export default function BookingsPage() {
         await domain.bookings.cancel(b.id);
       }
       setBookings((prev) => prev.map((x) => x.id === b.id ? { ...x, status: 'cancelled' } : x));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       alert(`No se pudo cancelar: ${e.message}`);
     } finally {
@@ -214,12 +235,13 @@ export default function BookingsPage() {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center gap-3">
           <Link href="/dashboard/pasajero"
             className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
-            ←
+            <IconArrowLeft size={16} />
           </Link>
           <h1 className="text-xl font-bold text-gray-900">Mis Reservas</h1>
           <button onClick={load} disabled={loading}
-            className="ml-auto text-xs text-[#ff4c41] font-semibold hover:underline disabled:opacity-40">
-            {loading ? 'Cargando…' : '↻ Actualizar'}
+            className="ml-auto text-xs font-semibold hover:underline disabled:opacity-40"
+            style={{ color: COLORS.brand.red }}>
+            {loading ? 'Cargando…' : 'Actualizar'}
           </button>
         </div>
       </div>
@@ -229,38 +251,45 @@ export default function BookingsPage() {
         {/* Counters */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Total',      value: counts.total,    filter: 'all'       },
-            { label: 'Próximas',   value: counts.upcoming, filter: 'upcoming'  },
-            { label: 'Completadas',value: counts.done,     filter: 'completed' },
-          ].map(c => (
-            <button key={c.filter}
-              onClick={() => setFilter(c.filter as FilterType)}
-              className={`rounded-2xl p-3 text-center transition-all border ${
-                filter === c.filter
-                  ? 'border-[#ff4c41] bg-red-50'
-                  : 'border-gray-100 bg-white hover:border-gray-200'
-              }`}>
-              <p className={`text-2xl font-black ${filter === c.filter ? 'text-[#ff4c41]' : 'text-gray-900'}`}>
-                {c.value}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">{c.label}</p>
-            </button>
-          ))}
+            { label: 'Total',       value: counts.total,    filter: 'all'       as FilterType },
+            { label: 'Próximas',    value: counts.upcoming, filter: 'upcoming'  as FilterType },
+            { label: 'Completadas', value: counts.done,     filter: 'completed' as FilterType },
+          ].map(c => {
+            const active = filter === c.filter;
+            return (
+              <button key={c.filter}
+                onClick={() => setFilter(c.filter)}
+                className="rounded-2xl p-3 text-center transition-all border"
+                style={{
+                  borderColor:     active ? COLORS.brand.red    : COLORS.border.subtle,
+                  backgroundColor: active ? COLORS.brand.redBg  : COLORS.bg.card,
+                }}>
+                <p className="text-2xl font-black" style={{ color: active ? COLORS.brand.red : COLORS.text.primary }}>
+                  {c.value}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">{c.label}</p>
+              </button>
+            );
+          })}
         </div>
 
         {/* Filtros */}
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {(['all', 'upcoming', 'completed', 'cancelled'] as FilterType[]).map(f => (
-            <button key={f}
-              onClick={() => setFilter(f)}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                filter === f
-                  ? 'bg-[#ff4c41] text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}>
-              {{ all: 'Todas', upcoming: 'Próximas', completed: 'Completadas', cancelled: 'Canceladas' }[f]}
-            </button>
-          ))}
+          {(['all', 'upcoming', 'completed', 'cancelled'] as FilterType[]).map(f => {
+            const active = filter === f;
+            return (
+              <button key={f}
+                onClick={() => setFilter(f)}
+                className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: active ? COLORS.brand.red : COLORS.bg.card,
+                  color:           active ? COLORS.brand.white : COLORS.text.muted,
+                  border:          active ? 'none' : `1px solid ${COLORS.border.default}`,
+                }}>
+                {{ all: 'Todas', upcoming: 'Próximas', completed: 'Completadas', cancelled: 'Canceladas' }[f]}
+              </button>
+            );
+          })}
         </div>
 
         {/* Error */}
@@ -283,56 +312,71 @@ export default function BookingsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <p className="text-5xl mb-4">🎫</p>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+              <IconCar size={30} />
+            </div>
             <p className="font-semibold text-gray-700">No hay reservas aquí aún</p>
             <p className="text-sm text-gray-400 mt-1 mb-6">
               {filter === 'all' ? 'Cuando hagas viajes o reservas aparecerán aquí' : `Sin reservas ${filter}`}
             </p>
             <Link href="/ride"
-              className="inline-block px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
-              style={{ backgroundColor: '#ff4c41' }}>
-              🚗 Hacer un viaje
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-bold text-sm transition-all hover:opacity-90"
+              style={{ backgroundColor: COLORS.brand.red }}>
+              <IconCar size={16} />
+              Hacer un viaje
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map(b => (
-              <Link key={b.id} href={`/bookings/${b.id}`}
-                className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center text-xl flex-shrink-0">
-                    {b.icon}
+            {filtered.map(b => {
+              const status = STATUS_LABELS[b.status];
+              return (
+                <Link key={b.id} href={`/bookings/${b.id}`}
+                  className="block bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                      <b.Icon size={22} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{b.title}</p>
+                        <span className={`flex-shrink-0 inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[b.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {status && <status.Icon size={12} />}
+                          {status?.text ?? b.rawStatus}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{b.detail}</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className="text-xs text-gray-400">{b.date} · {b.time}</span>
+                        <span className="text-xs font-bold text-gray-900">{b.amount}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{b.title}</p>
-                      <span className={`flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[b.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {STATUS_LABELS[b.status] ?? b.rawStatus}
+                  {['confirmed', 'pending'].includes(b.status) && (
+                    <div className="mt-3 pt-3 border-t border-gray-50 flex gap-2">
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleCancel(b); }}
+                        disabled={cancelling === b.id}
+                        className="flex-1 inline-flex items-center justify-center gap-1 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-colors disabled:opacity-40"
+                      >
+                        {cancelling === b.id ? (
+                          'Cancelando…'
+                        ) : (
+                          <>
+                            <IconClose size={12} />
+                            Cancelar
+                          </>
+                        )}
+                      </button>
+                      <span className="flex-1 inline-flex items-center justify-center gap-1 py-2 rounded-xl bg-gray-50 text-gray-500 text-xs font-semibold text-center">
+                        Ver detalle
+                        <IconArrowRight size={12} />
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{b.detail}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xs text-gray-400">{b.date} · {b.time}</span>
-                      <span className="text-xs font-bold text-gray-900">{b.amount}</span>
-                    </div>
-                  </div>
-                </div>
-                {['confirmed', 'pending'].includes(b.status) && (
-                  <div className="mt-3 pt-3 border-t border-gray-50 flex gap-2">
-                    <button
-                      onClick={(e) => { e.preventDefault(); handleCancel(b); }}
-                      disabled={cancelling === b.id}
-                      className="flex-1 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 transition-colors disabled:opacity-40"
-                    >
-                      {cancelling === b.id ? 'Cancelando…' : '✗ Cancelar'}
-                    </button>
-                    <span className="flex-1 py-2 rounded-xl bg-gray-50 text-gray-500 text-xs font-semibold text-center">
-                      Ver detalle →
-                    </span>
-                  </div>
-                )}
-              </Link>
-            ))}
+                  )}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
