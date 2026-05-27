@@ -6,7 +6,7 @@ import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
 import { COLORS } from './components/design-tokens';
 import {
-  IconClock, IconSuv, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
+  IconClock, IconSuv, IconVan, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
   IconStar, IconBell, IconChat, IconShield, IconMap, IconCalendar, IconUser,
   IconPackage, IconLightning, IconSignal, IconMoney, IconCamera, IconArrowRight,
   IconSearch, IconUsers, IconCheckCircle, IconGraduation, IconRoute, IconPhone,
@@ -334,50 +334,153 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center" style={{ minHeight: '100vh' }}>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 lg:py-20 flex flex-col items-center" style={{ minHeight: '100vh' }}>
 
-          {/* ── Lado izquierdo: titular + CTA ── */}
-          <FadeIn dir="up" className="text-white">
-            {/* Logo Going */}
+          {/* ── HEAD del hero: logo + tagline + subtítulo ── */}
+          <FadeIn dir="up" className="text-white text-center max-w-3xl mb-10">
             <img
               src="/going-logo-white-h.png"
               alt="Going"
-              className="h-12 mb-8"
+              className="h-12 mx-auto mb-6"
               style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
             />
 
-            {/* Eyebrow — ahora DICE que es una app */}
             <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
               <IconMobile size={14} />
               App de transporte · Ecuador
             </span>
 
-            {/* Titular principal */}
-            <h1 className="font-black mb-5 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-              Nos movemos<br />
-              <span style={{ color: COLORS.brand.red }}>contigo.</span>
+            <h1 className="font-black mb-4 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+              Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
 
-            {/* Subtítulo — copy enfatiza "desde la app" */}
-            <p className="text-lg sm:text-xl text-white/80 mb-6 max-w-xl leading-relaxed">
-              Descargá <strong className="text-white">Going</strong>, la app de transporte
-              compartido y privado entre ciudades del Ecuador. Conductoras y
-              conductores verificados, tracking en vivo y precio fijo —
-              directo desde tu teléfono.
+            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
+              Descargá <strong className="text-white">Going</strong> y reservá tu viaje compartido,
+              privado o un envío entre ciudades del Ecuador. Conductoras y conductores
+              verificados, tracking en vivo y precio fijo desde el teléfono o la web.
             </p>
+          </FadeIn>
 
-            {/* CTAs principales — descargar la app primero, buscar viaje secundario */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
+             El user reportó que el hero no mostraba los productos. Ahora
+             las 3 cards son el elemento visual central, prominentes,
+             con CTA clara cada una. Esto es lo que define qué es Going.
+          */}
+          <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+              {/* CARD 1: Viaje Compartido */}
+              <Link
+                href="/ride?type=shared"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,76,65,0.4)] transition-all relative overflow-hidden"
+              >
+                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: COLORS.brand.red }}>
+                  Más popular
+                </span>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                  <IconSuv size={30} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                  Viaje Compartido
+                </h3>
+                <p className="text-xs text-gray-500 mb-4 flex-1">
+                  De ciudad en ciudad, en SUV o VAN, pagás solo tu asiento.
+                </p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
+                    <p className="text-2xl font-black" style={{ color: COLORS.brand.red, fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                      $10<span className="text-xs text-gray-400 font-normal ml-1">/persona</span>
+                    </p>
+                  </div>
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center text-white group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.red }}>
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
+              </Link>
+
+              {/* CARD 2: Viaje Privado */}
+              <Link
+                href="/ride?type=van"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,210,83,0.4)] transition-all relative overflow-hidden"
+              >
+                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
+                  Premium
+                </span>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
+                  <IconVan size={30} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                  Viaje Privado
+                </h3>
+                <p className="text-xs text-gray-500 mb-4 flex-1">
+                  SUV, VAN o bus exclusivo para vos y tu grupo, por servicio o por día.
+                </p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
+                    <p className="text-2xl font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                      $25<span className="text-xs text-gray-400 font-normal ml-1">/servicio</span>
+                    </p>
+                  </div>
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
+              </Link>
+
+              {/* CARD 3: Envíos */}
+              <Link
+                href="/envios/cotizar"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(0,0,0,0.4)] transition-all relative overflow-hidden"
+              >
+                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: COLORS.brand.black }}>
+                  Mismo día
+                </span>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.gray[100], color: COLORS.brand.black }}>
+                  <IconPackage size={30} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                  Envíos
+                </h3>
+                <p className="text-xs text-gray-500 mb-4 flex-1">
+                  Sobres, documentos o paquetes de puerta a puerta, dentro de Ecuador.
+                </p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
+                    <p className="text-2xl font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                      $8<span className="text-xs text-gray-400 font-normal ml-1">/paquete</span>
+                    </p>
+                  </div>
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center text-white group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.black }}>
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
+              </Link>
+
+            </div>
+          </FadeIn>
+
+          {/* ── Download / Web CTAs ──
+             Bandera secundaria: cómo accedés. Los 3 productos arriba ya
+             son los CTAs principales; acá ofrecemos los CANALES (app o web).
+          */}
+          <FadeIn dir="up" delay={0.3} className="flex flex-col items-center gap-4 mb-6">
+            <p className="text-xs text-white/60 font-bold uppercase tracking-[0.25em]">
+              Disponible en
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 items-center">
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
               >
-                <IconGooglePlay size={28} />
+                <IconGooglePlay size={26} />
                 <span className="text-left">
                   <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Disponible en</span>
-                  <span className="block font-black text-base leading-none">Google Play</span>
+                  <span className="block font-black text-sm leading-none">Google Play</span>
                 </span>
               </a>
               {APP_STORE_AVAILABLE ? (
@@ -387,10 +490,10 @@ export default function HomePage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
                 >
-                  <IconApple size={28} />
+                  <IconApple size={26} />
                   <span className="text-left">
                     <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
-                    <span className="block font-black text-base leading-none">App Store</span>
+                    <span className="block font-black text-sm leading-none">App Store</span>
                   </span>
                 </a>
               ) : (
@@ -398,54 +501,48 @@ export default function HomePage() {
                   className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
                   title="App Store iOS estará disponible próximamente"
                 >
-                  <IconApple size={28} />
+                  <IconApple size={26} />
                   <span className="text-left">
                     <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
-                    <span className="block font-black text-base leading-none">App Store</span>
+                    <span className="block font-black text-sm leading-none">App Store</span>
                   </span>
                 </span>
               )}
-            </div>
-
-            {/* CTA secundario — reservar desde la webapp si no tiene Android */}
-            <Link
-              href="/ride"
-              className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors mb-7 underline underline-offset-4 decoration-white/30"
-            >
-              o reservá un viaje desde la web
-              <IconArrowRight size={14} />
-            </Link>
-
-            {/* Trust badges */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs sm:text-sm text-white/70">
-              <span className="inline-flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
-                  <IconShield size={14} />
-                </span>
-                Conductoras y conductores verificados
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
-                  <IconPin size={14} />
-                </span>
-                Tracking en vivo
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
-                  <IconCard size={14} />
-                </span>
-                Pago sin efectivo
-              </span>
+              <span className="text-white/40 text-xs hidden sm:inline mx-2">o</span>
+              <Link
+                href="/ride"
+                className="inline-flex items-center gap-2 text-sm font-bold text-white/80 hover:text-white transition-colors underline underline-offset-4 decoration-white/30 px-2"
+              >
+                Reservá desde la web
+                <IconArrowRight size={14} />
+              </Link>
             </div>
           </FadeIn>
 
-          {/* ── Lado derecho: MOCKUP iPHONE con UI Going adentro ── */}
-          <FadeIn dir="right" className="relative hidden lg:flex justify-center items-center">
-            <PhoneMockup />
+          {/* Trust badges abajo */}
+          <FadeIn dir="up" delay={0.4} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/70 mb-4">
+            <span className="inline-flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                <IconShield size={14} />
+              </span>
+              Conductoras y conductores verificados
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                <IconPin size={14} />
+              </span>
+              Tracking en vivo
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+                <IconCard size={14} />
+              </span>
+              Pago sin efectivo
+            </span>
           </FadeIn>
 
           {/* Indicador scroll */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-xs text-white/50">
+          <div className="flex items-center gap-2 text-xs text-white/50 mt-auto">
             <span>Conocé Ecuador con Going</span>
             <IconChevronDown size={16} />
           </div>
@@ -685,16 +782,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ DESCARGÁ LA APP — sección dedicada ════════════════════════════════
+      {/* ══ DESCARGÁ LA APP — sección dedicada con mockup iPhone ════════════
          Refuerzo del mensaje principal: Going ES una app móvil. Esta
-         sección habla directamente del producto: cómo se descarga,
-         qué incluye, y muestra el QR para desktop.
+         sección muestra cómo se ve la app en uso (mockup iPhone) + QR +
+         badges grandes para descarga.
       */}
       <section id="descarga" className="py-16 px-4" style={{ background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a1a1a 100%)` }}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 items-center">
 
-            {/* ── Lado izquierdo: copy + badges ── */}
+            {/* ── Lado izquierdo: copy + badges + QR ── */}
             <FadeIn dir="left">
               <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] mb-4 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,210,83,0.15)', color: COLORS.brand.yellow }}>
                 <IconDownload size={14} />
@@ -726,73 +823,69 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Store badges grandes */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href={PLAY_STORE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
-                >
-                  <IconGooglePlay size={36} />
-                  <span className="text-left">
-                    <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Disponible en</span>
-                    <span className="block font-black text-lg leading-tight">Google Play</span>
-                  </span>
-                </a>
-                {APP_STORE_AVAILABLE ? (
+              {/* Layout: badges + QR lado a lado */}
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="flex flex-col gap-3">
                   <a
-                    href={APP_STORE_URL}
+                    href={PLAY_STORE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
                   >
-                    <IconApple size={36} />
+                    <IconGooglePlay size={36} />
                     <span className="text-left">
-                      <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
-                      <span className="block font-black text-lg leading-tight">App Store</span>
+                      <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Disponible en</span>
+                      <span className="block font-black text-lg leading-tight">Google Play</span>
                     </span>
                   </a>
-                ) : (
-                  <span
-                    className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
-                    title="App Store iOS estará disponible próximamente"
-                  >
-                    <IconApple size={36} />
-                    <span className="text-left">
-                      <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
-                      <span className="block font-black text-lg leading-tight">App Store</span>
+                  {APP_STORE_AVAILABLE ? (
+                    <a
+                      href={APP_STORE_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                    >
+                      <IconApple size={36} />
+                      <span className="text-left">
+                        <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
+                        <span className="block font-black text-lg leading-tight">App Store</span>
+                      </span>
+                    </a>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
+                      title="App Store iOS estará disponible próximamente"
+                    >
+                      <IconApple size={36} />
+                      <span className="text-left">
+                        <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
+                        <span className="block font-black text-lg leading-tight">App Store</span>
+                      </span>
                     </span>
-                  </span>
-                )}
+                  )}
+                </div>
+
+                {/* QR card */}
+                <div className="bg-white rounded-2xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-2 text-gray-700">
+                    <IconQrCode size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Escaneá</span>
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(PLAY_STORE_URL)}&size=160x160&margin=8&color=000000`}
+                    alt="QR para descargar Going en Google Play"
+                    width={140}
+                    height={140}
+                    className="mx-auto rounded-lg"
+                  />
+                </div>
               </div>
             </FadeIn>
 
-            {/* ── Lado derecho: QR code para desktop ── */}
-            <FadeIn dir="right" className="flex justify-center lg:justify-end">
-              <div className="bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center">
-                <div className="flex items-center justify-center gap-2 mb-4 text-gray-700">
-                  <IconQrCode size={20} />
-                  <span className="text-xs font-bold uppercase tracking-widest">Escaneá con tu teléfono</span>
-                </div>
-                {/* QR generado dinámicamente apuntando al Play Store. Cuando
-                    iOS esté disponible podemos usar una landing /app que
-                    redirija según user-agent. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(PLAY_STORE_URL)}&size=240x240&margin=10&color=000000`}
-                  alt="QR para descargar Going en Google Play"
-                  width={240}
-                  height={240}
-                  className="mx-auto rounded-xl"
-                />
-                <p className="text-xs text-gray-500 mt-4">
-                  Apuntá la cámara de tu celular al código y descargá Going gratis.
-                </p>
-                <p className="text-[10px] text-gray-400 mt-2">
-                  Disponible para Android · iOS próximamente
-                </p>
-              </div>
+            {/* ── Lado derecho: MOCKUP iPHONE con UI Going adentro ── */}
+            <FadeIn dir="right" className="hidden lg:flex justify-center items-center">
+              <PhoneMockup />
             </FadeIn>
 
           </div>
