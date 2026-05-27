@@ -37,6 +37,125 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
   );
 }
 
+/* ── iPhone mockup ─────────────────────────────────────────
+   Marco iPhone CSS-puro con UI mockeada de la app Going viajando.
+   Sin imagen externa: todo SVG + divs. Refuerza la idea "el producto
+   es una app móvil" en lugar de mostrar una foto de stock.
+*/
+function PhoneMockup() {
+  return (
+    <div
+      className="relative"
+      style={{ width: 280, height: 580 }}
+    >
+      {/* Frame exterior (negro mate, simula chasis iPhone) */}
+      <div
+        className="absolute inset-0 rounded-[44px] shadow-2xl"
+        style={{
+          backgroundColor: '#0a0a0a',
+          padding: 10,
+          boxShadow: '0 30px 80px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.06)',
+        }}
+      >
+        {/* Pantalla interior */}
+        <div
+          className="relative w-full h-full overflow-hidden"
+          style={{
+            backgroundColor: '#F9FAFB',
+            borderRadius: 34,
+          }}
+        >
+          {/* Notch */}
+          <div
+            className="absolute top-0 left-1/2 -translate-x-1/2 z-10"
+            style={{
+              width: 100, height: 22,
+              backgroundColor: '#0a0a0a',
+              borderBottomLeftRadius: 12, borderBottomRightRadius: 12,
+            }}
+          />
+          {/* Status bar fake */}
+          <div className="absolute top-1.5 left-0 right-0 px-6 flex items-center justify-between text-[10px] font-bold text-gray-800 z-20">
+            <span>08:30</span>
+            <span className="ml-auto inline-flex items-center gap-1">
+              <span className="w-1 h-1.5 rounded-sm bg-gray-800" />
+              <span className="w-1.5 h-2 rounded-sm bg-gray-800" />
+              <span className="w-1.5 h-2.5 rounded-sm bg-gray-800" />
+              <svg width="14" height="10" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><path d="M2 22h20V8L12 2 2 8z" /></svg>
+              <svg width="18" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="ml-1"><rect x="2" y="6" width="18" height="12" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg>
+            </span>
+          </div>
+
+          {/* App content */}
+          <div className="absolute inset-0 pt-8 pb-3 px-3 flex flex-col gap-3">
+            {/* App header con logo + estado */}
+            <div className="flex items-center justify-between px-2 mt-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: COLORS.brand.red }}>
+                  <IconCar size={14} className="text-white" />
+                </span>
+                <span className="font-black text-sm text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Going</span>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#15803D' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                EN RUTA
+              </span>
+            </div>
+
+            {/* Mini "map" simulated */}
+            <div
+              className="rounded-2xl flex-1 relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #E0F2FE, #DBEAFE)' }}
+            >
+              {/* Route line */}
+              <svg width="100%" height="100%" viewBox="0 0 200 240" preserveAspectRatio="none" className="absolute inset-0">
+                <path d="M 40 30 Q 100 100 80 140 T 160 210" stroke={COLORS.brand.red} strokeWidth="3" fill="none" strokeDasharray="6 4" />
+                <circle cx="40" cy="30" r="6" fill={COLORS.brand.red} />
+                <circle cx="160" cy="210" r="6" fill={COLORS.brand.blue} />
+              </svg>
+              {/* Pin origen badge */}
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-white shadow text-[9px] font-bold text-gray-700">QUITO</div>
+              {/* Pin destino badge */}
+              <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-white shadow text-[9px] font-bold text-gray-700">AMBATO</div>
+
+              {/* Car marker en medio */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: COLORS.brand.red }}>
+                <IconCar size={18} className="text-white" />
+              </div>
+            </div>
+
+            {/* Driver card */}
+            <div className="bg-white rounded-2xl p-3 shadow-sm flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                <IconUser size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-gray-900">Pablo M.</p>
+                <p className="text-[10px] text-gray-500">SUV blanco · PBA-1234</p>
+              </div>
+              <div className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: COLORS.brand.yellowDark }}>
+                <IconStar size={10} />
+                4.9
+              </div>
+            </div>
+
+            {/* CTA bar */}
+            <div className="bg-white rounded-2xl p-3 shadow-sm flex items-center justify-between">
+              <div>
+                <p className="text-[9px] font-bold text-gray-400 uppercase">Total</p>
+                <p className="text-base font-black" style={{ color: COLORS.brand.red }}>$10.00</p>
+              </div>
+              <button className="text-[10px] font-bold text-white px-4 py-2 rounded-xl" style={{ backgroundColor: COLORS.brand.red }}>
+                Pagar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Data ───────────────────────────────────────────────────── *
  * REGIONS son las 4 regiones turísticas de Ecuador. Los colores acá NO son
  * de marca Going — son tokens de identidad geográfica (Sierra=morado andino,
@@ -279,37 +398,117 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          {/* ── Lado derecho: imagen viaje compartido ── */}
-          <FadeIn dir="right" className="relative hidden lg:block">
-            <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl" style={{ border: '3px solid rgba(255,255,255,0.1)' }}>
-              <img
-                src="/images/viaje compartido .png"
-                alt="Viaje compartido Going entre ciudades del Ecuador"
-                className="w-full h-full object-cover"
-              />
-              {/* Overlay con badge "EN VIVO" estilo mockup mobile */}
-              <div className="absolute top-5 left-5 flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md text-white text-xs font-bold" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: COLORS.brand.red }} />
-                EN RUTA · QUITO → AMBATO
-              </div>
-              {/* Stat card flotante abajo */}
-              <div className="absolute bottom-5 left-5 right-5 rounded-2xl p-4 backdrop-blur-md flex items-center justify-between" style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}>
-                <div>
-                  <p className="text-xs text-gray-500 font-semibold">PRÓXIMA SALIDA</p>
-                  <p className="text-lg font-black text-gray-900">08:30 AM · SUV</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500 font-semibold">DESDE</p>
-                  <p className="text-2xl font-black" style={{ color: COLORS.brand.red }}>$10</p>
-                </div>
-              </div>
-            </div>
+          {/* ── Lado derecho: MOCKUP iPHONE con UI Going adentro ── */}
+          <FadeIn dir="right" className="relative hidden lg:flex justify-center items-center">
+            <PhoneMockup />
           </FadeIn>
 
-          {/* Slide dots ahora navegan a la sección de destinos */}
+          {/* Indicador scroll */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 text-xs text-white/50">
             <span>Conocé Ecuador con Going</span>
             <IconChevronDown size={16} />
+          </div>
+        </div>
+      </section>
+
+      {/* ══ COBERTURA — chips de ciudades ════════════════════════════════════
+         Muestra concretamente dónde opera Going. Refuerza la idea de
+         "interurbano Ecuador" sin necesidad de mirar el mapa.
+      */}
+      <section className="bg-white border-y border-gray-100 py-6">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap flex-shrink-0">
+              Cobertura · 15 ciudades del Ecuador
+            </span>
+            <div className="flex flex-wrap gap-2 flex-1">
+              {[
+                'Quito', 'Guayaquil', 'Cuenca', 'Ambato', 'Riobamba',
+                'Ibarra', 'Otavalo', 'Latacunga', 'Salcedo', 'Cayambe',
+                'Tabacundo', 'Atuntaqui', 'Santo Domingo', 'La Concordia', 'El Carmen',
+              ].map(city => (
+                <span
+                  key={city}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors hover:bg-red-50"
+                  style={{ backgroundColor: COLORS.gray[50], color: COLORS.gray[700], border: `1px solid ${COLORS.gray[200]}` }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS.brand.red }} />
+                  {city}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
+                + Aeropuerto Mariscal Sucre
+              </span>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ══ STATS EN VIVO ════════════════════════════════════════════════════
+         Cifras que transmiten que la plataforma está activa. Valores
+         demo plausibles hasta que tengamos métricas reales conectadas al
+         backend; cuando estén disponibles, reemplazar por fetch a
+         /analytics/kpis/current.
+      */}
+      <section className="bg-gray-50 py-12 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn className="text-center mb-8">
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>
+              Going en números
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mt-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+              Una red viva, todos los días
+            </h2>
+          </FadeIn>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {[
+              { value: '15+',  label: 'Ciudades cubiertas',                    sub: 'Sierra, Costa y Amazonía' },
+              { value: '4.9',  label: 'Calificación promedio',                 sub: 'De 5 estrellas en viajes Going', accent: COLORS.brand.yellow },
+              { value: '24/7', label: 'Soporte humano + IA',                   sub: 'Cuando lo necesites' },
+              { value: '< 5m', label: 'Tiempo promedio de respuesta',          sub: 'Desde que pedís tu viaje' },
+            ].map((stat, i) => (
+              <FadeIn key={stat.label} delay={i * 0.08}>
+                <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-3xl sm:text-4xl font-black mb-1" style={{ color: stat.accent ?? COLORS.brand.red, fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                    {stat.value}
+                  </p>
+                  <p className="text-xs sm:text-sm font-bold text-gray-900">{stat.label}</p>
+                  <p className="text-xs text-gray-500 mt-1">{stat.sub}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ TESTIMONIOS MINI — carousel auto ═════════════════════════════════
+         Banda compacta con 3 testimonios visibles. En lugar de un carousel
+         con dots (que requiere interacción), mostramos los 3 al mismo
+         tiempo en desktop y rotamos en mobile.
+      */}
+      <section className="bg-white py-12 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { stars: 5, name: 'María G.', role: 'Pasajera frecuente · Quito → Ambato', text: 'Salidas cada hora, precio fijo y conductora amable. Cambié para siempre el bus interprovincial.' },
+              { stars: 5, name: 'Carlos R.', role: 'Conductor Going · Sierra Norte',     text: 'Ingresos predecibles, app fácil y nada de efectivo. Recomendado a 3 colegas y todos se sumaron.' },
+              { stars: 5, name: 'Ana T.',    role: 'Anfitriona · Mindo',                 text: 'Mis huéspedes piden el traslado desde el aeropuerto por la app. Cero stress, todo gestionado.' },
+            ].map((t, i) => (
+              <FadeIn key={t.name} delay={i * 0.1}>
+                <div className="bg-gray-50 rounded-2xl p-5 h-full border border-gray-100">
+                  <div className="flex items-center gap-1 mb-3" style={{ color: COLORS.brand.yellow }}>
+                    {Array.from({ length: t.stars }).map((_, idx) => (
+                      <IconStar key={idx} size={14} />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{t.name}</p>
+                    <p className="text-xs text-gray-500">{t.role}</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
           </div>
         </div>
       </section>
