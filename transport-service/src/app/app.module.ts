@@ -86,6 +86,7 @@ import {
 import { DriverHybridLifecycleService } from '@going-monorepo-clean/domains-transport-application';
 import { SearchController } from '../api/search.controller';
 import { ScheduledTripController } from '../api/scheduled-trip.controller';
+import { AdminStubsController } from '../api/admin-stubs.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
 import { DriverHybridTransitionCronService } from '../application/driver-hybrid-transition.cron';
 import { RideNoShowCronService } from '../application/ride-no-show.cron';
@@ -168,6 +169,7 @@ import { MulterModule } from '@nestjs/platform-express';
     DriverPushTokenController,
     SearchController,
     ScheduledTripController,
+    AdminStubsController,
     DriverHybridController,
     DriverComplianceAdminController,
   ],
