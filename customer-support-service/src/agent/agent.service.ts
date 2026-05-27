@@ -62,7 +62,30 @@ export class AgentService {
     userMessage: string,
     opts?: { lang?: SupportedLang },
   ): Promise<string | null> {
-    this.conversationService.addMessage(userId, 'user', userMessage);
+    // ⚠️ AWAIT obligatorio.
+    //
+    // Antes este llamado era fire-and-forget (sin await). Para userIds que
+    // YA existían en Mongo no hacía diferencia porque getOrCreate hitea el
+    // cache y devuelve la misma instancia. Pero para userIds NUEVOS (caso
+    // típico del chat anónimo público — cada sesión genera un userId
+    // distinto `web_anon_*`), ocurre esta race condition:
+    //
+    //   1) addMessage() arranca → su `await getOrCreate` golpea mongo
+    //   2) respond() continúa → su propio `await getOrCreate` golpea mongo
+    //      en paralelo
+    //   3) Ninguno encuentra el doc → AMBOS crean conv objects distintos
+    //      (con timestamps `Date.now()` diferentes)
+    //   4) El último en hacer `this.conversations.set(userId, conv)`
+    //      sobrescribe el cache
+    //   5) addMessage.push() empuja su msg al conv "A"
+    //      respond lee del cache el conv "B" → messages vacío
+    //   6) Bot devuelve "Disculpa, no recibí tu mensaje" aunque el user
+    //      sí escribió algo. Es invisible en logs porque el msg sí se
+    //      persistió en mongo (vía la otra rama del race).
+    //
+    // El await asegura que addMessage termine ANTES de que respond llame a
+    // getOrCreate — la segunda llamada hitea el cache poblado por la primera.
+    await this.conversationService.addMessage(userId, 'user', userMessage);
 
     // Idioma efectivo: override (STT) > regex sobre texto
     const lang: SupportedLang = opts?.lang ?? detectLanguage(userMessage);
