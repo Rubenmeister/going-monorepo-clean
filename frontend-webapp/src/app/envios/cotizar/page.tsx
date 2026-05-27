@@ -3,10 +3,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { COLORS } from '../../components/design-tokens';
+import { IconPackage, IconMailbox, IconCard, IconMoney, IconMobile, IconUsers } from '../../components/icons';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-const RED   = '#ff4c41';
-const GREEN = '#059669';
+const RED   = COLORS.brand.red;   // rojo Going — origen/CTA principales
+const GREEN = COLORS.state.success; // verde de sistema (estados entregado/pagado/verificado), NO marca
+const BLUE  = COLORS.brand.blue;  // azul Going — destino, info secundario
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 // Tarifas oficiales Going (urbano flat). Para envíos interurbanos el backend
@@ -547,7 +550,9 @@ export default function EnviosCotizarPage() {
               </span>
             </div>
             <div className="flex items-center gap-3 px-4 py-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 bg-gray-50">📦</div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-50 text-gray-700">
+                <IconPackage size={22} />
+              </div>
               <div className="flex-1">
                 <p className="text-sm font-bold text-gray-900">{selectedPkg.label} · {selectedPkg.desc}</p>
                 <p className="text-xs text-gray-500">${totalPrice.toFixed(2)}</p>
@@ -709,7 +714,7 @@ export default function EnviosCotizarPage() {
             value={recipientAddr}
             onChange={setRecipientAddr}
             onSelect={s => { setRecipientAddr(s.display_name); setRecipientLat(parseFloat(s.lat)); setRecipientLon(parseFloat(s.lon)); }}
-            accent={GREEN}
+            accent={BLUE}
           />
           {/* OTP note */}
           <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border"
@@ -725,22 +730,31 @@ export default function EnviosCotizarPage() {
         <SectionCard icon={<IcoCube />} title="El paquete">
           {/* Tipo — 3 categorías por peso (oficial Going) */}
           <div className="grid grid-cols-3 gap-2">
-            {PACKAGE_TYPES.map(p => (
-              <button key={p.id} type="button"
-                onClick={() => setPkgType(p.id)}
-                className="rounded-xl p-3 text-center border-2 transition-all"
-                style={{
-                  borderColor:      pkgType === p.id ? RED : '#F3F4F6',
-                  backgroundColor:  pkgType === p.id ? '#FFF0EF' : '#F9FAFB',
-                }}>
-                <div className="text-2xl mb-1">
-                  {p.id === 'small' ? '📦' : p.id === 'medium' ? '🗃️' : '📫'}
-                </div>
-                <p className="text-xs font-black" style={{ color: pkgType === p.id ? RED : '#374151' }}>{p.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{p.desc}</p>
-                <p className="text-sm font-black mt-1" style={{ color: pkgType === p.id ? RED : '#374151' }}>${p.price}</p>
-              </button>
-            ))}
+            {PACKAGE_TYPES.map(p => {
+              const active = pkgType === p.id;
+              // Visual size hint: SVG escalado según el tier. Refuerza el
+              // tamaño relativo sin emojis. small=18px, medium=24px, large=30px.
+              const iconSize = p.id === 'small' ? 22 : p.id === 'medium' ? 28 : 34;
+              // Mismo icon (IconPackage) o diferenciar:
+              //   small/medium → IconPackage
+              //   large → IconMailbox (más grande/buzón)
+              const Icon = p.id === 'large' ? IconMailbox : IconPackage;
+              return (
+                <button key={p.id} type="button"
+                  onClick={() => setPkgType(p.id)}
+                  className="rounded-xl p-3 text-center border-2 transition-all flex flex-col items-center"
+                  style={{
+                    borderColor:      active ? RED : '#F3F4F6',
+                    backgroundColor:  active ? '#FFF0EF' : '#F9FAFB',
+                    color:            active ? RED : '#374151',
+                  }}>
+                  <Icon size={iconSize} />
+                  <p className="text-xs font-black mt-1" style={{ color: active ? RED : '#374151' }}>{p.label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{p.desc}</p>
+                  <p className="text-sm font-black mt-1" style={{ color: active ? RED : '#374151' }}>${p.price}</p>
+                </button>
+              );
+            })}
           </div>
 
           {/* Descripción */}
@@ -770,12 +784,13 @@ export default function EnviosCotizarPage() {
           title="CÓMO SE PAGA"
         >
           {([
-            { id: 'A' as const, label: 'Pago ahora con tarjeta',                icon: '💳', sub: 'Datafast/DeUna · El más rápido' },
-            { id: 'B' as const, label: 'Pago en efectivo al recoger',           icon: '💵', sub: 'Le pagas al conductor cuando llegue' },
-            { id: 'C' as const, label: 'Que pague el destinatario (tarjeta)',   icon: '📱', sub: 'Recibe link de pago por SMS' },
-            { id: 'D' as const, label: 'Contra entrega (efectivo del destinatario)', icon: '🤝', sub: 'Cobra al recibir' },
+            { id: 'A' as const, label: 'Pago ahora con tarjeta',                Icon: IconCard,   sub: 'Datafast/DeUna · El más rápido' },
+            { id: 'B' as const, label: 'Pago en efectivo al recoger',           Icon: IconMoney,  sub: 'Le pagas al conductor cuando llegue' },
+            { id: 'C' as const, label: 'Que pague el destinatario (tarjeta)',   Icon: IconMobile, sub: 'Recibe link de pago por SMS' },
+            { id: 'D' as const, label: 'Contra entrega (efectivo del destinatario)', Icon: IconUsers, sub: 'Cobra al recibir' },
           ]).map((scheme) => {
             const active = paymentScheme === scheme.id;
+            const Icon = scheme.Icon;
             return (
               <button
                 key={scheme.id}
@@ -793,7 +808,9 @@ export default function EnviosCotizarPage() {
                 >
                   {active && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: RED }} />}
                 </div>
-                <span className="text-2xl">{scheme.icon}</span>
+                <span className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: active ? '#FFE5E2' : '#F3F4F6', color: active ? RED : '#6B7280' }}>
+                  <Icon size={22} />
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold" style={{ color: active ? RED : '#111827' }}>
                     {scheme.label}
