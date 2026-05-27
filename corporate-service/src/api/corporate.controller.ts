@@ -184,6 +184,37 @@ export class CorporateController {
     return this.svc.listEmployees(companyId, token);
   }
 
+  // ── Equipo: invitaciones a nuevos miembros ─────────────────────────────
+
+  /**
+   * POST /corporate/invite — Invita a un nuevo miembro al equipo
+   * corporativo. Envía email con link de registro pre-completado.
+   * Usado por /empresas/panel/equipo (botón "+ Invitar miembro").
+   */
+  @Post('invite')
+  async inviteTeamMember(
+    @Req() req: Request,
+    @Body() body: {
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      role: string;
+      companyId: string;
+    },
+  ) {
+    if (!body?.email || !body?.role) {
+      throw new BadRequestException('email and role are required');
+    }
+    const companyId = body.companyId || this.extractCompanyId(req);
+    const invitedBy = this.extractUserId(req);
+    return this.svc.inviteTeamMember(companyId, invitedBy, {
+      email: body.email,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      role: body.role,
+    });
+  }
+
   // ── Quotes (cotizaciones corporativas para eventos / grupos) ───────────
 
   /**
