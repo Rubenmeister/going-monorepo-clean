@@ -10,8 +10,16 @@ import {
   IconStar, IconBell, IconChat, IconShield, IconMap, IconCalendar, IconUser,
   IconPackage, IconLightning, IconSignal, IconMoney, IconCamera, IconArrowRight,
   IconSearch, IconUsers, IconCheckCircle, IconGraduation, IconRoute, IconPhone,
-  IconHeadphones, IconBook, IconChevronDown,
+  IconHeadphones, IconBook, IconChevronDown, IconGooglePlay, IconApple,
+  IconQrCode, IconDownload,
 } from './components/icons';
+
+// Links de descarga oficiales — actualizar cuando estén publicados.
+// Android live: usa el package name @rubenmeister/going-mobile (Play Console).
+// iOS pendiente: requiere Apple Developer account ($99/año), aún no submitted.
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.thornai.goingmobile';
+const APP_STORE_URL  = '#';
+const APP_STORE_AVAILABLE = false;
 
 /* ── useInView ──────────────────────────────────────────────── */
 function useInView(threshold = 0.12) {
@@ -338,9 +346,10 @@ export default function HomePage() {
               style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
             />
 
-            {/* Eyebrow */}
-            <span className="inline-block text-xs sm:text-sm font-bold uppercase tracking-[0.25em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
-              Transporte compartido · Ecuador
+            {/* Eyebrow — ahora DICE que es una app */}
+            <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
+              <IconMobile size={14} />
+              App de transporte · Ecuador
             </span>
 
             {/* Titular principal */}
@@ -349,31 +358,63 @@ export default function HomePage() {
               <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
 
-            {/* Subtítulo */}
-            <p className="text-lg sm:text-xl text-white/80 mb-8 max-w-xl leading-relaxed">
-              Reserva tu viaje compartido o privado entre ciudades del Ecuador.
-              Conductoras y conductores verificados, tracking en vivo y precio
-              fijo desde la app.
+            {/* Subtítulo — copy enfatiza "desde la app" */}
+            <p className="text-lg sm:text-xl text-white/80 mb-6 max-w-xl leading-relaxed">
+              Descargá <strong className="text-white">Going</strong>, la app de transporte
+              compartido y privado entre ciudades del Ecuador. Conductoras y
+              conductores verificados, tracking en vivo y precio fijo —
+              directo desde tu teléfono.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3 mb-8">
-              <Link
-                href="/ride"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 font-black text-base rounded-2xl transition-all hover:scale-[1.03] shadow-xl text-white"
-                style={{ backgroundColor: COLORS.brand.red }}
+            {/* CTAs principales — descargar la app primero, buscar viaje secundario */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
               >
-                <IconSearch size={20} />
-                Buscar viaje
-                <IconArrowRight size={20} />
-              </Link>
-              <Link
-                href="#destinos"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 font-bold text-base rounded-2xl border-2 border-white/30 text-white hover:bg-white/10 transition-all"
-              >
-                Ver rutas y destinos
-              </Link>
+                <IconGooglePlay size={28} />
+                <span className="text-left">
+                  <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Disponible en</span>
+                  <span className="block font-black text-base leading-none">Google Play</span>
+                </span>
+              </a>
+              {APP_STORE_AVAILABLE ? (
+                <a
+                  href={APP_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                >
+                  <IconApple size={28} />
+                  <span className="text-left">
+                    <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
+                    <span className="block font-black text-base leading-none">App Store</span>
+                  </span>
+                </a>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
+                  title="App Store iOS estará disponible próximamente"
+                >
+                  <IconApple size={28} />
+                  <span className="text-left">
+                    <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
+                    <span className="block font-black text-base leading-none">App Store</span>
+                  </span>
+                </span>
+              )}
             </div>
+
+            {/* CTA secundario — reservar desde la webapp si no tiene Android */}
+            <Link
+              href="/ride"
+              className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors mb-7 underline underline-offset-4 decoration-white/30"
+            >
+              o reservá un viaje desde la web
+              <IconArrowRight size={14} />
+            </Link>
 
             {/* Trust badges */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs sm:text-sm text-white/70">
@@ -513,23 +554,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Search Card ───────────────────────────────────── *
-         Search card mantenida pero menos prominente — el CTA principal ya
-         vive en el hero. Acá es una segunda oportunidad para el user que
-         scrolleó sin clickear.
+      {/* ── Search Card — "también sin app" ───────────────── *
+         Posicionada como alternativa al download. Quien entra desde
+         desktop o quiere reservar rápido sin instalar, puede hacerlo
+         desde la webapp con la misma cuenta Going.
       */}
       <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4 -mt-12 mb-16">
         <FadeIn>
           <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 text-center border border-gray-100">
+            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: COLORS.brand.red }}>
+              También desde el navegador
+            </p>
             <h2 className="text-gray-900 font-black text-xl sm:text-2xl mb-1">¿A dónde viajas hoy?</h2>
-            <p className="text-gray-500 text-sm mb-5">Encuentra tu próxima ruta en segundos.</p>
+            <p className="text-gray-500 text-sm mb-5">Reservá un viaje sin descargar nada. Tu cuenta funciona en app y web.</p>
             <Link
               href="/ride"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-white font-black rounded-2xl transition-all hover:opacity-90 hover:scale-[1.02] shadow-lg"
               style={{ backgroundColor: COLORS.brand.red }}
             >
               <IconSearch size={18} />
-              Buscar viaje
+              Buscar viaje en la web
               <IconArrowRight size={18} />
             </Link>
           </div>
@@ -637,6 +681,120 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ DESCARGÁ LA APP — sección dedicada ════════════════════════════════
+         Refuerzo del mensaje principal: Going ES una app móvil. Esta
+         sección habla directamente del producto: cómo se descarga,
+         qué incluye, y muestra el QR para desktop.
+      */}
+      <section id="descarga" className="py-16 px-4" style={{ background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a1a1a 100%)` }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+            {/* ── Lado izquierdo: copy + badges ── */}
+            <FadeIn dir="left">
+              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] mb-4 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,210,83,0.15)', color: COLORS.brand.yellow }}>
+                <IconDownload size={14} />
+                Descargá la app
+              </span>
+              <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                Going vive en<br />
+                <span style={{ color: COLORS.brand.red }}>tu teléfono.</span>
+              </h2>
+              <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-lg">
+                La app oficial de Going para pasajeras y pasajeros. Reservá
+                viajes compartidos o privados, mandá un envío, seguí tu ruta
+                en vivo y pagá sin efectivo — todo desde el celular.
+              </p>
+
+              {/* Feature pills */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {[
+                  'Notificaciones push',
+                  'GPS en segundo plano',
+                  'Pago con tarjeta · DATAFAST · DeUna',
+                  'Soporte 24/7 dentro de la app',
+                  'Funciona sin señal en ruta',
+                ].map(feat => (
+                  <span key={feat} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)' }}>
+                    <IconCheckCircle size={12} style={{ color: COLORS.brand.yellow }} />
+                    {feat}
+                  </span>
+                ))}
+              </div>
+
+              {/* Store badges grandes */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href={PLAY_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                >
+                  <IconGooglePlay size={36} />
+                  <span className="text-left">
+                    <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Disponible en</span>
+                    <span className="block font-black text-lg leading-tight">Google Play</span>
+                  </span>
+                </a>
+                {APP_STORE_AVAILABLE ? (
+                  <a
+                    href={APP_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                  >
+                    <IconApple size={36} />
+                    <span className="text-left">
+                      <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
+                      <span className="block font-black text-lg leading-tight">App Store</span>
+                    </span>
+                  </a>
+                ) : (
+                  <span
+                    className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
+                    title="App Store iOS estará disponible próximamente"
+                  >
+                    <IconApple size={36} />
+                    <span className="text-left">
+                      <span className="block text-[11px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
+                      <span className="block font-black text-lg leading-tight">App Store</span>
+                    </span>
+                  </span>
+                )}
+              </div>
+            </FadeIn>
+
+            {/* ── Lado derecho: QR code para desktop ── */}
+            <FadeIn dir="right" className="flex justify-center lg:justify-end">
+              <div className="bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center">
+                <div className="flex items-center justify-center gap-2 mb-4 text-gray-700">
+                  <IconQrCode size={20} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Escaneá con tu teléfono</span>
+                </div>
+                {/* QR generado dinámicamente apuntando al Play Store. Cuando
+                    iOS esté disponible podemos usar una landing /app que
+                    redirija según user-agent. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(PLAY_STORE_URL)}&size=240x240&margin=10&color=000000`}
+                  alt="QR para descargar Going en Google Play"
+                  width={240}
+                  height={240}
+                  className="mx-auto rounded-xl"
+                />
+                <p className="text-xs text-gray-500 mt-4">
+                  Apuntá la cámara de tu celular al código y descargá Going gratis.
+                </p>
+                <p className="text-[10px] text-gray-400 mt-2">
+                  Disponible para Android · iOS próximamente
+                </p>
+              </div>
+            </FadeIn>
+
           </div>
         </div>
       </section>
