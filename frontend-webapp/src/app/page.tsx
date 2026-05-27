@@ -321,188 +321,124 @@ export default function HomePage() {
         className="relative w-full overflow-hidden"
         style={{
           minHeight: '100vh',
-          background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a1a1a 50%, ${COLORS.brand.red} 130%)`,
+          /* TODO (foto): reemplazar `Ciclista y Cotopaxi_RAPOSA.jpg` por la
+             versión con SUV en lugar del ciclista cuando esté disponible.
+             Mantener el mismo nombre o actualizar el path acá. */
+          backgroundImage: "url('/images/Ciclista%20y%20Cotopaxi_RAPOSA.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 30%',
         }}
       >
-        {/* Patrón sutil de vías de fondo (alusión a "patrón de vías y tejido
-            urbano" mencionado en la guía de marca p.12). */}
+        {/* Overlay claro para legibilidad — montaña visible arriba,
+            blanco translúcido abajo donde van el texto y las cards. */}
         <div
-          className="absolute inset-0 opacity-[0.05]"
+          className="absolute inset-0"
           style={{
-            backgroundImage:
-              'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 1px, transparent 14px)',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.78) 38%, rgba(255,255,255,0.95) 100%)',
           }}
         />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 lg:py-20 flex flex-col items-center" style={{ minHeight: '100vh' }}>
 
-          {/* ── HEAD del hero: logo + tagline + subtítulo ── */}
-          <FadeIn dir="up" className="text-white text-center max-w-3xl mb-10">
+          {/* ── HEAD del hero: logo color + headline + texto descriptivo ── */}
+          <FadeIn dir="up" className="text-center max-w-3xl mb-10">
             <img
-              src="/going-logo-white-h.png"
+              src="/going-logo-h.png"
               alt="Going"
-              className="h-12 mx-auto mb-6"
-              style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
+              className="h-14 mx-auto mb-6"
+              style={{ filter: 'drop-shadow(0 2px 12px rgba(255,255,255,0.6))' }}
             />
 
-            <span className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
-              <IconLightning size={14} />
-              1<sup>ra</sup> superapp de movilidad de Latinoamérica
-            </span>
-
-            <h1 className="font-black mb-4 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+            <h1 className="font-black text-gray-900 mb-5 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
               Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed mb-4">
-              La única app que conecta tu viaje <strong className="text-white">dentro</strong> y <strong className="text-white">entre</strong> ciudades del Ecuador.
-              Compartí asiento entre ciudades, llevá a tu grupo en VAN o bus, o enviá un paquete en el día.
+            <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+              La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
+              viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
+              todo desde tu teléfono.
             </p>
-
-            {/* Píldoras del diferencial dual */}
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold" style={{ backgroundColor: 'rgba(255,76,65,0.18)', color: '#ffd9d6', border: `1px solid ${COLORS.brand.red}` }}>
-                <IconPin size={12} /> Intracity (dentro de ciudad)
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold" style={{ backgroundColor: 'rgba(255,210,83,0.18)', color: '#fff3cf', border: `1px solid ${COLORS.brand.yellow}` }}>
-                <IconRoute size={12} /> Intercity (entre ciudades)
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-white/90" style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.25)' }}>
-                <IconUsers size={12} /> 1 a 30 pasajeros
-              </span>
-            </div>
           </FadeIn>
 
           {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
-             El user reportó que el hero no mostraba los productos. Ahora
-             las 3 cards son el elemento visual central, prominentes,
-             con CTA clara cada una. Esto es lo que define qué es Going.
+             Cards simples y limpias: icono + título + descripción + CTA.
+             SIN precios ni chips numéricos para evitar inconsistencias
+             cuando se ajusten tarifas; el detalle de tarifa/cupos vive
+             en /ride y /envios/cotizar, fuente única.
           */}
           <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
-              {/* CARD 1: Viaje Compartido — INTERCITY hero
-                 El carpooling entre ciudades es nuestro diferencial #1:
-                 dividís el costo del SUV/VAN con otras 3-6 personas que van
-                 al mismo destino. Inexistente en la región hasta hoy.
-              */}
+              {/* CARD 1: Viaje Compartido */}
               <Link
                 href="/ride?type=shared"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,76,65,0.4)] transition-all relative overflow-hidden"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: COLORS.brand.red }}>
-                  Intercity
-                </span>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
                   <IconSuv size={30} />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Viaje Compartido
                 </h3>
-                <p className="text-xs text-gray-500 mb-3 flex-1">
-                  <strong className="text-gray-700">Carpooling entre ciudades.</strong> Pagás solo tu asiento en SUV o VAN — hasta un 70 % más barato que ir en privado.
+                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                  Viajes compartidos puerta a puerta entre ciudades del Ecuador.
+                  Pagas solo tu asiento.
                 </p>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>SUV 4 pax</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>VAN 7 pax</span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
-                    <p className="text-2xl font-black" style={{ color: COLORS.brand.red, fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                      $10<span className="text-xs text-gray-400 font-normal ml-1">/persona</span>
-                    </p>
-                  </div>
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center text-white group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.red }}>
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
+                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.red }}>
+                  Reservar
+                  <IconArrowRight size={16} />
+                </span>
               </Link>
 
-              {/* CARD 2: Viaje Privado — INTRACITY + INTERCITY · grupos chicos y grandes
-                 Acá vive la flexibilidad total: desde Auto para una pareja
-                 hasta Bus 30 pax para una empresa o promoción. Único en la
-                 región que cubre todo el rango.
-              */}
+              {/* CARD 2: Viaje Privado */}
               <Link
                 href="/ride?type=van"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,210,83,0.4)] transition-all relative overflow-hidden"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
-                  1 — 30 pax
-                </span>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
                   <IconVan size={30} />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Viaje Privado
                 </h3>
-                <p className="text-xs text-gray-500 mb-3 flex-1">
-                  <strong className="text-gray-700">De 1 a 30 personas.</strong> Auto, SUV, VAN, Minibús o Bus exclusivo para vos y tu grupo, dentro o entre ciudades.
+                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                  Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo,
+                  dentro o entre ciudades.
                 </p>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Auto</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>SUV</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>VAN</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Minibús</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Bus</span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
-                    <p className="text-2xl font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                      $25<span className="text-xs text-gray-400 font-normal ml-1">/servicio</span>
-                    </p>
-                  </div>
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
+                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.yellowDark }}>
+                  Cotizar
+                  <IconArrowRight size={16} />
+                </span>
               </Link>
 
-              {/* CARD 3: Envíos — urbano + interurbano */}
+              {/* CARD 3: Envíos */}
               <Link
                 href="/envios/cotizar"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(0,0,0,0.4)] transition-all relative overflow-hidden"
+                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: COLORS.brand.black }}>
-                  Mismo día
-                </span>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.gray[100], color: COLORS.brand.black }}>
                   <IconPackage size={30} />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Envíos
                 </h3>
-                <p className="text-xs text-gray-500 mb-3 flex-1">
-                  <strong className="text-gray-700">Puerta a puerta.</strong> Sobres, documentos o paquetes — express urbano o entre ciudades aprovechando los viajes Going en ruta.
+                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                  Sobres, documentos o paquetes puerta a puerta — dentro de la
+                  ciudad o entre ciudades.
                 </p>
-                <div className="flex flex-wrap gap-1 mb-3">
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">Urbano</span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">Interurbano</span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
-                    <p className="text-2xl font-black text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                      $8<span className="text-xs text-gray-400 font-normal ml-1">/paquete</span>
-                    </p>
-                  </div>
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center text-white group-hover:translate-x-0.5 transition-transform" style={{ backgroundColor: COLORS.brand.black }}>
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
+                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all text-gray-900">
+                  Cotizar envío
+                  <IconArrowRight size={16} />
+                </span>
               </Link>
 
             </div>
           </FadeIn>
 
-          {/* ── Download / Web CTAs ──
-             Bandera secundaria: cómo accedés. Los 3 productos arriba ya
-             son los CTAs principales; acá ofrecemos los CANALES (app o web).
-          */}
+          {/* ── Download / Web CTAs · adaptados a fondo claro ── */}
           <FadeIn dir="up" delay={0.3} className="flex flex-col items-center gap-4 mb-6">
-            <p className="text-xs text-white/60 font-bold uppercase tracking-[0.25em]">
+            <p className="text-xs text-gray-600 font-bold uppercase tracking-[0.25em]">
               Disponible en
             </p>
             <div className="flex flex-col sm:flex-row gap-3 items-center">
@@ -510,7 +446,8 @@ export default function HomePage() {
                 href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl text-white hover:scale-[1.03] transition-all shadow-lg"
+                style={{ backgroundColor: COLORS.brand.black }}
               >
                 <IconGooglePlay size={26} />
                 <span className="text-left">
@@ -523,7 +460,8 @@ export default function HomePage() {
                   href={APP_STORE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white text-gray-900 hover:scale-[1.03] transition-all shadow-xl"
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl text-white hover:scale-[1.03] transition-all shadow-lg"
+                  style={{ backgroundColor: COLORS.brand.black }}
                 >
                   <IconApple size={26} />
                   <span className="text-left">
@@ -533,7 +471,7 @@ export default function HomePage() {
                 </a>
               ) : (
                 <span
-                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border-2 border-white/20 text-white/60 cursor-not-allowed"
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border-2 border-gray-300 text-gray-400 cursor-not-allowed"
                   title="App Store iOS estará disponible próximamente"
                 >
                   <IconApple size={26} />
@@ -543,33 +481,33 @@ export default function HomePage() {
                   </span>
                 </span>
               )}
-              <span className="text-white/40 text-xs hidden sm:inline mx-2">o</span>
+              <span className="text-gray-400 text-xs hidden sm:inline mx-2">o</span>
               <Link
                 href="/ride"
-                className="inline-flex items-center gap-2 text-sm font-bold text-white/80 hover:text-white transition-colors underline underline-offset-4 decoration-white/30 px-2"
+                className="inline-flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-gray-900 transition-colors underline underline-offset-4 decoration-gray-300 px-2"
               >
-                Reservá desde la web
+                Reserva desde la web
                 <IconArrowRight size={14} />
               </Link>
             </div>
           </FadeIn>
 
-          {/* Trust badges abajo */}
-          <FadeIn dir="up" delay={0.4} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/70 mb-4">
+          {/* Trust badges · adaptados a fondo claro */}
+          <FadeIn dir="up" delay={0.4} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-gray-700 mb-4">
             <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
                 <IconShield size={14} />
               </span>
               Conductoras y conductores verificados
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
                 <IconPin size={14} />
               </span>
               Tracking en vivo
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,210,83,0.2)', color: COLORS.brand.yellow }}>
+              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
                 <IconCard size={14} />
               </span>
               Pago sin efectivo
@@ -577,8 +515,8 @@ export default function HomePage() {
           </FadeIn>
 
           {/* Indicador scroll */}
-          <div className="flex items-center gap-2 text-xs text-white/50 mt-auto">
-            <span>Conocé Ecuador con Going</span>
+          <div className="flex items-center gap-2 text-xs text-gray-500 mt-auto">
+            <span>Conoce Ecuador con Going</span>
             <IconChevronDown size={16} />
           </div>
         </div>
@@ -638,7 +576,7 @@ export default function HomePage() {
               { value: '15+',  label: 'Ciudades cubiertas',                    sub: 'Sierra, Costa y Amazonía' },
               { value: '4.9',  label: 'Calificación promedio',                 sub: 'De 5 estrellas en viajes Going', accent: COLORS.brand.yellow },
               { value: '24/7', label: 'Soporte humano + IA',                   sub: 'Cuando lo necesites' },
-              { value: '< 5m', label: 'Tiempo promedio de respuesta',          sub: 'Desde que pedís tu viaje' },
+              { value: '< 5m', label: 'Tiempo promedio de respuesta',          sub: 'Desde que pides tu viaje' },
             ].map((stat, i) => (
               <FadeIn key={stat.label} delay={i * 0.08}>
                 <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
@@ -698,7 +636,7 @@ export default function HomePage() {
               También desde el navegador
             </p>
             <h2 className="text-gray-900 font-black text-xl sm:text-2xl mb-1">¿A dónde viajas hoy?</h2>
-            <p className="text-gray-500 text-sm mb-5">Reservá un viaje sin descargar nada. Tu cuenta funciona en app y web.</p>
+            <p className="text-gray-500 text-sm mb-5">Reserva un viaje sin descargar nada. Tu cuenta funciona en app y web.</p>
             <Link
               href="/ride"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 text-white font-black rounded-2xl transition-all hover:opacity-90 hover:scale-[1.02] shadow-lg"
@@ -830,16 +768,16 @@ export default function HomePage() {
             <FadeIn dir="left">
               <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] mb-4 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,210,83,0.15)', color: COLORS.brand.yellow }}>
                 <IconDownload size={14} />
-                Descargá la app
+                Descarga la app
               </span>
               <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                 Going vive en<br />
                 <span style={{ color: COLORS.brand.red }}>tu teléfono.</span>
               </h2>
               <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-lg">
-                La app oficial de Going para pasajeras y pasajeros. Reservá
-                viajes compartidos o privados, mandá un envío, seguí tu ruta
-                en vivo y pagá sin efectivo — todo desde el celular.
+                La app oficial de Going para pasajeras y pasajeros. Reserva
+                viajes compartidos o privados, manda un envío, sigue tu ruta
+                en vivo y paga sin efectivo — todo desde el celular.
               </p>
 
               {/* Feature pills */}
