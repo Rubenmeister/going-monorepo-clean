@@ -1,9 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ReactElement } from 'react';
 import Link from 'next/link';
 import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
+import { COLORS } from './components/design-tokens';
+import {
+  IconClock, IconSuv, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
+  IconStar, IconBell, IconChat, IconShield, IconMap, IconCalendar, IconUser,
+  IconPackage, IconLightning, IconSignal, IconMoney, IconCamera, IconArrowRight,
+  IconSearch, IconUsers, IconCheckCircle, IconGraduation, IconRoute, IconPhone,
+  IconHeadphones, IconBook,
+} from './components/icons';
 
 /* ── useInView ──────────────────────────────────────────────── */
 function useInView(threshold = 0.12) {
@@ -29,57 +37,142 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
   );
 }
 
-/* ── Data ───────────────────────────────────────────────────── */
+/* ── Data ───────────────────────────────────────────────────── *
+ * SLIDES y REGIONS son las 4 regiones turísticas de Ecuador. Los
+ * colores acá NO son de marca Going — son tokens de identidad geográfica
+ * (Sierra=morado andino, Costa=azul mar, Amazonía=verde selva,
+ * Galápagos=ámbar). Es legítimo que estén fuera de la paleta de marca.
+ */
 const SLIDES = [
-  { region: 'Sierra', subtitle: 'Andes · Volcanes · Cultura', img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg', color: '#6366f1' },
-  { region: 'Costa', subtitle: 'Mar · Playas · Atardeceres', img: '/images/costa.png', color: '#0ea5e9' },
-  { region: 'Amazonía', subtitle: 'Selva · Biodiversidad · Aventura', img: '/images/Orellana Pañacocha Laguna.jpg', color: '#16a34a' },
-  { region: 'Galápagos', subtitle: 'Islas únicas en el mundo', img: '/images/galàpagos.png', color: '#f59e0b' },
+  { region: 'Sierra',    subtitle: 'Andes · Volcanes · Cultura',         img: '/images/Ciclista y Cotopaxi_RAPOSA.jpg' },
+  { region: 'Costa',     subtitle: 'Mar · Playas · Atardeceres',          img: '/images/costa.png' },
+  { region: 'Amazonía',  subtitle: 'Selva · Biodiversidad · Aventura',    img: '/images/Orellana Pañacocha Laguna.jpg' },
+  { region: 'Galápagos', subtitle: 'Islas únicas en el mundo',            img: '/images/galàpagos.png' },
 ];
 
 const REGIONS = {
   Sierra: {
-    color: '#6366f1',
+    color: '#6366F1',
     destinations: [
-      { name: 'Quito', desc: 'Capital histórica', img: '/images/calle venezuela quito.jpg' },
-      { name: 'Baños', desc: 'Aventura & termas', img: '/images/baños 7.jpg' },
-      { name: 'Riobamba', desc: 'Puerta del Chimborazo', img: '/images/chimborazo desde riobamba.jpg' },
-      { name: 'Cotacachi', desc: 'Lago Cuicocha & artesanías', img: '/images/cuicocha.jpg' },
+      { name: 'Quito',      desc: 'Capital histórica',           img: '/images/calle venezuela quito.jpg' },
+      { name: 'Baños',      desc: 'Aventura y termas',           img: '/images/baños 7.jpg' },
+      { name: 'Riobamba',   desc: 'Puerta del Chimborazo',       img: '/images/chimborazo desde riobamba.jpg' },
+      { name: 'Cotacachi',  desc: 'Lago Cuicocha y artesanías',  img: '/images/cuicocha.jpg' },
     ],
   },
   Costa: {
-    color: '#0ea5e9',
+    color: '#0EA5E9',
     destinations: [
-      { name: 'Guayaquil', desc: 'Puerto principal', img: '/images/GUAYAQUIL DE NOCHE.jpg' },
-      { name: 'Manta', desc: 'Cruceros del Pacífico', img: '/images/CRUCEROS MANTA.jpg' },
-      { name: 'Salinas', desc: 'Balneario ecuatoriano', img: '/images/Salinas.png' },
-      { name: 'Montañita', desc: 'Surf & bohemia', img: '/images/Montañita.png' },
+      { name: 'Guayaquil',  desc: 'Puerto principal',            img: '/images/GUAYAQUIL DE NOCHE.jpg' },
+      { name: 'Manta',      desc: 'Cruceros del Pacífico',       img: '/images/CRUCEROS MANTA.jpg' },
+      { name: 'Salinas',    desc: 'Balneario ecuatoriano',       img: '/images/Salinas.png' },
+      { name: 'Montañita',  desc: 'Surf y bohemia',              img: '/images/Montañita.png' },
     ],
   },
   Amazonía: {
-    color: '#16a34a',
+    color: '#16A34A',
     destinations: [
-      { name: 'Tena', desc: 'Cascadas & rafting', img: '/images/AR PN AMAZONÍA19 TENA CASCADAS SAN RAFAEL_0502.JPG' },
-      { name: 'Cuyabeno', desc: 'Reserva natural única', img: '/images/Copia de AR PN AMAZONÍA18 CUYABENO CANOA foto0026.jpg' },
-      { name: 'Orellana', desc: 'Ríos & biodiversidad', img: '/images/Orellana Pañacocha Laguna.jpg' },
-      { name: 'Zamora', desc: 'Fauna & mariposas', img: '/images/AR PN AMAZONIA ZAMORA FAUNA mariposas 0283.JPG' },
+      { name: 'Tena',       desc: 'Cascadas y rafting',          img: '/images/AR PN AMAZONÍA19 TENA CASCADAS SAN RAFAEL_0502.JPG' },
+      { name: 'Cuyabeno',   desc: 'Reserva natural única',       img: '/images/Copia de AR PN AMAZONÍA18 CUYABENO CANOA foto0026.jpg' },
+      { name: 'Orellana',   desc: 'Ríos y biodiversidad',        img: '/images/Orellana Pañacocha Laguna.jpg' },
+      { name: 'Zamora',     desc: 'Fauna y mariposas',           img: '/images/AR PN AMAZONIA ZAMORA FAUNA mariposas 0283.JPG' },
     ],
   },
   Galápagos: {
-    color: '#f59e0b',
+    color: '#F59E0B',
     destinations: [
-      { name: 'Santa Cruz', desc: 'Centro de las Islas', img: '/images/GALÁPAGOS PAISAJE  .JPG' },
-      { name: 'San Cristóbal', desc: 'La isla capital', img: '/images/AR PN GALÁPAGOS Baquerizo Moreno San Cristóbal2.jpg' },
-      { name: 'Isabela', desc: 'Volcanes & tortugas', img: '/images/BUCEO GALÁPAGOS 001.jpg' },
-      { name: 'Buceo', desc: 'Vida marina única', img: '/images/GALAPAGOS FAUNA BUCEO 038.jpg' },
+      { name: 'Santa Cruz',     desc: 'Centro de las Islas',     img: '/images/GALÁPAGOS PAISAJE  .JPG' },
+      { name: 'San Cristóbal',  desc: 'La isla capital',         img: '/images/AR PN GALÁPAGOS Baquerizo Moreno San Cristóbal2.jpg' },
+      { name: 'Isabela',        desc: 'Volcanes y tortugas',     img: '/images/BUCEO GALÁPAGOS 001.jpg' },
+      { name: 'Buceo',          desc: 'Vida marina única',       img: '/images/GALAPAGOS FAUNA BUCEO 038.jpg' },
     ],
   },
 };
 
-const ACADEMY_COURSES = [
-  { title: 'Cómo maximizar tus ganancias como conductora o conductor', level: 'Básico', duration: '45 min', icon: '🚗', color: '#ff4c41' },
-  { title: 'Atención al cliente de excelencia', level: 'Intermedio', duration: '1.5 hrs', icon: '⭐', color: '#f59e0b' },
-  { title: 'Manejo seguro y eficiente', level: 'Avanzado', duration: '2 hrs', icon: '🛡️', color: '#16a34a' },
+interface AcademyCourse {
+  title: string;
+  level: string;
+  duration: string;
+  Icon: (props: { size?: number; className?: string }) => ReactElement;
+  iconColor: string;
+}
+
+const ACADEMY_COURSES: AcademyCourse[] = [
+  { title: 'Cómo maximizar tus ganancias como conductora o conductor', level: 'Básico',     duration: '45 min',  Icon: IconCar,    iconColor: COLORS.brand.red },
+  { title: 'Atención al cliente de excelencia',                         level: 'Intermedio', duration: '1.5 hrs', Icon: IconStar,   iconColor: COLORS.brand.red },
+  { title: 'Manejo seguro y eficiente',                                 level: 'Avanzado',   duration: '2 hrs',   Icon: IconShield, iconColor: COLORS.brand.blue },
+];
+
+/* ── Features data — ahora con Component icon ──────────────── */
+interface Feature {
+  Icon: (props: { size?: number; className?: string }) => ReactElement;
+  text: string;
+}
+
+const SHARED_FEATURES: Feature[] = [
+  { Icon: IconMobile,    text: 'Reserva desde la app' },
+  { Icon: IconPin,       text: 'Tracking en tiempo real' },
+  { Icon: IconCard,      text: 'Pago sin efectivo' },
+  { Icon: IconStar,      text: 'Conductoras y conductores verificados' },
+  { Icon: IconBell,      text: 'Notificaciones al instante' },
+  { Icon: IconChat,      text: 'Chat con la conductora o conductor' },
+  { Icon: IconShield,    text: 'Viaje asegurado' },
+  { Icon: IconSuv,       text: 'SUV y VAN disponibles' },
+];
+
+const PRIVATE_FEATURES: Feature[] = [
+  { Icon: IconMobile,    text: 'Agendamiento en la app' },
+  { Icon: IconSuv,       text: 'SUV, VAN o bus' },
+  { Icon: IconMap,       text: 'Ruta en vivo' },
+  { Icon: IconChat,      text: 'Chat con tu conductora/conductor' },
+  { Icon: IconCalendar,  text: 'Por servicio o por día' },
+  { Icon: IconUser,      text: 'Conductora/conductor dedicado' },
+  { Icon: IconPin,       text: 'Tracking en tiempo real' },
+  { Icon: IconShield,    text: 'Viaje asegurado' },
+];
+
+const PARCEL_FEATURES: Feature[] = [
+  { Icon: IconPackage,   text: 'Sobres, documentos y paquetes pequeños' },
+  { Icon: IconMobile,    text: 'Cotiza desde la app' },
+  { Icon: IconLightning, text: 'Entrega mismo día' },
+  { Icon: IconSignal,    text: 'Tracking en vivo' },
+  { Icon: IconShield,    text: 'Seguro incluido' },
+  { Icon: IconMoney,     text: 'Precio justo sin sorpresas' },
+  { Icon: IconBell,      text: 'Notificación de entrega' },
+  { Icon: IconCamera,    text: 'Foto de confirmación' },
+];
+
+interface Benefit {
+  Icon: (props: { size?: number; className?: string }) => ReactElement;
+  title: string;
+  desc: string;
+}
+
+const TRAVELER_BENEFITS: Benefit[] = [
+  { Icon: IconShield,   title: 'Viaja Seguro',                              desc: 'Antes de subir, ve el perfil de la conductora o conductor, la foto del vehículo y las calificaciones de otros viajeros. Tu trayecto queda registrado de inicio a fin.' },
+  { Icon: IconStar,     title: 'Conductoras y Conductores Confiables',      desc: 'Cada conductora y conductor tiene calificaciones reales. Sabes quién te lleva y en qué carro viajarás antes de confirmar tu viaje.' },
+  { Icon: IconMoney,    title: 'Precio Claro, Sin Sorpresas',               desc: 'La app te muestra el precio antes de confirmar. Sin negociar, sin cambios inesperados al final del recorrido.' },
+  { Icon: IconLightning,title: 'Rápido y Fácil',                            desc: 'Abre Going, escribe tu destino y en segundos tienes tu viaje en camino. Pedir transporte nunca fue tan simple.' },
+  { Icon: IconRoute,    title: 'Aeropuerto y Viajes Largos',                desc: 'Organiza tu traslado al aeropuerto o a otra ciudad con anticipación. Llega a tiempo, sin el estrés de buscar transporte de último minuto.' },
+  { Icon: IconUser,     title: 'Servicio VIP Disponible',                   desc: 'Para reuniones importantes, eventos especiales o cuando quieres viajar con más comodidad. Elige el nivel de servicio que necesitas.' },
+  { Icon: IconPin,      title: 'Tracking en Tiempo Real',                   desc: 'Sigue tu ruta en vivo desde la app. Tu familia también puede ver dónde estás durante el trayecto.' },
+  { Icon: IconUsers,    title: 'Apoya la Comunidad Local',                  desc: 'Cada viaje genera ingresos para conductoras y conductores ecuatorianos de tu propia comunidad. Moverse con Going también es apoyar lo nuestro.' },
+  { Icon: IconPhone,    title: 'Soporte Siempre Disponible',                desc: 'Nuestro equipo está listo para ayudarte ante cualquier duda, objeto olvidado o inconveniente. No estás sola ni solo en ningún viaje.' },
+];
+
+interface DriverPerk {
+  Icon: (props: { size?: number; className?: string }) => ReactElement;
+  text: string;
+}
+
+const DRIVER_PERKS: DriverPerk[] = [
+  { Icon: IconCar,        text: 'Más viajes: conéctate y recibe solicitudes en tu zona' },
+  { Icon: IconClock,      text: 'Horarios flexibles: trabaja cuando quieras y como quieras' },
+  { Icon: IconMoney,      text: 'Pagos claros y transparentes, sin confusiones ni sorpresas' },
+  { Icon: IconShield,     text: 'Viajes registrados: mayor respaldo y seguridad en cada trayecto' },
+  { Icon: IconStar,       text: 'Calificaciones que construyen tu reputación' },
+  { Icon: IconGraduation, text: 'Academia Going: capacitación gratuita para conductoras y conductores' },
+  { Icon: IconHeadphones, text: 'Comunidad y soporte del equipo Going cuando lo necesites' },
 ];
 
 /* ── Main Page ──────────────────────────────────────────────── */
@@ -128,9 +221,6 @@ export default function HomePage() {
             {SLIDES[slide].region}
           </h1>
           <p className="text-white text-xl font-light opacity-80 mb-10 tracking-widest uppercase">Nos movemos contigo</p>
-          {/* Botón hero eliminado: era redundante con el form de búsqueda
-              que está más abajo en la sección #search-card. El usuario tiene
-              el form completo a la vista directa al hacer scroll. */}
 
           {/* Slide dots */}
           <div className="absolute bottom-10 flex gap-3">
@@ -139,7 +229,7 @@ export default function HomePage() {
                 key={i}
                 onClick={() => setSlide(i)}
                 className="rounded-full transition-all"
-                style={{ width: i === slide ? 28 : 8, height: 8, backgroundColor: i === slide ? '#ff4c41' : 'rgba(255,255,255,0.5)' }}
+                style={{ width: i === slide ? 28 : 8, height: 8, backgroundColor: i === slide ? COLORS.brand.red : 'rgba(255,255,255,0.5)' }}
                 aria-label={`Slide ${i + 1}`}
               />
             ))}
@@ -156,13 +246,15 @@ export default function HomePage() {
           <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
             <h2 className="text-gray-900 font-black text-2xl mb-2">¿A dónde viajas hoy?</h2>
             <p className="text-gray-500 text-sm mb-6">Encuentra tu próxima ruta en segundos.</p>
-            <a
+            <Link
               href="/ride"
-              className="inline-block w-full sm:w-auto px-10 py-4 text-white font-black text-lg rounded-2xl transition-all hover:opacity-90 hover:scale-[1.01] shadow-lg"
-              style={{ backgroundColor: '#ff4c41' }}
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-10 py-4 text-white font-black text-lg rounded-2xl transition-all hover:opacity-90 hover:scale-[1.01] shadow-lg"
+              style={{ backgroundColor: COLORS.brand.red }}
             >
-              Buscar viaje →
-            </a>
+              <IconSearch size={22} />
+              Buscar viaje
+              <IconArrowRight size={22} />
+            </Link>
           </div>
         </FadeIn>
       </section>
@@ -185,29 +277,33 @@ export default function HomePage() {
           <FadeIn dir="up" className="flex flex-col lg:flex-row lg:items-start gap-10">
             {/* Columna izquierda: título + descripción + botón */}
             <div className="lg:w-1/3">
-              <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: '#ff4c41' }}>Primeras rutas</span>
+              <span className="text-xs font-bold uppercase tracking-widest mb-3 block" style={{ color: COLORS.brand.red }}>Primeras rutas</span>
               <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.4rem)' }}>
                 Rutas a Quito<br />y su Aeropuerto
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo. Salidas <span className="font-bold" style={{ color: '#ff4c41' }}>cada hora</span>, ida y vuelta.
+                Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo. Salidas <span className="font-bold" style={{ color: COLORS.brand.red }}>cada hora</span>, ida y vuelta.
               </p>
 
               {/* Badges informativos */}
               <div className="flex flex-wrap gap-3 mb-8">
-                <span className="px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  🕐 Salidas cada hora
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <IconClock size={14} />
+                  Salidas cada hora
                 </span>
-                <span className="px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  🚙 SUV · 3 pasajeros
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <IconSuv size={14} />
+                  SUV · 3 pasajeros
                 </span>
-                <span className="px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  🔄 Ida y vuelta
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <IconRoundTrip size={14} />
+                  Ida y vuelta
                 </span>
               </div>
 
-              <Link href="/ride?type=shared" className="inline-flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-xl hover:opacity-90 transition-all w-fit" style={{ backgroundColor: '#ff4c41' }}>
-                Reservar viaje compartido →
+              <Link href="/ride?type=shared" className="inline-flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-xl hover:opacity-90 transition-all w-fit" style={{ backgroundColor: COLORS.brand.red }}>
+                Reservar viaje compartido
+                <IconArrowRight size={18} />
               </Link>
             </div>
 
@@ -256,7 +352,10 @@ export default function HomePage() {
                 </div>
                 <p className="text-gray-400 text-xs leading-relaxed mb-4">{r.detail}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400 text-xs">⏱ {r.time}</span>
+                  <span className="inline-flex items-center gap-1.5 text-gray-400 text-xs">
+                    <IconClock size={12} />
+                    {r.time}
+                  </span>
                   <span className="font-black text-sm" style={{ color: r.color }}>{r.price}</span>
                 </div>
               </div>
@@ -269,7 +368,7 @@ export default function HomePage() {
       <section className="py-14 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <FadeIn className="text-center mb-10">
-            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Nuestros servicios</span>
+            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Nuestros servicios</span>
             <h2 className="text-gray-900 font-black text-4xl mt-2">Todo lo que necesitas para moverte</h2>
             <p className="text-gray-500 text-lg mt-3 max-w-xl mx-auto">Tres servicios diseñados para Ecuador, pensados para ti.</p>
           </FadeIn>
@@ -281,7 +380,7 @@ export default function HomePage() {
               <div className="relative md:w-1/2 overflow-hidden" style={{ minHeight: 380 }}>
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                   style={{ backgroundImage: "url('/images/viaje compartido .png')" }} />
-                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: '#ff4c41' }}>Más popular</span>
+                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: COLORS.brand.red }}>Más popular</span>
               </div>
               {/* Texto */}
               <div className="md:w-1/2 p-10 md:p-12 flex flex-col justify-center">
@@ -290,27 +389,22 @@ export default function HomePage() {
                   Viaja de ciudad en ciudad en SUV o VAN con otros pasajeros. Reserva desde la app en segundos, sigue tu ruta en tiempo real y paga sin efectivo. Conductoras y conductores verificados, precio fijo.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-7">
-                  {[
-                    '📲 Reserva desde la app',
-                    '📍 Tracking en tiempo real',
-                    '💳 Pago sin efectivo',
-                    '⭐ Conductoras y conductores verificados',
-                    '🔔 Notificaciones al instante',
-                    '💬 Chat con la conductora o conductor',
-                    '🛡️ Viaje asegurado',
-                    '🚙 SUV y VAN disponibles',
-                  ].map(f => (
-                    <span key={f} className="text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">{f}</span>
+                  {SHARED_FEATURES.map(({ Icon, text }) => (
+                    <span key={text} className="inline-flex items-center gap-2 text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">
+                      <Icon size={16} className="flex-shrink-0" />
+                      <span>{text}</span>
+                    </span>
                   ))}
                 </div>
                 <div className="flex items-center gap-6">
                   <div>
                     <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2" style={{ color: '#ff4c41' }}>$10</span>
+                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.red }}>$10</span>
                     <span className="text-sm text-gray-400 ml-1">/ persona</span>
                   </div>
-                  <Link href="/ride?type=shared" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#ff4c41' }}>
-                    Reservar viaje compartido →
+                  <Link href="/ride?type=shared" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.red }}>
+                    Reservar viaje compartido
+                    <IconArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -324,7 +418,7 @@ export default function HomePage() {
               <div className="relative md:w-1/2 overflow-hidden" style={{ minHeight: 380 }}>
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                   style={{ backgroundImage: "url('/images/Viaje privado.png')" }} />
-                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10 bg-slate-700">Premium</span>
+                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: COLORS.brand.blue }}>Premium</span>
               </div>
               {/* Texto */}
               <div className="md:w-1/2 p-10 md:p-12 flex flex-col justify-center">
@@ -333,27 +427,22 @@ export default function HomePage() {
                   Reserva un SUV, VAN o bus exclusivo para ti y tu grupo. Agenda por servicio o por día, monitorea la ruta en vivo y comunícate directo con tu conductora o conductor desde la app.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-7">
-                  {[
-                    '📲 Agendamiento en la app',
-                    '🚙 SUV, VAN o bus',
-                    '🗺️ Ruta en vivo',
-                    '💬 Chat con tu conductora/conductor',
-                    '🗓️ Por servicio o por día',
-                    '👔 Conductora/conductor dedicado',
-                    '📍 Tracking en tiempo real',
-                    '🛡️ Viaje asegurado',
-                  ].map(f => (
-                    <span key={f} className="text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">{f}</span>
+                  {PRIVATE_FEATURES.map(({ Icon, text }) => (
+                    <span key={text} className="inline-flex items-center gap-2 text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">
+                      <Icon size={16} className="flex-shrink-0" />
+                      <span>{text}</span>
+                    </span>
                   ))}
                 </div>
                 <div className="flex items-center gap-6">
                   <div>
                     <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2 text-gray-900">$25</span>
+                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.blue }}>$25</span>
                     <span className="text-sm text-gray-400 ml-1">/ servicio</span>
                   </div>
-                  <Link href="/ride?type=van" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 bg-slate-800 hover:bg-slate-700">
-                    Contratar transporte privado →
+                  <Link href="/ride?type=van" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.blue }}>
+                    Contratar transporte privado
+                    <IconArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -367,7 +456,7 @@ export default function HomePage() {
               <div className="relative md:w-1/2 overflow-hidden" style={{ minHeight: 380 }}>
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                   style={{ backgroundImage: "url('/images/envìo.png')" }} />
-                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: '#1e3a8a' }}>Mismo día</span>
+                <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: COLORS.brand.blue }}>Mismo día</span>
               </div>
               {/* Texto */}
               <div className="md:w-1/2 p-10 md:p-12 flex flex-col justify-center">
@@ -376,27 +465,22 @@ export default function HomePage() {
                   Envía sobres, documentos o paquetes del tamaño de una maleta de mano a cualquier ciudad del Ecuador el mismo día. Cotiza y rastrea tu envío desde la app.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mb-7">
-                  {[
-                    '📦 Sobres, documentos y paquetes pequeños',
-                    '📲 Cotiza desde la app',
-                    '⚡ Entrega mismo día',
-                    '📡 Tracking en vivo',
-                    '🛡️ Seguro incluido',
-                    '💰 Precio justo sin sorpresas',
-                    '🔔 Notificación de entrega',
-                    '📸 Foto de confirmación',
-                  ].map(f => (
-                    <span key={f} className="text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">{f}</span>
+                  {PARCEL_FEATURES.map(({ Icon, text }) => (
+                    <span key={text} className="inline-flex items-center gap-2 text-gray-700 text-xs font-medium bg-gray-100 rounded-xl px-3 py-2.5">
+                      <Icon size={16} className="flex-shrink-0" />
+                      <span>{text}</span>
+                    </span>
                   ))}
                 </div>
                 <div className="flex items-center gap-6">
                   <div>
                     <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2 text-gray-900">$10</span>
+                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.blue }}>$8</span>
                     <span className="text-sm text-gray-400 ml-1">puerta a puerta</span>
                   </div>
-                  <Link href="/envios/cotizar" className="flex-1 block text-center text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a8a' }}>
-                    Enviar un paquete →
+                  <Link href="/envios/cotizar" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.blue }}>
+                    Enviar un paquete
+                    <IconArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -409,24 +493,24 @@ export default function HomePage() {
       <section className="py-14 px-4" style={{ background: 'linear-gradient(135deg, #fff5f5, #fff)' }}>
         <div className="max-w-4xl mx-auto">
           <FadeIn className="text-center mb-10">
-            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Simple y rápido</span>
+            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Simple y rápido</span>
             <h2 className="text-gray-900 font-black text-4xl mt-2">Cómo funciona Going</h2>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connector line */}
             <div className="hidden md:block absolute top-12 left-1/3 right-1/3 h-0.5 bg-gray-200" />
             {[
-              { step: '01', icon: '📍', title: 'Elige origen y destino', desc: 'Ingresa de dónde saldrás y a dónde vas. Te mostramos las mejores opciones disponibles.' },
-              { step: '02', icon: '💳', title: 'Confirma y paga', desc: 'Selecciona tu viaje, elige el tipo de servicio y paga de forma segura con tarjeta o efectivo.' },
-              { step: '03', icon: '🚗', title: 'Viaja con tracking live', desc: 'Sigue tu viaje en tiempo real desde la app. Tu familia también puede ver tu ubicación.' },
-            ].map((item, i) => (
-              <FadeIn key={item.step} delay={i * 0.15} className="text-center">
-                <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl mb-5 mx-auto" style={{ backgroundColor: i === 0 ? '#ff4c41' : i === 1 ? '#1e3a8a' : '#16a34a' }}>
-                  <span className="text-4xl">{item.icon}</span>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-900 text-white text-xs font-black flex items-center justify-center">{item.step}</span>
+              { step: '01', Icon: IconPin,  title: 'Elige origen y destino', desc: 'Ingresa de dónde saldrás y a dónde vas. Te mostramos las mejores opciones disponibles.', bg: COLORS.brand.red },
+              { step: '02', Icon: IconCard, title: 'Confirma y paga',         desc: 'Selecciona tu viaje, elige el tipo de servicio y paga de forma segura con tarjeta o efectivo.', bg: COLORS.brand.blue },
+              { step: '03', Icon: IconCar,  title: 'Viaja con tracking live', desc: 'Sigue tu viaje en tiempo real desde la app. Tu familia también puede ver tu ubicación.', bg: COLORS.brand.red },
+            ].map(({ step, Icon, title, desc, bg }, i) => (
+              <FadeIn key={step} delay={i * 0.15} className="text-center">
+                <div className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl mb-5 mx-auto text-white" style={{ backgroundColor: bg }}>
+                  <Icon size={42} />
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-900 text-white text-xs font-black flex items-center justify-center">{step}</span>
                 </div>
-                <h3 className="font-black text-xl text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                <h3 className="font-black text-xl text-gray-900 mb-2">{title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </FadeIn>
             ))}
           </div>
@@ -437,7 +521,7 @@ export default function HomePage() {
       <section id="destinos" className="py-14 px-4 bg-gray-950">
         <div className="max-w-7xl mx-auto">
           <FadeIn className="text-center mb-12">
-            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>4 mundos</span>
+            <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>4 mundos</span>
             <h2 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going</h2>
             <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going te lleva a todas.</p>
           </FadeIn>
@@ -484,22 +568,27 @@ export default function HomePage() {
 
 
       {/* ── Academia Going ───────────────────────────────────── */}
-      <section className="py-14 px-4" style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a8a)' }}>
+      <section className="py-14 px-4" style={{ background: `linear-gradient(135deg, #0f172a, ${COLORS.brand.blue})` }}>
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
             <span className="text-sm font-bold uppercase tracking-widest text-blue-300">Aprende con Going</span>
-            <h2 className="text-white font-black text-4xl mt-2">Academia Going</h2>
-            <p className="text-blue-200 text-lg mt-3 max-w-lg mx-auto">Capacitaciones gratuitas para conductores y proveedores turísticos debidamente verificados.</p>
+            <h2 className="text-white font-black text-4xl mt-2" style={{ fontFamily: 'var(--font-academia, serif)' }}>Academia Going</h2>
+            <p className="text-blue-200 text-lg mt-3 max-w-lg mx-auto">Capacitaciones gratuitas para conductoras, conductores y proveedores turísticos verificados.</p>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {ACADEMY_COURSES.map((c, i) => (
               <FadeIn key={c.title} delay={i * 0.1}>
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-all">
-                  <div className="text-4xl mb-4">{c.icon}</div>
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4" style={{ backgroundColor: c.iconColor }}>
+                    <c.Icon size={26} />
+                  </div>
                   <h4 className="text-white font-bold text-base mb-2">{c.title}</h4>
                   <div className="flex items-center gap-3 mt-4">
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: c.color }}>{c.level}</span>
-                    <span className="text-blue-300 text-xs">⏱ {c.duration}</span>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: c.iconColor }}>{c.level}</span>
+                    <span className="inline-flex items-center gap-1 text-blue-300 text-xs">
+                      <IconClock size={12} />
+                      {c.duration}
+                    </span>
                   </div>
                 </div>
               </FadeIn>
@@ -507,7 +596,9 @@ export default function HomePage() {
           </div>
           <FadeIn className="text-center">
             <Link href="/academy" className="inline-flex items-center gap-2 bg-white text-gray-900 font-black px-8 py-4 rounded-2xl hover:bg-gray-100 transition-all text-lg">
-              Ver todos los cursos →
+              <IconBook size={20} />
+              Ver todos los cursos
+              <IconArrowRight size={20} />
             </Link>
           </FadeIn>
         </div>
@@ -519,29 +610,21 @@ export default function HomePage() {
           <section className="py-14 px-4 bg-white">
             <div className="max-w-6xl mx-auto">
               <FadeIn className="text-center mb-10">
-                <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>Para viajeros</span>
+                <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Para viajeros</span>
                 <h2 className="text-gray-900 font-black mt-2 mb-4" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>¿Por qué viajar con Going?</h2>
                 <p className="text-gray-500 text-xl max-w-2xl mx-auto">Seguridad, comodidad y precio claro en cada viaje. Descubre por qué miles de ecuatorianos ya usan Going.</p>
               </FadeIn>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
-                {[
-                  { icon: '🛡️', title: 'Viaja Seguro', desc: 'Antes de subir, ve el perfil de la conductora o conductor, la foto del vehículo y las calificaciones de otros viajeros. Tu trayecto queda registrado de inicio a fin.' },
-                  { icon: '⭐', title: 'Conductoras y Conductores Confiables', desc: 'Cada conductora y conductor tiene calificaciones reales. Sabes quién te lleva y en qué carro viajarás antes de confirmar tu viaje.' },
-                  { icon: '💰', title: 'Precio Claro, Sin Sorpresas', desc: 'La app te muestra el precio antes de confirmar. Sin negociar, sin cambios inesperados al final del recorrido.' },
-                  { icon: '⚡', title: 'Rápido y Fácil', desc: 'Abre Going, escribe tu destino y en segundos tienes tu viaje en camino. Pedir transporte nunca fue tan simple.' },
-                  { icon: '✈️', title: 'Aeropuerto & Viajes Largos', desc: 'Organiza tu traslado al aeropuerto o a otra ciudad con anticipación. Llega a tiempo, sin el estrés de buscar transporte de último minuto.' },
-                  { icon: '👑', title: 'Servicio VIP Disponible', desc: 'Para reuniones importantes, eventos especiales o cuando quieres viajar con más comodidad. Elige el nivel de servicio que necesitas.' },
-                  { icon: '📍', title: 'Tracking en Tiempo Real', desc: 'Sigue tu ruta en vivo desde la app. Tu familia también puede ver dónde estás durante el trayecto.' },
-                  { icon: '🤝', title: 'Apoya la Comunidad Local', desc: 'Cada viaje genera ingresos para conductoras y conductores ecuatorianos de tu propia comunidad. Moverse con Going también es apoyar lo nuestro.' },
-                  { icon: '📞', title: 'Soporte Siempre Disponible', desc: 'Nuestro equipo está listo para ayudarte ante cualquier duda, objeto olvidado o inconveniente. No estás sola ni solo en ningún viaje.' },
-                ].map((b, i) => (
-                  <FadeIn key={b.title} delay={i * 0.05}>
+                {TRAVELER_BENEFITS.map(({ Icon, title, desc }, i) => (
+                  <FadeIn key={title} delay={i * 0.05}>
                     <div className="flex gap-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all h-full">
-                      <span className="text-3xl flex-shrink-0 mt-0.5">{b.icon}</span>
+                      <div className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: i % 2 === 0 ? COLORS.brand.red : COLORS.brand.blue }}>
+                        <Icon size={22} />
+                      </div>
                       <div>
-                        <h4 className="font-black text-gray-900 text-base mb-1.5">{b.title}</h4>
-                        <p className="text-gray-500 text-sm leading-relaxed">{b.desc}</p>
+                        <h4 className="font-black text-gray-900 text-base mb-1.5">{title}</h4>
+                        <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
                       </div>
                     </div>
                   </FadeIn>
@@ -549,10 +632,11 @@ export default function HomePage() {
               </div>
 
               <FadeIn className="text-center">
-                <p className="text-gray-400 text-base mb-6 italic">"Tu tranquilidad es lo primero. Con Going, cada viaje está pensado para que llegues seguro a tu destino."</p>
+                <p className="text-gray-400 text-base mb-6 italic">&ldquo;Tu tranquilidad es lo primero. Con Going, cada viaje está pensado para que llegues seguro a tu destino.&rdquo;</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 text-white font-black px-10 py-4 rounded-2xl text-lg transition-all hover:opacity-90 hover:scale-105 shadow-xl" style={{ backgroundColor: '#ff4c41' }}>
-                    Registrarme gratis →
+                  <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 text-white font-black px-10 py-4 rounded-2xl text-lg transition-all hover:opacity-90 hover:scale-105 shadow-xl" style={{ backgroundColor: COLORS.brand.red }}>
+                    Registrarme gratis
+                    <IconArrowRight size={22} />
                   </Link>
                   <Link href="/auth/login" className="inline-flex items-center justify-center border-2 border-gray-300 text-gray-700 font-bold px-10 py-4 rounded-2xl text-lg hover:bg-gray-50 transition-all">
                     Ya tengo cuenta
@@ -563,7 +647,7 @@ export default function HomePage() {
           </section>
 
           {/* ── Únete como Conductor ───────────────────────── */}
-          <section className="py-14 px-4" style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a8a)' }}>
+          <section className="py-14 px-4" style={{ background: `linear-gradient(135deg, #0f172a, ${COLORS.brand.blue})` }}>
             <div className="max-w-6xl mx-auto">
               <div className="flex flex-col md:flex-row gap-12 items-center">
                 {/* Foto grande */}
@@ -582,23 +666,19 @@ export default function HomePage() {
                     Tu vehículo es una oportunidad. Únete a la comunidad Going y genera ingresos con total flexibilidad.
                   </p>
                   <ul className="space-y-4 mb-10">
-                    {[
-                      { icon: '🚗', text: 'Más viajes: conéctate y recibe solicitudes en tu zona' },
-                      { icon: '🕐', text: 'Horarios flexibles: trabaja cuando quieras y como quieras' },
-                      { icon: '💵', text: 'Pagos claros y transparentes, sin confusiones ni sorpresas' },
-                      { icon: '🛡️', text: 'Viajes registrados: mayor respaldo y seguridad en cada trayecto' },
-                      { icon: '⭐', text: 'Calificaciones que construyen tu reputación' },
-                      { icon: '🎓', text: 'Academia Going: capacitación gratuita para conductoras y conductores' },
-                      { icon: '🤝', text: 'Comunidad y soporte del equipo Going cuando lo necesites' },
-                    ].map((item) => (
-                      <li key={item.text} className="flex items-start gap-3">
-                        <span className="text-xl flex-shrink-0">{item.icon}</span>
-                        <span className="text-blue-100 text-base leading-relaxed">{item.text}</span>
+                    {DRIVER_PERKS.map(({ Icon, text }) => (
+                      <li key={text} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white">
+                          <Icon size={18} />
+                        </span>
+                        <span className="text-blue-100 text-base leading-relaxed pt-1">{text}</span>
                       </li>
                     ))}
                   </ul>
                   <Link href="/conductores" className="inline-flex items-center gap-2 bg-white text-gray-900 font-black px-8 py-4 rounded-2xl text-lg hover:bg-gray-100 transition-all hover:scale-105 shadow-xl">
-                    Unirme como conductora/conductor →
+                    <IconCheckCircle size={20} />
+                    Unirme como conductora/conductor
+                    <IconArrowRight size={20} />
                   </Link>
                 </FadeIn>
               </div>
