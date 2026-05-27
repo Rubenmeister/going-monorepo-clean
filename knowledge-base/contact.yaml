@@ -1,0 +1,51 @@
+# Contacto oficial Going
+#
+# IMPORTANTE: el teléfono personal del fundador NO debe aparecer aquí ni en
+# ningún sistema público. Los números abajo son de la empresa Going (Thorn AI
+# Technologies).
+
+contact:
+  # Canal preferido — atención al cliente
+  whatsapp:
+    number: "+593 98 403 7949"
+    label:  "WhatsApp Going"
+    hours:  "24/7 (atención automatizada con escalada a humano)"
+
+  # Email general
+  email: soporte@goingec.com
+
+  # Email de privacidad / DPO (requerido por LOPDP Ecuador)
+  privacy_email: privacidad@goingec.com
+
+# Websites
+websites:
+  public:       https://app.goingec.com           # webapp pasajero
+  business:     https://empresas.goingec.com      # panel corporativo
+  marketing:    https://goingec.com               # landing público
+  status_page:  null                              # pendiente lanzamiento
+
+# Apps móviles
+apps:
+  android:
+    available: true
+    package:   com.thornai.goingmobile
+    store_url: https://play.google.com/store/apps/details?id=com.thornai.goingmobile
+  ios:
+    available: false
+    notes:     "Pendiente Apple Developer account. ETA por confirmar."
+
+# Empresa
+company:
+  legal_name:  "THORN AI Technologies"
+  brand:       "Going"
+  country:     Ecuador
+  city:        Quito
+  tagline:     "Nos movemos contigo."
+
+# Redes sociales (completar cuando estén activas)
+social:
+  instagram:   null
+  facebook:    null
+  tiktok:      null
+  linkedin:    null
+  x_twitter:   null

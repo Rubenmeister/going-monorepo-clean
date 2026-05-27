@@ -1,0 +1,83 @@
+# Flota Going — tipos de vehículo y capacidades
+#
+# Esta es la lista CANÓNICA de vehículos que Going opera. Las capacidades son
+# operativas (no de fabricante): número máximo de pasajeros que la empresa
+# permite asignar a ese vehículo.
+#
+# Cada vehiculo tiene:
+#   id          → identificador interno (no cambiar, lo usa el backend)
+#   label       → nombre que ve el cliente
+#   capacity    → pasajeros máximos
+#   uso_tipico  → para qué se ofrece en la UI
+#   activo      → si está habilitado en la app HOY
+#
+# Vehículos compartidos (carpooling) → solo SUV y VAN.
+# Vehículos privados → toda la flota.
+
+fleet:
+  - id:         auto
+    label:      Auto
+    capacity:   4
+    uso_tipico: "Pareja, familia chica, ejecutivo · viaje urbano"
+    activo:     true
+    compartido_disponible: false   # Auto solo en privado
+    privado_disponible:    true
+
+  - id:         suv
+    label:      SUV
+    capacity:   4
+    uso_tipico: "Familia con equipaje · viajes intercity"
+    activo:     true
+    compartido_disponible: true
+    privado_disponible:    true
+
+  - id:         suv_xl
+    label:      SUV XL
+    capacity:   5
+    uso_tipico: "Familia más grande con equipaje · viajes intercity"
+    activo:     true
+    compartido_disponible: true
+    privado_disponible:    true
+
+  - id:         van
+    label:      VAN
+    capacity:   7
+    uso_tipico: "Grupo de amigos, familia extendida"
+    activo:     true
+    compartido_disponible: true
+    privado_disponible:    true
+
+  - id:         van_xl
+    label:      VAN XL
+    capacity:   12
+    uso_tipico: "Grupo grande, delegación pequeña"
+    activo:     true
+    compartido_disponible: false   # Solo privado por economía de cupo
+    privado_disponible:    true
+
+  - id:         minibus
+    label:      Minibús
+    capacity:   20
+    uso_tipico: "Tour, evento, delegación mediana"
+    activo:     true
+    compartido_disponible: false
+    privado_disponible:    true
+
+  - id:         bus
+    label:      Bus
+    capacity:   30
+    uso_tipico: "Corporativo, promoción escolar, evento grande"
+    activo:     true
+    compartido_disponible: false
+    privado_disponible:    true
+
+# Restricciones operativas
+restrictions:
+  envios:
+    # Por seguridad del paquete y del conductor, los envíos van SOLO en SUV/SUV XL.
+    # Los vehículos más grandes (VAN+) se reservan para pasajeros.
+    permitidos: [suv, suv_xl]
+  carpooling:
+    # El carpool solo se ofrece en SUV y VAN. SUV XL existe pero rara vez se
+    # llena con pasajeros random — se ofrece sobre todo en privado.
+    permitidos: [suv, suv_xl, van]
