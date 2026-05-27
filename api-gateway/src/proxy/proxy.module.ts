@@ -299,6 +299,16 @@ export class ProxyModule implements NestModule {
     guard('tours', svc.tours);
     guard('accommodations', svc.accommodations);
     guard('experiences', svc.experiences);
+    // /parcels/quote — PÚBLICO (mismo razonamiento que /search: un usuario
+    // anónimo debe poder ver el precio del envío antes de registrarse).
+    // El envios-service.ParcelController.quote() está decorado @Public()
+    // pero el gateway debe permitir el preflight antes — montamos forward
+    // sin jwtAuthSkipOptions para esta ruta exacta.
+    if (svc.parcels) {
+      consumer
+        .apply(makeForwardMiddleware(svc.parcels, 'parcels'))
+        .forRoutes({ path: 'parcels/quote', method: RequestMethod.POST });
+    }
     guard('parcels', svc.parcels);
     guard('notifications', svc.notifications);
     guard('tracking', svc.tracking);
