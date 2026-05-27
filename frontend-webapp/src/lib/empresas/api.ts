@@ -283,16 +283,19 @@ export async function updateUserRole(
 }
 
 // Configuración
+// El endpoint backend canónico es PUT /corporate/settings (corporate-service).
+// El companyId se deriva del JWT en el server, no se pasa por path. Aceptamos
+// el companyId aquí para compat con el caller actual pero lo ignoramos.
 export async function updateCompanySettings(
   token: string,
-  companyId: string,
+  _companyId: string,
   data: any
 ): Promise<any> {
   return corpFetch(
-    `/api/v1/empresas/companies/${companyId}/settings`,
+    `/corporate/settings`,
     token,
     {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(data),
     }
   );
