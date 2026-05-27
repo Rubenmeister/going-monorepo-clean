@@ -345,20 +345,32 @@ export default function HomePage() {
               style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}
             />
 
-            <span className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
-              <IconMobile size={14} />
-              App de transporte · Ecuador
+            <span className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] mb-5 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: COLORS.brand.yellow }}>
+              <IconLightning size={14} />
+              1<sup>ra</sup> superapp de movilidad de Latinoamérica
             </span>
 
             <h1 className="font-black mb-4 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
               Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
-              Descargá <strong className="text-white">Going</strong> y reservá tu viaje compartido,
-              privado o un envío entre ciudades del Ecuador. Conductoras y conductores
-              verificados, tracking en vivo y precio fijo desde el teléfono o la web.
+            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed mb-4">
+              La única app que conecta tu viaje <strong className="text-white">dentro</strong> y <strong className="text-white">entre</strong> ciudades del Ecuador.
+              Compartí asiento entre ciudades, llevá a tu grupo en VAN o bus, o enviá un paquete en el día.
             </p>
+
+            {/* Píldoras del diferencial dual */}
+            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-xs">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold" style={{ backgroundColor: 'rgba(255,76,65,0.18)', color: '#ffd9d6', border: `1px solid ${COLORS.brand.red}` }}>
+                <IconPin size={12} /> Intracity (dentro de ciudad)
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold" style={{ backgroundColor: 'rgba(255,210,83,0.18)', color: '#fff3cf', border: `1px solid ${COLORS.brand.yellow}` }}>
+                <IconRoute size={12} /> Intercity (entre ciudades)
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-white/90" style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.25)' }}>
+                <IconUsers size={12} /> 1 a 30 pasajeros
+              </span>
+            </div>
           </FadeIn>
 
           {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
@@ -369,13 +381,17 @@ export default function HomePage() {
           <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
-              {/* CARD 1: Viaje Compartido */}
+              {/* CARD 1: Viaje Compartido — INTERCITY hero
+                 El carpooling entre ciudades es nuestro diferencial #1:
+                 dividís el costo del SUV/VAN con otras 3-6 personas que van
+                 al mismo destino. Inexistente en la región hasta hoy.
+              */}
               <Link
                 href="/ride?type=shared"
                 className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,76,65,0.4)] transition-all relative overflow-hidden"
               >
                 <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: COLORS.brand.red }}>
-                  Más popular
+                  Intercity
                 </span>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
                   <IconSuv size={30} />
@@ -383,9 +399,13 @@ export default function HomePage() {
                 <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Viaje Compartido
                 </h3>
-                <p className="text-xs text-gray-500 mb-4 flex-1">
-                  De ciudad en ciudad, en SUV o VAN, pagás solo tu asiento.
+                <p className="text-xs text-gray-500 mb-3 flex-1">
+                  <strong className="text-gray-700">Carpooling entre ciudades.</strong> Pagás solo tu asiento en SUV o VAN — hasta un 70 % más barato que ir en privado.
                 </p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>SUV 4 pax</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>VAN 7 pax</span>
+                </div>
                 <div className="flex items-end justify-between">
                   <div>
                     <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
@@ -399,13 +419,17 @@ export default function HomePage() {
                 </div>
               </Link>
 
-              {/* CARD 2: Viaje Privado */}
+              {/* CARD 2: Viaje Privado — INTRACITY + INTERCITY · grupos chicos y grandes
+                 Acá vive la flexibilidad total: desde Auto para una pareja
+                 hasta Bus 30 pax para una empresa o promoción. Único en la
+                 región que cubre todo el rango.
+              */}
               <Link
                 href="/ride?type=van"
                 className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(255,210,83,0.4)] transition-all relative overflow-hidden"
               >
                 <span className="absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
-                  Premium
+                  1 — 30 pax
                 </span>
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
                   <IconVan size={30} />
@@ -413,9 +437,16 @@ export default function HomePage() {
                 <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Viaje Privado
                 </h3>
-                <p className="text-xs text-gray-500 mb-4 flex-1">
-                  SUV, VAN o bus exclusivo para vos y tu grupo, por servicio o por día.
+                <p className="text-xs text-gray-500 mb-3 flex-1">
+                  <strong className="text-gray-700">De 1 a 30 personas.</strong> Auto, SUV, VAN, Minibús o Bus exclusivo para vos y tu grupo, dentro o entre ciudades.
                 </p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Auto</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>SUV</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>VAN</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Minibús</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>Bus</span>
+                </div>
                 <div className="flex items-end justify-between">
                   <div>
                     <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
@@ -429,7 +460,7 @@ export default function HomePage() {
                 </div>
               </Link>
 
-              {/* CARD 3: Envíos */}
+              {/* CARD 3: Envíos — urbano + interurbano */}
               <Link
                 href="/envios/cotizar"
                 className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-2xl hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(0,0,0,0.4)] transition-all relative overflow-hidden"
@@ -443,9 +474,13 @@ export default function HomePage() {
                 <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
                   Envíos
                 </h3>
-                <p className="text-xs text-gray-500 mb-4 flex-1">
-                  Sobres, documentos o paquetes de puerta a puerta, dentro de Ecuador.
+                <p className="text-xs text-gray-500 mb-3 flex-1">
+                  <strong className="text-gray-700">Puerta a puerta.</strong> Sobres, documentos o paquetes — express urbano o entre ciudades aprovechando los viajes Going en ruta.
                 </p>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">Urbano</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">Interurbano</span>
+                </div>
                 <div className="flex items-end justify-between">
                   <div>
                     <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Desde</span>
@@ -889,6 +924,125 @@ export default function HomePage() {
             </FadeIn>
 
           </div>
+        </div>
+      </section>
+
+      {/* ── Flota: el rango completo (1 a 30 pax) ─────────────
+         Ningún ride-hailing de la región cubre desde SUV hasta Bus.
+         Esto es el ENGRANAJE del diferencial dual: para cada viaje
+         (1 persona urbano · 4 personas a la playa · 30 personas en
+         tour corporativo) hay un vehículo justo y una tarifa justa.
+         Capacidades reales del backend (libs/pricing/fares.ts).
+      */}
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn className="text-center mb-10">
+            <span className="text-sm font-black uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Nuestra flota</span>
+            <h2 className="text-gray-900 font-black text-4xl mt-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+              De 1 a 30 personas — sin cambiar de app
+            </h2>
+            <p className="text-gray-500 text-lg mt-3 max-w-2xl mx-auto">
+              El único catálogo en Ecuador que conecta un viaje rápido en SUV con un tour
+              corporativo en Bus. Mismo precio fijo, misma tracking, misma app.
+            </p>
+          </FadeIn>
+
+          <FadeIn dir="up" delay={0.1}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+
+              {/* SUV — 4 pax */}
+              <div className="bg-white rounded-2xl p-5 text-center border border-gray-200 hover:border-transparent hover:shadow-lg transition-all">
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                  <IconSuv size={28} />
+                </div>
+                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>SUV</h3>
+                <p className="text-xs text-gray-500 mb-2">Hasta 4 pax</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Familia · pareja</p>
+              </div>
+
+              {/* SUV XL — 5 pax */}
+              <div className="bg-white rounded-2xl p-5 text-center border border-gray-200 hover:border-transparent hover:shadow-lg transition-all">
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+                  <IconSuv size={28} />
+                </div>
+                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>SUV XL</h3>
+                <p className="text-xs text-gray-500 mb-2">Hasta 5 pax</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Familia + equipaje</p>
+              </div>
+
+              {/* VAN — 7 pax */}
+              <div className="rounded-2xl p-5 text-center transition-all hover:shadow-xl" style={{ backgroundColor: COLORS.brand.yellowBg, border: `2px solid ${COLORS.brand.yellow}` }}>
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
+                  <IconVan size={28} />
+                </div>
+                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>VAN</h3>
+                <p className="text-xs text-gray-700 mb-2 font-bold">Hasta 7 pax</p>
+                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellowDark }}>Grupo de amigos</p>
+              </div>
+
+              {/* Minibús — 20 pax */}
+              <div className="rounded-2xl p-5 text-center transition-all hover:shadow-xl" style={{ backgroundColor: COLORS.brand.yellowBg, border: `2px solid ${COLORS.brand.yellow}` }}>
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
+                  <IconVan size={28} />
+                </div>
+                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Minibús</h3>
+                <p className="text-xs text-gray-700 mb-2 font-bold">Hasta 20 pax</p>
+                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellowDark }}>Tour · evento</p>
+              </div>
+
+              {/* Bus — 30 pax */}
+              <div className="rounded-2xl p-5 text-center text-white transition-all hover:shadow-xl col-span-2 md:col-span-1" style={{ backgroundColor: COLORS.brand.black }}>
+                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.red, color: '#fff' }}>
+                  <IconVan size={28} />
+                </div>
+                <h3 className="font-black text-white text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Bus</h3>
+                <p className="text-xs text-white/80 mb-2 font-bold">30+ pax</p>
+                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellow }}>Corporativo · promoción</p>
+              </div>
+
+            </div>
+          </FadeIn>
+
+          {/* Cinta de diferencial dual */}
+          <FadeIn dir="up" delay={0.25} className="mt-10">
+            <div className="rounded-3xl p-6 md:p-8 text-white text-center" style={{ background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a1a1a 100%)` }}>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.red }}>
+                    <IconPin size={22} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: COLORS.brand.yellow }}>Intracity</p>
+                    <p className="font-bold">Dentro de la ciudad</p>
+                  </div>
+                </div>
+
+                <div className="hidden md:block w-px h-12 bg-white/20" />
+
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
+                    <IconRoute size={22} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: COLORS.brand.yellow }}>Intercity</p>
+                    <p className="font-bold">Entre ciudades del Ecuador</p>
+                  </div>
+                </div>
+
+                <div className="hidden md:block w-px h-12 bg-white/20" />
+
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.25)' }}>
+                    <IconLightning size={22} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: COLORS.brand.yellow }}>1ra superapp</p>
+                    <p className="font-bold">de movilidad en Latam</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
