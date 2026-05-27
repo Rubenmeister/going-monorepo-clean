@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ComponentType } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { COLORS } from '../../components/design-tokens';
+import {
+  IconUser, IconGlobe, IconMobile, IconCamera, IconBook, IconMap,
+  IconBook as IconReading, IconHeadphones, IconPlay, IconChart, IconQuiz,
+  IconMedal, IconArrowLeft, IconArrowRight, IconCheckCircle, IconStar,
+} from '../../components/icons';
+
+type IconComponent = ComponentType<{ size?: number; className?: string }>;
 
 /* ─────────────────────────────────────────────
    COURSE CONTENT DATABASE
@@ -34,7 +42,7 @@ interface Lesson {
 
 interface CourseData {
   id: string;
-  icon: string;
+  Icon: IconComponent;
   school: string;
   schoolColor: string;
   title: string;
@@ -49,13 +57,13 @@ const COURSES_DB: Record<string, CourseData> = {
   // ─── CONDUCTORES ───────────────────────────────────────────────
   c1: {
     id: 'c1',
-    icon: '👋',
+    Icon: IconUser,
     school: 'Escuela de Conductores',
-    schoolColor: '#ff4c41',
+    schoolColor: COLORS.brand.red,
     title: 'La Primera Impresión',
     subtitle: 'Módulo 1 — Ruta del Volante',
     description: 'El arte de recibir. Checklist del vehículo, el saludo Going, uso del lanyard y manejo de equipaje. Este módulo es la base de todo: los primeros 30 segundos definen la calificación del viaje.',
-    badge: '🏅 Conductor Estrella',
+    badge: 'Conductor Estrella',
     lessons: [
       {
         id: 'c1-l1',
@@ -243,13 +251,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   // ─── TRONCO COMÚN ──────────────────────────────────────────────
   tc1: {
     id: 'tc1',
-    icon: '🌍',
+    Icon: IconGlobe,
     school: 'Tronco Común — Todos los roles',
-    schoolColor: '#ff4c41',
+    schoolColor: COLORS.brand.red,
     title: 'El ADN de Going',
     subtitle: 'Filosofía y hospitalidad ecuatoriana',
     description: 'La misión de Going, hospitalidad ecuatoriana, empatía, resolución pacífica de problemas y por qué somos embajadores del país.',
-    badge: '🔰 Proveedor Verificado Going',
+    badge: 'Proveedor Verificado Going',
     lessons: [
       {
         id: 'tc1-l1',
@@ -358,13 +366,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   // ─── TRONCO COMÚN tc2 ─────────────────────────────────────────
   tc2: {
     id: 'tc2',
-    icon: '📱',
+    Icon: IconMobile,
     school: 'Tronco Común — Todos los roles',
-    schoolColor: '#ff4c41',
+    schoolColor: COLORS.brand.red,
     title: 'Uso de la Plataforma',
     subtitle: 'Reservas, cobros y emergencias',
     description: 'Cómo aceptar reservas, usar el chat con traducción automática, entender los cobros y reportar emergencias.',
-    badge: '📱 Experto en la App',
+    badge: 'Experto en la App',
     lessons: [
       {
         id: 'tc2-v1',
@@ -440,13 +448,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   // ─── ANFITRIONES ──────────────────────────────────────────────
   a1: {
     id: 'a1',
-    icon: '📸',
+    Icon: IconCamera,
     school: 'Escuela de Anfitriones',
-    schoolColor: '#3B82F6',
+    schoolColor: COLORS.system.blue,
     title: 'Fotografía con el Celular',
     subtitle: 'Fotos que venden el vibe',
     description: 'Luz natural, ángulos, composición y edición gratis. Convierte tu teléfono en una cámara profesional para mostrar tu alojamiento.',
-    badge: '📸 Fotógrafo Going',
+    badge: 'Fotógrafo Going',
     lessons: [
       {
         id: 'a1-l1',
@@ -567,13 +575,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   // ─── GUÍAS ─────────────────────────────────────────────────────
   g1: {
     id: 'g1',
-    icon: '📖',
+    Icon: IconBook,
     school: 'Escuela de Guías Locales',
-    schoolColor: '#10B981',
+    schoolColor: COLORS.state.success,
     title: 'El Arte del Storytelling',
     subtitle: 'Cuenta tu historia, vende tu experiencia',
     description: 'Técnicas para estructurar la historia de tu comunidad, artesanía o taller. Cómo crear momentos memorables que hagan que los viajeros te recomienden.',
-    badge: '📖 Narrador Going',
+    badge: 'Narrador Going',
     lessons: [
       {
         id: 'g1-l1',
@@ -653,13 +661,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   // ─── VIAJEROS ──────────────────────────────────────────────────
   v1: {
     id: 'v1',
-    icon: '🗺️',
+    Icon: IconMap,
     school: 'Escuela de Viajeros',
-    schoolColor: '#F59E0B',
+    schoolColor: COLORS.brand.yellowDark,
     title: 'Viaja Inteligente con Going',
     subtitle: 'Guía completa del pasajero',
     description: 'Cómo reservar, rastrear tu viaje, comunicarte con el conductor y usar todas las funciones de la app.',
-    badge: '🌟 Viajero Going Pro',
+    badge: 'Viajero Going Pro',
     lessons: [
       {
         id: 'v1-l1',
@@ -729,23 +737,25 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
    FORMAT RENDERER
    ───────────────────────────────────────────── */
 function FormatIcon({ format }: { format: LessonFormat }) {
-  const icons: Record<LessonFormat, string> = {
-    text: '📖',
-    podcast: '🎧',
-    video: '📺',
-    slides: '📊',
-    quiz: '✅',
+  const ICONS: Record<LessonFormat, IconComponent> = {
+    text:    IconReading,
+    podcast: IconHeadphones,
+    video:   IconPlay,
+    slides:  IconChart,
+    quiz:    IconQuiz,
   };
-  const labels: Record<LessonFormat, string> = {
-    text: 'Lectura',
+  const LABELS: Record<LessonFormat, string> = {
+    text:    'Lectura',
     podcast: 'Podcast',
-    video: 'Video',
-    slides: 'Diapositivas',
-    quiz: 'Quiz',
+    video:   'Video',
+    slides:  'Diapositivas',
+    quiz:    'Quiz',
   };
+  const I = ICONS[format];
   return (
-    <span className="text-xs text-gray-500">
-      {icons[format]} {labels[format]}
+    <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+      <I size={12} />
+      {LABELS[format]}
     </span>
   );
 }
@@ -893,7 +903,9 @@ function LessonContent({ lesson, schoolColor }: { lesson: Lesson; schoolColor: s
       return (
         <div>
           <div className={`rounded-2xl p-6 mb-6 text-center ${passed ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <div className="text-4xl mb-2">{passed ? '🎉' : '📖'}</div>
+            <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-2 text-white ${passed ? 'bg-green-500' : 'bg-red-500'}`}>
+              {passed ? <IconCheckCircle size={32} /> : <IconBook size={32} />}
+            </div>
             <h3 className={`text-xl font-bold mb-1 ${passed ? 'text-green-700' : 'text-red-700'}`}>
               {passed ? '¡Aprobado!' : 'Inténtalo de nuevo'}
             </h3>
@@ -986,12 +998,15 @@ export default function CoursePage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">📚</div>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-4 text-white" style={{ backgroundColor: COLORS.brand.red }}>
+            <IconBook size={36} />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Curso en construcción</h1>
           <p className="text-gray-500 mb-6">Este curso estará disponible muy pronto. Mientras tanto, prueba otro.</p>
           <Link href="/academy"
-            className="inline-block px-6 py-3 rounded-xl text-white font-bold hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#ff4c41' }}>
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: COLORS.brand.red }}>
+            <IconArrowLeft size={16} />
             Ver todos los cursos
           </Link>
         </div>
@@ -1016,8 +1031,9 @@ export default function CoursePage() {
       {/* ── Top bar ── */}
       <div className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Link href="/academy" className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
-            ← Academia
+          <Link href="/academy" className="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors text-sm">
+            <IconArrowLeft size={14} />
+            Academia
           </Link>
           <span className="text-gray-200">|</span>
           <span className="text-xs font-semibold truncate" style={{ color: course.schoolColor }}>
@@ -1041,8 +1057,10 @@ export default function CoursePage() {
             {/* Course header */}
             <div className="p-5 border-b border-gray-100"
               style={{ background: `linear-gradient(135deg, ${course.schoolColor}12, ${course.schoolColor}06)` }}>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">{course.icon}</span>
+              <div className="flex items-center gap-3 mb-1">
+                <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl flex-shrink-0" style={{ backgroundColor: course.schoolColor, color: '#fff' }}>
+                  <course.Icon size={22} />
+                </span>
                 <div>
                   <h2 className="font-bold text-gray-900 text-sm leading-snug">{course.title}</h2>
                   <p className="text-xs mt-0.5" style={{ color: course.schoolColor }}>{course.subtitle}</p>
@@ -1083,7 +1101,9 @@ export default function CoursePage() {
             {/* Badge earned */}
             {completedLessons.size === course.lessons.length && (
               <div className="p-4 border-t border-gray-100 bg-green-50 text-center">
-                <div className="text-2xl mb-1">🏅</div>
+                <div className="flex justify-center mb-1 text-green-600">
+                  <IconMedal size={28} />
+                </div>
                 <p className="text-xs font-bold text-green-700">{course.badge}</p>
                 <p className="text-xs text-green-600">¡Curso completado!</p>
               </div>

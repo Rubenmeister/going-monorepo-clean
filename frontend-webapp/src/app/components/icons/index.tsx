@@ -387,6 +387,76 @@ export const IconHeadphones = (p: IconProps) => (
   </Svg>
 );
 
+/** ▶ Play — video / curso en formato audiovisual */
+export const IconPlay = (p: IconProps) => (
+  <Svg {...p} fill="currentColor" stroke="none">
+    <polygon points="6 4 20 12 6 20 6 4"/>
+  </Svg>
+);
+
+/** 🔧 Llave/herramienta — mantenimiento, mecánica preventiva */
+export const IconTool = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </Svg>
+);
+
+/** ❓ Pregunta / quiz */
+export const IconQuiz = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </Svg>
+);
+
+/** 📋 Clipboard — checklist, logística */
+export const IconClipboard = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+    <rect x="9" y="3" width="6" height="4" rx="1"/>
+  </Svg>
+);
+
+/** 🌱 Hoja / sostenibilidad */
+export const IconLeaf = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c1.4 9.3-2 13.5-8.2 17.04Z"/>
+    <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+  </Svg>
+);
+
+/** 🎨 Paleta — diseño, decoración */
+export const IconPalette = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2Z"/>
+  </Svg>
+);
+
+/** 🥉🥈🥇 Medalla */
+export const IconMedal = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/>
+    <path d="M11 12 5.12 2.2"/>
+    <path d="m13 12 5.88-9.8"/>
+    <path d="M8 7h8"/>
+    <circle cx="12" cy="17" r="5"/>
+    <path d="M12 18v-2h-.5"/>
+  </Svg>
+);
+
+/** 🗺️ Brújula / explorar — guías locales */
+export const IconCompass = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10"/>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+  </Svg>
+);
+
 /** 📊 Gráfico */
 export const IconChart = (p: IconProps) => (
   <Svg {...p}>
