@@ -18,7 +18,9 @@ import {
 import { AnalyticsService } from '../application/services/analytics.service';
 import { CorporateJwtAuthGuard } from '@going-monorepo-clean/features-corporate-auth';
 
-@Controller('api/analytics')
+// Path: el api-gateway forward es /analytics/* (sin el prefijo /api/).
+// Antes este controller estaba en /api/analytics/* y devolvía 404 al gateway.
+@Controller('analytics')
 @UseGuards(CorporateJwtAuthGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
