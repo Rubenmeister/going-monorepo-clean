@@ -571,6 +571,49 @@ export class CorporateService {
     return Array.isArray(data) ? data : (data as any)?.bookings ?? [];
   }
 
+  // ── Equipo: invitaciones ───────────────────────────────────────────────
+
+  private readonly invitationsByCompany: Map<string, any[]> = new Map();
+
+  /**
+   * Crea una invitación. Por ahora la persistimos in-memory y delegamos el
+   * email al notifications-service cuando esté disponible. Sin email, la
+   * empresa puede compartir el link manualmente.
+   */
+  async inviteTeamMember(
+    companyId: string,
+    invitedBy: string,
+    data: { email: string; firstName?: string; lastName?: string; role: string },
+  ): Promise<{ invitationId: string; email: string; inviteLink: string }> {
+    const invitationId = `inv_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const invitation = {
+      id: invitationId,
+      companyId,
+      invitedBy,
+      email: data.email.toLowerCase().trim(),
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: data.role,
+      status: 'pending', // pending | accepted | expired
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    const arr = this.invitationsByCompany.get(companyId) ?? [];
+    arr.unshift(invitation);
+    this.invitationsByCompany.set(companyId, arr);
+
+    const baseUrl = process.env.APP_BASE_URL || 'https://app.goingec.com';
+    const inviteLink = `${baseUrl}/empresas/auth/accept-invite?token=${invitationId}`;
+
+    this.logger.log(
+      `Invitation ${invitationId} for ${invitation.email} role=${invitation.role} (link: ${inviteLink})`,
+    );
+
+    // TODO: trigger email via notifications-service:
+    //   POST notifications-url/notifications/send with template "corporate_invite"
+    return { invitationId, email: invitation.email, inviteLink };
+  }
+
   // ── Quotes (cotizaciones) ──────────────────────────────────────────────
   // In-memory por ahora — el frontend mostraba demo data y no había
   // persistencia. Si se necesita persistir, agregar un Schema/Repository
