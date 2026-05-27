@@ -1,0 +1,244 @@
+# Ruta Sierra Centro — Quito ↔ Latacunga ↔ Ambato ↔ Baños ↔ Riobamba
+#
+# ⚠️ TARIFAS PROVISIONALES — confirmar con operaciones Going antes del lanzamiento.
+#
+# Ver formato y recargos en ruta-norte.yaml (mismas reglas).
+
+tramos:
+  - ruta: "Quito Centro Norte → Tambillo"
+    comp_suv: 8
+    comp_suvxl: 8
+    priv_suv: 30
+    priv_suvxl: 40
+    priv_van: 60
+    priv_vanxl: 100
+    priv_minibus: 160
+    priv_bus: 250
+    prem_suv: 40
+
+  - ruta: "Quito Centro Norte → Machachi"
+    comp_suv: 9
+    comp_suvxl: 9
+    priv_suv: 40
+    priv_suvxl: 50
+    priv_van: 70
+    priv_vanxl: 110
+    priv_minibus: 180
+    priv_bus: 250
+    prem_suv: 50
+
+  - ruta: "Quito Centro Norte → Latacunga"
+    comp_suv: 13
+    comp_suvxl: 13
+    priv_suv: 50
+    priv_suvxl: 70
+    priv_van: 100
+    priv_vanxl: 160
+    priv_minibus: 260
+    priv_bus: 350
+    prem_suv: 60
+
+  - ruta: "Quito Centro Norte → Salcedo"
+    comp_suv: 10
+    comp_suvxl: 10
+    priv_suv: 40
+    priv_suvxl: 60
+    priv_van: 80
+    priv_vanxl: 120
+    priv_minibus: 200
+    priv_bus: 350
+    prem_suv: 50
+
+  - ruta: "Quito Centro Norte → Píllaro"
+    comp_suv: 11
+    comp_suvxl: 11
+    priv_suv: 40
+    priv_suvxl: 60
+    priv_van: 90
+    priv_vanxl: 130
+    priv_minibus: 220
+    priv_bus: 350
+    prem_suv: 50
+
+  - ruta: "Quito Centro Norte → Ambato"
+    comp_suv: 15
+    comp_suvxl: 15
+    priv_suv: 60
+    priv_suvxl: 80
+    priv_van: 120
+    priv_vanxl: 180
+    priv_minibus: 300
+    priv_bus: 350
+    prem_suv: 70
+
+  - ruta: "Quito Centro Norte → Baños"
+    comp_suv: 17
+    comp_suvxl: 17
+    priv_suv: 70
+    priv_suvxl: 100
+    priv_van: 140
+    priv_vanxl: 200
+    priv_minibus: 340
+    priv_bus: 350
+    prem_suv: 80
+
+  - ruta: "Quito Centro Norte → Riobamba"
+    comp_suv: 20
+    comp_suvxl: 20
+    priv_suv: 80
+    priv_suvxl: 110
+    priv_van: 160
+    priv_vanxl: 240
+    priv_minibus: 400
+    priv_bus: 500
+    prem_suv: 90
+
+  - ruta: "Quito Centro Norte → Guaranda"
+    comp_suv: 24
+    comp_suvxl: 24
+    priv_suv: 100
+    priv_suvxl: 130
+    priv_van: 190
+    priv_vanxl: 290
+    priv_minibus: 480
+    priv_bus: 500
+    prem_suv: 110
+
+  - ruta: "Aeropuerto → Latacunga"
+    comp_suv: 20
+    comp_suvxl: 20
+    priv_suv: 65
+    priv_suvxl: 85
+    priv_van: 125
+    priv_vanxl: 185
+    priv_minibus: 305
+    priv_bus: 500
+    prem_suv: 75
+    nota: "+$5 recargo origen aeropuerto ya incluido"
+
+  - ruta: "Aeropuerto → Ambato"
+    comp_suv: 23
+    comp_suvxl: 23
+    priv_suv: 75
+    priv_suvxl: 105
+    priv_van: 145
+    priv_vanxl: 225
+    priv_minibus: 365
+    priv_bus: 500
+    prem_suv: 85
+    nota: "+$5 recargo origen aeropuerto ya incluido"
+
+  - ruta: "Aeropuerto → Baños"
+    comp_suv: 23
+    comp_suvxl: 23
+    priv_suv: 75
+    priv_suvxl: 105
+    priv_van: 145
+    priv_vanxl: 225
+    priv_minibus: 365
+    priv_bus: 500
+    prem_suv: 85
+    nota: "+$5 recargo origen aeropuerto ya incluido"
+
+  - ruta: "Aeropuerto → Riobamba"
+    comp_suv: 28
+    comp_suvxl: 28
+    priv_suv: 95
+    priv_suvxl: 135
+    priv_van: 185
+    priv_vanxl: 285
+    priv_minibus: 465
+    priv_bus: 500
+    prem_suv: 105
+    nota: "+$5 recargo origen aeropuerto ya incluido"
+
+  - ruta: "Quito Sur → Latacunga"
+    comp_suv: 15
+    comp_suvxl: 15
+    priv_suv: 45
+    priv_suvxl: 65
+    priv_van: 85
+    priv_vanxl: 125
+    priv_minibus: 205
+    priv_bus: 250
+    prem_suv: 55
+    nota: "+$5 recargo origen Quito Sur ya incluido"
+
+  - ruta: "Quito Sur → Ambato"
+    comp_suv: 18
+    comp_suvxl: 18
+    priv_suv: 55
+    priv_suvxl: 75
+    priv_van: 105
+    priv_vanxl: 165
+    priv_minibus: 265
+    priv_bus: 250
+    prem_suv: 65
+    nota: "+$5 recargo origen Quito Sur ya incluido"
+
+  - ruta: "Quito Sur → Riobamba"
+    comp_suv: 23
+    comp_suvxl: 23
+    priv_suv: 75
+    priv_suvxl: 105
+    priv_van: 145
+    priv_vanxl: 225
+    priv_minibus: 365
+    priv_bus: 300
+    prem_suv: 85
+    nota: "+$5 recargo origen Quito Sur ya incluido"
+
+  - ruta: "Latacunga ↔ Salcedo"
+    comp_suv: 3
+    comp_suvxl: 3
+    priv_suv: 10
+    priv_suvxl: 20
+    priv_van: 20
+    priv_vanxl: 40
+    priv_minibus: 60
+    priv_bus: 120
+    prem_suv: 20
+
+  - ruta: "Latacunga ↔ Ambato"
+    comp_suv: 5
+    comp_suvxl: 5
+    priv_suv: 20
+    priv_suvxl: 30
+    priv_van: 40
+    priv_vanxl: 60
+    priv_minibus: 100
+    priv_bus: 200
+    prem_suv: 30
+
+  - ruta: "Ambato ↔ Baños"
+    comp_suv: 5
+    comp_suvxl: 5
+    priv_suv: 20
+    priv_suvxl: 30
+    priv_van: 40
+    priv_vanxl: 60
+    priv_minibus: 100
+    priv_bus: 200
+    prem_suv: 30
+
+  - ruta: "Ambato ↔ Riobamba"
+    comp_suv: 7
+    comp_suvxl: 7
+    priv_suv: 30
+    priv_suvxl: 40
+    priv_van: 60
+    priv_vanxl: 80
+    priv_minibus: 100
+    priv_bus: 150
+    prem_suv: 40
+
+  - ruta: "Baños ↔ Riobamba"
+    comp_suv: 10
+    comp_suvxl: 10
+    priv_suv: 40
+    priv_suvxl: 60
+    priv_van: 80
+    priv_vanxl: 120
+    priv_minibus: 150
+    priv_bus: 200
+    prem_suv: 50

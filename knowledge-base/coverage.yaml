@@ -1,0 +1,120 @@
+# Cobertura Going — ciudades del Ecuador
+#
+# Esta lista DEFINE dónde Going puede operar HOY. Cualquier ciudad fuera de
+# esta lista debe ser tratada por los agentes como "próximamente" o
+# "fuera de cobertura".
+#
+# Actualizar este archivo cuando:
+#   - Se activa una nueva ciudad → moverla de coming_soon a active
+#   - Se desactiva una ciudad → moverla a paused (con razón)
+
+active_cities:
+  # Sierra Norte (corredor Quito → Ibarra)
+  - name: Quito
+    region: Sierra
+    province: Pichincha
+    is_capital: true
+    notes: "Cobertura completa zona urbana + Cumbayá/Tumbaco/Valles + Aeropuerto Mariscal Sucre"
+  - name: Cayambe
+    region: Sierra
+    province: Pichincha
+  - name: Tabacundo
+    region: Sierra
+    province: Pichincha
+  - name: Otavalo
+    region: Sierra
+    province: Imbabura
+  - name: Atuntaqui
+    region: Sierra
+    province: Imbabura
+  - name: Ibarra
+    region: Sierra
+    province: Imbabura
+
+  # Sierra Centro (corredor Quito → Ambato → Riobamba)
+  - name: Latacunga
+    region: Sierra
+    province: Cotopaxi
+  - name: Salcedo
+    region: Sierra
+    province: Cotopaxi
+  - name: Ambato
+    region: Sierra
+    province: Tungurahua
+  - name: Riobamba
+    region: Sierra
+    province: Chimborazo
+
+  # Costa Noroeste (corredor Quito → Santo Domingo → El Carmen / La Concordia)
+  - name: Santo Domingo
+    region: Costa
+    province: Santo Domingo de los Tsáchilas
+  - name: La Concordia
+    region: Costa
+    province: Santo Domingo de los Tsáchilas
+  - name: El Carmen
+    region: Costa
+    province: Manabí
+
+  # Hubs especiales
+  - name: Aeropuerto Mariscal Sucre
+    region: Sierra
+    province: Pichincha
+    type: hub_aeroportuario
+    notes: "Tababela. Cobertura 24/7. Recargo +$5 cuando es origen del viaje."
+
+# Ciudades en hoja de ruta (NO operamos aún)
+# Cuando una se active, moverla arriba a active_cities.
+coming_soon:
+  # Extensión Sierra Norte → Tulcán
+  - Pimampiro
+  - Mira
+  - El Ángel
+  - Bolívar
+  - San Gabriel
+  - Huaca
+  - Tulcán
+
+  # Extensión Sierra Centro → Baños y alrededores
+  - Mocha
+  - Tisaleo
+  - Cevallos
+  - Píllaro
+  - Baños
+  - Guano
+  - Penipe
+  - Chambo
+
+  # Cantones cercanos a rutas activas pero fuera del camino principal
+  - Sigchos
+  - Saquisilí
+  - Pujilí
+  - Pangua
+  - Pedro Vicente Maldonado
+  - Puerto Quito
+
+  # Sierra Sur (mediano plazo)
+  - Cuenca
+  - Loja
+  - Azogues
+  - Cañar
+
+  # Costa principal (mediano plazo)
+  - Guayaquil
+  - Manta
+  - Esmeraldas
+  - Portoviejo
+  - Machala
+
+  # Amazonía (largo plazo)
+  - Tena
+  - Puyo
+  - Macas
+  - Lago Agrio
+  - Coca
+
+# Zonas NO planeadas (deriva a otros operadores)
+not_serviced:
+  - name: Galápagos
+    reason: "Going opera por carretera. Galápagos requiere vuelo + operador local."
+    sugerencia: "Derivar a la aerolínea y al operador local de las islas."
