@@ -260,22 +260,31 @@ describe('PricingService — calculate (entry point)', () => {
   });
 
   describe('envio (mensajería y encomiendas)', () => {
-    it('envío urbano: dinámico por distancia, mínimo $3 y tope $10', () => {
-      const corto = service.calculate({ serviceType: 'envio', distanceKm: 0, weightKg: 5, isIntercity: false });
-      expect(corto.total).toBe(3); // base mínimo
-
+    // ── Precios urbanos FIJOS oficiales Going (no dependen de la distancia)
+    //   small  (0–5 kg)   → $8
+    //   medium (6–15 kg)  → $12
+    //   large  (16–30 kg) → $15
+    it('envío urbano pequeño (≤5 kg): $8 flat (independiente de distancia)', () => {
+      const corto = service.calculate({ serviceType: 'envio', distanceKm: 1,  weightKg: 5, isIntercity: false });
       const medio = service.calculate({ serviceType: 'envio', distanceKm: 10, weightKg: 5, isIntercity: false });
-      expect(medio.total).toBe(6.5); // 3 + 0.35×10
-
       const lejos = service.calculate({ serviceType: 'envio', distanceKm: 30, weightKg: 5, isIntercity: false });
-      expect(lejos.total).toBe(10); // acotado al tope urbano
+      expect(corto.total).toBe(8);
+      expect(medio.total).toBe(8);
+      expect(lejos.total).toBe(8);
     });
 
-    it('envío urbano: el tamaño suma recargo (grande > pequeño a igual distancia)', () => {
-      const pequeno = service.calculate({ serviceType: 'envio', distanceKm: 8, weightKg: 5,  isIntercity: false });
-      const grande  = service.calculate({ serviceType: 'envio', distanceKm: 8, weightKg: 25, isIntercity: false });
-      expect(pequeno.total).toBe(5.8); // 3 + 0.35×8
-      expect(grande.total).toBe(8.8);  // 3 + 0.35×8 + 3 (recargo grande)
+    it('envío urbano mediano (6–15 kg): $12 flat', () => {
+      const r6  = service.calculate({ serviceType: 'envio', distanceKm: 5, weightKg: 6,  isIntercity: false });
+      const r15 = service.calculate({ serviceType: 'envio', distanceKm: 5, weightKg: 15, isIntercity: false });
+      expect(r6.total).toBe(12);
+      expect(r15.total).toBe(12);
+    });
+
+    it('envío urbano grande (16–30 kg): $15 flat', () => {
+      const r16 = service.calculate({ serviceType: 'envio', distanceKm: 5, weightKg: 16, isIntercity: false });
+      const r30 = service.calculate({ serviceType: 'envio', distanceKm: 5, weightKg: 30, isIntercity: false });
+      expect(r16.total).toBe(15);
+      expect(r30.total).toBe(15);
     });
 
     it('envío interurbano nivel 1 (0-10 kg) a Santo Domingo/Ambato: $10.00 USD', () => {
