@@ -455,6 +455,7 @@ export async function runAllMonitors(): Promise<MonitorRunResult> {
 
   const collector = createCollector();
 
+  await checkExternalEndpoints(collector);     // health api.goingec.com + Mapbox
   await checkRidesSinConductor(collector);     // cada run
   await checkConductoresInactivos(collector);  // cada run (suprimido por hora)
   await checkIngresos(collector);              // solo 12pm y 18pm
@@ -465,6 +466,119 @@ export async function runAllMonitors(): Promise<MonitorRunResult> {
 
   console.log('[ops] Ciclo completado');
   return { collector };
+}
+
+/**
+ * Health checks de endpoints externos críticos. Reemplaza el chequeo
+ * antiguo vía UptimeRobot (que requería API key + Secret Manager + IAM)
+ * por GETs directos sin credenciales.
+ *
+ * Targets:
+ *   - api.goingec.com/health        → backend Going (Cloud Run)
+ *   - status.mapbox.com (Statuspage) → proveedor de mapas/geocoding
+ *
+ * Best-effort: si alguno falla (timeout, 5xx, DNS), se registra como
+ * anomalía pero NO se interrumpe el resto del ciclo de monitoreo.
+ *
+ * Métricas que se publican al cerebro:
+ *   - uptime.goingApi.up         (1 | 0)
+ *   - uptime.goingApi.latencyMs  (ms del round-trip)
+ *   - uptime.mapbox.status       ("none" | "minor" | "major" | "critical")
+ */
+async function checkExternalEndpoints(c: RunCollector): Promise<void> {
+  // ── Going backend ────────────────────────────────────────────────
+  const goingUrl = 'https://api.goingec.com/health';
+  try {
+    const t0 = Date.now();
+    const res = await fetch(goingUrl, {
+      method: 'GET',
+      // Cloud Run cold-start puede tardar — pero /health debería ser caliente
+      // siempre. 8s es generoso pero finito.
+      signal: AbortSignal.timeout(8000),
+    });
+    const latencyMs = Date.now() - t0;
+    c.metrics['uptime.goingApi.latencyMs'] = latencyMs;
+
+    if (res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { status?: string };
+      const isOk = body.status === 'ok';
+      c.metrics['uptime.goingApi.up'] = isOk ? 1 : 0;
+      if (!isOk) {
+        c.anomalies.push({
+          severity: 'warning',
+          type:     'external_health_degraded',
+          message:  `api.goingec.com/health responde 200 pero payload inesperado: ${JSON.stringify(body).slice(0, 100)}`,
+          data:     { url: goingUrl, body, latencyMs },
+        });
+      } else {
+        console.log(`[ops/health] api.goingec.com OK (${latencyMs}ms)`);
+      }
+    } else {
+      c.metrics['uptime.goingApi.up'] = 0;
+      c.anomalies.push({
+        severity: 'critical',
+        type:     'external_health_down',
+        message:  `api.goingec.com/health respondió ${res.status} ${res.statusText}`,
+        data:     { url: goingUrl, status: res.status, latencyMs },
+      });
+    }
+  } catch (e) {
+    const err = (e as Error).message;
+    c.metrics['uptime.goingApi.up'] = 0;
+    c.anomalies.push({
+      severity: 'critical',
+      type:     'external_health_unreachable',
+      message:  `api.goingec.com/health unreachable: ${err.slice(0, 150)}`,
+      data:     { url: goingUrl, error: err },
+    });
+    c.errors.push(`health_going: ${err.slice(0, 200)}`);
+  }
+
+  // ── Mapbox (proveedor crítico para mapas/geocoding) ──────────────
+  const mapboxUrl = 'https://status.mapbox.com/api/v2/status.json';
+  try {
+    const res = await fetch(mapboxUrl, {
+      method: 'GET',
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const body = (await res.json()) as {
+        status?: { indicator?: string; description?: string };
+      };
+      const indicator = body.status?.indicator ?? 'unknown';
+      c.metrics['uptime.mapbox.status'] = indicator;
+
+      // "none" = All Systems Operational. Cualquier otra cosa requiere visibilidad.
+      if (indicator !== 'none') {
+        c.anomalies.push({
+          severity: indicator === 'critical' || indicator === 'major' ? 'critical' : 'warning',
+          type:     'external_provider_degraded',
+          message:  `Mapbox status: ${indicator} — ${body.status?.description ?? ''}`,
+          data:     { url: mapboxUrl, indicator, description: body.status?.description },
+        });
+      } else {
+        console.log(`[ops/health] Mapbox All Systems Operational`);
+      }
+    } else {
+      c.anomalies.push({
+        severity: 'warning',
+        type:     'external_health_unknown',
+        message:  `Mapbox status endpoint respondió ${res.status} (puede ser transitorio)`,
+        data:     { url: mapboxUrl, status: res.status },
+      });
+    }
+  } catch (e) {
+    const err = (e as Error).message;
+    // Mapbox status no es crítico — si su STATUS page se cae, la API real
+    // puede seguir funcionando. Solo warning.
+    c.anomalies.push({
+      severity: 'warning',
+      type:     'external_health_unreachable',
+      message:  `Mapbox status unreachable: ${err.slice(0, 150)}`,
+      data:     { url: mapboxUrl, error: err },
+    });
+    c.errors.push(`health_mapbox: ${err.slice(0, 200)}`);
+  }
 }
 
 /**
