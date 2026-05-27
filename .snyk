@@ -1,0 +1,39 @@
+# Snyk (https://snyk.io) policy file — Going monorepo
+#
+# Política: solo ignoramos vulnerabilidades cuando hay una justificación
+# técnica concreta y documentada (dep transitive sin fix upstream, alcance
+# build-only, mitigación natural por aislamiento de runtime, etc).
+# Cualquier ignore tiene fecha de expiración para forzar re-evaluación.
+
+version: v1.25.0
+
+ignore:
+  # ── inflight 1.0.6 — Missing Release of Resource ─────────────────────
+  # https://security.snyk.io/vuln/SNYK-JS-INFLIGHT-6095116
+  #
+  # Justificación:
+  #   - Paquete `inflight` está DEPRECATED upstream (isaacs lo deprecó en
+  #     favor de lru-cache). No existe versión patched.
+  #   - Llega como transitive solo a través de `glob@6.x` (file-system
+  #     utility de build/test tooling). NO entra al bundle de runtime
+  #     de ninguna app móvil ni servicio backend Cloud Run.
+  #   - La fix real es upgradar el padre que trae `glob@6` a `glob@9+`,
+  #     pero eso depende de actualizaciones upstream de las herramientas
+  #     de Expo/Metro/Nx que aún no migraron.
+  #   - Impacto: memory leak en procesos largos de build/dev, NO en
+  #     producción ni en dispositivos de usuarios finales.
+  #
+  # Re-evaluar: cuando Expo SDK / Metro / Nx publiquen versiones que ya
+  # no dependan de glob@6.x. Revisar trimestralmente.
+  SNYK-JS-INFLIGHT-6095116:
+    - '*':
+        reason: >-
+          Transitive dev-only via glob@6. Paquete deprecated upstream,
+          sin patch disponible. Riesgo de runtime = 0 (no entra al bundle
+          de producción). Re-evaluar cuando los tooling parents migren a
+          glob@9+.
+        expires: 2026-08-27T00:00:00.000Z
+
+# Vulnerabilidades remediadas con fix REAL (no ignore):
+#   - shell-quote CVE-2026-9277 (SNYK-JS-SHELLQUOTE-16799355):
+#     Resuelto vía `pnpm.overrides` en package.json (>=1.8.4).
