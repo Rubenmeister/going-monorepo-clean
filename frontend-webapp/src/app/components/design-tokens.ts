@@ -2,10 +2,17 @@
  * Design Tokens — Going brand system
  *
  * Fuente única de verdad para colores, espaciados y tipografía en la webapp.
- * Mapea la "Guía de uso de marca Going" a constantes consumibles en JSX.
+ * Mapea la "Going Branding Guidelines 2024" (Conexolab) a constantes
+ * consumibles en JSX.
  *
- * Cuando llegue la guía oficial actualizamos los valores acá; el resto del
- * código consume los nombres semánticos y no hay que tocar nada más.
+ * GUÍA OFICIAL:
+ *   - Rojo dominante:  #FF4C41
+ *   - Amarillo acento: #FFD253
+ *   - Negro:           #000000
+ *   - Conceptos: calidez · dinamismo · juventud · aventura · energía
+ *   - Símbolo: movimiento curvilíneo en forma de G rematado en un punto
+ *     (lugar de llegada). El rojo "acentúa los conceptos asociados a la
+ *     marca, complementándose con el amarillo para los acentos cromáticos."
  *
  * Uso típico:
  *   import { COLORS, SHADOWS, RADII } from '@/components/design-tokens';
@@ -13,29 +20,59 @@
  */
 
 // ── Paleta oficial Going ─────────────────────────────────────────────────────
-// Rojo Going (#ff4c41) y Azul Corporate (#0033A0) son los DOS primarios.
-// Tonos derivados sirven para hover, fondos pasteles y bordes.
+// Rojo PRINCIPAL + Amarillo ACENTO (NO hay azul en la guía oficial).
 export const COLORS = {
   brand: {
-    /** Rojo Going — principal CTA, identidad marca pasajero */
-    red:        '#ff4c41',
-    redDark:    '#d63d34', // hover/pressed
-    redLight:   '#ff7068',
-    redBg:      '#fff2f2', // fondo card destacado
+    /** Rojo Going — PRIMARIO. CTAs, identidad, marca. */
+    red:        '#FF4C41',
+    redDark:    '#D63D34', // hover/pressed
+    redLight:   '#FF7068',
+    redBg:      '#FFF2F2', // fondo card destacado
     redBgSoft:  '#FFF0EF', // fondo aún más sutil (badges)
     redBorder:  '#FECACA',
 
-    /** Azul Corporate — empresas, contraste, secundario */
+    /** Amarillo Going — ACENTO. Highlights, badges, énfasis secundario. */
+    yellow:        '#FFD253',
+    yellowDark:    '#E6B43E', // hover/pressed
+    yellowLight:   '#FFE082',
+    yellowBg:      '#FFFCEB',
+    yellowBgSoft:  '#FFFDF5',
+    yellowBorder:  '#FDE68A',
+
+    /** Neutrales del sistema marca (negro oficial) */
+    black:      '#000000',
+    white:      '#FFFFFF',
+
+    /** @deprecated `brand.blue` ya NO es color de marca (la guía oficial 2024
+     *  solo tiene rojo + amarillo + negro). Estos aliases existen para no
+     *  romper código viejo durante la migración. El nuevo código debe usar
+     *  `COLORS.brand.yellow` para énfasis secundario o `COLORS.system.blue`
+     *  si necesita azul funcional (forms, info messages). */
     blue:       '#0033A0',
     blueDark:   '#002475',
     blueLight:  '#3D5FBF',
     blueBg:     '#EEF2FF',
     blueBgSoft: '#F0F4FF',
     blueBorder: '#C7D2FE',
+  },
 
-    /** Neutrales del sistema marca */
-    black:      '#0F0F14',
-    white:      '#FFFFFF',
+  /**
+   * COLORES FUNCIONALES (no de marca).
+   * Estos colores NO aparecen en la guía oficial pero los usamos para
+   * elementos de sistema/utilidad que necesitan contraste con la marca
+   * (ej. botones de "Iniciar sesión" en formularios largos, links de info
+   * neutral). Cuando se pueda, preferir red o yellow.
+   *
+   * El azul antes era "Corporate Going" — eliminado de marca pero
+   * conservado acá como `system.blue` para forms y elementos auxiliares.
+   */
+  system: {
+    blue:       '#0033A0',
+    blueDark:   '#002475',
+    blueLight:  '#3D5FBF',
+    blueBg:     '#EEF2FF',
+    blueBgSoft: '#F0F4FF',
+    blueBorder: '#C7D2FE',
   },
 
   // ── Grises (escala neutral) ─────────────────────────────────────────────
@@ -120,20 +157,32 @@ export const SPACING = {
   16:   '4rem',
 } as const;
 
-// ── Tipografía ──────────────────────────────────────────────────────────────
-// Google Fonts. Cuando llegue la guía de marca, actualizar `body` con la
-// fuente oficial. Por ahora usa Inter (excelente legibilidad pantalla).
-// `display` para titulares grandes, `body` para texto general,
-// `academia` para la sección Academia Going (cuando el user defina cuál).
+// ── Tipografía OFICIAL Going ───────────────────────────────────────────────
+// Going Branding Guidelines 2024:
+//   - Títulos: Nunito Sans Variable (Google Fonts)
+//   - Cuerpo:  Roboto (Google Fonts)
+//
+// Las cargamos en app/layout.tsx con next/font/google que las inyecta como
+// CSS variables `--font-nunito-sans` y `--font-roboto`. Acá las referenciamos
+// con esos nombres para que tailwind + style inline funcionen.
+//
+// `academia` reusa Nunito Sans con un peso más fuerte (la sección
+// "Academia Going" es parte del producto, no necesita una fuente distinta
+// — la jerarquía la marca el peso y tamaño).
 export const FONTS = {
-  display:  'Manrope, system-ui, -apple-system, sans-serif',
-  body:     'Inter, system-ui, -apple-system, sans-serif',
-  academia: 'Lora, Georgia, serif', // placeholder hasta confirmar guía
+  display:  'var(--font-nunito-sans), system-ui, -apple-system, sans-serif',
+  body:     'var(--font-roboto), system-ui, -apple-system, sans-serif',
+  academia: 'var(--font-nunito-sans), system-ui, -apple-system, sans-serif',
   mono:     'JetBrains Mono, ui-monospace, monospace',
 } as const;
 
 // ── Atajos legacy (compat con código que ya usa los valores hardcoded) ──────
 // Permite hacer reemplazos graduales sin tocar todo de un golpe.
-export const RED   = COLORS.brand.red;
-export const BLUE  = COLORS.brand.blue;
-export const WHITE = COLORS.brand.white;
+// Mantenemos BLUE como alias a system.blue para evitar romper imports
+// existentes, pero el nuevo código debe usar COLORS.brand.{red,yellow}.
+export const RED    = COLORS.brand.red;
+export const YELLOW = COLORS.brand.yellow;
+export const BLACK  = COLORS.brand.black;
+export const WHITE  = COLORS.brand.white;
+/** @deprecated NO es color de marca. Usar COLORS.brand.yellow o red. */
+export const BLUE   = COLORS.system.blue;

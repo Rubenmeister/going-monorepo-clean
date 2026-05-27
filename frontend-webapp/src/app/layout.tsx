@@ -1,3 +1,4 @@
+import { Nunito_Sans, Roboto } from 'next/font/google';
 import { RootLayoutClient } from './RootLayoutClient';
 import { PWARegister } from '@/components/PWARegister';
 import './global.css';
@@ -5,9 +6,27 @@ import './global.css';
 // que envían errores JS al cerebro-service. 10% sampling por sesión.
 import '@/lib/cerebro-tracker';
 
+// ── Fuentes oficiales Going (Brand Guidelines 2024) ───────────────────────
+// Cargadas via next/font/google que: (a) hace self-host automático, (b)
+// expone CSS variables consumibles desde design-tokens.ts y Tailwind, y
+// (c) elimina FOUC vs <link rel="stylesheet"> manual.
+const nunitoSans = Nunito_Sans({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800', '900'],
+  variable: '--font-nunito-sans',
+  display: 'swap',
+});
+
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-roboto',
+  display: 'swap',
+});
+
 export const metadata = {
-  title: 'Going Ecuador: Reserva tu aventura',
-  description: 'Transporte, tours y alojamiento en un solo lugar.',
+  title: 'Going Ecuador: Nos movemos contigo',
+  description: 'Transporte compartido y privado entre ciudades del Ecuador. Reserva tu viaje en segundos.',
   applicationName: 'Going Ecuador',
   appleWebApp: {
     capable: true,
@@ -17,7 +36,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#ff4c41',
+  themeColor: '#FF4C41',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -29,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={`${nunitoSans.variable} ${roboto.variable}`}>
       <head>
         {/* PWA */}
         <link rel="manifest" href="/manifest.json" />
@@ -40,19 +59,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
-        {/* Fuentes */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900;1,6..12,400&family=Roboto:wght@400;500;700&display=swap"
-          rel="stylesheet"
-        />
       </head>
-      <body className="bg-gray-50 font-sans">
+      <body className="bg-gray-50" style={{ fontFamily: 'var(--font-roboto), system-ui, sans-serif' }}>
         <PWARegister />
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
