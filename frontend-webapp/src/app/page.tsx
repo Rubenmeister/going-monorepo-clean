@@ -321,21 +321,23 @@ export default function HomePage() {
         className="relative w-full overflow-hidden"
         style={{
           minHeight: '100vh',
-          /* TODO (foto): reemplazar `Ciclista y Cotopaxi_RAPOSA.jpg` por la
-             versión con SUV en lugar del ciclista cuando esté disponible.
-             Mantener el mismo nombre o actualizar el path acá. */
-          backgroundImage: "url('/images/Ciclista%20y%20Cotopaxi_RAPOSA.jpg')",
+          /* Foto Hero oficial Going: carretera ecuatoriana entre Sierra y Costa.
+             Sirve también como referencia para el splash de las apps móviles
+             (la versión vertical para mobile vive en mobile-user-app/assets). */
+          backgroundImage: "url('/images/going-hero.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center 30%',
+          backgroundPosition: 'center 55%',
         }}
       >
-        {/* Overlay claro para legibilidad — montaña visible arriba,
-            blanco translúcido abajo donde van el texto y las cards. */}
+        {/* Overlay claro · más sutil que antes porque la foto ya tiene contraste
+            propio (cielo brillante + verdes vivos + asfalto oscuro). Top casi
+            transparente para que el cielo respire, abajo más opaco donde
+            descansan las cards y el resto del contenido. */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.78) 38%, rgba(255,255,255,0.95) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.55) 35%, rgba(255,255,255,0.92) 100%)',
           }}
         />
 
