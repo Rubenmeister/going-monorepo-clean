@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Legal — Going Ecuador',
-  description: 'Términos y condiciones, política de privacidad y documentos legales de Going Ecuador.',
+  title: 'Legal — Going',
+  description: 'Términos y condiciones, política de privacidad y documentos legales de Going (Ecuador).',
 };
 
 const SECTIONS = [
@@ -10,7 +10,7 @@ const SECTIONS = [
     id: 'terminos',
     title: 'Términos y Condiciones',
     icon: '📄',
-    content: `Going Ecuador S.A.S. ("Going") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
+    content: `Thorn AI Technologies S.A.S. ("Going") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
 
 **Uso del servicio:** Going es una plataforma de intermediación. Los conductores son proveedores independientes, no empleados de Going. Going no es responsable por el contenido publicado por usuarios.
 
@@ -74,7 +74,7 @@ export default function LegalPage() {
       <div className="bg-[#011627] py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="font-serif text-4xl font-black text-white mb-3">Información Legal</h1>
-          <p className="text-[16px] text-white/50">Going Ecuador S.A.S. · RUC: 1792XXXXXX001 · Quito, Ecuador</p>
+          <p className="text-[16px] text-white/50">Thorn AI Technologies S.A.S. · RUC: 1793176925001 · Quito, Ecuador</p>
         </div>
       </div>
 
@@ -104,7 +104,7 @@ export default function LegalPage() {
 
         <div className="mt-12 bg-gray-50 rounded-2xl p-6 text-center">
           <p className="text-[13px] text-gray-500 mb-1">¿Tienes preguntas legales?</p>
-          <a href="mailto:legal@goingec.com" className="text-[15px] font-black text-[#ff4c41] hover:underline">legal@goingec.com</a>
+          <a href="mailto:soporte@goingec.com" className="text-[15px] font-black text-[#ff4c41] hover:underline">soporte@goingec.com</a> · DPO: <a href="mailto:privacidad@goingec.com" className="text-[14px] text-[#ff4c41] hover:underline">privacidad@goingec.com</a>
           <p className="text-[11px] text-gray-400 mt-2">Última actualización: Abril 2026</p>
         </div>
       </div>

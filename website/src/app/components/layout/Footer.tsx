@@ -135,7 +135,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[12px] text-white/25">
-            © 2026 Going Ecuador S.A.S. — Todos los derechos reservados
+            © 2026 Going — marca operada por Thorn AI Technologies S.A.S.
           </p>
           <div className="flex gap-2">
             <Link href="https://app.goingec.com" className="text-[12px] text-white/35 hover:text-white/60 transition-colors">
