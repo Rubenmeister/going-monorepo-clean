@@ -1,0 +1,72 @@
+# Lugar: Loja — capital musical y cultural del sur del Ecuador
+id: loja
+name: Loja
+province: Loja
+region: Sierra
+canton: Loja
+is_canton_capital: true
+
+geography:
+  altitude_m: 2060
+  area_km2: 1928           # cantón completo
+  population: 286636        # INEC 2022 estimación
+  climate:
+    zone: ecuatorial mesotérmico templado
+    avg_temp_c:
+      min: 10
+      max: 22
+    best_visit_months: [julio, agosto, septiembre]
+    rainy_months: [febrero, marzo, abril]
+
+history_es: |
+  Loja fue fundada por el capitán Alonso de Mercadillo el 8 de diciembre de
+  1548. Es una de las ciudades más antiguas del Ecuador. Su nombre proviene
+  de Loja en Andalucía (España).
+
+  Conocida como la "Capital Musical y Cultural del Ecuador" por su tradición
+  de compositores, intérpretes y conservatorios. La ciudad también es cuna
+  de figuras como el científico y polígrafo del siglo XVIII Pedro Vicente
+  Maldonado, y del expresidente Bernardo Valdivieso.
+
+  Está rodeada de un entorno biodiverso clave: el Parque Nacional Podocarpus
+  (uno de los más biodiversos del mundo en su área), el valle de Vilcabamba
+  (famoso por la longevidad de sus habitantes) y la frontera con Perú.
+
+attractions_es:
+  - "Parque Nacional Podocarpus — biodiversidad de Sierra y Amazonía"
+  - "Vilcabamba — el 'valle de la longevidad' a 1h de Loja"
+  - "Centro Histórico — Plaza de la Independencia, Catedral, San Francisco"
+  - "Santuario de El Cisne — pueblo religioso, peregrinación nacional"
+  - "Museo de la Música — único en su tipo en el Ecuador"
+  - "Río Zamora y río Malacatos — atraviesan la ciudad"
+  - "Mirador Nuestra Señora del Rosario"
+
+gastronomy_es:
+  - "Cecina lojana — carne seca al sol con sal y aliños"
+  - "Repe lojano — sopa de plátano verde con queso"
+  - "Tamales lojanos — diferentes a los del norte, con cerdo y maní"
+  - "Café de Loja — uno de los mejores cafés del país (origen sur)"
+  - "Horchata lojana — té de hierbas medicinales rojo, con hasta 18 plantas"
+  - "Miel de panela con quesillo"
+
+events_es:
+  - name: "Fiestas de la Virgen del Cisne"
+    when: "20 agosto / septiembre"
+    description: "Una de las peregrinaciones más grandes del Ecuador."
+  - name: "Festival Internacional de Artes Vivas"
+    when: "Noviembre"
+    description: "Música, teatro, danza con participación internacional."
+  - name: "Fundación de Loja"
+    when: "8 diciembre"
+    description: "Fiesta cívica de fundación."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Loja es destino de mediano plazo en nuestra expansión
+    sur. Mercado importante por su tradición universitaria y conexión con
+    el sur del país (Vilcabamba, Catamayo, Macará, frontera con Perú).
+  nearest_hub: null
+  coming_soon: true
+
+tags: [sierra_sur, musical, cultural, podocarpus, vilcabamba, peregrinacion]

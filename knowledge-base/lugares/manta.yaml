@@ -1,0 +1,74 @@
+# Lugar: Manta — puerto pesquero, capital del atún
+id: manta
+name: Manta
+province: Manabí
+region: Costa
+canton: Manta
+is_canton_capital: true
+
+geography:
+  altitude_m: 6
+  area_km2: 309
+  population: 257553        # INEC 2022 estimación
+  climate:
+    zone: tropical seco
+    avg_temp_c:
+      min: 20
+      max: 30
+    best_visit_months: [julio, agosto, septiembre, octubre]
+    rainy_months: [enero, febrero, marzo]
+
+history_es: |
+  Manta tiene una historia que predata a la conquista española: fue uno de
+  los centros más importantes de la cultura Manteño-Huancavilca, comerciantes
+  marítimos prehispánicos que navegaban toda la costa pacífica desde el
+  actual México hasta Chile.
+
+  La ciudad moderna fue fundada en 1535 y desde entonces ha sido un
+  puerto clave. Hoy es el principal puerto pesquero del Ecuador y uno de
+  los mayores procesadores de atún del Pacífico Sur. Su industria pesquera
+  es central para la economía nacional.
+
+  En 2016 sufrió graves daños por el terremoto del 16 de abril (Pedernales),
+  del que se ha ido recuperando. La ciudad mantiene una mezcla de carácter
+  industrial-pesquero, turismo de playa y cultura manabita.
+
+attractions_es:
+  - "Playa Murciélago — la principal, urbana, gastronomía costera"
+  - "Playa El Murcielago / Tarqui — ambiente más local"
+  - "Puerto pesquero — fauna marina y vida portuaria al amanecer"
+  - "Museo Centro Cultural Manta (MCCM) — historia Manteño-Huancavilca"
+  - "Bahía de Manta — vistas y atardeceres"
+  - "Museo del Sombrero de Paja Toquilla — origen manabita del Panama Hat"
+  - "San Lorenzo / Santa Marianita (cerca) — kitesurf, ballenas"
+
+gastronomy_es:
+  - "Ceviche manabita — único en el país, con tomate fresco y sin cocción"
+  - "Viche de mariscos — variante manabita del viche"
+  - "Seco de gallina criolla — emblema manaba"
+  - "Tonga — porción de comida en hoja para llevar al trabajo (cultural)"
+  - "Caldo de bola — bola de plátano verde rellena, en caldo"
+  - "Pan de almidón / pan de yuca — desayuno costeño"
+
+events_es:
+  - name: "Independencia de Manta"
+    when: "4 noviembre"
+    description: "Fiesta cívica principal."
+  - name: "Cantonización de Manta"
+    when: "4 noviembre (compartido)"
+    description: "Misma fecha."
+  - name: "Avistamiento de ballenas en costas cercanas"
+    when: "Julio - octubre"
+    description: "Tours desde Manta hacia Isla de la Plata, Salango, Puerto López."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Manta es uno de los mercados costeros importantes y
+    parte del corredor Costa que incluye también Portoviejo, Salinas y
+    eventualmente la Ruta del Spondylus. No prioritario para lanzamiento
+    inicial — entra cuando consolidemos Guayaquil.
+  nearest_hub: null
+  coming_soon: true
+
+tags: [costa, puerto, pesquero, atun, manteno_huancavilca, panama_hat, terremoto_2016]

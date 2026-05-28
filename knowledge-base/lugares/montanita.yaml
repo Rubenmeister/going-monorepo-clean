@@ -1,0 +1,67 @@
+# Lugar: Montañita — capital del surf, vida nocturna en la Ruta del Spondylus
+id: montanita
+name: Montañita
+province: Santa Elena
+region: Costa
+canton: Santa Elena
+parroquia: Manglaralto
+
+geography:
+  altitude_m: 5
+  area_km2: null             # parroquia, no cantón
+  population: 3500           # aprox., Montañita pueblo
+  climate:
+    zone: tropical seco
+    avg_temp_c:
+      min: 20
+      max: 30
+    best_visit_months: [diciembre, enero, febrero, marzo]
+    rainy_months: [enero, febrero, marzo]
+  notes: "Temporada alta: dic-mar (cálido). Oleaje fuerte para surf jun-oct."
+
+history_es: |
+  Montañita es una pequeña parroquia costera de la provincia de Santa Elena
+  que se convirtió, desde los años 80 del siglo XX, en uno de los íconos
+  del surf en el Pacífico sudamericano. Su ola izquierda es buscada por
+  surfistas internacionales.
+
+  Lo que era un poblado de pescadores se transformó en destino turístico
+  internacional: vida nocturna, escuelas de surf, hostales y restaurantes
+  pequeños. Aún conserva su esencia bohemia y comunitaria, aunque enfrenta
+  los desafíos del turismo masivo.
+
+attractions_es:
+  - "Olas de Montañita — paraíso del surf, escuelas en la playa"
+  - "Playa principal y Playa de Pescadores — bandera intermitente según oleaje"
+  - "Pueblo Manglaralto — más tranquilo, a 10 min al norte"
+  - "Avistamiento de ballenas jorobadas (julio - octubre)"
+  - "Olón — playa familiar más al norte, paisaje similar"
+  - "Vida nocturna en la Calle de los Cócteles"
+  - "Día del Pescador — celebración local"
+
+gastronomy_es:
+  - "Ceviche de camarón / pescado / concha"
+  - "Viche de mariscos — sopa de pescado con maní y mariscos"
+  - "Encocado de pescado — leche de coco, plátano y arroz"
+  - "Bolón de verde — variantes con queso o chicharrón"
+  - "Patacones con queso y mariscos"
+  - "Jugos tropicales naturales en cada esquina"
+
+events_es:
+  - name: "Festival Internacional de Surf"
+    when: "Variable, generalmente febrero-marzo"
+    description: "Competencias de surf internacionales."
+  - name: "Avistamiento de ballenas"
+    when: "Julio - octubre"
+    description: "Ballenas jorobadas pasan en su ruta de apareamiento."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Es destino turístico importante de la Costa. Conectaría
+    con el hub futuro de Guayaquil (~3h) o con la red de la Ruta del
+    Spondylus. No prioritario para el lanzamiento inicial.
+  nearest_hub: null
+  coming_soon: true
+
+tags: [costa, surf, playa, ballenas, vida_nocturna, turismo_internacional]
