@@ -49,7 +49,7 @@ export function DriverRootNavigator() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#ff4c41" />
+        <ActivityIndicator size="large" color="#FF4C41" />
       </View>
     );
   }

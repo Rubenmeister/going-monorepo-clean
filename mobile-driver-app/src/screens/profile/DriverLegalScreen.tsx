@@ -30,8 +30,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const NAVY   = '#0033A0';
-const YELLOW = '#FFCD00';
+const NAVY   = '#FF4C41';
+const YELLOW = '#FFD253';
 const LEGAL_BASE = 'https://app.goingec.com/legal';
 
 interface LegalDoc {

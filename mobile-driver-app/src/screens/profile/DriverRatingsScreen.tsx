@@ -12,8 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDriverStore } from '../../store/useDriverStore';
 import { API_BASE_URL } from '../../utils/constants';
 
-const GOING_BLUE   = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE   = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 interface Rating {
   id: string;

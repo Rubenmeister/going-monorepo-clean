@@ -25,8 +25,8 @@ import type { RouteProp } from '@react-navigation/native';
 import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 import { hapticSuccess, hapticHeavy } from '../../utils/haptics';
 
-const NAVY   = '#0033A0';
-const YELLOW = '#FFCD00';
+const NAVY   = '#FF4C41';
+const YELLOW = '#FFD253';
 const GREEN  = '#059669';
 const RED    = '#DC2626';
 
@@ -86,7 +86,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 const PAYMENT_COLORS: Record<string, string> = {
   cash:   '#065F46',
-  card:   '#1E3A8A',
+  card:   '#FF4C41',
   wallet: '#5B21B6',
 };
 

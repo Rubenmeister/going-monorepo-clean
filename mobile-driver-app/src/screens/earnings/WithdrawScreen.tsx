@@ -21,8 +21,8 @@ const API_BASE =
 
 type WithdrawRouteProp = RouteProp<DriverMainStackParamList, 'Withdraw'>;
 
-const GOING_BLUE = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 const GOING_GREEN = '#10B981';
 
 const MP_WEB_URL = 'https://www.mercadopago.com/activities';

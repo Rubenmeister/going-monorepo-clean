@@ -26,6 +26,10 @@ import { API_BASE_URL } from '../../utils/constants';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
+// Going Branding Guidelines 2024 (sprint #119 — 2026-05-28)
+const NAVY   = '#FF4C41';  // @deprecated alias → brandRed. Migración progresiva.
+const YELLOW = '#FFD253';
+
 // Default center: Quito, Ecuador [lng, lat]
 const QUITO_COORD: [number, number] = [-78.4678, -0.1807];
 const BG_LOCATION_TASK = 'going-driver-bg-location';
@@ -296,7 +300,7 @@ export function DriverHomeScreen() {
         {/* Métricas del día — 4 tarjetas */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Ionicons name="car-outline" size={20} color="#0033A0" />
+            <Ionicons name="car-outline" size={20} color="#FF4C41" />
             <Text style={styles.statValue}>{todayStats.trips}</Text>
             <Text style={styles.statLabel}>Viajes hoy</Text>
           </View>
@@ -308,7 +312,7 @@ export function DriverHomeScreen() {
             <Text style={styles.statLabel}>Ganado hoy</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="star-outline" size={20} color="#FFCD00" />
+            <Ionicons name="star-outline" size={20} color="#FFD253" />
             <Text style={styles.statValue}>{todayStats.avgRating.toFixed(1)}</Text>
             <Text style={styles.statLabel}>Rating</Text>
           </View>
@@ -419,7 +423,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  carMarkerOnline: { backgroundColor: '#0033A0' },
+  carMarkerOnline: { backgroundColor: '#FF4C41' },
   statusBar: {
     position: 'absolute',
     top: 52,
@@ -488,12 +492,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   goOnlineBtn: {
-    backgroundColor: '#FFCD00',
+    backgroundColor: '#FFD253',
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
   },
-  goOnlineBtnText: { color: '#0033A0', fontSize: 16, fontWeight: '900' },
+  goOnlineBtnText: { color: '#FF4C41', fontSize: 16, fontWeight: '900' },
   waitingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -593,16 +597,16 @@ const styles = StyleSheet.create({
   // ── Agenda y próximo viaje ──────────────────────────────────────────────────
   nextTripCard: {
     backgroundColor: '#fff', borderRadius: 14, padding: 12,
-    borderLeftWidth: 4, borderLeftColor: '#0033A0',
+    borderLeftWidth: 4, borderLeftColor: '#FF4C41',
     marginBottom: 8,
   },
   nextTripTimeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  nextTripTime:   { fontSize: 20, fontWeight: '900', color: '#0033A0' },
+  nextTripTime:   { fontSize: 20, fontWeight: '900', color: '#FF4C41' },
   countdownBadge: { backgroundColor: '#EFF6FF', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 },
-  countdownText:  { fontSize: 10, fontWeight: '800', color: '#0033A0' },
+  countdownText:  { fontSize: 10, fontWeight: '800', color: '#FF4C41' },
   nextTripRoute:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   nextTripAddr:   { fontSize: 12, fontWeight: '700', color: '#111827' },
-  routeDotBlue:   { width: 9, height: 9, borderRadius: 4.5, backgroundColor: '#0033A0' },
+  routeDotBlue:   { width: 9, height: 9, borderRadius: 4.5, backgroundColor: '#FF4C41' },
   routeDotGreen:  { width: 9, height: 9, borderRadius: 4.5, backgroundColor: '#059669' },
   routeLineShort: { width: 2, height: 12, backgroundColor: '#BFDBFE', marginLeft: 3.5, marginVertical: 2 },
   passengerChips: { flexDirection: 'row', gap: 6, marginTop: 8 },

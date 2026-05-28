@@ -65,7 +65,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
       name: 'Solicitudes de viaje',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FFCD00',
+      lightColor: '#FFD253',
       sound: 'default',
     });
   }

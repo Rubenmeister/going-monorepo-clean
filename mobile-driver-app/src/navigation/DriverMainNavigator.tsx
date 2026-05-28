@@ -43,8 +43,8 @@ import type { EntregaPaqueteParams }  from '@screens/envios/EntregaPaqueteScreen
 // Drawer
 import { DriverDrawer } from './DriverDrawer';
 
-const NAVY   = '#0033A0';
-const YELLOW = '#FFCD00';
+const NAVY   = '#FF4C41';
+const YELLOW = '#FFD253';
 
 // ── Param lists ──────────────────────────────────────────────────────────────
 

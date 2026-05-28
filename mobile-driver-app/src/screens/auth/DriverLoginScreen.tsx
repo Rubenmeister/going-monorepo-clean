@@ -19,8 +19,8 @@ import type { DriverAuthStackParamList } from '@navigation/DriverAuthNavigator';
 
 type Nav = NativeStackNavigationProp<DriverAuthStackParamList, 'Login'>;
 
-const GOING_RED    = '#ff4c41';
-const GOING_YELLOW = '#FFCD00';
+const GOING_RED    = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 export function DriverLoginScreen() {
   const navigation = useNavigation<Nav>();

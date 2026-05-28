@@ -125,7 +125,7 @@ export function EarningsScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0033A0" />
+        <ActivityIndicator size="large" color="#FF4C41" />
       </View>
     );
   }
@@ -137,7 +137,7 @@ export function EarningsScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={() => load(true)}
-          tintColor="#0033A0"
+          tintColor="#FF4C41"
         />
       }
     >
@@ -187,7 +187,7 @@ export function EarningsScreen() {
                       styles.barFill,
                       {
                         height: `${Math.max(pct * 100, 8)}%`,
-                        backgroundColor: isToday ? '#FFCD00' : '#0033A0',
+                        backgroundColor: isToday ? '#FFD253' : '#FF4C41',
                         opacity: isToday ? 1 : 0.5 + pct * 0.5,
                       },
                     ]} />
@@ -202,11 +202,11 @@ export function EarningsScreen() {
         )}
         <View style={styles.chartLegend}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#FFCD00' }]} />
+            <View style={[styles.legendDot, { backgroundColor: '#FFD253' }]} />
             <Text style={styles.legendText}>Hoy</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#0033A0' }]} />
+            <View style={[styles.legendDot, { backgroundColor: '#FF4C41' }]} />
             <Text style={styles.legendText}>Días anteriores</Text>
           </View>
         </View>
@@ -241,7 +241,7 @@ export function EarningsScreen() {
             label: 'Esta semana',
             value: `$${summary.week.toFixed(2)}`,
             icon: '🚗',
-            color: '#0033A0',
+            color: '#FF4C41',
           },
         ].map(({ label, value, icon, color }) => (
           <View key={label} style={styles.statCard}>
@@ -259,7 +259,7 @@ export function EarningsScreen() {
         activeOpacity={0.8}
       >
         <Text style={styles.historyBtnText}>Ver historial completo de viajes</Text>
-        <Ionicons name="chevron-forward" size={16} color="#0033A0" />
+        <Ionicons name="chevron-forward" size={16} color="#FF4C41" />
       </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>Resumen reciente</Text>
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   hero: {
-    backgroundColor: '#0033A0',
+    backgroundColor: '#FF4C41',
     alignItems: 'center',
     padding: 32,
     margin: 16,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   heroValue: {
-    color: '#FFCD00',
+    color: '#FFD253',
     fontSize: 40,
     fontWeight: '900',
     marginVertical: 4,
@@ -310,12 +310,12 @@ const styles = StyleSheet.create({
   statIcon: { fontSize: 24, marginBottom: 4 },
   withdrawBtn: {
     marginTop: 14,
-    backgroundColor: '#FFCD00',
+    backgroundColor: '#FFD253',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 22,
   },
-  withdrawBtnText: { color: '#0033A0', fontWeight: '800', fontSize: 14 },
+  withdrawBtnText: { color: '#FF4C41', fontWeight: '800', fontSize: 14 },
   // Chart
   chartCard: {
     backgroundColor: '#fff', borderRadius: 20, margin: 16, marginBottom: 8,
@@ -325,14 +325,14 @@ const styles = StyleSheet.create({
   },
   chartHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   chartTitle: { fontSize: 14, fontWeight: '700', color: '#374151' },
-  chartTotal: { fontSize: 18, fontWeight: '900', color: '#0033A0' },
+  chartTotal: { fontSize: 18, fontWeight: '900', color: '#FF4C41' },
   barsRow: { flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 6, marginBottom: 8 },
   barCol:  { flex: 1, alignItems: 'center', height: '100%', justifyContent: 'flex-end' },
   barValue: { fontSize: 8, fontWeight: '700', color: '#6B7280', marginBottom: 3 },
   barTrack: { width: '100%', height: '80%', justifyContent: 'flex-end' },
   barFill:  { width: '100%', borderRadius: 4, minHeight: 6 },
   barLabel: { fontSize: 9, color: '#9CA3AF', marginTop: 4, fontWeight: '600' },
-  barLabelToday: { color: '#0033A0', fontWeight: '800' },
+  barLabelToday: { color: '#FF4C41', fontWeight: '800' },
   chartLegend: { flexDirection: 'row', gap: 16, marginTop: 8 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#DBEAFE',
   },
-  historyBtnText: { color: '#0033A0', fontSize: 14, fontWeight: '700' },
+  historyBtnText: { color: '#FF4C41', fontSize: 14, fontWeight: '700' },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#ff4c41',
+    backgroundColor: '#FF4C41',
     marginHorizontal: 16,
     marginBottom: 16,
     paddingVertical: 13,

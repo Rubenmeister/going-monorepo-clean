@@ -19,8 +19,8 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../utils/constants';
 import { hapticHeavy, hapticSuccess, hapticError } from '../../utils/haptics';
 
-const NAVY  = '#0033A0';
-const GOLD  = '#FFCD00';
+const NAVY  = '#FF4C41';
+const GOLD  = '#FFD253';
 const GREEN = '#059669';
 const RED   = '#DC2626';
 

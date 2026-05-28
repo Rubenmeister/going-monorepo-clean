@@ -58,7 +58,7 @@ export function DriverProfileScreen() {
         {info.map(({ icon, label, value }) => (
           <View key={label} style={styles.infoRow}>
             <View style={styles.infoIcon}>
-              <Ionicons name={icon as any} size={18} color="#0033A0" />
+              <Ionicons name={icon as any} size={18} color="#FF4C41" />
             </View>
             <View>
               <Text style={styles.infoLabel}>{label}</Text>
@@ -79,7 +79,7 @@ export function DriverProfileScreen() {
             <Ionicons
               name={icon as any}
               size={20}
-              color="#0033A0"
+              color="#FF4C41"
               style={styles.menuIcon}
             />
             <Text style={styles.menuLabel}>{label}</Text>
@@ -100,7 +100,7 @@ export function DriverProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   hero: {
-    backgroundColor: '#001F6B',
+    backgroundColor: '#FF4C41',
     alignItems: 'center',
     paddingTop: 36,
     paddingBottom: 28,
@@ -109,14 +109,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FFCD00',
+    backgroundColor: '#FFD253',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
     borderWidth: 3,
     borderColor: 'rgba(255,255,255,0.2)',
   },
-  avatarText: { fontSize: 28, fontWeight: '900', color: '#001F6B' },
+  avatarText: { fontSize: 28, fontWeight: '900', color: '#FF4C41' },
   name: { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 8 },
   verifiedBadge: {
     flexDirection: 'row',
