@@ -28,7 +28,7 @@ import { hapticLight, hapticMedium } from '../../utils/haptics';
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
 const { width, height } = Dimensions.get('window');
-const NAVY  = '#0033A0';
+const NAVY  = '#FF4C41';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 export type LocationResult = {
@@ -187,7 +187,7 @@ export function LocationPickerScreen() {
     navigation.navigate(returnScreen, { [paramKey]: result });
   };
 
-  const pinColor = mode === 'origin' ? accentColor : '#ff4c41';
+  const pinColor = mode === 'origin' ? accentColor : '#FF4C41';
 
   return (
     <View style={styles.container}>

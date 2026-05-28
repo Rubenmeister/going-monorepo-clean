@@ -280,7 +280,7 @@ export function SosScreen() {
           <Ionicons name="close" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Ionicons name="warning" size={22} color="#FFCD00" />
+          <Ionicons name="warning" size={22} color="#FFD253" />
           <Text style={styles.headerTitle}>Emergencia · SOS</Text>
         </View>
         <View style={{ width: 40 }} />
@@ -513,7 +513,7 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       shadowOpacity: 0.18, shadowRadius: 10, elevation: 5,
     },
     actionCardCall:   { backgroundColor: HERO_RED },
-    actionCardNotify: { backgroundColor: '#0033A0' },  // navy (brand action)
+    actionCardNotify: { backgroundColor: '#FF4C41' },  // navy (brand action)
     actionCardGoing:  { backgroundColor: HERO_RED_DARK },
     actionCardGoingSent: { backgroundColor: '#16A34A' },  // success green
     actionIcon: {

@@ -20,8 +20,8 @@ export type TripDetailParams = {
 };
 type TripDetailRouteProp = RouteProp<MainStackParamList, 'TripDetail'>;
 
-const GOING_BLUE = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 const STATUS_CONFIG: Record<
   string,

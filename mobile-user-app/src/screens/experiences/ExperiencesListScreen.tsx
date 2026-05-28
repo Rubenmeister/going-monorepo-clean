@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { searchAPI } from '@services/api';
 
 const GOING_RED  = '#F04E40';
-const GOING_BLUE = '#0033A0';
+const GOING_BLUE = '#FF4C41';
 const NAVY       = '#131b2e';
 const GRAY       = '#6B7280';
 

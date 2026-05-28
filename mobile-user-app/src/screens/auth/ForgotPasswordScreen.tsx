@@ -6,8 +6,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '@services/api';
 
-const GOING_RED    = '#ff4c41';
-const GOING_YELLOW = '#FFCD00';
+const GOING_RED    = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 const BLACK        = '#1a1a1a';
 
 export function ForgotPasswordScreen({ navigation }: any) {

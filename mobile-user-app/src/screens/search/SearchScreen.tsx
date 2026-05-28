@@ -15,8 +15,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '../../navigation/MainNavigator';
 import { searchAPI } from '../../services/api';
 
-const GOING_BLUE   = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE   = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 // ── Regiones de Ecuador (rutas iniciales Going) ──────────────────────────────
 type RegionId = 'todas' | 'sierra_norte' | 'sierra_centro' | 'costa' | 'aeropuerto';

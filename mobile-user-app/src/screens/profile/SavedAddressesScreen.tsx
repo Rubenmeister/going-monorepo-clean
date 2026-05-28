@@ -7,9 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSavedAddressesStore, AddressType, SavedAddress } from '@store/useSavedAddressesStore';
 import { hapticLight, hapticMedium, hapticError } from '@utils/haptics';
 
-const GOING_BLUE   = '#0033A0';
-const GOING_RED    = '#ff4c41';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE   = '#FF4C41';
+const GOING_RED    = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 const TYPE_CONFIG: Record<AddressType, { icon: keyof typeof Ionicons.glyphMap; color: string; label: string }> = {
   home:     { icon: 'home',       color: GOING_BLUE,  label: 'Casa' },

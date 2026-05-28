@@ -12,8 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { paymentAPI } from '../../services/api';
 
-const GOING_RED  = '#ff4c41';
-const GOING_BLUE = '#0033A0';
+const GOING_RED  = '#FF4C41';
+const GOING_BLUE = '#FF4C41';
 
 interface PaymentScreenProps {
   route: {

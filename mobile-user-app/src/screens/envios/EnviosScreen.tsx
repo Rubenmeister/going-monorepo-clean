@@ -1,7 +1,7 @@
 /**
  * EnviosScreen — Envíos y Encomiendas Going
  *
- * Colores: Rojo Going (#ff4c41) SOLO en bordes, iconos y acentos.
+ * Colores: Rojo Going (#FF4C41) SOLO en bordes, iconos y acentos.
  * Flujo: Form → Tracking → Entrega (foto conductor + OTP)
  */
 import React, { useState, useEffect, useRef } from 'react';
@@ -20,7 +20,7 @@ import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../uti
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
-const RED   = '#ff4c41';
+const RED   = '#FF4C41';
 const GREEN = '#059669';
 
 const PACKAGE_TYPES = [
