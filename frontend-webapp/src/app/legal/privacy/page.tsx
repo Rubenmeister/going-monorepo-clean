@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Política de Privacidad</h1>
-        <p className="text-sm text-gray-500 mb-8">Última actualización: 23 de marzo de 2026</p>
+        <p className="text-sm text-gray-500 mb-8">Última actualización: 28 de mayo de 2026</p>
 
         <div className="bg-white rounded-xl shadow-md p-8 space-y-8 text-gray-600 leading-relaxed">
 

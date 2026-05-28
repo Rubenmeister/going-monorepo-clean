@@ -35,7 +35,7 @@ export default function TermsPage() {
         </div>
 
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Términos y Condiciones</h1>
-        <p className="text-sm text-gray-500 mb-8">Última actualización: 11 de abril de 2026</p>
+        <p className="text-sm text-gray-500 mb-8">Última actualización: 28 de mayo de 2026</p>
 
         {/* Índice de navegación */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
@@ -58,9 +58,11 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">1. Identificación y Aceptación</h2>
             <p>
               Los presentes Términos y Condiciones (en adelante, &quot;Términos&quot;) regulan el acceso, uso y
-              contratación de los servicios ofrecidos por <strong>Going Ecuador S.A.S.</strong>
-              (en adelante, &quot;Going&quot;) a través de la plataforma digital <strong>goingec.com</strong>{' '}
-              y la aplicación móvil Going, domiciliada en Echeverría N2-170, Quito, Ecuador.
+              contratación de los servicios ofrecidos por <strong>Thorn AI Technologies S.A.S.</strong>{' '}
+              (RUC <strong>1793176925001</strong>), titular de la marca <strong>Going</strong>
+              (en adelante, &quot;Going&quot; o &quot;la Empresa&quot;), a través del sitio web{' '}
+              <strong>app.goingec.com</strong> y las aplicaciones móviles Going Pasajero y Going Conductor,
+              con domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
             </p>
             <p className="mt-2">
               Al registrarse, acceder o utilizar cualquier servicio de la plataforma, la persona usuaria
@@ -98,24 +100,30 @@ export default function TermsPage() {
 
           <section id="servicios">
             <h2 className="text-xl font-bold text-gray-900 mb-3">4. Servicios Disponibles</h2>
-            <p className="mb-3">Going ofrece los siguientes servicios a través de su plataforma:</p>
+            <p className="mb-3">
+              Going ofrece los siguientes servicios <strong>activos</strong> a través de su plataforma:
+            </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <strong>Transporte compartido:</strong> servicio de movilidad donde varios pasajeros
-                comparten ruta y costo con un conductor verificado.
+                <strong>Viaje Compartido:</strong> servicio de movilidad entre ciudades donde varias
+                personas comparten un vehículo (SUV o VAN) y cada quien paga solo su asiento.
+                Conductoras y conductores verificados, puerta a puerta.
               </li>
               <li>
-                <strong>Transporte privado:</strong> servicio de movilidad exclusivo para la persona usuaria
-                o grupo, con conductor asignado y tarifa fija.
+                <strong>Viaje Privado:</strong> vehículo exclusivo para la persona usuaria o su grupo,
+                dentro o entre ciudades. Disponible en Auto, SUV, SUV XL, VAN, VAN XL, Minibús o Bus
+                (de 1 a 30 personas).
               </li>
               <li>
-                <strong>Envíos:</strong> servicio de envío y entrega de sobres, paquetes y maletas
-                a nivel nacional, con tracking en tiempo real y confirmación por token y foto.
+                <strong>Envíos:</strong> entrega de sobres, documentos y paquetes puerta a puerta,
+                dentro de la ciudad o entre ciudades. Con tracking en vivo y comprobante de entrega
+                por código de un solo uso (OTP).
               </li>
-              <li>
-                <strong>Destinos y Tours:</strong> reserva de actividades turísticas, aventura
-                y experiencias culturales con operadores locales certificados.
-              </li>
+            </ul>
+            <p className="mt-4 mb-3 text-sm font-semibold text-gray-700">Próximamente:</p>
+            <ul className="list-disc pl-6 space-y-1 text-sm text-gray-500">
+              <li><strong>Tours y Experiencias</strong> guiadas (en desarrollo).</li>
+              <li><strong>Alojamiento</strong> con anfitriones locales (en desarrollo).</li>
             </ul>
           </section>
 
@@ -145,19 +153,28 @@ export default function TermsPage() {
               Los precios se muestran en dólares americanos (USD) e incluyen todos los impuestos
               aplicables según la legislación ecuatoriana (IVA).
             </p>
+            <p className="mb-3 font-semibold text-gray-700">
+              Going opera <strong>sin efectivo</strong>: todos los pagos se procesan electrónicamente
+              dentro de la aplicación, para mayor seguridad de pasajeras, pasajeros y
+              conductoras/conductores.
+            </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <strong>Pago en efectivo:</strong> el pasajero paga directamente al conductor al
-                finalizar el viaje o servicio.
+                <strong>Tarjeta de crédito o débito:</strong> Mastercard, Visa, American Express y
+                Diners Club, procesadas a través de pasarelas certificadas PCI DSS.
+                Going no almacena datos completos de tarjetas.
               </li>
               <li>
-                <strong>Pago digital:</strong> Going acepta tarjetas de crédito y débito a través
-                de pasarelas certificadas (Mastercard, Visa y otras). El procesamiento está a cargo
-                de proveedores certificados PCI DSS. Going no almacena datos completos de tarjetas.
+                <strong>Datafast:</strong> pasarela de pago certificada del Ecuador, integrada
+                directamente en la aplicación.
+              </li>
+              <li>
+                <strong>DeUna:</strong> pago instantáneo mediante la aplicación DeUna del Banco
+                Pichincha y otras entidades aliadas.
               </li>
               <li>
                 Las facturas se emiten electrónicamente conforme a la normativa del SRI.
-                El usuario recibirá su comprobante al correo registrado.
+                La persona usuaria recibirá su comprobante al correo registrado.
               </li>
               <li>
                 Going se reserva el derecho de modificar precios en cualquier momento,
@@ -303,19 +320,20 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">15. Contacto</h2>
             <p>Para consultas, reclamaciones o ejercicio de derechos relacionados con estos Términos:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>Correo electrónico: <strong>legal@goingec.com</strong></li>
-              <li>Teléfono: <strong>096 249 9988</strong></li>
-              <li>Dirección: <strong>Echeverría N2-170, Quito, Ecuador</strong></li>
+              <li>Atención al cliente: <strong>soporte@goingec.com</strong></li>
+              <li>Privacidad / DPO: <strong>privacidad@goingec.com</strong></li>
+              <li>WhatsApp Going: <strong>+593 98 403 7949</strong></li>
+              <li>Dirección: <strong>Echeverría N2-170 y Crespo Toral, Quito, Ecuador</strong></li>
             </ul>
           </section>
 
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 italic">
               Estos Términos y Condiciones constituyen el acuerdo completo entre la persona usuaria y
-              Going Ecuador S.A.S. respecto al uso de la plataforma y reemplazan cualquier
-              acuerdo anterior sobre la misma materia.
+              Thorn AI Technologies S.A.S. (titular de la marca Going) respecto al uso de la
+              plataforma, y reemplazan cualquier acuerdo anterior sobre la misma materia.
             </p>
-            <p className="text-sm text-gray-500 mt-2">Última actualización: 11 de abril de 2026</p>
+            <p className="text-sm text-gray-500 mt-2">Última actualización: 28 de mayo de 2026</p>
           </div>
 
         </div>
