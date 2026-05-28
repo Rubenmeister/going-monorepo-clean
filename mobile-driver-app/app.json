@@ -19,9 +19,11 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.going.conductor",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para mostrar tu posición a los pasajeros.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Going necesita rastrear tu ubicación en segundo plano mientras estás en línea.",
-        "NSLocationAlwaysUsageDescription": "Going necesita rastrear tu ubicación mientras conduces."
+        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para mostrar tu posición a las personas pasajeras y asignarte viajes cercanos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Going rastrea tu ubicación en segundo plano mientras estás en línea para asignar viajes y actualizar la posición a las personas pasajeras durante el servicio.",
+        "NSLocationAlwaysUsageDescription": "Going rastrea tu ubicación mientras conduces para asignar viajes cercanos y compartir tu posición con las personas pasajeras.",
+        "NSCameraUsageDescription": "Going usa la cámara para que puedas subir tu foto de perfil, documentos del vehículo y fotos de incidencias durante el servicio.",
+        "NSPhotoLibraryUsageDescription": "Going accede a tu galería para que puedas seleccionar fotos de perfil y documentos del vehículo."
       }
     },
     "android": {
@@ -36,8 +38,12 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
+        "POST_NOTIFICATIONS",
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],

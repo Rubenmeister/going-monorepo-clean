@@ -18,9 +18,11 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.going.userapp",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para encontrar el transporte más cercano.",
-        "NSLocationAlwaysUsageDescription": "Going necesita tu ubicación para rastrear tu viaje.",
-        "NSCameraUsageDescription": "Going necesita tu cámara para subir tu foto de perfil."
+        "NSLocationWhenInUseUsageDescription": "Going usa tu ubicación para mostrarte el transporte más cercano y guiarte al punto de encuentro con tu conductora o conductor.",
+        "NSLocationAlwaysUsageDescription": "Going rastrea tu ubicación durante el viaje para compartirla con tus contactos de confianza si activas la función SOS.",
+        "NSCameraUsageDescription": "Going usa la cámara para que puedas subir tu foto de perfil y adjuntar fotos a tus reclamos de soporte.",
+        "NSMicrophoneUsageDescription": "Going usa el micrófono cuando hablas con el Asistente Going por voz o cuando llamas al equipo de soporte desde la app.",
+        "NSPhotoLibraryUsageDescription": "Going accede a tu galería para que selecciones fotos de perfil y adjuntes evidencia a tus tickets de soporte."
       }
     },
     "android": {
@@ -36,7 +38,9 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "RECORD_AUDIO",
-        "CAMERA"
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "POST_NOTIFICATIONS"
       ],
       "googleServicesFile": "./google-services.json",
       "config": {}
