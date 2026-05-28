@@ -70,6 +70,7 @@ import { SecurityScreen } from '@screens/profile/SecurityScreen';
 import { UserSupportScreen } from '@screens/profile/UserSupportScreen';
 import { TermsScreen } from '@screens/profile/TermsScreen';
 import { PrivacyPolicyScreen } from '@screens/profile/PrivacyPolicyScreen';
+import { UserLegalScreen } from '@screens/profile/UserLegalScreen';
 import { SavedAddressesScreen } from '@screens/profile/SavedAddressesScreen';
 import { WalletScreen } from '@screens/profile/WalletScreen';
 import { CorporateScreen } from '@screens/profile/CorporateScreen';
@@ -142,6 +143,7 @@ export type MainStackParamList = {
   UserSupport:        undefined;
   Terms:              undefined;
   Privacy:            undefined;
+  Legal:              undefined;
   SavedAddresses:     undefined;
   Wallet:             undefined;
   Corporate:          undefined;
@@ -279,6 +281,7 @@ function MainStack() {
       <Stack.Screen name="UserSupport"          component={UserSupportScreen}          options={{ title: 'Ayuda y soporte' }} />
       <Stack.Screen name="Terms"               component={TermsScreen}                options={{ title: 'Términos y condiciones' }} />
       <Stack.Screen name="Privacy"             component={PrivacyPolicyScreen}        options={{ title: 'Política de privacidad' }} />
+      <Stack.Screen name="Legal"               component={UserLegalScreen}            options={{ title: 'Centro Legal' }} />
       <Stack.Screen name="SavedAddresses"      component={SavedAddressesScreen}       options={{ title: 'Mis direcciones' }} />
       <Stack.Screen name="Wallet"              component={WalletScreen}               options={{ title: 'Mi billetera' }} />
       <Stack.Screen name="Corporate"           component={CorporateScreen}            options={{ headerShown: false }} />
