@@ -1,0 +1,111 @@
+# Envíos / Paquetería Going — tarifas
+#
+# Los envíos van SOLO en SUV o SUV XL (ver fleet.yaml restrictions.envios).
+# Hay dos modalidades: URBANO (dentro de ciudad) e INTERURBANO (entre ciudades).
+# El interurbano aprovecha viajes Going ya en ruta.
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "PENDIENTE — Rubén con operaciones Going"
+
+# ── Tipos de paquete ──────────────────────────────────────────────────
+package_types:
+  - id: sobre
+    label: "Sobre / Documentos"
+    max_dimensions_cm: { largo: 30, ancho: 30, alto: 5 }
+    max_weight_kg: 2
+    descripcion: "Documentos, contratos, pasaportes, sobres pequeños"
+
+  - id: mediano
+    label: "Paquete mediano"
+    max_dimensions_cm: { largo: 50, ancho: 50, alto: 50 }
+    max_weight_kg: 10
+    descripcion: "Caja típica de e-commerce, ropa, pequeños electrodomésticos"
+
+  - id: grande
+    label: "Paquete grande"
+    max_dimensions_cm: { largo: 80, ancho: 80, alto: 80 }
+    max_weight_kg: 25
+    descripcion: "Caja grande, encomienda, electrodomésticos chicos"
+
+  - id: especial
+    label: "Especial / coordinar"
+    max_dimensions_cm: null
+    max_weight_kg: null
+    descripcion: "Para envíos fuera de los tamaños estándar, contactar soporte"
+
+# ── Tarifas URBANAS (dentro de la misma ciudad) ───────────────────────
+# El envío urbano usa SUV o SUV XL según disponibilidad. Precio fijo por
+# tipo de paquete, sin depender del barrio (la app calcula la mejor ruta).
+tarifas_urbanas:
+  por_ciudad:
+    quito:
+      sobre:   8.00
+      mediano: 12.00
+      grande:  15.00
+      revisar: true
+    guayaquil:
+      activo: false              # próximamente
+      sobre:   null
+      mediano: null
+      grande:  null
+    cuenca:
+      activo: false
+      sobre:   null
+      mediano: null
+      grande:  null
+    # Resto de ciudades activas: heredan el precio base de Quito por ahora
+    default:
+      sobre:   8.00
+      mediano: 12.00
+      grande:  15.00
+      revisar: true
+      notas:
+        - "Precio aplica para Ambato, Riobamba, Otavalo, Ibarra, Santo Domingo, etc."
+        - "Cuando una ciudad tenga tarifa distinta, sobreescribir acá."
+
+# ── Tarifas INTERURBANAS (entre ciudades) ──────────────────────────────
+# Aprovecha viajes Going ya en ruta. El precio se calcula como:
+#   precio_interurbano = base_por_tipo + por_km_excedente × (km_ruta - 50)
+# O alternativamente: usar la tarifa de la ruta correspondiente (shared SUV)
+# con un descuento (envíos pagan menos que pasajeros porque no ocupan asiento).
+tarifas_interurbanas:
+  modelo: "porcentaje_sobre_tarifa_compartida"
+  porcentaje_sobre_compartido_suv:
+    sobre:   0.60      # 60% de la tarifa compartida SUV para esa ruta
+    mediano: 0.80
+    grande:  1.00      # 100% — paga como un pasajero
+    revisar: true
+  notas:
+    - "Si Quito→Ambato compartido SUV = $15, entonces Sobre Quito→Ambato = $9"
+    - "El modelo PENDIENTE confirmar con ops: ¿es así o se cobra tarifa fija por corredor?"
+    - "Alternativa: tarifa fija por corredor + tipo, como las urbanas."
+
+# ── Recargos especiales ──────────────────────────────────────────────
+recargos:
+  pickup_fuera_de_horario:
+    horario_estandar: ["07:00", "20:00"]
+    fuera_de_horario_multiplier: 1.30
+    revisar: true
+
+  paquete_fragil:
+    addon_usd: 2.00
+    descripcion: "Manejo especial. Etiqueta visible + atención del conductor."
+    revisar: true
+
+  comprobante_de_entrega_otp:
+    addon_usd: 0.00      # incluido por default en todos los envíos
+    descripcion: "Código de un solo uso que el destinatario entrega al conductor."
+
+# ── Qué NO transportamos (regla de dominio) ──────────────────────────
+# Restricciones legales y operativas. Si el cliente quiere enviar algo
+# de la lista NO, el chat debe rechazarlo educadamente.
+no_transportamos:
+  - "Mercancías peligrosas (explosivos, inflamables, gases, ácidos, baterías sueltas)"
+  - "Sustancias controladas o ilegales (drogas, armas)"
+  - "Animales vivos"
+  - "Dinero en efectivo en grandes cantidades"
+  - "Joyas de alto valor declarado"
+  - "Obras de arte únicas"
+  - "Productos perecederos sin embalaje térmico adecuado (helados, etc.)"

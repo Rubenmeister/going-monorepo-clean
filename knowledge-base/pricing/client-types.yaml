@@ -1,0 +1,64 @@
+# Tipos de cliente Going — multiplicador por tipo de cuenta
+#
+# El multiplicador se aplica al final, sobre el precio ya ajustado por
+# recargos dinámicos. Es el ÚLTIMO factor antes de cualquier descuento
+# por promo o cupón.
+#
+# ⚠️ REGLA DE DOMINIO IMPORTANTE:
+# El plan corporativo aplica +25% de RECARGO sobre la tarifa privada
+# Confort. ES UN SOBRECOSTO, NO UN DESCUENTO. Razón: el plan ofrece
+# servicios premium (facturación consolidada, política, despacho
+# prioritario, reportes) que requieren infraestructura adicional.
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "PENDIENTE — Rubén con operaciones Going"
+
+client_types:
+  - id: retail
+    label: "Retail — pasajero individual"
+    multiplier: 1.00
+    descripcion: "Cliente normal de la app. Tarifa base."
+
+  - id: corporate
+    label: "Going Empresas (corporativo)"
+    multiplier: 1.25         # +25% recargo
+    descripcion: |
+      Empresas con contrato Going Empresas. Recibe: facturación
+      consolidada mensual, política de viaje configurable, límites de
+      presupuesto por empleado, aprobación multinivel, despacho
+      prioritario, reportes y analytics.
+
+      El +25% financia esa capa de servicios premium.
+    requiere_contrato: true
+    pago: "Facturación mensual a 15-30 días según contrato"
+
+  - id: agency
+    label: "Agencia de turismo / tour operador"
+    multiplier: 1.20         # +20% recargo
+    descripcion: |
+      Operadoras de turismo que revenden Going a sus clientes finales.
+      El recargo cubre el margen del operador (que cobra al cliente
+      final con su propio markup) y la prioridad operativa.
+    requiere_contrato: true
+    revisar: true            # confirmar multiplicador real con ops
+
+  - id: anfitrion
+    label: "Anfitrión Going (alojamiento)"
+    multiplier: 0.95         # 5% descuento como partner
+    descripcion: |
+      Anfitriones que tienen alojamiento listado en Going (cuando se
+      lance el producto). Reciben descuento porque traen tráfico a la
+      plataforma.
+    activo_actualmente: false  # Going Anfitriones no está lanzado
+    revisar: true
+
+  - id: conductor_off_duty
+    label: "Conductor Going (uso propio)"
+    multiplier: 0.90         # 10% descuento para conductores
+    descripcion: |
+      Conductoras y conductores Going pueden pedir viajes para sí
+      mismos en su tiempo libre con descuento.
+    activo_actualmente: false  # política a implementar
+    revisar: true
