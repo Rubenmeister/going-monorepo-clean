@@ -1,0 +1,15 @@
+import { LegalPlaceholder } from '../_components/LegalPlaceholder';
+
+export const metadata = {
+  title: 'Programa de Referidos Going — Going',
+  description: 'Condiciones del Programa de Referidos Going: cómo invitar amistades, recompensas Going Cash y reglas.',
+};
+
+export default function ReferidosPage() {
+  return (
+    <LegalPlaceholder
+      title="Programa de Referidos Going"
+      summary="Cómo funciona el Programa de Referidos: invita a personas a Going con tu código personal y recibe crédito Going Cash cuando completen su primer viaje. Condiciones, ventana de validez, restricciones de uso comercial (prohibida la venta de códigos o publicidad pagada) y consecuencias por incumplimiento."
+    />
+  );
+}
