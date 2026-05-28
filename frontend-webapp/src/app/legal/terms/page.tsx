@@ -258,7 +258,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">11. Propiedad Intelectual</h2>
             <p>
               Todos los contenidos de la plataforma Going (marca, logotipo, diseño, código,
-              textos, imágenes y videos) son propiedad de Going Ecuador S.A.S. y están
+              textos, imágenes y videos) son propiedad de Thorn AI Technologies S.A.S. y están
               protegidos por la legislación ecuatoriana e internacional de propiedad intelectual.
               Su reproducción total o parcial sin autorización expresa está prohibida.
             </p>
