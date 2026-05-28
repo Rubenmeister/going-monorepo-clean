@@ -1,0 +1,26 @@
+# Corredor Amazonía — Quito ↔ Puyo ↔ Tena
+#
+# Corredor nuevo agregado el 28-may-2026 tras confirmación del founder de
+# tarifas para Puyo. Otros destinos amazónicos (Tena, Macas, Lago Agrio,
+# Coca) están en `coverage.yaml` como coming_soon.
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "Rubén Torres"
+corredor: amazonia
+
+rutas:
+  - id: quito_cn_to_puyo
+    origin:      { canton: quito, zone: centro_norte }
+    destination: { canton: puyo }
+    shared:    { suv: 25.00, suv_xl: 25.00 }
+    private:   { suv: 100.00, suv_xl: 120.00, van: 180.00, van_xl: 260.00, minibus: 420.00, bus: 500.00 }
+    premium_suv: 115.00
+    last_updated: "2026-05-28"
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Ruta nueva: shared SUV $25 · private SUV $100 (confirmado por Rubén)", autor: "Rubén" }
+    notas:
+      - "Ruta cruza la cordillera oriental — vía Baños es la más común (~4h)."
+      - "Tarifas para otros vehículos (van, van_xl, etc.) estimadas — PENDIENTE validación con ops."

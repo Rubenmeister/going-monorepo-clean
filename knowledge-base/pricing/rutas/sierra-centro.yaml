@@ -39,11 +39,13 @@ rutas:
   - id: quito_cn_to_latacunga
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: latacunga }
-    shared:    { suv: 13.00, suv_xl: 13.00 }
+    shared:    { suv: 12.00, suv_xl: 12.00 }
     private:   { suv: 50.00, suv_xl: 70.00, van: 100.00, van_xl: 160.00, minibus: 260.00, bus: 350.00 }
     premium_suv: 60.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $13→$12 (validado por Rubén) · private SUV $50 confirmado", autor: "Rubén" }
 
   - id: quito_cn_to_salcedo
     origin:      { canton: quito, zone: centro_norte }
@@ -72,16 +74,20 @@ rutas:
     private:   { suv: 60.00, suv_xl: 80.00, van: 120.00, van_xl: 180.00, minibus: 300.00, bus: 350.00 }
     premium_suv: 70.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $15 y private SUV $60 confirmados por Rubén", autor: "Rubén" }
 
   - id: quito_cn_to_banos
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: banos }
-    shared:    { suv: 17.00, suv_xl: 17.00 }
-    private:   { suv: 70.00, suv_xl: 100.00, van: 140.00, van_xl: 200.00, minibus: 340.00, bus: 350.00 }
+    shared:    { suv: 20.00, suv_xl: 20.00 }
+    private:   { suv: 80.00, suv_xl: 100.00, van: 140.00, van_xl: 200.00, minibus: 340.00, bus: 350.00 }
     premium_suv: 80.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $17→$20 · private SUV $70→$80 (validado por Rubén)", autor: "Rubén" }
     notas:
       - "Baños está en coming_soon — confirmar si se opera HOY o se difiere."
 

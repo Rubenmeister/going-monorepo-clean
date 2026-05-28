@@ -24,11 +24,13 @@ rutas:
   - id: quito_cn_to_cayambe
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: cayambe }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
-    private:   { suv: 30.00, suv_xl: 40.00, van: 60.00, van_xl: 80.00, minibus: 140.00, bus: 280.00 }
+    shared:    { suv: 12.00, suv_xl: 12.00 }
+    private:   { suv: 50.00, suv_xl: 40.00, van: 60.00, van_xl: 80.00, minibus: 140.00, bus: 280.00 }
     premium_suv: 40.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $10→$12 · private SUV $30→$50 (validado por Rubén)", autor: "Rubén" }
 
   - id: quito_cn_to_tabacundo
     origin:      { canton: quito, zone: centro_norte }
@@ -55,10 +57,12 @@ rutas:
     distance_km: 95
     duration_min_typical: 120
     shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 40.00, suv_xl: 60.00, van: 90.00, van_xl: 130.00, minibus: 200.00, bus: 300.00 }
+    private:   { suv: 60.00, suv_xl: 60.00, van: 90.00, van_xl: 130.00, minibus: 200.00, bus: 300.00 }
     premium_suv: 50.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "private SUV $40→$60 (validado por Rubén) · shared $15 confirmado", autor: "Rubén" }
     notas:
       - "Incluye Peguche por extensión natural de ruta"
 
@@ -76,11 +80,13 @@ rutas:
     destination: { canton: ibarra }
     distance_km: 113
     duration_min_typical: 135
-    shared:    { suv: 11.00, suv_xl: 11.00 }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 90.00, van_xl: 130.00, minibus: 200.00, bus: 300.00 }
+    shared:    { suv: 15.00, suv_xl: 15.00 }
+    private:   { suv: 60.00, suv_xl: 60.00, van: 90.00, van_xl: 130.00, minibus: 200.00, bus: 300.00 }
     premium_suv: 60.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $11→$15 · private SUV $50→$60 (validado por Rubén)", autor: "Rubén" }
 
   - id: quito_cn_to_cotacachi
     origin:      { canton: quito, zone: centro_norte }

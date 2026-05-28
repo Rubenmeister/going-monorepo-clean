@@ -13,11 +13,13 @@ rutas:
   - id: quito_cn_to_santo_domingo
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: santo_domingo }
-    shared:    { suv: 14.00, suv_xl: 14.00 }
+    shared:    { suv: 15.00, suv_xl: 15.00 }
     private:   { suv: 60.00, suv_xl: 80.00, van: 110.00, van_xl: 170.00, minibus: 250.00, bus: 350.00 }
     premium_suv: 70.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← compartido + privado SUV validados por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "shared SUV $14→$15 (validado por Rubén) · private SUV $60 confirmado", autor: "Rubén" }
 
   - id: quito_cn_to_la_concordia
     origin:      { canton: quito, zone: centro_norte }
