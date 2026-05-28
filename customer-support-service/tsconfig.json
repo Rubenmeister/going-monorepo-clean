@@ -13,6 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@going-platform/pricing": ["../libs/pricing/src/index.ts"],
+      "@going-platform/going-kb": ["../libs/going-kb/src/index.ts"],
       "@going-platform/cerebro-contracts": ["../libs/cerebro-contracts/src/index.ts"]
     },
     "incremental": true,

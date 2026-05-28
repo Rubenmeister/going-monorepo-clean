@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { FARES, applyDynamicPricing } from '@going-platform/pricing';
+import { findRoute, type Modality, type VehicleId } from '@going-platform/going-kb';
 import { RealtimeTool } from './openai-realtime.adapter';
 
 /**
@@ -212,21 +212,29 @@ function numberToSpanish(n: number): string {
 }
 
 /**
- * Handler de get_quote_phone. Reusa el cálculo canónico de pricing
- * (mismas FARES + applyDynamicPricing que el resto del stack) — diferencia
- * solo en el shape del resultado: pre-formateado para dictado verbal.
+ * Handler de get_quote_phone. Reusa el cálculo canónico de pricing del
+ * Centro de Información Going (@going-platform/going-kb) — misma fuente
+ * de verdad que el chat web. Solo difiere en el shape del resultado:
+ * pre-formateado para dictado verbal.
  */
 export function executeGetQuotePhone(args: any): QuotePhoneResult | QuotePhoneError {
   const origen    = String(args?.origen   || '').toLowerCase().replace(/\s+/g, '_');
   const destino   = String(args?.destino  || '').toLowerCase().replace(/\s+/g, '_');
-  const modalidad = (args?.modalidad === 'privado' ? 'privado' : 'compartido') as 'compartido' | 'privado';
+  const modalidadEs = (args?.modalidad === 'privado' ? 'privado' : 'compartido') as 'compartido' | 'privado';
+  const modalidad: Modality = modalidadEs === 'compartido' ? 'shared' : 'private';
+  // Por defecto SUV (vehículo más común). El voice agent rara vez especifica
+  // vehículo en una llamada — si lo hace, lo respetamos.
+  const vehicle: VehicleId = (['suv','suv_xl','van','van_xl','minibus','bus','auto']
+    .includes(String(args?.vehiculo || '').toLowerCase().replace(/\s+/g,'_'))
+      ? String(args?.vehiculo || '').toLowerCase().replace(/\s+/g,'_')
+      : 'suv') as VehicleId;
 
   if (!origen || !destino) {
     return {
       ok: false,
       error: 'missing_route',
       message: 'Faltan origen o destino.',
-      spoken_suggestion: 'No escuché bien la ruta, ¿me decís de dónde a dónde?',
+      spoken_suggestion: 'No escuché bien la ruta. ¿Me dices de dónde a dónde?',
     };
   }
 
@@ -236,58 +244,87 @@ export function executeGetQuotePhone(args: any): QuotePhoneResult | QuotePhoneEr
       ok: false,
       error: 'invalid_datetime',
       message: 'fecha_hora debe ser ISO 8601 válido.',
-      spoken_suggestion: 'No entendí la fecha, ¿es para hoy?',
+      spoken_suggestion: 'No entendí la fecha. ¿Es para hoy?',
     };
   }
 
-  const sharedFares = FARES.shared as Record<string, number>;
-  const basePrice = sharedFares[`${origen}-${destino}`] ?? sharedFares[`${destino}-${origen}`];
+  // Lookup en el KB. Probar ambas direcciones por si la ruta es bidireccional.
+  let fare = findRoute({
+    origin:      { canton: origen },
+    destination: { canton: destino },
+    modality:    modalidad,
+    vehicle,
+    when:        dateTime,
+    clientType:  'retail',
+  });
+  if (!fare) {
+    fare = findRoute({
+      origin:      { canton: destino },
+      destination: { canton: origen },
+      modality:    modalidad,
+      vehicle,
+      when:        dateTime,
+      clientType:  'retail',
+    });
+  }
 
-  if (basePrice === undefined) {
+  if (!fare) {
     return {
       ok: false,
       error: 'route_not_listed',
       message: `Ruta ${origen} ↔ ${destino} no está en el catálogo.`,
       spoken_suggestion:
         `Esa ruta entre ${origen.replace(/_/g, ' ')} y ${destino.replace(/_/g, ' ')} ` +
-        'no la tengo a mano. ¿Querés que te mande opciones por mensaje al mismo número?',
+        'no la tengo a mano. ¿Quieres que te envíe opciones por mensaje al mismo número?',
     };
   }
 
-  const pricing = applyDynamicPricing({
-    basePrice,
-    mode: modalidad,
-    dateTime,
-    clientSegment: 'public',
-  });
-
-  // Construir frase de recargos hablable, solo si hay alguno > 0.
+  // Construir frase de recargos hablable a partir del breakdown del KB.
   const surchargeBits: string[] = [];
-  if (pricing.timeSurchargeRate > 0) {
-    const pct = Math.round(pricing.timeSurchargeRate * 100);
-    surchargeBits.push(`incluye recargo del ${numberToSpanish(pct)} por ciento por horario`);
-  }
-  if (pricing.clientSurchargeRate > 0) {
-    const pct = Math.round(pricing.clientSurchargeRate * 100);
-    surchargeBits.push(`más ${numberToSpanish(pct)} por ciento por tipo de cliente`);
+  for (const item of fare.breakdown) {
+    if (item.type === 'base') continue;
+    if (item.multiplier && item.multiplier !== 1) {
+      const pct = Math.round((item.multiplier - 1) * 100);
+      if (pct === 0) continue;
+      surchargeBits.push(`más ${numberToSpanish(pct)} por ciento por ${humanLabel(item.type)}`);
+    } else if (item.amount_usd !== 0) {
+      surchargeBits.push(`más ${priceToSpanish(Math.abs(item.amount_usd))} por ${humanLabel(item.type)}`);
+    }
   }
   const spokenSurcharges = surchargeBits.length > 0 ? surchargeBits.join(', ') : '';
-  const spokenUnit = modalidad === 'compartido' ? 'por asiento' : 'por el viaje completo';
+  const spokenUnit = modalidadEs === 'compartido' ? 'por asiento' : 'por el viaje completo';
 
-  toolsLogger.log(`[tool:get_quote_phone] ${origen}↔${destino} ${modalidad} → $${pricing.adjustedPrice} (${priceToSpanish(pricing.adjustedPrice)})`);
+  toolsLogger.log(
+    `[tool:get_quote_phone] ${origen}↔${destino} ${modalidadEs} ${vehicle} → ` +
+      `$${fare.finalPrice} (${priceToSpanish(fare.finalPrice)})` +
+      `${fare.revisar ? ' [REVISAR]' : ''}`
+  );
 
   return {
     ok: true,
     origen,
     destino,
-    modalidad,
-    final_price:        pricing.adjustedPrice,
-    spoken_price:       priceToSpanish(pricing.adjustedPrice),
+    modalidad: modalidadEs,
+    final_price:        fare.finalPrice,
+    spoken_price:       priceToSpanish(fare.finalPrice),
     spoken_surcharges:  spokenSurcharges,
     spoken_unit:        spokenUnit,
     currency:           'USD',
     datetime_used:      dateTime.toISOString(),
   };
+}
+
+// Helper para traducir tipo de surcharge a frase verbal en español.
+function humanLabel(type: string): string {
+  switch (type) {
+    case 'origin_zone_surcharge': return 'zona de origen';
+    case 'hora_del_dia':           return 'horario';
+    case 'dia_de_la_semana':       return 'día de la semana';
+    case 'feriado':                return 'feriado';
+    case 'client_type':            return 'tipo de cliente';
+    case 'discount':               return 'descuento';
+    default:                       return 'recargo';
+  }
 }
 
 // ─── Handoff phone result ────────────────────────────────────
