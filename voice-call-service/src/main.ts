@@ -16,8 +16,32 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { initKnowledgeBase, getKbWarnings, countRutasPendientesRevision } from '@going-platform/going-kb';
 
 async function bootstrap() {
+  // Cargar el Centro de Información Going antes del bootstrap de Nest.
+  // Uyari usa el mismo KB que el chat web — única fuente de verdad para
+  // precios, cobertura, productos e identidad.
+  try {
+    const kb = initKnowledgeBase();
+    Logger.log(
+      `🧠 Going KB loaded: ${kb.rutas.length} rutas, ${kb.coverage.active_cities.length} ciudades activas, ` +
+        `${countRutasPendientesRevision()} tarifas pendientes de revisión`,
+      'Bootstrap',
+    );
+    const warnings = getKbWarnings();
+    if (warnings.length > 0) {
+      Logger.warn(`KB cargado con ${warnings.length} warnings`, 'Bootstrap');
+      warnings.slice(0, 5).forEach(w => Logger.warn(`  · ${w}`, 'Bootstrap'));
+    }
+  } catch (e) {
+    Logger.error(
+      `❌ Failed to load Going KB: ${(e as Error).message}. ` +
+        `Service will start but get_quote_phone tool will fail.`,
+      'Bootstrap',
+    );
+  }
+
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3018;
 

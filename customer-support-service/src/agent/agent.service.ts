@@ -5,7 +5,12 @@ import { ConversationService } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
-import { FARES, applyDynamicPricing } from '@going-platform/pricing';
+import {
+  findRoute,
+  listActiveCities,
+  type Modality,
+  type VehicleId,
+} from '@going-platform/going-kb';
 
 // [CREAR_VIAJE:origen=X,destino=Y,servicio=Z,modalidad=compartido|privado] o con ,hora=ISO
 const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servicio=([^,\]]+)(?:,modalidad=([^,\]]+))?(?:,hora=([^\]]+))?\]/i;
@@ -289,69 +294,135 @@ export class AgentService {
   }
 
   /**
-   * get_quote: calcula precio EXACTO usando libs/pricing. Mismo código que
-   * payment-service usa para cobrar — sin desincronización.
+   * get_quote: calcula precio EXACTO usando @going-platform/going-kb (única
+   * fuente de verdad). El KB lee de knowledge-base/pricing/ que es editable
+   * sin código.
    *
    * Returns shape esperado por Gemini para componer respuesta natural:
    *   {
-   *     base_price: 15,
-   *     final_price: 19.50,
-   *     surcharges: { time: '+20% nocturno', weekend: '+10%' },
+   *     base_price: 20,
+   *     final_price: 24.00,
+   *     surcharges: { hora_pico: '+15%', corporativo: '+25%' },
    *     currency: 'USD',
    *     per_seat: true  // (compartido) o false (privado)
+   *     revisar: false   // true si la tarifa está pendiente de validación
    *   }
+   *
+   * Args aceptados (Gemini puede no enviarlos todos):
+   *   origen, destino — strings de ciudad/canton (ej. "quito", "ambato")
+   *   modalidad       — 'compartido' | 'privado'
+   *   vehiculo        — opcional: 'suv'|'suv_xl'|'van'|'minibus'|'bus'
+   *                     (default 'suv' que es el más común)
+   *   fecha_hora      — opcional: ISO 8601. Default = ahora.
+   *   tipo_cliente    — opcional: 'retail'|'corporate'. Default 'retail'.
+   *   zona_origen     — opcional: solo aplica para Quito
+   *                     ('centro_norte'|'sur'|'cumbaya_tumbaco'|...)
    */
   private toolGetQuote(args: any): any {
-    const origen   = String(args.origen   || '').toLowerCase().replace(/\s+/g, '_');
-    const destino  = String(args.destino  || '').toLowerCase().replace(/\s+/g, '_');
-    const modalidad = (args.modalidad === 'privado' ? 'privado' : 'compartido') as 'privado' | 'compartido';
+    const origenCanton  = normalizeCanton(args.origen);
+    const destinoCanton = normalizeCanton(args.destino);
+    const modalidad = (args.modalidad === 'privado' ? 'private' : 'shared') as Modality;
+    const vehiculo  = normalizeVehicle(args.vehiculo);
+    const zonaOrigen = args.zona_origen
+      ? String(args.zona_origen).toLowerCase().replace(/\s+/g, '_')
+      : undefined;
+    const tipoCliente = args.tipo_cliente === 'corporate'
+      ? 'corporate' as const
+      : 'retail' as const;
     const dateTime = args.fecha_hora ? new Date(args.fecha_hora) : new Date();
     if (isNaN(dateTime.getTime())) {
       return { error: 'fecha_hora inválida — usar formato ISO 8601' };
     }
 
-    // Lookup en tabla FARES (direccional — probar ambos órdenes).
-    const sharedFares: Record<string, number> = FARES.shared as any;
-    const key1 = `${origen}-${destino}`;
-    const key2 = `${destino}-${origen}`;
-    let basePrice = sharedFares[key1] ?? sharedFares[key2];
+    // Lookup en el knowledge base (probar ambas direcciones porque
+    // muchas rutas son bidireccionales).
+    let fare = findRoute({
+      origin:      { canton: origenCanton, zone: zonaOrigen },
+      destination: { canton: destinoCanton },
+      modality:    modalidad,
+      vehicle:     vehiculo,
+      when:        dateTime,
+      clientType:  tipoCliente,
+    });
 
-    // Si no es ruta compartida conocida, devolver no_route_found para
-    // que Gemini sugiera al usuario contactar soporte o usar la app.
-    if (basePrice === undefined) {
+    if (!fare) {
+      // Probar dirección inversa (rutas bidireccionales tipo Ibarra↔Otavalo).
+      fare = findRoute({
+        origin:      { canton: destinoCanton },
+        destination: { canton: origenCanton },
+        modality:    modalidad,
+        vehicle:     vehiculo,
+        when:        dateTime,
+        clientType:  tipoCliente,
+      });
+    }
+
+    if (!fare) {
+      const sugerencias = listActiveCities()
+        .slice(0, 8)
+        .map(c => c.name)
+        .join(', ');
       return {
         error: 'ruta_no_listada',
-        message: `No tengo tarifa fija para ${origen} → ${destino}. Las rutas con tarifa pre-definida son: ${Object.keys(sharedFares).slice(0, 10).join(', ')}...`,
+        message:
+          `No tengo tarifa para ${origenCanton} → ${destinoCanton} en modalidad ${modalidad}, ` +
+          `vehículo ${vehiculo}. Ciudades cubiertas: ${sugerencias}...`,
       };
     }
 
-    // applyDynamicPricing aplica TODOS los recargos del momento.
-    const pricing = applyDynamicPricing({
-      basePrice,
-      mode: modalidad,
-      dateTime,
-      clientSegment: 'public',
-    });
-
-    // Componer surcharges en formato humano para Gemini.
+    // Componer surcharges en formato humano (para que Gemini explique al
+    // cliente). Solo incluir los que realmente suman.
     const surcharges: Record<string, string> = {};
-    if (pricing.timeSurchargeRate > 0) {
-      surcharges.tiempo = `+${(pricing.timeSurchargeRate * 100).toFixed(0)}%`;
-    }
-    if (pricing.clientSurchargeRate > 0) {
-      surcharges.segmento = `+${(pricing.clientSurchargeRate * 100).toFixed(0)}%`;
+    for (const item of fare.breakdown) {
+      if (item.type === 'base') continue;
+      const tag = surchargeTag(item.type);
+      if (item.multiplier && item.multiplier !== 1) {
+        surcharges[tag] = `+${((item.multiplier - 1) * 100).toFixed(0)}% (${item.label})`;
+      } else if (item.amount_usd !== 0) {
+        const sign = item.amount_usd > 0 ? '+' : '';
+        surcharges[tag] = `${sign}$${item.amount_usd.toFixed(2)} (${item.label})`;
+      }
     }
 
     return {
-      origen,
-      destino,
-      modalidad,
-      base_price: basePrice,
-      final_price: pricing.adjustedPrice,
+      origen:         origenCanton,
+      destino:        destinoCanton,
+      modalidad:      modalidad === 'shared' ? 'compartido' : 'privado',
+      vehiculo,
+      base_price:     fare.basePrice,
+      final_price:    fare.finalPrice,
       surcharges,
-      currency: 'USD',
-      per_seat: modalidad === 'compartido',
-      datetime_used: dateTime.toISOString(),
+      currency:       'USD',
+      per_seat:       modalidad === 'shared',
+      datetime_used:  dateTime.toISOString(),
+      route_id:       fare.routeId,
+      revisar:        fare.revisar,
+      trusted:        fare.trusted,
     };
+  }
+}
+
+// ─── Helpers de normalización ──────────────────────────────────────
+
+function normalizeCanton(input: any): string {
+  return String(input || '').toLowerCase().trim().replace(/\s+/g, '_');
+}
+
+function normalizeVehicle(input: any): VehicleId {
+  const v = String(input || 'suv').toLowerCase().replace(/\s+/g, '_');
+  const valid: VehicleId[] = ['auto', 'suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus'];
+  return (valid.includes(v as VehicleId) ? v : 'suv') as VehicleId;
+}
+
+function surchargeTag(type: string): string {
+  // Friendly tags que Gemini puede leer y explicar.
+  switch (type) {
+    case 'origin_zone_surcharge': return 'recargo_zona';
+    case 'hora_del_dia':           return 'hora';
+    case 'dia_de_la_semana':       return 'dia';
+    case 'feriado':                return 'feriado';
+    case 'client_type':            return 'tipo_cliente';
+    case 'discount':               return 'descuento';
+    default:                       return 'otro';
   }
 }
