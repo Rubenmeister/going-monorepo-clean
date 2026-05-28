@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Política de Privacidad — Going',
   description:
-    'Política de Privacidad de Thorn Ai Technologies S.A.S. (titular de la marca Going) conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
+    'Política de Privacidad de Thorn AI Technologies S.A.S. (titular de la marca Going) conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
 };
 
 const LAST_UPDATE = '25 de abril de 2026';
@@ -13,7 +13,7 @@ const SECTIONS = [
     id: 'responsable',
     icon: '🏢',
     title: '1. Responsable del Tratamiento',
-    content: `Thorn Ai Technologies S.A.S., titular de la marca Going (en adelante "Going" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going Pasajero y Going Conductor.
+    content: `Thorn AI Technologies S.A.S., titular de la marca Going (en adelante "Going" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going Pasajero y Going Conductor.
 
 Contacto del Delegado de Protección de Datos (DPD):
 • Correo: privacidad@goingec.com
@@ -260,7 +260,7 @@ export default function PrivacidadPage() {
             privacidad@goingec.com
           </a>
           <p className="text-white/40 text-xs mt-4">
-            Thorn Ai Technologies S.A.S. (titular de la marca Going) · RUC 1793176925001 · Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
+            Thorn AI Technologies S.A.S. (titular de la marca Going) · RUC 1793176925001 · Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
             Última actualización: {LAST_UPDATE}
           </p>
           <div className="mt-6 flex justify-center gap-4">

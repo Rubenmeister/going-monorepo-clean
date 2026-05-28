@@ -76,7 +76,7 @@ https://goingec.com/terminos
 ---
 
 ## APP 2: Going - Conductor
-**Package:** `com.going.driverapp` | **Versión:** 2.0.0
+**Package:** `com.going.conductor` | **Versión:** 2.0.0
 
 ### Nombre de la app (50 chars máx)
 ```
