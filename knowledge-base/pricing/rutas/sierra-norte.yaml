@@ -112,45 +112,60 @@ rutas:
   - id: aeropuerto_to_quito_cn
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: quito, zone: centro_norte }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
+    # NO se ofrece compartido: decisión de producto 28-may-2026.
+    # Por seguridad de pasajeras/os (equipaje, perfil turístico), las rutas
+    # Quito↔Aeropuerto van SOLO en modalidad privada (vehículo completo).
     private:   { suv: 20.00, suv_xl: 25.00, van: 60.00, van_xl: 70.00, minibus: 120.00, bus: 200.00 }
     premium_suv: 40.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← Privado SUV $20 validado por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Eliminada modalidad compartida (decisión de seguridad). Privado SUV $20 confirmado por Rubén.", autor: "Rubén" }
     notas:
-      - "Precio fijo especial. NO aplica recargo por origen aeropuerto (ya está incluido)."
+      - "Tarifa $20 fija. NO se ofrece compartido por seguridad."
+      - "NO aplica recargo por origen aeropuerto (ya está incluido)."
 
   - id: quito_cn_to_aeropuerto
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: quito, zone: aeropuerto }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
-    private:   { suv: 25.00, suv_xl: 25.00, van: 50.00, van_xl: 75.00, minibus: 125.00, bus: 250.00 }
+    # NO se ofrece compartido: decisión de producto 28-may-2026.
+    # Por seguridad, las rutas Quito↔Aeropuerto van SOLO en privado.
+    private:   { suv: 20.00, suv_xl: 25.00, van: 50.00, van_xl: 75.00, minibus: 125.00, bus: 250.00 }
     premium_suv: 30.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false     # ← Privado SUV $20 validado por founder
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Eliminada modalidad compartida (decisión de seguridad). Privado SUV $25→$20 (alineado a tarifa Aeropuerto→Quito CN).", autor: "Rubén" }
     notas:
-      - "Precio fijo especial. NO aplica recargo por destino aeropuerto."
+      - "Tarifa $20 fija. NO se ofrece compartido por seguridad."
 
   - id: aeropuerto_to_cayambe
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: cayambe }
-    shared:    { suv: 14.00, suv_xl: 14.00 }
-    private:   { suv: 45.00, suv_xl: 55.00, van: 75.00, van_xl: 115.00, minibus: 185.00, bus: 365.00 }
+    # Regla aeropuerto: tarifa Quito CN + $10 compartido / + $20 privado.
+    # Base Quito CN→Cayambe: shared $12 / private $50.
+    shared:    { suv: 22.00, suv_xl: 22.00 }       # 12 + 10
+    private:   { suv: 70.00, suv_xl: 55.00, van: 75.00, van_xl: 115.00, minibus: 185.00, bus: 365.00 }    # 50 + 20
     premium_suv: 55.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Aplicada regla aeropuerto: shared $14→$22 (Quito+$10) · private $45→$70 (Quito+$20)", autor: "Rubén" }
 
   - id: aeropuerto_to_ibarra
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: ibarra }
-    shared:    { suv: 19.00, suv_xl: 19.00 }
-    private:   { suv: 65.00, suv_xl: 80.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00 }
+    # Regla aeropuerto: tarifa Quito CN + $10 compartido / + $20 privado.
+    # Base Quito CN→Ibarra: shared $15 / private $60.
+    shared:    { suv: 25.00, suv_xl: 25.00 }       # 15 + 10
+    private:   { suv: 80.00, suv_xl: 80.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00 }    # 60 + 20
     premium_suv: 75.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Aplicada regla aeropuerto: shared $19→$25 (Quito+$10) · private $65→$80 (Quito+$20)", autor: "Rubén" }
     notas:
       - "Mismo precio aplica para Otavalo y Atuntaqui (en el camino)."
-      - "+$5 recargo origen aeropuerto ya incluido en estos números."
 
   # ── Tramos cortos ─────────────────────────────────────────────────────
   - id: ibarra_to_otavalo
