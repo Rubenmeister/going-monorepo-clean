@@ -1,0 +1,69 @@
+# Lugar: Cuenca — Atenas del Ecuador, patrimonio cuencano
+id: cuenca
+name: Cuenca
+province: Azuay
+region: Sierra
+canton: Cuenca
+is_canton_capital: true
+
+geography:
+  altitude_m: 2550
+  area_km2: 366            # urbano. Cantón completo: 3086 km²
+  population: 614539        # INEC 2022 estimación
+  climate:
+    zone: ecuatorial mesotérmico templado
+    avg_temp_c:
+      min: 8
+      max: 20
+    best_visit_months: [julio, agosto, septiembre, enero, febrero]
+    rainy_months: [marzo, abril, mayo, octubre, noviembre]
+
+history_es: |
+  Cuenca, formalmente Santa Ana de los Cuatro Ríos de Cuenca, fue fundada
+  el 12 de abril de 1557 sobre Tomebamba — capital del norte del imperio
+  Inca. Su Centro Histórico fue declarado Patrimonio Cultural de la
+  Humanidad por la UNESCO en 1999.
+
+  Es conocida como "la Atenas del Ecuador" por su tradición intelectual,
+  poética y musical. Sus cuatro ríos (Tomebamba, Yanuncay, Tarqui y
+  Machángara) atraviesan la ciudad y le dan su nombre. Es la tercera ciudad
+  más poblada del país.
+
+attractions_es:
+  - "Centro Histórico (Patrimonio UNESCO 1999) — calles empedradas, balcones"
+  - "Catedral Nueva (Inmaculada Concepción) — cúpulas azules emblemáticas"
+  - "Museo del Sombrero de Paja Toquilla — Panama Hat (Patrimonio UNESCO)"
+  - "Parque Nacional Cajas — lagunas de altura a 30 min"
+  - "Ruinas de Pumapungo — sitio inca-cañari"
+  - "Mirador de Turi — vista panorámica de la ciudad"
+  - "Río Tomebamba (Barranco) — paseo emblemático"
+
+gastronomy_es:
+  - "Cuy asado con papas — emblema de la cocina cuencana"
+  - "Mote pillo — mote con huevo, cebolla y achiote"
+  - "Hornado cuencano — variante regional"
+  - "Morocho de leche — bebida caliente típica"
+  - "Llapingachos — tortilla de papa con queso"
+  - "Tamales y humitas serranos"
+
+events_es:
+  - name: "Fundación de Cuenca"
+    when: "12 abril"
+    description: "Fiesta cívica principal. Desfiles, eventos culturales."
+  - name: "Septenario de Corpus Christi"
+    when: "Junio (semana móvil)"
+    description: "7 días de procesiones, dulces tradicionales (corpus) y música."
+  - name: "Pase del Niño Viajero"
+    when: "24 diciembre"
+    description: "Procesión navideña única de Cuenca, declarada Patrimonio Cultural Inmaterial."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Cuenca es uno de los destinos de mayor demanda en
+    nuestra hoja de ruta de mediano plazo. Tercera ciudad del Ecuador
+    por población y centro turístico, comercial y cultural clave.
+  nearest_hub: null            # cuando se active, hub propio o conexión vía Riobamba
+  coming_soon: true
+
+tags: [capital_cantonal, andina, colonial, patrimonio_unesco, panama_hat, intelectual]

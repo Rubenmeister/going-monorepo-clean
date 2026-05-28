@@ -1,0 +1,68 @@
+# Lugar: Riobamba — la Sultana de los Andes, ciudad ferroviaria
+id: riobamba
+name: Riobamba
+province: Chimborazo
+region: Sierra
+canton: Riobamba
+is_canton_capital: true
+
+geography:
+  altitude_m: 2750
+  area_km2: 980
+  population: 264048        # INEC 2022 estimación
+  climate:
+    zone: ecuatorial mesotérmico
+    avg_temp_c:
+      min: 5
+      max: 18
+    best_visit_months: [junio, julio, agosto, septiembre]
+    rainy_months: [febrero, marzo, octubre, noviembre]
+
+history_es: |
+  Riobamba es la primera ciudad fundada por los españoles en territorio del
+  actual Ecuador (15 de agosto de 1534, antes que Quito). Fue refundada en
+  su ubicación actual tras el terremoto de 1797 que destruyó la primera sede.
+
+  Conocida como la "Sultana de los Andes" por su ubicación al pie del volcán
+  Chimborazo (6.263 m), la cumbre más alta del Ecuador y el punto más
+  cercano al sol desde el centro de la Tierra (por el abultamiento ecuatorial).
+  Fue capital de Ecuador durante el primer congreso constituyente de 1830.
+
+  Riobamba fue históricamente nodo ferroviario clave — la línea Quito-Guayaquil
+  pasaba por aquí, incluyendo la mítica Nariz del Diablo.
+
+attractions_es:
+  - "Volcán Chimborazo — 6.263 m, punto más cercano al sol desde el centro de la Tierra"
+  - "Nariz del Diablo — ruta ferroviaria histórica (cuando opera)"
+  - "Parque Nacional Sangay — Patrimonio Natural UNESCO"
+  - "Mercado La Merced — gastronomía y artesanía local"
+  - "Catedral de Riobamba — primera fundada en Ecuador"
+  - "Reserva Faunística Chimborazo — vicuñas y páramo"
+  - "Laguna de Colta — paisaje andino accesible"
+
+gastronomy_es:
+  - "Hornado de Riobamba — uno de los más reconocidos del país"
+  - "Caldo de 31 — sopa tradicional con vísceras de res"
+  - "Yahuarlocro — sopa de borrego con sangre cocida"
+  - "Chicha huevona — bebida fermentada con huevo y cerveza"
+  - "Cholas de Guano — pan dulce típico"
+
+events_es:
+  - name: "Independencia de Riobamba"
+    when: "11 noviembre"
+    description: "Fiesta cívica. Desfile, comida, música."
+  - name: "Reyes Magos / Diablada de Píllaro"
+    when: "Enero (cantones cercanos)"
+    description: "Tradición carnavalesca en pueblos vecinos."
+  - name: "Festival del Chimborazo"
+    when: "Variable"
+    description: "Celebración del volcán y la cultura puruhá."
+
+going_coverage:
+  active: true
+  notes: |
+    Cobertura puerta a puerta. Salidas desde Quito (~3.5h) y Aeropuerto
+    Mariscal Sucre. Conexiones con Ambato (~45 min) y Baños (~1.5h).
+  nearest_hub: Quito
+
+tags: [andina, ferroviaria, chimborazo, historica, puruhá, paramo]

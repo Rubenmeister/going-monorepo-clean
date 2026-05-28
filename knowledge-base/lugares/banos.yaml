@@ -1,0 +1,67 @@
+# Lugar: Baños — puerta a la Amazonía, capital del turismo de aventura
+id: banos
+name: Baños de Agua Santa
+short_name: Baños
+province: Tungurahua
+region: Sierra
+canton: Baños
+
+geography:
+  altitude_m: 1820
+  area_km2: 1065           # incluye parroquias rurales
+  population: 20018         # urbano, INEC 2022 estimación
+  climate:
+    zone: subtropical húmedo
+    avg_temp_c:
+      min: 14
+      max: 24
+    best_visit_months: [junio, julio, agosto, diciembre, enero]
+    rainy_months: [marzo, abril, mayo, octubre, noviembre]
+  notes: "Microclima por estar en la entrada de la Amazonía — más cálido y húmedo que el resto de la Sierra."
+
+history_es: |
+  Baños de Agua Santa debe su nombre a sus aguas termales subterráneas
+  alimentadas por el volcán Tungurahua (5.023 m), aún activo. Es uno de
+  los destinos turísticos más visitados del Ecuador, tanto por turismo
+  nacional como internacional.
+
+  La ciudad es la puerta entre la Sierra y la Amazonía, lo que se nota en
+  su biodiversidad, su gastronomía y su clima de transición. El Tungurahua
+  tuvo un período eruptivo intenso entre 1999 y 2016 — la ciudad ha
+  convivido con el volcán como vecino respetable.
+
+attractions_es:
+  - "Ruta de las Cascadas — Pailón del Diablo, Manto de la Novia, Agoyán"
+  - "Casa del Árbol — columpio sobre el abismo con vista al volcán Tungurahua"
+  - "Termas de la Virgen — aguas medicinales en el centro de Baños"
+  - "Rafting en el río Pastaza"
+  - "Parapente sobre el cañón del Pastaza"
+  - "Volcán Tungurahua — observatorio (cuando hay actividad)"
+  - "Iglesia de Nuestra Señora del Rosario de Agua Santa"
+
+gastronomy_es:
+  - "Melcocha — dulce de caña típico de Baños"
+  - "Taffy de caña — variante artesanal del melcocha"
+  - "Truchas frescas — de criaderos locales"
+  - "Caña guarapo — jugo de caña recién prensado"
+  - "Empanadas de viento con queso fresco"
+
+events_es:
+  - name: "Cantonización de Baños"
+    when: "16 diciembre"
+    description: "Fiesta de fundación, desfile y música."
+  - name: "Nuestra Señora del Rosario"
+    when: "Octubre"
+    description: "Procesión religiosa principal del año."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Está en la lista de ciudades en hoja de ruta cercana —
+    es uno de los destinos turísticos de mayor demanda del Ecuador. Cuando
+    se active, mejorar a `active: true`. Conexión natural con Ambato (~1h)
+    y Riobamba (~1.5h).
+  nearest_hub: Quito           # via Ambato cuando se active
+  coming_soon: true
+
+tags: [subtropical, volcan, turismo_aventura, termales, cascadas, amazonia_puerta]

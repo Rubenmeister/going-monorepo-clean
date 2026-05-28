@@ -1,0 +1,72 @@
+# Lugar: Tena — capital amazónica, cuna del rafting ecuatoriano
+id: tena
+name: Tena
+province: Napo
+region: Amazonía
+canton: Tena
+is_canton_capital: true
+
+geography:
+  altitude_m: 511
+  area_km2: 3897           # cantón completo
+  population: 78076         # INEC 2022 estimación
+  climate:
+    zone: tropical húmedo amazónico
+    avg_temp_c:
+      min: 18
+      max: 28
+    best_visit_months: [agosto, septiembre, octubre]
+    rainy_months: [marzo, abril, mayo, junio, julio]
+  notes: "Llueve mucho casi todo el año — es Amazonía. La 'temporada seca' es relativa."
+
+history_es: |
+  Tena fue fundada por los españoles en 1560 como uno de los puestos
+  fronterizos hacia la Amazonía ecuatoriana. Su nombre proviene del kichwa.
+  Es la capital de la provincia de Napo y puerta principal a la Amazonía
+  ecuatoriana desde la Sierra Centro.
+
+  La región es territorio ancestral del pueblo kichwa amazónico (también
+  llamados Napo Runas), que mantiene viva su lengua, gastronomía y
+  cosmovisión. Tena es punto de partida para el turismo amazónico de
+  aventura — rafting, kayak, caminatas en selva primaria, comunidades
+  indígenas.
+
+  El cacao nativo de la región amazónica es reconocido mundialmente entre
+  los mejores cacaos finos del mundo.
+
+attractions_es:
+  - "Rafting en el río Napo, Misahuallí o Jatunyacu"
+  - "Comunidades Kichwas — turismo comunitario responsable"
+  - "Cascada de Latas (Latas Yaku) — cascada accesible"
+  - "Mirador del Bermejo / Parque Amazónico La Isla"
+  - "Reserva Biosfera Sumaco-Napo-Galeras"
+  - "Cacao nativo amazónico — visitas a fincas artesanales"
+  - "Misahuallí — pueblo cercano, monos en la plaza, río Napo"
+
+gastronomy_es:
+  - "Maito de tilapia — pescado envuelto en hoja de bijao y cocido al carbón"
+  - "Maito de pollo — variante con pollo"
+  - "Chicha de yuca — bebida fermentada tradicional kichwa"
+  - "Ayampaco — pescado o pollo con palmito en hoja, al carbón"
+  - "Chocolate artesanal — del cacao nativo amazónico (¡finísimo!)"
+  - "Chontacuro — gusano de la palma chonta, plato tradicional"
+
+events_es:
+  - name: "Cantonización de Tena"
+    when: "15 noviembre"
+    description: "Fiesta cívica principal del cantón."
+  - name: "Fiestas de la Chonta"
+    when: "Septiembre-octubre"
+    description: "Celebración kichwa de la cosecha de la palma chonta."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Tena requiere un corredor Sierra → Amazonía que aún no
+    operamos. Es uno de los puntos de mayor demanda turística amazónica.
+    Acceso natural desde Quito vía Papallacta y desde Ambato vía Baños →
+    Puyo → Tena (~5h total).
+  nearest_hub: null
+  coming_soon: true
+
+tags: [amazonia, kichwa, rafting, comunitario, cacao, biodiversidad]

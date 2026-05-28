@@ -1,0 +1,67 @@
+# Lugar: Guayaquil — Perla del Pacífico, capital económica
+id: guayaquil
+name: Guayaquil
+short_name: Guayaquil
+province: Guayas
+region: Costa
+canton: Guayaquil
+is_canton_capital: true
+
+geography:
+  altitude_m: 4
+  area_km2: 344            # urbano. Cantón: 5237 km²
+  population: 2723665        # INEC 2022 estimación
+  climate:
+    zone: tropical seco a húmedo
+    avg_temp_c:
+      min: 22
+      max: 32
+    best_visit_months: [julio, agosto, septiembre, octubre]
+    rainy_months: [enero, febrero, marzo, abril]
+
+history_es: |
+  Guayaquil fue fundada por Francisco de Orellana en 1535 como Santiago de
+  Guayaquil. Su ubicación estratégica en el estuario del río Guayas la
+  convirtió en el principal puerto del Ecuador y, durante siglos, en
+  astillero clave de la costa pacífica sudamericana.
+
+  Es la ciudad más poblada del país y su capital económica. El 9 de octubre
+  de 1820 proclamó la independencia de la corona española, dando inicio a
+  la liberación del actual Ecuador. Famoso encuentro entre Bolívar y San
+  Martín en julio de 1822 (Conferencia de Guayaquil).
+
+attractions_es:
+  - "Malecón 2000 — paseo ribereño emblemático del río Guayas"
+  - "Las Peñas + Cerro Santa Ana — barrio colorido, escaleras a la cima"
+  - "Parque Histórico — réplica de la Guayaquil colonial + fauna costera"
+  - "Iguanas del Parque Seminario — íconos vivos del centro"
+  - "Malecón del Salado — paseo alternativo, gastronomía"
+  - "Isla Santay — eco-isla, accesible en bici desde el centro"
+  - "Mercado Artesanal del Sur"
+
+gastronomy_es:
+  - "Ceviche guayaquileño — camarón, concha, pescado, con maíz tostado"
+  - "Encebollado — sopa de pescado emblemática del desayuno costeño"
+  - "Bolón de verde — bola de plátano verde con queso, chicharrón o relleno"
+  - "Seco de pato / seco de gallina criolla"
+  - "Cangrejada — banquete grupal de cangrejos del manglar (temporada)"
+  - "Encocado de pescado — pescado en leche de coco"
+
+events_es:
+  - name: "Independencia de Guayaquil"
+    when: "9 octubre"
+    description: "Fiesta cívica máxima. Desfiles, eventos culturales y conciertos."
+  - name: "Fundación de Guayaquil"
+    when: "25 julio"
+    description: "Fiesta de fundación, complementa el 9 octubre."
+
+going_coverage:
+  active: false
+  notes: |
+    Próximamente. Guayaquil es el mercado más grande del Ecuador (~3M
+    habitantes urbano + área metropolitana) y central para nuestra
+    expansión. Plan: ingresar después de consolidar la Sierra Norte/Centro.
+  nearest_hub: null
+  coming_soon: true
+
+tags: [costa, capital_economica, puerto, malecon, manglar, tropical]

@@ -1,0 +1,69 @@
+# Lugar: Otavalo — capital textil de los Andes, identidad kichwa
+id: otavalo
+name: Otavalo
+province: Imbabura
+region: Sierra
+canton: Otavalo
+is_canton_capital: true
+
+geography:
+  altitude_m: 2530
+  area_km2: 528
+  population: 110461        # INEC 2022 estimación
+  climate:
+    zone: ecuatorial mesotérmico
+    avg_temp_c:
+      min: 8
+      max: 20
+    best_visit_months: [junio, julio, agosto, septiembre]
+    rainy_months: [febrero, marzo, octubre, noviembre]
+
+history_es: |
+  Otavalo es el centro cultural más reconocido del pueblo kichwa-otavalo,
+  uno de los más antiguos y resistentes del Ecuador. Su identidad se mantuvo
+  intacta a través de la colonia, la república y la modernización: vestimenta
+  tradicional, lengua kichwa cotidiana y una tradición textil que predata a
+  los incas.
+
+  El nombre "Otavalo" proviene del kichwa y significa, según diversas
+  interpretaciones, "manta de todos" o "lugar de los antepasados". El pueblo
+  otavaleño es reconocido a nivel mundial por sus textiles: ponchos, sacos
+  de lana, chales y bisutería que viajan a ferias en Europa, Estados Unidos
+  y Asia desde Otavalo mismo.
+
+attractions_es:
+  - "Plaza de los Ponchos — mercado artesanal el sábado todo el día"
+  - "Cascada de Peguche — 15 min en SUV, accesible y sagrada en cosmovisión kichwa"
+  - "Laguna de San Pablo — a los pies del volcán Imbabura"
+  - "Cuicocha — laguna de origen volcánico (cráter), ~30 min"
+  - "Museo Viviente Otavalango — historia y memoria del pueblo otavalo"
+  - "Parque Cóndor — centro de rescate de aves rapaces con vistas al valle"
+  - "Cascada de Taxopamba — sendero corto, naturaleza"
+
+gastronomy_es:
+  - "Yamor — chicha fermentada de siete granos, tradicional de septiembre"
+  - "Carnes coloradas — carne de res adobada con achiote y especias"
+  - "Fritada otavaleña — variante con sabor regional"
+  - "Empanadas de morocho"
+  - "Tostado con queso amasado"
+
+events_es:
+  - name: "Fiestas del Yamor"
+    when: "Primera semana de septiembre"
+    description: "Fiesta tradicional más importante de Otavalo. Música, danza, comida y la chicha de siete granos."
+  - name: "Inti Raymi"
+    when: "Junio (solsticio)"
+    description: "Fiesta del sol — celebración ancestral kichwa con rituales, comida y música."
+  - name: "Pawkar Raymi"
+    when: "Marzo (equinoccio)"
+    description: "Celebración del florecimiento."
+
+going_coverage:
+  active: true
+  notes: |
+    Cobertura puerta a puerta. Salidas frecuentes hacia Quito (~2h) y al
+    Aeropuerto Mariscal Sucre. Ruta interurbana directa también con Ibarra
+    (~30 min) y Atuntaqui (~15 min).
+  nearest_hub: Quito
+
+tags: [andina, kichwa, artesanal, textil, mercado, sabado, naturaleza, lagunas]

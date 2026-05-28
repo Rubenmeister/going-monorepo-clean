@@ -1,0 +1,73 @@
+# Lugar: Quito — capital de Ecuador, hub principal de Going
+id: quito
+name: Quito
+province: Pichincha
+region: Sierra
+canton: Quito
+is_canton_capital: true
+is_country_capital: true
+
+geography:
+  altitude_m: 2850
+  area_km2: 372            # Distrito Metropolitano: 4204 km² (incluye parroquias)
+  population: 1763275      # INEC 2022 estimación
+  climate:
+    zone: ecuatorial mesotérmico
+    avg_temp_c:
+      min: 7
+      max: 22
+    best_visit_months: [junio, julio, agosto, septiembre]
+    rainy_months: [febrero, marzo, abril, octubre, noviembre]
+
+history_es: |
+  Quito fue fundada por el conquistador Sebastián de Belalcázar el 6 de
+  diciembre de 1534, sobre las ruinas de la ciudad Inca de Quitu. Su Centro
+  Histórico es el primer Patrimonio Cultural de la Humanidad declarado por
+  la UNESCO en 1978, por ser el conjunto colonial mejor conservado y menos
+  modificado de América Latina.
+
+  La ciudad se sitúa a 2.850 metros sobre el nivel del mar, sobre la falda
+  oriental del volcán activo Pichincha. Su latitud (0°) le da el nombre al
+  país. Es una de las dos capitales más antiguas de Sudamérica y la más alta
+  del mundo entre las constitucionales.
+
+attractions_es:
+  - "Centro Histórico (Patrimonio UNESCO 1978) — iglesias barrocas, plazas"
+  - "Basílica del Voto Nacional — torres con vista panorámica"
+  - "TelefériQo — sube al Pichincha a 4.100 m en 18 minutos"
+  - "Mitad del Mundo — monumento a la línea ecuatorial (latitud 0°)"
+  - "La Ronda (Calle Morales) — tradicional, bares, café y dulces"
+  - "Parque La Carolina — pulmón verde de la zona norte"
+  - "Capilla del Hombre / Casa de Oswaldo Guayasamín"
+  - "Plaza San Francisco y su convento"
+
+gastronomy_es:
+  - "Fritada — cerdo cocido y dorado, con mote, maduro y llapingacho"
+  - "Caldo de patas — sopa contundente con pata de res y mote"
+  - "Hornado — cerdo asado entero servido con mote y agrio"
+  - "Colada morada con guaguas de pan — bebida y pan típico de Difuntos (noviembre)"
+  - "Empanadas de viento, de morocho y de verde"
+  - "Locro de papa con queso y aguacate"
+
+events_es:
+  - name: "Fiestas de Quito"
+    when: "30 noviembre - 6 diciembre"
+    description: "Fiestas de fundación. Corridas, chivas, música, comida."
+  - name: "Día de Difuntos"
+    when: "2 noviembre"
+    description: "Tradición colada morada + guaguas de pan."
+  - name: "Inti Raymi (versiones locales)"
+    when: "Junio (solsticio)"
+    description: "Celebraciones kichwas en parroquias rurales."
+
+going_coverage:
+  active: true
+  notes: |
+    Hub principal. Cobertura puerta a puerta en todo el Distrito
+    Metropolitano: zona urbana, Cumbayá, Tumbaco, Los Chillos, Valle de los
+    Chillos, Quito Sur. Recargo de +$5 al originar viaje en: Quito Sur,
+    Cumbayá/Tumbaco, Los Chillos, Aeropuerto Mariscal Sucre.
+  nearest_hub: self
+  airport: "Aeropuerto Mariscal Sucre (Tababela) — a ~45 min del Centro"
+
+tags: [capital, andina, colonial, patrimonio_unesco, hub, aeropuerto]
