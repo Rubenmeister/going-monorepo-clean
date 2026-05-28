@@ -1,0 +1,110 @@
+# Zonas dentro de ciudad — recargos por zona de ORIGEN
+#
+# Cuando una ciudad tiene varias zonas con tarifas distintas (ej. Quito que
+# tiene Centro Norte como base + recargos por Sur, Cumbayá, Aeropuerto),
+# se declaran acá.
+#
+# El recargo SE SUMA al precio base de la ruta. Es siempre en USD (no
+# porcentual) para que el cliente entienda fácil.
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "PENDIENTE — Rubén con operaciones Going"
+
+# ⚠️ REVISAR: estas son las 5 zonas conocidas hoy. El founder indicó que
+# pueden faltar zonas y/o los recargos pueden ser distintos. Validar con
+# operaciones antes de Fase B (loader).
+zones:
+  quito:
+    base_zone: centro_norte
+    zonas:
+      - id: centro_norte
+        label: "Quito Centro Norte"
+        origin_surcharge_usd: 0
+        descripcion: "Mariscal, La Carolina, Quicentro, Iñaquito, Bellavista"
+
+      - id: norte_alto
+        label: "Quito Norte (Calderón, Carcelén)"
+        origin_surcharge_usd: 0        # REVISAR: ¿aplica recargo?
+        descripcion: "Norte de Quito, fuera del centro tradicional"
+        revisar: true
+
+      - id: sur
+        label: "Quito Sur (Chillogallo, Quitumbe)"
+        origin_surcharge_usd: 5
+        descripcion: "Sur de Quito, recargo por distancia al CN"
+
+      - id: centro_historico
+        label: "Centro Histórico"
+        origin_surcharge_usd: 0        # REVISAR: ¿aplica?
+        revisar: true
+
+      - id: cumbaya_tumbaco
+        label: "Cumbayá / Tumbaco"
+        origin_surcharge_usd: 5
+        descripcion: "Valle, recargo por distancia"
+
+      - id: los_chillos
+        label: "Los Chillos / Valle de los Chillos"
+        origin_surcharge_usd: 5
+        descripcion: "Valle, recargo por distancia"
+
+      - id: aeropuerto
+        label: "Aeropuerto Mariscal Sucre (Tababela)"
+        origin_surcharge_usd: 5
+        descripcion: "Recargo por distancia al hub y por entrada/salida del aeropuerto"
+
+      - id: mitad_del_mundo
+        label: "San Antonio de Pichincha (Mitad del Mundo)"
+        origin_surcharge_usd: 0        # REVISAR: ¿aplica recargo?
+        revisar: true
+
+# Resto de ciudades — sin zonas internas por ahora.
+# Si Ambato, Riobamba u otra crece y desarrolla varias zonas operativas,
+# agregar acá con la misma estructura.
+
+  ambato:
+    base_zone: centro
+    zonas:
+      - id: centro
+        label: "Ambato Centro"
+        origin_surcharge_usd: 0
+        revisar: true   # confirmar si Ambato tiene sub-zonas operativas
+
+  riobamba:
+    base_zone: centro
+    zonas:
+      - id: centro
+        label: "Riobamba Centro"
+        origin_surcharge_usd: 0
+        revisar: true
+
+  ibarra:
+    base_zone: centro
+    zonas:
+      - id: centro
+        label: "Ibarra Centro"
+        origin_surcharge_usd: 0
+        revisar: true
+
+  otavalo:
+    base_zone: centro
+    zonas:
+      - id: centro
+        label: "Otavalo Centro"
+        origin_surcharge_usd: 0
+        revisar: true
+
+  santo_domingo:
+    base_zone: centro
+    zonas:
+      - id: centro
+        label: "Santo Domingo Centro"
+        origin_surcharge_usd: 0
+        revisar: true
+
+# Sobre el campo `revisar: true`:
+#   - Cuando se valida con operaciones, BORRAR ese flag.
+#   - El loader debe loggear (no bloquear) si encuentra zonas con flag
+#     revisar:true en una consulta real, para que sepamos qué falta cerrar.

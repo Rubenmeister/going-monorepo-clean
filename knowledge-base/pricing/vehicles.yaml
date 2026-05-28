@@ -1,0 +1,92 @@
+# Vehículos canónicos Going — tarifa base y capacidades
+#
+# Esto NO es el catálogo descriptivo de marketing (eso vive en fleet.yaml).
+# Acá viven los datos que el motor de pricing necesita: capacidad y, cuando
+# aplica, multiplicador respecto al vehículo de referencia.
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "Rubén Torres / pendiente confirmación operaciones"
+
+vehicles:
+  auto:
+    label: Auto
+    capacity_pax: 4
+    aplica_compartido: false   # auto solo en modalidad privado
+    aplica_privado: true
+    aplica_envios: false
+
+  suv:
+    label: SUV
+    capacity_pax: 4
+    aplica_compartido: true
+    aplica_privado: true
+    aplica_envios: true
+    multiplier_relativo_suv: 1.0   # vehículo de referencia
+
+  suv_xl:
+    label: SUV XL
+    capacity_pax: 5
+    aplica_compartido: true
+    aplica_privado: true
+    aplica_envios: true
+    multiplier_relativo_suv: 1.4
+
+  van:
+    label: VAN
+    capacity_pax: 7
+    aplica_compartido: true        # en algunas rutas grandes
+    aplica_privado: true
+    aplica_envios: false
+    multiplier_relativo_suv: 2.0
+
+  van_xl:
+    label: VAN XL
+    capacity_pax: 12
+    aplica_compartido: false       # solo privado por economía de cupo
+    aplica_privado: true
+    aplica_envios: false
+    multiplier_relativo_suv: 3.0
+
+  minibus:
+    label: Minibús
+    capacity_pax: 20
+    aplica_compartido: false
+    aplica_privado: true
+    aplica_envios: false
+    multiplier_relativo_suv: 5.0
+
+  bus:
+    label: Bus
+    capacity_pax: 30
+    aplica_compartido: false
+    aplica_privado: true
+    aplica_envios: false
+    multiplier_relativo_suv: 10.0
+
+# Vehículo "Premium SUV" — variante con conductor seleccionado y servicio plus
+# Pago: tarifa privada SUV + premium_addon_usd.
+premium_variants:
+  premium_suv:
+    base_vehicle: suv
+    label: "Premium SUV"
+    premium_addon_usd: 10
+    descripcion: |
+      Mayor confort, conductor con calificación >= 4.8, vehículo modelo
+      reciente. Se ofrece cuando el cliente lo pide explícitamente o
+      cuando la empresa cliente lo tiene en su política.
+
+# Restricciones operativas (cross-product)
+restrictions:
+  envios:
+    permitidos: [suv, suv_xl]
+    razon: >-
+      Por seguridad del paquete (vehículos sedán/SUV con baúl cerrado).
+      VAN+ se reservan para pasajeros.
+
+  carpooling_default:
+    permitidos: [suv, suv_xl, van]
+    razon: >-
+      Carpool solo en vehículos donde llenar el cupo es realista. VAN XL
+      (12 pax) y mayores se ofrecen solo en privado.

@@ -1,0 +1,95 @@
+# Recargos dinámicos — hora del día, día de la semana, feriados
+#
+# Estos multiplicadores se aplican SOBRE el precio base (después de sumar
+# recargo de zona de origen). Se COMPONEN entre sí: si es hora pico Y fin
+# de semana Y feriado, los 3 multiplicadores se multiplican.
+#
+# Ojo: precios al cliente nunca deben sentirse abusivos. Si la composición
+# de varios multiplicadores supera 1.5, el chat debe explicar al cliente
+# qué está sumando ("es feriado nocturno en hora pico, por eso el recargo
+# es alto").
+
+version: "2.0"
+vigente_desde: "2026-05-28"
+ultima_revision: "2026-05-28"
+revisor: "PENDIENTE — Rubén con operaciones Going"
+
+# ── Hora del día ────────────────────────────────────────────────
+# Aplica según hora local Ecuador (UTC-5).
+hora_del_dia:
+  - id: pico_manana
+    label: "Hora pico mañana"
+    rango_horas: ["06:00-09:00"]
+    privado_multiplier: 1.15      # +15% sobre tarifa privada
+    compartido_multiplier: 1.08   # +8% sobre tarifa compartida
+    revisar: true                  # confirmar % con ops
+
+  - id: pico_tarde
+    label: "Hora pico tarde"
+    rango_horas: ["17:00-20:00"]
+    privado_multiplier: 1.15
+    compartido_multiplier: 1.08
+    revisar: true
+
+  - id: nocturno
+    label: "Nocturno"
+    rango_horas: ["22:00-05:00"]
+    privado_multiplier: 1.20
+    compartido_multiplier: 1.10
+    descripcion: "Tarifa nocturna por riesgo y menor disponibilidad."
+    revisar: true
+
+  - id: diurno_estandar
+    label: "Diurno estándar"
+    # Implícito: cualquier hora fuera de las anteriores
+    rango_horas: ["09:00-17:00", "20:00-22:00"]
+    privado_multiplier: 1.00
+    compartido_multiplier: 1.00
+
+# ── Día de la semana ────────────────────────────────────────────
+dia_de_la_semana:
+  - id: fin_de_semana
+    label: "Fin de semana"
+    dias: [sabado, domingo]
+    privado_multiplier: 1.10
+    compartido_multiplier: 1.05
+    revisar: true
+
+  - id: dia_laborable
+    label: "Lunes a viernes"
+    dias: [lunes, martes, miercoles, jueves, viernes]
+    privado_multiplier: 1.00
+    compartido_multiplier: 1.00
+
+# ── Feriados ──────────────────────────────────────────────────
+# Aplica multiplicador adicional en feriados nacionales del Ecuador.
+# La lista de feriados específicos vive en `feriados_ecuador.yaml` (a crear).
+feriado:
+  privado_multiplier: 1.20
+  compartido_multiplier: 1.10
+  descripcion: |
+    Feriados nacionales del Ecuador con multiplicador adicional. Si cae
+    en fin de semana, los multiplicadores se componen (×1.20 × ×1.10 =
+    +32% para privado, +15% para compartido).
+  revisar: true
+
+# ── Lista de feriados Ecuador (referencia) ──────────────────────
+# PENDIENTE: crear archivo feriados_ecuador.yaml con calendario oficial.
+# Incluir al menos:
+#   - 1 enero (Año Nuevo)
+#   - Carnaval (lunes y martes — móvil)
+#   - Viernes Santo (móvil)
+#   - 1 mayo (Día del Trabajador)
+#   - 24 mayo (Batalla de Pichincha)
+#   - 10 agosto (Primer Grito de Independencia)
+#   - 9 octubre (Independencia de Guayaquil)
+#   - 2 noviembre (Día de Difuntos)
+#   - 3 noviembre (Independencia de Cuenca)
+#   - 25 diciembre (Navidad)
+#   - 31 diciembre (Fin de Año — opcional según horario)
+
+# ── Demanda alta especial ───────────────────────────────────────
+# Eventos puntuales que requieren tarifa surge: conciertos, partidos
+# Liga Pro, Carnaval en Ambato, fin de año en Baños, etc.
+# El admin-dashboard ya tiene endpoints /pricing/surge/* para esto.
+# No hardcodear en este YAML — vive en runtime/admin.
