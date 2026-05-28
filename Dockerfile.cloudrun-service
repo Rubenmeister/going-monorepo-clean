@@ -25,6 +25,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json 
 # (ARG-based COPY works in Docker BuildKit, which Cloud Build uses)
 COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 COPY libs/ ./libs/
+# Centro de Información Going — leído por @going-platform/going-kb en runtime.
+# Si el servicio NO usa going-kb, esta copia es benigna (carpeta inerte).
+COPY knowledge-base/ ./knowledge-base/
 
 # Install all dependencies (pnpm workspace-aware)
 RUN pnpm install --no-frozen-lockfile
@@ -89,6 +92,8 @@ WORKDIR /app
 
 # Copy compiled output + its self-contained node_modules (installed above)
 COPY --from=builder /app/dist/${SERVICE_NAME} ./dist
+# Centro de Información Going — runtime read by @going-platform/going-kb
+COPY --from=builder /app/knowledge-base ./knowledge-base
 
 ENV NODE_ENV=production
 # Cloud Run injects PORT=8080 (overrides service default)
