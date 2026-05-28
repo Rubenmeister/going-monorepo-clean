@@ -56,20 +56,29 @@ export interface ThemeTokens {
   premiumText:   string;
 
   // ── Brand identity ─────────────────────────────────────────
-  // Decisión rev 2026-05-23 tras logo canónico:
-  //   brandRed    → SOLO logo G + SOS / destructivos. NO usar como CTA.
-  //   brandNavy   → hero backgrounds + primary CTA en forms (Login/Register/etc)
-  //   brandYellow → CTA de momentos especiales (Comenzar, Pagar, Iniciar ruta)
-  brandRed:      string;
-  brandNavy:     string;   // primary action color (form CTAs)
-  brandNavyDark: string;   // hover/pressed state of navy
-  brandYellow:   string;   // accent CTA color (Comenzar/Pagar)
-  brandYellowDark: string; // pressed/hover
+  // Decisión rev 2026-05-28 (alineado con Going Branding Guidelines 2024 +
+  // webapp Hero v6):
+  //   brandRed    → primary CTA (Reservar, Continuar, Pagar). Color principal.
+  //   brandYellow → CTA de momentos especiales (Iniciar viaje, Cobrar)
+  //                 y badges Más popular / accents.
+  //   brandBlack  → tercer accent (Envíos en webapp, header dark mode).
+  //
+  // brandNavy / brandNavyDark se mantienen como ALIAS de brandRed para que
+  // componentes legacy que importan `tokens.brandNavy` sigan funcionando
+  // y muestren rojo automáticamente. Migración por nombres es opcional
+  // (no urgente — los valores ya están alineados).
+  brandRed:        string;
+  brandRedDark:    string;   // hover/pressed state del rojo
+  brandNavy:       string;   // @deprecated alias → brandRed
+  brandNavyDark:   string;   // @deprecated alias → brandRedDark
+  brandYellow:     string;   // amarillo Going (guía 2024 #FFD253)
+  brandYellowDark: string;
+  brandBlack:      string;   // negro Going (sobrio, header dark, Envíos)
 
-  // Texto sobre brandYellow — el yellow tiene buen contraste con negro
-  textOnYellow:  string;
-  // Texto sobre brandNavy — siempre blanco
-  textOnNavy:    string;
+  // Texto sobre superficies de marca
+  textOnRed:     string;   // blanco
+  textOnYellow:  string;   // negro
+  textOnNavy:    string;   // @deprecated alias → textOnRed (blanco)
 }
 
 // ─── Modo OSCURO (hero / brand / SOS / voice) ───────────────────────────
@@ -103,13 +112,16 @@ export const darkTokens: ThemeTokens = {
   premiumBg:     'rgba(255,215,0,0.06)',
   premiumText:   'rgba(255,215,0,0.85)',
 
-  brandRed:        '#FF4C41',  // confirmado por logo canónico Going
-  brandNavy:       '#2a3a6e',  // navy ligeramente más claro en dark para contraste
-  brandNavyDark:   '#1d2e58',
-  brandYellow:     '#FFCD00',  // mismo en ambos modos — el yellow funciona en dark
-  brandYellowDark: '#E6B800',
-  textOnYellow:    '#0a0e1a',
-  textOnNavy:      '#ffffff',
+  brandRed:        '#FF4C41',  // guía Going 2024 — rojo coral del logo
+  brandRedDark:    '#E03A30',  // pressed/hover del rojo
+  brandNavy:       '#FF4C41',  // @deprecated alias → brandRed (cambio 2026-05-28)
+  brandNavyDark:   '#E03A30',  // @deprecated alias → brandRedDark
+  brandYellow:     '#FFD253',  // guía Going 2024 (era #FFCD00, alineado a #FFD253)
+  brandYellowDark: '#E6B83A',
+  brandBlack:      '#000000',  // negro Going (guía 2024)
+  textOnRed:       '#ffffff',
+  textOnYellow:    '#000000',
+  textOnNavy:      '#ffffff',  // @deprecated alias → textOnRed
 };
 
 // ─── Modo CLARO (operativo / diario) ────────────────────────────────────
@@ -148,13 +160,16 @@ export const lightTokens: ThemeTokens = {
   premiumBg:     'rgba(201,162,39,0.08)',
   premiumText:   '#8B6F00',
 
-  brandRed:        '#FF4C41',  // mismo coral del logo en ambos modos
-  brandNavy:       '#1d2e58',  // navy profundo — primary CTA en forms
-  brandNavyDark:   '#142244',
-  brandYellow:     '#FFCD00',  // amarillo brand
-  brandYellowDark: '#E6B800',
-  textOnYellow:    '#0a0e1a',
-  textOnNavy:      '#ffffff',
+  brandRed:        '#FF4C41',  // guía Going 2024 — rojo coral del logo
+  brandRedDark:    '#D63828',  // pressed/hover (más profundo en modo light)
+  brandNavy:       '#FF4C41',  // @deprecated alias → brandRed
+  brandNavyDark:   '#D63828',  // @deprecated alias → brandRedDark
+  brandYellow:     '#FFD253',  // guía Going 2024
+  brandYellowDark: '#E6B83A',
+  brandBlack:      '#000000',  // negro Going
+  textOnRed:       '#ffffff',
+  textOnYellow:    '#000000',
+  textOnNavy:      '#ffffff',  // @deprecated alias → textOnRed
 };
 
 /**
