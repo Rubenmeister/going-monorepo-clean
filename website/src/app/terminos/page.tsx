@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Términos y Condiciones — Going Ecuador',
+  title: 'Términos y Condiciones — Going',
   description:
-    'Términos y Condiciones de uso de la plataforma Going Ecuador S.A.S. conforme a la legislación ecuatoriana.',
+    'Términos y Condiciones de uso de la plataforma Thorn AI Technologies S.A.S. conforme a la legislación ecuatoriana.',
 };
 
 const LAST_UPDATE = '14 de abril de 2026';
@@ -13,19 +13,19 @@ const SECTIONS = [
     id: 'objeto',
     icon: '📄',
     title: '1. Objeto y Ámbito de Aplicación',
-    content: `Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going Ecuador, operada por Going Ecuador S.A.S. (RUC: 1793XXXXXXX001), con domicilio en Av. Amazonas N23-45, Quito, Ecuador.
+    content: `Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going, operada por Thorn AI Technologies S.A.S. (RUC: 1793176925001), con domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
 
 Al registrarte, acceder o usar la aplicación Going, declaras haber leído, comprendido y aceptado íntegramente estos Términos. Si no estás de acuerdo, debes abstenerte de usar el servicio.
 
-Esta aceptación constituye un contrato vinculante entre tú y Going Ecuador S.A.S., de conformidad con el Código Civil ecuatoriano y la Ley de Comercio Electrónico (Ley No. 2002-67).`,
+Esta aceptación constituye un contrato vinculante entre tú y Thorn AI Technologies S.A.S., de conformidad con el Código Civil ecuatoriano y la Ley de Comercio Electrónico (Ley No. 2002-67).`,
   },
   {
     id: 'naturaleza',
     icon: '🚗',
     title: '2. Naturaleza del Servicio',
-    content: `Going Ecuador es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.
+    content: `Going es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.
 
-Going Ecuador S.A.S. NO es una empresa de transporte. Los conductores son prestadores independientes que actúan conforme a la Ley Orgánica de Transporte Terrestre, Tránsito y Seguridad Vial (LOTTTSV) y sus reglamentos.
+Thorn AI Technologies S.A.S. NO es una empresa de transporte. Los conductores son prestadores independientes que actúan conforme a la Ley Orgánica de Transporte Terrestre, Tránsito y Seguridad Vial (LOTTTSV) y sus reglamentos.
 
 Going opera bajo las categorías:
 (i) Viajes interurbanos e intercantonal en vehículos SUV, VAN y BUS.
@@ -39,7 +39,7 @@ Going opera bajo las categorías:
     title: '3. Registro y Cuenta de Usuario',
     content: `Para acceder al servicio debes crear una cuenta proporcionando: nombre completo, número de cédula o pasaporte, correo electrónico, número de teléfono móvil y contraseña segura.
 
-Te comprometes a proporcionar información veraz, completa y actualizada. Going Ecuador se reserva el derecho de suspender o eliminar cuentas con información falsa o incompleta.
+Te comprometes a proporcionar información veraz, completa y actualizada. Going se reserva el derecho de suspender o eliminar cuentas con información falsa o incompleta.
 
 Eres el único responsable de mantener la confidencialidad de tus credenciales y de todas las actividades que ocurran bajo tu cuenta. Notifica inmediatamente a soporte@goingec.com si sospechas de uso no autorizado.
 
@@ -58,7 +58,7 @@ Medios de pago aceptados:
 
 Precio mínimo de viaje: USD 5.00. Las tarifas incluyen el IVA aplicable en Ecuador según el Código Tributario vigente.
 
-Going Ecuador emitirá comprobantes de pago electrónicos según las disposiciones del Servicio de Rentas Internas (SRI).`,
+Going emitirá comprobantes de pago electrónicos según las disposiciones del Servicio de Rentas Internas (SRI).`,
   },
   {
     id: 'cancelaciones',
@@ -112,13 +112,13 @@ Comisión de plataforma: Going cobra entre el 15% y el 20% del valor del viaje s
 • Usar la función SOS de manera frívola o fraudulenta.
 • Grabar a otros usuarios sin su consentimiento.
 
-Going Ecuador se reserva el derecho de suspender o eliminar permanentemente cuentas que incumplan estas normas, sin derecho a reembolso de saldos pendientes en casos de infracción grave.`,
+Going se reserva el derecho de suspender o eliminar permanentemente cuentas que incumplan estas normas, sin derecho a reembolso de saldos pendientes en casos de infracción grave.`,
   },
   {
     id: 'seguridad-sos',
     icon: '🆘',
     title: '8. Función SOS y Seguridad',
-    content: `Going Ecuador incorpora una función de emergencia SOS accesible desde la pantalla de viaje activo. Al activarla:
+    content: `Going incorpora una función de emergencia SOS accesible desde la pantalla de viaje activo. Al activarla:
 
 • Se notifica automáticamente al equipo de seguridad de Going.
 • Se comparte la ubicación en tiempo real con los contactos de confianza registrados.
@@ -135,7 +135,7 @@ Going recomienda a los usuarios:
     id: 'responsabilidad',
     icon: '⚠️',
     title: '9. Limitación de Responsabilidad',
-    content: `Going Ecuador S.A.S. actúa exclusivamente como intermediario tecnológico y no asume responsabilidad directa por:
+    content: `Thorn AI Technologies S.A.S. actúa exclusivamente como intermediario tecnológico y no asume responsabilidad directa por:
 
 • Accidentes de tránsito (responsabilidad del conductor y su seguro SOAT).
 • Pérdida, daño o robo de bienes personales durante el viaje.
@@ -151,9 +151,9 @@ Going mantiene un proceso de verificación de antecedentes para conductores, per
     id: 'propiedad-intelectual',
     icon: '©️',
     title: '10. Propiedad Intelectual',
-    content: `Todos los derechos de propiedad intelectual de la aplicación Going, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de Going Ecuador S.A.S. y están protegidos por el Código Orgánico de la Economía Social de los Conocimientos y los tratados internacionales aplicables.
+    content: `Todos los derechos de propiedad intelectual de la aplicación Going, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de Thorn AI Technologies S.A.S. y están protegidos por el Código Orgánico de la Economía Social de los Conocimientos y los tratados internacionales aplicables.
 
-Se prohíbe expresamente: reproducir, distribuir, modificar, crear obras derivadas, realizar ingeniería inversa, descompilar o desensamblar cualquier parte de la aplicación sin autorización escrita previa de Going Ecuador S.A.S.
+Se prohíbe expresamente: reproducir, distribuir, modificar, crear obras derivadas, realizar ingeniería inversa, descompilar o desensamblar cualquier parte de la aplicación sin autorización escrita previa de Thorn AI Technologies S.A.S.
 
 El usuario recibe únicamente una licencia personal, no exclusiva, intransferible y revocable para usar la aplicación de acuerdo con estos Términos.`,
   },
@@ -173,7 +173,7 @@ Going no vende datos personales a terceros. Los datos compartidos con conductore
     id: 'modificaciones',
     icon: '🔄',
     title: '12. Modificaciones de los Términos',
-    content: `Going Ecuador S.A.S. se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
+    content: `Thorn AI Technologies S.A.S. se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
 
 En caso de cambios sustanciales, se notificará al usuario con al menos 15 días de anticipación mediante:
 • Notificación push en la aplicación.
@@ -207,7 +207,7 @@ export default function TerminosPage() {
       <div className="bg-[#0033A0] py-16 px-6">
         <div className="max-w-3xl mx-auto">
           <p className="text-[13px] font-black text-[#FFCD00] uppercase tracking-widest mb-3">
-            Legal · Going Ecuador
+            Legal · Going
           </p>
           <h1 className="text-4xl font-black text-white mb-4">
             Términos y Condiciones
@@ -270,7 +270,7 @@ export default function TerminosPage() {
             legal@goingec.com
           </a>
           <p className="text-white/40 text-xs mt-4">
-            Going Ecuador S.A.S. · Av. Amazonas N23-45, Quito, Ecuador<br />
+            Thorn AI Technologies S.A.S. · Av. Amazonas N23-45, Quito, Ecuador<br />
             Última actualización: {LAST_UPDATE}
           </p>
           <div className="mt-6 flex justify-center gap-4">
