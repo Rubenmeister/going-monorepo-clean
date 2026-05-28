@@ -1,0 +1,70 @@
+# Lugar: Puyo — puerta a la Amazonía centro
+id: puyo
+name: Puyo
+short_name: Puyo
+province: Pastaza
+region: Amazonía
+canton: Pastaza
+is_canton_capital: true
+
+geography:
+  altitude_m: 950
+  area_km2: 19774          # cantón completo (uno de los más extensos)
+  population: 36700         # urbano aprox.
+  climate:
+    zone: tropical húmedo amazónico
+    avg_temp_c:
+      min: 18
+      max: 28
+    best_visit_months: [agosto, septiembre, octubre, noviembre]
+    rainy_months: [marzo, abril, mayo, junio, julio]
+  notes: "Lluvia frecuente todo el año (más en abril-junio). Es Amazonía."
+
+history_es: |
+  Puyo es la capital de la provincia de Pastaza, en la Amazonía centro
+  del Ecuador. Su nombre proviene del kichwa "puyu" (nube), por la niebla
+  que cubre la región en las mañanas.
+
+  Fundada en 1899 como una pequeña misión dominicana, la ciudad creció
+  con la llegada de colonos serranos y se consolidó como puerta de entrada
+  a la Amazonía oriental ecuatoriana. La región alberga 7 nacionalidades
+  indígenas: Achuar, Andoa, Kichwa, Shiwiar, Shuar, Sápara y Waorani —
+  centros culturales clave del país.
+
+  Puyo es base para expediciones a comunidades indígenas amazónicas, al
+  Parque Nacional Llanganates y al Parque Nacional Sangay (Patrimonio
+  Natural UNESCO).
+
+attractions_es:
+  - "Parque Etno-Botánico Omaere — botánica + cultura indígena"
+  - "Centro de Rescate Yana Cocha — fauna amazónica rescatada"
+  - "Paseo Turístico Puyo — corredor de cascadas naturales"
+  - "Mercado Tradicional + Plaza Cívica"
+  - "Comunidades kichwa y shuar — turismo comunitario coordinado"
+  - "Río Pastaza y río Puyo — kayak, balsada, observación de aves"
+
+gastronomy_es:
+  - "Maito amazónico — pescado o pollo en hoja de bijao al carbón"
+  - "Ayampaco — pescado con palmito en hoja, al carbón"
+  - "Chicha de yuca y chicha de chonta — bebidas fermentadas ancestrales"
+  - "Mayón y chontacuro — gusano de la palma chonta (proteína tradicional)"
+  - "Caldo de pescado de río con yuca"
+  - "Cacao y chocolate artesanal amazónico"
+
+events_es:
+  - name: "Cantonización de Puyo"
+    when: "12 mayo"
+    description: "Fiesta cívica principal. Desfile, música, gastronomía amazónica."
+  - name: "Fiestas de Pastaza"
+    when: "Variable"
+    description: "Encuentros culturales con las 7 nacionalidades indígenas."
+
+going_coverage:
+  active: true
+  notes: |
+    Activado 28-may-2026. Ruta principal desde Quito CN vía Baños (~4h).
+    Conexión natural también desde Ambato (~2.5h) por la vía de Baños.
+    Tarifa confirmada: shared SUV $25/persona · private SUV $100.
+  nearest_hub: "Quito (via Baños)"
+
+tags: [amazonia, kichwa, comunitario, biodiversidad, nacionalidades_indigenas, cacao, rio]

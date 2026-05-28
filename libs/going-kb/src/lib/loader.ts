@@ -136,7 +136,7 @@ export function initKnowledgeBase(opts: {
 
   // ── 3) Rutas (consolidar 3 corredores) ──
   const rutas: RouteEntry[] = [];
-  const corredores = ['sierra-norte', 'sierra-centro', 'costa-noroeste'];
+  const corredores = ['sierra-norte', 'sierra-centro', 'costa-noroeste', 'amazonia'];
   for (const corredor of corredores) {
     const corredorData = readYaml<{
       corredor?: string;

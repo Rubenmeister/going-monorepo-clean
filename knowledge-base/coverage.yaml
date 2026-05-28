@@ -56,6 +56,12 @@ active_cities:
     region: Costa
     province: Manabí
 
+  # Amazonía (corredor nuevo desde 28-may-2026)
+  - name: Puyo
+    region: Amazonía
+    province: Pastaza
+    notes: "Activado 28-may-2026. Vía Baños (~4h). Tarifa shared $25 / private $60."
+
   # Hubs especiales
   - name: Aeropuerto Mariscal Sucre
     region: Sierra
