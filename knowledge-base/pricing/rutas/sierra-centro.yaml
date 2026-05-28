@@ -115,38 +115,50 @@ rutas:
   - id: aeropuerto_to_latacunga
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: latacunga }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 65.00, suv_xl: 85.00, van: 125.00, van_xl: 185.00, minibus: 305.00, bus: 500.00 }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $12/$50.
+    shared:    { suv: 22.00, suv_xl: 22.00 }       # 12 + 10
+    private:   { suv: 70.00, suv_xl: 85.00, van: 125.00, van_xl: 185.00, minibus: 305.00, bus: 500.00 }    # 50 + 20
     premium_suv: 75.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Regla aeropuerto: shared $20→$22 · private $65→$70", autor: "Rubén" }
 
   - id: aeropuerto_to_ambato
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: ambato }
-    shared:    { suv: 23.00, suv_xl: 23.00 }
-    private:   { suv: 75.00, suv_xl: 105.00, van: 145.00, van_xl: 225.00, minibus: 365.00, bus: 500.00 }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $15/$60.
+    shared:    { suv: 25.00, suv_xl: 25.00 }       # 15 + 10
+    private:   { suv: 80.00, suv_xl: 105.00, van: 145.00, van_xl: 225.00, minibus: 365.00, bus: 500.00 }    # 60 + 20
     premium_suv: 85.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Regla aeropuerto: shared $23→$25 · private $75→$80", autor: "Rubén" }
 
   - id: aeropuerto_to_banos
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: banos }
-    shared:    { suv: 23.00, suv_xl: 23.00 }
-    private:   { suv: 75.00, suv_xl: 105.00, van: 145.00, van_xl: 225.00, minibus: 365.00, bus: 500.00 }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $20/$80.
+    shared:    { suv: 30.00, suv_xl: 30.00 }        # 20 + 10
+    private:   { suv: 100.00, suv_xl: 105.00, van: 145.00, van_xl: 225.00, minibus: 365.00, bus: 500.00 }    # 80 + 20
     premium_suv: 85.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Regla aeropuerto: shared $23→$30 · private $75→$100", autor: "Rubén" }
 
   - id: aeropuerto_to_riobamba
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: riobamba }
-    shared:    { suv: 28.00, suv_xl: 28.00 }
-    private:   { suv: 95.00, suv_xl: 135.00, van: 185.00, van_xl: 285.00, minibus: 465.00, bus: 500.00 }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $20/$80.
+    shared:    { suv: 30.00, suv_xl: 30.00 }        # 20 + 10
+    private:   { suv: 100.00, suv_xl: 135.00, van: 185.00, van_xl: 285.00, minibus: 465.00, bus: 500.00 }    # 80 + 20
     premium_suv: 105.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Regla aeropuerto: shared $28→$30 · private $95→$100", autor: "Rubén" }
 
   # ── Quito Sur → Sierra Centro ─────────────────────────────────────────
   - id: quito_sur_to_latacunga

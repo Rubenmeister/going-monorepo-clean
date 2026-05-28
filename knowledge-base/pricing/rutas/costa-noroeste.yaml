@@ -43,11 +43,14 @@ rutas:
   - id: aeropuerto_to_santo_domingo
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: santo_domingo }
-    shared:    { suv: 22.00, suv_xl: 22.00 }
-    private:   { suv: 75.00, suv_xl: 105.00, van: 145.00, van_xl: 205.00, minibus: 250.00, bus: 350.00 }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $15/$60.
+    shared:    { suv: 25.00, suv_xl: 25.00 }       # 15 + 10
+    private:   { suv: 80.00, suv_xl: 105.00, van: 145.00, van_xl: 205.00, minibus: 250.00, bus: 350.00 }    # 60 + 20
     premium_suv: 85.00
     last_updated: "2026-05-28"
-    revisar: true
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Regla aeropuerto: shared $22→$25 · private $75→$80", autor: "Rubén" }
 
   - id: aeropuerto_to_la_concordia
     origin:      { canton: quito, zone: aeropuerto }

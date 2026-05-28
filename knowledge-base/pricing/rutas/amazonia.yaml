@@ -11,6 +11,18 @@ revisor: "Rubén Torres"
 corredor: amazonia
 
 rutas:
+  - id: aeropuerto_to_puyo
+    origin:      { canton: quito, zone: aeropuerto }
+    destination: { canton: puyo }
+    # Regla aeropuerto: Quito CN + $10 shared / + $20 privado. Base $25/$100.
+    shared:    { suv: 35.00, suv_xl: 35.00 }       # 25 + 10
+    private:   { suv: 120.00, suv_xl: 140.00, van: 200.00, van_xl: 280.00, minibus: 440.00, bus: 520.00 }    # 100 + 20
+    premium_suv: 135.00
+    last_updated: "2026-05-28"
+    revisar: false
+    historial_cambios:
+      - { fecha: "2026-05-28", cambio: "Ruta nueva. Regla aeropuerto: shared $25+$10=$35 · private $100+$20=$120", autor: "Rubén" }
+
   - id: quito_cn_to_puyo
     origin:      { canton: quito, zone: centro_norte }
     destination: { canton: puyo }
