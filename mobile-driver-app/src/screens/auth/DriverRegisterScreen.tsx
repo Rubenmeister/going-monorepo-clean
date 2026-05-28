@@ -11,9 +11,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDriverStore } from '@store/useDriverStore';
 import { authService } from '../../services/authService';
 
-const GOING_RED = '#ff4c41';
-const NAVY   = '#001F6B'; // kept for internal use
-const YELLOW = '#FFCD00';
+const GOING_RED = '#FF4C41';
+const NAVY   = '#FF4C41'; // kept for internal use
+const YELLOW = '#FFD253';
 const BLACK  = '#1a1a1a';
 
 const API_BASE =
@@ -377,7 +377,7 @@ export function DriverRegisterScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ff4c41' },
+  container: { flex: 1, backgroundColor: '#FF4C41' },
   content: { padding: 24, paddingTop: 55, paddingBottom: 40 },
   back: { position: 'absolute', top: 14, left: 4, padding: 8, zIndex: 10 },
 
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
   },
-  logoText: { fontSize: 28, fontWeight: '900', color: '#ff4c41', letterSpacing: 4 },
+  logoText: { fontSize: 28, fontWeight: '900', color: '#FF4C41', letterSpacing: 4 },
 
   roleBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   stepDotActive: { backgroundColor: YELLOW },
   stepNum: { fontWeight: '600', fontSize: 13, color: 'rgba(255,255,255,0.5)' },
-  stepNumActive: { color: '#0033A0' },
+  stepNumActive: { color: '#FF4C41' },
   stepLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 70 },
   stepLabelActive: { color: YELLOW, fontWeight: '600' },
   stepLine: { flex: 1, height: 2, backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 6, marginBottom: 18 },
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   docIconDone: { backgroundColor: 'rgba(255,205,0,0.2)' },
   docInfo: { flex: 1 },
   docLabel: { fontWeight: '600', fontSize: 14, color: BLACK, marginBottom: 2 },
-  docLabelDone: { color: '#0033A0' },
+  docLabelDone: { color: '#FF4C41' },
   docStatus: { fontSize: 12, color: '#aaa' },
 
   // Doc progress indicator
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 10, marginBottom: 14,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { fontWeight: '900', color: '#0033A0', fontSize: 16 },
+  buttonText: { fontWeight: '900', color: '#FF4C41', fontSize: 16 },
   link: { color: '#888', textAlign: 'center', fontSize: 14 },
   linkBold: { fontWeight: '600', color: BLACK },
   disclaimer: {

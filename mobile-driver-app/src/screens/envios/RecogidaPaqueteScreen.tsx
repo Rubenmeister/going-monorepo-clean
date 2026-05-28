@@ -19,10 +19,10 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../utils/constants';
 import { hapticMedium, hapticSuccess, hapticError } from '../../utils/haptics';
 
-const NAVY  = '#0033A0';
-const RED   = '#ff4c41';
+const NAVY  = '#FF4C41';
+const RED   = '#FF4C41';
 const GREEN = '#059669';
-const GOLD  = '#FFCD00';
+const GOLD  = '#FFD253';
 
 export type RecogidaPaqueteParams = {
   envioId:       string;

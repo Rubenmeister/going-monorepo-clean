@@ -6,7 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
-const GOING_RED = '#ff4c41';
+const GOING_RED = '#FF4C41';
 // GOING_YELLOW removed — unused
 const BLACK = '#1a1a1a';
 

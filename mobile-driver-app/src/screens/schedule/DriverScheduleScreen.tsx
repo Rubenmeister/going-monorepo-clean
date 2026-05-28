@@ -21,10 +21,10 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../utils/constants';
 import { hapticLight, hapticMedium, hapticSuccess } from '../../utils/haptics';
 
-const NAVY  = '#0033A0';
-const GOLD  = '#FFCD00';
+const NAVY  = '#FF4C41';
+const GOLD  = '#FFD253';
 const GREEN = '#059669';
-const RED   = '#ff4c41';
+const RED   = '#FF4C41';
 
 // ── Ciudades de origen y sus rutas ────────────────────────────────────────────
 const ORIGIN_CITIES = [

@@ -17,8 +17,8 @@ import { type DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useDriverStore } from '@store/useDriverStore';
 
-const NAVY   = '#0033A0';
-const YELLOW = '#FFCD00';
+const NAVY   = '#FF4C41';
+const YELLOW = '#FFD253';
 const WHITE  = '#FFFFFF';
 const GRAY   = '#6B7280';
 const BG     = '#F7F8FA';

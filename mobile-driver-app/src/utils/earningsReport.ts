@@ -23,8 +23,8 @@ type ReportParams = {
   days: DayData[];
 };
 
-const GOING_RED  = '#ff4c41';
-const GOING_BLUE = '#0033A0';
+const GOING_RED  = '#FF4C41';
+const GOING_BLUE = '#FF4C41';
 
 function buildHtml(p: ReportParams): string {
   const maxEarning = Math.max(...p.days.map(d => d.earnings), 1);

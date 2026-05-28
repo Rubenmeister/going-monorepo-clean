@@ -236,7 +236,7 @@ export function ActiveRideScreen() {
         {/* Passenger info */}
         <View style={styles.passengerRow}>
           <View style={styles.avatar}>
-            <Ionicons name="person" size={22} color="#0033A0" />
+            <Ionicons name="person" size={22} color="#FF4C41" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.passengerName}>
@@ -251,7 +251,7 @@ export function ActiveRideScreen() {
             onPress={handleCallPassenger}
             disabled={callLoading}
           >
-            <Ionicons name={callLoading ? 'hourglass-outline' : 'call-outline'} size={20} color="#0033A0" />
+            <Ionicons name={callLoading ? 'hourglass-outline' : 'call-outline'} size={20} color="#FF4C41" />
           </TouchableOpacity>
         </View>
 
@@ -263,7 +263,7 @@ export function ActiveRideScreen() {
           <Ionicons
             name={PAYMENT_ICONS[paymentMethod] as any}
             size={16}
-            color={paymentMethod === 'cash' ? '#065F46' : '#1E3A8A'}
+            color={paymentMethod === 'cash' ? '#065F46' : '#FF4C41'}
           />
           <Text style={[
             styles.paymentLabel,
@@ -299,7 +299,7 @@ export function ActiveRideScreen() {
               step < STEPS.length - 1 ? 'arrow-forward' : 'checkmark-circle'
             }
             size={20}
-            color="#0033A0"
+            color="#FF4C41"
           />
         </TouchableOpacity>
       </View>
@@ -351,14 +351,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 6,
   },
-  stepDotActive: { backgroundColor: '#0033A0', borderColor: '#0033A0' },
+  stepDotActive: { backgroundColor: '#FF4C41', borderColor: '#FF4C41' },
   stepText: {
     fontSize: 10,
     color: '#9CA3AF',
     textAlign: 'center',
     fontWeight: '600',
   },
-  stepTextActive: { color: '#0033A0', fontWeight: '800' },
+  stepTextActive: { color: '#FF4C41', fontWeight: '800' },
   passengerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   nextBtn: {
-    backgroundColor: '#FFCD00',
+    backgroundColor: '#FFD253',
     borderRadius: 14,
     paddingVertical: 15,
     flexDirection: 'row',
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   nextBtnDone: { backgroundColor: '#D1FAE5' },
-  nextBtnText: { color: '#0033A0', fontSize: 15, fontWeight: '900' },
+  nextBtnText: { color: '#FF4C41', fontSize: 15, fontWeight: '900' },
   paymentBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   paymentLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#1E3A8A',
+    color: '#FF4C41',
   },
   paymentLabelCash: {
     color: '#065F46',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   paymentFare: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#1E3A8A',
+    color: '#FF4C41',
   },
   paymentCashNote: {
     fontSize: 12,

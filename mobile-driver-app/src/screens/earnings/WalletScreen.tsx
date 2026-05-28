@@ -32,8 +32,8 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../utils/constants';
 
 // ─── Brand ───────────────────────────────────────────────────────────────────
-const NAVY   = '#0033A0';
-const YELLOW = '#FFCD00';
+const NAVY   = '#FF4C41';
+const YELLOW = '#FFD253';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 type Tab = 'ingresos' | 'pagos' | 'efectivo';
@@ -162,7 +162,7 @@ export function WalletScreen() {
     return 'card-outline';
   };
   const methodColor = (m: string) =>
-    m === 'cash' ? '#059669' : m === 'wallet' ? '#7C3AED' : '#1E3A8A';
+    m === 'cash' ? '#059669' : m === 'wallet' ? '#7C3AED' : '#FF4C41';
   const methodBg = (m: string) =>
     m === 'cash' ? '#F0FDF4' : m === 'wallet' ? '#F5F3FF' : '#EFF6FF';
 
@@ -236,8 +236,8 @@ export function WalletScreen() {
 
         {/* ── Resumen por método ────────────────────────────────────────────── */}
         <View style={styles.summaryRow}>
-          <View style={[styles.summaryCard, { borderLeftColor: '#1E3A8A' }]}>
-            <Ionicons name="card-outline" size={18} color="#1E3A8A" />
+          <View style={[styles.summaryCard, { borderLeftColor: '#FF4C41' }]}>
+            <Ionicons name="card-outline" size={18} color="#FF4C41" />
             <Text style={styles.summaryAmount}>${cardAmt.toFixed(2)}</Text>
             <Text style={styles.summaryLabel}>Tarjeta</Text>
           </View>

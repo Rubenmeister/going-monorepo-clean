@@ -138,7 +138,7 @@ export function RideRequestScreen() {
         <Animated.View
           style={[
             styles.countdownBar,
-            { width: progressWidth, backgroundColor: isUrgent ? '#DC2626' : '#FFCD00' },
+            { width: progressWidth, backgroundColor: isUrgent ? '#DC2626' : '#FFD253' },
           ]}
         />
       </View>
@@ -163,11 +163,11 @@ export function RideRequestScreen() {
             <Ionicons
               name={rideType === 'shared' ? 'people' : 'person'}
               size={13}
-              color={rideType === 'shared' ? '#065F46' : '#1E3A8A'}
+              color={rideType === 'shared' ? '#065F46' : '#FF4C41'}
             />
             <Text style={[
               styles.rideTypeBadgeText,
-              { color: rideType === 'shared' ? '#065F46' : '#1E3A8A' },
+              { color: rideType === 'shared' ? '#065F46' : '#FF4C41' },
             ]}>
               {rideType === 'shared'
                 ? `Viaje Compartido · ${passengerCount} pasajero${passengerCount > 1 ? 's' : ''}`
@@ -188,14 +188,14 @@ export function RideRequestScreen() {
 
         <View style={styles.iconArea}>
           <View style={styles.iconBg}>
-            <Ionicons name={rideType === 'shared' ? 'people' : 'person'} size={36} color="#0033A0" />
+            <Ionicons name={rideType === 'shared' ? 'people' : 'person'} size={36} color="#FF4C41" />
           </View>
           <Text style={styles.passengerName}>
             {rideType === 'shared' ? `${passengerCount} pasajeros` : (passenger || 'Pasajero')}
           </Text>
           {rideType !== 'shared' && (
             <View style={styles.rating}>
-              <Ionicons name="star" size={14} color="#FFCD00" />
+              <Ionicons name="star" size={14} color="#FFD253" />
               <Text style={styles.ratingText}>4.9</Text>
             </View>
           )}
@@ -213,7 +213,7 @@ export function RideRequestScreen() {
           </View>
           <View style={styles.routeLine} />
           <View style={styles.routeRow}>
-            <Ionicons name="location" size={16} color="#FFCD00" />
+            <Ionicons name="location" size={16} color="#FFD253" />
             <View style={styles.routeInfo}>
               <Text style={styles.routeLabel}>Destino</Text>
               <Text style={styles.routeAddr}>
@@ -250,10 +250,10 @@ export function RideRequestScreen() {
           disabled={isAccepting || isRejecting}
         >
           {isAccepting ? (
-            <ActivityIndicator color="#0033A0" />
+            <ActivityIndicator color="#FF4C41" />
           ) : (
             <>
-              <Ionicons name="checkmark-circle" size={22} color="#0033A0" />
+              <Ionicons name="checkmark-circle" size={22} color="#FF4C41" />
               <Text style={styles.acceptText}>Aceptar</Text>
             </>
           )}
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#0033A0',
+    backgroundColor: '#FF4C41',
     borderWidth: 2,
     borderColor: '#BFDBFE',
   },
@@ -404,9 +404,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#FFCD00',
+    backgroundColor: '#FFD253',
     borderRadius: 14,
     paddingVertical: 16,
   },
-  acceptText: { color: '#0033A0', fontSize: 15, fontWeight: '900' },
+  acceptText: { color: '#FF4C41', fontSize: 15, fontWeight: '900' },
 });
