@@ -16,8 +16,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '@store/useAuthStore';
 import { authAPI } from '@services/api';
 
-const GOING_BLUE = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 export function EditProfileScreen() {
   const navigation = useNavigation();

@@ -26,8 +26,8 @@ import { api } from '../../services/api';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-const GOING_BLUE   = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE   = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 const BENEFITS = [
   { icon: 'diamond-outline',           text: 'Vehículos y conductores de categoría premium' },

@@ -69,7 +69,7 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
 
 /** Rutas destacadas para mostrar en el home como sugerencias rápidas. */
 export const FEATURED_ROUTES = [
-  { id: 'r1', label: 'El Carmen → Sto. Domingo → Quito → Aeropuerto', color: '#ff4c41', icon: '✈️', badge: 'Popular'   },
-  { id: 'r2', label: 'Riobamba → Ambato → Latacunga → Quito',         color: '#0033A0', icon: '🏔️', badge: 'Frecuente' },
+  { id: 'r1', label: 'El Carmen → Sto. Domingo → Quito → Aeropuerto', color: '#FF4C41', icon: '✈️', badge: 'Popular'   },
+  { id: 'r2', label: 'Riobamba → Ambato → Latacunga → Quito',         color: '#FF4C41', icon: '🏔️', badge: 'Frecuente' },
   { id: 'r3', label: 'Ibarra → Otavalo → Quito → Aeropuerto',         color: '#43A047', icon: '🌿', badge: 'Rápida'    },
 ];

@@ -165,7 +165,7 @@ export function InCallOverlay({ session, otherPersonName, onCallEnd }: InCallOve
 
   return (
     <Modal visible animationType="slide" statusBarTranslucent>
-      <StatusBar barStyle="light-content" backgroundColor="#0033A0" />
+      <StatusBar barStyle="light-content" backgroundColor="#FF4C41" />
       <View style={styles.root}>
 
         {/* Avatar + nombre */}
@@ -191,7 +191,7 @@ export function InCallOverlay({ session, otherPersonName, onCallEnd }: InCallOve
             style={[styles.controlBtn, muted && styles.controlBtnActive]}
             onPress={toggleMute}
           >
-            <Ionicons name={muted ? 'mic-off' : 'mic'} size={26} color={muted ? '#fff' : '#0033A0'} />
+            <Ionicons name={muted ? 'mic-off' : 'mic'} size={26} color={muted ? '#fff' : '#FF4C41'} />
             <Text style={[styles.controlLabel, muted && { color: '#fff' }]}>
               {muted ? 'Silenciado' : 'Silenciar'}
             </Text>
@@ -206,7 +206,7 @@ export function InCallOverlay({ session, otherPersonName, onCallEnd }: InCallOve
             style={[styles.controlBtn, speaker && styles.controlBtnActive]}
             onPress={toggleSpeaker}
           >
-            <Ionicons name={speaker ? 'volume-high' : 'volume-medium'} size={26} color={speaker ? '#fff' : '#0033A0'} />
+            <Ionicons name={speaker ? 'volume-high' : 'volume-medium'} size={26} color={speaker ? '#fff' : '#FF4C41'} />
             <Text style={[styles.controlLabel, speaker && { color: '#fff' }]}>
               {speaker ? 'Altavoz' : 'Altavoz'}
             </Text>
@@ -223,7 +223,7 @@ export function InCallOverlay({ session, otherPersonName, onCallEnd }: InCallOve
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#0033A0',
+    backgroundColor: '#FF4C41',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 80,
@@ -293,10 +293,10 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#ff4c41',
+    backgroundColor: '#FF4C41',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ff4c41',
+    shadowColor: '#FF4C41',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.5,
     shadowRadius: 12,

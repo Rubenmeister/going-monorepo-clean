@@ -13,8 +13,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '@services/api';
 
-const GOING_BLUE = '#0033A0';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 const WHATSAPP_NUMBER = '593984037949';
 const SUPPORT_PHONE = '+593984037949';
 

@@ -4,9 +4,9 @@
  */
 
 // ─── Brand Colors ─────────────────────────────────────────────────────────────
-export const GOING_RED    = '#ff4c41';
-export const GOING_BLUE   = '#0033A0';
-export const GOING_YELLOW = '#FFCD00';
+export const GOING_RED    = '#FF4C41';
+export const GOING_BLUE   = '#FF4C41';
+export const GOING_YELLOW = '#FFD253';
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL

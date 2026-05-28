@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 
-const GOING_BLUE   = '#0033A0';
-const GOING_RED    = '#ff4c41';
-const GOING_YELLOW = '#FFCD00';
+const GOING_BLUE   = '#FF4C41';
+const GOING_RED    = '#FF4C41';
+const GOING_YELLOW = '#FFD253';
 
 interface EmptyStateProps {
   emoji: string;
