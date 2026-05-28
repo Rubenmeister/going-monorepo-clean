@@ -37,6 +37,7 @@ const NAV_POLITICA:     NavItem = { href: "/empresas/panel/politica",       labe
 const NAV_SOSTENIB:     NavItem = { href: "/empresas/panel/sostenibilidad",  label: "Sostenibilidad" };
 const NAV_RECURRENTES:  NavItem = { href: "/empresas/panel/recurrentes",   label: "Recurrentes" };
 const NAV_COTIZACION:   NavItem = { href: "/empresas/panel/cotizacion",    label: "Cotización Grupos" };
+const NAV_LEGAL:        NavItem = { href: "/empresas/panel/legal",         label: "Legal Corporativo" };
 
 export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
   grande: [
@@ -56,6 +57,8 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_POLITICA,
     NAV_SOSTENIB,
     NAV_COTIZACION,
+    NAV_CONDICIONES,
+    NAV_LEGAL,
     NAV_CONFIG,
   ],
   negocio: [
@@ -75,6 +78,8 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_POLITICA,
     NAV_SOSTENIB,
     NAV_COTIZACION,
+    NAV_CONDICIONES,
+    NAV_LEGAL,
     NAV_CONFIG,
   ],
   agencia: [
@@ -93,8 +98,9 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
     NAV_POLITICA,
     NAV_SOSTENIB,
     NAV_COTIZACION,
-    NAV_CONFIG,
     NAV_CONDICIONES,
+    NAV_LEGAL,
+    NAV_CONFIG,
   ],
 };
 
@@ -102,7 +108,7 @@ export const NAV_POR_TIPO: Record<TipoCuenta, NavItem[]> = {
 export const NAV_DEFAULT: NavItem[] = [
   NAV_PANEL, NAV_VIAJES, NAV_SOLICITAR, NAV_FAVORITOS, NAV_RECURRENTES,
   NAV_APROBACIONES, NAV_EQUIPO, NAV_PRESUPUESTO, NAV_FACTURACION,
-  NAV_REPORTES, NAV_TRACKING, NAV_MAPA, NAV_SEGURIDAD, NAV_POLITICA, NAV_SOSTENIB, NAV_COTIZACION, NAV_CONFIG, NAV_CONDICIONES,
+  NAV_REPORTES, NAV_TRACKING, NAV_MAPA, NAV_SEGURIDAD, NAV_POLITICA, NAV_SOSTENIB, NAV_COTIZACION, NAV_CONDICIONES, NAV_LEGAL, NAV_CONFIG,
 ];
 
 export function getNavItems(tipoCuenta?: string): NavItem[] {

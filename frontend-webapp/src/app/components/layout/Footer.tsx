@@ -74,19 +74,21 @@ export function Footer() {
   ];
 
   const legal = [
-    { name: 'Términos de Servicio', href: '/legal/terms' },
-    { name: 'Privacidad',           href: '/legal/privacy' },
-    { name: 'Política de Envíos',   href: '/legal/shipping' },
+    { name: 'Centro Legal',         href: '/legal' },
+    { name: 'Términos y Condiciones', href: '/legal/terms' },
+    { name: 'Privacidad (LOPDP)',   href: '/legal/privacy' },
     { name: 'Cookies',              href: '/legal/cookies' },
-    { name: 'Contacto Legal',       href: '/legal/contact' },
+    { name: 'Términos de Pago',     href: '/legal/pagos' },
+    { name: 'Condiciones Envíos',   href: '/legal/envios-condiciones' },
+    { name: 'Glosario de Servicios', href: '/legal/glosario' },
   ];
 
   const support = [
     { name: 'Centro de Ayuda',      href: '/help' },
-    { name: 'Contacto',             href: 'https://wa.me/14705580432' },
+    { name: 'Contacto',             href: 'https://wa.me/593984037949' },
     { name: 'Estado del Servicio',  href: '/status' },
     { name: 'Seguridad',            href: '/security' },
-    { name: 'SOS Emergencias',      href: 'https://wa.me/14705580432?text=SOS%20necesito%20ayuda%20urgente' },
+    { name: 'SOS Emergencias',      href: 'https://wa.me/593984037949?text=SOS%20necesito%20ayuda%20urgente' },
   ];
 
   const socialLinks = [
@@ -249,7 +251,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-500">
           <div className="flex items-center gap-3 flex-wrap justify-center">
-            <span>© {new Date().getFullYear()} Going Ecuador</span>
+            <span>© {new Date().getFullYear()} Going — marca operada por <span className="text-gray-300 font-medium">Thorn AI Technologies S.A.S.</span></span>
             <span className="hidden md:block">·</span>
             <span className="text-xs">🇪🇨 Hecho en Ecuador para Ecuador</span>
           </div>
@@ -259,7 +261,7 @@ export function Footer() {
           </div>
           <div className="flex flex-col items-center md:items-end gap-1">
             <span className="text-xs text-gray-600">v2.0.0</span>
-            <span className="text-xs text-gray-700">Powered by <span className="text-gray-500 font-medium">Thorn AI Technologies</span></span>
+            <span className="text-xs text-gray-700">RUC <span className="text-gray-500 font-medium">1793176925001</span> · Quito, Ecuador</span>
           </div>
         </div>
       </div>
