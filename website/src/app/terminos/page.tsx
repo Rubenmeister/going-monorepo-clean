@@ -180,7 +180,7 @@ En caso de cambios sustanciales, se notificará al usuario con al menos 15 días
 • Correo electrónico a la dirección registrada.
 • Aviso destacado en la pantalla de inicio.
 
-El uso continuado de la aplicación tras el período de notificación constituye aceptación de los términos modificados. Si no aceptas los cambios, debes dejar de usar el servicio y solicitar la eliminación de tu cuenta escribiendo a legal@goingec.com.`,
+El uso continuado de la aplicación tras el período de notificación constituye aceptación de los términos modificados. Si no aceptas los cambios, debes dejar de usar el servicio y solicitar la eliminación de tu cuenta escribiendo a soporte@goingec.com.`,
   },
   {
     id: 'legislacion',
@@ -265,12 +265,18 @@ export default function TerminosPage() {
 
         {/* Contacto */}
         <div className="mt-14 bg-[#0033A0] rounded-2xl p-8 text-center">
-          <p className="text-white/70 text-sm mb-2">Consultas legales</p>
-          <a href="mailto:legal@goingec.com" className="text-[#FFCD00] font-black text-lg hover:underline">
-            legal@goingec.com
-          </a>
+          <p className="text-white/70 text-sm mb-2">Consultas generales y privacidad</p>
+          <div className="flex flex-wrap justify-center gap-3 mb-2">
+            <a href="mailto:soporte@goingec.com" className="text-[#FFCD00] font-black text-lg hover:underline">
+              soporte@goingec.com
+            </a>
+            <span className="text-white/40 text-lg">·</span>
+            <a href="mailto:privacidad@goingec.com" className="text-[#FFCD00] font-black text-lg hover:underline">
+              privacidad@goingec.com
+            </a>
+          </div>
           <p className="text-white/40 text-xs mt-4">
-            Thorn AI Technologies S.A.S. · Av. Amazonas N23-45, Quito, Ecuador<br />
+            Thorn AI Technologies S.A.S. · RUC 1793176925001 · Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
             Última actualización: {LAST_UPDATE}
           </p>
           <div className="mt-6 flex justify-center gap-4">
