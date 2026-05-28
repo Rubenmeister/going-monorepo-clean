@@ -179,8 +179,7 @@ export function ProfileScreen() {
         { icon: 'notifications-outline',   label: 'Notificaciones',         screen: 'NotificationSettings', accent: 'navy' },
         { icon: 'shield-outline',          label: 'Seguridad',              screen: 'Security',            accent: 'navy' },
         { icon: 'help-circle-outline',     label: 'Ayuda y soporte',        screen: 'UserSupport',         accent: 'navy' },
-        { icon: 'document-text-outline',   label: 'Términos y condiciones', screen: 'Terms',               accent: 'navy' },
-        { icon: 'shield-checkmark-outline',label: 'Política de privacidad', screen: 'Privacy',             accent: 'navy' },
+        { icon: 'shield-checkmark-outline',label: 'Centro Legal',           screen: 'Legal',               accent: 'navy' },
       ],
     },
   ], [hasCompany, handleEmpresas, handleVoiceSettings, isDark, mode]);

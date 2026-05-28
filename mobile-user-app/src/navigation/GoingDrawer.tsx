@@ -52,7 +52,7 @@ const ACCOUNT_ITEMS: MenuItem[] = [
 
 const MORE_ITEMS: MenuItem[] = [
   { icon: 'school-outline',       label: 'Academia Going',       screen: 'Academy' },
-  { icon: 'document-text-outline',label: 'Legal y Términos',     screen: 'Terms' },
+  { icon: 'shield-checkmark-outline', label: 'Centro Legal',         screen: 'Legal' },
   { icon: 'help-circle-outline',  label: 'Ayuda y soporte',      screen: 'UserSupport' },
 ];
 
