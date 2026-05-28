@@ -72,6 +72,7 @@ export function DriverProfileScreen() {
         {[
           { icon: 'document-text-outline', label: 'Mis documentos', route: 'Documents' as const },
           { icon: 'star-outline',          label: 'Mis calificaciones', route: 'Ratings' as const },
+          { icon: 'shield-checkmark-outline', label: 'Centro Legal', route: 'Legal' as const },
           { icon: 'help-circle-outline',   label: 'Soporte Going', route: 'Support' as const },
         ].map(({ icon, label, route }) => (
           <TouchableOpacity key={label} style={styles.menuItem} onPress={() => navigation.navigate(route)}>

@@ -30,6 +30,7 @@ import { TripHistoryScreen }      from '@screens/earnings/TripHistoryScreen';
 import { DocumentsScreen }        from '@screens/profile/DocumentsScreen';
 import { DriverRatingsScreen }    from '@screens/profile/DriverRatingsScreen';
 import { SupportScreen }          from '@screens/profile/SupportScreen';
+import { DriverLegalScreen }     from '@screens/profile/DriverLegalScreen';
 import { AcademiaScreen }            from '@screens/academia/AcademiaScreen';
 import { DriverScheduleScreen }      from '@screens/schedule/DriverScheduleScreen';
 import { OportunisticoScreen }       from '@screens/ride/OportunisticoScreen';
@@ -77,6 +78,7 @@ export type DriverMainStackParamList = {
   Documents:   undefined;
   Ratings:     undefined;
   Support:     undefined;
+  Legal:       undefined;
   TripHistory: undefined;
   Academia:    undefined;
 };
@@ -216,6 +218,11 @@ function DriverStack({ navigation }: any) {
         name="Support"
         component={SupportScreen}
         options={{ title: 'Soporte Going' }}
+      />
+      <Stack.Screen
+        name="Legal"
+        component={DriverLegalScreen}
+        options={{ title: 'Centro Legal' }}
       />
       <Stack.Screen
         name="Academia"

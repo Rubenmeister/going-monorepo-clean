@@ -45,8 +45,9 @@ const DRIVER_ITEMS: MenuItem[] = [
 ];
 
 const ACCOUNT_ITEMS: MenuItem[] = [
-  { icon: 'person-outline',           label: 'Mi Perfil',          screen: 'Profile' },
-  { icon: 'help-circle-outline',      label: 'Soporte Going',      screen: 'Support' },
+  { icon: 'person-outline',              label: 'Mi Perfil',          screen: 'Profile' },
+  { icon: 'shield-checkmark-outline',    label: 'Centro Legal',       screen: 'Legal' },
+  { icon: 'help-circle-outline',         label: 'Soporte Going',      screen: 'Support' },
 ];
 
 export function DriverDrawer(props: DrawerContentComponentProps) {
