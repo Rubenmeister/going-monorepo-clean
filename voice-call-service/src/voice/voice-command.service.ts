@@ -186,6 +186,18 @@ export class VoiceCommandService {
    * Si no hay sesión activa con ese callId (llamada ya terminó, callId
    * incorrecto, etc.), retorna `not_found`.
    */
+  /**
+   * Verifier helper para el ActionVerifier del orchestrator. Devuelve true
+   * si la llamada con ese callId está en estado pending handoff (handoff
+   * solicitado pero no completado todavía). Delegado al bridge.
+   *
+   * Pre-acción del verifier: count=1 (porque el publisher emitió porque
+   * estaba stuck). Post-acción esperamos count=0 (resolved).
+   */
+  isCallPendingHandoff(callId: string): boolean {
+    return this.bridge.isCallPendingHandoff(callId);
+  }
+
   async forceHandoffCurrentCall(input: {
     callId: string;
     reason: string;

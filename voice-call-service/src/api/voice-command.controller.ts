@@ -184,4 +184,56 @@ export class VoiceCommandController {
       asOf:         new Date().toISOString(),
     };
   }
+
+  /**
+   * GET /voice/metrics/handoff-pending?callId=CA...
+   *
+   * Endpoint para el ActionVerifier post-`force_handoff_voice_call`. Cierra
+   * el loop voice-handoff-stuck end-to-end:
+   *
+   *   anomaly voice_handoff_stuck (voice-call publisher)
+   *     → cerebro EventHandler
+   *     → AnomalyRulesService rule → Intention force_handoff_voice_call
+   *     → orchestrator dispatcher
+   *     → POST /voice/command { action: force_handoff_current_call }
+   *     → voice-call hace Twilio Calls.update
+   *     → 15s después: ActionVerifier llama acá
+   *     → cuenta vuelve a 0 → converged
+   *     → OutcomeTracker registra success
+   *
+   * Response shape (estable, no romper sin coordinar con orchestrator):
+   *   { callId, count: 0|1, asOf }
+   *
+   * `count` = 1 si la llamada con ese callId sigue pending handoff (handoff
+   * requested pero no transferred); 0 si ya fue transferred o la sesión cerró.
+   *
+   * Auth: requiere `Authorization: Bearer <INTERNAL_SERVICE_TOKEN>` (mismo
+   * patrón que metrics/active-blocks).
+   */
+  @Get('metrics/handoff-pending')
+  handoffPendingFor(
+    @Query('callId') callId: string,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    if (this.internalToken) {
+      const expected = `Bearer ${this.internalToken}`;
+      if (authHeader !== expected) {
+        this.logger.warn(`[metrics/handoff-pending] auth rechazado callId=${callId?.slice(0, 12)}...`);
+        throw new UnauthorizedException('Token inválido o ausente');
+      }
+    } else {
+      this.logger.warn('[metrics/handoff-pending] INTERNAL_SERVICE_TOKEN no configurado — auth desactivada');
+    }
+
+    if (!callId) {
+      return { callId: '', count: 0, asOf: new Date().toISOString(), error: 'callId requerido' };
+    }
+
+    const pending = this.commands.isCallPendingHandoff(callId);
+    return {
+      callId,
+      count: pending ? 1 : 0,
+      asOf:  new Date().toISOString(),
+    };
+  }
 }

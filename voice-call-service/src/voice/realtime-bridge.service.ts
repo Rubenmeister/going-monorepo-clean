@@ -492,6 +492,29 @@ export class RealtimeBridgeService {
     return { mode: ok ? 'pstn_redirect' : 'callback_notified' };
   }
 
+  /**
+   * Verifier helper. Devuelve true si hay una sesión activa con ese callId
+   * en estado pending handoff (handoffRequested=true pero handoffTransferred
+   * NO completado). Usado por ActionVerifier post-`force_handoff_voice_call`
+   * para medir si la acción autónoma del cerebro convergió.
+   *
+   * Tres outcomes que mapean a metric:
+   *  - sesión no existe (caller colgó, transferencia ya cerró ctx) → false (resolved)
+   *  - sesión con handoffTransferred=true → false (resolved, PSTN redirect ok)
+   *  - sesión con handoffRequested=true y handoffTransferred=false → true (still pending)
+   *
+   * El verifier mide direction='decrease': pre-acción 1, post-acción esperamos 0.
+   */
+  isCallPendingHandoff(callId: string): boolean {
+    for (const ctx of this.sessions.values()) {
+      if (ctx.callId === callId) {
+        return ctx.handoffRequested === true && ctx.handoffTransferred !== true;
+      }
+    }
+    // No matching session = ya cerró o nunca existió → no está pending
+    return false;
+  }
+
   // ── Sistema prompt ────────────────────────────────────────
 
   /**

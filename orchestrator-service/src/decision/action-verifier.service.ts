@@ -191,6 +191,22 @@ export class ActionVerifierService {
         return this.fetchVoiceMetric('active-blocks', { from: target });
       }
 
+      case 'voice_call_pending_handoff': {
+        // Métrica granular para verify de `force_handoff_voice_call`.
+        // La rule voice-handoff-stuck (mycortex) pone el callId en
+        // intent.target, así que el dispatcher lo pasa en context.target.
+        // Pre-acción esperamos 1 (still pending). Post-acción esperamos 0
+        // (Twilio Calls.update redirigió a operador, o la call cerró sola).
+        const callId = typeof context?.target === 'string' ? context.target : null;
+        if (!callId) {
+          this.logger.warn(
+            `[verify] voice_call_pending_handoff sin context.target (callId) — skipping`,
+          );
+          return -1;
+        }
+        return this.fetchVoiceMetric('handoff-pending', { callId });
+      }
+
       default:
         this.logger.warn(`[verify] verifierKey desconocido: ${key}`);
         return -1;
