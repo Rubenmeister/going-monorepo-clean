@@ -111,13 +111,85 @@ export class AnomalyRulesService {
       },
     },
 
+    // ─── Rule: stale RED handoffs (customer support) ────────
+    // Trigger: customer-support-service publica `high_pending_red_handoffs`
+    // cuando detecta >N handoffs RED + status:open + createdAt > 24h.
+    // Acción: cleanup_stale_customer_handoffs (allowlist entry V1, ya
+    // verificada con verifierKey 'pending_red_handoffs').
+    //
+    // PUBLISHER TODO: customer-support-service no emite esta anomaly aún.
+    // Cuando se implemente, esta regla la procesa automáticamente. Mientras
+    // tanto la regla está dormant — `matches()` retorna false en producción.
+    {
+      id: 'stale-customer-handoffs',
+      matches: (a) =>
+        a.type === 'high_pending_red_handoffs' &&
+        typeof a.data?.count === 'number',
+      build: (a) => {
+        const count = a.data!.count as number;
+        // Urgency clamp 0.85-0.98 (la action ya tiene minUrgency 0.85).
+        //   10 handoffs → 0.85, 20 → 0.92, 30+ → 0.98
+        const urgency = Math.min(0.98, Math.max(0.85, 0.85 + (count - 10) / 100));
+        return {
+          type:    'cleanup_stale_customer_handoffs',
+          urgency: Number(urgency.toFixed(2)),
+          reason:
+            `customer-support reportó ${count} handoffs RED con status:open > 24h — risk de pérdida de tickets`,
+          suggestedAction:
+            `Marcar como auto_closed_stale los handoffs RED viejos via /support/command cleanup_stale`,
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+          data: {
+            sourceAnomaly: 'high_pending_red_handoffs',
+            count,
+          },
+        };
+      },
+    },
+
+    // ─── Rule: voice AI loop stuck (handoff requested sin transfer) ──
+    // Trigger: voice-call-service detecta que ctx.handoffRequested=true
+    // pero ctx.handoffTransferred=false por > 90s (AI dijo "te paso con
+    // alguien" pero el redirect PSTN nunca confirmó).
+    // Acción: force_handoff_current_call via /voice/command — fuerza
+    // redirect PSTN o callback notification al operador.
+    //
+    // PUBLISHER TODO: voice-call-service no emite anomaly `voice_handoff_stuck`
+    // todavía. Cuando se implemente en CerebroPublisherService.publishVoiceHandoffStuck,
+    // esta regla la procesa. Allowlist entry pendiente de agregar al orchestrator.
+    {
+      id: 'voice-handoff-stuck',
+      matches: (a) =>
+        a.type === 'voice_handoff_stuck' &&
+        typeof a.data?.callId === 'string',
+      build: (a) => {
+        const callId = a.data!.callId as string;
+        const ageSeconds = (a.data?.ageSeconds as number) ?? 90;
+        return {
+          type:    'force_handoff_voice_call',
+          target:  callId,
+          urgency: 0.9, // siempre alta — el caller está esperando
+          reason:
+            `voice-call-service detectó handoff stuck en callId=${callId.slice(0, 12)} hace ${ageSeconds}s — AI dijo "te paso" pero PSTN redirect no confirmó`,
+          suggestedAction:
+            `Forzar redirect PSTN o callback notification via /voice/command force_handoff_current_call`,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+          data: {
+            sourceAnomaly: 'voice_handoff_stuck',
+            callId,
+            ageSeconds,
+            reason: 'ops_forced_due_to_stuck_handoff',
+          },
+        };
+      },
+    },
+
     // ─── Próximas reglas a agregar (placeholders documentados) ──
-    // - `voice_handoff_loop`: si una call está > N minutos con AI loop sin
-    //   convergencia, emit Intention `force_handoff_voice_call`.
     // - `driver_compliance_expired`: si un driver activo tiene documentos
     //   vencidos hace > X horas, emit `suspend_driver_documents`.
     // - `payment_gateway_degraded`: si Datafast error rate > 30% en 10 min,
     //   emit `switch_payment_fallback` (TODO action).
+    // - `surge_demand_drop`: si demanda de viajes cae >50% vs baseline en
+    //   3h, emit `boost_driver_supply_notification`.
   ];
 
   /**
