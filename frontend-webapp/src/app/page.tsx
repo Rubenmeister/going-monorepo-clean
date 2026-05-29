@@ -910,14 +910,32 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Columna derecha: lista de rutas */}
-            <div className="lg:flex-1 space-y-3">
+            {/* Columna derecha: lista de rutas operativas.
+                Feedback 29-may: precios actualizados estaban mal —
+                quitados completamente. Lista expandida con todas las
+                ciudades del mapa oficial: Sierra norte/centro/sur,
+                Costa, y Amazonia. Los tiempos quedan como referencia
+                aproximada (carretera abierta, sin tráfico). */}
+            <div className="lg:flex-1 space-y-2.5">
               {[
-                { color: '#fb923c', route: 'Santo Domingo — Quito — Aeropuerto', time: '~2 h 45 min' },
-                { color: '#60a5fa', route: 'Ambato — Latacunga — Quito — Aeropuerto', time: '~2 h 30 min' },
-                { color: '#4ade80', route: 'Ibarra — Quito — Aeropuerto', time: '~2 h 15 min' },
+                // Sierra norte (E35 azul en el mapa)
+                { color: '#3b82f6', route: 'Tulcán — Ibarra — Quito — Aeropuerto', time: '~5 h 30 min' },
+                { color: '#3b82f6', route: 'Ibarra — Cayambe — Quito — Aeropuerto', time: '~2 h 15 min' },
+                { color: '#3b82f6', route: 'Otavalo — Cayambe — Quito — Aeropuerto', time: '~2 h' },
+                // Sierra centro/sur (E35 marrón en el mapa)
+                { color: '#d97706', route: 'Riobamba — Ambato — Latacunga — Quito — Aeropuerto', time: '~4 h 15 min' },
+                { color: '#d97706', route: 'Ambato — Latacunga — Quito — Aeropuerto', time: '~2 h 30 min' },
+                { color: '#d97706', route: 'Latacunga — Quito — Aeropuerto', time: '~1 h 45 min' },
+                // Costa (E20 púrpura en el mapa)
+                { color: '#a855f7', route: 'El Carmen — Santo Domingo — Quito — Aeropuerto', time: '~4 h 30 min' },
+                { color: '#a855f7', route: 'La Concordia — Santo Domingo — Quito — Aeropuerto', time: '~3 h 45 min' },
+                { color: '#a855f7', route: 'Santo Domingo — Quito — Aeropuerto', time: '~2 h 45 min' },
+                // Amazonia (E45 / E30 verde y rojo en el mapa)
+                { color: '#16a34a', route: 'Tena — Baeza — Quito — Aeropuerto', time: '~3 h 30 min' },
+                { color: '#dc2626', route: 'Puyo — Baños — Ambato — Quito — Aeropuerto', time: '~5 h' },
+                { color: '#dc2626', route: 'Baños de Agua Santa — Ambato — Quito — Aeropuerto', time: '~3 h 15 min' },
               ].map((r) => (
-                <div key={r.route} className="flex items-center gap-4 rounded-xl px-5 py-4" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div key={r.route} className="flex items-center gap-4 rounded-xl px-5 py-3" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
                   <span className="text-white font-semibold text-sm flex-1">{r.route}</span>
                   <span className="text-gray-400 text-xs whitespace-nowrap">{r.time}</span>
@@ -926,44 +944,11 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          {/* 3 tarjetas de ruta */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
-            {[
-              {
-                color: '#fb923c',
-                route: 'Santo Domingo — Quito — Aeropuerto',
-                detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro norte de Quito y aeropuerto.',
-                time: '~2 h 45 min', price: 'Desde $15',
-              },
-              {
-                color: '#60a5fa',
-                route: 'Ambato — Latacunga — Quito — Aeropuerto',
-                detail: 'Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.',
-                time: '~2 h 30 min', price: 'Desde $10',
-              },
-              {
-                color: '#4ade80',
-                route: 'Ibarra — Quito — Aeropuerto',
-                detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
-                time: '~2 h 15 min', price: 'Desde $15',
-              },
-            ].map((r) => (
-              <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
-                  <span className="text-white font-black text-sm">{r.route}</span>
-                </div>
-                <p className="text-gray-400 text-xs leading-relaxed mb-4">{r.detail}</p>
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-gray-400 text-xs">
-                    <IconClock size={12} />
-                    {r.time}
-                  </span>
-                  <span className="font-black text-sm" style={{ color: r.color }}>{r.price}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Las 3 tarjetas con precios fueron eliminadas el 29-may por
+              feedback del founder: los precios mostrados estaban mal y
+              causarían inconsistencias hasta tener tarifas finales
+              conectadas a backend. Cuando estén las tarifas reales, se
+              pueden re-introducir desde /api/fares. */}
         </div>
       </section>
 
