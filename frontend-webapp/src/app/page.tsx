@@ -151,7 +151,7 @@ function PhoneMockup() {
             <div className="bg-white rounded-2xl p-3 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-[9px] font-bold text-gray-400 uppercase">Total</p>
-                <p className="text-base font-black" style={{ color: COLORS.brand.red }}>$10.00</p>
+                <p className="text-base font-black" style={{ color: COLORS.brand.red }}>$ —.—</p>
               </div>
               <button className="text-[10px] font-bold text-white px-4 py-2 rounded-xl" style={{ backgroundColor: COLORS.brand.red }}>
                 Pagar
@@ -1245,17 +1245,10 @@ export default function HomePage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.red }}>$10</span>
-                    <span className="text-sm text-gray-400 ml-1">/ persona</span>
-                  </div>
-                  <Link href="/ride?type=shared" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.red }}>
-                    Reservar viaje compartido
-                    <IconArrowRight size={16} />
-                  </Link>
-                </div>
+                <Link href="/ride?type=shared" className="inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 w-full" style={{ backgroundColor: COLORS.brand.red }}>
+                  Reservar viaje compartido
+                  <IconArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </FadeIn>
@@ -1283,17 +1276,10 @@ export default function HomePage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.blue }}>$25</span>
-                    <span className="text-sm text-gray-400 ml-1">/ servicio</span>
-                  </div>
-                  <Link href="/ride?type=van" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.blue }}>
-                    Contratar transporte privado
-                    <IconArrowRight size={16} />
-                  </Link>
-                </div>
+                <Link href="/ride?type=van" className="inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 w-full" style={{ backgroundColor: COLORS.brand.blue }}>
+                  Contratar transporte privado
+                  <IconArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </FadeIn>
@@ -1321,17 +1307,10 @@ export default function HomePage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-6">
-                  <div>
-                    <span className="text-sm text-gray-400">Desde</span>
-                    <span className="text-4xl font-black ml-2" style={{ color: COLORS.brand.blue }}>$8</span>
-                    <span className="text-sm text-gray-400 ml-1">puerta a puerta</span>
-                  </div>
-                  <Link href="/envios/cotizar" className="flex-1 inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90" style={{ backgroundColor: COLORS.brand.blue }}>
-                    Enviar un paquete
-                    <IconArrowRight size={16} />
-                  </Link>
-                </div>
+                <Link href="/envios/cotizar" className="inline-flex items-center justify-center gap-2 text-white font-bold px-6 py-4 rounded-2xl text-sm transition-all hover:opacity-90 w-full" style={{ backgroundColor: COLORS.brand.blue }}>
+                  Enviar un paquete
+                  <IconArrowRight size={16} />
+                </Link>
               </div>
             </div>
           </FadeIn>
