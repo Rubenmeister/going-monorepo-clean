@@ -46,6 +46,7 @@ const DRIVER_ITEMS: MenuItem[] = [
 
 const ACCOUNT_ITEMS: MenuItem[] = [
   { icon: 'person-outline',              label: 'Mi Perfil',          screen: 'Profile' },
+  { icon: 'mic-outline',                 label: 'Asistente Going',    screen: 'Assistant' },
   { icon: 'shield-checkmark-outline',    label: 'Centro Legal',       screen: 'Legal' },
   { icon: 'help-circle-outline',         label: 'Soporte Going',      screen: 'Support' },
 ];
