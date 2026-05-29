@@ -26,7 +26,6 @@
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@rnmapbox/maps": "^10.1.35",
-    "@sentry/react-native": "^8.13.0",
     "axios": "^1.6.0",
     "babel-preset-expo": "~12.0.0",
     "expo": "~52.0.0",

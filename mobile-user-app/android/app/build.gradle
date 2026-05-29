@@ -80,11 +80,10 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
-// Sentry: inyecta sentry.gradle para subir source maps + debug ID en el
-// bundle de release. Modo legacy (RN autolinking), sin plugin Expo en
-// app.json — porque tener ambos generaba doble registro nativo y rompía el
-// gradle build. Ver historia en commits 12f2bd8d, ac7c1c12.
-apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
+// Sentry quitado del bundle (29-may, pre-launch 16-jun). @sentry/react-native
+// v8.13 tiene doble registro nativo (Expo modules + RN autolinking) y rompe
+// gradle 8.10. Re-integrar post-launch con v7.x. Historia: commits 12f2bd8d,
+// ac7c1c12, 863c6af8, c838cc4c, ade0e129.
 
 android {
 // @generated begin @rnmapbox/maps-libcpp - expo prebuild (DO NOT MODIFY) sync-e24830a5a3e854b398227dfe9630aabfaa1cadd1
@@ -105,7 +104,7 @@ packagingOptions {
         applicationId 'com.going.userapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 72
+        versionCode 73
         versionName "2.0.0"
     }
     signingConfigs {

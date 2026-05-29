@@ -3,28 +3,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { DriverRootNavigator } from './src/navigation/DriverRootNavigator';
-import * as Sentry from '@sentry/react-native';
 
-Sentry.init({
-  dsn: 'https://b0da414a6b3987c9f9c94fde47f7296c@o4511372708020224.ingest.us.sentry.io/4511372739805184',
+// NOTA: Sentry quitado temporalmente del bundle para desbloquear el soft launch
+// del 16-jun. @sentry/react-native@8.13 tiene doble registro nativo (Expo
+// modules autolinking + RN autolinking) que rompe gradle 8.10 con
+// "implicit dependency" en :sentry_react-native:packageReleaseResources.
+// Re-integrar post-launch con versión 7.x o configurando autolinking exclude.
+// Crash logs entretanto: Play Console + Firebase Crashlytics (ya integrado).
 
-  // Adds more context data to events (IP address, cookies, user, etc.)
-  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
-  sendDefaultPii: true,
-
-  // Enable Logs
-  enableLogs: true,
-
-  // NOTA: el wizard agregó `integrations: [Sentry.feedbackIntegration()]`,
-  // pero feedbackIntegration es de @sentry/browser, NO existe en
-  // @sentry/react-native. Su llamada lanzaba "is not a function" en el
-  // primer render → app crasheaba en el splash (v56). Removido en v57.
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
-});
-
-export default Sentry.wrap(function App() {
+export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -33,4 +20,4 @@ export default Sentry.wrap(function App() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-});
+}
