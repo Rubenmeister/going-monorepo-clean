@@ -5,6 +5,7 @@ import { DispatcherService } from '../decision/dispatcher.service';
 import { MyCortexPollerService } from '../decision/mycortex-poller.service';
 import { RulesEngineService } from '../decision/rules-engine.service';
 import { AgentOverrideService } from '../decision/agent-override.service';
+import { OutcomeTrackerService } from '../decision/outcome-tracker.service';
 import { DecisionStatus } from '../infrastructure/schemas/decision.schema';
 import { RULES, ActionRule } from '../decision/rules-engine.service';
 import { safetyMeta } from '../decision/safety-levels';
@@ -30,6 +31,7 @@ export class OrchestratorController {
     private readonly rules:      RulesEngineService,
     private readonly config:     ConfigService,
     private readonly overrides:  AgentOverrideService,
+    private readonly outcomes:   OutcomeTrackerService,
   ) {}
 
   @Get('decisions')
@@ -62,6 +64,30 @@ export class OrchestratorController {
     const safeHours = Number.isFinite(hours) && hours > 0 && hours <= 720 ? hours : 24;
     const stats = await this.repo.statsByStatus(safeHours);
     return { windowHours: safeHours, byStatus: stats };
+  }
+
+  /**
+   * Outcome stats — métricas de convergencia de las decisiones autónomas
+   * (Capa 4 mini del cerebro). Calcula success rate por verifierKey desde
+   * `action_verifications`. Útil para detectar reglas que fallan mucho.
+   *
+   * Window default 24h. Max 720h (30 días).
+   *
+   * Response shape:
+   *   {
+   *     window: { hoursBack, since, until },
+   *     total: N,
+   *     byStatus: { pending_verification, converged, failed_to_converge, ... },
+   *     successByKey: { pending_red_handoffs: { successRate, total, converged, failed }, ... },
+   *     globalSuccessRate: 0.92,
+   *     topFailedIntentTypes: [{ intentType, count }]
+   *   }
+   */
+  @Get('outcome-stats')
+  async outcomeStats(@Query('hours') hoursStr?: string) {
+    const hours = parseInt(hoursStr || '24', 10);
+    const safeHours = Number.isFinite(hours) && hours > 0 && hours <= 720 ? hours : 24;
+    return this.outcomes.computeStats(safeHours);
   }
 
   @Get('rules')

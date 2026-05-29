@@ -25,6 +25,7 @@ import { DispatcherService } from './decision/dispatcher.service';
 import { MyCortexPollerService } from './decision/mycortex-poller.service';
 import { AgentOverrideService } from './decision/agent-override.service';
 import { ActionVerifierService } from './decision/action-verifier.service';
+import { OutcomeTrackerService } from './decision/outcome-tracker.service';
 import { ActionVerificationSchema } from './infrastructure/schemas/action-verification.schema';
 
 @Module({
@@ -68,6 +69,9 @@ import { ActionVerificationSchema } from './infrastructure/schemas/action-verifi
     // intent.type listados en autonomous-allowlist.ts. El dispatcher lo
     // inyecta como @Optional, así que si está deshabilitado no rompe.
     ActionVerifierService,
+    // Capa 4 mini — cron diario que mide success rate de las decisiones
+    // autónomas. Endpoint /orchestrator/outcome-stats para consulta on-demand.
+    OutcomeTrackerService,
   ],
 })
 export class AppModule {}
