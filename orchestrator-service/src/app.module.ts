@@ -26,7 +26,9 @@ import { MyCortexPollerService } from './decision/mycortex-poller.service';
 import { AgentOverrideService } from './decision/agent-override.service';
 import { ActionVerifierService } from './decision/action-verifier.service';
 import { OutcomeTrackerService } from './decision/outcome-tracker.service';
+import { DriftDetectorService } from './decision/drift-detector.service';
 import { ActionVerificationSchema } from './infrastructure/schemas/action-verification.schema';
+import { OutcomeDailyStats, OutcomeDailyStatsSchema } from './infrastructure/schemas/outcome-daily-stats.schema';
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { ActionVerificationSchema } from './infrastructure/schemas/action-verifi
       { name: 'Decision', schema: DecisionSchema },
       { name: 'AgentOverride', schema: AgentOverrideSchema },
       { name: 'ActionVerification', schema: ActionVerificationSchema },
+      { name: OutcomeDailyStats.name, schema: OutcomeDailyStatsSchema },
     ]),
   ],
   controllers: [
@@ -72,6 +75,9 @@ import { ActionVerificationSchema } from './infrastructure/schemas/action-verifi
     // Capa 4 mini — cron diario que mide success rate de las decisiones
     // autónomas. Endpoint /orchestrator/outcome-stats para consulta on-demand.
     OutcomeTrackerService,
+    // Capa 4 media — cron semanal que detecta drift (degradación) en
+    // success rate week-over-week. Hoy solo alerta, no muta runbook.
+    DriftDetectorService,
   ],
 })
 export class AppModule {}

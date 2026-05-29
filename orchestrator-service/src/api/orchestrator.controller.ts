@@ -6,6 +6,7 @@ import { MyCortexPollerService } from '../decision/mycortex-poller.service';
 import { RulesEngineService } from '../decision/rules-engine.service';
 import { AgentOverrideService } from '../decision/agent-override.service';
 import { OutcomeTrackerService } from '../decision/outcome-tracker.service';
+import { DriftDetectorService } from '../decision/drift-detector.service';
 import { DecisionStatus } from '../infrastructure/schemas/decision.schema';
 import { RULES, ActionRule } from '../decision/rules-engine.service';
 import { safetyMeta } from '../decision/safety-levels';
@@ -32,6 +33,7 @@ export class OrchestratorController {
     private readonly config:     ConfigService,
     private readonly overrides:  AgentOverrideService,
     private readonly outcomes:   OutcomeTrackerService,
+    private readonly drift:      DriftDetectorService,
   ) {}
 
   @Get('decisions')
@@ -88,6 +90,28 @@ export class OrchestratorController {
     const hours = parseInt(hoursStr || '24', 10);
     const safeHours = Number.isFinite(hours) && hours > 0 && hours <= 720 ? hours : 24;
     return this.outcomes.computeStats(safeHours);
+  }
+
+  /**
+   * Histórico de outcome_daily_stats. Útil para dashboards de tendencia.
+   * Default 30 días. Max 365.
+   */
+  @Get('outcome-stats/history')
+  async outcomeStatsHistory(@Query('days') daysStr?: string) {
+    const days = parseInt(daysStr || '30', 10);
+    const safeDays = Number.isFinite(days) && days > 0 && days <= 365 ? days : 30;
+    const docs = await this.outcomes.getHistory(safeDays);
+    return { days: safeDays, count: docs.length, items: docs };
+  }
+
+  /**
+   * Drift report — compara success rate week-over-week por verifierKey.
+   * Run on-demand del DriftDetectorService.
+   * Útil para que ops vea de inmediato si alguna regla degradó.
+   */
+  @Get('drift-report')
+  async driftReport() {
+    return this.drift.detectDrift();
   }
 
   @Get('rules')
