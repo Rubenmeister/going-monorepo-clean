@@ -32,7 +32,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.conductor",
-      "versionCode": 53,
+      "versionCode": 56,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -81,7 +81,15 @@
         }
       ],
       "expo-notifications",
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "mobile-driver-app",
+          "organization": "goingapp"
+        }
+      ]
     ]
   }
 }

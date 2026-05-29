@@ -31,7 +31,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.userapp",
-      "versionCode": 67,
+      "versionCode": 70,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -75,7 +75,15 @@
           "color": "#F25C45"
         }
       ],
-      "@react-native-firebase/app"
+      "@react-native-firebase/app",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "mobile-user-app",
+          "organization": "goingapp"
+        }
+      ]
     ],
     "extra": {
       "eas": {
