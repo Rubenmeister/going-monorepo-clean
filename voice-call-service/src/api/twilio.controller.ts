@@ -13,6 +13,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { VoiceCallService } from '../voice/voice-call.service';
+import { VoiceCommandService } from '../voice/voice-command.service';
 import { buildAnswerTwiml, buildBlockedTwiml, buildHandoffTwiml } from '../twilio/twiml-builder';
 import { validateTwilioSignature } from '../twilio/twilio-signature';
 import { HandoffNotifierService } from '../voice/handoff-notifier.service';
@@ -44,6 +45,7 @@ export class TwilioController {
     private readonly config: ConfigService,
     private readonly voice: VoiceCallService,
     private readonly handoff: HandoffNotifierService,
+    private readonly commands: VoiceCommandService,
   ) {
     this.twilioAuthToken = this.config.get<string>('TWILIO_AUTH_TOKEN') ?? '';
     // wss://api.goingec.com/voice-calls/twilio/media-stream — la URL pública
@@ -113,7 +115,18 @@ export class TwilioController {
 
     this.logger.log(`[twilio] incoming call CallSid=${callId} from=${from} to=${to}`);
 
-    // ── 3. Detección de patrón sospechoso ──
+    // ── 3a. Blocklist manual (set vía VoiceCommandService) ──
+    // ops puede bloquear temporalmente un número con `/voice/command`
+    // action=block_caller_temporarily. Check ANTES de la detección de patrón
+    // sospechoso porque es prioridad alta (decisión humana).
+    if (this.commands.isBlocked(from)) {
+      this.logger.warn(`[twilio] blocking ${from} — en blocklist activa`);
+      return buildBlockedTwiml(
+        'Tu número fue bloqueado temporalmente. Si crees que es un error, escribe a soporte@goingec.com o WhatsApp +593 98 403 7949.',
+      );
+    }
+
+    // ── 3b. Detección de patrón sospechoso ──
     const suspicious = await this.voice.isSuspiciousCaller(from);
     if (suspicious) {
       this.logger.warn(`[twilio] blocking suspicious caller ${from}`);

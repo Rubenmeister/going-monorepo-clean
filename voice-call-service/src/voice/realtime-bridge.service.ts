@@ -382,7 +382,88 @@ export class RealtimeBridgeService {
     this.logger.warn(`[bridge] handoff marked callId=${ctx.callId}: ${reason}`);
   }
 
+  /**
+   * Fuerza el handoff de una llamada activa desde fuera del flujo del
+   * tool (ej. comando ops via VoiceCommandService). Localiza la session por
+   * callId, marca handoffRequested + handoffTransferred=true para evitar el
+   * dispatch del response.done, y ejecuta el redirect PSTN directamente.
+   *
+   * Retorna:
+   *  - { mode: 'pstn_redirect' } si Twilio confirmó el redirect
+   *  - { mode: 'callback_notified' } si no hubo creds Twilio o falló el
+   *    redirect (igual notificamos al operador para callback manual)
+   *  - null si no hay sesión activa con ese callId
+   */
+  async forceHandoffByCallId(
+    callId: string,
+    reason: string,
+  ): Promise<{ mode: 'pstn_redirect' | 'callback_notified' } | null> {
+    // Búsqueda lineal sobre sessions (típicamente <50 activas, OK).
+    let targetCtx: BridgeContext | undefined;
+    for (const ctx of this.sessions.values()) {
+      if (ctx.callId === callId) {
+        targetCtx = ctx;
+        break;
+      }
+    }
+    if (!targetCtx) return null;
+    if (targetCtx.handoffTransferred) {
+      // Ya fue handoff-eado por otro flow (el tool o ops previo). Idempotente.
+      return { mode: 'pstn_redirect' };
+    }
+
+    targetCtx.handoffRequested = true;
+    targetCtx.handoffTransferred = true;
+
+    // Notif al operador independientemente del modo PSTN — siempre conviene
+    // que alguien sepa que ops forzó el handoff.
+    this.handoff.notify({
+      callId,
+      from:              targetCtx.transcript[0]?.text?.slice(0, 80) ?? 'unknown',
+      priority:          'RED', // forzado por ops siempre es máxima prioridad
+      reason:            `[ops-forced] ${reason}`,
+      callbackRequested: true,
+      transcript:        targetCtx.transcript.slice(-5).map((t) => ({ role: t.role, text: t.text })),
+    }).catch((err) =>
+      this.logger.warn(`[force-handoff] handoff.notify fallo: ${(err as Error).message}`),
+    );
+
+    const handoffUrl = `${this.publicBaseUrl}/twilio/handoff-twiml/${encodeURIComponent(callId)}`;
+    this.logger.warn(`[force-handoff] redirecting callId=${callId} → ${handoffUrl}`);
+    const ok = await this.twilioRest.redirectCall(callId, handoffUrl);
+
+    // Cerramos la session OpenAI sin importar el resultado del redirect:
+    // - Si redirect ok → TwiML nuevo toma control de la PSTN
+    // - Si redirect falló → el caller cuelga al WS close, callback manual
+    try { targetCtx.session.close(); } catch { /* ignore */ }
+
+    return { mode: ok ? 'pstn_redirect' : 'callback_notified' };
+  }
+
   // ── Sistema prompt ────────────────────────────────────────
+
+  /**
+   * Override activo del system prompt (set vía VoiceCommandService).
+   * Si está set, se concatena al final del prompt base de la SIGUIENTE
+   * sesión creada — las activas siguen con su prompt original (cambiar
+   * mid-session es demasiado disruptivo para el contexto del agente).
+   */
+  private promptOverride: string | null = null;
+
+  /** Setter remoto, usado por VoiceCommandService.updateVoiceAgentPrompt. */
+  setPromptOverride(delta: string | null): void {
+    this.promptOverride = delta;
+    if (delta) {
+      this.logger.warn(`[bridge] prompt override set: "${delta.slice(0, 80)}..."`);
+    } else {
+      this.logger.log(`[bridge] prompt override cleared`);
+    }
+  }
+
+  /** Getter para inspección/debug. */
+  getPromptOverride(): string | null {
+    return this.promptOverride;
+  }
 
   /**
    * System prompt minimal para el agente telefónico. NO inyectamos FARES
@@ -390,10 +471,26 @@ export class RealtimeBridgeService {
    * necesita un precio. Mantener el prompt corto baja la latencia del
    * primer token.
    *
+   * Si hay un promptOverride activo (set vía VoiceCommandService), se
+   * concatena al final como instrucción adicional para esta sesión.
+   *
    * TODO: agregar lookups dinámicos por hora/canton si vemos en logs que
    * el AI se confunde con preguntas no-quote (horarios, ubicaciones, etc).
    */
   private buildSystemPrompt(callId: string, language: string = 'es'): string {
+    const basePrompt = this.buildBaseSystemPrompt(callId, language);
+    if (this.promptOverride) {
+      const overrideHeader = language === 'en'
+        ? '\n\nADDITIONAL CONTEXT (set by ops):'
+        : language === 'qu'
+          ? '\n\nÑAUPAK YUYAY (ops-pak):'
+          : '\n\nCONTEXTO ADICIONAL (puesto por ops):';
+      return basePrompt + overrideHeader + '\n' + this.promptOverride;
+    }
+    return basePrompt;
+  }
+
+  private buildBaseSystemPrompt(callId: string, language: string = 'es'): string {
     if (language === 'en') {
       return [
         'You are Uyari, the phone agent for Going Ecuador — the mobility app of Ecuador.',
