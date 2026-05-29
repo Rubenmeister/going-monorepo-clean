@@ -225,6 +225,66 @@ export class CerebroPublisherService {
     }
   }
 
+  /**
+   * Handoff stuck — el AI dijo "te paso con alguien" pero el redirect PSTN
+   * no confirmó después de `ageSeconds`. Publicado al cerebro para que
+   * mycortex emita Intention `force_handoff_voice_call` y el orchestrator
+   * ejecute force_handoff_current_call → notifica operador via Telegram +
+   * intenta redirect PSTN nuevamente.
+   *
+   * Es evento INMEDIATO porque cada segundo cuenta — el caller está
+   * esperando del otro lado del teléfono escuchando silencio o música.
+   *
+   * Threshold típico: 90 segundos. Configurable per-deployment via env
+   * VOICE_HANDOFF_STUCK_THRESHOLD_SECONDS (default 90).
+   */
+  async publishHandoffStuck(input: {
+    runId:      string;
+    callId:     string;
+    ageSeconds: number;
+  }): Promise<void> {
+    this.logger.warn(
+      `[cerebro] voice_handoff_stuck callId=${input.callId.slice(0, 12)} age=${input.ageSeconds}s`,
+    );
+
+    if (!this.enabled) return;
+
+    const now = new Date();
+    const event: AgentRunEvent = {
+      agentId:     'voice-call-service' as any,
+      runId:       input.runId,
+      startedAt:   now.toISOString(),
+      finishedAt:  now.toISOString(),
+      durationMs:  0,
+      status:      'success',
+      metrics: {
+        stuckCallId: input.callId,
+        ageSeconds:  input.ageSeconds,
+      },
+      anomalies: [{
+        type:     'voice_handoff_stuck',
+        severity: 'critical',
+        message:  `callId=${input.callId.slice(0, 12)} marcó handoff requested pero PSTN redirect no convergió en ${input.ageSeconds}s`,
+        data:     { callId: input.callId, ageSeconds: input.ageSeconds },
+      }],
+      actionsTaken:    [],
+      actionsProposed: [{
+        type:    'force_handoff_current_call',
+        target:  input.callId,
+        reason:  `Handoff stuck por ${input.ageSeconds}s — caller esperando`,
+        urgency: 0.9,
+        data:    { callId: input.callId, reason: 'stuck_handoff_auto' },
+      }],
+      meta: { runEnv: 'production' },
+    };
+
+    try {
+      await publishAgentRunEvent(event, { projectId: this.projectId });
+    } catch (err) {
+      this.logger.error(`[cerebro] publishHandoffStuck fallo: ${(err as Error).message}`);
+    }
+  }
+
   // ── Snapshot batch cada 10 min (TODO: activar @Cron cuando hagamos deploy) ──
 
   /**

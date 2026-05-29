@@ -11,6 +11,7 @@ import {
   executeSendFollowupSms,
 } from '../realtime/voice-tools-phone';
 import { VoiceCallService } from './voice-call.service';
+import { CerebroPublisherService } from './cerebro-publisher.service';
 import { HandoffNotifierService } from './handoff-notifier.service';
 import { TwilioRestClient } from '../twilio/twilio-rest.client';
 import {
@@ -84,6 +85,7 @@ export class RealtimeBridgeService {
     private readonly handoff: HandoffNotifierService,
     private readonly twilioRest: TwilioRestClient,
     private readonly voicePref: VoicePreferenceClient,
+    private readonly cerebro: CerebroPublisherService,
   ) {
     this.defaultVoice    = this.config.get<string>('VOICE_REALTIME_DEFAULT_VOICE') || 'shimmer';
     this.defaultLanguage = this.config.get<string>('VOICE_REALTIME_DEFAULT_LANG')  || 'es';
@@ -274,6 +276,11 @@ export class RealtimeBridgeService {
       const ctx = this.sessions.get(input.streamSid);
       if (!ctx || !ctx.handoffRequested || ctx.handoffTransferred) return;
       ctx.handoffTransferred = true; // marcamos antes del await para evitar dobles redirects en race
+      // Handoff transferred OK → cancelar stuck timer si está pendiente
+      if (ctx.stuckTimer) {
+        clearTimeout(ctx.stuckTimer);
+        ctx.stuckTimer = undefined;
+      }
 
       const handoffUrl = `${this.publicBaseUrl}/twilio/handoff-twiml/${encodeURIComponent(input.callId)}`;
       this.logger.log(`[bridge] dispatching handoff redirect callId=${input.callId} → ${handoffUrl}`);
@@ -343,6 +350,13 @@ export class RealtimeBridgeService {
     if (!ctx) return;
     this.sessions.delete(streamSid);
 
+    // Cancelar timer de stuck handoff si está activo — la sesión cerró,
+    // ya no tiene sentido reportar stuck.
+    if (ctx.stuckTimer) {
+      clearTimeout(ctx.stuckTimer);
+      ctx.stuckTimer = undefined;
+    }
+
     try {
       ctx.session.close();
     } catch { /* ignore */ }
@@ -375,11 +389,43 @@ export class RealtimeBridgeService {
    * tool.call). Hoy NO transfiere físicamente la call — la implementación
    * real de la transferencia (TwiML <Dial>) queda como pending del task #52.
    */
+  /**
+   * Configurable threshold para detectar handoff stuck. Default 90s — el AI
+   * dijo "te paso" pero el redirect PSTN no convergió. Disparamos un evento
+   * al cerebro que mycortex traduce a Intention force_handoff_voice_call.
+   */
+  private readonly handoffStuckThresholdMs = parseInt(
+    process.env.VOICE_HANDOFF_STUCK_THRESHOLD_SECONDS ?? '90',
+    10,
+  ) * 1000;
+
   markHandoffRequested(streamSid: string, reason: string): void {
     const ctx = this.sessions.get(streamSid);
     if (!ctx) return;
     ctx.handoffRequested = true;
+    ctx.handoffRequestedAt = Date.now();
     this.logger.warn(`[bridge] handoff marked callId=${ctx.callId}: ${reason}`);
+
+    // Arranca timer de detección de stuck handoff. Si en N segundos
+    // ctx.handoffTransferred no quedó true, publicamos anomaly al cerebro.
+    // El timer se cancela en endCallSession si la sesión cierra antes.
+    ctx.stuckTimer = setTimeout(() => {
+      const current = this.sessions.get(streamSid);
+      if (!current) return; // sesión cerró — nada que hacer
+      if (current.handoffTransferred) return; // transferred ok — nada que hacer
+      // Aún stuck. Publicar al cerebro y dejar que el loop autónomo decida.
+      const age = Math.round((Date.now() - (current.handoffRequestedAt ?? 0)) / 1000);
+      this.logger.error(
+        `[bridge] handoff stuck callId=${current.callId} age=${age}s — publicando al cerebro`,
+      );
+      this.cerebro.publishHandoffStuck({
+        runId:      current.runId ?? current.callId,
+        callId:     current.callId,
+        ageSeconds: age,
+      }).catch((e) =>
+        this.logger.warn(`[bridge] publishHandoffStuck fallo: ${(e as Error).message}`),
+      );
+    }, this.handoffStuckThresholdMs);
   }
 
   /**
@@ -414,6 +460,12 @@ export class RealtimeBridgeService {
 
     targetCtx.handoffRequested = true;
     targetCtx.handoffTransferred = true;
+    // Cancelar stuck timer si estaba activo — ops forzó handoff antes que
+    // expire el threshold.
+    if (targetCtx.stuckTimer) {
+      clearTimeout(targetCtx.stuckTimer);
+      targetCtx.stuckTimer = undefined;
+    }
 
     // Notif al operador independientemente del modo PSTN — siempre conviene
     // que alguien sepa que ops forzó el handoff.
@@ -573,4 +625,11 @@ interface BridgeContext {
   /** True después de que disparamos el twilioRest.redirectCall — evita
    *  doble redirect en caso de race entre múltiples response.done. */
   handoffTransferred: boolean;
+  /** Timestamp epoch ms cuando markHandoffRequested fue invocado.
+   *  Usado para calcular ageSeconds en publishHandoffStuck. */
+  handoffRequestedAt?: number;
+  /** Timer que dispara publishHandoffStuck si handoffTransferred no llega
+   *  a true en handoffStuckThresholdMs. Se limpia en endCallSession y
+   *  cuando handoffTransferred se setea true (cleanupStuckTimer). */
+  stuckTimer?: NodeJS.Timeout;
 }
