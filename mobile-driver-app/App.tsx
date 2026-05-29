@@ -14,7 +14,11 @@ Sentry.init({
 
   // Enable Logs
   enableLogs: true,
-  integrations: [Sentry.feedbackIntegration()],
+
+  // NOTA: el wizard agregó `integrations: [Sentry.feedbackIntegration()]`,
+  // pero feedbackIntegration es de @sentry/browser, NO existe en
+  // @sentry/react-native. Su llamada lanzaba "is not a function" en el
+  // primer render → app crasheaba en el splash (v56). Removido en v57.
 
   // uncomment the line below to enable Spotlight (https://spotlightjs.com)
   // spotlight: __DEV__,
