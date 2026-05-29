@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MongoConversationRepository } from '../infrastructure/persistence/mongo-conversation.repository';
 import { HandoffNotifierService } from '../infrastructure/handoff-notifier.service';
+import { CerebroPublisherService } from '../infrastructure/cerebro-publisher.service';
 import { VoiceName } from '../infrastructure/voice.service';
 
 export type ConversationState = 'AI_ACTIVE' | 'HANDOFF_REQUESTED' | 'HUMAN_ACTIVE';
@@ -60,6 +61,7 @@ export class ConversationService {
   constructor(
     @Optional() private mongoRepository?: MongoConversationRepository,
     @Optional() private handoffNotifier?: HandoffNotifierService,
+    @Optional() private cerebroPublisher?: CerebroPublisherService,
   ) {}
 
   async getOrCreate(userId: string, channel: 'whatsapp' | 'telegram' | 'web' = 'whatsapp'): Promise<Conversation> {
@@ -193,6 +195,19 @@ export class ConversationService {
         reason,
         lastMessages: conv.messages.slice(-5),
       }).catch(err => this.logger.warn(`Handoff notification failed: ${err.message}`));
+    }
+
+    // Publish RED handoff inmediato al cerebro — no esperamos el cron de
+    // 10 min porque emergencias necesitan razonamiento más rápido. Solo
+    // para RED (orange/normal pueden esperar el snapshot agregado).
+    // Fire-and-forget, no bloquea.
+    if (priority === 'RED' && this.cerebroPublisher) {
+      this.cerebroPublisher.publishHandoffOpenedRed({
+        conversationId: userId,
+        handoffId:      `${userId}-${conv.updatedAt.getTime()}`, // sintético; no hay tabla separada
+        priority:       'RED',
+        callerInfo:     conv.channel,
+      }).catch(err => this.logger.warn(`Cerebro RED publish failed (non-fatal): ${err.message}`));
     }
   }
 
