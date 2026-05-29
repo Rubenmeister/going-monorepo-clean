@@ -419,15 +419,16 @@ export default function HomePage() {
           backgroundPosition: 'center 55%',
         }}
       >
-        {/* Overlay claro · v3 con contraste pleno. v1 era 0.18 ilegible, v2
-            era 0.55 mejoraba pero seguía bajo, v3 es 0.78 en top para que el
-            texto "Nos movemos contigo" se lea perfectamente sin desaparecer
-            la foto (que sigue visible con buena opacidad en el centro). */}
+        {/* Overlay claro · v4 con balance foto/legibilidad. v3 era 0.78 top
+            que tapaba demasiado la foto. v4 baja el top a 0.42 dejando ver el
+            paisaje, y compensa la legibilidad del texto con text-shadow en
+            h1/p (definido más abajo en el headline). El bottom queda alto
+            (0.95) para que las cards descansen sobre fondo casi blanco. */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.97) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.72) 45%, rgba(255,255,255,0.97) 100%)',
           }}
         />
 
@@ -442,11 +443,25 @@ export default function HomePage() {
               style={{ filter: 'drop-shadow(0 2px 12px rgba(255,255,255,0.6))' }}
             />
 
-            <h1 className="font-black text-gray-900 mb-5 leading-[0.95]" style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+            <h1
+              className="font-black text-gray-900 mb-5 leading-[0.95]"
+              style={{
+                fontSize: 'clamp(2.5rem, 7vw, 4.5rem)',
+                fontFamily: 'var(--font-nunito-sans), sans-serif',
+                // Text-shadow blanco sutil para legibilidad sobre cielo claro
+                // sin necesidad de overlay opaco que tape la foto.
+                textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
+              }}
+            >
               Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+            <p
+              className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
+              style={{
+                textShadow: '0 1px 12px rgba(255,255,255,0.9)',
+              }}
+            >
               La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
               viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
               todo desde tu teléfono.
