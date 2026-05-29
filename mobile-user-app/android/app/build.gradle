@@ -80,11 +80,11 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
-// NOTA: el wizard de Sentry agrega aquí un `apply from:` manual con
-// require.resolve('@sentry/react-native/package.json'). Removido a propósito —
-// el plugin @sentry/react-native/expo registrado en app.json ya inyecta
-// sentry.gradle durante `expo prebuild` (que EAS Build corre automático con
-// profile production). Tener ambos causa conflict y rompe el gradle build.
+// Sentry: inyecta sentry.gradle para subir source maps + debug ID en el
+// bundle de release. Modo legacy (RN autolinking), sin plugin Expo en
+// app.json — porque tener ambos generaba doble registro nativo y rompía el
+// gradle build. Ver historia en commits 12f2bd8d, ac7c1c12.
+apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
 
 android {
 // @generated begin @rnmapbox/maps-libcpp - expo prebuild (DO NOT MODIFY) sync-e24830a5a3e854b398227dfe9630aabfaa1cadd1
@@ -105,7 +105,7 @@ packagingOptions {
         applicationId 'com.going.userapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 70
+        versionCode 72
         versionName "2.0.0"
     }
     signingConfigs {
