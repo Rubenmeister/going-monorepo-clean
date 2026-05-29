@@ -153,9 +153,11 @@ export class AnomalyRulesService {
     // Acción: force_handoff_current_call via /voice/command — fuerza
     // redirect PSTN o callback notification al operador.
     //
-    // PUBLISHER TODO: voice-call-service no emite anomaly `voice_handoff_stuck`
-    // todavía. Cuando se implemente en CerebroPublisherService.publishVoiceHandoffStuck,
-    // esta regla la procesa. Allowlist entry pendiente de agregar al orchestrator.
+    // Loop completo: voice-call-service emite voice_handoff_stuck (publisher
+    // publishHandoffStuck), esta rule lo traduce a Intention force_handoff_voice_call,
+    // orchestrator dispatcher rutea a voice-call POST /voice/command, y el
+    // ActionVerifier mide voice_call_pending_handoff via /voice/metrics/handoff-pending.
+    // Allowlist entry: AUTONOMOUS_ALLOWLIST[2] en orchestrator-service.
     {
       id: 'voice-handoff-stuck',
       matches: (a) =>

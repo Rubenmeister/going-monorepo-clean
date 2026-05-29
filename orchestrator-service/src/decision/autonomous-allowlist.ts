@@ -133,6 +133,43 @@ export const AUTONOMOUS_ALLOWLIST: AutonomousEntry[] = [
       'urgency 0.85. El TTL del block es 60min — si nos equivocamos, blast radius es 1h de un ' +
       'caller. Idempotente: re-bloquear extiende el TTL al máximo.',
   },
+  {
+    // Caso de uso: voice-call-service detecta una llamada PSTN trabada — el
+    // AI está en loop o el caller pide explícitamente operador y el AI no
+    // logra resolverlo en N turnos. publisher emite `voice_handoff_stuck`
+    // con urgency 0.9. La rule voice-handoff-stuck del AnomalyRulesService
+    // (mycortex-service) traduce → Intention `force_handoff_voice_call`
+    // urgency 0.9. El dispatcher rutea a voice-call-service:
+    // POST /voice/command { action: 'force_handoff_current_call' } que
+    // hace Twilio Calls.update redirigiendo al operador (PSTN) o notifica
+    // por Telegram si no hay operator phone configurado.
+    //
+    // El verifier consulta GET /voice/metrics/handoff-pending?callId=X y
+    // confirma que la llamada salió del estado pending (transferida o
+    // cerrada). Direction 'decrease' porque pre-acción la métrica es 1
+    // (still pending) y post-acción esperamos 0 (resolved).
+    //
+    // Reversible: NO. Una vez que el handoff redirige al operador, no se
+    // puede "des-llamar". Por eso onVerifyFail = 'alert_only' — si el
+    // verifier falla, no hacemos rollback (qué rollback haría? colgar al
+    // operador en medio de la conversación?). Solo alerta para que ops
+    // revise el caso.
+    intentType: 'force_handoff_voice_call',
+    minUrgency: 0.85,
+    verify: {
+      verifierKey: 'voice_call_pending_handoff',
+      description: 'cuántos handoffs siguen pending para el callId (esperamos 0 post-acción)',
+      direction: 'decrease',
+      waitMs: 15_000, // 15s — Twilio Calls.update tarda <3s, margin para operator pick-up
+      minDelta: 1,
+    },
+    onVerifyFail: 'alert_only',
+    notes:
+      'Tercera acción autónoma. Caso de uso: AI atrapado en loop con caller que pide humano. ' +
+      'mycortex emite urgency 0.9 cuando voice_handoff_stuck > threshold. La redirección PSTN ' +
+      'es irreversible — por eso urgency mínima 0.85, no más baja. Blast radius: una llamada ' +
+      'mal transferida al operador (cuelga, el caller marca de nuevo, AI lo atiende otra vez).',
+  },
 ];
 
 /**
