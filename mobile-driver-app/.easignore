@@ -115,5 +115,25 @@ dist/
 ../financial-agent
 ../ops-agent
 
+# Servicios nuevos (post-2026-05)
+../voice-call-service
+../emergency-service
+../orchestrator-service
+../cerebro-service
+../mycortex-service
+../agent-bridge-service
+../knowledge-base
+../mobile-user-app/assets
+../tmp-marco-legal-unpacked
+../tmp-sistema-dual-unpacked
+../tmp-*
+../going-mobile
+
+# Test reports
+../test-report-*.json
+../.next
+../coverage
+../docs
+
 # Shared libs
 ../libs

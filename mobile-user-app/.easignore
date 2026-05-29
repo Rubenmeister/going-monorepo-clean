@@ -32,6 +32,43 @@ coverage/
 driver-screens-preview.html
 driver-screens-slideshow.html
 
+# === Assets pesados no referenciados — whitelist abajo ===
+# Audit 2026-05-28: 30 PNGs numerados (10.png-58.png) + algunos otros
+# pesan ~200 MB pero NO están referenciados en src/. Excluimos TODOS los
+# PNG/JPG de assets/ y después white-listamos los 15 que sí se usan.
+# Si vas a agregar un asset nuevo, agregalo a la whitelist abajo.
+
+assets/*.png
+assets/*.jpg
+assets/*.jpeg
+assets/*.JPG
+assets/*.JPEG
+
+# Whitelist — assets REALMENTE referenciados en src/:
+!assets/1. uv.jpg
+!assets/2.suvxl.jpg
+!assets/3van.jpg
+!assets/4.VAN XL.jpg
+!assets/5. bus grande y pequeño.png
+!assets/6. bus.png
+!assets/entrega.png
+!assets/going-logo-envios.png
+!assets/going-logo-horizontal-white.png
+!assets/going-logo-horizontal.png
+!assets/going-logo-splash.png
+!assets/going-logo-white.png
+!assets/going-logo.png
+!assets/splash-bg.png
+!assets/suv premium.jpg
+# Iconos de la app (referenciados en app.json):
+!assets/icon.png
+!assets/adaptive-icon.png
+!assets/splash.png
+!assets/favicon.png
+!assets/notification-icon.png
+!assets/icon-512.png
+!assets/feature-graphic.jpg
+
 # === Monorepo siblings (forzar que SOLO mobile-user-app suba) ===
 ../node_modules
 ../.git
@@ -115,6 +152,26 @@ driver-screens-slideshow.html
 ../marketing-agent
 ../financial-agent
 ../ops-agent
+
+# Servicios nuevos (post-2026-05)
+../voice-call-service
+../emergency-service
+../orchestrator-service
+../cerebro-service
+../mycortex-service
+../agent-bridge-service
+../knowledge-base
+../mobile-driver-app
+../tmp-marco-legal-unpacked
+../tmp-sistema-dual-unpacked
+../tmp-*
+../going-mobile
+
+# Test reports
+../test-report-*.json
+../.next
+../coverage
+../docs
 
 # Shared libs (mobile-user-app embebió las que usa)
 ../libs
