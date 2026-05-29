@@ -1,10 +1,12 @@
-const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
+const {
+  getSentryExpoConfig
+} = require("@sentry/react-native/metro");
 
 const projectRoot = __dirname;
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(projectRoot);
+const config = getSentryExpoConfig(projectRoot);
 
 // In EAS Build the monorepo root node_modules doesn't exist —
 // restrict Metro to only look inside this app's own node_modules.
