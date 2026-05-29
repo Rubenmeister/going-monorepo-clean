@@ -158,6 +158,91 @@ export class CerebroPublisherService {
     return { anomalies, actionsProposed };
   }
 
+  /**
+   * Publica un evento INMEDIATO al cerebro cuando se abre un handoff RED.
+   *
+   * Por qué: el cron snapshot corre cada 10 min — para un handoff RED
+   * (emergencia / accidente / robo) eso puede ser demasiado tarde. Este
+   * publish va directo al pubsub sin esperar el snapshot, así MyCortex
+   * tiene el dato dentro de segundos y puede emitir Intentions más rápido.
+   *
+   * Cierra el TODO Fase 4 de la docstring del archivo (líneas 22-25).
+   *
+   * El evento emite la MISMA anomaly type que el cron (`red_priority_unattended`)
+   * para que las rules de MyCortex no tengan que distinguir source. La
+   * diferencia es solo el `runEnv` flag `meta.realtime=true` que indica
+   * latencia <1s vs los 10 min del snapshot.
+   *
+   * No bloquea el caller — si pubsub falla, loguea error y sigue. El
+   * handoff a humano via Telegram ya está garantizado por HandoffNotifier.
+   */
+  async publishHandoffOpenedRed(input: {
+    conversationId: string;
+    handoffId:      string;
+    priority:       'RED';
+    callerInfo?:    string;
+  }): Promise<void> {
+    const runId = uuidv4();
+    const startedAt = new Date();
+    const finishedAt = new Date();
+
+    this.logger.warn(
+      `[cerebro] handoff_opened_RED conversationId=${input.conversationId.slice(0, 12)} ` +
+        `handoffId=${input.handoffId.slice(0, 12)} runId=${runId.slice(0, 8)}`,
+    );
+
+    const anomaly: Anomaly = {
+      type: 'red_priority_unattended',
+      severity: 'critical',
+      message:
+        `Handoff RED recién abierto en conversation ${input.conversationId.slice(0, 12)} — ` +
+        `notificación a Telegram disparada, esperamos confirmación de operador en <5min`,
+      data: {
+        conversationId: input.conversationId,
+        handoffId: input.handoffId,
+        priority: input.priority,
+        callerInfo: input.callerInfo ?? null,
+        // Flag para que rules sepan que es realtime, no snapshot.
+        // Si quieren filtrar (ej: para evitar doble-trigger entre cron + realtime),
+        // pueden usar este campo.
+        realtime: true,
+      },
+    };
+
+    const actionProposed: ActionProposed = {
+      type: 'page_oncall_operator',
+      reason: `RED priority recién abierto — notif preventiva por si no responden en 5min`,
+      urgency: 0.85, // menor que el cron-based (0.95) porque acaba de abrirse
+      data: { conversationId: input.conversationId },
+    };
+
+    try {
+      const event: AgentRunEvent = {
+        agentId:    'customer-support-service',
+        runId,
+        startedAt:  startedAt.toISOString(),
+        finishedAt: finishedAt.toISOString(),
+        durationMs: 0,
+        status:     'success',
+        metrics:    {}, // No snapshot — es evento puntual
+        anomalies:      [anomaly],
+        actionsTaken:   [],
+        actionsProposed: [actionProposed],
+        meta: {
+          gitSha: process.env.GIT_SHA,
+          runEnv: (process.env.NODE_ENV === 'production' ? 'production' : 'staging'),
+          // realtime: true — los rules pueden filtrar duplicados de cron vs aquí
+          realtime: 'true',
+        } as Record<string, string>,
+      };
+      await publishAgentRunEvent(event, { logger: this.bridgeLogger() });
+    } catch (e) {
+      this.logger.error(
+        `[cerebro] handoff_opened_RED publish fallo (non-fatal): ${(e as Error).message}`,
+      );
+    }
+  }
+
   /** Compone el AgentRunEvent y lo publica con el helper compartido. */
   private async publish(args: {
     runId:        string;
