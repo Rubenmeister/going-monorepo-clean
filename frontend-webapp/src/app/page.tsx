@@ -419,15 +419,15 @@ export default function HomePage() {
           backgroundPosition: 'center 55%',
         }}
       >
-        {/* Overlay claro · reforzado en el top para que "Nos movemos contigo"
-            tenga contraste contra el cielo brillante de la foto. Reportado
-            29-may por feedback de UX: texto era ilegible sobre cielo claro.
-            Antes: top 0.18 → ahora 0.55. Bottom igual (cards descansan ahí). */}
+        {/* Overlay claro · v3 con contraste pleno. v1 era 0.18 ilegible, v2
+            era 0.55 mejoraba pero seguía bajo, v3 es 0.78 en top para que el
+            texto "Nos movemos contigo" se lea perfectamente sin desaparecer
+            la foto (que sigue visible con buena opacidad en el centro). */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.72) 35%, rgba(255,255,255,0.95) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.97) 100%)',
           }}
         />
 
@@ -497,7 +497,9 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          {/* ── Download / Web CTAs · adaptados a fondo claro ── */}
+          {/* ── Download / Web CTAs · solo Play Store (iOS aún no submitted)
+              + botón "Reserva en la web" con el mismo estilo del Play Store
+              para visual consistency. Feedback 29-may. ── */}
           <FadeIn dir="up" delay={0.3} className="flex flex-col items-center gap-4 mb-6">
             <p className="text-xs text-gray-600 font-bold uppercase tracking-[0.25em]">
               Disponible en
@@ -516,63 +518,73 @@ export default function HomePage() {
                   <span className="block font-black text-sm leading-none">Google Play</span>
                 </span>
               </a>
-              {APP_STORE_AVAILABLE ? (
-                <a
-                  href={APP_STORE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl text-white hover:scale-[1.03] transition-all shadow-lg"
-                  style={{ backgroundColor: COLORS.brand.black }}
-                >
-                  <IconApple size={26} />
-                  <span className="text-left">
-                    <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Descargar en</span>
-                    <span className="block font-black text-sm leading-none">App Store</span>
-                  </span>
-                </a>
-              ) : (
-                <span
-                  className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border-2 border-gray-300 text-gray-400 cursor-not-allowed"
-                  title="App Store iOS estará disponible próximamente"
-                >
-                  <IconApple size={26} />
-                  <span className="text-left">
-                    <span className="block text-[10px] font-medium uppercase tracking-wider opacity-70">Próximamente en</span>
-                    <span className="block font-black text-sm leading-none">App Store</span>
-                  </span>
-                </span>
-              )}
-              <span className="text-gray-400 text-xs hidden sm:inline mx-2">o</span>
+              {/* "Reserva en la web" con estilo Play Store. Mismo wrapper,
+                 fondo brand red para distinguir del Play Store negro. */}
               <Link
                 href="/ride"
-                className="inline-flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-gray-900 transition-colors underline underline-offset-4 decoration-gray-300 px-2"
+                className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl text-white hover:scale-[1.03] transition-all shadow-lg"
+                style={{ backgroundColor: COLORS.brand.red }}
               >
-                Reserva desde la web
-                <IconArrowRight size={14} />
+                <IconMobile size={26} />
+                <span className="text-left">
+                  <span className="block text-[10px] font-medium uppercase tracking-wider opacity-80">Reserva en</span>
+                  <span className="block font-black text-sm leading-none">la web</span>
+                </span>
               </Link>
             </div>
           </FadeIn>
 
-          {/* Trust badges · adaptados a fondo claro */}
-          <FadeIn dir="up" delay={0.4} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-gray-700 mb-4">
-            <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                <IconShield size={14} />
-              </span>
-              Conductoras y conductores verificados
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                <IconPin size={14} />
-              </span>
-              Tracking en vivo
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                <IconCard size={14} />
-              </span>
-              Pago sin efectivo
-            </span>
+          {/* Ventajas de la GoingApp · cards más grandes con icono prominente
+              y descripción corta. Feedback 29-may: las badges chicas pasaban
+              desapercibidas; queremos que la propuesta de valor se vea claro.
+              Truco de diseño: gradient en el icon container + lift on hover
+              + el borde se colorea en hover. */}
+          <FadeIn dir="up" delay={0.4} className="w-full max-w-5xl mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  Icon: IconShield,
+                  title: 'Conductoras y conductores verificados',
+                  sub: 'Documentos + antecedentes + vehículo aprobado antes del primer viaje.',
+                  color: COLORS.brand.red,
+                  bg: COLORS.brand.redBg,
+                },
+                {
+                  Icon: IconPin,
+                  title: 'Tracking en vivo',
+                  sub: 'Mirá tu ruta en tiempo real y compartila con tus contactos de confianza.',
+                  color: COLORS.brand.yellowDark,
+                  bg: COLORS.brand.yellowBg,
+                },
+                {
+                  Icon: IconCard,
+                  title: 'Múltiples formas de pago',
+                  sub: 'Tarjeta, transferencia, DeUna y más. Pagás como te resulte cómodo.',
+                  color: COLORS.brand.black,
+                  bg: COLORS.gray[100],
+                },
+              ].map((v, i) => (
+                <div
+                  key={v.title}
+                  className="group bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/70 hover:border-transparent hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300"
+                    style={{ backgroundColor: v.bg, color: v.color }}
+                  >
+                    <v.Icon size={28} />
+                  </div>
+                  <h4
+                    className="text-base font-black text-gray-900 mb-1.5 leading-tight"
+                    style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+                  >
+                    {v.title}
+                  </h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">{v.sub}</p>
+                </div>
+              ))}
+            </div>
           </FadeIn>
 
           {/* Indicador scroll */}
@@ -583,17 +595,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ COBERTURA — chips de ciudades ════════════════════════════════════
-         Muestra concretamente dónde opera Going. Refuerza la idea de
-         "interurbano Ecuador" sin necesidad de mirar el mapa.
-      */}
-      <section className="bg-white border-y border-gray-100 py-6">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeIn className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap flex-shrink-0">
-              Cobertura · 15 ciudades del Ecuador
+      {/* ══ COBERTURA — 15 ciudades + Aeropuerto Quito ═══════════════════════
+         Sección prominente que destaca el alcance operativo inicial de
+         Going. Feedback 29-may: tenía bajo peso visual; ahora título
+         grande + chips con border-l accent + el Aeropuerto destacado
+         como ancla destino. */}
+      <section className="bg-gradient-to-b from-gray-50 to-white py-14 border-y border-gray-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn className="text-center mb-8">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
+              <IconMap size={14} />
+              Empezamos en estas 15 ciudades
             </span>
-            <div className="flex flex-wrap gap-2 flex-1">
+            <h2
+              className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight"
+              style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+            >
+              Rutas a <span style={{ color: COLORS.brand.red }}>Quito</span> y al{' '}
+              <span style={{ color: COLORS.brand.yellowDark }}>Aeropuerto Mariscal Sucre</span>
+            </h2>
+            <p className="text-sm text-gray-600 mt-3 max-w-2xl mx-auto leading-relaxed">
+              Sierra y Costa conectadas con frecuencias diarias. Sumamos ciudades
+              cada mes según la demanda de las viajeras y los viajeros.
+            </p>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div className="flex flex-wrap justify-center gap-2.5 mb-5">
               {[
                 'Quito', 'Guayaquil', 'Cuenca', 'Ambato', 'Riobamba',
                 'Ibarra', 'Otavalo', 'Latacunga', 'Salcedo', 'Cayambe',
@@ -601,89 +629,33 @@ export default function HomePage() {
               ].map(city => (
                 <span
                   key={city}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors hover:bg-red-50"
-                  style={{ backgroundColor: COLORS.gray[50], color: COLORS.gray[700], border: `1px solid ${COLORS.gray[200]}` }}
+                  className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl bg-white shadow-sm border border-gray-200 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                  style={{ color: COLORS.gray[800] }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS.brand.red }} />
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS.brand.red }} />
                   {city}
                 </span>
               ))}
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
-                + Aeropuerto Mariscal Sucre
+            </div>
+            <div className="flex justify-center">
+              <span
+                className="inline-flex items-center gap-2.5 text-base font-black px-5 py-3 rounded-2xl shadow-lg"
+                style={{ backgroundColor: COLORS.brand.yellowDark, color: '#ffffff' }}
+              >
+                <IconRoute size={20} />
+                + Aeropuerto Internacional Mariscal Sucre
               </span>
             </div>
           </FadeIn>
         </div>
       </section>
 
-      {/* ══ STATS EN VIVO ════════════════════════════════════════════════════
-         Cifras que transmiten que la plataforma está activa. Valores
-         demo plausibles hasta que tengamos métricas reales conectadas al
-         backend; cuando estén disponibles, reemplazar por fetch a
-         /analytics/kpis/current.
-      */}
-      <section className="bg-gray-50 py-12 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6">
-          <FadeIn className="text-center mb-8">
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>
-              Going en números
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mt-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-              Una red viva, todos los días
-            </h2>
-          </FadeIn>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {[
-              { value: '15+',  label: 'Ciudades cubiertas',                    sub: 'Sierra, Costa y Amazonía' },
-              { value: '4.9',  label: 'Calificación promedio',                 sub: 'De 5 estrellas en viajes Going', accent: COLORS.brand.yellow },
-              { value: '24/7', label: 'Soporte humano + IA',                   sub: 'Cuando lo necesites' },
-              { value: '< 5m', label: 'Tiempo promedio de respuesta',          sub: 'Desde que pides tu viaje' },
-            ].map((stat, i) => (
-              <FadeIn key={stat.label} delay={i * 0.08}>
-                <div className="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                  <p className="text-3xl sm:text-4xl font-black mb-1" style={{ color: stat.accent ?? COLORS.brand.red, fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                    {stat.value}
-                  </p>
-                  <p className="text-xs sm:text-sm font-bold text-gray-900">{stat.label}</p>
-                  <p className="text-xs text-gray-500 mt-1">{stat.sub}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══ TESTIMONIOS MINI — carousel auto ═════════════════════════════════
-         Banda compacta con 3 testimonios visibles. En lugar de un carousel
-         con dots (que requiere interacción), mostramos los 3 al mismo
-         tiempo en desktop y rotamos en mobile.
-      */}
-      <section className="bg-white py-12 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { stars: 5, name: 'María G.', role: 'Pasajera frecuente · Quito → Ambato', text: 'Salidas cada hora, precio fijo y conductora amable. Cambié para siempre el bus interprovincial.' },
-              { stars: 5, name: 'Carlos R.', role: 'Conductor Going · Sierra Norte',     text: 'Ingresos predecibles, app fácil y nada de efectivo. Recomendado a 3 colegas y todos se sumaron.' },
-              { stars: 5, name: 'Ana T.',    role: 'Anfitriona · Mindo',                 text: 'Mis huéspedes piden el traslado desde el aeropuerto por la app. Cero stress, todo gestionado.' },
-            ].map((t, i) => (
-              <FadeIn key={t.name} delay={i * 0.1}>
-                <div className="bg-gray-50 rounded-2xl p-5 h-full border border-gray-100">
-                  <div className="flex items-center gap-1 mb-3" style={{ color: COLORS.brand.yellow }}>
-                    {Array.from({ length: t.stars }).map((_, idx) => (
-                      <IconStar key={idx} size={14} />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed mb-4">&ldquo;{t.text}&rdquo;</p>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ══ STATS EN VIVO + TESTIMONIOS — eliminados 29-may por feedback ════
+         del founder: las cifras y los testimonios eran demo (María G.,
+         Carlos R., Ana T.) y considerados falsos para una soft launch
+         pre-operativa. Re-introducir solo cuando tengamos métricas
+         reales conectadas a /analytics/kpis/current + testimonios reales
+         con consentimiento explícito de los pasajeros y conductores. */}
 
       {/* ── Search Card — "también sin app" ───────────────── *
          Posicionada como alternativa al download. Quien entra desde
