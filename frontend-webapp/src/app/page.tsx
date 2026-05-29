@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ReactElement } from 'react';
+import { useState, useEffect, useRef, type ReactElement, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
@@ -300,6 +300,96 @@ const DRIVER_PERKS: DriverPerk[] = [
   { Icon: IconHeadphones, text: 'Comunidad y soporte del equipo Going cuando lo necesites' },
 ];
 
+/* ── ServiceCard ────────────────────────────────────────────────
+   Cards de servicios del hero con tilt 3D siguiendo el cursor +
+   título que crece en hover. Pensado para transmitir "tech" sin
+   sobrecargar la composición. Solo activo en desktop (pointer:fine);
+   en touch devices queda como Link estático con scale en activo.
+
+   Feedback 29-may del founder: las cards iniciales (solo icon + texto)
+   se veían planas. Ahora foto top + tilt + hover-grow dan dinamismo
+   sin que la composición pierda elegancia.
+*/
+function ServiceCard({
+  href,
+  image,
+  alt,
+  title,
+  description,
+  cta,
+  ctaColor,
+}: {
+  href: string;
+  image: string;
+  alt: string;
+  title: string;
+  description: string;
+  cta: string;
+  ctaColor: string;
+}) {
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+
+  const handleMove = (e: MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // -0.5 a 0.5 desde el centro
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    // rotateX se invierte (mouse arriba → tilt arriba mirando a la cámara)
+    // Cap a ±7° para que el efecto sea sutil, no mareador.
+    setTilt({ rx: -py * 7, ry: px * 7 });
+  };
+
+  const handleLeave = () => setTilt({ rx: 0, ry: 0 });
+
+  return (
+    <Link
+      href={href}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:shadow-2xl relative overflow-hidden border border-gray-100 will-change-transform"
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translateZ(0)`,
+        transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease',
+        transformStyle: 'preserve-3d',
+      }}
+    >
+      <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+        <img
+          src={image}
+          alt={alt}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+        />
+        {/* Sutil gradient bottom para que el blanco de abajo no corte tan duro */}
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/40 to-transparent pointer-events-none" />
+      </div>
+      <div className="p-6 flex flex-col flex-1">
+        <h3
+          className="font-black text-gray-900 mb-2 transition-all duration-300 ease-out group-hover:tracking-tight"
+          style={{
+            fontFamily: 'var(--font-nunito-sans), sans-serif',
+            fontSize: '1.25rem', // base 20px
+          }}
+        >
+          {/* span con escala on hover — grow visual sin causar layout shift */}
+          <span className="inline-block transition-transform duration-300 ease-out origin-left group-hover:scale-110">
+            {title}
+          </span>
+        </h3>
+        <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+          {description}
+        </p>
+        <span
+          className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-4 transition-all duration-300"
+          style={{ color: ctaColor }}
+        >
+          {cta}
+          <IconArrowRight size={16} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 /* ── Main Page ──────────────────────────────────────────────── */
 export default function HomePage() {
   // Fuente de verdad: el store de auth (vía useIsAuthenticated). Devuelve
@@ -372,95 +462,37 @@ export default function HomePage() {
           <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
-              {/* CARD 1: Viaje Compartido — foto de pasajeros top + icon badge */}
-              <Link
+              {/* 3 CARDS DE SERVICIOS — usan <ServiceCard /> con tilt 3D
+                 siguiendo el cursor + título escala en hover. Sin emojis ni
+                 icon badges sobre la foto (feedback 29-may: queremos que la
+                 foto respire). El feel "tech" lo da el tilt + el hover scale. */}
+              <ServiceCard
                 href="/ride?type=shared"
-                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
-              >
-                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
-                  <img
-                    src="/images/pasajeros.JPG"
-                    alt="Pasajeros viajando en Going"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.red }}>
-                    <IconSuv size={26} />
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                    Viaje Compartido
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                    Viajes compartidos puerta a puerta entre ciudades del Ecuador.
-                    Pagas solo tu asiento.
-                  </p>
-                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.red }}>
-                    Reservar
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
-              </Link>
-
-              {/* CARD 2: Viaje Privado — foto de SUV/Van + icon badge */}
-              <Link
+                image="/images/pasajeros.JPG"
+                alt="Pasajeros viajando en Going"
+                title="Viaje Compartido"
+                description="Viajes compartidos puerta a puerta entre ciudades del Ecuador. Pagas solo tu asiento."
+                cta="Reservar"
+                ctaColor={COLORS.brand.red}
+              />
+              <ServiceCard
                 href="/ride?type=van"
-                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
-              >
-                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
-                  <img
-                    src="/images/Viaje%20privado.png"
-                    alt="Vehículo privado Going"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.yellowDark }}>
-                    <IconVan size={26} />
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                    Viaje Privado
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                    Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo,
-                    dentro o entre ciudades.
-                  </p>
-                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.yellowDark }}>
-                    Cotizar
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
-              </Link>
-
-              {/* CARD 3: Envíos — foto de entrega puerta a puerta + icon badge */}
-              <Link
+                image="/images/Viaje%20privado.png"
+                alt="Vehículo privado Going"
+                title="Viaje Privado"
+                description="Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo, dentro o entre ciudades."
+                cta="Cotizar"
+                ctaColor={COLORS.brand.yellowDark}
+              />
+              <ServiceCard
                 href="/envios/cotizar"
-                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
-              >
-                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
-                  <img
-                    src="/images/Puerta%20a%20puerta%20entre%20ciudades.png"
-                    alt="Envíos puerta a puerta Going"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.black }}>
-                    <IconPackage size={26} />
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                    Envíos
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                    Sobres, documentos o paquetes puerta a puerta — dentro de la
-                    ciudad o entre ciudades.
-                  </p>
-                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all text-gray-900">
-                    Cotizar envío
-                    <IconArrowRight size={16} />
-                  </span>
-                </div>
-              </Link>
+                image="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=85&auto=format&fit=crop"
+                alt="Entrega de paquetes Going"
+                title="Envíos"
+                description="Sobres, documentos o paquetes puerta a puerta — dentro de la ciudad o entre ciudades."
+                cta="Cotizar envío"
+                ctaColor={COLORS.brand.black}
+              />
 
             </div>
           </FadeIn>
