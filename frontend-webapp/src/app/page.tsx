@@ -944,11 +944,43 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          {/* Las 3 tarjetas con precios fueron eliminadas el 29-may por
-              feedback del founder: los precios mostrados estaban mal y
-              causarían inconsistencias hasta tener tarifas finales
-              conectadas a backend. Cuando estén las tarifas reales, se
-              pueden re-introducir desde /api/fares. */}
+          {/* 3 tarjetas resumen — corredores principales. Sin precios
+              (feedback 29-may: los precios mostrados estaban mal, los
+              quitamos hasta tener tarifas reales conectadas a /api/fares). */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+            {[
+              {
+                color: '#a855f7',
+                route: 'Santo Domingo — Quito — Aeropuerto',
+                detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro norte de Quito y aeropuerto.',
+                time: '~2 h 45 min',
+              },
+              {
+                color: '#d97706',
+                route: 'Ambato — Latacunga — Quito — Aeropuerto',
+                detail: 'Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.',
+                time: '~2 h 30 min',
+              },
+              {
+                color: '#3b82f6',
+                route: 'Ibarra — Quito — Aeropuerto',
+                detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
+                time: '~2 h 15 min',
+              },
+            ].map((r) => (
+              <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
+                  <span className="text-white font-black text-sm">{r.route}</span>
+                </div>
+                <p className="text-gray-400 text-xs leading-relaxed mb-4">{r.detail}</p>
+                <span className="inline-flex items-center gap-1.5 text-gray-400 text-xs">
+                  <IconClock size={12} />
+                  {r.time}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
