@@ -534,63 +534,226 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          {/* Ventajas de la GoingApp · cards más grandes con icono prominente
-              y descripción corta. Feedback 29-may: las badges chicas pasaban
-              desapercibidas; queremos que la propuesta de valor se vea claro.
-              Truco de diseño: gradient en el icon container + lift on hover
-              + el borde se colorea en hover. */}
-          <FadeIn dir="up" delay={0.4} className="w-full max-w-5xl mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                {
-                  Icon: IconShield,
-                  title: 'Conductoras y conductores verificados',
-                  sub: 'Documentos + antecedentes + vehículo aprobado antes del primer viaje.',
-                  color: COLORS.brand.red,
-                  bg: COLORS.brand.redBg,
-                },
-                {
-                  Icon: IconPin,
-                  title: 'Tracking en vivo',
-                  sub: 'Mirá tu ruta en tiempo real y compartila con tus contactos de confianza.',
-                  color: COLORS.brand.yellowDark,
-                  bg: COLORS.brand.yellowBg,
-                },
-                {
-                  Icon: IconCard,
-                  title: 'Múltiples formas de pago',
-                  sub: 'Tarjeta, transferencia, DeUna y más. Pagás como te resulte cómodo.',
-                  color: COLORS.brand.black,
-                  bg: COLORS.gray[100],
-                },
-              ].map((v, i) => (
-                <div
-                  key={v.title}
-                  className="group bg-white/90 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/70 hover:border-transparent hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300"
-                    style={{ backgroundColor: v.bg, color: v.color }}
-                  >
-                    <v.Icon size={28} />
-                  </div>
-                  <h4
-                    className="text-base font-black text-gray-900 mb-1.5 leading-tight"
-                    style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
-                  >
-                    {v.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">{v.sub}</p>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-
-          {/* Indicador scroll */}
+          {/* Indicador scroll · las 3 ventajas pasaron a sección propia
+              después del hero (mejor contraste + más espacio para visuals). */}
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-auto">
             <span>Conoce Ecuador con Going</span>
             <IconChevronDown size={16} />
+          </div>
+        </div>
+      </section>
+
+      {/* ══ VENTAJAS GoingApp — sección dedicada con visuals únicos ═════════
+         Feedback 29-may: las cards en el hero perdían contraste contra la
+         foto de fondo y los icons solos se veían planos. Ahora:
+           - Sección propia con fondo blanco sólido (contraste pleno)
+           - Cada card tiene su VISUAL ÚNICO arriba (no icon repetido):
+             * Conductoras → foto real de conductor Going
+             * Tracking → mini phone mockup con mapa SVG animado (pulse GPS)
+             * Pago → stack visual de métodos (Visa/Master/DeUna/transfer)
+           - Hover lift + scale del visual + borde brand
+      */}
+      <section className="bg-white py-16 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <FadeIn className="text-center mb-10">
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>
+              Lo que hace especial a Going
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl font-black text-gray-900 mt-2 leading-tight"
+              style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+            >
+              Tecnología que cuida tu viaje
+            </h2>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* CARD 1: Conductoras verificadas · foto real */}
+            <FadeIn delay={0.1}>
+              <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+                <div className="relative w-full h-48 overflow-hidden bg-gray-100">
+                  <img
+                    src="/images/Conductor%20Gong.jpg"
+                    alt="Conductor verificado Going"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                  />
+                  {/* badge verificado top-right */}
+                  <div
+                    className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black text-white shadow-md"
+                    style={{ backgroundColor: COLORS.brand.red }}
+                  >
+                    <IconShield size={12} />
+                    VERIFICADO
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3
+                    className="text-lg font-black text-gray-900 mb-2 leading-tight"
+                    style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+                  >
+                    Conductoras y conductores verificados
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Documentos, antecedentes y vehículo aprobados antes del primer viaje.
+                    Cada conductora y conductor con foto y calificación visible.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* CARD 2: Tracking en vivo · mockup tech SVG con GPS pulse */}
+            <FadeIn delay={0.2}>
+              <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+                {/* Mockup mapa con pin GPS animado + ruta dashed */}
+                <div
+                  className="relative w-full h-48 overflow-hidden"
+                  style={{
+                    background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1a2332 100%)`,
+                  }}
+                >
+                  {/* Grid pattern tech background */}
+                  <svg
+                    className="absolute inset-0 w-full h-full opacity-20"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <defs>
+                      <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                        <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#ffffff" strokeWidth="0.5" />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                  </svg>
+
+                  {/* Ruta SVG con dash animation + pin pulsante */}
+                  <svg
+                    viewBox="0 0 400 200"
+                    className="absolute inset-0 w-full h-full"
+                    aria-hidden="true"
+                  >
+                    {/* Path de ruta dashed (animation via CSS @keyframes en
+                       style global; fallback estático si no soportada) */}
+                    <path
+                      d="M 50 160 Q 120 80 200 110 T 350 50"
+                      fill="none"
+                      stroke={COLORS.brand.red}
+                      strokeWidth="3"
+                      strokeDasharray="8 6"
+                      strokeLinecap="round"
+                      opacity="0.9"
+                      style={{ animation: 'dashFlow 1.8s linear infinite' }}
+                    />
+                    {/* Inline keyframes para la animation del dash */}
+                    <style>{`
+                      @keyframes dashFlow {
+                        from { stroke-dashoffset: 0; }
+                        to { stroke-dashoffset: -28; }
+                      }
+                    `}</style>
+                    {/* Origen (verde) */}
+                    <circle cx="50" cy="160" r="6" fill="#4ade80" />
+                    <circle cx="50" cy="160" r="6" fill="#4ade80" opacity="0.4" className="animate-ping" />
+                    {/* Destino (rojo brand) */}
+                    <circle cx="350" cy="50" r="8" fill={COLORS.brand.red} />
+                    <circle cx="350" cy="50" r="14" fill={COLORS.brand.red} opacity="0.3" className="animate-pulse" />
+                    {/* Vehículo en movimiento (yellow) */}
+                    <g transform="translate(220, 95)">
+                      <circle r="10" fill={COLORS.brand.yellowDark} />
+                      <circle r="16" fill={COLORS.brand.yellowDark} opacity="0.35" className="animate-pulse" />
+                      <text x="0" y="4" textAnchor="middle" fontSize="11" fontWeight="900" fill="white">
+                        ●
+                      </text>
+                    </g>
+                  </svg>
+
+                  {/* Etiqueta "EN VIVO" */}
+                  <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black text-white bg-red-500 shadow-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    EN VIVO
+                  </div>
+
+                  {/* ETA mini-card bottom-right */}
+                  <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg">
+                    <div className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Llegando en</div>
+                    <div className="text-base font-black" style={{ color: COLORS.brand.red }}>
+                      4 min
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3
+                    className="text-lg font-black text-gray-900 mb-2 leading-tight"
+                    style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+                  >
+                    Tracking en vivo
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Mirá tu ruta y la del vehículo en tiempo real. Compartí el viaje
+                    con tus contactos de confianza con un toque.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* CARD 3: Múltiples formas de pago · stack de métodos */}
+            <FadeIn delay={0.3}>
+              <div className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+                {/* Visual con stack de payment methods */}
+                <div
+                  className="relative w-full h-48 overflow-hidden flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${COLORS.brand.redBg} 0%, ${COLORS.brand.yellowBg} 100%)`,
+                  }}
+                >
+                  {/* Decorative circles backdrop */}
+                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.4)' }} />
+                  <div className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.3)' }} />
+
+                  {/* Payment method chips en stack */}
+                  <div className="relative z-10 flex flex-col gap-2.5">
+                    {[
+                      { label: 'Visa', color: '#1a1f71' },
+                      { label: 'Mastercard', color: '#eb001b' },
+                      { label: 'DeUna', color: '#00a8e1' },
+                      { label: 'Transferencia', color: '#374151' },
+                    ].map((m, i) => (
+                      <div
+                        key={m.label}
+                        className="bg-white rounded-lg px-4 py-2 shadow-md flex items-center gap-2 transition-transform duration-300"
+                        style={{
+                          marginLeft: `${i * 14}px`,
+                          transform: `rotate(${(i - 1.5) * 2}deg)`,
+                        }}
+                      >
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }} />
+                        <span className="text-xs font-black text-gray-800">{m.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* "Y MÁS" badge top-right */}
+                  <div
+                    className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black text-white shadow-md"
+                    style={{ backgroundColor: COLORS.brand.black }}
+                  >
+                    <IconCard size={12} />
+                    Y MÁS
+                  </div>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3
+                    className="text-lg font-black text-gray-900 mb-2 leading-tight"
+                    style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
+                  >
+                    Múltiples formas de pago
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Tarjeta de crédito, débito, DeUna, transferencia bancaria.
+                    Pagás como te resulte más cómodo, sin efectivo a bordo.
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
           </div>
         </div>
       </section>
