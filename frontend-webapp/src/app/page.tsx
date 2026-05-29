@@ -329,15 +329,15 @@ export default function HomePage() {
           backgroundPosition: 'center 55%',
         }}
       >
-        {/* Overlay claro · más sutil que antes porque la foto ya tiene contraste
-            propio (cielo brillante + verdes vivos + asfalto oscuro). Top casi
-            transparente para que el cielo respire, abajo más opaco donde
-            descansan las cards y el resto del contenido. */}
+        {/* Overlay claro · reforzado en el top para que "Nos movemos contigo"
+            tenga contraste contra el cielo brillante de la foto. Reportado
+            29-may por feedback de UX: texto era ilegible sobre cielo claro.
+            Antes: top 0.18 → ahora 0.55. Bottom igual (cards descansan ahí). */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.55) 35%, rgba(255,255,255,0.92) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.72) 35%, rgba(255,255,255,0.95) 100%)',
           }}
         />
 
@@ -372,67 +372,94 @@ export default function HomePage() {
           <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
-              {/* CARD 1: Viaje Compartido */}
+              {/* CARD 1: Viaje Compartido — foto de pasajeros top + icon badge */}
               <Link
                 href="/ride?type=shared"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
+                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                  <IconSuv size={30} />
+                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+                  <img
+                    src="/images/pasajeros.JPG"
+                    alt="Pasajeros viajando en Going"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.red }}>
+                    <IconSuv size={26} />
+                  </div>
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                  Viaje Compartido
-                </h3>
-                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                  Viajes compartidos puerta a puerta entre ciudades del Ecuador.
-                  Pagas solo tu asiento.
-                </p>
-                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.red }}>
-                  Reservar
-                  <IconArrowRight size={16} />
-                </span>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                    Viaje Compartido
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                    Viajes compartidos puerta a puerta entre ciudades del Ecuador.
+                    Pagas solo tu asiento.
+                  </p>
+                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.red }}>
+                    Reservar
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
               </Link>
 
-              {/* CARD 2: Viaje Privado */}
+              {/* CARD 2: Viaje Privado — foto de SUV/Van + icon badge */}
               <Link
                 href="/ride?type=van"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
+                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
-                  <IconVan size={30} />
+                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+                  <img
+                    src="/images/Viaje%20privado.png"
+                    alt="Vehículo privado Going"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.yellowDark }}>
+                    <IconVan size={26} />
+                  </div>
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                  Viaje Privado
-                </h3>
-                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                  Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo,
-                  dentro o entre ciudades.
-                </p>
-                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.yellowDark }}>
-                  Cotizar
-                  <IconArrowRight size={16} />
-                </span>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                    Viaje Privado
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                    Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo,
+                    dentro o entre ciudades.
+                  </p>
+                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all" style={{ color: COLORS.brand.yellowDark }}>
+                    Cotizar
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
               </Link>
 
-              {/* CARD 3: Envíos */}
+              {/* CARD 3: Envíos — foto de entrega puerta a puerta + icon badge */}
               <Link
                 href="/envios/cotizar"
-                className="group bg-white rounded-3xl p-6 flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
+                className="group bg-white rounded-3xl flex flex-col text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition-all relative overflow-hidden border border-gray-100"
               >
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: COLORS.gray[100], color: COLORS.brand.black }}>
-                  <IconPackage size={30} />
+                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+                  <img
+                    src="/images/Puerta%20a%20puerta%20entre%20ciudades.png"
+                    alt="Envíos puerta a puerta Going"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md backdrop-blur-sm" style={{ backgroundColor: 'rgba(255,255,255,0.95)', color: COLORS.brand.black }}>
+                    <IconPackage size={26} />
+                  </div>
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                  Envíos
-                </h3>
-                <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
-                  Sobres, documentos o paquetes puerta a puerta — dentro de la
-                  ciudad o entre ciudades.
-                </p>
-                <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all text-gray-900">
-                  Cotizar envío
-                  <IconArrowRight size={16} />
-                </span>
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-xl font-black text-gray-900 mb-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
+                    Envíos
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-5 flex-1 leading-relaxed">
+                    Sobres, documentos o paquetes puerta a puerta — dentro de la
+                    ciudad o entre ciudades.
+                  </p>
+                  <span className="inline-flex items-center gap-2 font-bold text-sm group-hover:gap-3 transition-all text-gray-900">
+                    Cotizar envío
+                    <IconArrowRight size={16} />
+                  </span>
+                </div>
               </Link>
 
             </div>
