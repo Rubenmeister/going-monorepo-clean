@@ -11,9 +11,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { DriverMainStackParamList } from '../../navigation/DriverMainNavigator';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../../utils/constants';
+
+type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
 
 const GOING_BLUE   = '#FF4C41';
 const GOING_YELLOW = '#FFD253';
@@ -49,6 +54,7 @@ const FAQ: FAQItem[] = [
 ];
 
 export function SupportScreen() {
+  const navigation = useNavigation<Nav>();
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [subject, setSubject] = useState('');
@@ -87,6 +93,26 @@ export function SupportScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* ── Banner Asistente Going (voz IA + handoff a humano) ──
+          Acceso prioritario al asistente de voz Uyari. Llamada PSTN al
+          backend voice-call-service deployado en Cloud Run. */}
+      <TouchableOpacity
+        style={styles.assistantBanner}
+        onPress={() => navigation.navigate('Assistant')}
+        activeOpacity={0.85}
+      >
+        <View style={styles.assistantBannerIcon}>
+          <Ionicons name="mic" size={22} color={GOING_YELLOW} />
+        </View>
+        <View style={styles.assistantBannerBody}>
+          <Text style={styles.assistantBannerTitle}>Asistente Going</Text>
+          <Text style={styles.assistantBannerSub}>
+            Llamá y hablá con nuestro AI o un operador humano · 24/7
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#fff" />
+      </TouchableOpacity>
+
       {/* Quick contact */}
       <View style={styles.contactRow}>
         <TouchableOpacity style={styles.contactBtn} onPress={handleCall}>
@@ -169,6 +195,42 @@ export function SupportScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB', paddingHorizontal: 16, paddingTop: 16 },
+
+  // Assistant banner (top priority)
+  assistantBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: GOING_BLUE,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    shadowColor: GOING_BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  assistantBannerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  assistantBannerBody: { flex: 1 },
+  assistantBannerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  assistantBannerSub: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 15,
+  },
 
   // Quick contact
   contactRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
