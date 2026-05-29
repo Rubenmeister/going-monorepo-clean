@@ -8,6 +8,7 @@ import { VoiceCommandController } from './api/voice-command.controller';
 import { HealthController } from './api/health.controller';
 // Voice flow
 import { VoiceCallService } from './voice/voice-call.service';
+import { VoiceCommandService } from './voice/voice-command.service';
 import { CerebroPublisherService } from './voice/cerebro-publisher.service';
 import { RealtimeBridgeService } from './voice/realtime-bridge.service';
 import { HandoffNotifierService } from './voice/handoff-notifier.service';
@@ -52,6 +53,10 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
   ],
   providers: [
     VoiceCallService,
+    // VoiceCommandService — backing store de los comandos ops (blocklist en
+    // memoria, prompt override que delega al bridge, force handoff). Depende
+    // de RealtimeBridgeService.
+    VoiceCommandService,
     CerebroPublisherService,
     VoiceCallRepository,
     // OpenAI Realtime adapter + bridge.
