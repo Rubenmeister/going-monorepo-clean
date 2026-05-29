@@ -486,8 +486,8 @@ export default function HomePage() {
               />
               <ServiceCard
                 href="/envios/cotizar"
-                image="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=85&auto=format&fit=crop"
-                alt="Entrega de paquetes Going"
+                image="/images/envio.png"
+                alt="Mensajero entregando paquete a domicilio"
                 title="Envíos"
                 description="Sobres, documentos o paquetes puerta a puerta — dentro de la ciudad o entre ciudades."
                 cta="Cotizar envío"
