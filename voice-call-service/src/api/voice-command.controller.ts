@@ -2,11 +2,15 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Logger,
   Post,
+  Query,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { VoiceCommandService } from '../voice/voice-command.service';
 
 /**
@@ -38,8 +42,14 @@ import { VoiceCommandService } from '../voice/voice-command.service';
 @Controller('voice')
 export class VoiceCommandController {
   private readonly logger = new Logger(VoiceCommandController.name);
+  private readonly internalToken: string;
 
-  constructor(private readonly commands: VoiceCommandService) {}
+  constructor(
+    private readonly commands: VoiceCommandService,
+    private readonly config: ConfigService,
+  ) {
+    this.internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN') ?? '';
+  }
 
   @Post('command')
   @HttpCode(HttpStatus.OK)
@@ -113,6 +123,65 @@ export class VoiceCommandController {
     return {
       activeBlocks:           this.commands.listActiveBlocks(),
       lastPromptOverrideMeta: this.commands.getLastPromptOverrideMeta(),
+    };
+  }
+
+  /**
+   * GET /voice/metrics/active-blocks?from=+593...
+   *
+   * Endpoint para el ActionVerifier del orchestrator. Después de despachar
+   * `block_caller_temporarily`, el verifier consulta acá para confirmar que
+   * el bloqueo efectivamente quedó activo. Cierra el loop:
+   *   anomaly → mycortex → orchestrator → /voice/command → /voice/metrics → verify
+   *
+   * Auth: requiere header `Authorization: Bearer <INTERNAL_SERVICE_TOKEN>`.
+   * El token es compartido entre orchestrator y todos los agents que
+   * exponen métricas de verificación (mismo patrón que customer-support).
+   *
+   * Response shape (estable, no romper sin coordinar con orchestrator):
+   *   { from, count: 0|1, blockedUntil?, asOf }
+   *
+   * `count` siempre es 0 o 1 (un caller solo puede estar en blocklist
+   * una vez — re-bloquear extiende el TTL al máximo, no duplica entrada).
+   * El verifier mide `direction: 'increase', minDelta: 1` así que con 1
+   * post-acción ya cuenta como convergido (pre-acción siempre es 0).
+   *
+   * NO devolver toda la lista por seguridad — solo el query target.
+   */
+  @Get('metrics/active-blocks')
+  activeBlocksFor(
+    @Query('from') from: string,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    // Auth check inline. Mismo patrón que customer-support pero sin guard
+    // dedicado (voice-call-service no tiene auth modules todavía — esto
+    // se factoriza si agregamos un segundo endpoint protegido).
+    if (this.internalToken) {
+      const expected = `Bearer ${this.internalToken}`;
+      if (authHeader !== expected) {
+        this.logger.warn(`[metrics/active-blocks] auth rechazado from=${from?.slice(0, 6)}...`);
+        throw new UnauthorizedException('Token inválido o ausente');
+      }
+    } else {
+      // En dev sin token configurado, permitimos pero warn — igual que
+      // hacemos con TWILIO_AUTH_TOKEN. En prod siempre hay token seteado.
+      this.logger.warn('[metrics/active-blocks] INTERNAL_SERVICE_TOKEN no configurado — auth desactivada');
+    }
+
+    if (!from || !from.startsWith('+')) {
+      return { from: from ?? '', count: 0, asOf: new Date().toISOString(), error: 'from debe ser E.164' };
+    }
+
+    // listActiveBlocks() ya hace cleanup perezoso de los expirados,
+    // así que el resultado es siempre el estado actual real.
+    const all = this.commands.listActiveBlocks();
+    const match = all.find((b) => b.from === from);
+
+    return {
+      from,
+      count:        match ? 1 : 0,
+      blockedUntil: match?.blockedUntil,
+      asOf:         new Date().toISOString(),
     };
   }
 }

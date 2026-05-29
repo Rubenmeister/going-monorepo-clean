@@ -203,14 +203,23 @@ export class DispatcherService {
       let verificationId: string | null = null;
       if (this.verifier) {
         try {
+          // verifierContext: contexto opcional que la métrica granular necesita.
+          // Para verifier global (pending_red_handoffs) → undefined.
+          // Para verifier por target (block_voice_caller) → { target: intent.target }.
+          // El verifier decide si lo usa o lo ignora según el verifierKey.
+          const verifierContext = intent.target
+            ? { target: intent.target }
+            : undefined;
           const snap = await this.verifier.snapshotBefore({
             decisionId,
             entry: allowEntry,
+            verifierContext,
           });
           verificationId = snap.verificationId;
           this.logger.log(
             `[verify] snapshot pre decision=${decisionId.slice(0, 8)} ` +
-              `metric=${allowEntry.verify.verifierKey} before=${snap.metricBefore}`,
+              `metric=${allowEntry.verify.verifierKey} before=${snap.metricBefore}` +
+              (verifierContext ? ` ctx=${JSON.stringify(verifierContext)}` : ''),
           );
         } catch (e) {
           // Si el snapshot falla (Mongo down, métrica no implementada),

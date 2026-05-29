@@ -66,6 +66,21 @@ export class ActionVerification {
   /** Si onVerifyFail='rollback' y se ejecutó, el decisionId del rollback. */
   @Prop()
   rollbackDecisionId?: string;
+
+  /**
+   * Contexto opcional del verifier — argumentos extraídos del intent que
+   * el measureMetric necesita para consultar la métrica específica.
+   *
+   * Ejemplos:
+   *  · `block_voice_caller`: { target: '+593984037949' } para que el
+   *    verifier consulte `/voice/metrics/active-blocks?from=...`
+   *  · `cleanup_stale_customer_handoffs`: undefined (la métrica es global)
+   *
+   * Mongoose 'Mixed' permite cualquier shape — el verifier hace el cast
+   * inseguro contra context.target / context.X según el case.
+   */
+  @Prop({ type: Object })
+  verifierContext?: Record<string, unknown>;
 }
 
 export type ActionVerificationDocument = HydratedDocument<ActionVerification>;

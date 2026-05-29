@@ -40,8 +40,18 @@ export class ActionVerifierService {
   async snapshotBefore(args: {
     decisionId: string;
     entry: AutonomousEntry;
+    /**
+     * Contexto opcional del verifier — args del intent que la métrica
+     * necesita para consultar el target específico (ej. `{ target: '+593...' }`
+     * para block_voice_caller). Si la métrica es global (ej. pending_red_handoffs)
+     * se omite.
+     */
+    verifierContext?: Record<string, unknown>;
   }): Promise<{ verificationId: string; metricBefore: number }> {
-    const metricBefore = await this.measureMetric(args.entry.verify.verifierKey);
+    const metricBefore = await this.measureMetric(
+      args.entry.verify.verifierKey,
+      args.verifierContext,
+    );
     const doc = await this.verifModel.create({
       decisionId: args.decisionId,
       intentType: args.entry.intentType,
@@ -52,6 +62,7 @@ export class ActionVerifierService {
       metricBeforeAt: new Date(),
       status: 'pending_verification',
       onVerifyFail: args.entry.onVerifyFail,
+      verifierContext: args.verifierContext,
     });
     return { verificationId: doc.id.toString(), metricBefore };
   }
@@ -91,12 +102,19 @@ export class ActionVerifierService {
     verificationId: string,
     entry: AutonomousEntry,
   ): Promise<void> {
-    const metricAfter = await this.measureMetric(entry.verify.verifierKey);
     const doc = await this.verifModel.findById(verificationId);
     if (!doc) {
       this.logger.warn(`[verify] doc ${verificationId.slice(0, 8)} no encontrado`);
       return;
     }
+
+    // Re-leemos el verifierContext desde el doc para asegurar consistencia
+    // (snapshotBefore lo persistió, runVerification lo lee). Esto blinda el
+    // caso de restart entre dispatch y verify — el contexto sobrevive en Mongo.
+    const metricAfter = await this.measureMetric(
+      entry.verify.verifierKey,
+      doc.verifierContext as Record<string, unknown> | undefined,
+    );
 
     const delta = metricAfter - doc.metricBefore;
     const converged =
@@ -151,10 +169,27 @@ export class ActionVerifierService {
    * agente reporte correctamente "hice cleanup". El cerebro mide con
    * sus propios ojos contra el endpoint admin.
    */
-  private async measureMetric(key: string): Promise<number> {
+  private async measureMetric(
+    key: string,
+    context?: Record<string, unknown>,
+  ): Promise<number> {
     switch (key) {
       case 'pending_red_handoffs':
+        // Métrica global, no requiere context.
         return this.fetchCustomerSupportMetric('pending-red-handoffs', 24);
+
+      case 'active_voice_block_for_caller': {
+        // Métrica granular: cuántos blocks activos hay para el caller del intent.
+        // context.target = '+593...' (E.164). Si no viene, no podemos medir.
+        const target = typeof context?.target === 'string' ? context.target : null;
+        if (!target) {
+          this.logger.warn(
+            `[verify] active_voice_block_for_caller sin context.target — skipping`,
+          );
+          return -1;
+        }
+        return this.fetchVoiceMetric('active-blocks', { from: target });
+      }
 
       default:
         this.logger.warn(`[verify] verifierKey desconocido: ${key}`);
@@ -211,6 +246,69 @@ export class ActionVerifierService {
     } catch (e) {
       this.logger.warn(
         `[verify] customer-support metric fallo: ${(e as Error).message}`,
+      );
+      return -1;
+    }
+  }
+
+  /**
+   * Fetch a voice-call-service `/voice/metrics/:metricPath?<params>`.
+   *
+   * Auth: header `Authorization: Bearer <INTERNAL_SERVICE_TOKEN>` (mismo
+   * token compartido entre orchestrator y los agents). Distinto del
+   * `x-internal-token` que usa customer-support — voice-call-service
+   * implementa el patrón Bearer estándar.
+   *
+   * Convención de response: `{ count: number, ... }`. El verifier solo
+   * lee `count` y descarta el resto. Si la response no tiene `count`,
+   * lo trata como -1 (no medible).
+   *
+   * Timeout 5s, fire-and-forget si falla.
+   */
+  private async fetchVoiceMetric(
+    metricPath: string,
+    params: Record<string, string>,
+  ): Promise<number> {
+    const base = this.config.get<string>('VOICE_CALL_SERVICE_URL');
+    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+    if (!base) {
+      this.logger.warn(
+        '[verify] VOICE_CALL_SERVICE_URL no configurado — métrica no medible',
+      );
+      return -1;
+    }
+    if (!token) {
+      this.logger.warn(
+        '[verify] INTERNAL_SERVICE_TOKEN no configurado — sin auth, no medimos',
+      );
+      return -1;
+    }
+    const qs = new URLSearchParams(params).toString();
+    const url = `${base.replace(/\/$/, '')}/voice/metrics/${metricPath}?${qs}`;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) {
+        this.logger.warn(
+          `[verify] voice metric HTTP ${res.status} en ${url}`,
+        );
+        return -1;
+      }
+      const data = (await res.json()) as { count?: number };
+      if (typeof data.count !== 'number') {
+        this.logger.warn(`[verify] voice response sin count: ${JSON.stringify(data).slice(0, 80)}`);
+        return -1;
+      }
+      return data.count;
+    } catch (e) {
+      this.logger.warn(
+        `[verify] voice metric fallo: ${(e as Error).message}`,
       );
       return -1;
     }
