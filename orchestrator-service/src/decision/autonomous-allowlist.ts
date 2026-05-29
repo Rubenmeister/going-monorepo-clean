@@ -101,6 +101,38 @@ export const AUTONOMOUS_ALLOWLIST: AutonomousEntry[] = [
       'Primera acción autónoma. Caso de uso: founder fuera de horario + 13 RED handoffs >24h ' +
       'esperando. MyCortex emite con urgency 0.95. La acción es soft (marca, no borra).',
   },
+  {
+    // Caso de uso: voice-call-service detecta 5+ calls del mismo número en
+    // 15min y publica `suspicious_call_pattern` al cerebro. MyCortex razona
+    // sobre el patrón (volumen, hora del día, sentiment del transcript) y
+    // emite Intention `block_voice_caller` con urgency 0.7-0.95 según
+    // severidad. El orchestrator ejecuta block_caller_temporarily contra
+    // voice-call-service que mete el número a blocklist in-memory por TTL.
+    // El verifier consulta GET /voice/metrics/active-blocks y confirma que
+    // el caller quedó bloqueado.
+    //
+    // Reversible por TTL: el block dura 60min máx (configurable per-call).
+    // Si el orchestrator se equivoca, el block expira solo. Blast radius
+    // mínimo: un solo número bloqueado por 1 hora.
+    intentType: 'block_voice_caller',
+    minUrgency: 0.7,
+    verify: {
+      verifierKey: 'active_voice_block_for_caller',
+      description: 'cantidad de active blocks para el caller específico (esperamos 1 post-acción)',
+      direction: 'increase',
+      waitMs: 10_000, // 10s — voice-call-service responde sub-segundo, este margin cubre red latency
+      minDelta: 1,
+    },
+    onVerifyFail: 'alert_only',
+    // No rollback: blocklist es in-memory. Si el verifier falla, lo más
+    // probable es que la instancia voice-call-service reinició entre el
+    // dispatch y la verify (cold start o redeploy). Alerta y deja que
+    // el cerebro lo intente en el próximo ciclo.
+    notes:
+      'Segunda acción autónoma. Caso de uso: spammer marca 8 veces en 12 min, mycortex emite ' +
+      'urgency 0.85. El TTL del block es 60min — si nos equivocamos, blast radius es 1h de un ' +
+      'caller. Idempotente: re-bloquear extiende el TTL al máximo.',
+  },
 ];
 
 /**
