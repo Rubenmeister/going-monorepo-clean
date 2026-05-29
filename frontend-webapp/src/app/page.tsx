@@ -419,16 +419,17 @@ export default function HomePage() {
           backgroundPosition: 'center 55%',
         }}
       >
-        {/* Overlay claro · v4 con balance foto/legibilidad. v3 era 0.78 top
-            que tapaba demasiado la foto. v4 baja el top a 0.42 dejando ver el
-            paisaje, y compensa la legibilidad del texto con text-shadow en
-            h1/p (definido más abajo en el headline). El bottom queda alto
-            (0.95) para que las cards descansen sobre fondo casi blanco. */}
+        {/* Overlay claro · v5 minimalista. Feedback: la foto se apreciaba
+            poco con v4 (top 0.42). v5 deja la parte superior casi sin
+            overlay (0.12 → solo un velo) para que el paisaje del fondo se
+            vea pleno. La legibilidad del texto ya está garantizada por el
+            text-shadow blanco fuerte en h1/p. El medio sube gradualmente
+            para que las cards descansen sobre fondo casi sólido al final. */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.72) 45%, rgba(255,255,255,0.97) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.42) 50%, rgba(255,255,255,0.97) 100%)',
           }}
         />
 
