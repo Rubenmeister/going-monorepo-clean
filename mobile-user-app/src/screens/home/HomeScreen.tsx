@@ -294,8 +294,27 @@ export default function HomeScreen() {
         )}
 
         {/* Espacio inferior para safe area / tab bar */}
-        <View style={{ height: 32 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* ── FAB Asistente Going ─────────────────────────────────
+          Botón flotante para abrir el asistente de voz. Esquina
+          inferior derecha, sobre el contenido scrolleable. Usa el
+          brandRed Going como acento (es la única acción en el screen
+          que es brand-pop, separada de las cards de productos). */}
+      <TouchableOpacity
+        style={styles.assistantFab}
+        onPress={() => {
+          hapticLight();
+          navigation.navigate('Assistant');
+        }}
+        activeOpacity={0.85}
+        accessibilityLabel="Hablar con el Asistente Going"
+        accessibilityRole="button"
+      >
+        <Ionicons name="mic" size={24} color={tokens.textOnRed} />
+        <Text style={styles.assistantFabText}>Hablar con Going</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -304,6 +323,32 @@ export default function HomeScreen() {
 function makeStyles(t: ThemeTokens, isDark: boolean) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: t.bg },
+
+    // ── FAB Asistente Going ────────────────────────────────
+    assistantFab: {
+      position: 'absolute',
+      bottom: 24,
+      right: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: t.brandRed,
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+      borderRadius: 32,
+      shadowColor: t.brandRed,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.45,
+      shadowRadius: 12,
+      elevation: 10,
+    },
+    assistantFabText: {
+      color: t.textOnRed,
+      fontSize: 14,
+      fontWeight: '800',
+      letterSpacing: -0.2,
+    },
+
     scroll: {
       paddingTop: 48,
       paddingHorizontal: 20,
