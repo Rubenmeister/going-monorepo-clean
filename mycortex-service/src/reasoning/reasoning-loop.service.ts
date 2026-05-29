@@ -8,6 +8,7 @@ import { PromptBuilderService } from './prompt-builder.service';
 import { IntentionsParserService } from './intentions-parser.service';
 import { TelegramReporterService } from './telegram-reporter.service';
 import { CortexConfigService } from './cortex-config.service';
+import { AnomalyRulesService } from './anomaly-rules.service';
 import { computeCycleCostUsd } from './anthropic-pricing';
 import { IntentionRepository } from '../infrastructure/persistence/intention.repository';
 import { MemoryRollupRepository } from '../infrastructure/persistence/memory-rollup.repository';
@@ -40,6 +41,7 @@ export class ReasoningLoopService implements OnModuleInit {
     private readonly cortexConfig:  CortexConfigService,
     private readonly repo:          IntentionRepository,
     private readonly rollups:       MemoryRollupRepository,
+    private readonly anomalyRules:  AnomalyRulesService,
   ) {}
 
   onModuleInit() {
@@ -141,6 +143,19 @@ export class ReasoningLoopService implements OnModuleInit {
       return { cycleId, intentionsCount: 0, reasoning: '', error: err };
     }
 
+    // 2b. **Rule-based translation determinística**.
+    //     Corre ANTES del LLM y produce Intentions garantizadas para
+    //     anomalies que tienen una regla explícita (ej. suspicious_call_pattern
+    //     → block_voice_caller). El LLM corre en paralelo y puede generar
+    //     Intentions adicionales sobre las mismas anomalies desde otro ángulo.
+    //     Si las reglas fallan, NO interrumpimos — el LLM sigue activo.
+    let ruleBasedIntentions: ReturnType<typeof this.anomalyRules.translate> = [];
+    try {
+      ruleBasedIntentions = this.anomalyRules.translate(snapshot.activeAnomalies ?? []);
+    } catch (e) {
+      this.logger.warn(`AnomalyRules translate fallo: ${(e as Error).message}`);
+    }
+
     // 3. Memoria reciente (últimas 24h, top 20 ordenadas)
     const recentIntentions = await this.repo.recent(20).catch(() => []);
 
@@ -171,10 +186,18 @@ export class ReasoningLoopService implements OnModuleInit {
     }
 
     // 5. Parsear, persistir, reportar
-    const { reasoning, intentions } = this.parser.parse(modelResponse.text);
+    const { reasoning, intentions: llmIntentions } = this.parser.parse(modelResponse.text);
     this.logger.log(
-      `Modelo propuso ${intentions.length} intención(es) (reasoning len=${reasoning.length})`,
+      `Modelo propuso ${llmIntentions.length} intención(es) LLM ` +
+      `+ ${ruleBasedIntentions.length} determinística(s) ` +
+      `(reasoning len=${reasoning.length})`,
     );
+
+    // Mergeo: las rule-based VAN PRIMERO en el array para que tengan
+    // prioridad de procesamiento por el orchestrator (mismo cycleId, mismo
+    // save call). Si el LLM accidentalmente emite la misma type+target que
+    // una regla, el orchestrator es idempotente — no rompe nada.
+    const intentions = [...ruleBasedIntentions, ...llmIntentions];
 
     // Costo real del ciclo (denormalizado en cada intention del cycleId).
     const cycleCostUsd = computeCycleCostUsd({

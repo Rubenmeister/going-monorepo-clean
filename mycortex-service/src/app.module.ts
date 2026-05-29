@@ -29,6 +29,7 @@ import { TelegramReporterService } from './reasoning/telegram-reporter.service';
 import { CortexConfigService } from './reasoning/cortex-config.service';
 import { ReasoningLoopService } from './reasoning/reasoning-loop.service';
 import { MemoryRollupService } from './reasoning/memory-rollup.service';
+import { AnomalyRulesService } from './reasoning/anomaly-rules.service';
 
 @Module({
   imports: [
@@ -70,6 +71,11 @@ import { MemoryRollupService } from './reasoning/memory-rollup.service';
     TelegramReporterService,
     ReasoningLoopService,
     MemoryRollupService,
+    // AnomalyRulesService — Capa 1 del cerebro proactivo. Traduce
+    // determinísticamente anomalies a Intentions (sin LLM) para garantizar
+    // que patrones críticos como spammer voice se procesen aunque Claude
+    // no los detecte en su prompt.
+    AnomalyRulesService,
   ],
 })
 export class AppModule {}
