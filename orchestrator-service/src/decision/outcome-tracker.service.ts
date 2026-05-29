@@ -6,6 +6,10 @@ import {
   ActionVerification,
   ActionVerificationDocument,
 } from '../infrastructure/schemas/action-verification.schema';
+import {
+  OutcomeDailyStats,
+  OutcomeDailyStatsDocument,
+} from '../infrastructure/schemas/outcome-daily-stats.schema';
 
 /**
  * OutcomeTrackerService — Capa 4 mini del cerebro autónomo.
@@ -39,6 +43,8 @@ export class OutcomeTrackerService {
   constructor(
     @InjectModel(ActionVerification.name)
     private readonly verifModel: Model<ActionVerificationDocument>,
+    @InjectModel(OutcomeDailyStats.name)
+    private readonly statsModel: Model<OutcomeDailyStatsDocument>,
   ) {}
 
   /**
@@ -52,9 +58,62 @@ export class OutcomeTrackerService {
     try {
       const stats = await this.computeStats(24);
       this.logStructured(stats);
+      // Persistir agregados — base para drift detection (Capa 4 media).
+      await this.persistDailyStats(stats);
     } catch (e) {
       this.logger.error(`[outcome-tracker] daily report fallo: ${(e as Error).message}`);
     }
+  }
+
+  /**
+   * Upserts un row por verifierKey en `outcome_daily_stats`. Idempotente:
+   * si el cron corre dos veces el mismo día, sobreescribe el row existente.
+   * Usa la fecha de cierre del window (= hoy si window=24h).
+   */
+  async persistDailyStats(stats: OutcomeStatsReport): Promise<number> {
+    const dateStr = new Date(stats.window.until).toISOString().slice(0, 10); // YYYY-MM-DD
+    let upserted = 0;
+    for (const [verifierKey, s] of Object.entries(stats.successByKey)) {
+      // Calcular pending/skipped sumando per-key. La función computeStats no
+      // los expone separados por key — los re-derivamos rápido aquí.
+      await this.statsModel.updateOne(
+        { date: dateStr, verifierKey },
+        {
+          $set: {
+            date:         dateStr,
+            verifierKey,
+            total:        s.total,
+            converged:    s.converged,
+            failed:       s.failed,
+            pending:      0, // OutcomeStatsReport no lo separa per-key actualmente
+            skipped:      0,
+            successRate:  s.successRate,
+            windowHours:  stats.window.hoursBack,
+          },
+        },
+        { upsert: true },
+      );
+      upserted++;
+    }
+    if (upserted > 0) {
+      this.logger.log(`[outcome-tracker] persisted ${upserted} daily stats for ${dateStr}`);
+    }
+    return upserted;
+  }
+
+  /**
+   * Retorna el histórico de outcome_daily_stats para los últimos `days` días.
+   * Útil para dashboards de tendencias y para el DriftDetectorService.
+   * Ordenado desc por date + asc por verifierKey.
+   */
+  async getHistory(days: number): Promise<OutcomeDailyStatsDocument[]> {
+    const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const sinceStr = sinceDate.toISOString().slice(0, 10);
+    return this.statsModel
+      .find({ date: { $gte: sinceStr } })
+      .sort({ date: -1, verifierKey: 1 })
+      .lean()
+      .exec() as unknown as OutcomeDailyStatsDocument[];
   }
 
   /**
