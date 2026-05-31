@@ -349,6 +349,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   };
 
   const today         = new Date().toISOString().split('T')[0];
+  const tomorrow      = new Date(Date.now() + 86400000).toISOString().split('T')[0];
   const maxPax        = mode === 'compartido' ? 3 : SIMPLE_VEHICLES[simpleVehicle].maxPax;
   const hasRoute      = !!(pickupLocation && dropoffLocation);
   const hasValidRoute = hasRoute && pickupLocation!.lat !== 0 && dropoffLocation!.lat !== 0;
@@ -573,19 +574,60 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1.5">Fecha</label>
-                  <input type="date" min={today} value={scheduledDate}
-                    onChange={e => {
-                      // Auto-clamp: si el usuario tipea una fecha pasada (común
-                      // si el browser auto-completa o el year defaultea a algo
-                      // viejo), saltamos a hoy en lugar de quedar con un valor
-                      // inválido que dispara el tooltip nativo "El valor debe
-                      // ser igual o posterior a <today>" y bloquea el submit.
-                      const raw = e.target.value;
-                      const next = raw && raw < today ? today : raw;
-                      setScheduledDate(next);
-                      setIsScheduled(!!next && !!scheduledTime);
+                  {/* Atajos rápidos: evitan que el pasajero tenga que tipear
+                      dd/mm/aaaa para los casos más comunes (hoy / mañana). */}
+                  <div className="flex gap-1.5 mb-2">
+                    {([
+                      { label: 'Hoy', value: today },
+                      { label: 'Mañana', value: tomorrow },
+                    ] as const).map(opt => {
+                      const isActive = scheduledDate === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setScheduledDate(opt.value);
+                            setIsScheduled(!!scheduledTime);
+                          }}
+                          className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            isActive
+                              ? 'bg-[#0033A0] text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Calendario gráfico: el input completo abre el datepicker
+                      nativo al hacer clic (no solo el iconito), y el ícono +
+                      cursor de mano dejan claro que es clickeable. */}
+                  <button
+                    type="button"
+                    onClick={e => {
+                      const input = e.currentTarget.querySelector('input');
+                      input?.showPicker?.();
+                      input?.focus();
                     }}
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
+                    className="relative w-full flex items-center px-3 py-2.5 rounded-xl border border-gray-200 hover:border-[#0033A0] focus-within:ring-2 focus-within:ring-[#0033A0] bg-white cursor-pointer transition-colors text-left"
+                  >
+                    <span className="text-[#0033A0] mr-2 shrink-0"><IcoCalendar /></span>
+                    <input type="date" min={today} value={scheduledDate}
+                      onChange={e => {
+                        // Auto-clamp: si el usuario tipea una fecha pasada (común
+                        // si el browser auto-completa o el year defaultea a algo
+                        // viejo), saltamos a hoy en lugar de quedar con un valor
+                        // inválido que dispara el tooltip nativo "El valor debe
+                        // ser igual o posterior a <today>" y bloquea el submit.
+                        const raw = e.target.value;
+                        const next = raw && raw < today ? today : raw;
+                        setScheduledDate(next);
+                        setIsScheduled(!!next && !!scheduledTime);
+                      }}
+                      className="flex-1 min-w-0 bg-transparent focus:outline-none text-sm text-gray-800 cursor-pointer" />
+                  </button>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1.5">Hora</label>
