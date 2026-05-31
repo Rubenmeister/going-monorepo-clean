@@ -10,6 +10,7 @@ export interface Location {
 }
 
 export type RideStatus =
+  | 'reserved'   // viaje programado: anotado para fecha/hora futura, aún no busca conductor
   | 'pending'
   | 'accepted'
   | 'in_progress'
@@ -37,6 +38,8 @@ export interface Ride {
   duration: number;
   status: RideStatus;
   createdAt: Date;
+  /** Fecha/hora programada para viajes reservados (status='reserved'). */
+  scheduledAt?: Date;
   completedAt?: Date;
   driverLocation?: Location;
   driverInfo?: DriverInfo;
@@ -186,6 +189,7 @@ export function availableVehiclesForPax(pax: number): VehicleType[] {
 }
 
 export const RIDE_STATUS_LABELS: Record<RideStatus, string> = {
+  reserved:    'Reservado',
   pending:     'Buscando conductor',
   accepted:    'Conductor asignado',
   in_progress: 'Viaje en curso',

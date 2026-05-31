@@ -22,7 +22,9 @@ export interface CreateRideRequest {
   passengers:    number;
   passengerId:   string;
   scheduledAt?:  string;
-  transportMode: 'privado' | 'compartido';
+  transportMode: 'ciudad' | 'privado' | 'compartido';
+  /** Precio garantizado fijado al reservar (solo viajes programados). */
+  lockedFare?:   number;
 }
 
 class RideService {
@@ -52,8 +54,13 @@ class RideService {
           dropoffLongitude: req.dropoff.lon,
           serviceType:      `${req.rideType}_${req.serviceTier}`,
           passengers:       req.passengers,
-          scheduledAt:      req.scheduledAt,
+          // 'ciudad' es inmediato → nunca mandamos scheduledAt aunque por
+          // alguna razón viniera (defensa en profundidad).
+          scheduledAt:      req.transportMode === 'ciudad' ? undefined : req.scheduledAt,
+          // Backend solo distingue shared/private; 'ciudad' viaja como private.
           mode:             req.transportMode === 'compartido' ? 'shared' : 'private',
+          // Precio garantizado para reservas (el backend lo preserva).
+          lockedFare:       req.lockedFare,
         }),
       });
     } catch (err) {
@@ -80,16 +87,21 @@ class RideService {
     }
 
     const data = await response.json();
+    // El backend devuelve status='scheduled' para reservas (viaje a futuro
+    // que aún no busca conductor). En el front lo representamos como 'reserved'.
+    const status = data.status === 'scheduled' ? 'reserved' : (data.status || 'pending');
     return {
       tripId:        data.rideId || data.tripId || `trip-${Date.now()}`,
       passengerId:   req.passengerId,
       pickup:        req.pickup,
       dropoff:       req.dropoff,
-      estimatedFare: data.fare?.estimatedTotal ?? estimatedFare,
+      // En reservas el precio mostrado es el fijado (lockedFare); si no, el estimado.
+      estimatedFare: data.lockedFare ?? data.fare?.estimatedTotal ?? estimatedFare,
       distance,
       duration,
-      status:        data.status || 'pending',
+      status,
       createdAt:     new Date(data.requestedAt || Date.now()),
+      scheduledAt:   req.scheduledAt ? new Date(req.scheduledAt) : undefined,
       passengers:    req.passengers,
       vehicleType:   req.rideType,
       transportMode: req.transportMode,

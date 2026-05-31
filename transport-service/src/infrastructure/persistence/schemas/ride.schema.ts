@@ -30,6 +30,29 @@ export class RideModelSchema {
   @Prop() modalidad: string;            // compartido | privado
   @Prop() scheduledAt: Date;
 
+  // ── Reserva programada ────────────────────────────────────────────────────
+  // Un viaje con scheduledAt futuro entra como status='scheduled': NO busca
+  // conductor hasta que el cron lo "despacha" MATCH_LEAD_TIME_MINUTES antes.
+  /**
+   * Precio garantizado fijado al reservar. Cuando el cron despacha el viaje,
+   * este valor se respeta tal cual aunque las condiciones de la hora real
+   * (hora pico, etc.) den otro precio. null para viajes inmediatos.
+   */
+  @Prop() lockedFare: number;
+  /**
+   * Marca de idempotencia: instante en que el cron disparó el matching de
+   * este viaje programado. Mientras sea null el viaje sigue "en agenda".
+   * Evita doble-dispatch si el cron corre en varios pods.
+   */
+  @Prop() matchDispatchedAt: Date;
+  /**
+   * Instante en que se abrió el canal conductor↔pasajero. El canal vive desde
+   * aquí hasta CHANNEL_CLOSE_AFTER_MINUTES después de completedAt.
+   */
+  @Prop() channelOpenedAt: Date;
+  /** Instante en que el canal se cerró (cron de limpieza post-viaje). */
+  @Prop() channelClosedAt: Date;
+
   // ── Identidad y tokens ────────────────────────────────────────────────────
   @Prop() pickupToken: string;          // QR para verificar identidad al subir
   @Prop() deliveryToken: string;        // token generado al llegar, confirma entrega
