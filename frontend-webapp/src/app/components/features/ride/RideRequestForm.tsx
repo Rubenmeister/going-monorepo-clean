@@ -74,6 +74,12 @@ const IcoClock = () => (
     <polyline points="12 6 12 12 16 14"/>
   </svg>
 );
+const IcoCity = () => (
+  // Rayo: comunica inmediatez (busca conductor ya, "en la ciudad").
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
 const IcoChevronDown = ({ open }: { open: boolean }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
     style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }}>
@@ -82,7 +88,12 @@ const IcoChevronDown = ({ open }: { open: boolean }) => (
 );
 
 // ── Tipos de vehículo con fotos reales ────────────────────────────────────
-type TransportMode = 'privado' | 'compartido';
+// 'ciudad' = ride-hailing inmediato: busca al conductor activo más cercano YA,
+//            sin opción de programar (no muestra fecha/hora).
+// 'privado' / 'compartido' = pueden ser inmediatos o RESERVADOS (si el
+//            pasajero elige fecha/hora futura, el viaje queda reservado y el
+//            backend recién busca conductor ~1h antes).
+type TransportMode = 'ciudad' | 'privado' | 'compartido';
 type SimpleVehicle = 'suv' | 'van' | 'bus';
 
 const SIMPLE_VEHICLES: Record<SimpleVehicle, {
@@ -158,9 +169,9 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     if (mode === 'compartido') setSimpleVehicle('suv');
   }, [mode]);
 
-  // Privado → sugiere vehículo según pasajeros
+  // Privado/Ciudad → sugiere vehículo según pasajeros
   useEffect(() => {
-    if (mode === 'privado') setSimpleVehicle(suggestSimpleVehicle(passengers));
+    if (mode !== 'compartido') setSimpleVehicle(suggestSimpleVehicle(passengers));
   }, [passengers, mode]);
 
   const vehicleType: VehicleType = SIMPLE_VEHICLES[simpleVehicle].vehicleForPax(passengers);
@@ -345,6 +356,9 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
       passengers,
       isScheduled ? `${scheduledDate}T${scheduledTime}` : undefined,
       mode,
+      // Precio garantizado: solo en reservas mandamos el total ya calculado
+      // para que el backend lo preserve aunque la hora real cambie las tarifas.
+      isScheduled && localFare != null ? localFare : undefined,
     );
   };
 
@@ -415,6 +429,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-2xl border border-gray-200 overflow-hidden flex-shrink-0">
               {([
+                { key: 'ciudad'     as TransportMode, Icon: IcoCity,   label: 'En la ciudad' },
                 { key: 'privado'    as TransportMode, Icon: IcoLock,   label: 'Privado' },
                 { key: 'compartido' as TransportMode, Icon: IcoPeople, label: 'Compartido' },
               ]).map(opt => (
@@ -422,10 +437,11 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                   onClick={() => {
                     setMode(opt.key);
                     if (opt.key === 'compartido') setPassengers(p => Math.min(p, 3));
-                    // Al volver de compartido a privado, resetear la
-                    // programación (los compartidos siempre tienen fecha/hora
-                    // pero en privado el caso dominante es "ahora").
-                    if (opt.key === 'privado') {
+                    // 'ciudad' y 'privado' son inmediatos por default — al
+                    // entrar reseteamos cualquier programación previa.
+                    // ('ciudad' además NO ofrece programar: siempre busca
+                    // conductor ya, al estilo ride-hailing.)
+                    if (opt.key === 'privado' || opt.key === 'ciudad') {
                       setShowSchedule(false);
                       setScheduledDate('');
                       setScheduledTime('');
@@ -458,8 +474,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
             </div>
           </div>
 
-          {/* ── Selector de vehículo (Privado) o SUV Compartida ─────── */}
-          {mode === 'privado' ? (
+          {/* ── Selector de vehículo (Privado/Ciudad) o SUV Compartida ─────── */}
+          {mode !== 'compartido' ? (
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Vehículo</p>
               <div className="grid grid-cols-3 gap-2">
@@ -636,6 +652,12 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0033A0] text-sm text-gray-800 bg-white" />
                 </div>
               </div>
+            </div>
+          ) : mode === 'ciudad' ? (
+            // 'En la ciudad' es siempre inmediato: no se ofrece programar.
+            <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-[#0033A0] text-sm font-medium">
+              <IcoCity />
+              Buscaremos al conductor más cercano ahora mismo
             </div>
           ) : (
             <button
@@ -844,8 +866,10 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
             : !localFare
               ? 'Calculando tarifa…'
               : isScheduled
-                ? <><IcoCalendar /> Reservar · {scheduledDate} {scheduledTime}</>
-                : `Confirmar viaje · $${localFare.toFixed(0)}`
+                ? <><IcoCalendar /> Reservar · {scheduledDate} {scheduledTime} · ${localFare.toFixed(0)}</>
+                : mode === 'ciudad'
+                  ? <><IcoCity /> Buscar conductor · ${localFare.toFixed(0)}</>
+                  : `Confirmar viaje · $${localFare.toFixed(0)}`
         }
       </button>
 
