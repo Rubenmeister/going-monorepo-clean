@@ -1,0 +1,66 @@
+{
+  "name": "going-monorepo (Nx + pnpm)",
+
+  // Imagen base oficial de Dev Containers con Node 18 (coincide con .nvmrc: 18.20.0)
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-18-bookworm",
+
+  "features": {
+    // Docker-in-Docker: permite levantar el docker-compose.yml (Mongo, Redis, etc.)
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    // Git actualizado y GitHub CLI para trabajar con PRs desde el Codespace
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // Habilita pnpm (gestor obligatorio del monorepo) e instala dependencias al crear el contenedor
+  "onCreateCommand": "corepack enable && corepack prepare pnpm@latest --activate",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Puertos de desarrollo que se reenvían automáticamente
+  "forwardPorts": [3000, 3001, 4200, 4201, 6006, 8080, 27017, 6379, 9200, 5601, 9090, 3030],
+  "portsAttributes": {
+    "3000": { "label": "frontend-webapp (Next.js)", "onAutoForward": "notify" },
+    "3001": { "label": "admin-dashboard (Next.js)", "onAutoForward": "notify" },
+    "4200": { "label": "Nx app", "onAutoForward": "silent" },
+    "4201": { "label": "Nx app (2)", "onAutoForward": "silent" },
+    "6006": { "label": "Storybook", "onAutoForward": "notify" },
+    "8080": { "label": "api-gateway", "onAutoForward": "silent" },
+    "27017": { "label": "MongoDB", "onAutoForward": "silent" },
+    "6379": { "label": "Redis", "onAutoForward": "silent" },
+    "9200": { "label": "Elasticsearch", "onAutoForward": "silent" },
+    "5601": { "label": "Kibana", "onAutoForward": "silent" },
+    "9090": { "label": "Prometheus", "onAutoForward": "silent" },
+    "3030": { "label": "Grafana", "onAutoForward": "silent" }
+  },
+
+  "customizations": {
+    "vscode": {
+      // Extensiones recomendadas (incluye las de .vscode/extensions.json + utilidades del stack)
+      "extensions": [
+        "ms-playwright.playwright",
+        "esbenp.prettier-vscode",
+        "firsttris.vscode-jest-runner",
+        "nrwl.angular-console",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "bradlc.vscode-tailwindcss"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  // Recursos recomendados para un monorepo grande (ajustable en GitHub al crear el Codespace)
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  "remoteUser": "node"
+}
