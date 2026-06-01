@@ -18,8 +18,10 @@ export interface Ride {
   finalFare?: number;
   distance: number;
   duration: number;
-  status: 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'no_driver';
+  status: 'reserved' | 'pending' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'no_driver';
   createdAt: Date;
+  /** Fecha/hora reservada para viajes programados (status='reserved'). */
+  scheduledAt?: Date;
   completedAt?: Date;
   driverLocation?: Location;
   driverInfo?: {
