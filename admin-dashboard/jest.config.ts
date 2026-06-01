@@ -6,7 +6,7 @@
 // de forma nativa; swcrc:false evita heredar el .swcrc del build (que excluye
 // specs) y target es2022 evita "unknown variant es2023" en @swc/core.
 
-const config = {
+module.exports = {
   displayName: 'admin-dashboard',
   preset: '../jest.preset.js',
   testEnvironment: 'jsdom',
@@ -29,7 +29,3 @@ const config = {
   },
   coverageDirectory: '../coverage/admin-dashboard',
 };
-
-module.exports = config;
-
-export {};

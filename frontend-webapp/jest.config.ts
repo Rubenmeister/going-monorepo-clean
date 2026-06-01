@@ -9,7 +9,7 @@
 // nativa, sin depender de Babel ni del wrapper de Next) y mock de CSS para que
 // `import './global.css'` no rompa el render de componentes.
 
-const config = {
+module.exports = {
   displayName: 'frontend-webapp',
   preset: '../jest.preset.js',
   testEnvironment: 'jsdom',
@@ -40,7 +40,3 @@ const config = {
   },
   coverageDirectory: '../coverage/frontend-webapp',
 };
-
-module.exports = config;
-
-export {};
