@@ -19,3 +19,6 @@ export * from './lib/ports/ipassword-hasher';
 export * from './lib/entities/user.entity';
 export * from './lib/entities/refresh-token.entity';
 export * from './lib/entities/token-blacklist.entity';
+
+// Exporta Value Objects
+export * from './lib/value-objects/role.vo';

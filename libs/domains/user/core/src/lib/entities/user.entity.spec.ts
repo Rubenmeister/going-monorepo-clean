@@ -29,8 +29,9 @@ describe('User Entity', () => {
     
     expect(user.id).toBeDefined();
     expect(user.firstName).toBe('Test');
-    expect(user.status).toBe('pending_verification');
-    expect(user.verificationToken).toBeDefined();
+    // Los usuarios nacen ACTIVOS (sin verificación pendiente).
+    expect(user.status).toBe('active');
+    expect(user.verificationToken).toBeUndefined();
   });
 
   it('debería fallar si el nombre es muy corto', () => {
@@ -43,26 +44,15 @@ describe('User Entity', () => {
     expect(userResult.error.message).toBe('First name is too short');
   });
 
-  it('debería verificar una cuenta pendiente', () => {
-    const user = User.create(validProps)._unsafeUnwrap();
-    
-    expect(user.status).toBe('pending_verification');
-    
-    const verifyResult = user.verifyAccount();
-    
-    expect(verifyResult.isOk()).toBe(true);
-    expect(user.status).toBe('active');
-    expect(user.verificationToken).toBeUndefined();
-  });
-
   it('debería fallar al verificar una cuenta ya activa', () => {
+    // create() nace 'active', así que verifyAccount() debe rechazar.
     const user = User.create(validProps)._unsafeUnwrap();
-    user.verifyAccount(); // Se activa la primera vez
-    
-    const secondVerifyResult = user.verifyAccount(); // Se intenta de nuevo
-    
-    expect(secondVerifyResult.isErr()).toBe(true);
-    expect(secondVerifyResult.error.message).toBe('Account is already active');
+    expect(user.status).toBe('active');
+
+    const verifyResult = user.verifyAccount();
+
+    expect(verifyResult.isErr()).toBe(true);
+    expect(verifyResult.error.message).toBe('Account is already active');
   });
 
   it('debería verificar la contraseña correctamente usando el hasher', async () => {

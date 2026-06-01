@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProcessPaymentUseCase } from '../process-payment.use-case';
-import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
+import { StripeGateway } from '../../../infrastructure/gateways/stripe.gateway';
+import { IPaymentRepository } from '../../../domain/ports';
+import { PricingService } from '../../pricing.service';
 
 describe('ProcessPaymentUseCase', () => {
   let useCase: ProcessPaymentUseCase;
   let mockPaymentRepository: any;
   let mockStripeGateway: any;
+  let mockPricingService: any;
 
   beforeEach(async () => {
     mockPaymentRepository = {
@@ -17,16 +20,27 @@ describe('ProcessPaymentUseCase', () => {
       processPayment: jest.fn(),
     };
 
+    // PricingService.calculate devuelve el desglose de tarifa; por defecto un
+    // breakdown mínimo, los tests que necesiten valores concretos lo overridean.
+    mockPricingService = {
+      calculate: jest.fn().mockReturnValue({ total: 0, platformFee: 0, driverEarnings: 0 }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProcessPaymentUseCase,
         {
-          provide: 'IPaymentRepository',
+          // El token real es el Symbol IPaymentRepository (no el string).
+          provide: IPaymentRepository,
           useValue: mockPaymentRepository,
         },
         {
           provide: StripeGateway,
           useValue: mockStripeGateway,
+        },
+        {
+          provide: PricingService,
+          useValue: mockPricingService,
         },
       ],
     }).compile();
