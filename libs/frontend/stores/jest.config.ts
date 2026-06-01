@@ -1,7 +1,8 @@
 /* eslint-disable */
 export default {
   displayName: 'frontend-stores',
-  preset: '../../jest.preset.js',
+  // libs/frontend/stores → raíz son 3 niveles (no 2).
+  preset: '../../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]sx?$': [
@@ -11,9 +12,8 @@ export default {
       },
     ],
   },
-  snapshotSerializers: [
-    'jest-serializer-html',
-  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/libs/frontend/stores',
+  // Este lib aún no tiene specs; no fallar el job por ello.
+  passWithNoTests: true,
+  coverageDirectory: '../../../coverage/libs/frontend/stores',
 };
