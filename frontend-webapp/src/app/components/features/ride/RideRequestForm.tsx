@@ -829,7 +829,9 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                 <p className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
                   {mode === 'compartido'
                     ? <><IcoPeople /><span>Compartido · {passengers} persona{passengers > 1 ? 's' : ''} · precio por asiento</span></>
-                    : <><IcoLock /><span>Vehículo privado</span></>
+                    : mode === 'ciudad'
+                      ? <><IcoCity /><span>En la ciudad · tarifa dinámica (base + km + min)</span></>
+                      : <><IcoLock /><span>Vehículo privado</span></>
                   }
                 </p>
               </div>

@@ -69,7 +69,7 @@ export interface FareBreakdown {
   durationMin:       number;
   /** true = precio de tabla fija · false = estimado por distancia */
   isPriceFixed:      boolean;
-  mode:              'privado' | 'compartido';
+  mode:              'ciudad' | 'privado' | 'compartido';
   tier:              'confort' | 'premium';
   /** Recargo fijo por zona de origen (+$5) */
   originSurcharge:   number;
@@ -105,6 +105,36 @@ export function calculateDistance(pickup: Location, dropoff: Location): number {
 }
 
 const AVERAGE_SPEED_KMH = 75;
+
+// ════════════════════════════════════════════════════════════════
+// TARIFA URBANA — modo "En la ciudad" (taxímetro dinámico)
+// ════════════════════════════════════════════════════════════════
+// A diferencia de los viajes interurbanos (privado/compartido), que tienen
+// precios FIJOS por par de ciudades (tabla CITY_PAIR_PRICES), los viajes
+// dentro de la ciudad se cobran con un modelo de taxímetro:
+//   precio = base + (km × valor_km) + (min × valor_min)   [+ surge dinámico]
+//
+// ⚠️ VALORES PLACEHOLDER — ajustar a la tarifa real de Going.
+//    Pensados como referencia para Quito/Guayaquil; revísalos antes de
+//    producción.
+const URBAN_BASE_FARE     = 1.50;  // banderazo / arranque (USD)
+const URBAN_PER_KM        = 0.45;  // USD por km recorrido
+const URBAN_PER_MIN       = 0.12;  // USD por minuto de viaje
+const URBAN_MIN_FARE      = 2.00;  // tarifa mínima garantizada (USD)
+const URBAN_PREMIUM_MULT  = 1.30;  // recargo tier Premium en ciudad
+const URBAN_SPEED_KMH     = 25;    // velocidad urbana para estimar minutos
+                                   // cuando aún no hay duración real de ruta
+
+/**
+ * Taxímetro urbano: base + distancia + tiempo, con piso de tarifa mínima.
+ * No incluye recargos dinámicos (surge) — esos se aplican aparte en
+ * getFareBreakdown para poder mostrarlos desglosados.
+ */
+function urbanTaximeterBase(km: number, durationMin: number): number {
+  const raw = URBAN_BASE_FARE + km * URBAN_PER_KM + durationMin * URBAN_PER_MIN;
+  return Math.max(URBAN_MIN_FARE, raw);
+}
+
 
 export function calculateEstimatedDuration(pickup: Location, dropoff: Location): number {
   return Math.round((calculateDistance(pickup, dropoff) / AVERAGE_SPEED_KMH) * 60);
@@ -240,7 +270,7 @@ interface SurchargeResult {
  */
 function getDynamicSurcharge(
   date: Date,
-  mode: 'privado' | 'compartido',
+  mode: 'ciudad' | 'privado' | 'compartido',
 ): SurchargeResult {
   const hour    = date.getHours();
   const isShared = mode === 'compartido';
