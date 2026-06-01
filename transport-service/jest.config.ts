@@ -54,3 +54,5 @@ module.exports = {
   },
   coverageDirectory: '../coverage/transport-service',
 };
+
+export {};

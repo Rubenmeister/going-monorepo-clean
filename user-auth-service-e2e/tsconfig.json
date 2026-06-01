@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../tsconfig.base.json",
   "files": [],
   "include": [],
   "references": [
@@ -7,13 +7,13 @@
       "path": "./tsconfig.spec.json"
     },
     {
-      "path": "../../user-auth-service/tsconfig.app.json"
+      "path": "../user-auth-service/tsconfig.app.json"
     },
     {
-      "path": "../../libs/domains/user/application/tsconfig.lib.json"
+      "path": "../libs/domains/user/application/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/domains/user/core/tsconfig.lib.json"
+      "path": "../libs/domains/user/core/tsconfig.lib.json"
     }
   ]
 }
