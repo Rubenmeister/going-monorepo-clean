@@ -51,10 +51,12 @@ steps:
       - --port=3000
       - --cpu=1
       - --memory=512Mi
-      # min-instances=1 es OBLIGATORIO para SOS — un cold start de 5-10s
-      # en una emergencia real es inaceptable. Cuesta ~$5/mes mantener
-      # un container caliente; vale la pena.
-      - --min-instances=1
+      # min-instances=1 es OBLIGATORIO en producción para SOS — un cold start de
+      # 5-10s en una emergencia real es inaceptable. Cuesta ~$5/mes mantener un
+      # container caliente; vale la pena.
+      # ⚠️ TEMP pre-prod (ahorro): escalado a 0. RESTAURAR A 1 SÍ O SÍ antes del
+      #    go-live — sin esto el SOS arranca en frío y puede tardar 5-10s.
+      - --min-instances=0
       - --max-instances=10
       # timeout corto — el endpoint /sos debe responder en <300ms.
       # Si Mongo o Telegram cuelgan, queremos saberlo rápido.

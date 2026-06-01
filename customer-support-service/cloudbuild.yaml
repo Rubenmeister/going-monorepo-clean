@@ -62,11 +62,12 @@ steps:
       - --port=3000
       - --cpu=1
       - --memory=512Mi
-      # min-instances=1 es OBLIGATORIO: el CerebroPublisherService usa
-      # @Cron interno cada 10 min. Con scale-to-zero el container se duerme
+      # min-instances=1 es OBLIGATORIO en producción: el CerebroPublisherService
+      # usa @Cron interno cada 10 min. Con scale-to-zero el container se duerme
       # entre requests y el timer del cron muere — no dispara nunca. min=1
       # mantiene el container vivo. Costo: ~$5/mes adicional.
-      - --min-instances=1
+      # TEMP pre-prod (ahorro): escalado a 0; el cron NO corre. Restaurar a 1 antes del go-live.
+      - --min-instances=0
       - --max-instances=5
       # timeout 300s (5 min) en lugar del default 60s. Las notas de voz
       # combinan STT (5-50s; Deepgram rápido + fallback Google lento) + LLM
