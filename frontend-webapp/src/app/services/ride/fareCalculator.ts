@@ -614,13 +614,52 @@ export function getFareBreakdown(
   dropoff:       Location,
   vehicleType:   VehicleType = 'suv',
   tier:          'confort' | 'premium' = 'confort',
-  mode:          'privado' | 'compartido' = 'privado',
+  mode:          'ciudad' | 'privado' | 'compartido' = 'privado',
   roadDistance?: { distanceKm: number; durationMin: number },
   context?:      PricingContext,
 ): FareBreakdown {
   const dist     = roadDistance?.distanceKm ?? calculateDistance(pickup, dropoff);
   const dateTime = context?.dateTime ?? new Date();
   const segment  = context?.clientSegment ?? 'public';
+
+  // Duracion estimada: usa la real de la ruta si existe; si no, estima con la
+  // velocidad apropiada (urbana es mucho mas lenta que interurbana).
+  const durationMin = roadDistance?.durationMin ??
+    Math.round((dist / (mode === 'ciudad' ? URBAN_SPEED_KMH : AVERAGE_SPEED_KMH)) * 60);
+
+  // Modo "En la ciudad": taximetro dinamico.
+  // No usa la tabla interurbana. Precio = base + km + min, con surge por
+  // hora pico/noche/feriado. Siempre "estimado" (depende de la ruta real).
+  if (mode === 'ciudad') {
+    const vehicleC  = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
+    const isLarge   = !['suv', 'suv_xl', 'other'].includes(vehicleType);
+    const vehFactor = isLarge ? vehicleC.multiplierConfort : 1;
+
+    const urbanBase = urbanTaximeterBase(dist, durationMin) * vehFactor *
+      (tier === 'premium' ? URBAN_PREMIUM_MULT : 1);
+
+    // El surge dinamico SOLO aplica a viajes urbanos.
+    const { rate: surge, label: surgeLabel } = getDynamicSurcharge(dateTime, mode);
+    const { rate: clientRate, label: clientLabel } = getClientSurcharge(segment);
+    const urbanTotal = Math.round(urbanBase * (1 + surge + clientRate) * 100) / 100;
+
+    return {
+      sharedBase:           Math.round(urbanBase * 100) / 100,
+      totalFare:            urbanTotal,
+      distanceKm:           roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
+      durationMin,
+      isPriceFixed:         false,
+      mode,
+      tier,
+      originSurcharge:      0,
+      surchargeRate:        surge,
+      surchargeLabel:       surgeLabel,
+      clientSurchargeRate:  clientRate,
+      clientSurchargeLabel: clientLabel,
+      discountRate:         0,
+      clientSegment:        segment,
+    };
+  }
 
   const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
   const originSurcharge = getOriginSurcharge(pickup);
