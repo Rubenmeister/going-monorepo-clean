@@ -8,7 +8,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
       "options": {
-        "jestConfig": "envios-service-e2e/jest.config.cts",
+        "jestConfig": "envios-service-e2e/jest.config.ts",
         "passWithNoTests": true
       },
       "dependsOn": ["envios-service:build", "envios-service:serve"]
