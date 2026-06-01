@@ -1,6 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { ok, err } from 'neverthrow';
+import {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  OAuthLoginUseCase,
+  ITokenManager,
+} from '@going-monorepo-clean/domains-user-core';
+import { AuditLogService } from '@going-monorepo-clean/domains-audit-application';
+import { AccountLockoutService } from '../application/account-lockout.service';
+import { OauthStateService } from '../infrastructure/oauth/oauth-state.service';
+import { UserModelSchema } from '../infrastructure/user.schema';
+import { LoyaltyPointsService } from '../application/loyalty-points.service';
+import { MfaService } from '../application/mfa.service';
 
 /**
  * Auth Controller Integration Tests
@@ -22,29 +35,37 @@ describe('AuthController (Integration)', () => {
       revokeAccessToken: jest.fn(),
     };
 
-    mockRegisterUseCase = {
-      execute: jest.fn(),
-    };
+    mockRegisterUseCase = { execute: jest.fn() };
+    mockLoginUseCase = { execute: jest.fn() };
 
-    mockLoginUseCase = {
-      execute: jest.fn(),
-    };
+    // Stub genérico para las dependencias colaboradoras que el controller
+    // recibió en refactors posteriores; los tests de refresh/logout no las
+    // ejercitan, pero Nest exige que estén resueltas.
+    const stub = () => ({}) as any;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
+        // El token real es la CLASE (no el string).
+        { provide: RegisterUserUseCase, useValue: mockRegisterUseCase },
+        { provide: LoginUserUseCase, useValue: mockLoginUseCase },
+        { provide: OAuthLoginUseCase, useValue: { execute: jest.fn() } },
+        // ITokenManager es un Symbol.
+        { provide: ITokenManager, useValue: mockTokenManager },
+        { provide: AuditLogService, useValue: { recordFailure: jest.fn(), recordSuccess: jest.fn() } },
         {
-          provide: 'ITokenManager',
-          useValue: mockTokenManager,
+          provide: AccountLockoutService,
+          useValue: {
+            isAccountLocked: jest.fn(),
+            getLockoutExpiration: jest.fn(),
+            recordFailedAttempt: jest.fn(),
+            recordSuccessfulLogin: jest.fn(),
+          },
         },
-        {
-          provide: 'RegisterUserUseCase',
-          useValue: mockRegisterUseCase,
-        },
-        {
-          provide: 'LoginUserUseCase',
-          useValue: mockLoginUseCase,
-        },
+        { provide: OauthStateService, useValue: { validateReturnTo: jest.fn(), verify: jest.fn() } },
+        { provide: getModelToken(UserModelSchema.name), useValue: {} },
+        { provide: LoyaltyPointsService, useValue: { award: jest.fn(), getBalance: jest.fn(), redeem: jest.fn() } },
+        { provide: MfaService, useValue: { verifyChallenge: jest.fn() } },
       ],
     }).compile();
 

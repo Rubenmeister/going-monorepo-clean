@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
 import { MongoPaymentRepository } from '../mongo-payment.repository';
 
 describe('MongoPaymentRepository', () => {
@@ -20,7 +21,8 @@ describe('MongoPaymentRepository', () => {
       providers: [
         MongoPaymentRepository,
         {
-          provide: 'Payment',
+          // El repo usa @InjectModel('Payment'); el token real es getModelToken('Payment').
+          provide: getModelToken('Payment'),
           useValue: mockPaymentModel,
         },
       ],
