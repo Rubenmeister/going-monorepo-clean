@@ -12,5 +12,3 @@ module.exports = {
   passWithNoTests: true,
   coverageDirectory: '../../../coverage/libs/shared/observability',
 };
-
-export {};

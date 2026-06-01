@@ -10,5 +10,3 @@ module.exports = {
   passWithNoTests: true,
   coverageDirectory: '../../coverage/libs/going-kb',
 };
-
-export {};

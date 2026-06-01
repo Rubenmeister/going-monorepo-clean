@@ -8,5 +8,3 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../coverage/experiencias-service',
 };
-
-export {};
