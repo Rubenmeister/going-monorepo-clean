@@ -12,6 +12,12 @@ export interface StatusConfig {
 }
 
 export const STATUS_CONFIGS: Record<RideStatus, StatusConfig> = {
+  reserved: {
+    icon: '📅',
+    label: 'Reservado',
+    color: 'bg-blue-100',
+    textColor: 'text-blue-800',
+  },
   pending: {
     icon: '🔍',
     label: 'Finding driver',
