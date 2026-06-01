@@ -680,11 +680,13 @@ export function getFareBreakdown(
     basePrice = tier === 'premium' ? privadoConfort + 10 : privadoConfort;
   }
 
-  const { rate: surchargeRate,       label: surchargeLabel       } = getDynamicSurcharge(dateTime, mode);
+  // Interurbano: PRECIO FIJO. El surge dinamico (hora/dia) NO aplica aqui;
+  // solo el recargo por segmento de cliente (agencia/empresa).
+  const surchargeRate = 0;
+  const surchargeLabel: string | null = null;
   const { rate: clientSurchargeRate, label: clientSurchargeLabel } = getClientSurcharge(segment);
 
-  // Fórmula: base × (1 + recargo_tiempo + recargo_cliente) + origen
-  // NOTA: clientSurchargeRate es POSITIVO (+0.25) → aumenta el precio
+  // Formula: base x (1 + recargo_cliente) + origen
   const adjustedPrice = Math.round(basePrice * (1 + surchargeRate + clientSurchargeRate));
   const totalFare     = adjustedPrice + originSurcharge;
 
