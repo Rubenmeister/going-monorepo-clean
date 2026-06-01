@@ -28,3 +28,5 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: '../../coverage/libs/payment',
 };
+
+export {};

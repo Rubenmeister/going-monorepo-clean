@@ -8,3 +8,5 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../coverage/api-gateway',
 };
+
+export {};
