@@ -20,7 +20,7 @@ RUN npm install --omit=dev
 COPY . .
 
 # Expón el puerto de tu servicio (ej. 3001)
-ARG SERVICE_NAME=payment-service
+ARG SERVICE_NAME=envios-service
 
 # Ejecuta el comando de construcción de Nx para el servicio específico
 # Esto transpila el código TypeScript a JavaScript en 'dist/apps/payment-service'
@@ -36,8 +36,8 @@ WORKDIR /app
 
 # Copia SOLO la carpeta 'dist' del servicio construido
 # El puerto 3001 es el que definimos en main.ts
-ARG SERVICE_NAME=payment-service
-EXPOSE 3001
+ARG SERVICE_NAME=envios-service
+EXPOSE 3007
 
 # Copia los archivos necesarios para la ejecución:
 # 1. package.json y package-lock.json

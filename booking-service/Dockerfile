@@ -39,7 +39,7 @@ COPY --from=builder /app/package.json /app/package-lock.json ./
 RUN npm install --omit=dev --ignore-scripts
 
 # Expón el puerto de la aplicación (esto es solo metadatos)
-ARG SERVICE_PORT=3001
+ARG SERVICE_PORT=3010
 EXPOSE ${SERVICE_PORT}
 
 # Copia el código COMPILADO de la etapa 'builder'

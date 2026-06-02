@@ -40,6 +40,10 @@ jobs:
           fi
           echo "✓ No CR found in shell scripts"
 
+      # 1.55 Validate Dockerfile SERVICE_NAME defaults match directory names
+      - name: Validate Dockerfile SERVICE_NAME defaults
+        run: bash scripts/validate-dockerfiles.sh
+
       # 1.6 ShellCheck — análisis estático de scripts bash.
       # severity:error → falla CI sólo en bugs reales (sintaxis, lógica
       # rota, command not found). Warnings (variables sin usar, quoting
