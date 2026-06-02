@@ -20,11 +20,11 @@ RUN npm install --omit=dev
 COPY . .
 
 # Expón el puerto de tu servicio (ej. 3001)
-ARG SERVICE_NAME=payment-service
+ARG SERVICE_NAME=experiencias-service
 
 # Ejecuta el comando de construcción de Nx para el servicio específico
-# Esto transpila el código TypeScript a JavaScript en 'dist/apps/payment-service'
-# Asegúrate de que el comando en package.json sea `nx build payment-service`
+# Esto transpila el código TypeScript a JavaScript en 'dist/apps/experiencias-service'
+# Asegúrate de que el comando en package.json sea `nx build experiencias-service`
 RUN npx nx run ${SERVICE_NAME}:build
 
 # --- ETAPA 2: PRODUCCIÓN (FINAL) ---
@@ -35,9 +35,9 @@ FROM node:20-alpine AS final
 WORKDIR /app
 
 # Copia SOLO la carpeta 'dist' del servicio construido
-# El puerto 3001 es el que definimos en main.ts
-ARG SERVICE_NAME=payment-service
-EXPOSE 3001
+# El puerto 3004 es el que definimos en main.ts
+ARG SERVICE_NAME=experiencias-service
+EXPOSE 3004
 
 # Copia los archivos necesarios para la ejecución:
 # 1. package.json y package-lock.json
