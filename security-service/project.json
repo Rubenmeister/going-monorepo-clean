@@ -1,0 +1,13 @@
+{
+  "name": "@going-monorepo-clean/security-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "security-service/src",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}
