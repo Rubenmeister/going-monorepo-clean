@@ -1,12 +1,9 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: going-production
-  labels:
-    environment: production
-    app.kubernetes.io/managed-by: argocd
----
-# ── API GATEWAY ──────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════
+# GOING PLATFORM — Production Deployments
+# 15 microservices + HPAs + Ingress
+# ══════════════════════════════════════════════════════════════════
+
+# ── API GATEWAY (Tier 1 — high resources, HPA) ──────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,6 +11,7 @@ metadata:
   namespace: going-production
   labels:
     app: api-gateway
+    tier: gateway
 spec:
   replicas: 2
   selector:
@@ -28,10 +26,16 @@ spec:
     metadata:
       labels:
         app: api-gateway
+        tier: gateway
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3000"
     spec:
+      serviceAccountName: api-gateway
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -44,18 +48,17 @@ spec:
           image: ghcr.io/rubenmeister/going-monorepo-clean/api-gateway:main
           ports:
             - containerPort: 3000
+              name: http
           env:
             - name: PORT
               value: "3000"
             - name: NODE_ENV
               value: production
-            - name: CORS_ORIGINS
-              value: "https://going.app,https://dashboard.going.app"
-            - name: RATE_LIMIT_ENABLED
-              value: "true"
           envFrom:
             - secretRef:
                 name: going-secrets
+            - configMapRef:
+                name: production-config
           resources:
             requests:
               cpu: 500m
@@ -76,6 +79,14 @@ spec:
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
 ---
 apiVersion: v1
 kind: Service
@@ -88,8 +99,9 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
+      name: http
 ---
-# ── USER AUTH SERVICE ────────────────────────────────────────
+# ── USER AUTH SERVICE (Tier 1) ──────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,6 +109,7 @@ metadata:
   namespace: going-production
   labels:
     app: user-auth-service
+    tier: core
 spec:
   replicas: 2
   selector:
@@ -111,10 +124,16 @@ spec:
     metadata:
       labels:
         app: user-auth-service
+        tier: core
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3001"
     spec:
+      serviceAccountName: user-auth-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -127,6 +146,7 @@ spec:
           image: ghcr.io/rubenmeister/going-monorepo-clean/user-auth-service:main
           ports:
             - containerPort: 3001
+              name: http
           env:
             - name: PORT
               value: "3001"
@@ -135,6 +155,8 @@ spec:
           envFrom:
             - secretRef:
                 name: going-secrets
+            - configMapRef:
+                name: production-config
           resources:
             requests:
               cpu: 250m
@@ -148,12 +170,21 @@ spec:
               port: 3001
             initialDelaySeconds: 10
             periodSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
               port: 3001
             initialDelaySeconds: 30
             periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
 ---
 apiVersion: v1
 kind: Service
@@ -166,20 +197,23 @@ spec:
   ports:
     - port: 3001
       targetPort: 3001
+      name: http
 ---
-# ── TRANSPORT SERVICE ────────────────────────────────────────
+# ── PAYMENT SERVICE (Tier 1 — PCI sensitive) ────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: transport-service
+  name: payment-service
   namespace: going-production
   labels:
-    app: transport-service
+    app: payment-service
+    tier: core
+    compliance: pci
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: transport-service
+      app: payment-service
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -188,21 +222,42 @@ spec:
   template:
     metadata:
       labels:
-        app: transport-service
+        app: payment-service
+        tier: core
+        compliance: pci
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3001"
     spec:
+      serviceAccountName: payment-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        readOnlyRootFilesystem: true
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: payment-service
+              topologyKey: kubernetes.io/hostname
       containers:
-        - name: transport-service
-          image: ghcr.io/rubenmeister/going-monorepo-clean/transport-service:main
+        - name: payment-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/payment-service:main
           ports:
-            - containerPort: 3006
+            - containerPort: 3001
+              name: http
           env:
             - name: PORT
-              value: "3006"
+              value: "3001"
             - name: NODE_ENV
               value: production
           envFrom:
             - secretRef:
                 name: going-secrets
+            - configMapRef:
+                name: production-config
           resources:
             requests:
               cpu: 250m
@@ -210,76 +265,42 @@ spec:
             limits:
               cpu: 1000m
               memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: transport-service
+  name: payment-service
   namespace: going-production
 spec:
   selector:
-    app: transport-service
+    app: payment-service
   ports:
-    - port: 3006
-      targetPort: 3006
+    - port: 3001
+      targetPort: 3001
+      name: http
 ---
-# ── TRACKING SERVICE ─────────────────────────────────────────
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tracking-service
-  namespace: going-production
-  labels:
-    app: tracking-service
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: tracking-service
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  template:
-    metadata:
-      labels:
-        app: tracking-service
-    spec:
-      containers:
-        - name: tracking-service
-          image: ghcr.io/rubenmeister/going-monorepo-clean/tracking-service:main
-          ports:
-            - containerPort: 3008
-          env:
-            - name: PORT
-              value: "3008"
-            - name: NODE_ENV
-              value: production
-          envFrom:
-            - secretRef:
-                name: going-secrets
-          resources:
-            requests:
-              cpu: 250m
-              memory: 256Mi
-            limits:
-              cpu: 1000m
-              memory: 1Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tracking-service
-  namespace: going-production
-spec:
-  selector:
-    app: tracking-service
-  ports:
-    - port: 3008
-      targetPort: 3008
----
-# ── BOOKING SERVICE ──────────────────────────────────────────
+# ── BOOKING SERVICE (Tier 1) ────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -287,6 +308,7 @@ metadata:
   namespace: going-production
   labels:
     app: booking-service
+    tier: core
 spec:
   replicas: 2
   selector:
@@ -301,12 +323,22 @@ spec:
     metadata:
       labels:
         app: booking-service
+        tier: core
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3010"
     spec:
+      serviceAccountName: booking-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: booking-service
           image: ghcr.io/rubenmeister/going-monorepo-clean/booking-service:main
           ports:
             - containerPort: 3010
+              name: http
           env:
             - name: PORT
               value: "3010"
@@ -315,6 +347,8 @@ spec:
           envFrom:
             - secretRef:
                 name: going-secrets
+            - configMapRef:
+                name: production-config
           resources:
             requests:
               cpu: 250m
@@ -322,6 +356,27 @@ spec:
             limits:
               cpu: 1000m
               memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3010
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3010
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
 ---
 apiVersion: v1
 kind: Service
@@ -334,8 +389,1004 @@ spec:
   ports:
     - port: 3010
       targetPort: 3010
+      name: http
 ---
-# ── HORIZONTAL POD AUTOSCALING ───────────────────────────────
+# ── TRANSPORT SERVICE (Tier 1 — HPA) ────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transport-service
+  namespace: going-production
+  labels:
+    app: transport-service
+    tier: core
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transport-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: transport-service
+        tier: core
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3006"
+    spec:
+      serviceAccountName: transport-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: transport-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/transport-service:main
+          ports:
+            - containerPort: 3006
+              name: http
+          env:
+            - name: PORT
+              value: "3006"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transport-service
+  namespace: going-production
+spec:
+  selector:
+    app: transport-service
+  ports:
+    - port: 3006
+      targetPort: 3006
+      name: http
+---
+# ── TRACKING SERVICE (Tier 1 — HPA, WebSocket) ──────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking-service
+  namespace: going-production
+  labels:
+    app: tracking-service
+    tier: core
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tracking-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tracking-service
+        tier: core
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3008"
+    spec:
+      serviceAccountName: tracking-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: tracking-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/tracking-service:main
+          ports:
+            - containerPort: 3008
+              name: http
+          env:
+            - name: PORT
+              value: "3008"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3008
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3008
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-service
+  namespace: going-production
+spec:
+  selector:
+    app: tracking-service
+  ports:
+    - port: 3008
+      targetPort: 3008
+      name: http
+---
+# ── NOTIFICATIONS SERVICE (Tier 2) ──────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-service
+  namespace: going-production
+  labels:
+    app: notifications-service
+    tier: standard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notifications-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: notifications-service
+        tier: standard
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3002"
+    spec:
+      serviceAccountName: notifications-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: notifications-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/notifications-service:main
+          ports:
+            - containerPort: 3002
+              name: http
+          env:
+            - name: PORT
+              value: "3002"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-service
+  namespace: going-production
+spec:
+  selector:
+    app: notifications-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+      name: http
+---
+# ── BILLING SERVICE (Tier 2) ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  namespace: going-production
+  labels:
+    app: billing-service
+    tier: standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: billing-service
+        tier: standard
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3003"
+    spec:
+      serviceAccountName: billing-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: billing-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/billing-service:main
+          ports:
+            - containerPort: 3003
+              name: http
+          env:
+            - name: PORT
+              value: "3003"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-service
+  namespace: going-production
+spec:
+  selector:
+    app: billing-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+      name: http
+---
+# ── EXPERIENCIAS SERVICE (Tier 3) ────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: experiencias-service
+  namespace: going-production
+  labels:
+    app: experiencias-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: experiencias-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: experiencias-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3004"
+    spec:
+      serviceAccountName: experiencias-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: experiencias-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/experiencias-service:main
+          ports:
+            - containerPort: 3004
+              name: http
+          env:
+            - name: PORT
+              value: "3004"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 150m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: experiencias-service
+  namespace: going-production
+spec:
+  selector:
+    app: experiencias-service
+  ports:
+    - port: 3004
+      targetPort: 3004
+      name: http
+---
+# ── TOURS SERVICE (Tier 3) ──────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tours-service
+  namespace: going-production
+  labels:
+    app: tours-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tours-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tours-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3005"
+    spec:
+      serviceAccountName: tours-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: tours-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/tours-service:main
+          ports:
+            - containerPort: 3005
+              name: http
+          env:
+            - name: PORT
+              value: "3005"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 150m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tours-service
+  namespace: going-production
+spec:
+  selector:
+    app: tours-service
+  ports:
+    - port: 3005
+      targetPort: 3005
+      name: http
+---
+# ── ANFITRIONES SERVICE (Tier 3) ────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anfitriones-service
+  namespace: going-production
+  labels:
+    app: anfitriones-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anfitriones-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: anfitriones-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3003"
+    spec:
+      serviceAccountName: anfitriones-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: anfitriones-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/anfitriones-service:main
+          ports:
+            - containerPort: 3003
+              name: http
+          env:
+            - name: PORT
+              value: "3003"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 150m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anfitriones-service
+  namespace: going-production
+spec:
+  selector:
+    app: anfitriones-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+      name: http
+---
+# ── ENVIOS SERVICE (Tier 2) ─────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envios-service
+  namespace: going-production
+  labels:
+    app: envios-service
+    tier: standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envios-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: envios-service
+        tier: standard
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3007"
+    spec:
+      serviceAccountName: envios-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: envios-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/envios-service:main
+          ports:
+            - containerPort: 3007
+              name: http
+          env:
+            - name: PORT
+              value: "3007"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3007
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3007
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envios-service
+  namespace: going-production
+spec:
+  selector:
+    app: envios-service
+  ports:
+    - port: 3007
+      targetPort: 3007
+      name: http
+---
+# ── VOICE SERVICE (Tier 3) ──────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voice-service
+  namespace: going-production
+  labels:
+    app: voice-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: voice-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: voice-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3011"
+    spec:
+      serviceAccountName: voice-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: voice-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/voice-service:main
+          ports:
+            - containerPort: 3011
+              name: http
+          env:
+            - name: PORT
+              value: "3011"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3011
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3011
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: voice-service
+  namespace: going-production
+spec:
+  selector:
+    app: voice-service
+  ports:
+    - port: 3011
+      targetPort: 3011
+      name: http
+---
+# ── ANALYTICS SERVICE (Tier 3) ──────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: going-production
+  labels:
+    app: analytics-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3012"
+    spec:
+      serviceAccountName: analytics-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: analytics-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/analytics-service:main
+          ports:
+            - containerPort: 3012
+              name: http
+          env:
+            - name: PORT
+              value: "3012"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3012
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3012
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: going-production
+spec:
+  selector:
+    app: analytics-service
+  ports:
+    - port: 3012
+      targetPort: 3012
+      name: http
+---
+# ── RATINGS SERVICE (Tier 3) ────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratings-service
+  namespace: going-production
+  labels:
+    app: ratings-service
+    tier: feature
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratings-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: ratings-service
+        tier: feature
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3013"
+    spec:
+      serviceAccountName: ratings-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: ratings-service
+          image: ghcr.io/rubenmeister/going-monorepo-clean/ratings-service:main
+          ports:
+            - containerPort: 3013
+              name: http
+          env:
+            - name: PORT
+              value: "3013"
+            - name: NODE_ENV
+              value: production
+          envFrom:
+            - secretRef:
+                name: going-secrets
+            - configMapRef:
+                name: production-config
+          resources:
+            requests:
+              cpu: 150m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3013
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3013
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      imagePullSecrets:
+        - name: gcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratings-service
+  namespace: going-production
+spec:
+  selector:
+    app: ratings-service
+  ports:
+    - port: 3013
+      targetPort: 3013
+      name: http
+---
+# ══════════════════════════════════════════════════════════════════
+# HORIZONTAL POD AUTOSCALERS
+# ══════════════════════════════════════════════════════════════════
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -361,6 +1412,19 @@ spec:
         target:
           type: Utilization
           averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -381,8 +1445,71 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
 ---
-# ── PRODUCTION INGRESS ───────────────────────────────────────
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tracking-hpa
+  namespace: going-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tracking-service
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payment-hpa
+  namespace: going-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payment-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
+---
+# ══════════════════════════════════════════════════════════════════
+# INGRESS
+# ══════════════════════════════════════════════════════════════════
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -393,16 +1520,32 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
     nginx.ingress.kubernetes.io/enable-modsecurity: "true"
     nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   tls:
     - hosts:
         - going.app
         - dashboard.going.app
+        - api.going.app
       secretName: going-production-tls
   rules:
     - host: going.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
+    - host: api.going.app
       http:
         paths:
           - path: /
@@ -422,16 +1565,3 @@ spec:
                 name: api-gateway
                 port:
                   number: 3000
----
-# ── SECRETS (use Sealed Secrets or Vault in real prod) ───────
-apiVersion: v1
-kind: Secret
-metadata:
-  name: going-secrets
-  namespace: going-production
-type: Opaque
-stringData:
-  DATABASE_URL: "REPLACE_WITH_SEALED_SECRET"
-  REDIS_URL: "REPLACE_WITH_SEALED_SECRET"
-  JWT_SECRET: "REPLACE_WITH_SEALED_SECRET"
-  SENTRY_DSN: "REPLACE_WITH_SEALED_SECRET"
