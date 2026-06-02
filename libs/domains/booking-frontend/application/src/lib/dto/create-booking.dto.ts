@@ -1,5 +1,3 @@
-// Esta librería necesita 'class-validator'
-// Ejecuta: npm install class-validator
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -9,8 +7,8 @@ import {
   IsDate,
   IsOptional,
 } from 'class-validator';
-import { ServiceType } from '@going-monorepo-clean/domains-booking-core'; // Reemplaza con tu scope
-import { MoneyDto } from '@going-monorepo-clean/shared-domain'; // Reemplaza con tu scope
+import { ServiceType } from '@going-monorepo-clean/domains-booking-frontend-core';
+import { MoneyDto } from '@going-monorepo-clean/shared-domain';
 
 export class CreateBookingDto {
   @IsNotEmpty()
@@ -19,7 +17,7 @@ export class CreateBookingDto {
 
   @IsNotEmpty()
   @IsUUID()
-  serviceId: string; // ID del Trip, Accommodation, o Tour
+  serviceId: string;
 
   @IsNotEmpty()
   @IsEnum(ServiceType)
