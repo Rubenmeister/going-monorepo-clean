@@ -119,12 +119,61 @@ Go to: **Repository → Settings → Environments → New environment**
 1. **`staging`** — no protection rules needed (auto-deploy on push to main)
 2. **`production`** — add **Required reviewers** (at least 1) so production deploys need manual approval
 
-## 7. Verify
+## 7. App Secrets — GCP Secret Manager (`MONGODB_URI`, `REDIS_URL`, `JWT_SECRET`, Stripe…)
+
+Cloud Run inyecta los secrets de la app vía `--set-secrets` (ya configurado en
+`cd-cloud-run.yml`). Los valores viven en **GCP Secret Manager**, no en git.
+
+Un script interactivo los sube y asigna permisos a las service accounts:
+
+```bash
+chmod +x scripts/setup-secret-manager.sh
+./scripts/setup-secret-manager.sh
+```
+
+Sube estos secrets (IDs en Secret Manager):
+
+| Secret Manager ID              | Env var en Cloud Run     | Servicios que lo reciben |
+| ------------------------------ | ------------------------ | ------------------------ |
+| `going-mongodb-uri`            | `MONGODB_URI`            | todos                    |
+| `going-redis-url`              | `REDIS_URL`              | todos                    |
+| `going-jwt-secret`             | `JWT_SECRET`             | todos                    |
+| `going-stripe-secret-key`      | `STRIPE_SECRET_KEY`      | payment, billing         |
+| `going-stripe-publishable-key` | `STRIPE_PUBLISHABLE_KEY` | payment, billing         |
+| `going-stripe-webhook-secret`  | `STRIPE_WEBHOOK_SECRET`  | payment, billing         |
+| `going-twilio-account-sid`     | `TWILIO_ACCOUNT_SID`     | notifications            |
+| `going-twilio-auth-token`      | `TWILIO_AUTH_TOKEN`      | notifications            |
+| `going-sendgrid-api-key`       | `SENDGRID_API_KEY`       | notifications            |
+
+### Redis para Cloud Run — Upstash (serverless)
+
+El Redis in-cluster de GKE **no es alcanzable desde Cloud Run**. Para el path
+Cloud Run usa Upstash (free tier):
+
+1. https://console.upstash.com → **Create Database** → Redis → región us-central1
+2. Copia la **Redis URL** (`rediss://default:****@****.upstash.io:6379`)
+3. Pégala como `REDIS_URL` cuando corras `setup-secret-manager.sh`
+
+### Base de datos — MongoDB Atlas
+
+1. https://cloud.mongodb.com → Create Cluster → **FREE (M0)** → Google Cloud / us-central1
+2. Database Access → usuario `going-production` con password
+3. Network Access → `0.0.0.0/0` (Cloud Run no tiene IP fija)
+4. Connect → Drivers → copia la URI → pégala como `MONGODB_URI`
+
+> Para actualizar un secret luego: vuelve a correr el script, o
+> `printf '%s' "nuevo-valor" | gcloud secrets versions add going-<id> --data-file=-`.
+> Cloud Run toma `:latest` en el siguiente deploy.
+
+## 8. Verify
 
 After setup, either:
 
 - Push a commit to `main` — the pipeline auto-detects affected services and deploys to staging
 - Or trigger manually: **Actions → CD — Build & Deploy to Cloud Run → Run workflow** → pick a service and environment
+
+> El deploy de producción solo corre con `workflow_dispatch` + `environment=production`,
+> después de que staging pase, y requiere aprobación del reviewer del environment `production`.
 
 ## Deployable Services
 

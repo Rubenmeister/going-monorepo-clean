@@ -181,6 +181,19 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Compose secret bindings
+        id: secrets
+        run: |
+          BASE="MONGODB_URI=going-mongodb-uri:latest,REDIS_URL=going-redis-url:latest,JWT_SECRET=going-jwt-secret:latest"
+          case "${{ matrix.service }}" in
+            payment-service|billing-service)
+              EXTRA=",STRIPE_SECRET_KEY=going-stripe-secret-key:latest,STRIPE_PUBLISHABLE_KEY=going-stripe-publishable-key:latest,STRIPE_WEBHOOK_SECRET=going-stripe-webhook-secret:latest" ;;
+            notifications-service)
+              EXTRA=",TWILIO_ACCOUNT_SID=going-twilio-account-sid:latest,TWILIO_AUTH_TOKEN=going-twilio-auth-token:latest,SENDGRID_API_KEY=going-sendgrid-api-key:latest" ;;
+            *) EXTRA="" ;;
+          esac
+          echo "flags=${BASE}${EXTRA}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to Cloud Run (staging)
         run: |
           gcloud run deploy ${{ matrix.service }}-staging \
@@ -193,6 +206,7 @@ jobs:
             --max-instances 5 \
             --timeout 300 \
             --set-env-vars "NODE_ENV=staging" \
+            --set-secrets "${{ steps.secrets.outputs.flags }}" \
             --quiet
 
       - name: Verify deployment health
@@ -235,6 +249,19 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Compose secret bindings
+        id: secrets
+        run: |
+          BASE="MONGODB_URI=going-mongodb-uri:latest,REDIS_URL=going-redis-url:latest,JWT_SECRET=going-jwt-secret:latest"
+          case "${{ matrix.service }}" in
+            payment-service|billing-service)
+              EXTRA=",STRIPE_SECRET_KEY=going-stripe-secret-key:latest,STRIPE_PUBLISHABLE_KEY=going-stripe-publishable-key:latest,STRIPE_WEBHOOK_SECRET=going-stripe-webhook-secret:latest" ;;
+            notifications-service)
+              EXTRA=",TWILIO_ACCOUNT_SID=going-twilio-account-sid:latest,TWILIO_AUTH_TOKEN=going-twilio-auth-token:latest,SENDGRID_API_KEY=going-sendgrid-api-key:latest" ;;
+            *) EXTRA="" ;;
+          esac
+          echo "flags=${BASE}${EXTRA}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to Cloud Run (production)
         run: |
           gcloud run deploy ${{ matrix.service }} \
@@ -247,6 +274,7 @@ jobs:
             --max-instances 10 \
             --timeout 300 \
             --set-env-vars "NODE_ENV=production" \
+            --set-secrets "${{ steps.secrets.outputs.flags }}" \
             --quiet
 
       - name: Verify deployment health
