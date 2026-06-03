@@ -13,7 +13,7 @@ metadata:
     app: api-gateway
     tier: gateway
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: api-gateway
@@ -111,7 +111,7 @@ metadata:
     app: user-auth-service
     tier: core
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: user-auth-service
@@ -210,7 +210,7 @@ metadata:
     tier: core
     compliance: pci
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: payment-service
@@ -310,7 +310,7 @@ metadata:
     app: booking-service
     tier: core
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: booking-service
@@ -401,7 +401,7 @@ metadata:
     app: transport-service
     tier: core
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: transport-service
@@ -492,7 +492,7 @@ metadata:
     app: tracking-service
     tier: core
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: tracking-service
@@ -583,7 +583,7 @@ metadata:
     app: notifications-service
     tier: standard
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: notifications-service
@@ -1397,7 +1397,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: api-gateway
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 10
   metrics:
     - type: Resource
@@ -1436,7 +1436,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: transport-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 8
   metrics:
     - type: Resource
@@ -1461,7 +1461,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: tracking-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 8
   metrics:
     - type: Resource
@@ -1492,7 +1492,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: payment-service
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 6
   metrics:
     - type: Resource

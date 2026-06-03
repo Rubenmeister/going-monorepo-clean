@@ -20,11 +20,25 @@ set -euo pipefail
 # ── CONFIG ────────────────────────────────────────────────────────
 PROJECT="${GCP_PROJECT_ID:-going-5d1ae}"
 REGION="${GCP_REGION:-us-central1}"
+# Cluster ZONAL (1 zona) para minimizar costo al inicio.
+# Para alta disponibilidad regional: exporta GKE_ZONAL=false
+ZONE="${GKE_ZONE:-us-central1-a}"
+ZONAL="${GKE_ZONAL:-true}"
 CLUSTER_NAME="${GKE_CLUSTER_NAME:-going-production}"
-MACHINE_TYPE="${GKE_MACHINE_TYPE:-e2-standard-2}"
-MIN_NODES="${GKE_MIN_NODES:-2}"
-MAX_NODES="${GKE_MAX_NODES:-5}"
+MACHINE_TYPE="${GKE_MACHINE_TYPE:-e2-medium}"
+MIN_NODES="${GKE_MIN_NODES:-1}"
+MAX_NODES="${GKE_MAX_NODES:-3}"
+NUM_NODES="${GKE_NUM_NODES:-1}"
 REPO_URL="https://github.com/rubenmeister/going-monorepo-clean.git"
+
+# Determina el flag de ubicación (--zone para zonal, --region para regional)
+if [ "$ZONAL" = "true" ]; then
+  LOCATION_FLAG="--zone $ZONE"
+  LOCATION_DESC="$ZONE (zonal — 1 zona)"
+else
+  LOCATION_FLAG="--region $REGION"
+  LOCATION_DESC="$REGION (regional — 3 zonas, HA)"
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -87,9 +101,11 @@ enable_apis() {
 create_cluster() {
   info "Verificando cluster GKE: $CLUSTER_NAME..."
 
-  if gcloud container clusters describe "$CLUSTER_NAME" --region "$REGION" --format="value(name)" 2>/dev/null; then
+  # shellcheck disable=SC2086
+  if gcloud container clusters describe "$CLUSTER_NAME" $LOCATION_FLAG --format="value(name)" 2>/dev/null; then
     log "Cluster '$CLUSTER_NAME' ya existe"
-    gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$REGION" --quiet
+    # shellcheck disable=SC2086
+    gcloud container clusters get-credentials "$CLUSTER_NAME" $LOCATION_FLAG --quiet
     return
   fi
 
@@ -97,10 +113,14 @@ create_cluster() {
   echo ""
   echo "  Configuración:"
   echo "    Nombre:     $CLUSTER_NAME"
-  echo "    Región:     $REGION"
-  echo "    Máquina:    $MACHINE_TYPE (2 vCPU, 8 GB RAM)"
+  echo "    Ubicación:  $LOCATION_DESC"
+  echo "    Máquina:    $MACHINE_TYPE"
   echo "    Nodos:      $MIN_NODES - $MAX_NODES (autoscaling)"
-  echo "    Costo est.: ~\$70-150/mes con carga baja"
+  if [ "$ZONAL" = "true" ]; then
+    echo "    Costo est.: ~\$25-75/mes (control plane GRATIS en zonal)"
+  else
+    echo "    Costo est.: ~\$290-360/mes (nodos x3 zonas + control plane \$73/mes)"
+  fi
   echo ""
   read -rp "¿Continuar? (y/N): " CONFIRM
   if [[ ! "$CONFIRM" =~ ^[yYsS]$ ]]; then
@@ -108,10 +128,11 @@ create_cluster() {
     exit 0
   fi
 
+  # shellcheck disable=SC2086
   gcloud container clusters create "$CLUSTER_NAME" \
-    --region "$REGION" \
+    $LOCATION_FLAG \
     --machine-type "$MACHINE_TYPE" \
-    --num-nodes 1 \
+    --num-nodes "$NUM_NODES" \
     --min-nodes "$MIN_NODES" \
     --max-nodes "$MAX_NODES" \
     --enable-autoscaling \
@@ -128,7 +149,8 @@ create_cluster() {
     --quiet
 
   log "Cluster creado exitosamente"
-  gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$REGION" --quiet
+  # shellcheck disable=SC2086
+  gcloud container clusters get-credentials "$CLUSTER_NAME" $LOCATION_FLAG --quiet
   log "kubectl configurado para $CLUSTER_NAME"
 }
 
