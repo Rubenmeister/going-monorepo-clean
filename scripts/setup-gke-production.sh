@@ -355,10 +355,13 @@ setup_workload_identity() {
     "roles/container.developer"
   )
   for role in "${ROLES[@]}"; do
+    # --condition=None evita el prompt interactivo cuando el proyecto
+    # ya tiene bindings condicionales (ej. de Cloud Build).
     gcloud projects add-iam-policy-binding "$PROJECT" \
       --member="serviceAccount:$SA_EMAIL" \
       --role="$role" \
-      --quiet >/dev/null 2>&1
+      --condition=None \
+      --quiet >/dev/null
     log "Rol asignado: $role"
   done
 
@@ -395,7 +398,7 @@ setup_workload_identity() {
     --project="$PROJECT" \
     --role="roles/iam.workloadIdentityUser" \
     --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/rubenmeister/going-monorepo-clean" \
-    --quiet >/dev/null 2>&1
+    --quiet >/dev/null
 
   WIF_PROVIDER=$(gcloud iam workload-identity-pools providers describe github-provider \
     --project="$PROJECT" --location=global \
