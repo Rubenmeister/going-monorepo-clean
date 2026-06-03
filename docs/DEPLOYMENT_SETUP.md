@@ -218,13 +218,35 @@ git push origin main
 Puedes sobreescribir los defaults:
 
 ```bash
-GCP_PROJECT_ID=going-5d1ae     # Proyecto GCP
-GCP_REGION=us-central1          # Región
-GKE_CLUSTER_NAME=going-production  # Nombre del cluster
-GKE_MACHINE_TYPE=e2-standard-2     # Tipo de máquina
-GKE_MIN_NODES=2                    # Mínimo de nodos
-GKE_MAX_NODES=5                    # Máximo de nodos
+GCP_PROJECT_ID=going-5d1ae      # Proyecto GCP
+GCP_REGION=us-central1           # Región (para cluster regional)
+GKE_ZONE=us-central1-a           # Zona (para cluster zonal)
+GKE_ZONAL=true                   # true=zonal (barato), false=regional (HA)
+GKE_CLUSTER_NAME=going-production
+GKE_MACHINE_TYPE=e2-medium       # e2-medium (4GB) económico / e2-standard-2 (8GB) balanceado
+GKE_NUM_NODES=1                  # Nodos iniciales
+GKE_MIN_NODES=1                  # Mínimo (autoscaling)
+GKE_MAX_NODES=3                  # Máximo (autoscaling)
 ```
+
+### Defaults: económico zonal
+
+Por defecto el script crea un cluster **zonal económico** (~$25-75/mes):
+- 1 zona, e2-medium, 1-3 nodos con autoscaling
+- Control plane GRATIS (primer cluster zonal del proyecto)
+- Los 15 servicios arrancan con **1 réplica** (el HPA escala bajo carga)
+
+Para escalar a producción seria más adelante:
+
+```bash
+# Cluster balanceado zonal (~$98-196/mes)
+GKE_MACHINE_TYPE=e2-standard-2 GKE_MIN_NODES=2 GKE_MAX_NODES=4 ./scripts/setup-gke-production.sh
+
+# Cluster regional HA (~$290-360/mes)
+GKE_ZONAL=false GKE_MACHINE_TYPE=e2-standard-2 ./scripts/setup-gke-production.sh
+```
+
+Y sube los replicas en `k8s/production/deployment.yaml` (de 1 a 2 en los servicios core) + `minReplicas` en los HPA.
 
 ## Cloud Run vs GKE — cuándo usar cada uno
 
