@@ -155,3 +155,83 @@ The pipeline knows about these services (defined in `cd-cloud-run.yml`):
 **"Could not find workload identity pool"** — double-check the attribute condition matches your repo exactly (`rubenmeister/going-monorepo-clean`).
 
 **Health check warnings in staging** — the service deployed but `/health` didn't return 200 within 50 seconds. Check Cloud Run logs: `gcloud run services logs read <service>-staging --region=us-central1`.
+
+---
+
+# GKE + ArgoCD Setup (alternativa a Cloud Run)
+
+Si prefieres control total con Kubernetes, el repo incluye infraestructura GKE completa en `k8s/production/`.
+
+## Setup automatizado
+
+Un solo script hace todo — crear cluster, instalar componentes, configurar Workload Identity:
+
+```bash
+# 1. Autentícate en GCP
+gcloud auth login
+gcloud config set project going-5d1ae
+
+# 2. Ejecuta el setup (interactivo, ~15 min)
+chmod +x scripts/setup-gke-production.sh
+./scripts/setup-gke-production.sh
+
+# 3. Sella tus secrets de producción
+chmod +x scripts/seal-production-secrets.sh
+./scripts/seal-production-secrets.sh
+
+# 4. Apunta tus DNS al IP del Ingress
+kubectl get svc -n ingress-nginx
+# going.app         → <EXTERNAL-IP>
+# api.going.app     → <EXTERNAL-IP>
+# dashboard.going.app → <EXTERNAL-IP>
+
+# 5. Mergea a main para que ArgoCD sincronice
+git checkout main
+git merge claude/keen-planck-qFwou
+git push origin main
+```
+
+## Qué instala el script
+
+| Componente | Propósito |
+|------------|-----------|
+| **GKE Cluster** | 2-5 nodos e2-standard-2 con autoscaling |
+| **ingress-nginx** | LoadBalancer + ModSecurity/OWASP |
+| **cert-manager** | Certificados TLS automáticos (Let's Encrypt) |
+| **Sealed Secrets** | Encriptación de secrets en git |
+| **ArgoCD** | GitOps — sincroniza automáticamente desde `k8s/production/` |
+| **Workload Identity** | Auth sin JSON keys para GitHub Actions |
+
+## Qué contiene `k8s/production/`
+
+| Archivo | Contenido |
+|---------|-----------|
+| `deployment.yaml` | 15 servicios + HPAs + Ingress |
+| `namespace.yaml` | Namespace + ResourceQuota + LimitRange |
+| `production-configmap.yaml` | Variables de entorno de producción |
+| `production-secrets.yaml` | Template de secrets (se reemplaza con SealedSecret) |
+| `rbac.yaml` | Roles + ServiceAccounts + PodDisruptionBudgets |
+| `network-policies.yaml` | Zero-trust network (default deny + whitelist) |
+
+## Variables de entorno del script
+
+Puedes sobreescribir los defaults:
+
+```bash
+GCP_PROJECT_ID=going-5d1ae     # Proyecto GCP
+GCP_REGION=us-central1          # Región
+GKE_CLUSTER_NAME=going-production  # Nombre del cluster
+GKE_MACHINE_TYPE=e2-standard-2     # Tipo de máquina
+GKE_MIN_NODES=2                    # Mínimo de nodos
+GKE_MAX_NODES=5                    # Máximo de nodos
+```
+
+## Cloud Run vs GKE — cuándo usar cada uno
+
+| Escenario | Recomendación |
+|-----------|---------------|
+| Validar MVP, poco tráfico | Cloud Run ($0-20/mes) |
+| Tráfico constante, WebSockets | GKE (~$70-150/mes) |
+| Compliance PCI DSS | GKE (network policies + RBAC) |
+| Equipo pequeño, sin ops | Cloud Run |
+| Necesitas control total | GKE |
