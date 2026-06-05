@@ -19,7 +19,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/going-kb"],
       "options": {
-        "jestConfig": "libs/going-kb/jest.config.cts",
+        "jestConfig": "libs/going-kb/jest.config.ts",
         "passWithNoTests": true
       }
     }

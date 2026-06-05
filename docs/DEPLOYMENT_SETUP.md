@@ -1,0 +1,308 @@
+# CD Pipeline Setup — Cloud Run
+
+This guide walks you through setting up the GitHub Actions → GCP Cloud Run deployment pipeline defined in `.github/workflows/cd-cloud-run.yml`.
+
+## Prerequisites
+
+- Google Cloud SDK (`gcloud`) installed and authenticated
+- Owner or Editor role on the GCP project
+- Admin access to the GitHub repository
+
+## 1. GCP Project
+
+```
+GCP_PROJECT_ID = going-5d1ae
+```
+
+Verify with:
+
+```bash
+gcloud projects describe going-5d1ae --format='value(projectId)'
+```
+
+## 2. Create the Service Account (`GCP_SERVICE_ACCOUNT`)
+
+```bash
+PROJECT=going-5d1ae
+
+gcloud iam service-accounts create github-deployer \
+  --display-name="GitHub Actions Cloud Run Deployer" \
+  --project=$PROJECT
+
+SA="github-deployer@${PROJECT}.iam.gserviceaccount.com"
+
+# Cloud Run admin (deploy services)
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member="serviceAccount:$SA" --role="roles/run.admin"
+
+# Push images to GCR
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member="serviceAccount:$SA" --role="roles/storage.admin"
+
+# Act-as permission for Cloud Run revision identity
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member="serviceAccount:$SA" --role="roles/iam.serviceAccountUser"
+```
+
+**Secret value:** `github-deployer@going-5d1ae.iam.gserviceaccount.com`
+
+## 3. Create the Workload Identity Federation (`GCP_WORKLOAD_IDENTITY_PROVIDER`)
+
+This lets GitHub Actions authenticate to GCP without a JSON key.
+
+```bash
+PROJECT=going-5d1ae
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT --format='value(projectNumber)')
+
+# Create the pool
+gcloud iam workload-identity-pools create github-pool \
+  --project=$PROJECT --location=global \
+  --display-name="GitHub Actions Pool"
+
+# Create the OIDC provider (locked to this repo only)
+gcloud iam workload-identity-pools providers create-oidc github-provider \
+  --project=$PROJECT --location=global \
+  --workload-identity-pool=github-pool \
+  --display-name="GitHub OIDC provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository=='rubenmeister/going-monorepo-clean'" \
+  --issuer-uri="https://token.actions.githubusercontent.com"
+
+# Allow GitHub to impersonate the service account
+SA="github-deployer@${PROJECT}.iam.gserviceaccount.com"
+
+gcloud iam service-accounts add-iam-policy-binding $SA \
+  --project=$PROJECT \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/rubenmeister/going-monorepo-clean"
+```
+
+**Get the secret value:**
+
+```bash
+gcloud iam workload-identity-pools providers describe github-provider \
+  --project=$PROJECT --location=global \
+  --workload-identity-pool=github-pool \
+  --format='value(name)'
+```
+
+It returns something like:
+```
+projects/123456789/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+```
+
+That full string is your `GCP_WORKLOAD_IDENTITY_PROVIDER` secret.
+
+## 4. Snyk Token (`SNYK_TOKEN`) — Optional
+
+1. Sign up or log in at https://snyk.io
+2. Go to **Account Settings → General → Auth Token**
+3. Click "Click to show" and copy the token
+
+> This step has `continue-on-error: true` in CI, so leaving it empty won't break builds.
+
+## 5. Add Secrets to GitHub
+
+Go to: **Repository → Settings → Secrets and variables → Actions → New repository secret**
+
+| Secret name                        | Value                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `GCP_PROJECT_ID`                   | `going-5d1ae`                                                                               |
+| `GCP_SERVICE_ACCOUNT`              | `github-deployer@going-5d1ae.iam.gserviceaccount.com`                                      |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER`   | `projects/<NUMBER>/locations/global/workloadIdentityPools/github-pool/providers/github-provider` |
+| `SNYK_TOKEN`                       | *(from Snyk dashboard, optional)*                                                           |
+
+## 6. Create GitHub Environments
+
+Go to: **Repository → Settings → Environments → New environment**
+
+1. **`staging`** — no protection rules needed (auto-deploy on push to main)
+2. **`production`** — add **Required reviewers** (at least 1) so production deploys need manual approval
+
+## 7. App Secrets — GCP Secret Manager (`MONGODB_URI`, `REDIS_URL`, `JWT_SECRET`, Stripe…)
+
+Cloud Run inyecta los secrets de la app vía `--set-secrets` (ya configurado en
+`cd-cloud-run.yml`). Los valores viven en **GCP Secret Manager**, no en git.
+
+Un script interactivo los sube y asigna permisos a las service accounts:
+
+```bash
+chmod +x scripts/setup-secret-manager.sh
+./scripts/setup-secret-manager.sh
+```
+
+Sube estos secrets (IDs en Secret Manager):
+
+| Secret Manager ID              | Env var en Cloud Run     | Servicios que lo reciben |
+| ------------------------------ | ------------------------ | ------------------------ |
+| `going-mongodb-uri`            | `MONGODB_URI`            | todos                    |
+| `going-redis-url`              | `REDIS_URL`              | todos                    |
+| `going-jwt-secret`             | `JWT_SECRET`             | todos                    |
+| `going-stripe-secret-key`      | `STRIPE_SECRET_KEY`      | payment, billing         |
+| `going-stripe-publishable-key` | `STRIPE_PUBLISHABLE_KEY` | payment, billing         |
+| `going-stripe-webhook-secret`  | `STRIPE_WEBHOOK_SECRET`  | payment, billing         |
+| `going-twilio-account-sid`     | `TWILIO_ACCOUNT_SID`     | notifications            |
+| `going-twilio-auth-token`      | `TWILIO_AUTH_TOKEN`      | notifications            |
+| `going-sendgrid-api-key`       | `SENDGRID_API_KEY`       | notifications            |
+
+### Redis para Cloud Run — Upstash (serverless)
+
+El Redis in-cluster de GKE **no es alcanzable desde Cloud Run**. Para el path
+Cloud Run usa Upstash (free tier):
+
+1. https://console.upstash.com → **Create Database** → Redis → región us-central1
+2. Copia la **Redis URL** (`rediss://default:****@****.upstash.io:6379`)
+3. Pégala como `REDIS_URL` cuando corras `setup-secret-manager.sh`
+
+### Base de datos — MongoDB Atlas
+
+1. https://cloud.mongodb.com → Create Cluster → **FREE (M0)** → Google Cloud / us-central1
+2. Database Access → usuario `going-production` con password
+3. Network Access → `0.0.0.0/0` (Cloud Run no tiene IP fija)
+4. Connect → Drivers → copia la URI → pégala como `MONGODB_URI`
+
+> Para actualizar un secret luego: vuelve a correr el script, o
+> `printf '%s' "nuevo-valor" | gcloud secrets versions add going-<id> --data-file=-`.
+> Cloud Run toma `:latest` en el siguiente deploy.
+
+## 8. Verify
+
+After setup, either:
+
+- Push a commit to `main` — the pipeline auto-detects affected services and deploys to staging
+- Or trigger manually: **Actions → CD — Build & Deploy to Cloud Run → Run workflow** → pick a service and environment
+
+> El deploy de producción solo corre con `workflow_dispatch` + `environment=production`,
+> después de que staging pase, y requiere aprobación del reviewer del environment `production`.
+
+## Deployable Services
+
+The pipeline knows about these services (defined in `cd-cloud-run.yml`):
+
+| Service                 | Port |
+| ----------------------- | ---- |
+| api-gateway             | 3000 |
+| user-auth-service       | 3009 |
+| transport-service       | 3008 |
+| payment-service         | 3001 |
+| booking-service         | 3010 |
+| tracking-service        | 3008 |
+| notifications-service   | 3002 |
+| billing-service         | 3003 |
+| experiencias-service    | 3004 |
+| tours-service           | 3005 |
+| anfitriones-service     | 3006 |
+| voice-service           | 3011 |
+| analytics-service       | 3012 |
+| ratings-service         | 3013 |
+| envios-service          | 3007 |
+
+## Troubleshooting
+
+**"Permission denied" on deploy** — the service account is missing a role. Re-run the IAM binding commands in step 2.
+
+**"Could not find workload identity pool"** — double-check the attribute condition matches your repo exactly (`rubenmeister/going-monorepo-clean`).
+
+**Health check warnings in staging** — the service deployed but `/health` didn't return 200 within 50 seconds. Check Cloud Run logs: `gcloud run services logs read <service>-staging --region=us-central1`.
+
+---
+
+# GKE + ArgoCD Setup (alternativa a Cloud Run)
+
+Si prefieres control total con Kubernetes, el repo incluye infraestructura GKE completa en `k8s/production/`.
+
+## Setup automatizado
+
+Un solo script hace todo — crear cluster, instalar componentes, configurar Workload Identity:
+
+```bash
+# 1. Autentícate en GCP
+gcloud auth login
+gcloud config set project going-5d1ae
+
+# 2. Ejecuta el setup (interactivo, ~15 min)
+chmod +x scripts/setup-gke-production.sh
+./scripts/setup-gke-production.sh
+
+# 3. Sella tus secrets de producción
+chmod +x scripts/seal-production-secrets.sh
+./scripts/seal-production-secrets.sh
+
+# 4. Apunta tus DNS al IP del Ingress
+kubectl get svc -n ingress-nginx
+# going.app         → <EXTERNAL-IP>
+# api.going.app     → <EXTERNAL-IP>
+# dashboard.going.app → <EXTERNAL-IP>
+
+# 5. Mergea a main para que ArgoCD sincronice
+git checkout main
+git merge claude/keen-planck-qFwou
+git push origin main
+```
+
+## Qué instala el script
+
+| Componente | Propósito |
+|------------|-----------|
+| **GKE Cluster** | 2-5 nodos e2-standard-2 con autoscaling |
+| **ingress-nginx** | LoadBalancer + ModSecurity/OWASP |
+| **cert-manager** | Certificados TLS automáticos (Let's Encrypt) |
+| **Sealed Secrets** | Encriptación de secrets en git |
+| **ArgoCD** | GitOps — sincroniza automáticamente desde `k8s/production/` |
+| **Workload Identity** | Auth sin JSON keys para GitHub Actions |
+
+## Qué contiene `k8s/production/`
+
+| Archivo | Contenido |
+|---------|-----------|
+| `deployment.yaml` | 15 servicios + HPAs + Ingress |
+| `namespace.yaml` | Namespace + ResourceQuota + LimitRange |
+| `production-configmap.yaml` | Variables de entorno de producción |
+| `production-secrets.yaml` | Template de secrets (se reemplaza con SealedSecret) |
+| `rbac.yaml` | Roles + ServiceAccounts + PodDisruptionBudgets |
+| `network-policies.yaml` | Zero-trust network (default deny + whitelist) |
+
+## Variables de entorno del script
+
+Puedes sobreescribir los defaults:
+
+```bash
+GCP_PROJECT_ID=going-5d1ae      # Proyecto GCP
+GCP_REGION=us-central1           # Región (para cluster regional)
+GKE_ZONE=us-central1-a           # Zona (para cluster zonal)
+GKE_ZONAL=true                   # true=zonal (barato), false=regional (HA)
+GKE_CLUSTER_NAME=going-production
+GKE_MACHINE_TYPE=e2-medium       # e2-medium (4GB) económico / e2-standard-2 (8GB) balanceado
+GKE_NUM_NODES=1                  # Nodos iniciales
+GKE_MIN_NODES=1                  # Mínimo (autoscaling)
+GKE_MAX_NODES=3                  # Máximo (autoscaling)
+```
+
+### Defaults: económico zonal
+
+Por defecto el script crea un cluster **zonal económico** (~$25-75/mes):
+- 1 zona, e2-medium, 1-3 nodos con autoscaling
+- Control plane GRATIS (primer cluster zonal del proyecto)
+- Los 15 servicios arrancan con **1 réplica** (el HPA escala bajo carga)
+
+Para escalar a producción seria más adelante:
+
+```bash
+# Cluster balanceado zonal (~$98-196/mes)
+GKE_MACHINE_TYPE=e2-standard-2 GKE_MIN_NODES=2 GKE_MAX_NODES=4 ./scripts/setup-gke-production.sh
+
+# Cluster regional HA (~$290-360/mes)
+GKE_ZONAL=false GKE_MACHINE_TYPE=e2-standard-2 ./scripts/setup-gke-production.sh
+```
+
+Y sube los replicas en `k8s/production/deployment.yaml` (de 1 a 2 en los servicios core) + `minReplicas` en los HPA.
+
+## Cloud Run vs GKE — cuándo usar cada uno
+
+| Escenario | Recomendación |
+|-----------|---------------|
+| Validar MVP, poco tráfico | Cloud Run ($0-20/mes) |
+| Tráfico constante, WebSockets | GKE (~$70-150/mes) |
+| Compliance PCI DSS | GKE (network policies + RBAC) |
+| Equipo pequeño, sin ops | Cloud Run |
+| Necesitas control total | GKE |

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SubmitRatingUseCase } from '../submit-rating.use-case';
+import {
+  IRatingRepository,
+  IDriverProfileRepository,
+} from '../../../domain/ports';
 
 describe('SubmitRatingUseCase', () => {
   let useCase: SubmitRatingUseCase;
@@ -10,6 +14,7 @@ describe('SubmitRatingUseCase', () => {
     mockRatingRepository = {
       create: jest.fn(),
       findByRatee: jest.fn(),
+      findOne: jest.fn(),
     };
 
     mockDriverProfileRepository = {
@@ -21,11 +26,11 @@ describe('SubmitRatingUseCase', () => {
       providers: [
         SubmitRatingUseCase,
         {
-          provide: 'IRatingRepository',
+          provide: IRatingRepository,
           useValue: mockRatingRepository,
         },
         {
-          provide: 'IDriverProfileRepository',
+          provide: IDriverProfileRepository,
           useValue: mockDriverProfileRepository,
         },
       ],

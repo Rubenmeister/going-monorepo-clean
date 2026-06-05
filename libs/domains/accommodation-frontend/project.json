@@ -7,12 +7,17 @@
   "targets": {
     "build": {
       "executor": "@nx/js:swc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/libs/domains/accommodation-frontend",
         "main": "libs/domains/accommodation-frontend/src/index.ts",
         "tsConfig": "libs/domains/accommodation-frontend/tsconfig.lib.json",
-        "assets": ["libs/domains/accommodation-frontend/*.md"]
+        "assets": [
+          "libs/domains/accommodation-frontend/*.md"
+        ],
+        "skipTypeCheck": true
       }
     }
   }

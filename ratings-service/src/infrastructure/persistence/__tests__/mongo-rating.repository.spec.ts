@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
 import { MongoRatingRepository } from '../mongo-rating.repository';
 
 describe('MongoRatingRepository', () => {
@@ -18,7 +19,7 @@ describe('MongoRatingRepository', () => {
       providers: [
         MongoRatingRepository,
         {
-          provide: 'Rating',
+          provide: getModelToken('Rating'),
           useValue: mockRatingModel,
         },
       ],

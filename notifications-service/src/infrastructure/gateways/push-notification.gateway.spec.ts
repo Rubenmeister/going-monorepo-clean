@@ -1,12 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FirebasePushNotificationGateway } from './push-notification.gateway';
+import { DeviceTokenRepository } from '../persistence/device-token.repository';
 
 describe('FirebasePushNotificationGateway', () => {
   let gateway: FirebasePushNotificationGateway;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FirebasePushNotificationGateway],
+      providers: [
+        FirebasePushNotificationGateway,
+        {
+          provide: DeviceTokenRepository,
+          useValue: {
+            findActiveByUserId: jest.fn().mockResolvedValue([]),
+            deactivateTokens: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      ],
     }).compile();
 
     gateway = module.get<FirebasePushNotificationGateway>(

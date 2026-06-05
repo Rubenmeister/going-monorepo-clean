@@ -1,41 +1,37 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
-import { UserApiClient } from '@going-monorepo-clean/user-api-client'; // <--- NUEVA DEPENDENCIA
+import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
 import { LoginDto } from '../dto/login.dto';
 
-// --- View Model (Nuevo Modelo Simple para la UI) ---
 export interface AuthViewModel {
-    token: string;
-    userId: string;
-    firstName: string;
-    roles: string[];
+  token: string;
+  userId: string;
+  firstName: string;
+  roles: string[];
 }
 
 @Injectable()
 export class LoginUseCase {
-    private readonly apiClient: UserApiClient;
+  constructor(
+    @Inject(IAuthRepository)
+    private readonly authRepository: IAuthRepository,
+  ) {}
 
-    constructor() {
-        this.apiClient = new UserApiClient(); 
+  async execute(dto: LoginDto): Promise<Result<AuthViewModel, Error>> {
+    const result = await this.authRepository.login(dto.email, dto.password);
+
+    if (result.isErr()) {
+      return err(result.error);
     }
 
-    async execute(dto: LoginDto): Promise<Result<AuthViewModel, Error>> {
-        // 1. Llamar al Adaptador (API Client)
-        const result = await this.apiClient.login(dto);
+    const session = result.value;
+    const viewModel: AuthViewModel = {
+      token: session.token,
+      userId: session.userId,
+      firstName: session.firstName,
+      roles: session.roles,
+    };
 
-        if (result.isErr()) {
-            return err(result.error);
-        }
-        
-        // 2. Mapear DTO a View Model (Transformación)
-        const authDto = result.value;
-        const viewModel: AuthViewModel = {
-            token: authDto.token,
-            userId: authDto.user.id,
-            firstName: authDto.user.firstName,
-            roles: authDto.user.roles,
-        };
-
-        return ok(viewModel);
-    }
+    return ok(viewModel);
+  }
 }

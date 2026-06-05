@@ -37,6 +37,13 @@ export class RequestRideUseCase {
     serviceType?: string;
     modalidad?: string;
     scheduledAt?: Date;
+    /**
+     * Status inicial del ride. 'scheduled' para reservas (viaje a futuro que
+     * aún no busca conductor). undefined → default 'requested' (inmediato).
+     */
+    initialStatus?: string;
+    /** Precio garantizado fijado al reservar (solo viajes programados). */
+    lockedFare?: number;
   }): Promise<any> {
     const {
       userId,
@@ -94,6 +101,9 @@ export class RequestRideUseCase {
       modalidad:          input.modalidad ?? 'compartido',
       scheduledAt:        input.scheduledAt,
       totalDistanceKm:    estimatedDistance,
+      // Reserva programada: el viaje queda "en agenda" sin buscar conductor.
+      ...(input.initialStatus ? { status: input.initialStatus } : {}),
+      ...(input.lockedFare != null ? { lockedFare: input.lockedFare } : {}),
     });
 
     // Save to database
@@ -130,6 +140,7 @@ export class RequestRideUseCase {
       eta,
       requestedAt:     savedRide.requestedAt,
       scheduledAt:     input.scheduledAt,
+      lockedFare:      input.lockedFare,
       // Tokens para el pasajero/remitente
       pickupToken,
       shareUrl: `${baseUrl}/tracking?t=${shareToken}`,

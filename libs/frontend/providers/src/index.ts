@@ -8,3 +8,6 @@ export { useMonorepoApp } from './lib/use-monorepo-app.hook';
 
 // HTTP Clients
 export * from './lib/http-client';
+
+// DI Container
+export { dependencyProvider } from './lib/auth-context.provider';
