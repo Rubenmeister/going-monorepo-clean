@@ -31,7 +31,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { UserDocument, UserModelSchema } from '../infrastructure/user.schema';
 

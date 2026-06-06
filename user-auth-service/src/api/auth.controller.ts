@@ -19,7 +19,7 @@ import {
 import { Request, Response } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { randomUUID, timingSafeEqual, randomBytes } from 'crypto';
 import * as nodemailer from 'nodemailer';
 import {

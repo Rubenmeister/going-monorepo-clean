@@ -26,7 +26,8 @@ import { GatewayTokenManagerService } from './gateway-token-manager.service';
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           // string del config (p.ej. '7d'); el tipo de `ms` exige cast.
-          expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN') as any,
+          // Default '15m' para no tumbar el arranque si la env no está puesta.
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '15m') as any,
         },
       }),
     }),
