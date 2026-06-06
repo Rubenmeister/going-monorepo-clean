@@ -1,4 +1,5 @@
 {
+  // deploy: Dockerfiles estandarizados a pnpm (build+runtime verificado) — fuerza rebuild
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
