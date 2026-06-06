@@ -105,7 +105,7 @@ const SIMPLE_VEHICLES: Record<SimpleVehicle, {
     vehicleForPax: (pax) => pax <= 4 ? 'suv' : 'suv_xl',
   },
   van: {
-    label: 'VAN', photo: '/images/van-xl.png', desc: 'Hasta 14 personas', maxPax: 14,
+    label: 'VAN', photo: '/images/VAN-XL.png', desc: 'Hasta 14 personas', maxPax: 14,
     vehicleForPax: (pax) => pax <= 7 ? 'van' : 'van_xl',
   },
   bus: {
