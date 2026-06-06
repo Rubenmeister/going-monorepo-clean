@@ -296,7 +296,22 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
         fare={currentFare}
         extraStops={extraStops.length}
         searchElapsed={searchElapsed}
+        scheduledAt={activeRide.scheduledAt}
       />
+
+      {/* ══ AVISO VIAJE RESERVADO ══
+         En reservas el conductor NO se busca todavía: aparece ~1h antes de la
+         hora reservada. Explicamos el flujo para que el pasajero no espere un
+         conductor de inmediato. */}
+      {status === 'reserved' && (
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-gray-700 space-y-1.5">
+          <p className="font-bold text-[#0033A0] flex items-center gap-1.5">📅 Tu viaje está reservado</p>
+          <p className="text-xs text-gray-600">
+            Buscaremos a tu conductor <strong>una hora antes</strong> de la salida. En ese momento
+            verás aquí sus datos y podrás contactarlo. El precio <strong>${currentFare.toFixed(2)}</strong> queda garantizado.
+          </p>
+        </div>
+      )}
 
       {/* ══ ACCIONES TEMPRANAS EN PENDING ══
          Antes solo había "Cancelar viaje" al final del panel y el user no
@@ -449,7 +464,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
 
 /* ── Banner de estado ── */
 function StatusBanner({
-  status, driverArrived, driverInfo, fare, extraStops, searchElapsed = 0,
+  status, driverArrived, driverInfo, fare, extraStops, searchElapsed = 0, scheduledAt,
 }: {
   status: string;
   driverArrived: boolean;
@@ -458,6 +473,8 @@ function StatusBanner({
   extraStops: number;
   /** Segundos transcurridos en estado 'pending' — para feedback de búsqueda. */
   searchElapsed?: number;
+  /** Fecha/hora reservada (status='reserved'). */
+  scheduledAt?: Date;
 }) {
   // Mensaje contextual progresivo en pending: vamos cambiando la copy según
   // los segundos transcurridos, así el user nunca ve un texto estático
@@ -471,7 +488,13 @@ function StatusBanner({
   // mm:ss para el badge del countdown (siempre 0–1:30 en pending)
   const elapsedLabel = `${Math.floor(searchElapsed / 60)}:${String(searchElapsed % 60).padStart(2, '0')}`;
 
+  // Etiqueta del viaje reservado: "Reservado para el 31/05 14:30".
+  const reservedLabel = scheduledAt
+    ? `Reservado para el ${scheduledAt.toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit' })} ${scheduledAt.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' })}`
+    : 'Viaje reservado';
+
   const configs: Record<string, { icon: string; label: string; color: string; bg: string }> = {
+    reserved:    { icon: '📅', label: reservedLabel,                   color: '#0033A0', bg: '#EEF2FF' },
     pending:     { icon: '🔍', label: pendingMessage,                  color: '#6366f1', bg: '#EEF2FF' },
     accepted:    { icon: '🚗', label: `${driverInfo?.name ?? 'Conductor'} en camino`, color: '#10b981', bg: '#ECFDF5' },
     in_progress: { icon: '🛣️', label: 'Viaje en curso',                color: '#ff4c41', bg: '#fff2f2' },

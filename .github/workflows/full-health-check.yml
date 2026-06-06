@@ -1,0 +1,55 @@
+name: Full Health Check (Todo el monorepo)
+
+# Por qué existe este workflow:
+# El CI normal (ci.yml) usa `nx affected`, que solo prueba/compila los proyectos
+# TOCADOS por un cambio. Eso es rápido, pero deja que tests/builds rotos en
+# proyectos NO tocados se acumulen en silencio durante semanas (justo lo que
+# pasó: ~40 specs y 2 builds rotos enterrados). Este job barre TODO el monorepo
+# de forma periódica para detectar esa deuda apenas aparece.
+
+on:
+  # Semanal: lunes 06:00 UTC (~01:00 Ecuador).
+  schedule:
+    - cron: '0 6 * * 1'
+  # Y bajo demanda desde la pestaña Actions.
+  workflow_dispatch:
+
+# Evita correr dos barridos simultáneos.
+concurrency:
+  group: full-health-check
+  cancel-in-progress: true
+
+jobs:
+  full-test-and-build:
+    name: Probar y Construir TODOS los proyectos
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout (Obtener código)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `run-many` sobre TODO el monorepo (no `affected`). --output-style=stream
+      # para ver el detalle por proyecto en los logs. No usamos continue-on-error:
+      # si algo está roto, el barrido debe fallar y avisar.
+      - name: Run ALL tests (todo el monorepo)
+        run: npx nx run-many -t test --all --parallel=3 --output-style=stream
+
+      - name: Run ALL builds (todo el monorepo)
+        run: npx nx run-many -t build --all --parallel=3 --output-style=stream

@@ -1,4 +1,4 @@
-import { IsNumber, Min, Max, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsNumber, Min, Max, IsOptional, IsString, IsBoolean, IsISO8601 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -58,6 +58,42 @@ export class RequestRideDto {
   @IsOptional()
   @IsBoolean()
   isCorporate?: boolean;
+
+  /**
+   * Fecha/hora programada (ISO 8601). Si está presente Y es futura, el viaje
+   * se crea como RESERVA: NO se busca conductor de inmediato. Un cron
+   * (ScheduledRideDispatcherCron) dispara el matching MATCH_LEAD_TIME_MINUTES
+   * antes de esta hora. Si está ausente o ya pasó, el flujo es inmediato
+   * ("en la ciudad"): se busca al conductor activo más cercano al instante.
+   *
+   * ANTES: el webapp ya enviaba este campo pero el ValidationPipe
+   * (whitelist:true) lo descartaba porque no estaba declarado aquí — los
+   * viajes "programados" terminaban buscando conductor igual que los
+   * inmediatos. Declararlo lo conecta de punta a punta.
+   */
+  @IsOptional()
+  @IsISO8601()
+  scheduledAt?: string;
+
+  /**
+   * Modalidad de transporte: 'private' | 'shared'. Solo informativo para el
+   * matching/persistencia; el webapp lo manda como 'private'/'shared'.
+   */
+  @IsOptional()
+  @IsString()
+  mode?: string;
+
+  /**
+   * Precio fijado al momento de reservar (precio garantizado). Cuando el
+   * viaje es programado, el frontend manda el total ya calculado para que la
+   * reserva preserve EXACTAMENTE ese valor aunque al ejecutarse (1h antes)
+   * las condiciones (hora pico, etc.) sean otras.
+   */
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  @Min(0)
+  lockedFare?: number;
 }
 
 /**

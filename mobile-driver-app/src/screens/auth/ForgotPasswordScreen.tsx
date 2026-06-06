@@ -16,9 +16,9 @@ const API_BASE =
 
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import type { AuthStackParamList } from '@navigation/AuthNavigator';
+import type { DriverAuthStackParamList } from '@navigation/DriverAuthNavigator';
 
-type Nav = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
+type Nav = NativeStackNavigationProp<DriverAuthStackParamList, 'ForgotPassword'>;
 
 export function ForgotPasswordScreen() {
   const navigation = useNavigation<Nav>();

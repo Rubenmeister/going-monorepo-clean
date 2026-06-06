@@ -8,7 +8,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
       "options": {
-        "jestConfig": "api-gateway-e2e/jest.config.cts",
+        "jestConfig": "api-gateway-e2e/jest.config.ts",
         "passWithNoTests": true
       },
       "dependsOn": ["api-gateway:build", "api-gateway:serve"]

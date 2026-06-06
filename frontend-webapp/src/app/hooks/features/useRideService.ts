@@ -24,7 +24,8 @@ export interface UseRideServiceReturn {
     serviceTier?:   ServiceTier,
     passengers?:    number,
     scheduledAt?:   string,
-    transportMode?: 'privado' | 'compartido'
+    transportMode?: 'ciudad' | 'privado' | 'compartido',
+    lockedFare?:    number
   ) => Promise<void>;
   cancelRide:   () => Promise<void>;
   clearLocations: () => void;
@@ -61,7 +62,8 @@ export function useRideService(): UseRideServiceReturn {
       serviceTier: ServiceTier = 'confort',
       passengers = 1,
       scheduledAt?: string,
-      transportMode: 'privado' | 'compartido' = 'privado',
+      transportMode: 'ciudad' | 'privado' | 'compartido' = 'privado',
+      lockedFare?: number,
     ) => {
       if (!pickupLocation || !dropoffLocation) {
         setError('Selecciona origen y destino');
@@ -82,6 +84,7 @@ export function useRideService(): UseRideServiceReturn {
           passengerId,
           scheduledAt,
           transportMode,
+          lockedFare,
         });
         storeCreateRide(ride);
       } catch (err) {

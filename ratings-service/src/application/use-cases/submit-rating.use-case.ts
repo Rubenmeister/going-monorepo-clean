@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Inject } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
@@ -11,7 +11,12 @@ import {
 @Injectable()
 export class SubmitRatingUseCase {
   constructor(
+    // IRatingRepository/IDriverProfileRepository son Symbols (interfaces sin
+    // valor en runtime), así que requieren @Inject explícito para que Nest los
+    // resuelva — sin esto, la DI falla ("can't resolve dependency at index 0").
+    @Inject(IRatingRepository)
     private ratingRepository: IRatingRepository,
+    @Inject(IDriverProfileRepository)
     private driverProfileRepository: IDriverProfileRepository
   ) {}
 

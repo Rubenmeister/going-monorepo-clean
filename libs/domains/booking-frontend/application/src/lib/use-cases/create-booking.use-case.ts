@@ -1,59 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Result, ok, err } from 'neverthrow';
 import { CreateBookingDto } from '../dto/create-booking.dto';
-import { BookingApiClient } from '@going-monorepo-clean/booking-api-client'; // <--- NUEVA DEPENDENCIA
+import { IBookingRepository } from '@going-monorepo-clean/domains-booking-frontend-core';
+import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
 import { Money } from '@going-monorepo-clean/shared-domain';
 
-// --- View Model (Nuevo Modelo Simple para la UI) ---
 export interface BookingViewModel {
-    id: string;
-    totalPrice: number; // Ya en dólares
-    serviceType: string;
-    status: string;
-    startDate: Date;
+  id: string;
+  totalPrice: number;
+  serviceType: string;
+  status: string;
+  startDate: Date;
 }
 
 @Injectable()
 export class CreateBookingUseCase {
-    private readonly apiClient: BookingApiClient;
+  constructor(
+    @Inject(IBookingRepository)
+    private readonly bookingRepository: IBookingRepository,
+    @Inject(IAuthRepository)
+    private readonly authRepository: IAuthRepository,
+  ) {}
 
-    constructor() {
-        // Instanciamos el cliente de API (Adaptador) directamente aquí.
-        this.apiClient = new BookingApiClient(); 
-    }
+  async execute(dto: CreateBookingDto, token: string): Promise<Result<BookingViewModel, Error>> {
+    const priceVOResult = Money.create(dto.totalPrice.amount, dto.totalPrice.currency);
+    if (priceVOResult.isErr()) return err(priceVOResult.error);
 
-    async execute(dto: CreateBookingDto, token: string): Promise<Result<BookingViewModel, Error>> {
-        // 1. Validaciones de DTO a VOs (Si es necesario)
-        const priceVOResult = Money.create(dto.totalPrice.amount, dto.totalPrice.currency);
-        if (priceVOResult.isErr()) return err(priceVOResult.error);
+    const result = await this.bookingRepository.create(
+      {
+        userId: dto.userId,
+        serviceId: dto.serviceId,
+        serviceType: dto.serviceType,
+        totalPrice: priceVOResult.value.toPrimitives(),
+        startDate: dto.startDate,
+        endDate: dto.endDate,
+      },
+      token,
+    );
 
-        // 2. Crear el Request DTO
-        const requestData = {
-            userId: dto.userId,
-            serviceId: dto.serviceId,
-            serviceType: dto.serviceType,
-            totalPrice: priceVOResult.value.toPrimitives(),
-            startDate: dto.startDate,
-            endDate: dto.endDate,
-        };
+    if (result.isErr()) return err(result.error);
 
-        // 3. Llamar al Adaptador (API Client)
-        const result = await this.apiClient.create(requestData, token);
+    const booking = result.value;
+    const viewModel: BookingViewModel = {
+      id: booking.id,
+      totalPrice: booking.totalPrice.amount / 100,
+      serviceType: booking.serviceType,
+      status: booking.status,
+      startDate: booking.startDate,
+    };
 
-        if (result.isErr()) {
-            return err(result.error);
-        }
-        
-        // 4. Mapear DTOs simples a View Models (Transformación)
-        const bookingDto = result.value;
-        const viewModel: BookingViewModel = {
-            id: bookingDto.id,
-            totalPrice: bookingDto.totalPrice.amount / 100, // Convierte centavos a dólares
-            serviceType: bookingDto.serviceType,
-            status: bookingDto.status,
-            startDate: bookingDto.startDate,
-        };
-
-        return ok(viewModel);
-    }
+    return ok(viewModel);
+  }
 }

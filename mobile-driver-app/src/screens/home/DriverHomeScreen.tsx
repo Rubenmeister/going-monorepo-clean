@@ -35,7 +35,7 @@ const QUITO_COORD: [number, number] = [-78.4678, -0.1807];
 const BG_LOCATION_TASK = 'going-driver-bg-location';
 
 // Register background location task (no-op until WebSocket tracking is added)
-TaskManager.defineTask(BG_LOCATION_TASK, ({ data: _data, error }: any) => {
+TaskManager.defineTask(BG_LOCATION_TASK, async ({ data: _data, error }) => {
   if (error) return;
 });
 
@@ -131,7 +131,9 @@ export function DriverHomeScreen() {
     if (!pendingTrip) return;
     navigation.navigate('RideRequest', {
       rideId: pendingTrip.id,
-      passengerId: pendingTrip.userId,
+      // PendingTrip sólo trae userId; la pantalla espera passengerName.
+      // Hasta que el backend incluya el nombre, pasamos el id como referencia.
+      passengerName: pendingTrip.userId,
       origin: pendingTrip.origin.address,
       destination: pendingTrip.destination.address,
       amount: pendingTrip.price.amount,
@@ -216,7 +218,7 @@ export function DriverHomeScreen() {
   return (
     <View style={styles.container}>
       {/* Map */}
-      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.DarkV11}>
+      <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Dark}>
         <MapboxGL.Camera
           ref={cameraRef}
           zoomLevel={14}
