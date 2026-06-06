@@ -369,7 +369,7 @@ export default function ToursPage() {
         </section>
       )}
 
-      {/* Why Going */}
+      {/* Why Going App */}
       <section className="bg-white py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
@@ -431,7 +431,7 @@ export default function ToursPage() {
             <div className="md:w-2/5 flex-shrink-0">
               <img
                 src="/images/ANDES COTOPAXI QUILOTOA TURISTAS232.JPG"
-                alt="Operador turístico Going Ecuador"
+                alt="Operador turístico Going App Ecuador"
                 className="w-full h-full object-cover"
                 style={{ minHeight: '360px', maxHeight: '500px' }}
               />
@@ -446,7 +446,7 @@ export default function ToursPage() {
                 <span style={{ color: '#f87171' }}>miles de viajeros</span>
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Publica tus tours en Going y accede a viajeros nacionales e internacionales buscando aventura en Ecuador.
+                Publica tus tours en Going App y accede a viajeros nacionales e internacionales buscando aventura en Ecuador.
                 Panel de gestión profesional, pagos automáticos y soporte dedicado.
               </p>
               <div className="grid grid-cols-2 gap-3 mb-8">

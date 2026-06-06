@@ -112,7 +112,7 @@ function SolicitudContent() {
             Solicitar Cuenta
           </h1>
           <p className="text-slate-600 mt-2">
-            Completa el formulario para solicitar tu cuenta en Going para Empresas
+            Completa el formulario para solicitar tu cuenta en Going App para Empresas
           </p>
         </div>
 
@@ -282,7 +282,7 @@ function SolicitudContent() {
           {/* Empleados Estimados */}
           <div>
             <label htmlFor="empleadosEstimados" className="block text-sm font-semibold text-slate-900 mb-1">
-              Empleados Estimados (Para usar Going)
+              Empleados Estimados (Para usar Going App)
             </label>
             <input
               type="number"
@@ -298,7 +298,7 @@ function SolicitudContent() {
           {/* Descripción de Uso */}
           <div>
             <label htmlFor="descripcionUso" className="block text-sm font-semibold text-slate-900 mb-1">
-              ¿Cómo planean usar Going para Empresas?
+              ¿Cómo planean usar Going App para Empresas?
             </label>
             <textarea
               id="descripcionUso"

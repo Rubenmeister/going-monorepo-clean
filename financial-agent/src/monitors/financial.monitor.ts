@@ -166,11 +166,11 @@ export async function sendDailyFinancialReport(): Promise<void> {
   ].filter(Boolean).join(' | ');
 
   const msg = [
-    `📊 <b>Reporte Financiero Diario — Going</b>`,
+    `📊 <b>Reporte Financiero Diario — Going App</b>`,
     `${new Date().toLocaleDateString('es-EC', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
     ``,
     `💰 <b>Ingresos totales: ${fmt(report.totalRevenue)}</b>`,
-    `  ├ Going (20%): ${fmt(report.goingRevenue)}`,
+    `  ├ Going App (20%): ${fmt(report.goingRevenue)}`,
     `  ├ Conductores (80%): ${fmt(report.driverRevenue)}`,
     `  └ IVA cobrado: ${fmt(report.ivaCollected)}`,
     ``,
@@ -197,11 +197,11 @@ export async function sendWeeklyFinancialReport(): Promise<void> {
   const { count: pendingCount, totalAmount: pendingAmount } = await getPendingPayoutsSummary();
 
   const msg = [
-    `📈 <b>Reporte Financiero Semanal — Going</b>`,
+    `📈 <b>Reporte Financiero Semanal — Going App</b>`,
     `Semana ${report.from.toLocaleDateString('es-EC')} — ${report.to.toLocaleDateString('es-EC')}`,
     ``,
     `💰 <b>Ingresos semana: ${fmt(report.totalRevenue)}</b>`,
-    `  ├ Going: ${fmt(report.goingRevenue)}`,
+    `  ├ Going App: ${fmt(report.goingRevenue)}`,
     `  └ Conductores: ${fmt(report.driverRevenue)}`,
     ``,
     `🚗 <b>Viajes completados:</b> ${report.totalRides}`,

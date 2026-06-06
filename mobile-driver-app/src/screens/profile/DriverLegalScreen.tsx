@@ -1,7 +1,7 @@
 /**
  * DriverLegalScreen
  *
- * Centro Legal accesible desde el perfil de conductoras y conductores Going.
+ * Centro Legal accesible desde el perfil de conductoras y conductores Going App.
  * Reúne los documentos obligatorios bajo la legislación ecuatoriana (LOTTTSV
  * + LOPDP + Código del Trabajo / contratista independiente) y los específicos
  * para quienes operan en la plataforma:
@@ -47,7 +47,7 @@ const LEGAL_DOCS: LegalDoc[] = [
     icon: 'document-text',
     title: 'Términos y Condiciones',
     summary:
-      'Reglas generales que rigen tu uso de la plataforma Going como conductora o conductor.',
+      'Reglas generales que rigen tu uso de la plataforma Going App como conductora o conductor.',
     url: `${LEGAL_BASE}/terms`,
     mandatory: true,
   },
@@ -84,7 +84,7 @@ const LEGAL_DOCS: LegalDoc[] = [
   },
   {
     icon: 'school',
-    title: 'Tu Primer Viaje con Going',
+    title: 'Tu Primer Viaje con Going App',
     summary:
       'Guía paso a paso para tu primera carrera: preparación del vehículo, encuentro con la persona pasajera.',
     url: `${LEGAL_BASE}/conductores-elegirnos`,
@@ -93,7 +93,7 @@ const LEGAL_DOCS: LegalDoc[] = [
     icon: 'lock-closed',
     title: 'Política de Privacidad (LOPDP)',
     summary:
-      'Cómo Going recopila y trata tus datos personales. Tus derechos ARCO conforme a la legislación ecuatoriana.',
+      'Cómo Going App recopila y trata tus datos personales. Tus derechos ARCO conforme a la legislación ecuatoriana.',
     url: `${LEGAL_BASE}/privacy`,
     mandatory: true,
   },
@@ -115,7 +115,7 @@ const LEGAL_DOCS: LegalDoc[] = [
     icon: 'ban',
     title: 'Artículos Prohibidos en Envíos',
     summary:
-      'Lista de productos que no puedes transportar en Going Envíos (sustancias, armas, productos restringidos).',
+      'Lista de productos que no puedes transportar en Going App Envíos (sustancias, armas, productos restringidos).',
     url: `${LEGAL_BASE}/envios-prohibidos`,
   },
 ];
@@ -132,10 +132,10 @@ export function DriverLegalScreen() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Centro Legal Going</Text>
+        <Text style={styles.title}>Centro Legal Going App</Text>
         <Text style={styles.subtitle}>
           Documentos que rigen tu actividad como conductora o conductor en la
-          plataforma Going.
+          plataforma Going App.
         </Text>
       </View>
 
@@ -146,7 +146,7 @@ export function DriverLegalScreen() {
           <Text style={styles.wellnessTitle}>Bienestar de Conductoras y Conductores</Text>
         </View>
         <Text style={styles.wellnessText}>
-          Going aplica reglas automáticas para cuidar tu salud: descanso
+          Going App aplica reglas automáticas para cuidar tu salud: descanso
           forzado de 15 minutos cada 4 horas de manejo continuo, tope diario
           de 12 horas conectado, bloqueo de 8 horas para garantizar tu sueño.
           La fatiga del viaje interurbano se computa 1,5x.
@@ -212,7 +212,7 @@ export function DriverLegalScreen() {
       <View style={styles.companyCard}>
         <Text style={styles.companyLabel}>Empresa responsable</Text>
         <Text style={styles.companyText}>
-          Going es una marca operada por{' '}
+          Going App es una marca operada por{' '}
           <Text style={styles.companyBold}>Thorn AI Technologies S.A.S.</Text>,
           RUC <Text style={styles.companyBold}>1793176925001</Text>, con
           domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
@@ -235,7 +235,7 @@ export function DriverLegalScreen() {
           style={styles.whatsappBtn}
         >
           <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
-          <Text style={styles.whatsappText}>WhatsApp Going +593 98 403 7949</Text>
+          <Text style={styles.whatsappText}>WhatsApp Going App +593 98 403 7949</Text>
         </TouchableOpacity>
       </View>
 

@@ -46,7 +46,7 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '', style }: { ch
 }
 
 /* ── iPhone mockup ─────────────────────────────────────────
-   Marco iPhone CSS-puro con UI mockeada de la app Going viajando.
+   Marco iPhone CSS-puro con UI mockeada de la app Going App viajando.
    Sin imagen externa: todo SVG + divs. Refuerza la idea "el producto
    es una app móvil" en lugar de mostrar una foto de stock.
 */
@@ -102,7 +102,7 @@ function PhoneMockup() {
                 <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: COLORS.brand.red }}>
                   <IconCar size={14} className="text-white" />
                 </span>
-                <span className="font-black text-sm text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Going</span>
+                <span className="font-black text-sm text-gray-900" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Going App</span>
               </div>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#DCFCE7', color: '#15803D' }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -166,7 +166,7 @@ function PhoneMockup() {
 
 /* ── Data ───────────────────────────────────────────────────── *
  * REGIONS son las 4 regiones turísticas de Ecuador. Los colores acá NO son
- * de marca Going — son tokens de identidad geográfica (Sierra=morado andino,
+ * de marca Going App — son tokens de identidad geográfica (Sierra=morado andino,
  * Costa=azul mar, Amazonía=verde selva, Galápagos=ámbar). Es legítimo que
  * estén fuera de la paleta de marca.
  *
@@ -277,11 +277,11 @@ const TRAVELER_BENEFITS: Benefit[] = [
   { Icon: IconShield,   title: 'Viaja Seguro',                              desc: 'Antes de subir, ve el perfil de la conductora o conductor, la foto del vehículo y las calificaciones de otros viajeros. Tu trayecto queda registrado de inicio a fin.' },
   { Icon: IconStar,     title: 'Conductoras y Conductores Confiables',      desc: 'Cada conductora y conductor tiene calificaciones reales. Sabes quién te lleva y en qué carro viajarás antes de confirmar tu viaje.' },
   { Icon: IconMoney,    title: 'Precio Claro, Sin Sorpresas',               desc: 'La app te muestra el precio antes de confirmar. Sin negociar, sin cambios inesperados al final del recorrido.' },
-  { Icon: IconLightning,title: 'Rápido y Fácil',                            desc: 'Abre Going, escribe tu destino y en segundos tienes tu viaje en camino. Pedir transporte nunca fue tan simple.' },
+  { Icon: IconLightning,title: 'Rápido y Fácil',                            desc: 'Abre Going App, escribe tu destino y en segundos tienes tu viaje en camino. Pedir transporte nunca fue tan simple.' },
   { Icon: IconRoute,    title: 'Aeropuerto y Viajes Largos',                desc: 'Organiza tu traslado al aeropuerto o a otra ciudad con anticipación. Llega a tiempo, sin el estrés de buscar transporte de último minuto.' },
   { Icon: IconUser,     title: 'Servicio VIP Disponible',                   desc: 'Para reuniones importantes, eventos especiales o cuando quieres viajar con más comodidad. Elige el nivel de servicio que necesitas.' },
   { Icon: IconPin,      title: 'Tracking en Tiempo Real',                   desc: 'Sigue tu ruta en vivo desde la app. Tu familia también puede ver dónde estás durante el trayecto.' },
-  { Icon: IconUsers,    title: 'Apoya la Comunidad Local',                  desc: 'Cada viaje genera ingresos para conductoras y conductores ecuatorianos de tu propia comunidad. Moverse con Going también es apoyar lo nuestro.' },
+  { Icon: IconUsers,    title: 'Apoya la Comunidad Local',                  desc: 'Cada viaje genera ingresos para conductoras y conductores ecuatorianos de tu propia comunidad. Moverse con Going App también es apoyar lo nuestro.' },
   { Icon: IconPhone,    title: 'Soporte Siempre Disponible',                desc: 'Nuestro equipo está listo para ayudarte ante cualquier duda, objeto olvidado o inconveniente. No estás sola ni solo en ningún viaje.' },
 ];
 
@@ -296,8 +296,8 @@ const DRIVER_PERKS: DriverPerk[] = [
   { Icon: IconMoney,      text: 'Pagos claros y transparentes, sin confusiones ni sorpresas' },
   { Icon: IconShield,     text: 'Viajes registrados: mayor respaldo y seguridad en cada trayecto' },
   { Icon: IconStar,       text: 'Calificaciones que construyen tu reputación' },
-  { Icon: IconGraduation, text: 'Academia Going: capacitación gratuita para conductoras y conductores' },
-  { Icon: IconHeadphones, text: 'Comunidad y soporte del equipo Going cuando lo necesites' },
+  { Icon: IconGraduation, text: 'Academia Going App: capacitación gratuita para conductoras y conductores' },
+  { Icon: IconHeadphones, text: 'Comunidad y soporte del equipo Going App cuando lo necesites' },
 ];
 
 /* ── ServiceCard ────────────────────────────────────────────────
@@ -401,8 +401,8 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ══ HERO Going — Transporte primero, no turismo ════════════════════════
-         La marca Going es sobre MOVIMIENTO y transporte compartido (guía
+      {/* ══ HERO Going App — Transporte primero, no turismo ════════════════════════
+         La marca Going App es sobre MOVIMIENTO y transporte compartido (guía
          oficial 2024). El hero anterior era un carousel de paisajes de Ecuador
          que se sentía como sitio de turismo. Esta versión deja claro desde la
          primera mirada: viaje compartido, ruta, conductoras y conductores.
@@ -411,7 +411,7 @@ export default function HomePage() {
         className="relative w-full overflow-hidden"
         style={{
           minHeight: '100vh',
-          /* Foto Hero oficial Going: carretera ecuatoriana entre Sierra y Costa.
+          /* Foto Hero oficial Going App: carretera ecuatoriana entre Sierra y Costa.
              Sirve también como referencia para el splash de las apps móviles
              (la versión vertical para mobile vive en mobile-user-app/assets). */
           backgroundImage: "url('/images/going-hero.jpg')",
@@ -439,7 +439,7 @@ export default function HomePage() {
           <FadeIn dir="up" className="text-center max-w-3xl mb-10">
             <img
               src="/going-logo-h.png"
-              alt="Going"
+              alt="Going App"
               className="h-14 mx-auto mb-6"
               style={{ filter: 'drop-shadow(0 2px 12px rgba(255,255,255,0.6))' }}
             />
@@ -485,7 +485,7 @@ export default function HomePage() {
               <ServiceCard
                 href="/ride?type=shared"
                 image="/images/pasajeros.JPG"
-                alt="Pasajeros viajando en Going"
+                alt="Pasajeros viajando en Going App"
                 title="Viaje Compartido"
                 description="Viajes compartidos puerta a puerta entre ciudades del Ecuador. Pagas solo tu asiento."
                 cta="Reservar"
@@ -494,7 +494,7 @@ export default function HomePage() {
               <ServiceCard
                 href="/ride?type=van"
                 image="/images/Viaje%20privado.png"
-                alt="Vehículo privado Going"
+                alt="Vehículo privado Going App"
                 title="Viaje Privado"
                 description="Auto, SUV, VAN, Minibús o Bus exclusivo para ti y tu grupo, dentro o entre ciudades."
                 cta="Cotizar"
@@ -553,7 +553,7 @@ export default function HomePage() {
           {/* Indicador scroll · las 3 ventajas pasaron a sección propia
               después del hero (mejor contraste + más espacio para visuals). */}
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-auto">
-            <span>Conoce Ecuador con Going</span>
+            <span>Conoce Ecuador con Going App</span>
             <IconChevronDown size={16} />
           </div>
         </div>
@@ -564,7 +564,7 @@ export default function HomePage() {
          foto de fondo y los icons solos se veían planos. Ahora:
            - Sección propia con fondo blanco sólido (contraste pleno)
            - Cada card tiene su VISUAL ÚNICO arriba (no icon repetido):
-             * Conductoras → foto real de conductor Going
+             * Conductoras → foto real de conductor Going App
              * Tracking → mini phone mockup con mapa SVG animado (pulse GPS)
              * Pago → stack visual de métodos (Visa/Master/DeUna/transfer)
            - Hover lift + scale del visual + borde brand
@@ -573,7 +573,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-6">
           <FadeIn className="text-center mb-10">
             <span className="text-xs font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>
-              Lo que hace especial a Going
+              Lo que hace especial a Going App
             </span>
             <h2
               className="text-2xl sm:text-3xl font-black text-gray-900 mt-2 leading-tight"
@@ -590,7 +590,7 @@ export default function HomePage() {
                 <div className="relative w-full h-48 overflow-hidden bg-gray-100">
                   <img
                     src="/images/Conductor%20Gong.jpg"
-                    alt="Conductor verificado Going"
+                    alt="Conductor verificado Going App"
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
                   {/* badge verificado top-right */}
@@ -776,7 +776,7 @@ export default function HomePage() {
 
       {/* ══ COBERTURA — 15 ciudades + Aeropuerto Quito ═══════════════════════
          Sección prominente que destaca el alcance operativo inicial de
-         Going. Feedback 29-may: tenía bajo peso visual; ahora título
+         Going App. Feedback 29-may: tenía bajo peso visual; ahora título
          grande + chips con border-l accent + el Aeropuerto destacado
          como ancla destino. */}
       <section className="bg-gradient-to-b from-gray-50 to-white py-14 border-y border-gray-100">
@@ -839,7 +839,7 @@ export default function HomePage() {
       {/* ── Search Card — "también sin app" ───────────────── *
          Posicionada como alternativa al download. Quien entra desde
          desktop o quiere reservar rápido sin instalar, puede hacerlo
-         desde la webapp con la misma cuenta Going.
+         desde la webapp con la misma cuenta Going App.
       */}
       <section id="search-card" className="relative z-20 max-w-4xl mx-auto px-4 -mt-12 mb-16">
         <FadeIn>
@@ -862,7 +862,7 @@ export default function HomePage() {
         </FadeIn>
       </section>
 
-      {/* ── Primeras Rutas Going ──────────────────────────── */}
+      {/* ── Primeras Rutas Going App ──────────────────────────── */}
       <section className="overflow-hidden" style={{ background: '#0f172a' }}>
         <div className="max-w-7xl mx-auto px-6 py-16">
 
@@ -985,7 +985,7 @@ export default function HomePage() {
       </section>
 
       {/* ══ DESCARGÁ LA APP — sección dedicada con mockup iPhone ════════════
-         Refuerzo del mensaje principal: Going ES una app móvil. Esta
+         Refuerzo del mensaje principal: Going App ES una app móvil. Esta
          sección muestra cómo se ve la app en uso (mockup iPhone) + QR +
          badges grandes para descarga.
       */}
@@ -1000,11 +1000,11 @@ export default function HomePage() {
                 Descarga la app
               </span>
               <h2 className="text-white font-black leading-tight mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-                Going vive en<br />
+                Going App vive en<br />
                 <span style={{ color: COLORS.brand.red }}>tu teléfono.</span>
               </h2>
               <p className="text-white/80 text-lg leading-relaxed mb-8 max-w-lg">
-                La app oficial de Going para pasajeras y pasajeros. Reserva
+                La app oficial de Going App para pasajeras y pasajeros. Reserva
                 viajes compartidos o privados, manda un envío, sigue tu ruta
                 en vivo y paga sin efectivo — todo desde el celular.
               </p>
@@ -1076,7 +1076,7 @@ export default function HomePage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(PLAY_STORE_URL)}&size=160x160&margin=8&color=000000`}
-                    alt="QR para descargar Going en Google Play"
+                    alt="QR para descargar Going App en Google Play"
                     width={140}
                     height={140}
                     className="mx-auto rounded-lg"
@@ -1085,7 +1085,7 @@ export default function HomePage() {
               </div>
             </FadeIn>
 
-            {/* ── Lado derecho: MOCKUP iPHONE con UI Going adentro ── */}
+            {/* ── Lado derecho: MOCKUP iPHONE con UI Going App adentro ── */}
             <FadeIn dir="right" className="hidden lg:flex justify-center items-center">
               <PhoneMockup />
             </FadeIn>
@@ -1322,7 +1322,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <FadeIn className="text-center mb-10">
             <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Simple y rápido</span>
-            <h2 className="text-gray-900 font-black text-4xl mt-2">Cómo funciona Going</h2>
+            <h2 className="text-gray-900 font-black text-4xl mt-2">Cómo funciona Going App</h2>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connector line */}
@@ -1350,8 +1350,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <FadeIn className="text-center mb-12">
             <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>4 mundos</span>
-            <h2 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going</h2>
-            <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going te lleva a todas.</p>
+            <h2 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going App</h2>
+            <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going App te lleva a todas.</p>
           </FadeIn>
 
           {/* Region tabs */}
@@ -1395,12 +1395,12 @@ export default function HomePage() {
       </section>
 
 
-      {/* ── Academia Going ───────────────────────────────────── */}
+      {/* ── Academia Going App ───────────────────────────────────── */}
       <section className="py-14 px-4" style={{ background: `linear-gradient(135deg, #0f172a, ${COLORS.brand.blue})` }}>
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
-            <span className="text-sm font-bold uppercase tracking-widest text-blue-300">Aprende con Going</span>
-            <h2 className="text-white font-black text-4xl mt-2" style={{ fontFamily: 'var(--font-academia, serif)' }}>Academia Going</h2>
+            <span className="text-sm font-bold uppercase tracking-widest text-blue-300">Aprende con Going App</span>
+            <h2 className="text-white font-black text-4xl mt-2" style={{ fontFamily: 'var(--font-academia, serif)' }}>Academia Going App</h2>
             <p className="text-blue-200 text-lg mt-3 max-w-lg mx-auto">Capacitaciones gratuitas para conductoras, conductores y proveedores turísticos verificados.</p>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -1432,15 +1432,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Únete a Going (pasajeros) ─────────────────────── */}
+      {/* ── Únete a Going App (pasajeros) ─────────────────────── */}
       {!isLoggedIn && (
         <>
           <section className="py-14 px-4 bg-white">
             <div className="max-w-6xl mx-auto">
               <FadeIn className="text-center mb-10">
                 <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Para viajeros</span>
-                <h2 className="text-gray-900 font-black mt-2 mb-4" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>¿Por qué viajar con Going?</h2>
-                <p className="text-gray-500 text-xl max-w-2xl mx-auto">Seguridad, comodidad y precio claro en cada viaje. Descubre por qué miles de ecuatorianos ya usan Going.</p>
+                <h2 className="text-gray-900 font-black mt-2 mb-4" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>¿Por qué viajar con Going App?</h2>
+                <p className="text-gray-500 text-xl max-w-2xl mx-auto">Seguridad, comodidad y precio claro en cada viaje. Descubre por qué miles de ecuatorianos ya usan Going App.</p>
               </FadeIn>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
@@ -1460,7 +1460,7 @@ export default function HomePage() {
               </div>
 
               <FadeIn className="text-center">
-                <p className="text-gray-400 text-base mb-6 italic">&ldquo;Tu tranquilidad es lo primero. Con Going, cada viaje está pensado para que llegues seguro a tu destino.&rdquo;</p>
+                <p className="text-gray-400 text-base mb-6 italic">&ldquo;Tu tranquilidad es lo primero. Con Going App, cada viaje está pensado para que llegues seguro a tu destino.&rdquo;</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 text-white font-black px-10 py-4 rounded-2xl text-lg transition-all hover:opacity-90 hover:scale-105 shadow-xl" style={{ backgroundColor: COLORS.brand.red }}>
                     Registrarme gratis
@@ -1488,10 +1488,10 @@ export default function HomePage() {
                 <FadeIn dir="right" className="md:w-1/2 w-full">
                   <span className="text-sm font-bold uppercase tracking-widest text-blue-300 mb-3 block">Para conductoras y conductores</span>
                   <h2 className="text-white font-black leading-tight mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-                    Conduce con libertad.<br />Crece con Going.
+                    Conduce con libertad.<br />Crece con Going App.
                   </h2>
                   <p className="text-blue-200 text-lg mb-8 leading-relaxed">
-                    Tu vehículo es una oportunidad. Únete a la comunidad Going y genera ingresos con total flexibilidad.
+                    Tu vehículo es una oportunidad. Únete a la comunidad Going App y genera ingresos con total flexibilidad.
                   </p>
                   <ul className="space-y-4 mb-10">
                     {DRIVER_PERKS.map(({ Icon, text }) => (

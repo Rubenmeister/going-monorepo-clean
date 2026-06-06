@@ -18,7 +18,7 @@ export default function EmpresasLanding() {
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-blue-600">
-              Going
+              Going App
             </Link>
             <nav className="flex gap-6">
               <Link
@@ -36,7 +36,7 @@ export default function EmpresasLanding() {
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-slate-900 sm:text-5xl lg:text-6xl">
-            Going para Empresas
+            Going App para Empresas
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-xl text-slate-600">
             Soluciones de movilidad corporativa pensadas para tu negocio.
@@ -145,7 +145,7 @@ export default function EmpresasLanding() {
       <footer className="border-t border-slate-200 bg-white/50 mt-16">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-slate-600">
-            © 2026 Going. Soluciones de movilidad.
+            © 2026 Going App. Soluciones de movilidad.
           </p>
         </div>
       </footer>

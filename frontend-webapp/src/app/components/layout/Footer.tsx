@@ -58,8 +58,8 @@ export function Footer() {
 
   const empresa = [
     { name: 'Quiénes Somos',      href: '/quienes-somos' },
-    { name: 'Comunidad Going',    href: '/comunidad' },
-    { name: 'Academia Going',     href: '/academy', badge: 'Gratis' },
+    { name: 'Comunidad Going App',    href: '/comunidad' },
+    { name: 'Academia Going App',     href: '/academy', badge: 'Gratis' },
     { name: 'Blog',               href: '/blog' },
     { name: 'Noticias',           href: '/news' },
     { name: 'Carreras',           href: '/careers' },
@@ -110,7 +110,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going?</div>
+              <div className="text-white font-bold text-sm mb-1">¿Quieres ganar con Going App?</div>
               <div className="flex flex-wrap gap-4">
                 {[
                   { icon: '🚗', label: 'Conductor',       href: '/services/conductores' },
@@ -141,7 +141,7 @@ export function Footer() {
         {/* Brand + social */}
         <div className="flex flex-col lg:flex-row items-start gap-10 mb-12 pb-12 border-b border-gray-800">
           <div className="flex-shrink-0 max-w-xs">
-            <Image src="/going-logo-white-h.png" alt="Going" width={140} height={46} className="h-10 w-auto mb-4" />
+            <Image src="/going-logo-white-h.png" alt="Going App" width={140} height={46} className="h-10 w-auto mb-4" />
             <p className="text-gray-400 text-sm leading-relaxed mb-5">
               La plataforma de movilidad y servicios de Ecuador. Transporte, alojamiento, tours y envíos — todo en un lugar.
             </p>
@@ -251,7 +251,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-sm text-gray-500">
           <div className="flex items-center gap-3 flex-wrap justify-center">
-            <span>© {new Date().getFullYear()} Going — marca operada por <span className="text-gray-300 font-medium">Thorn AI Technologies S.A.S.</span></span>
+            <span>© {new Date().getFullYear()} Going App — marca operada por <span className="text-gray-300 font-medium">Thorn AI Technologies S.A.S.</span></span>
             <span className="hidden md:block">·</span>
             <span className="text-xs">🇪🇨 Hecho en Ecuador para Ecuador</span>
           </div>

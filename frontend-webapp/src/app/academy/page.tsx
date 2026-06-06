@@ -50,9 +50,9 @@ const TRONCO_COMUN: Course[] = [
   {
     id: 'tc1',
     Icon: IconGlobe,
-    title: 'El ADN de Going',
+    title: 'El ADN de Going App',
     subtitle: 'Filosofía y hospitalidad ecuatoriana',
-    desc: 'La misión de Going, hospitalidad ecuatoriana, empatía, resolución pacífica de problemas y por qué somos embajadores del país.',
+    desc: 'La misión de Going App, hospitalidad ecuatoriana, empatía, resolución pacífica de problemas y por qué somos embajadores del país.',
     duration: '15 min',
     lessons: 3,
     formats: ['reading', 'podcast'],
@@ -115,7 +115,7 @@ const SCHOOLS: Record<string, School> = {
     badgeIcon: IconMedal,
     courses: [
       { id: 'c1', Icon: IconUser,   title: 'La Primera Impresión',          subtitle: 'Módulo 1 — Ruta del Volante',
-        desc: 'El arte de recibir. Checklist del vehículo, saludo Going, uso del lanyard y manejo de equipaje.',
+        desc: 'El arte de recibir. Checklist del vehículo, saludo Going App, uso del lanyard y manejo de equipaje.',
         duration: '15 min', lessons: 3, formats: ['reading', 'podcast', 'slides'], level: 'Principiante',
         levelColor: 'bg-green-100 text-green-700', students: 5234, rating: 4.9 },
       { id: 'c2', Icon: IconShield, title: 'Seguridad Vial Ecuador',         subtitle: 'Manejo defensivo por región',
@@ -143,14 +143,14 @@ const SCHOOLS: Record<string, School> = {
     tagline: 'Alojamientos y hospedaje',
     color: COLORS.system.blue,
     bg: COLORS.system.blueBg,
-    badge: 'Superanfitrión Going',
+    badge: 'Superanfitrión Going App',
     badgeIcon: IconMedal,
     courses: [
       { id: 'a1', Icon: IconCamera,  title: 'Fotografía con el Celular',           subtitle: 'Fotos que venden el vibe',
         desc: 'Luz natural, ángulos, composición y edición gratis. Convierte tu teléfono en una cámara profesional.',
         duration: '20 min', lessons: 4, formats: ['video', 'reading'], level: 'Principiante',
         levelColor: 'bg-green-100 text-green-700', students: 3421, rating: 4.9 },
-      { id: 'a2', Icon: IconCheck,   title: 'Limpieza Estándar Going',             subtitle: 'El protocolo que construye confianza',
+      { id: 'a2', Icon: IconCheck,   title: 'Limpieza Estándar Going App',             subtitle: 'El protocolo que construye confianza',
         desc: 'Secuencia de limpieza, productos seguros, desinfección post-huésped y lista de verificación.',
         duration: '15 min', lessons: 3, formats: ['reading', 'quiz'], level: 'Principiante',
         levelColor: 'bg-green-100 text-green-700', students: 2800, rating: 4.7 },
@@ -171,7 +171,7 @@ const SCHOOLS: Record<string, School> = {
     tagline: 'Experiencias y cultura ecuatoriana',
     color: COLORS.state.success,
     bg: '#F0FDF4',
-    badge: 'Embajador Local Going',
+    badge: 'Embajador Local Going App',
     badgeIcon: IconMedal,
     courses: [
       { id: 'g1', Icon: IconBook,  title: 'El Arte del Storytelling', subtitle: 'Cuenta tu historia, vende tu experiencia',
@@ -195,7 +195,7 @@ const SCHOOLS: Record<string, School> = {
     tagline: 'Tours profesionales y grupos',
     color: '#8B5CF6',
     bg: '#F5F3FF',
-    badge: 'Operador Certificado Going',
+    badge: 'Operador Certificado Going App',
     badgeIcon: IconMedal,
     courses: [
       { id: 'o1', Icon: IconClipboard, title: 'Logística de Grupos Grandes',      subtitle: 'De 20 a 200 personas',
@@ -206,7 +206,7 @@ const SCHOOLS: Record<string, School> = {
         desc: 'Requisitos de licencia, permisos de operación, seguros obligatorios y actualizaciones regulatorias.',
         duration: '20 min', lessons: 4, formats: ['reading', 'quiz'], level: 'Intermedio',
         levelColor: 'bg-yellow-100 text-yellow-700', students: 750, rating: 4.8 },
-      { id: 'o3', Icon: IconMobile,    title: 'Integración con la App Going',      subtitle: 'Automatiza tu gestión',
+      { id: 'o3', Icon: IconMobile,    title: 'Integración con la App Going App',      subtitle: 'Automatiza tu gestión',
         desc: 'Sincronización de reservas, manejo de disponibilidad, sistema de pagos y métricas de rendimiento.',
         duration: '25 min', lessons: 5, formats: ['video', 'reading'], level: 'Intermedio',
         levelColor: 'bg-yellow-100 text-yellow-700', students: 520, rating: 4.7 },
@@ -216,13 +216,13 @@ const SCHOOLS: Record<string, School> = {
     id: 'viajeros',
     Icon: IconGlobe,
     name: 'Escuela de Viajeros',
-    tagline: 'Saca el máximo de Going',
+    tagline: 'Saca el máximo de Going App',
     color: COLORS.brand.yellowDark,
     bg: COLORS.brand.yellowBg,
-    badge: 'Viajero Going Pro',
+    badge: 'Viajero Going App Pro',
     badgeIcon: IconMedal,
     courses: [
-      { id: 'v1', Icon: IconMap,     title: 'Viaja Inteligente con Going', subtitle: 'Guía completa del pasajero',
+      { id: 'v1', Icon: IconMap,     title: 'Viaja Inteligente con Going App', subtitle: 'Guía completa del pasajero',
         desc: 'Cómo reservar, rastrear tu viaje, comunicarte con el conductor y usar todas las funciones de la app.',
         duration: '15 min', lessons: 3, formats: ['reading', 'video'], level: 'Principiante',
         levelColor: 'bg-green-100 text-green-700', students: 8934, rating: 4.9 },
@@ -293,13 +293,13 @@ export default function AcademyPage() {
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
               style={{ backgroundColor: `${COLORS.brand.red}22`, color: COLORS.brand.redLight }}>
               <IconGraduation size={14} />
-              Academia Going
+              Academia Going App
             </span>
             <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
               Capacítate. Crece. Gana más.
             </h1>
             <p className="text-gray-300 text-lg max-w-2xl mb-6">
-              La plataforma de aprendizaje de Going. Para conductores, anfitriones, guías, operadores y viajeros.
+              La plataforma de aprendizaje de Going App. Para conductores, anfitriones, guías, operadores y viajeros.
               Cursos gratuitos en formato microlearning: texto, podcast, video y quizzes.
             </p>
             <div className="flex flex-wrap gap-3 mb-8 justify-center md:justify-start">
@@ -332,7 +332,7 @@ export default function AcademyPage() {
           <div className="flex-1 w-full md:max-w-md">
             <img
               src="/images/Academia%20Going.jpg"
-              alt="Academia Going — formación para conductores y anfitriones"
+              alt="Academia Going App — formación para conductores y anfitriones"
               className="w-full rounded-3xl shadow-2xl object-cover"
               style={{ maxHeight: '440px' }}
             />
@@ -476,7 +476,7 @@ export default function AcademyPage() {
               <p className="text-gray-300 text-sm leading-relaxed">
                 Antes de activar tu perfil como proveedor o acceder a las escuelas de especialización,
                 debes completar estos 3 módulos. También disponibles para viajeros que quieren conocer
-                la filosofía Going.
+                la filosofía Going App.
               </p>
             </div>
 
@@ -553,7 +553,7 @@ export default function AcademyPage() {
         {activeTab === 'niveles' && (
           <div>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Sistema de Niveles Going</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Sistema de Niveles Going App</h2>
               <p className="text-gray-500 text-sm leading-relaxed">
                 Completa cursos y sube de nivel. Más nivel = mejor posición en los resultados de búsqueda +
                 insignias visibles en tu perfil que generan más confianza y más reservas.
@@ -617,7 +617,7 @@ export default function AcademyPage() {
                     color:  SCHOOLS[key].color,
                   })),
                   { Icon: IconShield, badge: 'Primeros Auxilios', school: 'Seguridad Certificada', color: COLORS.state.danger },
-                  { Icon: IconGlobe,  badge: 'Bilingüe Going',    school: 'Inglés Turístico',      color: COLORS.state.success },
+                  { Icon: IconGlobe,  badge: 'Bilingüe Going App',    school: 'Inglés Turístico',      color: COLORS.state.success },
                 ].map(b => (
                   <div key={b.badge} className="rounded-xl p-4 text-center border border-gray-100 bg-gray-50">
                     <div className="flex justify-center mb-2" style={{ color: b.color }}>

@@ -1,5 +1,5 @@
 /**
- * Going Rewards — programa de fidelidad.
+ * Going App Rewards — programa de fidelidad.
  *
  * Single source of truth para LEVELS + tierFromPoints + HOW_TO_EARN +
  * BENEFITS. Importado por #16 Profile y #17 Puntos para evitar drift
@@ -27,7 +27,7 @@ export interface RewardsLevel {
 }
 
 /**
- * 4 tiers del programa Going Rewards. Si un usuario nuevo arranca en
+ * 4 tiers del programa Going App Rewards. Si un usuario nuevo arranca en
  * Explorador, necesita 500 pts (~50 viajes Compartido) para subir a
  * Viajero — progresión sostenida pero alcanzable.
  */

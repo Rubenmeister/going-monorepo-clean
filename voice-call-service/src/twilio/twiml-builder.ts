@@ -49,7 +49,7 @@ export function buildAnswerTwiml(input: AnswerTwimlInput): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Lupe" language="es-MX">Aló, Going. Un momento por favor.</Say>
+  <Say voice="Polly.Lupe" language="es-MX">Aló, Going App. Un momento por favor.</Say>
   <Connect>
     <Stream url="${url}">
       <Parameter name="callId" value="${cid}"/>
@@ -74,7 +74,7 @@ interface HandoffTwimlInput {
  *    operador notificado por Telegram devuelve la llamada manualmente).
  */
 export function buildHandoffTwiml(input: HandoffTwimlInput): string {
-  const intro = (input.spokenIntro ?? 'Te paso con un agente del equipo Going. No cuelgues.')
+  const intro = (input.spokenIntro ?? 'Te paso con un agente del equipo Going App. No cuelgues.')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   if (input.operatorPhone) {
@@ -83,7 +83,7 @@ export function buildHandoffTwiml(input: HandoffTwimlInput): string {
 <Response>
   <Say voice="Polly.Lupe" language="es-MX">${intro}</Say>
   <Dial timeout="20" answerOnBridge="true">${phone}</Dial>
-  <Say voice="Polly.Lupe" language="es-MX">No pudimos conectarte ahora. Te vamos a llamar en breve. Gracias por llamar a Going.</Say>
+  <Say voice="Polly.Lupe" language="es-MX">No pudimos conectarte ahora. Te vamos a llamar en breve. Gracias por llamar a Going App.</Say>
   <Hangup/>
 </Response>`;
   }
@@ -92,7 +92,7 @@ export function buildHandoffTwiml(input: HandoffTwimlInput): string {
   // al operador via Telegram con info contextual + número del caller.
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Lupe" language="es-MX">Listo. Un agente del equipo Going te va a llamar en pocos minutos. Gracias por llamar.</Say>
+  <Say voice="Polly.Lupe" language="es-MX">Listo. Un agente del equipo Going App te va a llamar en pocos minutos. Gracias por llamar.</Say>
   <Hangup/>
 </Response>`;
 }

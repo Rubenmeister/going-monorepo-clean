@@ -206,7 +206,7 @@ export default function IngresosPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
           {label:'Total cobrado',   value:fmt(totalRevenue),   color:'text-green-600',  sub:`${filteredInv.filter(i=>i.status==='paid').length} facturas`},
-          {label:'Comisión Going',  value:fmt(goingFee),       color:'text-red-600',    sub:'15% del cobrado'},
+          {label:'Comisión Going App',  value:fmt(goingFee),       color:'text-red-600',    sub:'15% del cobrado'},
           {label:'Neto proveedores',value:fmt(netProviders),   color:'text-blue-700',   sub:'85% del cobrado'},
           {label:'Por cobrar',      value:fmt(pendingRevenue), color:'text-amber-600',  sub:`${overdueRev>0?`+ ${fmt(overdueRev)} vencido`:'sin vencidos'}`},
         ].map(k => (

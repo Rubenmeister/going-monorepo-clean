@@ -1,8 +1,8 @@
 /**
- * Design Tokens — Going brand system
+ * Design Tokens — Going App brand system
  *
  * Fuente única de verdad para colores, espaciados y tipografía en la webapp.
- * Mapea la "Going Branding Guidelines 2024" (Conexolab) a constantes
+ * Mapea la "Going App Branding Guidelines 2024" (Conexolab) a constantes
  * consumibles en JSX.
  *
  * GUÍA OFICIAL:
@@ -19,11 +19,11 @@
  *   <div style={{ background: COLORS.brand.red, color: COLORS.brand.white }}>
  */
 
-// ── Paleta oficial Going ─────────────────────────────────────────────────────
+// ── Paleta oficial Going App ─────────────────────────────────────────────────────
 // Rojo PRINCIPAL + Amarillo ACENTO (NO hay azul en la guía oficial).
 export const COLORS = {
   brand: {
-    /** Rojo Going — PRIMARIO. CTAs, identidad, marca. */
+    /** Rojo Going App — PRIMARIO. CTAs, identidad, marca. */
     red:        '#FF4C41',
     redDark:    '#D63D34', // hover/pressed
     redLight:   '#FF7068',
@@ -31,7 +31,7 @@ export const COLORS = {
     redBgSoft:  '#FFF0EF', // fondo aún más sutil (badges)
     redBorder:  '#FECACA',
 
-    /** Amarillo Going — ACENTO. Highlights, badges, énfasis secundario. */
+    /** Amarillo Going App — ACENTO. Highlights, badges, énfasis secundario. */
     yellow:        '#FFD253',
     yellowDark:    '#E6B43E', // hover/pressed
     yellowLight:   '#FFE082',
@@ -63,7 +63,7 @@ export const COLORS = {
    * (ej. botones de "Iniciar sesión" en formularios largos, links de info
    * neutral). Cuando se pueda, preferir red o yellow.
    *
-   * El azul antes era "Corporate Going" — eliminado de marca pero
+   * El azul antes era "Corporate Going App" — eliminado de marca pero
    * conservado acá como `system.blue` para forms y elementos auxiliares.
    */
   system: {
@@ -129,7 +129,7 @@ export const SHADOWS = {
   md: '0 4px 12px rgba(0,0,0,0.08)',
   lg: '0 12px 24px rgba(0,0,0,0.12)',
   xl: '0 24px 48px rgba(0,0,0,0.18)',
-  /** Sombra característica de cards Going (combinación md + tinte rojo) */
+  /** Sombra característica de cards Going App (combinación md + tinte rojo) */
   brand: '0 4px 20px rgba(255, 76, 65, 0.20)',
 } as const;
 
@@ -157,8 +157,8 @@ export const SPACING = {
   16:   '4rem',
 } as const;
 
-// ── Tipografía OFICIAL Going ───────────────────────────────────────────────
-// Going Branding Guidelines 2024:
+// ── Tipografía OFICIAL Going App ───────────────────────────────────────────────
+// Going App Branding Guidelines 2024:
 //   - Títulos: Nunito Sans Variable (Google Fonts)
 //   - Cuerpo:  Roboto (Google Fonts)
 //
@@ -167,7 +167,7 @@ export const SPACING = {
 // con esos nombres para que tailwind + style inline funcionen.
 //
 // `academia` reusa Nunito Sans con un peso más fuerte (la sección
-// "Academia Going" es parte del producto, no necesita una fuente distinta
+// "Academia Going App" es parte del producto, no necesita una fuente distinta
 // — la jerarquía la marca el peso y tamaño).
 export const FONTS = {
   display:  'var(--font-nunito-sans), system-ui, -apple-system, sans-serif',

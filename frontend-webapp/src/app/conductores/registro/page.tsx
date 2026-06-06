@@ -147,7 +147,7 @@ export default function DriverRegistroPage() {
               { icon: '📧', text: 'Recibirás un correo de confirmación' },
               { icon: '🔍', text: 'Revisamos tus documentos en 24–48 h' },
               { icon: '✅', text: 'Te activamos y ya puedes comenzar a recibir viajes' },
-              { icon: '📚', text: 'Mientras tanto, completa la Academia Going' },
+              { icon: '📚', text: 'Mientras tanto, completa la Academia Going App' },
             ].map(item => (
               <div key={item.text} className="flex items-center gap-3 text-sm text-gray-700">
                 <span className="text-lg">{item.icon}</span>
@@ -159,7 +159,7 @@ export default function DriverRegistroPage() {
             <Link href="/academy"
               className="block w-full py-3 rounded-xl font-bold text-white text-center transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#ff4c41' }}>
-              📚 Ir a la Academia Going
+              📚 Ir a la Academia Going App
             </Link>
             <Link href="/"
               className="block w-full py-3 rounded-xl font-bold text-gray-700 text-center bg-white border border-gray-200 hover:bg-gray-50 transition-colors">

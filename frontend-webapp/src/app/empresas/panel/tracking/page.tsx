@@ -301,7 +301,7 @@ export default function TrackingPage() {
             {/* Nota de actualización */}
             <p className="text-xs text-slate-400 text-center">
               La posición se actualiza automáticamente cada 8 segundos.
-              El conductor debe tener la app Going activa para compartir su ubicación.
+              El conductor debe tener la app Going App activa para compartir su ubicación.
             </p>
           </div>
         </div>

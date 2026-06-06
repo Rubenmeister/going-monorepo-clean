@@ -90,7 +90,7 @@ function rideToBooking(r: any): Booking {
     id:        r.tripId ?? r.rideId ?? r.id ?? '—',
     type:      'ride',
     Icon:      TYPE_ICONS.ride,
-    title:     'Transporte Going',
+    title:     'Transporte Going App',
     detail:    `${pickup} → ${dropoff}`,
     date,
     time,

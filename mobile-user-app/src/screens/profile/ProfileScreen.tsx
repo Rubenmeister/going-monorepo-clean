@@ -4,7 +4,7 @@
  * Estructura:
  *   - Hero navy con avatar + name + email + level badge
  *   - Stats row (Viajes / Puntos / Rating)
- *   - Going Rewards card (link a #17 Puntos)
+ *   - Going App Rewards card (link a #17 Puntos)
  *   - 3 secciones de menú:
  *     · MI CUENTA: Editar, Direcciones, Métodos pago, Wallet
  *     · ACTIVIDAD: Historial, Puntos, Envíos, Empresas (condicional)
@@ -22,7 +22,7 @@
  *   - Modal APARIENCIA funcional (Sistema/Claro/Oscuro) — wire al
  *     ThemeProvider.setMode con persistencia AsyncStorage
  *   - Entry VOZ GOING agregada (honest stub — TODO VoiceSettingsScreen)
- *   - Going Empresas condicional: visible solo si user.companyId
+ *   - Going App Empresas condicional: visible solo si user.companyId
  *
  * TODOs declarados:
  *   - Endpoint backend /users/me/stats para rideCount/points/rating reales
@@ -114,8 +114,8 @@ export function ProfileScreen() {
   const handleVoiceSettings = useCallback(() => {
     hapticLight();
     Alert.alert(
-      'Voz Going — Próximamente',
-      'Pronto podrás elegir la voz del asistente Going entre Kore (femenina), Despina (femenina), Charon (masculino) o Algenib (masculino) cuando uses chat o llamada de voz.',
+      'Voz Going App — Próximamente',
+      'Pronto podrás elegir la voz del asistente Going App entre Kore (femenina), Despina (femenina), Charon (masculino) o Algenib (masculino) cuando uses chat o llamada de voz.',
       [{ text: 'OK' }],
     );
   }, []);
@@ -127,7 +127,7 @@ export function ProfileScreen() {
     } else {
       Alert.alert(
         'Vincular empresa',
-        '¿Tu empresa tiene cuenta corporativa Going? Contacta a tu administrador o escribe a empresas@goingec.com para vincular tu correo y acceder a precios B2B.',
+        '¿Tu empresa tiene cuenta corporativa Going App? Contacta a tu administrador o escribe a empresas@goingec.com para vincular tu correo y acceder a precios B2B.',
         [
           { text: 'Cancelar', style: 'cancel' },
           { text: 'Contactar', onPress: () => {} }, // TODO: open mailto
@@ -144,18 +144,18 @@ export function ProfileScreen() {
         { icon: 'person-outline',   label: 'Editar perfil',      screen: 'EditProfile',    accent: 'navy' },
         { icon: 'location-outline', label: 'Mis direcciones',    screen: 'SavedAddresses', accent: 'navy' },
         { icon: 'card-outline',     label: 'Métodos de pago',    screen: 'PaymentMethods', accent: 'navy' },
-        { icon: 'wallet-outline',   label: 'Mi billetera Going', screen: 'Wallet',         accent: 'navy' },
+        { icon: 'wallet-outline',   label: 'Mi billetera Going App', screen: 'Wallet',         accent: 'navy' },
       ],
     },
     {
       title: 'Actividad',
       items: [
         { icon: 'time-outline',     label: 'Historial de viajes', screen: 'Historial', accent: 'success' },
-        { icon: 'star-outline',     label: 'Mis puntos Going',    screen: 'Puntos',    accent: 'warning' },
+        { icon: 'star-outline',     label: 'Mis puntos Going App',    screen: 'Puntos',    accent: 'warning' },
         { icon: 'cube-outline',     label: 'Mis envíos',          screen: 'Envios',    accent: 'red'     },
         {
           icon: 'business-outline',
-          label: hasCompany ? 'Going Empresas' : 'Vincular empresa',
+          label: hasCompany ? 'Going App Empresas' : 'Vincular empresa',
           onPress: handleEmpresas,
           accent: 'purple',
         },
@@ -172,7 +172,7 @@ export function ProfileScreen() {
         },
         {
           icon: 'mic-outline',
-          label: 'Voz Going',
+          label: 'Voz Going App',
           onPress: handleVoiceSettings,
           accent: 'navy',
         },
@@ -190,7 +190,7 @@ export function ProfileScreen() {
       case 'success': return tokens.success;
       case 'warning': return tokens.warning;
       case 'red':     return tokens.brandRed;
-      case 'purple':  return '#7C3AED';  // Going Empresas — color marcador único
+      case 'purple':  return '#7C3AED';  // Going App Empresas — color marcador único
       case 'navy':
       default:        return tokens.brandNavy;
     }
@@ -214,7 +214,7 @@ export function ProfileScreen() {
           </View>
         </TouchableOpacity>
         <Text style={styles.name}>
-          {user ? `${user.firstName} ${user.lastName}` : 'Viajero Going'}
+          {user ? `${user.firstName} ${user.lastName}` : 'Viajero Going App'}
         </Text>
         <Text style={styles.email}>{user?.email ?? ''}</Text>
         <View style={styles.levelBadge}>
@@ -303,7 +303,7 @@ export function ProfileScreen() {
       </TouchableOpacity>
 
       <Text style={styles.version}>
-        Going Ecuador {APP_VERSION ? `v${APP_VERSION}` : ''}{BUILD_NUMBER ? ` (${BUILD_NUMBER})` : ''}
+        Going App Ecuador {APP_VERSION ? `v${APP_VERSION}` : ''}{BUILD_NUMBER ? ` (${BUILD_NUMBER})` : ''}
       </Text>
       <View style={{ height: 40 }} />
 

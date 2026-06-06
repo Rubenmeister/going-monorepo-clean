@@ -1,5 +1,5 @@
 /**
- * RegisterScreen — Going Ecuador
+ * RegisterScreen — Going App Ecuador
  *
  * Flujo: form con 5 fields (nombre/apellido/email/teléfono/password) +
  * 2 checkboxes LOPDP obligatorios (T&C + Privacidad).

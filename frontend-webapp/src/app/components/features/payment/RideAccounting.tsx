@@ -84,7 +84,7 @@ export function RideAccounting({ amount, paymentMethod, onDone }: RideAccounting
               <div className="px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ff4c41]" />
-                  <span className="text-sm text-gray-600">Going (plataforma)</span>
+                  <span className="text-sm text-gray-600">Going App (plataforma)</span>
                   <span className="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full font-medium">20%</span>
                 </div>
                 <span className="font-bold text-gray-900">${companyCut.toFixed(2)}</span>

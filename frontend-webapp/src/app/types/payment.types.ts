@@ -1,5 +1,5 @@
 /**
- * Tipos de pago Going -- compatibles con la arquitectura DATAFAST
+ * Tipos de pago Going App -- compatibles con la arquitectura DATAFAST
  */
 
 export type PaymentMethod = 'datafast' | 'deuna' | 'cash';

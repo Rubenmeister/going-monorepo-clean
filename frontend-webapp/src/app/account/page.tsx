@@ -311,7 +311,7 @@ export default function AccountPage() {
                   <span className="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: COLORS.brand.red }}>
                     <IconGraduation size={16} />
                   </span>
-                  <span className="text-sm font-semibold text-gray-700">Academia Going</span>
+                  <span className="text-sm font-semibold text-gray-700">Academia Going App</span>
                 </div>
                 <IconArrowRight size={16} className="text-gray-400" />
               </Link>
@@ -344,7 +344,7 @@ export default function AccountPage() {
                   <IconCar size={30} />
                 </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin viajes aún</p>
-                <p className="text-gray-400 text-sm mb-5">Pide tu primer viaje con Going</p>
+                <p className="text-gray-400 text-sm mb-5">Pide tu primer viaje con Going App</p>
                 <Link href="/ride"
                   className="inline-block px-6 py-3 rounded-xl text-white font-bold text-sm"
                   style={{ backgroundColor: COLORS.brand.red }}>
@@ -410,7 +410,7 @@ export default function AccountPage() {
                   <IconPackage size={30} />
                 </div>
                 <p className="text-gray-700 font-semibold mb-1">Sin envíos aún</p>
-                <p className="text-gray-400 text-sm mb-5">Envía tu primer paquete con Going</p>
+                <p className="text-gray-400 text-sm mb-5">Envía tu primer paquete con Going App</p>
                 <Link href="/envios/cotizar"
                   className="inline-block px-6 py-3 rounded-xl text-white font-bold text-sm"
                   style={{ backgroundColor: COLORS.brand.red }}>
@@ -526,7 +526,7 @@ export default function AccountPage() {
               </span>
               <div>
                 <p className="font-semibold mb-1">Métodos aceptados</p>
-                <p className="text-xs" style={{ color: COLORS.brand.blueDark }}>Tarjeta de crédito/débito (DATAFAST), efectivo al conductor y Going Wallet.</p>
+                <p className="text-xs" style={{ color: COLORS.brand.blueDark }}>Tarjeta de crédito/débito (DATAFAST), efectivo al conductor y Going App Wallet.</p>
               </div>
             </div>
           </div>

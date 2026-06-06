@@ -33,7 +33,7 @@ const STEPS = [
     icon: '🌍',
     title: 'Descubre Ecuador',
     subtitle: 'Más allá del transporte',
-    desc: 'Hospedaje, tours a Galápagos, experiencias culturales, envíos express — Going conecta todo el país.',
+    desc: 'Hospedaje, tours a Galápagos, experiencias culturales, envíos express — Going App conecta todo el país.',
     color: '#10b981',
     bg: '#ecfdf5',
     feature: [
@@ -59,7 +59,7 @@ const STEPS = [
   {
     id: 'rewards',
     icon: '⭐',
-    title: 'Gana puntos Going',
+    title: 'Gana puntos Going App',
     subtitle: 'Cada viaje suma',
     desc: 'Acumula puntos en cada viaje, envío o reserva. Canjéalos por descuentos, tours y experiencias.',
     color: '#f59e0b',

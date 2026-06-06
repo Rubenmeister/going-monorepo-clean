@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Legal — Going',
-  description: 'Términos y condiciones, política de privacidad y documentos legales de Going (Ecuador).',
+  title: 'Legal — Going App',
+  description: 'Términos y condiciones, política de privacidad y documentos legales de Going App (Ecuador).',
 };
 
 const SECTIONS = [
@@ -10,23 +10,23 @@ const SECTIONS = [
     id: 'terminos',
     title: 'Términos y Condiciones',
     icon: '📄',
-    content: `Thorn AI Technologies S.A.S. ("Going") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
+    content: `Thorn AI Technologies S.A.S. ("Going App") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
 
-**Uso del servicio:** Going es una plataforma de intermediación. Los conductores son proveedores independientes, no empleados de Going. Going no es responsable por el contenido publicado por usuarios.
+**Uso del servicio:** Going App es una plataforma de intermediación. Los conductores son proveedores independientes, no empleados de Going App. Going App no es responsable por el contenido publicado por usuarios.
 
 **Cuentas:** Debes tener al menos 18 años para crear una cuenta. Eres responsable de mantener la confidencialidad de tu contraseña.
 
-**Pagos:** Los precios se muestran antes de confirmar el viaje. Going aplica una comisión de servicio. Los reembolsos están sujetos a nuestra política de cancelación.
+**Pagos:** Los precios se muestran antes de confirmar el viaje. Going App aplica una comisión de servicio. Los reembolsos están sujetos a nuestra política de cancelación.
 
 **Cancelaciones:** Puedes cancelar hasta 15 minutos antes sin cargo. Cancelaciones tardías pueden tener penalidad. El conductor también puede cancelar con justificación.
 
-**Conducta:** Está prohibido el acoso, discriminación, daño a vehículos o cualquier conducta que afecte la seguridad. Going puede suspender cuentas por incumplimiento.`,
+**Conducta:** Está prohibido el acoso, discriminación, daño a vehículos o cualquier conducta que afecte la seguridad. Going App puede suspender cuentas por incumplimiento.`,
   },
   {
     id: 'privacidad',
     title: 'Política de Privacidad',
     icon: '🔒',
-    content: `Going recopila y procesa datos personales de acuerdo con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).
+    content: `Going App recopila y procesa datos personales de acuerdo con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).
 
 **Datos que recopilamos:** Nombre, correo, teléfono, ubicación GPS durante viajes, historial de viajes, método de pago (sin números completos de tarjeta), valoraciones y comentarios.
 
@@ -56,15 +56,15 @@ const SECTIONS = [
     id: 'conductor',
     title: 'Contrato del Conductor',
     icon: '📋',
-    content: `Los conductores de Going son proveedores de servicios independientes, no empleados.
+    content: `Los conductores de Going App son proveedores de servicios independientes, no empleados.
 
-**Requisitos:** Licencia de conducir vigente tipo B mínimo, vehículo 2018 o posterior, seguro SOAT vigente, antecedentes penales limpios, aprobación de evaluación Going.
+**Requisitos:** Licencia de conducir vigente tipo B mínimo, vehículo 2018 o posterior, seguro SOAT vigente, antecedentes penales limpios, aprobación de evaluación Going App.
 
-**Comisiones:** Going cobra entre 15% y 20% del valor del viaje según el tipo de servicio. Los conductores reciben el saldo vía transferencia bancaria semanal.
+**Comisiones:** Going App cobra entre 15% y 20% del valor del viaje según el tipo de servicio. Los conductores reciben el saldo vía transferencia bancaria semanal.
 
 **Obligaciones del conductor:** Mantener el vehículo limpio y en buen estado, respetar la ruta asignada, usar el PIN de seguridad, calificar al pasajero, reportar incidentes.
 
-**Terminación:** Going puede desactivar a un conductor con rating inferior a 4.0 o por incumplimiento de estos términos.`,
+**Terminación:** Going App puede desactivar a un conductor con rating inferior a 4.0 o por incumplimiento de estos términos.`,
   },
 ];
 

@@ -1,5 +1,5 @@
 /**
- * Going – Threads Publisher
+ * Going App – Threads Publisher
  * Token: THREADS_ACCESS_TOKEN (Meta Threads API — usa Graph API de Instagram)
  * User ID: THREADS_USER_ID
  * Nota: Threads comparte infraestructura con Instagram Graph API.

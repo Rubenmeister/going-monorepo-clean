@@ -4,14 +4,14 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 
 export const metadata: Metadata = {
-  title: 'Going Ecuador — Nos movemos contigo',
+  title: 'Going App Ecuador — Nos movemos contigo',
   description: 'Viajes compartidos, privados, envíos y tours en Ecuador. La plataforma de movilidad más segura del país.',
-  keywords: 'transporte Ecuador, viajes compartidos, Quito, Guayaquil, Going',
+  keywords: 'transporte Ecuador, viajes compartidos, Quito, Guayaquil, Going App',
   openGraph: {
-    title: 'Going Ecuador',
+    title: 'Going App Ecuador',
     description: 'Nos movemos contigo',
     url: 'https://goingec.com',
-    siteName: 'Going Ecuador',
+    siteName: 'Going App Ecuador',
     locale: 'es_EC',
     type: 'website',
   },

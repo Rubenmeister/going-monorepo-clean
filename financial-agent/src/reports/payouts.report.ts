@@ -8,7 +8,7 @@ import { mongoGetDriverName } from '../mongodb/users.repository';
 
 // ============================================================
 // Driver Payouts – Liquidaciones a conductores
-// Comisión Going: 20% | Conductor: 80%
+// Comisión Going App: 20% | Conductor: 80%
 // ============================================================
 
 // Generar liquidaciones diarias para todos los conductores

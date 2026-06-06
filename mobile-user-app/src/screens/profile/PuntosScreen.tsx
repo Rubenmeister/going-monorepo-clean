@@ -1,5 +1,5 @@
 /**
- * PuntosScreen — Going Rewards (Mockup #17).
+ * PuntosScreen — Going App Rewards (Mockup #17).
  *
  * Estructura:
  *   - Hero navy con back btn + título + tarjeta puntos + progress
@@ -110,7 +110,7 @@ export function PuntosScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={tokens.textOnNavy} />
         </TouchableOpacity>
-        <Text style={styles.heroTitle}>Going Rewards</Text>
+        <Text style={styles.heroTitle}>Going App Rewards</Text>
         <Text style={styles.heroSub}>Viaja, acumula, canjea</Text>
 
         {/* Card de puntos + tier actual */}

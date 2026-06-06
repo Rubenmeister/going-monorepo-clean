@@ -32,13 +32,13 @@ const COMMUNITY_PILLARS = [
   {
     icon: '🤝',
     title: 'Red de confianza',
-    desc: 'Cada perfil es verificado. Cada calificación es real. La comunidad Going se construye sobre la transparencia y el respeto mutuo.',
+    desc: 'Cada perfil es verificado. Cada calificación es real. La comunidad Going App se construye sobre la transparencia y el respeto mutuo.',
     color: '#ff4c41',
   },
   {
     icon: '📍',
     title: 'Cobertura nacional',
-    desc: 'Desde Ibarra hasta Loja, desde Manta hasta Lago Agrio. La comunidad Going está presente en todas las provincias de Ecuador.',
+    desc: 'Desde Ibarra hasta Loja, desde Manta hasta Lago Agrio. La comunidad Going App está presente en todas las provincias de Ecuador.',
     color: '#1a1a1a',
   },
   {
@@ -50,7 +50,7 @@ const COMMUNITY_PILLARS = [
   {
     icon: '📱',
     title: 'Siempre conectados',
-    desc: 'Chat integrado, notificaciones en tiempo real y soporte 24/7. Nunca estás solo en un viaje Going.',
+    desc: 'Chat integrado, notificaciones en tiempo real y soporte 24/7. Nunca estás solo en un viaje Going App.',
     color: '#f59e0b',
   },
 ];
@@ -61,7 +61,7 @@ const COMMUNITY_ROLES = [
     emoji: '🧳',
     count: '900,000+',
     desc: 'Personas que descubrieron que moverse por Ecuador puede ser seguro, cómodo y asequible. Sin llamadas, sin esperar, sin incertidumbre.',
-    highlights: ['Viajes compartidos seguros', 'Califica tu experiencia', 'Puntos Going por cada viaje', 'Referidos con beneficios'],
+    highlights: ['Viajes compartidos seguros', 'Califica tu experiencia', 'Puntos Going App por cada viaje', 'Referidos con beneficios'],
     cta: 'Unirme como pasajero',
     href: '/auth/register',
     color: '#ff4c41',
@@ -80,9 +80,9 @@ const COMMUNITY_ROLES = [
     role: 'Proveedores',
     emoji: '🏨',
     count: '1,200+',
-    desc: 'Hoteles, hostales, operadoras de tours, agencias de envíos. Aliados que expanden su negocio con la red Going.',
+    desc: 'Hoteles, hostales, operadoras de tours, agencias de envíos. Aliados que expanden su negocio con la red Going App.',
     highlights: ['Visibilidad nacional instantánea', 'Panel de gestión profesional', 'Pagos automáticos y seguros', 'Soporte dedicado B2B'],
-    cta: 'Ser aliado Going',
+    cta: 'Ser aliado Going App',
     href: '/empresas',
     color: '#6366f1',
   },
@@ -94,7 +94,7 @@ const TESTIMONIALS = [
     city: 'Cuenca',
     role: 'Pasajera frecuente',
     emoji: '👩',
-    text: 'Antes pasaba horas coordinando por WhatsApp para ir a Guayaquil. Con Going reservo en 2 minutos y sé exactamente cuándo llega el conductor.',
+    text: 'Antes pasaba horas coordinando por WhatsApp para ir a Guayaquil. Con Going App reservo en 2 minutos y sé exactamente cuándo llega el conductor.',
     stars: 5,
   },
   {
@@ -108,18 +108,18 @@ const TESTIMONIALS = [
   {
     name: 'Hostería El Lago',
     city: 'Baños',
-    role: 'Aliado Going',
+    role: 'Aliado Going App',
     emoji: '🏨',
-    text: 'Desde que nos unimos a Going, nuestra ocupación subió un 40%. Los huéspedes llegan verificados y el proceso de reserva es impecable.',
+    text: 'Desde que nos unimos a Going App, nuestra ocupación subió un 40%. Los huéspedes llegan verificados y el proceso de reserva es impecable.',
     stars: 5,
   },
 ];
 
 const COMMUNITY_EVENTS = [
-  { icon: '🎓', title: 'Going Academy', desc: 'Formación gratuita para conductores: atención al cliente, manejo defensivo, gestión financiera personal.' },
+  { icon: '🎓', title: 'Going App Academy', desc: 'Formación gratuita para conductores: atención al cliente, manejo defensivo, gestión financiera personal.' },
   { icon: '🏅', title: 'Conductor del mes', desc: 'Reconocemos a los mejores conductores con bonos, visibilidad y premios especiales cada mes.' },
-  { icon: '🤜', title: 'Going Embajadores', desc: 'Usuarios que aman Going y lo recomiendan. Ganan comisiones, acceso anticipado y beneficios exclusivos.' },
-  { icon: '📊', title: 'Foros de feedback', desc: 'Reuniones mensuales donde conductores y pasajeros dan forma al futuro de Going. Tu voz importa.' },
+  { icon: '🤜', title: 'Going App Embajadores', desc: 'Usuarios que aman Going App y lo recomiendan. Ganan comisiones, acceso anticipado y beneficios exclusivos.' },
+  { icon: '📊', title: 'Foros de feedback', desc: 'Reuniones mensuales donde conductores y pasajeros dan forma al futuro de Going App. Tu voz importa.' },
 ];
 
 export default function ComunidadPage() {
@@ -145,7 +145,7 @@ export default function ComunidadPage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight">
             La Comunidad<br />
-            <span style={{ color: '#ff4c41' }}>Going</span>
+            <span style={{ color: '#ff4c41' }}>Going App</span>
           </h1>
           <p className="text-xl text-white/70 max-w-2xl mx-auto mb-10">
             No somos solo una aplicación. Somos una red de ecuatorianos que se mueven, trabajan y crecen juntos.
@@ -166,11 +166,11 @@ export default function ComunidadPage() {
         <div className="max-w-6xl mx-auto -mt-10 relative z-10">
           <img
             src="/images/senderismo quilotoa.png"
-            alt="Going - Senderismo Quilotoa Ecuador"
+            alt="Going App - Senderismo Quilotoa Ecuador"
             className="w-full rounded-3xl shadow-2xl object-cover"
             style={{ maxHeight: '460px' }}
           />
-          <div className="mt-4 text-center text-sm text-gray-400 italic">Going – Comunidad Ecuador</div>
+          <div className="mt-4 text-center text-sm text-gray-400 italic">Going App – Comunidad Ecuador</div>
         </div>
       </section>
 
@@ -181,7 +181,7 @@ export default function ComunidadPage() {
             <div className="text-center mb-14">
               <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#ff4c41] mb-4">Lo que nos une</span>
               <h2 className="text-4xl font-black text-gray-900 mb-4">Una comunidad construida sobre confianza</h2>
-              <p className="text-gray-500 max-w-2xl mx-auto">Going no es transaccional. Es relacional. Cada interacción fortalece una red que beneficia a todos.</p>
+              <p className="text-gray-500 max-w-2xl mx-auto">Going App no es transaccional. Es relacional. Cada interacción fortalece una red que beneficia a todos.</p>
             </div>
           </FadeIn>
 
@@ -204,7 +204,7 @@ export default function ComunidadPage() {
         <div className="max-w-6xl mx-auto">
           <FadeIn>
             <div className="text-center mb-14">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#ff4c41] mb-4">Tu lugar en Going</span>
+              <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#ff4c41] mb-4">Tu lugar en Going App</span>
               <h2 className="text-4xl font-black text-gray-900">¿Quién eres en la comunidad?</h2>
             </div>
           </FadeIn>
@@ -321,7 +321,7 @@ export default function ComunidadPage() {
                 <div className="text-5xl mb-4">🎁</div>
                 <h2 className="text-3xl font-black mb-4">Gana por traer amigos</h2>
                 <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                  Por cada amigo que se registre con tu código, ambos reciben un viaje gratis. La comunidad Going crece cuando tú creces.
+                  Por cada amigo que se registre con tu código, ambos reciben un viaje gratis. La comunidad Going App crece cuando tú creces.
                 </p>
                 <Link
                   href="/auth/register"
@@ -340,7 +340,7 @@ export default function ComunidadPage() {
         <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
             <h2 className="text-4xl font-black text-white mb-4">
-              Ecuador se mueve con Going.<br />
+              Ecuador se mueve con Going App.<br />
               <span style={{ color: '#ff4c41' }}>¿Y tú?</span>
             </h2>
             <p className="text-gray-400 text-lg mb-8">
@@ -351,7 +351,7 @@ export default function ComunidadPage() {
                 Crear cuenta gratis
               </Link>
               <Link href="/quienes-somos" className="inline-flex items-center justify-center gap-2 text-white font-bold px-8 py-4 rounded-2xl text-lg border border-white/20 hover:bg-white/10 transition-all">
-                Conocer más sobre Going
+                Conocer más sobre Going App
               </Link>
             </div>
           </FadeIn>

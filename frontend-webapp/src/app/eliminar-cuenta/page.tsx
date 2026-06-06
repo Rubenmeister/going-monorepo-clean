@@ -6,9 +6,9 @@ import type { Metadata } from 'next';
 // tendríamos 404 y rechazo del review.
 
 export const metadata: Metadata = {
-  title: 'Eliminación de Cuenta — Going Ecuador',
+  title: 'Eliminación de Cuenta — Going App Ecuador',
   description:
-    'Solicita la eliminación de tu cuenta Going y la supresión de tus datos personales conforme a la LOPDP.',
+    'Solicita la eliminación de tu cuenta Going App y la supresión de tus datos personales conforme a la LOPDP.',
 };
 
 export default function EliminarCuentaPage() {
@@ -16,7 +16,7 @@ export default function EliminarCuentaPage() {
     <main className="min-h-screen bg-white">
       {/* Hero */}
       <section className="bg-red-600 text-white py-16 px-6 text-center">
-        <h1 className="text-4xl font-bold mb-4">Eliminar mi cuenta Going</h1>
+        <h1 className="text-4xl font-bold mb-4">Eliminar mi cuenta Going App</h1>
         <p className="text-xl max-w-2xl mx-auto opacity-90">
           Tienes derecho a solicitar la eliminación de tu cuenta y la supresión
           de tus datos personales en cualquier momento.
@@ -32,7 +32,7 @@ export default function EliminarCuentaPage() {
           </h2>
           <ol className="list-decimal list-inside space-y-3 text-gray-700 text-lg">
             <li>
-              Desde la app Going: ve a{' '}
+              Desde la app Going App: ve a{' '}
               <strong>Perfil → Configuración → Eliminar cuenta</strong> y
               confirma la solicitud.
             </li>
@@ -80,7 +80,7 @@ export default function EliminarCuentaPage() {
             ¿Qué datos se conservan temporalmente?
           </h2>
           <p className="text-gray-700 mb-3">
-            Por obligaciones legales y fiscales, Going conservará ciertos datos
+            Por obligaciones legales y fiscales, Going App conservará ciertos datos
             por los plazos que la ley exige:
           </p>
           <ul className="list-disc list-inside space-y-2 text-gray-700">

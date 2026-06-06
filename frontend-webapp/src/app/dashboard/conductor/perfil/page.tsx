@@ -136,7 +136,7 @@ export default function PerfilPage() {
 
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-xs text-blue-800">
         💡 Para actualizar tus datos personales o tu vehículo, hazlo desde la app móvil
-        de Going Conductor — los cambios pasan por revisión del equipo Going.
+        de Going App Conductor — los cambios pasan por revisión del equipo Going App.
       </div>
     </div>
   );

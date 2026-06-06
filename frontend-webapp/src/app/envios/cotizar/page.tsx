@@ -7,12 +7,12 @@ import { COLORS } from '../../components/design-tokens';
 import { IconPackage, IconMailbox, IconCard, IconMoney, IconMobile, IconUsers } from '../../components/icons';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-const RED   = COLORS.brand.red;   // rojo Going — origen/CTA principales
+const RED   = COLORS.brand.red;   // rojo Going App — origen/CTA principales
 const GREEN = COLORS.state.success; // verde de sistema (estados entregado/pagado/verificado), NO marca
-const BLUE  = COLORS.brand.blue;  // azul Going — destino, info secundario
+const BLUE  = COLORS.brand.blue;  // azul Going App — destino, info secundario
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-// Tarifas oficiales Going (urbano flat). Para envíos interurbanos el backend
+// Tarifas oficiales Going App (urbano flat). Para envíos interurbanos el backend
 // /parcels/quote sobrescribe con tarifa real por corredor — los precios acá
 // son el fallback / estimado urbano.
 //   pequeño  ≤5 kg     → $8
@@ -653,7 +653,7 @@ export default function EnviosCotizarPage() {
           style={{ backgroundColor: '#FFF0EF', color: RED }}>
           ←
         </Link>
-        <span className="font-black text-gray-900 flex-1">Envíos Going</span>
+        <span className="font-black text-gray-900 flex-1">Envíos Going App</span>
         <span className="flex items-center gap-1 rounded-full px-2.5 py-1 border text-xs font-black"
           style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA', color: RED }}>
           <IcoCube /> ENVÍOS
@@ -728,7 +728,7 @@ export default function EnviosCotizarPage() {
 
         {/* EL PAQUETE */}
         <SectionCard icon={<IcoCube />} title="El paquete">
-          {/* Tipo — 3 categorías por peso (oficial Going) */}
+          {/* Tipo — 3 categorías por peso (oficial Going App) */}
           <div className="grid grid-cols-3 gap-2">
             {PACKAGE_TYPES.map(p => {
               const active = pkgType === p.id;

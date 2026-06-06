@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   {
     label: 'Editorial',
     dropdown: [
-      { href: '/noticiero', icon: '📰', label: 'Noticiero Going', sub: 'Actualidad del país' },
+      { href: '/noticiero', icon: '📰', label: 'Noticiero Going App', sub: 'Actualidad del país' },
       { href: '/revista', icon: '📖', label: 'Revista', sub: 'Cultura y turismo' },
       { href: '/blog', icon: '✍️', label: 'Blog', sub: 'Tips y guías de viaje' },
     ],
@@ -49,7 +49,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
           <GoingLogo size={28} />
-          <span className="text-[22px] font-black text-[#011627] tracking-tight">Going</span>
+          <span className="text-[22px] font-black text-[#011627] tracking-tight">Going App</span>
         </Link>
 
         {/* Desktop nav */}

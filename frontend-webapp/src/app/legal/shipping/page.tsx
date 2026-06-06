@@ -25,9 +25,9 @@ export default function ShippingPolicyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">1. Descripción del Servicio</h2>
             <p>
-              Going Ecuador ofrece un servicio de <strong>envío de paquetes y documentos</strong>, debidamente
+              Going App Ecuador ofrece un servicio de <strong>envío de paquetes y documentos</strong>, debidamente
               empacados, en las rutas abiertas a sus servicios, con recogida y entrega en menos de 24 horas.
-              El servicio es ejecutado por <strong>conductores verificados y registrados</strong> en la plataforma Going.
+              El servicio es ejecutado por <strong>conductores verificados y registrados</strong> en la plataforma Going App.
             </p>
           </section>
 
@@ -47,7 +47,7 @@ export default function ShippingPolicyPage() {
             </ul>
             <p className="text-sm text-gray-500 bg-gray-50 rounded-xl p-4">
               La cobertura de ciudades puede variar. La disponibilidad exacta en su zona se muestra en tiempo real
-              al ingresar las direcciones de recogida y entrega en la plataforma. <strong>Going no ofrece envíos internacionales.</strong>
+              al ingresar las direcciones de recogida y entrega en la plataforma. <strong>Going App no ofrece envíos internacionales.</strong>
             </p>
           </section>
 
@@ -84,7 +84,7 @@ export default function ShippingPolicyPage() {
             </div>
             <p className="text-sm text-gray-500 mt-3">
               Los tiempos estimados son referenciales y pueden variar por condiciones de tráfico, clima u otros
-              factores externos. Going informará al remitente y destinatario sobre retrasos significativos mediante
+              factores externos. Going App informará al remitente y destinatario sobre retrasos significativos mediante
               notificaciones en la aplicación. La persona que recibe o envía puede observar por dónde va su pedido
               en tiempo real.
             </p>
@@ -130,7 +130,7 @@ export default function ShippingPolicyPage() {
           {/* 5 */}
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">5. Artículos Prohibidos</h2>
-            <p className="mb-3">Going no acepta el envío de los siguientes artículos:</p>
+            <p className="mb-3">Going App no acepta el envío de los siguientes artículos:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Armas, municiones o explosivos de cualquier tipo.</li>
               <li>Sustancias controladas, drogas o estupefacientes.</li>
@@ -141,7 +141,7 @@ export default function ShippingPolicyPage() {
               <li>Artículos perecederos que requieran cadena de frío sin notificación previa.</li>
             </ul>
             <p className="text-sm text-gray-500 bg-amber-50 border border-amber-200 rounded-xl p-4 mt-4">
-              El remitente es responsable del contenido del paquete. Going se reserva el derecho de rechazar o
+              El remitente es responsable del contenido del paquete. Going App se reserva el derecho de rechazar o
               retener paquetes que se sospeche contienen artículos prohibidos y notificar a las autoridades competentes.
             </p>
           </section>
@@ -155,7 +155,7 @@ export default function ShippingPolicyPage() {
               El precio final se muestra al usuario <strong>antes de confirmar el envío</strong> y no tiene cargos ocultos adicionales.
             </p>
             <p>
-              Los precios incluyen el IVA vigente en Ecuador y el seguro básico del envío. Going puede aplicar
+              Los precios incluyen el IVA vigente en Ecuador y el seguro básico del envío. Going App puede aplicar
               tarifas dinámicas en horarios de alta demanda, lo cual se indica claramente en la pantalla de cotización.
             </p>
           </section>
@@ -166,7 +166,7 @@ export default function ShippingPolicyPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>Una vez confirmado el envío, un conductor verificado será asignado y se dirigirá a la dirección de recogida indicada.</li>
               <li>El remitente recibirá notificaciones en tiempo real con el tiempo estimado de llegada del conductor.</li>
-              <li>El conductor verificará que el paquete corresponde a la descripción ingresada en la plataforma. Going se reserva el derecho de rechazar paquetes que no coincidan o que contengan artículos prohibidos.</li>
+              <li>El conductor verificará que el paquete corresponde a la descripción ingresada en la plataforma. Going App se reserva el derecho de rechazar paquetes que no coincidan o que contengan artículos prohibidos.</li>
               <li>El remitente recibirá una <strong>foto de confirmación</strong> de la recogida del paquete.</li>
             </ul>
           </section>
@@ -176,7 +176,7 @@ export default function ShippingPolicyPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">8. Proceso de Entrega</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>El destinatario será notificado cuando el conductor esté en camino a la dirección de entrega.</li>
-              <li>La entrega se realiza en la dirección exacta indicada al momento de la reserva. Going no se responsabiliza por entregas fallidas causadas por datos incorrectos proporcionados por el remitente.</li>
+              <li>La entrega se realiza en la dirección exacta indicada al momento de la reserva. Going App no se responsabiliza por entregas fallidas causadas por datos incorrectos proporcionados por el remitente.</li>
               <li>El conductor tomará una <strong>foto de confirmación de entrega</strong> que será enviada tanto al remitente como al destinatario.</li>
               <li>Si el destinatario no se encuentra disponible, el conductor esperará un máximo de <strong>5 minutos</strong>. Transcurrido ese tiempo, se intentará una segunda entrega o se acordará un nuevo horario a través de la aplicación.</li>
             </ul>
@@ -186,7 +186,7 @@ export default function ShippingPolicyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">9. Rastreo del Envío</h2>
             <p>
-              Todos los envíos incluyen <strong>tracking en tiempo real</strong> desde la plataforma Going. El remitente
+              Todos los envíos incluyen <strong>tracking en tiempo real</strong> desde la plataforma Going App. El remitente
               y el destinatario pueden seguir la ubicación del conductor y el estado del envío en todo momento a
               través de la aplicación o el sitio web.
             </p>
@@ -201,7 +201,7 @@ export default function ShippingPolicyPage() {
               un seguro adicional al momento de la reserva.
             </p>
             <p>
-              Going no se responsabiliza por daños causados por embalaje inadecuado del remitente, contenido frágil
+              Going App no se responsabiliza por daños causados por embalaje inadecuado del remitente, contenido frágil
               no declarado, o artículos prohibidos. Las reclamaciones por daños deben presentarse dentro de las
               <strong> 24 horas siguientes</strong> a la entrega.
             </p>
@@ -214,7 +214,7 @@ export default function ShippingPolicyPage() {
               <li>El remitente puede cancelar el envío <strong>sin cargo</strong> hasta que el conductor haya aceptado la solicitud.</li>
               <li>Si el conductor ya aceptó y se dirige al punto de recogida, la cancelación generará un cargo de <strong>$5 USD</strong>.</li>
               <li>Una vez que el conductor ha recogido el paquete, no se aplican reembolsos.</li>
-              <li>En caso de envío no entregado por causas imputables a Going o al conductor, se realizará el <strong>reembolso total</strong> del valor pagado en un plazo de 5 días hábiles.</li>
+              <li>En caso de envío no entregado por causas imputables a Going App o al conductor, se realizará el <strong>reembolso total</strong> del valor pagado en un plazo de 5 días hábiles.</li>
             </ul>
           </section>
 
@@ -222,7 +222,7 @@ export default function ShippingPolicyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">12. Reclamaciones</h2>
             <p className="mb-3">
-              Para presentar una reclamación relacionada con un envío, el usuario deberá contactar a Going
+              Para presentar una reclamación relacionada con un envío, el usuario deberá contactar a Going App
               dentro de las <strong>24 horas posteriores a la entrega</strong>, adjuntando:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-4">
@@ -235,7 +235,7 @@ export default function ShippingPolicyPage() {
               <p className="mt-2">
                 📧 <a href="mailto:soporte@goingec.com" className="text-[#0033A0] font-semibold hover:underline">soporte@goingec.com</a>
                 {' '}— responderá en un plazo máximo de 24 horas hábiles, o a través del{' '}
-                💬 <strong>WhatsApp de la aplicación Going</strong>.
+                💬 <strong>WhatsApp de la aplicación Going App</strong>.
               </p>
             </div>
           </section>

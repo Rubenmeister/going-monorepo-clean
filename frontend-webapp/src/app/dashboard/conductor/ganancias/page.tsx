@@ -124,7 +124,7 @@ export default function GananciasPage() {
 
       <p className="text-xs text-gray-400 text-center">
         Los pagos en efectivo se cobran directamente al pasajero.
-        Los pagos con tarjeta/QR se liquidan según el calendario de Going.
+        Los pagos con tarjeta/QR se liquidan según el calendario de Going App.
       </p>
     </div>
   );

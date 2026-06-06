@@ -1,7 +1,7 @@
 {
   "name": "@going-platform/financial-agent",
   "version": "1.0.0",
-  "description": "Going Financial Agent — revenue reports, driver payouts, payment monitoring, Datil invoicing, SRI compliance, AI analysis (Gemini)",
+  "description": "Going App Financial Agent — revenue reports, driver payouts, payment monitoring, Datil invoicing, SRI compliance, AI analysis (Gemini)",
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist/index.js",

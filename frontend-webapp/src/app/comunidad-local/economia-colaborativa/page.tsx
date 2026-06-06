@@ -30,12 +30,12 @@ function FadeIn({ children, delay = 0, direction = 'up' }: { children: React.Rea
 
 const steps = [
   { number: '01', title: 'Tienes algo', desc: 'Un auto, una habitación, un conocimiento, un vehículo de carga — recursos que están subutilizados la mayor parte del tiempo.' },
-  { number: '02', title: 'Lo compartes', desc: 'A través de Going, lo pones a disposición de personas que lo necesitan, en el momento exacto en que lo necesitan.' },
+  { number: '02', title: 'Lo compartes', desc: 'A través de Going App, lo pones a disposición de personas que lo necesitan, en el momento exacto en que lo necesitan.' },
   { number: '03', title: 'Generas valor', desc: 'Recibes ingresos, ellos reciben un servicio de calidad, y toda la comunidad se beneficia del uso eficiente de los recursos.' },
 ];
 
 const goingCards = [
-  { emoji: '🚗', title: 'Tu auto genera ingresos', subtitle: 'mientras no lo usas', desc: 'El ecuatoriano promedio usa su auto solo 4% del tiempo. Con Going, conviertes el 96% de tiempo inactivo en ingreso real.', badge: 'Transporte' },
+  { emoji: '🚗', title: 'Tu auto genera ingresos', subtitle: 'mientras no lo usas', desc: 'El ecuatoriano promedio usa su auto solo 4% del tiempo. Con Going App, conviertes el 96% de tiempo inactivo en ingreso real.', badge: 'Transporte' },
   { emoji: '🏠', title: 'Tu casa genera ingresos', subtitle: 'como alojamiento', desc: 'Una habitación vacía o una segunda propiedad se convierte en fuente de ingresos recurrentes para huéspedes nacionales e internacionales.', badge: 'Alojamiento' },
   { emoji: '🗺️', title: 'Tu conocimiento genera ingresos', subtitle: 'como guía turístico', desc: 'Conoces tu ciudad, tu cultura, tus senderos. Comparte esa riqueza con viajeros que pagan por experiencias auténticas y locales.', badge: 'Experiencias' },
   { emoji: '📦', title: 'Tu moto o camioneta', subtitle: 'genera ingresos con envíos', desc: 'La demanda de entregas en Ecuador crece 40% cada año. Tu vehículo puede trabajar por ti mientras tú decides cuándo y cómo.', badge: 'Envíos' },
@@ -50,7 +50,7 @@ const comparison = [
 ];
 
 const testimonials = [
-  { name: 'Carmen V.', city: 'Quito', role: 'Conductora y anfitriona', quote: 'Con Going llevo a mis hijos al colegio y de regreso uso el tiempo para hacer viajes. Mi cuarto vacío lo alquilo los fines de semana. Genero más de $1,200 al mes sin salir de mi rutina.', emoji: '👩' },
+  { name: 'Carmen V.', city: 'Quito', role: 'Conductora y anfitriona', quote: 'Con Going App llevo a mis hijos al colegio y de regreso uso el tiempo para hacer viajes. Mi cuarto vacío lo alquilo los fines de semana. Genero más de $1,200 al mes sin salir de mi rutina.', emoji: '👩' },
   { name: 'Roberto P.', city: 'Cuenca', role: 'Guía turístico', quote: 'Trabajé 20 años en turismo formal. Ahora soy mi propio jefe, elijo mis grupos y gano el doble que antes. Mis tours del centro histórico están llenos todos los fines de semana.', emoji: '👨' },
   { name: 'Familia Tapia', city: 'Guayaquil', role: 'Anfitriones', quote: 'Teníamos un departamento vacío que nos costaba mantenimiento. Ahora genera $600 al mes. Ya pagamos la hipoteca con eso y el dinero extra lo ahorramos para los estudios de nuestros hijos.', emoji: '👨‍👩‍👧' },
 ];
@@ -61,7 +61,7 @@ export default function EconomiaColaborativaPage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
+          <Link href="/"><Image src="/going-logo-h.png" alt="Going App" width={120} height={40} className="h-9 w-auto" /></Link>
           <div className="flex items-center gap-4">
             <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Iniciar sesión</Link>
             <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Unirse</Link>
@@ -117,12 +117,12 @@ export default function EconomiaColaborativaPage() {
         </div>
       </section>
 
-      {/* Going in collaborative economy */}
+      {/* Going App in collaborative economy */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Going en la economía colaborativa</h2>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Going App en la economía colaborativa</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">Una plataforma, cuatro formas de generar valor con lo que ya tienes</p>
             </div>
           </FadeIn>
@@ -158,7 +158,7 @@ export default function EconomiaColaborativaPage() {
               <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-100">
                 <div className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wide">Aspecto</div>
                 <div className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wide text-center border-l border-gray-100">Economía Tradicional</div>
-                <div className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-center border-l border-gray-100" style={{ color: '#6366f1' }}>Going Colaborativo</div>
+                <div className="px-6 py-4 text-xs font-bold uppercase tracking-wide text-center border-l border-gray-100" style={{ color: '#6366f1' }}>Going App Colaborativo</div>
               </div>
               {comparison.map((row, i) => (
                 <div key={row.aspect} className={`grid grid-cols-3 ${i < comparison.length - 1 ? 'border-b border-gray-100' : ''}`}>
@@ -178,7 +178,7 @@ export default function EconomiaColaborativaPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Impacto real en familias ecuatorianas</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Historias de personas que transformaron su vida económica con Going</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Historias de personas que transformaron su vida económica con Going App</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-3 gap-6">
@@ -203,7 +203,7 @@ export default function EconomiaColaborativaPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Empieza a generar ingresos</h2>
-            <p className="text-indigo-100 text-lg mb-10">Únete a los miles de ecuatorianos que ya aprovechan la economía colaborativa con Going</p>
+            <p className="text-indigo-100 text-lg mb-10">Únete a los miles de ecuatorianos que ya aprovechan la economía colaborativa con Going App</p>
             <Link href="/auth/register" className="inline-block font-bold px-10 py-4 rounded-2xl text-lg shadow-xl hover:scale-105 transition-transform bg-white" style={{ color: '#6366f1' }}>
               Crear mi cuenta gratis
             </Link>

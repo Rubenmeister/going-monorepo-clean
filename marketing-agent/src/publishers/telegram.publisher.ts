@@ -3,7 +3,7 @@ import { GeneratedContent, PublishedPost, WeeklyReport } from '../types/marketin
 // ============================================================
 // Telegram Channel Publisher
 // Required secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
-// TELEGRAM_CHANNEL_ID = @goingappecuador (canal público Going)
+// TELEGRAM_CHANNEL_ID = @goingappecuador (canal público Going App)
 // ============================================================
 
 const TELEGRAM_API = 'https://api.telegram.org';
@@ -117,7 +117,7 @@ export async function alertFollowerMilestone(platform: string, count: number): P
   const text = [
     `🎉 <b>¡Nuevo hito en ${platform}!</b>`,
     `Ya somos <b>${count.toLocaleString()} seguidores</b> 🚀`,
-    `¡Gracias a la comunidad Going!`,
+    `¡Gracias a la comunidad Going App!`,
   ].join('\n');
 
   await sendTelegramMessage(chatId, text, 'HTML');
@@ -125,7 +125,7 @@ export async function alertFollowerMilestone(platform: string, count: number): P
 
 // ─── Channel metrics ──────────────────────────────────────────
 export interface TelegramMetrics {
-  members:     number;  // suscriptores del canal Going
+  members:     number;  // suscriptores del canal Going App
   recentViews: number;  // vistas recientes (requiere Telegram Stats API)
   postCount:   number;  // posts en últimos 30 días (requiere Stats API)
 }

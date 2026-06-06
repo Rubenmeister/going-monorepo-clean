@@ -1,5 +1,5 @@
 /**
- * Pricing canónico del frontend Going (mobile).
+ * Pricing canónico del frontend Going App (mobile).
  *
  * Por ahora estas tarifas viven en el frontend; el backend tiene su
  * propio cálculo en libs/pricing con FARES + applyDynamicPricing. Cuando
@@ -13,7 +13,7 @@ import { VEHICLE_SPECS } from './vehicles';
 
 /** Tarifa por persona según ciudad de origen y clase de vehículo. */
 export const PERSON_RATES: Record<CityId, { suv: number; van: number; bus: number }> = {
-  // ── Rutas Going principales ────────────────────────────────────────────
+  // ── Rutas Going App principales ────────────────────────────────────────────
   aeropuerto_quito: { suv: 12, van: 10, bus: 9  },
   quito:            { suv: 10, van: 8,  bus: 7  },
   // ── Sierra Centro ─────────────────────────────────────────────────────

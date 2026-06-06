@@ -24,14 +24,14 @@ interface Module {
 const MODULES: Module[] = [
   {
     id: 'm1',
-    title: 'Bienvenida a Going',
+    title: 'Bienvenida a Going App',
     desc: 'Cómo funciona la plataforma, tus derechos y responsabilidades.',
     duration: '20 min',
     icon: 'rocket-outline',
     color: GOING_RED,
     certificate: false,
     lessons: [
-      { title: 'Qué es Going y cómo ganas', duration: '5 min', completed: true },
+      { title: 'Qué es Going App y cómo ganas', duration: '5 min', completed: true },
       { title: 'Tu panel de conductor',      duration: '5 min', completed: true },
       { title: 'Tarifas y comisiones',        duration: '5 min', completed: false },
       { title: 'Pagos y retiros',             duration: '5 min', completed: false },
@@ -93,7 +93,7 @@ const MODULES: Module[] = [
     lessons: [
       { title: 'Horarios de mayor demanda',     duration: '5 min', completed: false },
       { title: 'Zonas calientes en Ecuador',    duration: '5 min', completed: false },
-      { title: 'Bonos y promociones Going',     duration: '5 min', completed: false },
+      { title: 'Bonos y promociones Going App',     duration: '5 min', completed: false },
       { title: 'Gestión de gastos y vehículo',  duration: '5 min', completed: false },
     ],
   },
@@ -101,9 +101,9 @@ const MODULES: Module[] = [
 
 // ── Recursos adicionales ───────────────────────────────────────────────────
 const RESOURCES = [
-  { id: 'r1', title: 'Manual del Conductor Going',  icon: 'document-outline' as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/manual-conductor' },
+  { id: 'r1', title: 'Manual del Conductor Going App',  icon: 'document-outline' as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/manual-conductor' },
   { id: 'r2', title: 'Canal de WhatsApp Academia',  icon: 'logo-whatsapp'    as keyof typeof Ionicons.glyphMap, url: 'https://wa.me/593984037949' },
-  { id: 'r3', title: 'Comunidad Going Conductores', icon: 'people-outline'   as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/comunidad' },
+  { id: 'r3', title: 'Comunidad Going App Conductores', icon: 'people-outline'   as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/comunidad' },
   { id: 'r4', title: 'Preguntas frecuentes',        icon: 'help-circle-outline' as keyof typeof Ionicons.glyphMap, url: 'https://goingapp.ec/faq-conductor' },
 ];
 

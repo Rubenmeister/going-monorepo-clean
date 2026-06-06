@@ -197,7 +197,7 @@ export default function ServicesPage() {
             ¿Listo para comenzar?
           </h2>
           <p className="text-gray-500 mb-8 text-lg">
-            Descarga la app Going y accede a todos nuestros servicios desde tu
+            Descarga la app Going App y accede a todos nuestros servicios desde tu
             teléfono.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

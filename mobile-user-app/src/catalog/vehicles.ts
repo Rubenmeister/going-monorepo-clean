@@ -1,5 +1,5 @@
 /**
- * Catálogo de vehículos + categorías Going.
+ * Catálogo de vehículos + categorías Going App.
  *
  * SUV/SUV XL: viajes compartidos y privados, envíos (decisión #9)
  * VAN/VAN XL/BUS: solo privado (no entran en envíos ni en el lobby

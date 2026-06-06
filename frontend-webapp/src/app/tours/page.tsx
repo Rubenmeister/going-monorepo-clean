@@ -67,7 +67,7 @@ export default function ToursPage() {
       {/* Hero */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="rounded-3xl p-6 text-white mb-6" style={{ background: 'linear-gradient(135deg, #0033A0, #001f6b)' }}>
-          <p className="text-white/70 text-sm mb-1">Descubre Ecuador con Going</p>
+          <p className="text-white/70 text-sm mb-1">Descubre Ecuador con Going App</p>
           <h2 className="text-2xl font-black mb-2">Tours y aventuras</h2>
           <p className="text-white/60 text-sm">Desde Galápagos hasta la Amazonía — con transporte incluido</p>
         </div>

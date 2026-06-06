@@ -85,7 +85,7 @@ export default function TripDetailPage() {
         setDetail({
           id, type: 'ride',
           status:  ride.status ?? 'pending',
-          title:   'Transporte Going',
+          title:   'Transporte Going App',
           date:    ride.createdAt ?? ride.requestedAt ?? '',
           amount:  ride.finalFare ?? ride.estimatedFare ?? 0,
           pickup:  ride.pickup?.address ?? ride.pickupAddress ?? '—',

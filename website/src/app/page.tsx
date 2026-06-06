@@ -20,7 +20,7 @@ const DESTINOS = [
 const ARTICLES = [
   {
     cat: '📰 Noticiero', catHref: '/noticiero',
-    title: 'Going lanza nueva ruta Quito–Ambato–Baños con frecuencias cada 30 minutos',
+    title: 'Going App lanza nueva ruta Quito–Ambato–Baños con frecuencias cada 30 minutos',
     excerpt: 'Más de 200 asientos disponibles diariamente con conductores verificados y vehículos 2023 en adelante.',
     date: '8 Abr 2026', read: '3 min',
     img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=80', featured: true,
@@ -41,8 +41,8 @@ const ARTICLES = [
 
 const TESTIMONIALS = [
   { stars: 5, text: 'El PIN de seguridad me dio mucha confianza. Supe exactamente a qué vehículo subir.', name: 'Ana Rodríguez', route: 'Quito → Baños', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80' },
-  { stars: 5, text: 'Como conductor, Going me da estabilidad y un ingreso justo. La app es muy fácil de usar.', name: 'Carlos Mendoza', route: 'Conductor · 847 viajes', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80' },
-  { stars: 5, text: 'Mejor que el bus y más barato que el taxi. Siempre viajo Going de Latacunga a Quito.', name: 'María Toapanta', route: 'Latacunga → Quito', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
+  { stars: 5, text: 'Como conductor, Going App me da estabilidad y un ingreso justo. La app es muy fácil de usar.', name: 'Carlos Mendoza', route: 'Conductor · 847 viajes', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80' },
+  { stars: 5, text: 'Mejor que el bus y más barato que el taxi. Siempre viajo Going App de Latacunga a Quito.', name: 'María Toapanta', route: 'Latacunga → Quito', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
   { stars: 5, text: 'El tracking en vivo me tranquiliza cuando viaja mi hija. Sé exactamente dónde está.', name: 'Rosa Guerrero', route: 'Ibarra → Quito', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80' },
 ];
 
@@ -158,7 +158,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-6 pb-20">
         <div className="flex items-end justify-between mb-12">
           <div>
-            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Destinos Going</div>
+            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Destinos Going App</div>
             <h2 className="font-serif text-[clamp(28px,4vw,44px)] font-black text-[#011627] leading-tight">Ecuador te espera</h2>
           </div>
           <Link href="/destinos" className="text-[13px] font-black text-[#ff4c41] hover:underline">Ver todos →</Link>
@@ -196,7 +196,7 @@ export default function Home() {
         <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-[#ff4c41]/10 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center relative z-10">
           <div>
-            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Descarga Going</div>
+            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Descarga Going App</div>
             <h2 className="font-serif text-[clamp(32px,4.5vw,52px)] font-black text-white leading-tight mb-4">
               Tu viaje en la palma<br />de tu mano
             </h2>
@@ -242,7 +242,7 @@ export default function Home() {
               { img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=85', rotate: 'rotate-[4deg] translate-y-6' },
             ].map(({ img, rotate }, i) => (
               <div key={i} className={`w-[170px] rounded-[32px] bg-[#0d1117] border-2 border-white/[0.08] overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)] ${rotate}`}>
-                <Image src={img} alt="App Going" width={170} height={306} className="w-full" style={{ aspectRatio: '9/18', objectFit: 'cover' }} />
+                <Image src={img} alt="App Going App" width={170} height={306} className="w-full" style={{ aspectRatio: '9/18', objectFit: 'cover' }} />
               </div>
             ))}
           </div>
@@ -253,7 +253,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Editorial Going</div>
+            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Editorial Going App</div>
             <h2 className="font-serif text-[clamp(28px,4vw,44px)] font-black text-[#011627] leading-tight">
               Cultura, destinos<br />y actualidad
             </h2>
@@ -291,7 +291,7 @@ export default function Home() {
       <section className="bg-[#faf8f5] py-20 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
           <div>
-            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Comunidad Going</div>
+            <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-2.5">Comunidad Going App</div>
             <h2 className="font-serif text-[clamp(28px,4vw,44px)] font-black text-[#011627] leading-tight mb-4">
               Somos más que<br />un servicio
             </h2>
@@ -350,7 +350,7 @@ export default function Home() {
               { img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=400&q=85', mt: '' },
             ].map(({ img, mt }, i) => (
               <div key={i} className={`${mt} rounded-2xl overflow-hidden`} style={{ aspectRatio: '3/4' }}>
-                <Image src={img} alt="Going Ecuador" width={300} height={400} className="w-full h-full object-cover" />
+                <Image src={img} alt="Going App Ecuador" width={300} height={400} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -360,7 +360,7 @@ export default function Home() {
               Una empresa<br />ecuatoriana<br />con propósito
             </h2>
             <p className="text-[15px] text-white/50 leading-relaxed mb-7">
-              Going nació en 2026 con una misión clara: democratizar la movilidad en Ecuador. Somos un equipo joven, apasionado por la tecnología y el turismo, comprometido con la seguridad y el impacto local.
+              Going App nació en 2026 con una misión clara: democratizar la movilidad en Ecuador. Somos un equipo joven, apasionado por la tecnología y el turismo, comprometido con la seguridad y el impacto local.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-7">
               {[

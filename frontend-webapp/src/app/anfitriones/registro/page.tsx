@@ -115,7 +115,7 @@ export default function AnfitrionesRegistroPage() {
             {[
               { icon: '📧', text: 'Recibirás confirmación por correo' },
               { icon: '🔍', text: 'Verificamos fotos y documentos' },
-              { icon: '✅', text: 'Activamos tu listing en Going' },
+              { icon: '✅', text: 'Activamos tu listing en Going App' },
               { icon: '📚', text: 'Completa la Academia para anfitriones' },
             ].map(item => (
               <div key={item.text} className="flex items-center gap-3 text-sm text-gray-700">

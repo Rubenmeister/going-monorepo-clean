@@ -1,5 +1,5 @@
 /**
- * Going – YouTube Publisher
+ * Going App – YouTube Publisher
  * Token: YOUTUBE_API_KEY (Google Data API v3)
  * Channel ID: YOUTUBE_CHANNEL_ID
  */

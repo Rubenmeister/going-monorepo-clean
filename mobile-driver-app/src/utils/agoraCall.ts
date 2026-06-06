@@ -1,5 +1,5 @@
 /**
- * Going — Agora In-App Call Manager (Driver App)
+ * Going App — Agora In-App Call Manager (Driver App)
  * 1. Chequea red (ping < 300ms)  →  Agora VoIP
  * 2. Sin señal  →  fallback Twilio PSTN
  *

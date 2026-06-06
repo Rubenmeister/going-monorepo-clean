@@ -4,7 +4,7 @@
  * │  "uyari" = escuchar / oír (kichwa)                                   │
  * │                                                                       │
  * │  Atención de llamadas telefónicas 24/7 con AI. Bridge bidi entre     │
- * │  Twilio Voice (cliente que llama al número Going) y OpenAI Realtime  │
+ * │  Twilio Voice (cliente que llama al número Going App) y OpenAI Realtime  │
  * │  (voz-a-voz nativo, ~800ms latencia). Publica eventos al cerebro     │
  * │  (Pacha) para que mycortex razone y orchestrator actúe ante patrones │
  * │  detectados (llamadas perdidas, spikes de demanda, fraud, etc.).     │
@@ -19,13 +19,13 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { initKnowledgeBase, getKbWarnings, countRutasPendientesRevision } from '@going-platform/going-kb';
 
 async function bootstrap() {
-  // Cargar el Centro de Información Going antes del bootstrap de Nest.
+  // Cargar el Centro de Información Going App antes del bootstrap de Nest.
   // Uyari usa el mismo KB que el chat web — única fuente de verdad para
   // precios, cobertura, productos e identidad.
   try {
     const kb = initKnowledgeBase();
     Logger.log(
-      `🧠 Going KB loaded: ${kb.rutas.length} rutas, ${kb.coverage.active_cities.length} ciudades activas, ` +
+      `🧠 Going App KB loaded: ${kb.rutas.length} rutas, ${kb.coverage.active_cities.length} ciudades activas, ` +
         `${countRutasPendientesRevision()} tarifas pendientes de revisión`,
       'Bootstrap',
     );
@@ -36,7 +36,7 @@ async function bootstrap() {
     }
   } catch (e) {
     Logger.error(
-      `❌ Failed to load Going KB: ${(e as Error).message}. ` +
+      `❌ Failed to load Going App KB: ${(e as Error).message}. ` +
         `Service will start but get_quote_phone tool will fail.`,
       'Bootstrap',
     );

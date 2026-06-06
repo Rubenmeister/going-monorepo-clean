@@ -1,5 +1,5 @@
 /**
- * OnboardingScreen — Going Ecuador
+ * OnboardingScreen — Going App Ecuador
  *
  * 3 PRODUCTOS BÁSICOS:
  *   1. Compartido — SUV interurbano, hasta 7 pasajeros
@@ -213,7 +213,7 @@ export function OnboardingScreen() {
         backgroundColor="transparent"
       />
 
-      {/* Logo Going — siempre blanco porque vive sobre la foto con overlay oscuro */}
+      {/* Logo Going App — siempre blanco porque vive sobre la foto con overlay oscuro */}
       <View style={styles.logoOverlay} pointerEvents="none">
         <Image
           source={logoSource}

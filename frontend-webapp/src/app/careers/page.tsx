@@ -14,9 +14,9 @@ const jobs = [
 ];
 
 export const metadata = {
-  title: 'Trabaja en Going — Únete al Equipo',
+  title: 'Trabaja en Going App — Únete al Equipo',
   description:
-    'Explora oportunidades de carrera y únete al equipo Going. Ayúdanos a transformar la movilidad en Ecuador.',
+    'Explora oportunidades de carrera y únete al equipo Going App. Ayúdanos a transformar la movilidad en Ecuador.',
 };
 
 export default function CareersPage() {
@@ -32,10 +32,10 @@ export default function CareersPage() {
         </div>
       </section>
 
-      {/* Por qué Going */}
+      {/* Por qué Going App */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12 text-center">
-          ¿Por qué trabajar en Going?
+          ¿Por qué trabajar en Going App?
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[

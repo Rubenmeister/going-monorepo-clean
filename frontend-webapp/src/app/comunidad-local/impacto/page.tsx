@@ -36,17 +36,17 @@ const stats = [
 ];
 
 const trafficCards = [
-  { title: 'Menos autos en circulación', desc: 'Un solo viaje Going puede reemplazar 2 a 4 autos individuales, reduciendo el volumen de tráfico en horas pico.' },
+  { title: 'Menos autos en circulación', desc: 'Un solo viaje Going App puede reemplazar 2 a 4 autos individuales, reduciendo el volumen de tráfico en horas pico.' },
   { title: 'Menos parqueos necesarios', desc: 'Cada auto compartido libera hasta 5 espacios de estacionamiento, devolviendo espacio público a la ciudad.' },
   { title: 'Rutas optimizadas por IA', desc: 'Nuestro algoritmo agrupa viajes con trayectorias similares, reduciendo kilómetros recorridos totales.' },
-  { title: 'Menos accidentes en vía', desc: 'Conductores Going están verificados, evaluados y entrenados, lo que eleva el estándar de seguridad vial.' },
+  { title: 'Menos accidentes en vía', desc: 'Conductores Going App están verificados, evaluados y entrenados, lo que eleva el estándar de seguridad vial.' },
 ];
 
 const economicCards = [
-  { emoji: '🚘', title: 'Conductores prósperos', desc: 'Más de 28,000 conductores generan ingresos estables gracias a la plataforma Going.' },
-  { emoji: '🏨', title: 'Hoteles y alojamientos', desc: 'El 34% de huéspedes en alojamientos Going llegaron vía transporte Going, creando un ecosistema integrado.' },
-  { emoji: '🗺️', title: 'Tours que florecen', desc: 'Guías y operadoras turísticas duplicaron sus ventas conectándose con turistas a través de Going.' },
-  { emoji: '🔄', title: 'Economía circular', desc: 'Cada dólar gastado en Going genera $2.8 de actividad económica adicional en la ciudad.' },
+  { emoji: '🚘', title: 'Conductores prósperos', desc: 'Más de 28,000 conductores generan ingresos estables gracias a la plataforma Going App.' },
+  { emoji: '🏨', title: 'Hoteles y alojamientos', desc: 'El 34% de huéspedes en alojamientos Going App llegaron vía transporte Going App, creando un ecosistema integrado.' },
+  { emoji: '🗺️', title: 'Tours que florecen', desc: 'Guías y operadoras turísticas duplicaron sus ventas conectándose con turistas a través de Going App.' },
+  { emoji: '🔄', title: 'Economía circular', desc: 'Cada dólar gastado en Going App genera $2.8 de actividad económica adicional en la ciudad.' },
 ];
 
 const cities = [
@@ -58,9 +58,9 @@ const cities = [
 ];
 
 const sostenibilidadCards = [
-  { icon: '🌱', title: 'Flota hacia vehículos limpios', desc: 'Going incentiva activamente a conductoras y conductores a migrar a vehículos híbridos y eléctricos con tarifas preferenciales y bonificaciones.' },
-  { icon: '♻️', title: 'Operación sin papel', desc: 'Contratos, recibos y comunicaciones son 100% digitales. Cero papel en toda la cadena operativa de Going.' },
-  { icon: '🌍', title: 'Neutralidad de carbono 2030', desc: 'Going está comprometido a compensar el 100% de las emisiones generadas por su operación antes del año 2030.' },
+  { icon: '🌱', title: 'Flota hacia vehículos limpios', desc: 'Going App incentiva activamente a conductoras y conductores a migrar a vehículos híbridos y eléctricos con tarifas preferenciales y bonificaciones.' },
+  { icon: '♻️', title: 'Operación sin papel', desc: 'Contratos, recibos y comunicaciones son 100% digitales. Cero papel en toda la cadena operativa de Going App.' },
+  { icon: '🌍', title: 'Neutralidad de carbono 2030', desc: 'Going App está comprometido a compensar el 100% de las emisiones generadas por su operación antes del año 2030.' },
   { icon: '💧', title: 'Oficinas sostenibles', desc: 'Nuestras instalaciones operan con energía renovable certificada y programas de gestión de residuos.' },
   { icon: '🤝', title: 'Proveedores responsables', desc: 'Exigimos estándares ambientales y sociales a todos nuestros socios y proveedores tecnológicos.' },
   { icon: '📊', title: 'Reporte de impacto anual', desc: 'Publicamos anualmente nuestro reporte de sostenibilidad con métricas verificadas por terceros.' },
@@ -72,7 +72,7 @@ export default function ImpactoPage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
+          <Link href="/"><Image src="/going-logo-h.png" alt="Going App" width={120} height={40} className="h-9 w-auto" /></Link>
           <div className="flex items-center gap-4">
             <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Iniciar sesión</Link>
             <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Unirse</Link>
@@ -90,7 +90,7 @@ export default function ImpactoPage() {
           <FadeIn>
             <span className="inline-block text-emerald-200 text-sm font-semibold tracking-widest uppercase mb-4">Impacto y Sostenibilidad</span>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-              Going transforma la<br />movilidad y cuida el planeta
+              Going App transforma la<br />movilidad y cuida el planeta
             </h1>
             <p className="text-xl text-emerald-100 max-w-2xl mx-auto mb-10">
               Menos autos individuales, más viajes compartidos, operación sostenible y carbono neutral al 2030
@@ -119,7 +119,7 @@ export default function ImpactoPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Números que hablan por sí solos</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Datos reales de la operación Going en Ecuador durante el último año</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Datos reales de la operación Going App en Ecuador durante el último año</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -137,12 +137,12 @@ export default function ImpactoPage() {
         </div>
       </section>
 
-      {/* How Going reduces traffic */}
+      {/* How Going App reduces traffic */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">¿Cómo Going reduce el tráfico?</h2>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">¿Cómo Going App reduce el tráfico?</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">Tecnología y comunidad al servicio de una ciudad que fluye mejor</p>
             </div>
           </FadeIn>
@@ -194,7 +194,7 @@ export default function ImpactoPage() {
             <div className="text-center mb-14">
               <span className="inline-block text-emerald-600 text-sm font-semibold tracking-widest uppercase mb-3">Sostenibilidad</span>
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Construyendo un Ecuador más verde</h2>
-              <p className="text-gray-500 text-lg max-w-2xl mx-auto">Cada decisión en Going está guiada por nuestro compromiso con el medio ambiente y las generaciones futuras</p>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">Cada decisión en Going App está guiada por nuestro compromiso con el medio ambiente y las generaciones futuras</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -211,7 +211,7 @@ export default function ImpactoPage() {
           <FadeIn delay={200}>
             <div className="mt-12 rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)' }}>
               <p className="text-2xl font-black text-green-900 mb-2">Meta: Neutralidad de carbono 2030</p>
-              <p className="text-green-700 text-base max-w-xl mx-auto">Going compensa las emisiones de CO₂ generadas por su operación a través de programas certificados de reforestación en Ecuador</p>
+              <p className="text-green-700 text-base max-w-xl mx-auto">Going App compensa las emisiones de CO₂ generadas por su operación a través de programas certificados de reforestación en Ecuador</p>
             </div>
           </FadeIn>
         </div>
@@ -222,7 +222,7 @@ export default function ImpactoPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Únete y contribuye al cambio</h2>
-            <p className="text-emerald-100 text-lg mb-10">Cada viaje que haces con Going suma al impacto colectivo de nuestra comunidad</p>
+            <p className="text-emerald-100 text-lg mb-10">Cada viaje que haces con Going App suma al impacto colectivo de nuestra comunidad</p>
             <Link href="/auth/register" className="inline-block bg-white font-bold px-10 py-4 rounded-2xl text-lg shadow-xl hover:scale-105 transition-transform" style={{ color: '#16a34a' }}>
               Crear mi cuenta gratis
             </Link>

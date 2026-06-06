@@ -65,13 +65,13 @@ if (DATIL_AMBIENTE !== 1 && DATIL_AMBIENTE !== 2) {
   throw new Error(`[datil] DATIL_ENV debe ser "1" (pruebas) o "2" (producción), recibido: "${DATIL_ENV_RAW}"`);
 }
 
-// ─── Emisor (Going Ecuador) ───────────────────────────────────
+// ─── Emisor (Going App Ecuador) ───────────────────────────────────
 const ESTABLECIMIENTO_CODIGO  = process.env.GOING_ESTABLECIMIENTO || '001';
 const ESTABLECIMIENTO_PUNTO   = process.env.GOING_PUNTO_EMISION  || '001';
 const EMISOR = {
   ruc:                  GOING_RUC,
   razon_social:         process.env.GOING_RAZON_SOCIAL    || 'GOING ECUADOR',
-  nombre_comercial:     process.env.GOING_NOMBRE_COMERCIAL || 'Going',
+  nombre_comercial:     process.env.GOING_NOMBRE_COMERCIAL || 'Going App',
   direccion:            process.env.GOING_ADDRESS         || 'Quito, Ecuador',
   obligado_contabilidad: true,
   contribuyente_especial: '',

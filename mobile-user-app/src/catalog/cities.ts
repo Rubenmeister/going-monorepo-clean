@@ -1,5 +1,5 @@
 /**
- * Catálogo de ciudades origen — Going Ecuador.
+ * Catálogo de ciudades origen — Going App Ecuador.
  *
  * Lista canónica del frontend. Match con el catálogo backend en
  * libs/pricing/cities.ts (Paso 0 de la migración). Cuando agreguemos
@@ -15,7 +15,7 @@ export interface OriginCity {
 }
 
 export const ORIGIN_CITIES: OriginCity[] = [
-  // ── Rutas Going (aeropuerto + Sierra principales) ──────────────────────
+  // ── Rutas Going App (aeropuerto + Sierra principales) ──────────────────────
   { id: 'aeropuerto_quito', label: 'Aeropuerto Quito (Tababela)', province: 'Pichincha' },
   { id: 'quito',            label: 'Quito',                       province: 'Pichincha' },
   // ── Sierra Centro ──────────────────────────────────────────────────────
