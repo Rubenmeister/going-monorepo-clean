@@ -112,7 +112,7 @@ export function DriverScheduleScreen() {
   const [saving,       setSaving]       = useState(false);
 
   const origin = ORIGIN_CITIES.find(c => c.id === originId);
-  const price  = origin && destination ? origin.prices[destination] ?? 0 : 0;
+  const price  = origin && destination ? (origin.prices as unknown as Record<string, number>)[destination] ?? 0 : 0;
 
   useEffect(() => { loadSlots(); }, []);
 
@@ -256,7 +256,7 @@ export function DriverScheduleScreen() {
                   </Text>
                 </View>
                 <View style={[s.priceBadge, {backgroundColor:`${origin.color}12`,borderColor:`${origin.color}30`}]}>
-                  <Text style={[s.priceVal,{color:origin.color}]}>${origin.prices[stop]}</Text>
+                  <Text style={[s.priceVal,{color:origin.color}]}>${(origin.prices as unknown as Record<string, number>)[stop]}</Text>
                   <Text style={s.priceLbl}>/asiento</Text>
                 </View>
               </TouchableOpacity>

@@ -69,7 +69,7 @@ export interface FareBreakdown {
   durationMin:       number;
   /** true = precio de tabla fija · false = estimado por distancia */
   isPriceFixed:      boolean;
-  mode:              'privado' | 'compartido';
+  mode:              'ciudad' | 'privado' | 'compartido';
   tier:              'confort' | 'premium';
   /** Recargo fijo por zona de origen (+$5) */
   originSurcharge:   number;
@@ -105,6 +105,36 @@ export function calculateDistance(pickup: Location, dropoff: Location): number {
 }
 
 const AVERAGE_SPEED_KMH = 75;
+
+// ════════════════════════════════════════════════════════════════
+// TARIFA URBANA — modo "En la ciudad" (taxímetro dinámico)
+// ════════════════════════════════════════════════════════════════
+// A diferencia de los viajes interurbanos (privado/compartido), que tienen
+// precios FIJOS por par de ciudades (tabla CITY_PAIR_PRICES), los viajes
+// dentro de la ciudad se cobran con un modelo de taxímetro:
+//   precio = base + (km × valor_km) + (min × valor_min)   [+ surge dinámico]
+//
+// ⚠️ VALORES PLACEHOLDER — ajustar a la tarifa real de Going.
+//    Pensados como referencia para Quito/Guayaquil; revísalos antes de
+//    producción.
+const URBAN_BASE_FARE     = 1.50;  // banderazo / arranque (USD)
+const URBAN_PER_KM        = 0.45;  // USD por km recorrido
+const URBAN_PER_MIN       = 0.12;  // USD por minuto de viaje
+const URBAN_MIN_FARE      = 2.00;  // tarifa mínima garantizada (USD)
+const URBAN_PREMIUM_MULT  = 1.30;  // recargo tier Premium en ciudad
+const URBAN_SPEED_KMH     = 25;    // velocidad urbana para estimar minutos
+                                   // cuando aún no hay duración real de ruta
+
+/**
+ * Taxímetro urbano: base + distancia + tiempo, con piso de tarifa mínima.
+ * No incluye recargos dinámicos (surge) — esos se aplican aparte en
+ * getFareBreakdown para poder mostrarlos desglosados.
+ */
+function urbanTaximeterBase(km: number, durationMin: number): number {
+  const raw = URBAN_BASE_FARE + km * URBAN_PER_KM + durationMin * URBAN_PER_MIN;
+  return Math.max(URBAN_MIN_FARE, raw);
+}
+
 
 export function calculateEstimatedDuration(pickup: Location, dropoff: Location): number {
   return Math.round((calculateDistance(pickup, dropoff) / AVERAGE_SPEED_KMH) * 60);
@@ -240,7 +270,7 @@ interface SurchargeResult {
  */
 function getDynamicSurcharge(
   date: Date,
-  mode: 'privado' | 'compartido',
+  mode: 'ciudad' | 'privado' | 'compartido',
 ): SurchargeResult {
   const hour    = date.getHours();
   const isShared = mode === 'compartido';
@@ -584,13 +614,52 @@ export function getFareBreakdown(
   dropoff:       Location,
   vehicleType:   VehicleType = 'suv',
   tier:          'confort' | 'premium' = 'confort',
-  mode:          'privado' | 'compartido' = 'privado',
+  mode:          'ciudad' | 'privado' | 'compartido' = 'privado',
   roadDistance?: { distanceKm: number; durationMin: number },
   context?:      PricingContext,
 ): FareBreakdown {
   const dist     = roadDistance?.distanceKm ?? calculateDistance(pickup, dropoff);
   const dateTime = context?.dateTime ?? new Date();
   const segment  = context?.clientSegment ?? 'public';
+
+  // Duracion estimada: usa la real de la ruta si existe; si no, estima con la
+  // velocidad apropiada (urbana es mucho mas lenta que interurbana).
+  const durationMin = roadDistance?.durationMin ??
+    Math.round((dist / (mode === 'ciudad' ? URBAN_SPEED_KMH : AVERAGE_SPEED_KMH)) * 60);
+
+  // Modo "En la ciudad": taximetro dinamico.
+  // No usa la tabla interurbana. Precio = base + km + min, con surge por
+  // hora pico/noche/feriado. Siempre "estimado" (depende de la ruta real).
+  if (mode === 'ciudad') {
+    const vehicleC  = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
+    const isLarge   = !['suv', 'suv_xl', 'other'].includes(vehicleType);
+    const vehFactor = isLarge ? vehicleC.multiplierConfort : 1;
+
+    const urbanBase = urbanTaximeterBase(dist, durationMin) * vehFactor *
+      (tier === 'premium' ? URBAN_PREMIUM_MULT : 1);
+
+    // El surge dinamico SOLO aplica a viajes urbanos.
+    const { rate: surge, label: surgeLabel } = getDynamicSurcharge(dateTime, mode);
+    const { rate: clientRate, label: clientLabel } = getClientSurcharge(segment);
+    const urbanTotal = Math.round(urbanBase * (1 + surge + clientRate) * 100) / 100;
+
+    return {
+      sharedBase:           Math.round(urbanBase * 100) / 100,
+      totalFare:            urbanTotal,
+      distanceKm:           roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
+      durationMin,
+      isPriceFixed:         false,
+      mode,
+      tier,
+      originSurcharge:      0,
+      surchargeRate:        surge,
+      surchargeLabel:       surgeLabel,
+      clientSurchargeRate:  clientRate,
+      clientSurchargeLabel: clientLabel,
+      discountRate:         0,
+      clientSegment:        segment,
+    };
+  }
 
   const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
   const originSurcharge = getOriginSurcharge(pickup);
@@ -611,11 +680,13 @@ export function getFareBreakdown(
     basePrice = tier === 'premium' ? privadoConfort + 10 : privadoConfort;
   }
 
-  const { rate: surchargeRate,       label: surchargeLabel       } = getDynamicSurcharge(dateTime, mode);
+  // Interurbano: PRECIO FIJO. El surge dinamico (hora/dia) NO aplica aqui;
+  // solo el recargo por segmento de cliente (agencia/empresa).
+  const surchargeRate = 0;
+  const surchargeLabel: string | null = null;
   const { rate: clientSurchargeRate, label: clientSurchargeLabel } = getClientSurcharge(segment);
 
-  // Fórmula: base × (1 + recargo_tiempo + recargo_cliente) + origen
-  // NOTA: clientSurchargeRate es POSITIVO (+0.25) → aumenta el precio
+  // Formula: base x (1 + recargo_cliente) + origen
   const adjustedPrice = Math.round(basePrice * (1 + surchargeRate + clientSurchargeRate));
   const totalFare     = adjustedPrice + originSurcharge;
 

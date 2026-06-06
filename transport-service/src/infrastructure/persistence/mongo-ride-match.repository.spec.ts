@@ -70,7 +70,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.save(mockMatch as any);
 
       expect(result.isErr()).toBe(true);
-      expect(result.error?.message).toContain('Failed to save');
+      expect(result._unsafeUnwrapErr().message).toContain('Failed to save');
     });
   });
 
@@ -93,7 +93,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.findById(matchId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBeNull();
+      expect(result._unsafeUnwrap()).toBeNull();
     });
 
     it('should handle database errors', async () => {
@@ -114,33 +114,27 @@ describe('MongoRideMatchRepository', () => {
         { matchId: 'match_2', rideId, driverId: 'driver_2' },
       ];
 
-      const mockQuery = {
-        find: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockDocs),
-      };
-
-      mockModel.find = jest.fn().mockReturnValue(mockQuery);
+      // El repo hace `await find().sort()` y luego `docs.map(...)` (sin
+      // `.exec()`); por eso `sort()` debe RESOLVER al array de documentos.
+      mockModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockResolvedValue(mockDocs),
+      });
 
       const result = await repository.findByRideId(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(Array.isArray(result.value)).toBe(true);
+      expect(Array.isArray(result._unsafeUnwrap())).toBe(true);
     });
 
     it('should return empty array when no matches found', async () => {
-      const mockQuery = {
-        find: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue([]),
-      };
-
-      mockModel.find = jest.fn().mockReturnValue(mockQuery);
+      mockModel.find = jest.fn().mockReturnValue({
+        sort: jest.fn().mockResolvedValue([]),
+      });
 
       const result = await repository.findByRideId(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toEqual([]);
+      expect(result._unsafeUnwrap()).toEqual([]);
     });
   });
 
@@ -153,12 +147,9 @@ describe('MongoRideMatchRepository', () => {
         { matchId: 'match_2', acceptanceStatus: 'PENDING' },
       ];
 
-      const mockQuery = {
-        find: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue(mockDocs),
-      };
-
-      mockModel.find = jest.fn().mockReturnValue(mockQuery);
+      // findPendingByRideId hace `await find({...})` directo (sin sort/exec),
+      // así que find() debe RESOLVER al array.
+      mockModel.find = jest.fn().mockResolvedValue(mockDocs);
 
       const result = await repository.findPendingByRideId(rideId);
 
@@ -171,10 +162,17 @@ describe('MongoRideMatchRepository', () => {
     });
 
     it('should exclude expired matches', async () => {
+      mockModel.find = jest.fn().mockResolvedValue([]);
+
       const result = await repository.findPendingByRideId(rideId);
 
       expect(result.isOk()).toBe(true);
-      // Verify expiry check in query
+      // El filtro incluye expiresAt > ahora (excluye expirados).
+      expect(mockModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          expiresAt: expect.objectContaining({ $gt: expect.any(Date) }),
+        })
+      );
     });
   });
 
@@ -212,7 +210,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.countPendingForRide(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(5);
+      expect(result._unsafeUnwrap()).toBe(5);
     });
 
     it('should return 0 when no pending matches', async () => {
@@ -221,7 +219,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.countPendingForRide(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(0);
+      expect(result._unsafeUnwrap()).toBe(0);
     });
   });
 
@@ -234,7 +232,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.expireOldMatches(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(3);
+      expect(result._unsafeUnwrap()).toBe(3);
     });
 
     it('should return 0 when no matches to expire', async () => {
@@ -243,7 +241,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.expireOldMatches(rideId);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(0);
+      expect(result._unsafeUnwrap()).toBe(0);
     });
   });
 
@@ -256,7 +254,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.deleteExpiredMatches(olderThan);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(10);
+      expect(result._unsafeUnwrap()).toBe(10);
     });
 
     it('should return 0 when no expired matches', async () => {
@@ -265,7 +263,7 @@ describe('MongoRideMatchRepository', () => {
       const result = await repository.deleteExpiredMatches(olderThan);
 
       expect(result.isOk()).toBe(true);
-      expect(result.value).toBe(0);
+      expect(result._unsafeUnwrap()).toBe(0);
     });
   });
 });

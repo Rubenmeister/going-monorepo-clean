@@ -89,6 +89,8 @@
       "detox"
     ],
     "overrides": {
+      "react": "18.2.0",
+      "react-dom": "18.2.0",
       "@types/react": "^18.3.28",
       "@types/react-dom": "^18.3.0",
       "shell-quote": ">=1.8.4"
@@ -194,6 +196,8 @@
     "@fastify/helmet": "^12.0.0",
     "@fastify/rate-limit": "^10.0.0",
     "@fastify/static": "^8.0.0",
+    "@google-cloud/speech": "^6.7.1",
+    "@google-cloud/text-to-speech": "^5.8.1",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/bull": "^11.0.0",
     "@nestjs/cache-manager": "^3.0.0",

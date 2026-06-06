@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 import { RolesGuard } from '../../rbac/roles.guard';
@@ -15,10 +17,40 @@ describe('BookingController (RBAC)', () => {
   let service: BookingService;
 
   beforeEach(async () => {
+    // BookingService usa HttpService (proxy a booking-service) + ConfigService.
+    // El test cubre RBAC, no las llamadas HTTP reales, así que devolvemos
+    // respuestas vacías por defecto. response.data se devuelve tal cual.
+    const httpResult = (data: any) => ({
+      toPromise: () => Promise.resolve({ data }),
+    });
+    const mockHttpService = {
+      get: jest.fn(() => httpResult({ items: [], page: 1, limit: 20, total: 0 })),
+      post: jest.fn(() => httpResult({ id: 'booking-1' })),
+      patch: jest.fn(() => httpResult({ id: 'booking-1' })),
+      delete: jest.fn(() => httpResult({})),
+    };
+    const mockConfigService = {
+      get: jest.fn(() => 'http://booking-service'),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
-      providers: [BookingService],
-    }).compile();
+      providers: [
+        BookingService,
+        { provide: HttpService, useValue: mockHttpService },
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
+    })
+      // Los tests llaman a los métodos del controller directamente; los guards
+      // (que dependen de RbacService/Reflector y de otros módulos) se
+      // sustituyen por uno que siempre permite, para no instanciar su árbol DI.
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<BookingController>(BookingController);
     service = module.get<BookingService>(BookingService);

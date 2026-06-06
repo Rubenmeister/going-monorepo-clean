@@ -38,6 +38,7 @@ import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { TokenService } from '../infrastructure/token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
+import { RideMatchingService } from '../application/ride-matching.service';
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
@@ -74,6 +75,7 @@ export class RideController {
     private readonly twilioProxy: TwilioProxyService,
     private readonly agoraToken: AgoraTokenService,
     private readonly matchDriversUseCase: MatchAvailableDriversUseCase,
+    private readonly rideMatching: RideMatchingService,
     private readonly dispatchGateway: RideDispatchGateway,
     private readonly eventsGateway: RideEventsGateway,
     private readonly paymentService: PaymentGatewayService,
@@ -101,6 +103,13 @@ export class RideController {
       ? (dto.isCorporate ?? !!user.companyId)
       : !!user.companyId;
 
+    // ¿Es una RESERVA (viaje programado a futuro) o un viaje INMEDIATO
+    // ("en la ciudad")? La regla es por scheduledAt: si llega una fecha
+    // futura → reserva; si no llega o ya pasó → inmediato.
+    const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : undefined;
+    const isFutureScheduled =
+      !!scheduledAt && !isNaN(scheduledAt.getTime()) && scheduledAt.getTime() > Date.now();
+
     const ride = await this.requestRideUseCase.execute({
       userId: user.id,
       pickupLatitude: dto.pickupLatitude,
@@ -108,53 +117,35 @@ export class RideController {
       dropoffLatitude: dto.dropoffLatitude,
       dropoffLongitude: dto.dropoffLongitude,
       serviceType: dto.serviceType,
+      scheduledAt: isFutureScheduled ? scheduledAt : undefined,
+      // status='scheduled' deja el viaje "en agenda": el cron lo despacha
+      // MATCH_LEAD_TIME_MINUTES antes. Inmediato sigue con el default.
+      initialStatus: isFutureScheduled ? 'scheduled' : undefined,
+      lockedFare: isFutureScheduled ? dto.lockedFare : undefined,
     });
 
-    // Fire-and-forget: match drivers and dispatch notifications asynchronously
-    // Does not block the passenger's response
-    this.matchDriversUseCase
-      .execute({
-        rideId: ride.rideId,
-        pickupLatitude: dto.pickupLatitude,
-        pickupLongitude: dto.pickupLongitude,
-        dropoffLatitude: dto.dropoffLatitude,
-        dropoffLongitude: dto.dropoffLongitude,
-        vehicleType: dto.serviceType || 'ANY',
-        maxRadius: 10,
-        isCorporate,
-      })
-      .then((result) => {
-        if (result.isOk() && result.value.matches.length > 0) {
-          const driverIds = result.value.matches.map((m) => m.driverId);
-          this.dispatchGateway.broadcastRideMatches(
-            ride.rideId,
-            result.value.matches,
-            driverIds
-          );
-        } else {
-          // Sin conductores disponibles — notificar al pasajero por socket
-          // para que el mobile salga del estado "buscando" y muestre mensaje.
-          // Delay de 4s para dar tiempo al mobile a conectar al room ride:{rideId}
-          // tras la navegación de ConfirmRide → ActiveRide.
-          setTimeout(() => {
-            this.eventsGateway['server']?.to(`ride:${ride.rideId}`).emit('ride:no_drivers_available', {
-              rideId: ride.rideId,
-              message: 'No hay conductores disponibles cerca en este momento. Intenta de nuevo en unos minutos.',
-              timestamp: new Date().toISOString(),
-            });
-          }, 4000);
-        }
-      })
-      .catch(() => {
-        // Error real en el matching — también notificar al pasajero
-        setTimeout(() => {
-          this.eventsGateway['server']?.to(`ride:${ride.rideId}`).emit('ride:no_drivers_available', {
-            rideId: ride.rideId,
-            message: 'Ocurrió un problema buscando conductores. Intenta de nuevo.',
-            timestamp: new Date().toISOString(),
-          });
-        }, 4000);
-      });
+    if (isFutureScheduled) {
+      // RESERVA: NO se busca conductor ahora. El viaje queda anotado para
+      // tal fecha/hora con el precio fijado. ScheduledRideDispatcherCron
+      // disparará el matching ~1h antes (configurable). Devolvemos de una.
+      this.logger.log(
+        `[scheduled] ride ${ride.rideId} reservado para ${scheduledAt!.toISOString()} ` +
+          `(lockedFare=${dto.lockedFare ?? 'n/a'}) — matching diferido`,
+      );
+      return ride;
+    }
+
+    // INMEDIATO ("en la ciudad"): buscar al conductor activo más cercano ya.
+    // Fire-and-forget para no bloquear la respuesta al pasajero.
+    this.rideMatching.dispatchMatching({
+      rideId: ride.rideId,
+      pickupLatitude: dto.pickupLatitude,
+      pickupLongitude: dto.pickupLongitude,
+      dropoffLatitude: dto.dropoffLatitude,
+      dropoffLongitude: dto.dropoffLongitude,
+      vehicleType: dto.serviceType || 'ANY',
+      isCorporate,
+    });
 
     return ride;
   }

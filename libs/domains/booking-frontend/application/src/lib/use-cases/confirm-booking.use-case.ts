@@ -1,34 +1,23 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException, ConflictException } from '@nestjs/common';
-import { IBookingRepository } from '@going-monorepo-clean/domains-booking-core';
-import { UUID } from '@going-monorepo-clean/shared-domain';
+import { Inject, Injectable } from '@nestjs/common';
+import { Booking, IBookingRepository } from '@going-monorepo-clean/domains-booking-frontend-core';
+import { IAuthRepository } from '@going-monorepo-clean/domains-user-frontend-core';
+import { Result, err } from 'neverthrow';
 
 @Injectable()
 export class ConfirmBookingUseCase {
   constructor(
     @Inject(IBookingRepository)
     private readonly repository: IBookingRepository,
+    @Inject(IAuthRepository)
+    private readonly authRepository: IAuthRepository,
   ) {}
 
-  async execute(bookingId: UUID, confirmationId: string): Promise<void> {
-    const result = await this.repository.findById(bookingId);
-
-    if (result.isErr()) {
-      throw new InternalServerErrorException(result.error.message);
+  async execute(bookingId: string): Promise<Result<Booking, Error>> {
+    const sessionResult = await this.authRepository.loadSession();
+    if (sessionResult.isErr() || !sessionResult.value) {
+      return err(new Error('No estás autenticado.'));
     }
-    if (!result.value) {
-      throw new NotFoundException(`Booking with ID ${bookingId} not found.`);
-    }
-    
-    const booking = result.value;
-
-    // Lógica de confirmación en la entidad
-    const confirmResult = booking.confirm();
-
-    if (confirmResult.isErr()) {
-        throw new ConflictException(confirmResult.error.message);
-    }
-
-    // Actualizar el repositorio
-    await this.repository.update(booking);
+    const token = sessionResult.value.token;
+    return this.repository.confirm(bookingId, token);
   }
 }

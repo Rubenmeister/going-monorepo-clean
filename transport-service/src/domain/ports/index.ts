@@ -541,6 +541,12 @@ export interface IRideRepository {
   findRecent(limit: number): Promise<any[]>;
   findByStatus(status: string, limit?: number, excludeDriverId?: string): Promise<any[]>;
   /**
+   * Viajes reservados (status='scheduled') cuya hora programada cae dentro
+   * de la ventana de despacho (scheduledAt <= threshold) y que aún no fueron
+   * disparados. Usado por ScheduledRideDispatcherCron.
+   */
+  findScheduledDue?(threshold: Date, limit?: number): Promise<any[]>;
+  /**
    * Marca que un conductor rechazó este viaje (idempotente).
    * Usado por POST /rides/:id/reject para que el viaje no aparezca de nuevo
    * en GET /rides/pending para ese conductor específico.

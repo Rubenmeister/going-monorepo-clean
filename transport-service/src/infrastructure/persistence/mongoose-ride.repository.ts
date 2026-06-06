@@ -34,6 +34,10 @@ export class MongooseRideRepository implements IRideRepository {
       serviceType: ride.serviceType,
       modalidad: ride.modalidad,
       scheduledAt: ride.scheduledAt,
+      lockedFare: ride.lockedFare,
+      matchDispatchedAt: ride.matchDispatchedAt,
+      channelOpenedAt: ride.channelOpenedAt,
+      channelClosedAt: ride.channelClosedAt,
       pickupToken: ride.pickupToken,
       deliveryToken: ride.deliveryToken,
       pickupVerified: ride.pickupVerified,
@@ -125,6 +129,29 @@ export class MongooseRideRepository implements IRideRepository {
     );
   }
 
+  /**
+   * Viajes RESERVADOS listos para despachar: status='scheduled', con
+   * scheduledAt <= threshold (= now + lead) y que aún no fueron disparados
+   * (matchDispatchedAt null). El filtro por matchDispatchedAt da idempotencia
+   * multi-pod sin lock: el primer pod que despacha setea el campo y el resto
+   * deja de verlo en la query.
+   */
+  async findScheduledDue(threshold: Date, limit = 100): Promise<any[]> {
+    const docs = await this.model
+      .find({
+        status: 'scheduled',
+        scheduledAt: { $lte: threshold },
+        $or: [
+          { matchDispatchedAt: { $exists: false } },
+          { matchDispatchedAt: null },
+        ],
+      })
+      .limit(limit)
+      .sort({ scheduledAt: 1 })
+      .lean();
+    return docs.map((d) => this._toRideData(d));
+  }
+
   async delete(id: string): Promise<void> {
     await this.model.findByIdAndDelete(id);
   }
@@ -152,6 +179,10 @@ export class MongooseRideRepository implements IRideRepository {
       serviceType: doc.serviceType,
       modalidad: doc.modalidad,
       scheduledAt: doc.scheduledAt,
+      lockedFare: doc.lockedFare,
+      matchDispatchedAt: doc.matchDispatchedAt,
+      channelOpenedAt: doc.channelOpenedAt,
+      channelClosedAt: doc.channelClosedAt,
       pickupToken: doc.pickupToken,
       deliveryToken: doc.deliveryToken,
       pickupVerified: doc.pickupVerified,

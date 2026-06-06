@@ -52,7 +52,7 @@ steps:
       - --port=3000
       - --cpu=1
       - --memory=512Mi
-      - --min-instances=1
+      - --min-instances=0  # TEMP pre-prod (ahorro): el subscriber NO corre escalado a 0; restaurar a 1 antes del go-live
       - --max-instances=2
       - --set-env-vars=GCP_PROJECT=$PROJECT_ID,GCP_REGION=us-central1,NODE_ENV=production,CEREBRO_SUBSCRIBE_ENABLED=true,CEREBRO_HEALTH_ALERTS_ENABLED=true
       # MONGO_URL + TELEGRAM creds para alerts del HealthMonitorService.
