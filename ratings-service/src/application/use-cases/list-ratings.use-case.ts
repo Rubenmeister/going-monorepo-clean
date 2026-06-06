@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { IRatingRepository } from '../../domain/ports';
 
 /**
@@ -7,7 +7,10 @@ import { IRatingRepository } from '../../domain/ports';
  */
 @Injectable()
 export class ListRatingsUseCase {
-  constructor(private ratingRepository: IRatingRepository) {}
+  constructor(
+    @Inject(IRatingRepository)
+    private ratingRepository: IRatingRepository
+  ) {}
 
   async execute(input: {
     rateeId?: string;
