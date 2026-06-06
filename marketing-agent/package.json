@@ -1,7 +1,7 @@
 {
   "name": "@going-platform/marketing-agent",
   "version": "1.0.0",
-  "description": "Going Marketing Agent — métricas semanales de 9 redes (IG, FB, X, TikTok, YT, LinkedIn, Threads, WA, Telegram) + content generator on-demand",
+  "description": "Going App Marketing Agent — métricas semanales de 9 redes (IG, FB, X, TikTok, YT, LinkedIn, Threads, WA, Telegram) + content generator on-demand",
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist/index.js",

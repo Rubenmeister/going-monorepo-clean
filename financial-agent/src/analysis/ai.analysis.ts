@@ -125,7 +125,7 @@ export async function detectDriverAnomalies(): Promise<{
   ).join('\n');
 
   const aiSummary = await generateText(
-    `Eres analista antifraude de Going Ecuador (plataforma de transporte).
+    `Eres analista antifraude de Going App Ecuador (plataforma de transporte).
 Analiza estas anomalías detectadas en conductores esta semana y da recomendaciones de acción:
 ${statsText}
 Responde en máximo 150 palabras, en español, con acciones concretas por nivel de riesgo.`,
@@ -170,7 +170,7 @@ export async function projectMonthlyRevenue(): Promise<{
   const onTrack       = projected >= monthlyTarget * 0.8; // 80% de la meta = on track
 
   const aiInsight = await generateText(
-    `Eres analista financiero de Going Ecuador.
+    `Eres analista financiero de Going App Ecuador.
 Datos del mes (día ${day} de ${daysInMonth}):
 - Ingresos acumulados: $${currentRevenue.toFixed(2)}
 - Promedio diario: $${dailyAverage.toFixed(2)}
@@ -226,7 +226,7 @@ export async function compareWeeklyPerformance(): Promise<{
     : 0;
 
   const aiAnalysis = await generateText(
-    `Analiza el rendimiento semanal de Going Ecuador:
+    `Analiza el rendimiento semanal de Going App Ecuador:
 Semana actual: $${currentWeek.totalRevenue.toFixed(2)}, ${currentWeek.totalRides} viajes
 Semana anterior: $${previousWeek.totalRevenue.toFixed(2)}, ${previousWeek.totalRides} viajes
 Cambio ingresos: ${revenueChange.toFixed(1)}%

@@ -91,8 +91,8 @@ export default function PasajerosPage() {
         <div className="max-w-7xl mx-auto">
           <FadeIn className="text-center mb-10">
             <span className="text-sm font-bold uppercase tracking-widest" style={{ color: '#ff4c41' }}>4 mundos</span>
-            <h1 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going</h1>
-            <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going te lleva a todas.</p>
+            <h1 className="text-white font-black text-4xl mt-2">Explora Ecuador con Going App</h1>
+            <p className="text-gray-400 text-lg mt-3">Cada región, una experiencia única. Going App te lleva a todas.</p>
           </FadeIn>
 
           {/* Region tabs */}

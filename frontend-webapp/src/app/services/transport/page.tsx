@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 /* ─────────────────────────────────────────────
-   Vehículos privados — Going Ecuador
+   Vehículos privados — Going App Ecuador
    ───────────────────────────────────────────── */
 const PRIVATE_VEHICLES = [
   {
@@ -119,7 +119,7 @@ export default function TransportPage() {
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white opacity-5 -translate-y-1/2 translate-x-1/3" />
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full bg-white/15">
-            🚗 Transporte Going Ecuador
+            🚗 Transporte Going App Ecuador
           </span>
           <h1 className="text-5xl font-bold mb-4 leading-tight">
             Transporte para cada<br />necesidad y grupo
@@ -263,10 +263,10 @@ export default function TransportPage() {
             <div className="inline-block bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wide">
               💼 Servicio Corporativo
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Going para Empresas</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Going App para Empresas</h2>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">
               Los mejores conductores, los mejores vehículos, tiempos de espera extendidos.
-              El estándar más alto de Going, diseñado para negocios.
+              El estándar más alto de Going App, diseñado para negocios.
             </p>
           </div>
 
@@ -277,7 +277,7 @@ export default function TransportPage() {
               { icon: '⏳', title: 'Espera extendida', desc: 'Hasta 60 minutos sin cargo. Ideal para reuniones, vuelos con escala y eventos.' },
               { icon: '📊', title: 'Facturación centralizada', desc: 'Dashboard con control de gastos, informes mensuales y factura electrónica.' },
               { icon: '🔒', title: 'Privacidad garantizada', desc: 'NDA disponible con conductores. Viajes con máxima confidencialidad.' },
-              { icon: '📞', title: 'Coordinador dedicado', desc: 'Un coordinador Going asignado para gestionar reservas, rutas y situaciones especiales.' },
+              { icon: '📞', title: 'Coordinador dedicado', desc: 'Un coordinador Going App asignado para gestionar reservas, rutas y situaciones especiales.' },
             ].map(f => (
               <div key={f.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
@@ -375,15 +375,15 @@ export default function TransportPage() {
             <div className="p-7 flex-1 flex flex-col">
               <div className="text-4xl mb-4">💼</div>
               <h3 className="text-xl font-black text-gray-900 mb-1">Transporte para Empresas</h3>
-              <p className="text-sm text-yellow-600 font-semibold mb-4">El estándar más alto de Going</p>
+              <p className="text-sm text-yellow-600 font-semibold mb-4">El estándar más alto de Going App</p>
               <ul className="space-y-3 flex-1 mb-6">
                 {[
-                  'Conductores elite — top 10% de la flota Going',
+                  'Conductores elite — top 10% de la flota Going App',
                   'Protocolo empresarial, bilingüismo y discreción',
                   'Hasta 60 min de espera sin cargo adicional',
                   'Facturación centralizada con informe mensual',
                   'Dashboard de control de gastos y aprobaciones',
-                  'Coordinador Going dedicado a tu cuenta',
+                  'Coordinador Going App dedicado a tu cuenta',
                 ].map(v => (
                   <li key={v} className="flex items-start gap-2 text-sm text-gray-600">
                     <span className="text-yellow-500 font-bold mt-0.5">✓</span>{v}
@@ -409,7 +409,7 @@ export default function TransportPage() {
             <div className="md:w-2/5 flex-shrink-0">
               <img
                 src="/images/SUV de lujo.png"
-                alt="Conductor Going en Ecuador"
+                alt="Conductor Going App en Ecuador"
                 className="w-full h-full object-cover"
                 style={{ minHeight: '400px', maxHeight: '540px', objectPosition: 'center top' }}
               />
@@ -425,7 +425,7 @@ export default function TransportPage() {
                 <span style={{ color: '#ff4c41' }}>Multiplica tus ingresos.</span>
               </h2>
               <p className="text-gray-400 text-[0.95rem] leading-[1.75] mb-8 max-w-md">
-                Únete a la flota Going. Sin jefes ni horarios fijos. Tú decides cuándo y cuánto trabajar — con pagos garantizados directo a tu cuenta.
+                Únete a la flota Going App. Sin jefes ni horarios fijos. Tú decides cuándo y cuánto trabajar — con pagos garantizados directo a tu cuenta.
               </p>
 
               {/* Modalidades */}
@@ -483,7 +483,7 @@ export default function TransportPage() {
       <section className="py-10 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
           <img src="/images/43.png" alt="Trabaja cuando quieres" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
-          <img src="/images/41.png" alt="Sé parte del equipo Going" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
+          <img src="/images/41.png" alt="Sé parte del equipo Going App" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
           <img src="/images/42.png" alt="Sé tu propio jefe" className="w-full rounded-2xl shadow-md object-cover aspect-square" />
         </div>
       </section>
@@ -495,7 +495,7 @@ export default function TransportPage() {
           <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
             <img
               src="/images/nuevas%20rutas.png"
-              alt="Nuevas rutas Going — cobertura y expansión de zonas"
+              alt="Nuevas rutas Going App — cobertura y expansión de zonas"
               className="w-full object-contain"
               style={{ maxHeight: '520px', background: '#fff' }}
             />

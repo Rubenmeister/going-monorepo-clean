@@ -390,7 +390,7 @@ export function ActiveRideScreen() {
     analyticsShareTracking(rideId);
     try {
       await Share.share({
-        title: 'Mi viaje en Going 🚗',
+        title: 'Mi viaje en Going App 🚗',
         message: `Estoy en camino. Sigue mi ruta en tiempo real: ${trackingUrl}`,
         url: trackingUrl,
       });
@@ -548,7 +548,7 @@ export function ActiveRideScreen() {
           }}
           activeOpacity={0.75}
           accessibilityLabel="Botón de emergencia SOS"
-          accessibilityHint="Abre opciones de emergencia: ECU 911, contactos, soporte Going"
+          accessibilityHint="Abre opciones de emergencia: ECU 911, contactos, soporte Going App"
         >
           <Ionicons name="warning" size={18} color="#fff" />
           <Text style={styles.sosBtnText}>SOS</Text>

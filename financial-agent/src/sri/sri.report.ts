@@ -20,14 +20,14 @@ export interface MonthlyIVAReport {
   month: number;           // 1–12
   monthName: string;
 
-  // Ventas (Going como vendedor)
+  // Ventas (Going App como vendedor)
   totalSalesWithIVA: number;
   totalSalesSubtotal: number;
   ivaCollected: number;    // IVA cobrado a pasajeros (15%)
   totalInvoices: number;
   cancelledInvoices: number;
 
-  // Compras/Gastos (Going como comprador) — para crédito tributario
+  // Compras/Gastos (Going App como comprador) — para crédito tributario
   totalPurchases: number;
   ivaOnPurchases: number;  // IVA pagado en gastos
 

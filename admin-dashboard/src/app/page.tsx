@@ -37,7 +37,7 @@ const QUICK_ITEMS = [
   },
   {
     title: 'Empresas',
-    description: 'Clientes corporativos que usan la webapp empresarial Going',
+    description: 'Clientes corporativos que usan la webapp empresarial Going App',
     icon: '🏢',
     href: '/companies',
     color: '#8b5cf6',

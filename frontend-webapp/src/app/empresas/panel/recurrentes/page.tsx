@@ -319,7 +319,7 @@ export default function RecurrentesPage() {
 
       {/* Banner informativo */}
       <div className="mb-5 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-        Going programa automáticamente cada viaje según la frecuencia definida. Los bookings
+        Going App programa automáticamente cada viaje según la frecuencia definida. Los bookings
         aparecen en <strong>Viajes</strong> con 30 días de anticipación. Puedes pausar
         o eliminar cualquier recurrencia en cualquier momento.
       </div>

@@ -51,7 +51,7 @@ export function PaymentForm({
         const result = await paymentService.initiatePayment({
           rideId,
           amountUsd:   amount,
-          description: 'Viaje Going',
+          description: 'Viaje Going App',
           gateway:     'deuna',
         });
         if (result.mode === 'redirect' && result.redirectUrl) {
@@ -66,7 +66,7 @@ export function PaymentForm({
       const result = await paymentService.initiatePayment({
         rideId,
         amountUsd:   amount,
-        description: 'Viaje Going',
+        description: 'Viaje Going App',
       });
 
       if (result.mode === 'redirect' && result.redirectUrl) {
@@ -150,7 +150,7 @@ export function PaymentForm({
         <div className="mb-4 flex items-start gap-2 p-3 rounded-xl bg-blue-50 border border-blue-100">
           <span className="text-blue-500 mt-0.5">🔒</span>
           <p className="text-xs text-blue-700">
-            Seras redirigido a la pagina segura de DATAFAST. Going nunca almacena datos de tarjetas.
+            Seras redirigido a la pagina segura de DATAFAST. Going App nunca almacena datos de tarjetas.
           </p>
         </div>
       )}

@@ -227,7 +227,7 @@ export class RealtimeBridgeService {
             // o el envío falla, el tool result indica error pero el LLM
             // ya puede leer spoken_confirmation y cerrar el turno.
             const baseResult = executeSendFollowupSms(args);
-            const smsBody = `Going: ${baseResult.topic ? baseResult.topic + '. ' : ''}${baseResult.details ?? ''}`.trim();
+            const smsBody = `Going App: ${baseResult.topic ? baseResult.topic + '. ' : ''}${baseResult.details ?? ''}`.trim();
             if (input.from && smsBody) {
               this.twilioRest
                 .sendSms(input.from, smsBody)
@@ -568,8 +568,8 @@ export class RealtimeBridgeService {
   private buildBaseSystemPrompt(callId: string, language: string = 'es'): string {
     if (language === 'en') {
       return [
-        'You are Uyari, the phone agent for Going Ecuador — the mobility app of Ecuador.',
-        'Going offers: rides within the city, shared and private rides between cities,',
+        'You are Uyari, the phone agent for Going App Ecuador — the mobility app of Ecuador.',
+        'Going App offers: rides within the city, shared and private rides between cities,',
         'and door-to-door parcel delivery. The fleet covers from SUV (4 pax) up to',
         'Bus (30 pax). You answer calls in friendly, natural English.',
         '',
@@ -581,8 +581,8 @@ export class RealtimeBridgeService {
         '- If they need info they cannot write down: offer send_followup_sms.',
         '- NEVER mention URLs or redirect to apps — they are on a voice call.',
         '- If you do not understand, ask them to repeat (do not assume).',
-        '- Going operates on land in continental Ecuador (NOT Galápagos).',
-        '- Going does NOT take cash: payments go through the app (card, Datafast, DeUna).',
+        '- Going App operates on land in continental Ecuador (NOT Galápagos).',
+        '- Going App does NOT take cash: payments go through the app (card, Datafast, DeUna).',
         '',
         `Internal callId (for your context, never say it aloud): ${callId.slice(0, 16)}.`,
       ].join('\n');
@@ -591,8 +591,8 @@ export class RealtimeBridgeService {
       // Kichwa unificado / quichua ecuatoriano del Chimborazo. Backup en español
       // para que la conversación nunca quede sin respuesta si el caller mezcla.
       return [
-        'Kanka Uyariimi kanki, Going Ecuador kompañiyapak teléfono yanapakuk —',
-        'Ecuador llaktapi puriy yanapakuk app. Going kushan: llaktata uku puriy,',
+        'Kanka Uyariimi kanki, Going App Ecuador kompañiyapak teléfono yanapakuk —',
+        'Ecuador llaktapi puriy yanapakuk app. Going App kushan: llaktata uku puriy,',
         'compartido shuk privado llaktakuna chawpipi, shuk paquetekunata kachay.',
         'Kichwa shimipi ñukanchik runakunata yanapanki. Mishu shimipi tapurikpika,',
         'mishu shimipi kutichinki (mana yanllachu).',
@@ -603,16 +603,16 @@ export class RealtimeBridgeService {
         '- Runa-yanapakta munakpi, mana alli tukukpi: request_handoff_phone.',
         '- Killkana ushashpaka: send_followup_sms.',
         '- AMA URL-kunata rimaychu — voice call ukupimi.',
-        '- Going Ecuadormanta llaktapi puriy (Galápagosmanta MANA).',
-        '- Going MANA kullkita chaskin: appwan paganki (tarjeta, Datafast, DeUna).',
+        '- Going App Ecuadormanta llaktapi puriy (Galápagosmanta MANA).',
+        '- Going App MANA kullkita chaskin: appwan paganki (tarjeta, Datafast, DeUna).',
         '',
         `Internal callId (kampak yuyaypak, ama riman): ${callId.slice(0, 16)}.`,
       ].join('\n');
     }
     // Default — español ecuatoriano (NO rioplatense)
     return [
-      'Eres Uyari, el agente telefónico de Going Ecuador — la app de movilidad del',
-      'Ecuador. Going ofrece: viajes dentro de la ciudad, viajes compartidos y',
+      'Eres Uyari, el agente telefónico de Going App Ecuador — la app de movilidad del',
+      'Ecuador. Going App ofrece: viajes dentro de la ciudad, viajes compartidos y',
       'privados entre ciudades, y envíos puerta a puerta. La flota va desde SUV',
       '(4 pax) hasta Bus (30 pax).',
       '',
@@ -636,8 +636,8 @@ export class RealtimeBridgeService {
       '- Si necesitan info que no pueden tomar nota: ofrece send_followup_sms.',
       '- NO menciones URLs ni dirijas a apps — el cliente está en una llamada de voz.',
       '- Si no entiendes algo, pide que repita (no asumas).',
-      '- Going opera por carretera en Ecuador continental (NO Galápagos).',
-      '- Going NO acepta efectivo: el pago va por la app (tarjeta, Datafast, DeUna).',
+      '- Going App opera por carretera en Ecuador continental (NO Galápagos).',
+      '- Going App NO acepta efectivo: el pago va por la app (tarjeta, Datafast, DeUna).',
       '- Tours, experiencias y alojamiento están en desarrollo — di "próximamente".',
       '',
       `CallId interno (para tu contexto, no lo menciones al cliente): ${callId.slice(0, 16)}.`,

@@ -1,5 +1,5 @@
 /**
- * Going Monorepo Clean - Shared UI Component Library
+ * Going App Monorepo Clean - Shared UI Component Library
  *
  * This library exports all reusable UI components used across the monorepo.
  * It includes both presentational UI components (Button, Card, Input, etc.)

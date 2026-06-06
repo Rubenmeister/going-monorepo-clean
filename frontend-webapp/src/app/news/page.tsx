@@ -4,7 +4,7 @@ import Link from 'next/link';
 const newsPosts = [
   {
     id: 1,
-    title: 'Going se prepara para transformar la movilidad en Ecuador',
+    title: 'Going App se prepara para transformar la movilidad en Ecuador',
     date: '2026-03-01',
     category: 'Empresa',
     excerpt:
@@ -12,7 +12,7 @@ const newsPosts = [
   },
   {
     id: 2,
-    title: 'Going: tecnología de seguridad en tiempo real para cada viaje',
+    title: 'Going App: tecnología de seguridad en tiempo real para cada viaje',
     date: '2026-02-15',
     category: 'Producto',
     excerpt:
@@ -20,17 +20,17 @@ const newsPosts = [
   },
   {
     id: 3,
-    title: '¿Qué hace diferente a Going del resto?',
+    title: '¿Qué hace diferente a Going App del resto?',
     date: '2026-02-01',
     category: 'Comunidad',
     excerpt:
-      'Going nace con un enfoque local: entendemos las rutas, la cultura y las necesidades de movilidad del Ecuador.',
+      'Going App nace con un enfoque local: entendemos las rutas, la cultura y las necesidades de movilidad del Ecuador.',
   },
 ];
 
 export const metadata = {
-  title: 'Noticias Going — Novedades y Anuncios',
-  description: 'Mantente al día con las últimas noticias y anuncios de Going Ecuador.',
+  title: 'Noticias Going App — Novedades y Anuncios',
+  description: 'Mantente al día con las últimas noticias y anuncios de Going App Ecuador.',
 };
 
 export default function NewsPage() {
@@ -39,7 +39,7 @@ export default function NewsPage() {
       {/* Hero */}
       <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Noticias Going</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Noticias Going App</h1>
           <p className="text-xl text-primary-100">
             Novedades, anuncios y actualizaciones de nuestra plataforma
           </p>

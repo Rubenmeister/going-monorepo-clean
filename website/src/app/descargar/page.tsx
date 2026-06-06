@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { GoingLogo } from '../components/GoingLogo';
 
 export const metadata: Metadata = {
-  title: 'Descarga Going — App para iOS y Android',
-  description: 'Descarga la app de Going Ecuador en App Store y Google Play. Reserva viajes compartidos, privados y envíos desde tu celular.',
+  title: 'Descarga Going App — App para iOS y Android',
+  description: 'Descarga la app de Going App Ecuador en App Store y Google Play. Reserva viajes compartidos, privados y envíos desde tu celular.',
 };
 
 const STORES = [
@@ -45,7 +45,7 @@ export default function DescargarPage() {
           🇪🇨 Hecha en Ecuador
         </div>
         <h1 className="font-serif text-[clamp(36px,5vw,60px)] font-black text-white leading-tight mb-4">
-          Going en tu celular
+          Going App en tu celular
         </h1>
         <p className="text-lg text-white/50 leading-relaxed mb-10 max-w-xl mx-auto">
           Reserva, rastrea y paga desde la app. Disponible gratis para iPhone y Android.

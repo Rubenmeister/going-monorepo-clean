@@ -1,5 +1,5 @@
 /**
- * WalletScreen — Billetera Going (Mockup #19).
+ * WalletScreen — Billetera Going App (Mockup #19).
  *
  * Estructura:
  *   - Hero navy con saldo grande + currency + nota informativa
@@ -78,7 +78,7 @@ export function WalletScreen() {
       // el endpoint real con saldo + historial paginado.
       setBalance(12.50);
       setTransactions([
-        { id: '1', type: 'promo',  description: 'Bono bienvenida Going',   amount:  5.00, date: '2026-03-08' },
+        { id: '1', type: 'promo',  description: 'Bono bienvenida Going App',   amount:  5.00, date: '2026-03-08' },
         { id: '2', type: 'debit',  description: 'Viaje Latacunga → Quito', amount: -13.00, date: '2026-03-07' },
         { id: '3', type: 'credit', description: 'Recarga manual',           amount: 20.00, date: '2026-03-06' },
         { id: '4', type: 'debit',  description: 'Viaje Ambato → Riobamba', amount: -8.50,  date: '2026-03-05' },
@@ -95,7 +95,7 @@ export function WalletScreen() {
     hapticMedium();
     Alert.alert(
       'Recargar saldo',
-      `¿Recargar $${amount.toFixed(2)} a tu billetera Going?`,
+      `¿Recargar $${amount.toFixed(2)} a tu billetera Going App?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {

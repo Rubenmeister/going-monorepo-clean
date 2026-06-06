@@ -38,7 +38,7 @@ const upcomingEvents = [
     type: 'Presencial',
     typeColor: '#f59e0b',
     spots: '120 cupos disponibles',
-    desc: 'El gran encuentro trimestral de conductores Going de la Sierra. Networking, reconocimientos y presentación de novedades de la plataforma.',
+    desc: 'El gran encuentro trimestral de conductores Going App de la Sierra. Networking, reconocimientos y presentación de novedades de la plataforma.',
   },
   {
     date: '1 Abr 2026',
@@ -55,37 +55,37 @@ const upcomingEvents = [
     date: '8 Abr 2026',
     day: '08',
     month: 'ABR',
-    title: 'Going + Turismo: Mesa Redonda',
+    title: 'Going App + Turismo: Mesa Redonda',
     location: 'Guayaquil (sede por confirmar)',
     type: 'Presencial',
     typeColor: '#f59e0b',
     spots: '60 cupos disponibles',
-    desc: 'Diálogo abierto entre conductores, anfitriones, guías turísticos y el equipo Going sobre el futuro de la movilidad turística en Ecuador.',
+    desc: 'Diálogo abierto entre conductores, anfitriones, guías turísticos y el equipo Going App sobre el futuro de la movilidad turística en Ecuador.',
   },
   {
     date: '15 Abr 2026',
     day: '15',
     month: 'ABR',
-    title: 'Certificación Going Conductor Pro',
-    location: 'Online — Plataforma Going Academy',
+    title: 'Certificación Going App Conductor Pro',
+    location: 'Online — Plataforma Going App Academy',
     type: 'Online',
     typeColor: '#6366f1',
     spots: 'Cupos ilimitados',
-    desc: 'Obtén la certificación oficial Going Conductor Pro. Acceso a viajes premium, tarifa preferencial y distintivo verificado en tu perfil.',
+    desc: 'Obtén la certificación oficial Going App Conductor Pro. Acceso a viajes premium, tarifa preferencial y distintivo verificado en tu perfil.',
   },
 ];
 
 const eventTypes = [
-  { emoji: '🎓', title: 'Academia Going', desc: 'Formación práctica para conductores, anfitriones y guías. Certificaciones reconocidas dentro de la plataforma que desbloquean mejores oportunidades.', color: '#6366f1' },
-  { emoji: '🤝', title: 'Networking', desc: 'Conecta con otros proveedores Going de tu ciudad y región. Comparte experiencias, estrategias y construye una red de apoyo real.', color: '#059669' },
-  { emoji: '🗣️', title: 'Feedback Going', desc: 'Da forma al futuro de la plataforma. Going organiza sesiones de escucha activa donde las decisiones de producto se construyen con la comunidad.', color: '#f59e0b' },
-  { emoji: '🏆', title: 'Premios Going', desc: 'Reconocimiento trimestral a los mejores conductores, anfitriones y guías de cada ciudad. Premios en efectivo, visibilidad y beneficios exclusivos.', color: '#ff4c41' },
+  { emoji: '🎓', title: 'Academia Going App', desc: 'Formación práctica para conductores, anfitriones y guías. Certificaciones reconocidas dentro de la plataforma que desbloquean mejores oportunidades.', color: '#6366f1' },
+  { emoji: '🤝', title: 'Networking', desc: 'Conecta con otros proveedores Going App de tu ciudad y región. Comparte experiencias, estrategias y construye una red de apoyo real.', color: '#059669' },
+  { emoji: '🗣️', title: 'Feedback Going App', desc: 'Da forma al futuro de la plataforma. Going App organiza sesiones de escucha activa donde las decisiones de producto se construyen con la comunidad.', color: '#f59e0b' },
+  { emoji: '🏆', title: 'Premios Going App', desc: 'Reconocimiento trimestral a los mejores conductores, anfitriones y guías de cada ciudad. Premios en efectivo, visibilidad y beneficios exclusivos.', color: '#ff4c41' },
 ];
 
 const howToSteps = [
   { number: '1', title: 'Revisa el calendario', desc: 'Encuentra el evento que más te interesa según tu rol (conductor, anfitrión, guía) y tu ciudad.' },
-  { number: '2', title: 'Regístrate gratis', desc: 'Los eventos Going son gratuitos para todos los proveedores activos de la plataforma. Reserva tu cupo con anticipación.' },
-  { number: '3', title: 'Participa y conecta', desc: 'Asiste, aprende, comparte. Los eventos Going son espacios de crecimiento real, no conferencias corporativas.' },
+  { number: '2', title: 'Regístrate gratis', desc: 'Los eventos Going App son gratuitos para todos los proveedores activos de la plataforma. Reserva tu cupo con anticipación.' },
+  { number: '3', title: 'Participa y conecta', desc: 'Asiste, aprende, comparte. Los eventos Going App son espacios de crecimiento real, no conferencias corporativas.' },
 ];
 
 export default function EventosPage() {
@@ -94,7 +94,7 @@ export default function EventosPage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
+          <Link href="/"><Image src="/going-logo-h.png" alt="Going App" width={120} height={40} className="h-9 w-auto" /></Link>
           <div className="flex items-center gap-4">
             <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Iniciar sesión</Link>
             <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Unirse</Link>
@@ -110,9 +110,9 @@ export default function EventosPage() {
         </div>
         <div className="max-w-7xl mx-auto px-6 py-24 text-center relative z-10">
           <FadeIn>
-            <span className="inline-block text-amber-100 text-sm font-semibold tracking-widest uppercase mb-4">Comunidad Going</span>
+            <span className="inline-block text-amber-100 text-sm font-semibold tracking-widest uppercase mb-4">Comunidad Going App</span>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-              La comunidad Going<br />se reúne
+              La comunidad Going App<br />se reúne
             </h1>
             <p className="text-xl text-amber-100 max-w-2xl mx-auto mb-10">
               Talleres, encuentros y eventos que fortalecen nuestra red
@@ -130,7 +130,7 @@ export default function EventosPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Próximos eventos</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Calendario de eventos de la comunidad Going para el primer semestre 2026</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Calendario de eventos de la comunidad Going App para el primer semestre 2026</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 gap-6">
@@ -169,7 +169,7 @@ export default function EventosPage() {
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Tipos de eventos Going</h2>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Tipos de eventos Going App</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">Diferentes formatos pensados para distintas necesidades de la comunidad</p>
             </div>
           </FadeIn>
@@ -194,7 +194,7 @@ export default function EventosPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">¿Cómo participar?</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Tres pasos para ser parte de la comunidad Going más activa del país</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Tres pasos para ser parte de la comunidad Going App más activa del país</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-3 gap-8">

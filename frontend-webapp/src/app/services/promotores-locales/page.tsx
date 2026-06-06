@@ -123,7 +123,7 @@ export default function PromotoresLocalesPanel() {
             <button onClick={() => setSidebarOpen(o => !o)}
               className="lg:hidden w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200">☰</button>
             <Link href="/services/promotores-locales">
-              <span className="text-xl font-black" style={{ color: '#0891b2' }}>🏺 Going Promotores</span>
+              <span className="text-xl font-black" style={{ color: '#0891b2' }}>🏺 Going App Promotores</span>
             </Link>
           </div>
           <div className="flex items-center gap-3">

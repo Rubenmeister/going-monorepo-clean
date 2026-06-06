@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Destinos — Going Ecuador',
-  description: 'Explora los mejores destinos de Ecuador con Going. Baños, Cuenca, Otavalo, Guayaquil y más.',
+  title: 'Destinos — Going App Ecuador',
+  description: 'Explora los mejores destinos de Ecuador con Going App. Baños, Cuenca, Otavalo, Guayaquil y más.',
 };
 
 const DESTINOS = [
@@ -26,12 +26,12 @@ export default function DestinosPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#011627]/95 to-[#011627]/60" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto">
-          <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-4">Destinos Going</div>
+          <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-4">Destinos Going App</div>
           <h1 className="font-serif text-5xl font-black text-white leading-tight mb-4">
             Ecuador te espera
           </h1>
           <p className="text-lg text-white/55 max-w-xl">
-            Desde los Andes hasta la Costa, Going te lleva a los destinos más increíbles del país con seguridad y comodidad.
+            Desde los Andes hasta la Costa, Going App te lleva a los destinos más increíbles del país con seguridad y comodidad.
           </p>
         </div>
       </div>

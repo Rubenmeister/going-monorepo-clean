@@ -5,8 +5,8 @@ import './global.css'; // Asume que tienes un archivo global.css
 import '../lib/cerebro-tracker';
 
 export const metadata = {
-  title: 'Going Dashboard: Administración',
-  description: 'Panel de control de Going Monorepo.',
+  title: 'Going App Dashboard: Administración',
+  description: 'Panel de control de Going App Monorepo.',
 };
 
 export default function RootLayout({

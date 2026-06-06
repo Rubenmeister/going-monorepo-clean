@@ -1,7 +1,7 @@
 /**
  * DriverDrawer — Sidebar del conductor
  *
- * Items: Perfil, Mis Viajes, Wallet, Documentos, Calificaciones, Academia Going
+ * Items: Perfil, Mis Viajes, Wallet, Documentos, Calificaciones, Academia Going App
  * Cabecera NAVY con logo blanco y datos del conductor
  */
 import React from 'react';
@@ -41,14 +41,14 @@ const MAIN_ITEMS: MenuItem[] = [
 const DRIVER_ITEMS: MenuItem[] = [
   { icon: 'document-text-outline',    label: 'Mis Documentos',     screen: 'Documents' },
   { icon: 'star-outline',             label: 'Calificaciones',     screen: 'Ratings' },
-  { icon: 'school-outline',           label: 'Academia Going',     screen: 'Academia' },
+  { icon: 'school-outline',           label: 'Academia Going App',     screen: 'Academia' },
 ];
 
 const ACCOUNT_ITEMS: MenuItem[] = [
   { icon: 'person-outline',              label: 'Mi Perfil',          screen: 'Profile' },
-  { icon: 'mic-outline',                 label: 'Asistente Going',    screen: 'Assistant' },
+  { icon: 'mic-outline',                 label: 'Asistente Going App',    screen: 'Assistant' },
   { icon: 'shield-checkmark-outline',    label: 'Centro Legal',       screen: 'Legal' },
-  { icon: 'help-circle-outline',         label: 'Soporte Going',      screen: 'Support' },
+  { icon: 'help-circle-outline',         label: 'Soporte Going App',      screen: 'Support' },
 ];
 
 export function DriverDrawer(props: DrawerContentComponentProps) {

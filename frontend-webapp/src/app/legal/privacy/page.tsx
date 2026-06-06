@@ -13,11 +13,11 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">1. Identificación del Responsable</h2>
             <p>
               <strong>Thorn Ai Technologies S.A.S.</strong>, titular de la marca&nbsp;
-              <strong>Going</strong> (en adelante, &quot;Thorn Ai&quot; o &quot;la Empresa&quot;), con
+              <strong>Going App</strong> (en adelante, &quot;Thorn Ai&quot; o &quot;la Empresa&quot;), con
               RUC <strong>1793176925001</strong> y domicilio en Calle Echeverría N2-170 y
               Crespo Toral, Quito, Ecuador, es el responsable del tratamiento de los datos
               personales recopilados a través de la plataforma <strong>app.goingec.com</strong> y
-              las aplicaciones móviles Going Pasajero y Going Conductor.
+              las aplicaciones móviles Going App Pasajero y Going App Conductor.
             </p>
             <p className="mt-2">
               Para consultas relacionadas con privacidad y protección de datos puede contactarnos
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">2. Datos Personales que Recopilamos</h2>
-            <p className="mb-3">Going recopila los siguientes datos personales según el servicio utilizado:</p>
+            <p className="mb-3">Going App recopila los siguientes datos personales según el servicio utilizado:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
                 <strong>Datos de identificación:</strong> nombre completo, número de cédula o pasaporte,
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">6. Compartición de Datos con Terceros</h2>
-            <p className="mb-3">Going podrá compartir datos con terceros únicamente en los siguientes casos:</p>
+            <p className="mb-3">Going App podrá compartir datos con terceros únicamente en los siguientes casos:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
                 <strong>Proveedores de servicios:</strong> conductores, anfitriones, operadores de tours y
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p className="mt-3">
-              Going <strong>no vende, arrienda ni cede</strong> datos personales a terceros con fines
+              Going App <strong>no vende, arrienda ni cede</strong> datos personales a terceros con fines
               comerciales propios de esos terceros.
             </p>
           </section>
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">7. Seguridad de los Datos</h2>
             <p>
-              Going implementa medidas técnicas y organizativas para proteger los datos personales contra
+              Going App implementa medidas técnicas y organizativas para proteger los datos personales contra
               acceso no autorizado, pérdida, alteración o destrucción, que incluyen:
             </p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
@@ -163,7 +163,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-3">
               Para ejercer estos derechos, el usuario debe enviar una solicitud escrita a
-              <strong> privacidad@goingec.com</strong>. Going responderá en un plazo máximo de
+              <strong> privacidad@goingec.com</strong>. Going App responderá en un plazo máximo de
               <strong> 15 días hábiles</strong>.
             </p>
           </section>
@@ -171,7 +171,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">9. Cookies y Tecnologías de Seguimiento</h2>
             <p>
-              Going utiliza cookies y tecnologías similares para mejorar la experiencia del usuario,
+              Going App utiliza cookies y tecnologías similares para mejorar la experiencia del usuario,
               analizar el uso de la plataforma y personalizar el contenido. El usuario puede gestionar
               sus preferencias de cookies desde la sección <strong>Política de Cookies</strong> de la
               plataforma o desde la configuración de su navegador.
@@ -181,8 +181,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">10. Transferencias Internacionales</h2>
             <p>
-              Algunos proveedores tecnológicos de Going pueden procesar datos fuera del Ecuador.
-              En estos casos, Going garantiza que dichas transferencias se realizan a países con nivel
+              Algunos proveedores tecnológicos de Going App pueden procesar datos fuera del Ecuador.
+              En estos casos, Going App garantiza que dichas transferencias se realizan a países con nivel
               adecuado de protección o bajo acuerdos contractuales que garantizan la seguridad y
               confidencialidad de los datos.
             </p>
@@ -191,7 +191,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">11. Menores de Edad</h2>
             <p>
-              La plataforma Going no está dirigida a menores de 18 años. Going no recopila
+              La plataforma Going App no está dirigida a menores de 18 años. Going App no recopila
               intencionalmente datos personales de menores de edad. Si se detecta que se han recopilado
               datos de un menor sin consentimiento parental, serán eliminados de inmediato.
             </p>
@@ -200,7 +200,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">12. Modificaciones a esta Política</h2>
             <p>
-              Going se reserva el derecho de modificar esta Política de Privacidad en cualquier momento.
+              Going App se reserva el derecho de modificar esta Política de Privacidad en cualquier momento.
               Los cambios sustanciales serán notificados al usuario mediante correo electrónico o aviso
               destacado en la plataforma con al menos <strong>15 días de anticipación</strong>.
               El uso continuado de la plataforma tras la entrada en vigor de los cambios implica la
@@ -220,7 +220,7 @@ export default function PrivacyPage() {
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 italic">
               Esta Política de Privacidad rige el tratamiento de datos personales por parte de
-              Thorn Ai Technologies S.A.S., titular de la marca Going, de conformidad con la
+              Thorn Ai Technologies S.A.S., titular de la marca Going App, de conformidad con la
               Ley Orgánica de Protección de Datos Personales (LOPDP) y demás normativa aplicable
               en la República del Ecuador.
             </p>

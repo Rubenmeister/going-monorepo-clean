@@ -1,5 +1,5 @@
 /**
- * SplashScreen — Going Ecuador
+ * SplashScreen — Going App Ecuador
  * Fiel al diseño Stitch: https://stitch.withgoogle.com/projects/12141521556713894233
  *
  * Comportamiento:

@@ -29,7 +29,7 @@ export default function LegalContactPage() {
         </h1>
         <p className="text-base text-gray-600 leading-relaxed mb-8">
           Canales oficiales para consultas legales, ejercicio de derechos sobre
-          datos personales (LOPDP Ecuador) y notificaciones formales a Going.
+          datos personales (LOPDP Ecuador) y notificaciones formales a Going App.
         </p>
 
         {/* Canales */}
@@ -70,7 +70,7 @@ export default function LegalContactPage() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-                WhatsApp Going
+                WhatsApp Going App
               </p>
               <a
                 href="https://wa.me/593984037949"

@@ -142,7 +142,7 @@ export default function PoliticaPage() {
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Política de Viajes</h1>
-          <p className="text-slate-500 text-sm mt-1">Define las reglas que aplican a todos los empleados al solicitar servicios Going</p>
+          <p className="text-slate-500 text-sm mt-1">Define las reglas que aplican a todos los empleados al solicitar servicios Going App</p>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {saved && <span className="text-sm text-green-600 font-medium">✅ Guardado</span>}
@@ -206,7 +206,7 @@ export default function PoliticaPage() {
             <Field label="Justificación requerida desde" sub="El empleado debe escribir el motivo del viaje al superar este monto">
               <MoneyInput value={policy.requireJustificationAbove} onChange={v => setPolicy(p => ({...p, requireJustificationAbove:v}))} />
             </Field>
-            <Field label="Uso personal permitido" sub="Empleados pueden usar Going para viajes personales fuera de horario laboral">
+            <Field label="Uso personal permitido" sub="Empleados pueden usar Going App para viajes personales fuera de horario laboral">
               <Toggle checked={policy.allowPersonalUse} onChange={() => setPolicy(p => ({...p, allowPersonalUse:!p.allowPersonalUse}))} />
             </Field>
             <Field label="Servicios internacionales" sub="Permite reservar tours y alojamiento fuera del país">

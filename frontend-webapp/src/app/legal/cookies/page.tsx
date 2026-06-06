@@ -30,15 +30,15 @@ export default function CookiesPage() {
               de uso.
             </p>
             <p className="mt-2 text-sm text-gray-500">
-              Esta política aplica a los sitios web operados por Going (<strong>app.goingec.com</strong>,
+              Esta política aplica a los sitios web operados por Going App (<strong>app.goingec.com</strong>,
               <strong> empresas.goingec.com</strong>, <strong>goingec.com</strong>). Las aplicaciones
-              móviles Going Pasajero y Going Conductor NO usan cookies; en su lugar usan almacenamiento
+              móviles Going App Pasajero y Going App Conductor NO usan cookies; en su lugar usan almacenamiento
               local seguro del sistema operativo (SecureStore en iOS y EncryptedSharedPreferences en Android).
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-gray-900 mb-3">2. Cookies que utiliza Going</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">2. Cookies que utiliza Going App</h2>
 
             <h3 className="font-semibold text-gray-800 mb-2 mt-4">2.1 Cookies estrictamente necesarias</h3>
             <p className="mb-3">
@@ -104,14 +104,14 @@ export default function CookiesPage() {
 
             <h3 className="font-semibold text-gray-800 mb-2 mt-4">2.3 Cookies analíticas</h3>
             <p>
-              Por ahora <strong>Going NO usa cookies de analítica de terceros</strong> (Google Analytics,
+              Por ahora <strong>Going App NO usa cookies de analítica de terceros</strong> (Google Analytics,
               Facebook Pixel, etc.). Si esto cambia en el futuro, actualizaremos esta política y te
               pediremos tu consentimiento.
             </p>
 
             <h3 className="font-semibold text-gray-800 mb-2 mt-4">2.4 Cookies publicitarias</h3>
             <p>
-              <strong>Going NO usa cookies publicitarias.</strong> No vendemos tus datos a redes
+              <strong>Going App NO usa cookies publicitarias.</strong> No vendemos tus datos a redes
               publicitarias ni a corredores de datos.
             </p>
           </section>
@@ -119,8 +119,8 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">3. Cookies de terceros</h2>
             <p className="mb-3">
-              Cuando Going integra servicios externos, esos servicios pueden colocar sus propias
-              cookies bajo sus propias políticas. Going no controla esas cookies directamente.
+              Cuando Going App integra servicios externos, esos servicios pueden colocar sus propias
+              cookies bajo sus propias políticas. Going App no controla esas cookies directamente.
               Los terceros activos en nuestra plataforma son:
             </p>
             <ul className="list-disc pl-6 space-y-2">
@@ -193,7 +193,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">5. Base legal</h2>
             <p>
-              El uso de cookies en Going se fundamenta en la{' '}
+              El uso de cookies en Going App se fundamenta en la{' '}
               <strong>Ley Orgánica de Protección de Datos Personales (LOPDP)</strong> del Ecuador.
               Las cookies estrictamente necesarias se justifican por el interés legítimo de operar
               la plataforma. Las cookies opcionales requieren tu{' '}
@@ -204,7 +204,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">6. Cambios en esta política</h2>
             <p>
-              Going puede actualizar esta Política de Cookies en cualquier momento. Si los cambios
+              Going App puede actualizar esta Política de Cookies en cualquier momento. Si los cambios
               son materiales (por ejemplo, agregar un nuevo tipo de cookie analítica), te
               notificaremos con al menos <strong>15 días</strong> de anticipación a través de la
               plataforma o por correo electrónico. La fecha de &quot;última actualización&quot; arriba
@@ -234,13 +234,13 @@ export default function CookiesPage() {
                   soporte@goingec.com
                 </a>
               </li>
-              <li>WhatsApp Going: <strong>+593 98 403 7949</strong></li>
+              <li>WhatsApp Going App: <strong>+593 98 403 7949</strong></li>
             </ul>
           </section>
 
           <div className="border-t pt-6 mt-6">
             <p className="text-sm text-gray-500">
-              Going es una marca operada por <strong>Thorn AI Technologies S.A.S.</strong>,
+              Going App es una marca operada por <strong>Thorn AI Technologies S.A.S.</strong>,
               RUC <strong>1793176925001</strong>, con domicilio en Echeverría N2-170 y Crespo Toral,
               Quito, Ecuador.
             </p>

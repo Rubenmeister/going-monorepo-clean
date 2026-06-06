@@ -101,7 +101,7 @@ export default function DriverDashboard() {
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#011627] flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex`}>
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-          <Link href="/" className="text-2xl font-black" style={{ color: '#ff4c41' }}>Going</Link>
+          <Link href="/" className="text-2xl font-black" style={{ color: '#ff4c41' }}>Going App</Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
@@ -296,7 +296,7 @@ export default function DriverDashboard() {
               { icon: '🗺️', label: 'Viajes activos',  href: '/services/conductores/viajes',        bg: '#0033A0' },
               { icon: '💰', label: 'Mis ganancias',   href: '/services/conductores/ganancias',     bg: '#16a34a' },
               { icon: '⭐', label: 'Calificaciones',  href: '/services/conductores/calificaciones',bg: '#f59e0b' },
-              { icon: '📚', label: 'Academia Going',  href: '/academy',                             bg: '#7c3aed' },
+              { icon: '📚', label: 'Academia Going App',  href: '/academy',                             bg: '#7c3aed' },
             ].map(a => (
               <Link key={a.href} href={a.href}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center text-center hover:shadow-md transition-shadow">

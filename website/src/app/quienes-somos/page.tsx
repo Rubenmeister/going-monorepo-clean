@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Quiénes Somos — Going Ecuador',
-  description: 'Conoce la historia, misión y equipo detrás de Going Ecuador, la plataforma de movilidad más segura del país.',
+  title: 'Quiénes Somos — Going App Ecuador',
+  description: 'Conoce la historia, misión y equipo detrás de Going App Ecuador, la plataforma de movilidad más segura del país.',
 };
 
 export default function QuienesSomosPage() {
@@ -22,7 +22,7 @@ export default function QuienesSomosPage() {
             Una empresa ecuatoriana<br />con propósito
           </h1>
           <p className="text-lg text-white/55 max-w-xl leading-relaxed">
-            Going nació en 2026 con una misión clara: democratizar la movilidad en Ecuador. Tecnología, seguridad e impacto local — hecho en Ecuador para Ecuador.
+            Going App nació en 2026 con una misión clara: democratizar la movilidad en Ecuador. Tecnología, seguridad e impacto local — hecho en Ecuador para Ecuador.
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function QuienesSomosPage() {
               Conectar a Ecuador,<br />ciudad por ciudad
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-4">
-              Creemos que viajar de forma segura, cómoda y asequible es un derecho, no un privilegio. Going existe para hacer esa realidad posible en cada rincón del Ecuador.
+              Creemos que viajar de forma segura, cómoda y asequible es un derecho, no un privilegio. Going App existe para hacer esa realidad posible en cada rincón del Ecuador.
             </p>
             <p className="text-[15px] text-gray-500 leading-relaxed">
               Somos una plataforma tecnológica que conecta pasajeros con conductores verificados, usando inteligencia para hacer cada viaje mejor que el anterior.
@@ -60,7 +60,7 @@ export default function QuienesSomosPage() {
 
         {/* Numbers */}
         <div className="bg-[#011627] rounded-3xl p-10 mb-24">
-          <h2 className="font-serif text-3xl font-black text-white text-center mb-10">Going en números</h2>
+          <h2 className="font-serif text-3xl font-black text-white text-center mb-10">Going App en números</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { val: '2026', label: 'Año de fundación', icon: '🚀' },
@@ -81,7 +81,7 @@ export default function QuienesSomosPage() {
         <div id="careers" className="text-center">
           <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Trabaja con nosotros</div>
           <h2 className="font-serif text-4xl font-black text-[#011627] leading-tight mb-4">
-            Construye Going<br />con nosotros
+            Construye Going App<br />con nosotros
           </h2>
           <p className="text-[15px] text-gray-500 leading-relaxed max-w-xl mx-auto mb-8">
             Somos un equipo joven y apasionado. Buscamos personas que quieran resolver problemas reales con tecnología y construir el futuro de la movilidad en Ecuador.

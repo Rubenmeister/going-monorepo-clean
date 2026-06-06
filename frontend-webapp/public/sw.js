@@ -1,5 +1,5 @@
 /**
- * Going Ecuador — Service Worker
+ * Going App Ecuador — Service Worker
  *
  * Estrategia:
  *  - Shell de la app (HTML, JS, CSS, íconos) → Cache First
@@ -131,7 +131,7 @@ self.addEventListener("push", (event) => {
   if (!event.data) return;
   const data = event.data.json();
   event.waitUntil(
-    self.registration.showNotification(data.title || "Going Ecuador", {
+    self.registration.showNotification(data.title || "Going App Ecuador", {
       body: data.body || "",
       icon: "/icons/icon-192x192.png",
       badge: "/icons/icon-32x32.png",

@@ -29,7 +29,7 @@ interface FAQItem { q: string; a: string }
 const FAQ: FAQItem[] = [
   {
     q: '¿Cómo recibo mis pagos?',
-    a: 'Los pagos se acumulan en tu billetera Going. Puedes retirar a tu cuenta bancaria desde la sección Ganancias cuando alcances el mínimo de $10.',
+    a: 'Los pagos se acumulan en tu billetera Going App. Puedes retirar a tu cuenta bancaria desde la sección Ganancias cuando alcances el mínimo de $10.',
   },
   {
     q: '¿Qué documentos necesito para conducir?',
@@ -93,7 +93,7 @@ export function SupportScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* ── Banner Asistente Going (voz IA + handoff a humano) ──
+      {/* ── Banner Asistente Going App (voz IA + handoff a humano) ──
           Acceso prioritario al asistente de voz Uyari. Llamada PSTN al
           backend voice-call-service deployado en Cloud Run. */}
       <TouchableOpacity
@@ -105,7 +105,7 @@ export function SupportScreen() {
           <Ionicons name="mic" size={22} color={GOING_YELLOW} />
         </View>
         <View style={styles.assistantBannerBody}>
-          <Text style={styles.assistantBannerTitle}>Asistente Going</Text>
+          <Text style={styles.assistantBannerTitle}>Asistente Going App</Text>
           <Text style={styles.assistantBannerSub}>
             Llamá y hablá con nuestro AI o un operador humano · 24/7
           </Text>

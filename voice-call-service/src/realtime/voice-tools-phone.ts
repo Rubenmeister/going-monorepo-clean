@@ -29,7 +29,7 @@ export const VOICE_TOOLS_PHONE: RealtimeTool[] = [
     type: 'function',
     name: 'get_quote_phone',
     description:
-      'Calcula la tarifa de un viaje entre dos puntos del catálogo Going y devuelve ' +
+      'Calcula la tarifa de un viaje entre dos puntos del catálogo Going App y devuelve ' +
       'el precio en palabras (listo para dictar). Úsalo cuando el cliente pregunte ' +
       'por precio. Si la ruta no existe en catálogo, ofrecé enviar opciones por SMS ' +
       'usando send_followup_sms o transferí con request_handoff_phone.',
@@ -61,7 +61,7 @@ export const VOICE_TOOLS_PHONE: RealtimeTool[] = [
     type: 'function',
     name: 'request_handoff_phone',
     description:
-      'Transfiere la llamada a un operador humano del equipo Going. Úsalo cuando: ' +
+      'Transfiere la llamada a un operador humano del equipo Going App. Úsalo cuando: ' +
       '(1) el cliente lo pida explícitamente, (2) detectes emergencia (accidente, ' +
       'robo, herido), (3) cliente frustrado tras 2+ intentos, (4) consulta fuera de ' +
       'tu alcance (disputa de cobro, denuncia). Antes de invocar, decile al cliente ' +
@@ -156,7 +156,7 @@ const toolsLogger = new Logger('VoiceToolsPhone');
  * Ej: 22.50 → "veintidós dólares con cincuenta"; 15 → "quince dólares".
  *
  * Implementación pragmática (cubre 0-9999 + centavos). Para amounts más
- * grandes que esto Going no usa voz de todas formas — es transporte
+ * grandes que esto Going App no usa voz de todas formas — es transporte
  * local, no facturación corporativa.
  */
 export function priceToSpanish(amount: number): string {
@@ -172,7 +172,7 @@ export function priceToSpanish(amount: number): string {
   return `${dollarsWord} ${dollarLabel} con ${centsWord}`;
 }
 
-/** Números 0-9999 en español. Cobertura suficiente para tarifas Going. */
+/** Números 0-9999 en español. Cobertura suficiente para tarifas Going App. */
 function numberToSpanish(n: number): string {
   if (n === 0) return 'cero';
   if (n < 0 || n > 9999) return String(n);
@@ -213,7 +213,7 @@ function numberToSpanish(n: number): string {
 
 /**
  * Handler de get_quote_phone. Reusa el cálculo canónico de pricing del
- * Centro de Información Going (@going-platform/going-kb) — misma fuente
+ * Centro de Información Going App (@going-platform/going-kb) — misma fuente
  * de verdad que el chat web. Solo difiere en el shape del resultado:
  * pre-formateado para dictado verbal.
  */
@@ -352,10 +352,10 @@ export function executeHandoffPhone(args: any): HandoffPhoneResult {
   toolsLogger.warn(`[tool:request_handoff_phone] priority=${priority} callback=${callback} reason="${reason}"`);
 
   const spoken = callback
-    ? 'Listo, ya marqué tu pedido. Un agente te va a devolver la llamada en unos minutos. Gracias por llamar a Going.'
+    ? 'Listo, ya marqué tu pedido. Un agente te va a devolver la llamada en unos minutos. Gracias por llamar a Going App.'
     : priority === 'RED'
       ? 'Te paso ya mismo con el equipo de emergencias, no cuelgues por favor.'
-      : 'Dame un segundo, te transfiero con un agente del equipo Going. No cuelgues.';
+      : 'Dame un segundo, te transfiero con un agente del equipo Going App. No cuelgues.';
 
   return { ok: true, reason, priority, callback_requested: callback, spoken_confirmation: spoken };
 }

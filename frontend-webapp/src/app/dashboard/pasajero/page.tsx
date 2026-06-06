@@ -134,7 +134,7 @@ export default function PassengerDashboard() {
               ☰
             </button>
             <Link href="/dashboard/pasajero">
-              <Image src="/going-logo-h.png" alt="Going" width={110} height={36} className="h-8 w-auto object-contain" priority />
+              <Image src="/going-logo-h.png" alt="Going App" width={110} height={36} className="h-8 w-auto object-contain" priority />
             </Link>
           </div>
 
@@ -222,7 +222,7 @@ export default function PassengerDashboard() {
 
           {/* Wallet */}
           <div className="mx-4 my-3 rounded-2xl p-4" style={{ background: 'linear-gradient(135deg, #0033A0, #001f6b)' }}>
-            <p className="text-white/60 text-xs mb-1">Going Wallet</p>
+            <p className="text-white/60 text-xs mb-1">Going App Wallet</p>
             <p className="text-white text-2xl font-bold">
               {walletBalance !== null ? `$${walletBalance.toFixed(2)}` : '—'}
             </p>

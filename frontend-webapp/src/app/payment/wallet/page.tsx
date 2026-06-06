@@ -51,7 +51,7 @@ export default function WalletPage() {
             className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
             ←
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Going Wallet</h1>
+          <h1 className="text-xl font-bold text-gray-900">Going App Wallet</h1>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function WalletPage() {
               {balance !== null ? `$${balance.toFixed(2)}` : '$0.00'}
             </p>
           )}
-          <p className="text-white/50 text-xs">Going Wallet · {name}</p>
+          <p className="text-white/50 text-xs">Going App Wallet · {name}</p>
         </div>
 
         {/* Acciones rápidas */}

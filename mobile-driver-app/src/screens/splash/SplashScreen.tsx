@@ -1,5 +1,5 @@
 /**
- * SplashScreen — Going Ecuador
+ * SplashScreen — Going App Ecuador
  * Fiel al diseño Stitch: https://stitch.withgoogle.com/projects/12141521556713894233
  *
  * SETUP:
@@ -140,7 +140,7 @@ export default function SplashScreen({ onFinish, appMode = 'conductor' }: Props)
             ],
           }}
         >
-          {/* Logo color: G rojo + "Going" negro — igual que screenshot Stitch */}
+          {/* Logo color: G rojo + "Going App" negro — igual que screenshot Stitch */}
           <Image
             source={require('../../../assets/going-logo-splash.png')}
             style={styles.logo}

@@ -13,11 +13,11 @@ const CATEGORIES = [
 
 const FAQS: { category: string; q: string; a: string }[] = [
   // Primeros Pasos
-  { category: 'primeros-pasos', q: '¿Qué es Going?', a: 'Going es la plataforma ecuatoriana de movilidad y servicios. Puedes reservar transporte interurbano, alojamiento, tours, experiencias y envíos — todo desde una sola app.' },
-  { category: 'primeros-pasos', q: '¿Cómo descargo la app?', a: 'Descárgala gratis desde el App Store (iOS) o Google Play (Android). Busca "Going Ecuador" o usa los links en la sección de descarga de nuestra web.' },
+  { category: 'primeros-pasos', q: '¿Qué es Going App?', a: 'Going App es la plataforma ecuatoriana de movilidad y servicios. Puedes reservar transporte interurbano, alojamiento, tours, experiencias y envíos — todo desde una sola app.' },
+  { category: 'primeros-pasos', q: '¿Cómo descargo la app?', a: 'Descárgala gratis desde el App Store (iOS) o Google Play (Android). Busca "Going App Ecuador" o usa los links en la sección de descarga de nuestra web.' },
   { category: 'primeros-pasos', q: '¿Cómo creo mi cuenta?', a: 'Toca "Registrarse" en la app o web, ingresa tu nombre, correo y contraseña. También puedes entrar con tu cuenta de Google. En menos de 2 minutos ya puedes reservar.' },
   { category: 'primeros-pasos', q: '¿Cómo reservo un viaje?', a: 'Selecciona "Transporte", elige tu ciudad de origen y destino, la fecha, el tipo de vehículo y el modo de viaje (compartido o privado). Confirma y paga. Recibirás los datos del conductor al instante.' },
-  { category: 'primeros-pasos', q: '¿En qué ciudades opera Going?', a: 'Actualmente operamos rutas desde Quito hacia: Santo Domingo, Latacunga, Ambato, Riobamba, Baños y Salinas. Estamos expandiendo a nuevas rutas cada mes.' },
+  { category: 'primeros-pasos', q: '¿En qué ciudades opera Going App?', a: 'Actualmente operamos rutas desde Quito hacia: Santo Domingo, Latacunga, Ambato, Riobamba, Baños y Salinas. Estamos expandiendo a nuevas rutas cada mes.' },
 
   // Cuenta
   { category: 'cuenta', q: '¿Cómo cambio mi contraseña?', a: 'Ve a Mi Cuenta → Seguridad → Cambiar Contraseña. También puedes usar "Olvidé mi contraseña" en la pantalla de inicio de sesión para recibir un enlace por correo.' },
@@ -28,10 +28,10 @@ const FAQS: { category: string; q: string; a: string }[] = [
 
   // Pagos
   { category: 'pagos', q: '¿Qué métodos de pago aceptan?', a: 'Aceptamos tarjetas de crédito y débito Visa, Mastercard y American Express a través de Datafast. También puedes pagar con DeUna (billetera digital ecuatoriana). Próximamente transferencia bancaria.' },
-  { category: 'pagos', q: '¿Es seguro pagar en Going?', a: 'Sí. Todos los pagos están encriptados con SSL/TLS. No almacenamos datos de tu tarjeta. Los cobros los procesa Datafast, que cumple con estándares PCI-DSS.' },
+  { category: 'pagos', q: '¿Es seguro pagar en Going App?', a: 'Sí. Todos los pagos están encriptados con SSL/TLS. No almacenamos datos de tu tarjeta. Los cobros los procesa Datafast, que cumple con estándares PCI-DSS.' },
   { category: 'pagos', q: '¿Puedo cancelar una reserva y recibir reembolso?', a: 'Sí, si cancelas con más de 2 horas de anticipación recibes reembolso completo. Cancelaciones con menos de 2 horas tienen un cargo del 20%. El reembolso llega en 3–5 días hábiles a tu tarjeta.' },
   { category: 'pagos', q: '¿Cómo veo mis compras y recibos?', a: 'En la app: Mi Cuenta → Mis Compras. Ahí encuentras el historial de todos tus viajes y servicios con su recibo descargable en PDF.' },
-  { category: 'pagos', q: '¿Going cobra comisión?', a: 'Going cobra una comisión del 15% sobre el valor del servicio. Esta ya está incluida en el precio que ves al reservar — no hay cargos ocultos.' },
+  { category: 'pagos', q: '¿Going App cobra comisión?', a: 'Going App cobra una comisión del 15% sobre el valor del servicio. Esta ya está incluida en el precio que ves al reservar — no hay cargos ocultos.' },
 
   // Seguridad
   { category: 'seguridad', q: '¿Cómo sé que mi conductor o conductora es verificada?', a: 'Todas las conductoras y conductores pasan por verificación de cédula, licencia, SOAT, matrícula y antecedentes penales. Verás el badge "Verificado ✓" en su perfil. También puedes ver sus calificaciones y reseñas de otras personas usuarias.' },
@@ -41,9 +41,9 @@ const FAQS: { category: string; q: string; a: string }[] = [
 
   // Técnico
   { category: 'tecnico', q: '¿La app no carga o está lenta. Qué hago?', a: 'Primero verifica tu conexión a internet. Si el problema persiste, cierra y vuelve a abrir la app. Si aún falla, desinstala y reinstala la última versión desde la tienda.' },
-  { category: 'tecnico', q: '¿En qué versiones de iOS y Android funciona Going?', a: 'La app funciona en iOS 14 o superior y Android 8.0 (Oreo) o superior. Recomendamos tener siempre la última versión instalada.' },
-  { category: 'tecnico', q: '¿Puedo usar Going desde el navegador web?', a: 'Sí, la versión web está disponible en going.com.ec. Tiene las mismas funciones que la app. Para mejor experiencia en móvil, recomendamos la app.' },
-  { category: 'tecnico', q: '¿Cómo actualizo la app?', a: 'Ve al App Store o Google Play y busca "Going Ecuador". Si hay una actualización disponible aparecerá el botón "Actualizar". También puedes activar las actualizaciones automáticas en tu teléfono.' },
+  { category: 'tecnico', q: '¿En qué versiones de iOS y Android funciona Going App?', a: 'La app funciona en iOS 14 o superior y Android 8.0 (Oreo) o superior. Recomendamos tener siempre la última versión instalada.' },
+  { category: 'tecnico', q: '¿Puedo usar Going App desde el navegador web?', a: 'Sí, la versión web está disponible en going.com.ec. Tiene las mismas funciones que la app. Para mejor experiencia en móvil, recomendamos la app.' },
+  { category: 'tecnico', q: '¿Cómo actualizo la app?', a: 'Ve al App Store o Google Play y busca "Going App Ecuador". Si hay una actualización disponible aparecerá el botón "Actualizar". También puedes activar las actualizaciones automáticas en tu teléfono.' },
 ];
 
 function AccordionItem({ q, a }: { q: string; a: string }) {
@@ -89,7 +89,7 @@ export default function HelpPage() {
       <section className="text-white py-14 px-4" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 70%, #ff4c4120 100%)' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-3">Centro de Ayuda</h1>
-          <p className="text-gray-400 mb-6">Encuentra respuestas rápidas sobre Going</p>
+          <p className="text-gray-400 mb-6">Encuentra respuestas rápidas sobre Going App</p>
           <input
             type="search"
             value={search}

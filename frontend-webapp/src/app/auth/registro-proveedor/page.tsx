@@ -101,7 +101,7 @@ function RegistroProveedorForm() {
           className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
           ←
         </button>
-        <Image src="/going-logo-h.png" alt="Going" width={100} height={34} className="h-8 w-auto object-contain" />
+        <Image src="/going-logo-h.png" alt="Going App" width={100} height={34} className="h-8 w-auto object-contain" />
         <div className="ml-auto flex gap-2">
           {[1,2,3].map(s => (
             <div key={s} className={`h-1.5 rounded-full transition-all ${s === step ? 'w-8' : 'w-4'}`}
@@ -116,7 +116,7 @@ function RegistroProveedorForm() {
         {step === 1 && (
           <div>
             <h1 className="text-3xl font-black text-gray-900 mb-2">Únete como proveedor</h1>
-            <p className="text-gray-500 mb-8">¿Con qué quieres ganar dinero en Going?</p>
+            <p className="text-gray-500 mb-8">¿Con qué quieres ganar dinero en Going App?</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {ROLES.map(r => (
                 <button
@@ -315,7 +315,7 @@ function RegistroProveedorForm() {
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Cuéntanos sobre ti <span className="font-normal text-gray-400">(opcional)</span></label>
                 <textarea value={form.about || ''} onChange={e => set('about', e.target.value)}
-                  rows={3} placeholder="¿Por qué quieres ser proveedor Going? ¿Qué te hace especial?"
+                  rows={3} placeholder="¿Por qué quieres ser proveedor Going App? ¿Qué te hace especial?"
                   className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 text-sm bg-gray-50 focus:bg-white transition resize-none" />
               </div>
             </div>

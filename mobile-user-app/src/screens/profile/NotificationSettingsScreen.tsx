@@ -32,7 +32,7 @@ const DEFAULT_SETTINGS: NotifSetting[] = [
   {
     id: 'promotions',
     label: 'Promociones',
-    desc: 'Descuentos y ofertas especiales de Going',
+    desc: 'Descuentos y ofertas especiales de Going App',
     icon: 'pricetag-outline',
     value: true,
   },
@@ -53,7 +53,7 @@ const DEFAULT_SETTINGS: NotifSetting[] = [
   {
     id: 'new_services',
     label: 'Nuevos servicios',
-    desc: 'Cuando Going lanza nuevas rutas o experiencias',
+    desc: 'Cuando Going App lanza nuevas rutas o experiencias',
     icon: 'sparkles-outline',
     value: false,
   },
@@ -99,7 +99,7 @@ export function NotificationSettingsScreen() {
       <View style={styles.infoBox}>
         <Ionicons name="notifications-outline" size={20} color={GOING_BLUE} />
         <Text style={styles.infoText}>
-          Controla qué notificaciones recibes de Going
+          Controla qué notificaciones recibes de Going App
         </Text>
       </View>
 

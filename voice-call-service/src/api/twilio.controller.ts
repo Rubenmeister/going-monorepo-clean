@@ -22,7 +22,7 @@ import { HandoffNotifierService } from '../voice/handoff-notifier.service';
  * TwilioController — recibe webhooks de Twilio Voice.
  *
  * Flujo:
- *  1. Cliente llama al número Going de voz (TWILIO_VOICE_NUMBER en env)
+ *  1. Cliente llama al número Going App de voz (TWILIO_VOICE_NUMBER en env)
  *  2. Twilio dispara POST /twilio/voice-webhook con CallSid, From, To
  *  3. Validamos firma X-Twilio-Signature (anti-spoof) — ⚠️ STUB
  *  4. VoiceCallService.onCallInitiated() persiste + publica al cerebro
@@ -195,7 +195,7 @@ export class TwilioController {
    *
    * No requiere validación de signature porque la URL la inventamos
    * nosotros y Twilio la descarga vía request HTTP cleartext; pero un
-   * atacante que conozca la URL solo puede provocar Going-paga-por-una-
+   * atacante que conozca la URL solo puede provocar Going App-paga-por-una-
    * llamada-saliente (el <Dial> al operador). Mitigación realista:
    * el callId debe coincidir con una VoiceCallEntity en estado
    * 'in_progress' o 'escalated_to_human'. Si no, devolvemos <Hangup/>.
@@ -220,7 +220,7 @@ export class TwilioController {
     const twiml = buildHandoffTwiml({
       operatorPhone,
       spokenIntro: operatorPhone
-        ? 'Te paso con un agente del equipo Going. No cuelgues por favor.'
+        ? 'Te paso con un agente del equipo Going App. No cuelgues por favor.'
         : 'Listo. Un agente te va a llamar en pocos minutos. Gracias por llamar.',
     });
     return twiml;

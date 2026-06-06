@@ -8,7 +8,7 @@ export default function SustainabilityPage() {
         <div className="bg-white rounded-xl shadow-md p-8 space-y-6">
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Nuestro Compromiso Ambiental</h2>
-            <p className="text-gray-600">En Going, promovemos viajes sostenibles y responsables que protegen los ecosistemas ecuatorianos.</p>
+            <p className="text-gray-600">En Going App, promovemos viajes sostenibles y responsables que protegen los ecosistemas ecuatorianos.</p>
           </section>
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Iniciativas Verdes</h2>
@@ -22,7 +22,7 @@ export default function SustainabilityPage() {
           </section>
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Movilidad Responsable</h2>
-            <p className="text-gray-600">Going impulsa el transporte compartido como alternativa sostenible al vehículo particular. Cada viaje compartido reduce el tráfico vehicular, las emisiones de CO₂ y el consumo de combustible en las ciudades ecuatorianas.</p>
+            <p className="text-gray-600">Going App impulsa el transporte compartido como alternativa sostenible al vehículo particular. Cada viaje compartido reduce el tráfico vehicular, las emisiones de CO₂ y el consumo de combustible en las ciudades ecuatorianas.</p>
           </section>
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Turismo Consciente</h2>

@@ -62,7 +62,7 @@ const COURSES_DB: Record<string, CourseData> = {
     schoolColor: COLORS.brand.red,
     title: 'La Primera Impresión',
     subtitle: 'Módulo 1 — Ruta del Volante',
-    description: 'El arte de recibir. Checklist del vehículo, el saludo Going, uso del lanyard y manejo de equipaje. Este módulo es la base de todo: los primeros 30 segundos definen la calificación del viaje.',
+    description: 'El arte de recibir. Checklist del vehículo, el saludo Going App, uso del lanyard y manejo de equipaje. Este módulo es la base de todo: los primeros 30 segundos definen la calificación del viaje.',
     badge: 'Conductor Estrella',
     lessons: [
       {
@@ -71,9 +71,9 @@ const COURSES_DB: Record<string, CourseData> = {
         format: 'text',
         duration: '5 min',
         content: `
-<h2>Capítulo 1: La Preparación — Tu vehículo es Going-ready</h2>
+<h2>Capítulo 1: La Preparación — Tu vehículo es Going App-ready</h2>
 
-<p>Antes de encender el motor, tu vehículo debe ser <strong>Going-ready</strong>. No es solo un auto; es la primera extensión de la hospitalidad ecuatoriana que el viajero experimentará.</p>
+<p>Antes de encender el motor, tu vehículo debe ser <strong>Going App-ready</strong>. No es solo un auto; es la primera extensión de la hospitalidad ecuatoriana que el viajero experimentará.</p>
 
 <h3>🧹 Tu Checklist Visual</h3>
 <ul>
@@ -84,19 +84,19 @@ const COURSES_DB: Record<string, CourseData> = {
 </ul>
 
 <blockquote>
-  <strong>El estándar Going:</strong> "Un auto limpio es el primer saludo que das antes de abrir la boca."
+  <strong>El estándar Going App:</strong> "Un auto limpio es el primer saludo que das antes de abrir la boca."
 </blockquote>
 
-<h3>🪪 Tu Uniforme Going</h3>
-<p>El <strong>lanyard de Going</strong> es tu insignia de confianza. Úsalo siempre visible. Los pasajeros lo buscan para identificarte. Es tu sello de profesionalismo.</p>
+<h3>🪪 Tu Uniforme Going App</h3>
+<p>El <strong>lanyard de Going App</strong> es tu insignia de confianza. Úsalo siempre visible. Los pasajeros lo buscan para identificarte. Es tu sello de profesionalismo.</p>
 
 <h3>📱 La App lista</h3>
-<p>Antes de salir a conducir, verifica que la app esté abierta, con GPS activo y notificaciones habilitadas. Un conductor Going que no responde solicitudes pierde posiciones en el algoritmo.</p>
+<p>Antes de salir a conducir, verifica que la app esté abierta, con GPS activo y notificaciones habilitadas. Un conductor Going App que no responde solicitudes pierde posiciones en el algoritmo.</p>
         `,
       },
       {
         id: 'c1-l2',
-        title: 'Capítulo 2: El Saludo Going',
+        title: 'Capítulo 2: El Saludo Going App',
         format: 'text',
         duration: '5 min',
         content: `
@@ -106,21 +106,21 @@ const COURSES_DB: Record<string, CourseData> = {
 
 <h3>🤝 Las Siete Palabras Mágicas</h3>
 <blockquote>
-  <strong>"¡Bienvenido a Going! Soy [Tu Nombre]."</strong>
+  <strong>"¡Bienvenido a Going App! Soy [Tu Nombre]."</strong>
 </blockquote>
-<p>Estas siete palabras, dichas con calidez, desarman cualquier ansiedad del viajero. Y recuerda: la hospitalidad Going siempre incluye ayudar activamente con el equipaje.</p>
+<p>Estas siete palabras, dichas con calidez, desarman cualquier ansiedad del viajero. Y recuerda: la hospitalidad Going App siempre incluye ayudar activamente con el equipaje.</p>
 
 <h3>✅ El Protocolo de Llegada</h3>
 <ol>
   <li><strong>Sal del vehículo</strong> — no esperes dentro. Los pasajeros valoran que te muestres.</li>
   <li><strong>Sonríe genuinamente</strong> — no forzado. La empatía se nota.</li>
   <li><strong>Usa tu lanyard</strong> — visible y orgulloso.</li>
-  <li><strong>Di la frase</strong> — "¡Bienvenido a Going! Soy [nombre]."</li>
+  <li><strong>Di la frase</strong> — "¡Bienvenido a Going App! Soy [nombre]."</li>
   <li><strong>Ayuda con el equipaje</strong> — activamente, sin esperar que te pidan.</li>
 </ol>
 
 <h3>🌍 Si el pasajero no habla español</h3>
-<p>Usa la traducción automática en el chat de la app. Un simple <em>"Welcome! I'm your Going driver"</em> hace una diferencia enorme. En el módulo de Inglés Turístico aprenderás las frases más útiles.</p>
+<p>Usa la traducción automática en el chat de la app. Un simple <em>"Welcome! I'm your Going App driver"</em> hace una diferencia enorme. En el módulo de Inglés Turístico aprenderás las frases más útiles.</p>
 
 <h3>⚠️ Lo que NO debes hacer</h3>
 <ul>
@@ -133,30 +133,30 @@ const COURSES_DB: Record<string, CourseData> = {
       },
       {
         id: 'c1-l3',
-        title: 'Podcast: Going en Ruta — La Primera Impresión',
+        title: 'Podcast: Going App en Ruta — La Primera Impresión',
         format: 'podcast',
         duration: '8 min',
         audioDescription: `
 🎙️ Episodio 1 — "La Primera Impresión"
 
-Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia Going. Diseñado para escucharse mientras conduces sin pasajeros — aprende en movimiento.
+Bienvenido a <strong>Going App en Ruta</strong>, el podcast oficial de la Academia Going App. Diseñado para escucharse mientras conduces sin pasajeros — aprende en movimiento.
 
 <strong>En este episodio:</strong>
 <ul>
   <li>Ana (host) entrevista a Carlos, conductor estrella de Imbabura</li>
   <li>El secreto de Carlos para conseguir siempre 5 estrellas</li>
   <li>Cómo manejar pasajeros cansados después de vuelos largos</li>
-  <li>La historia del turista australiano que volvió a Ecuador solo para viajar con Going</li>
+  <li>La historia del turista australiano que volvió a Ecuador solo para viajar con Going App</li>
 </ul>
 
 <strong>Extracto del episodio:</strong>
 <hr/>
 <em>Ana: "Carlos, ¿cuál es tu secreto para ese primer saludo perfecto?"</em><br/><br/>
-<em>Carlos: "Hola Ana. Para mí el secreto es la empatía. Me pongo en los zapatos del turista. Salgo del auto, sonrío, y les digo: '¡Bienvenido a Going! Soy Carlos, y estoy aquí para llevarte seguro'. Esas palabras, con una sonrisa real, lo cambian todo."</em>
+<em>Carlos: "Hola Ana. Para mí el secreto es la empatía. Me pongo en los zapatos del turista. Salgo del auto, sonrío, y les digo: '¡Bienvenido a Going App! Soy Carlos, y estoy aquí para llevarte seguro'. Esas palabras, con una sonrisa real, lo cambian todo."</em>
 <hr/>
 
 <p style="color:#6b7280; font-size:0.85rem; margin-top:1rem;">
-  📻 El audio estará disponible en la app móvil Going para escucha offline. Descárgalo antes de salir a conducir.
+  📻 El audio estará disponible en la app móvil Going App para escucha offline. Descárgalo antes de salir a conducir.
 </p>
         `,
       },
@@ -176,12 +176,12 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
             ],
           },
           {
-            title: '👋 El Saludo Going',
+            title: '👋 El Saludo Going App',
             points: [
               'Sal fuera del vehículo',
               'Sonríe con calidez genuina',
-              'Usa tu lanyard de Going visible',
-              '"¡Bienvenido a Going! Soy [Tu Nombre]."',
+              'Usa tu lanyard de Going App visible',
+              '"¡Bienvenido a Going App! Soy [Tu Nombre]."',
               'Ayuda activamente con el equipaje',
             ],
           },
@@ -211,15 +211,15 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
         duration: '3 min',
         quiz: [
           {
-            question: '¿Cuál es la frase de saludo oficial de Going?',
+            question: '¿Cuál es la frase de saludo oficial de Going App?',
             options: [
               '"Hola, ¿cómo está usted?"',
-              '"¡Bienvenido a Going! Soy [Tu Nombre]."',
+              '"¡Bienvenido a Going App! Soy [Tu Nombre]."',
               '"Buenas, suba nomás."',
               '"¿Es usted el pasajero de la app?"',
             ],
             correct: 1,
-            explanation: 'La frase exacta "¡Bienvenido a Going! Soy [nombre]." crea confianza inmediata. Es breve, cálida y profesional.',
+            explanation: 'La frase exacta "¡Bienvenido a Going App! Soy [nombre]." crea confianza inmediata. Es breve, cálida y profesional.',
           },
           {
             question: 'Cuando llega tu pasajero, ¿qué debes hacer primero?',
@@ -230,18 +230,18 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
               'Enviarle un mensaje por la app',
             ],
             correct: 2,
-            explanation: 'Salir del vehículo muestra proactividad y hospitalidad. Es la marca Going. Los pasajeros lo valoran muchísimo.',
+            explanation: 'Salir del vehículo muestra proactividad y hospitalidad. Es la marca Going App. Los pasajeros lo valoran muchísimo.',
           },
           {
-            question: '¿Qué elemento de tu uniforme Going debes usar siempre visible?',
+            question: '¿Qué elemento de tu uniforme Going App debes usar siempre visible?',
             options: [
-              'La camisa azul Going',
-              'El lanyard de Going',
+              'La camisa azul Going App',
+              'El lanyard de Going App',
               'Los guantes blancos',
               'El pin de conductor',
             ],
             correct: 1,
-            explanation: 'El lanyard de Going es tu insignia de confianza. Los pasajeros lo buscan para identificarte como conductor verificado.',
+            explanation: 'El lanyard de Going App es tu insignia de confianza. Los pasajeros lo buscan para identificarte como conductor verificado.',
           },
         ],
       },
@@ -254,29 +254,29 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
     Icon: IconGlobe,
     school: 'Tronco Común — Todos los roles',
     schoolColor: COLORS.brand.red,
-    title: 'El ADN de Going',
+    title: 'El ADN de Going App',
     subtitle: 'Filosofía y hospitalidad ecuatoriana',
-    description: 'La misión de Going, hospitalidad ecuatoriana, empatía, resolución pacífica de problemas y por qué somos embajadores del país.',
-    badge: 'Proveedor Verificado Going',
+    description: 'La misión de Going App, hospitalidad ecuatoriana, empatía, resolución pacífica de problemas y por qué somos embajadores del país.',
+    badge: 'Proveedor Verificado Going App',
     lessons: [
       {
         id: 'tc1-l1',
-        title: 'La Misión de Going',
+        title: 'La Misión de Going App',
         format: 'text',
         duration: '5 min',
         content: `
-<h2>¿Qué es Going y por qué importa?</h2>
+<h2>¿Qué es Going App y por qué importa?</h2>
 
-<p>Going no es solo una app de transporte. Es una <strong>plataforma de economía colaborativa</strong> diseñada para conectar a viajeros con los mejores proveedores locales del Ecuador — conductores, anfitriones, guías y operadores.</p>
+<p>Going App no es solo una app de transporte. Es una <strong>plataforma de economía colaborativa</strong> diseñada para conectar a viajeros con los mejores proveedores locales del Ecuador — conductores, anfitriones, guías y operadores.</p>
 
 <h3>🌍 La diferencia entre una app del montón y una super-app</h3>
 <p>La diferencia radica exactamente en la <strong>estandarización de la calidad</strong>. Si capacitamos a nuestros proveedores, los empoderamos, ellos ganan más dinero y los viajeros reciben un servicio de nivel mundial.</p>
 
 <blockquote>
-  "Cada proveedor Going es un embajador de Ecuador."
+  "Cada proveedor Going App es un embajador de Ecuador."
 </blockquote>
 
-<h3>🤝 Los 3 valores fundamentales de Going</h3>
+<h3>🤝 Los 3 valores fundamentales de Going App</h3>
 <ol>
   <li><strong>Hospitalidad ecuatoriana:</strong> La calidez y la generosidad que nos caracteriza como pueblo. No es un protocolo — es una actitud.</li>
   <li><strong>Empatía:</strong> Ponerse en los zapatos del viajero. ¿Cómo me sentiría yo llegando a una ciudad extraña después de 12 horas de vuelo?</li>
@@ -284,7 +284,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
 </ol>
 
 <h3>🏆 El impacto que generamos juntos</h3>
-<p>Cada estrella de calificación que recibes no es solo para tu perfil. Es para la reputación del Ecuador como destino turístico. Cuando un turista alemán o canadiense vive un servicio Going de 5 estrellas, vuelve. Y trae a sus amigos.</p>
+<p>Cada estrella de calificación que recibes no es solo para tu perfil. Es para la reputación del Ecuador como destino turístico. Cuando un turista alemán o canadiense vive un servicio Going App de 5 estrellas, vuelve. Y trae a sus amigos.</p>
         `,
       },
       {
@@ -295,9 +295,9 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
         content: `
 <h2>La Hospitalidad Ecuatoriana: Nuestro Mayor Activo</h2>
 
-<p>Ecuador tiene algo que ningún country branding puede comprar: la <strong>calidez genuina de su gente</strong>. El "bienvenido" ecuatoriano es diferente al de cualquier otro lugar del mundo. En Going, esa es nuestra ventaja competitiva.</p>
+<p>Ecuador tiene algo que ningún country branding puede comprar: la <strong>calidez genuina de su gente</strong>. El "bienvenido" ecuatoriano es diferente al de cualquier otro lugar del mundo. En Going App, esa es nuestra ventaja competitiva.</p>
 
-<h3>🌿 ¿Qué significa ser embajador de Going?</h3>
+<h3>🌿 ¿Qué significa ser embajador de Going App?</h3>
 <ul>
   <li>Mostrar orgulloso tu ciudad, región y cultura.</li>
   <li>Recomendar lugares auténticos, no solo los turísticos.</li>
@@ -311,7 +311,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   <li><strong>Escucha sin interrumpir.</strong> Deja que exprese su frustración.</li>
   <li><strong>Valida su sentimiento:</strong> "Entiendo, eso no es lo que esperabas."</li>
   <li><strong>Ofrece una solución concreta,</strong> no excusas.</li>
-  <li>Si no puedes resolver, <strong>escala al soporte Going</strong> a través de la app.</li>
+  <li>Si no puedes resolver, <strong>escala al soporte Going App</strong> a través de la app.</li>
 </ol>
 
 <blockquote>
@@ -321,15 +321,15 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
       },
       {
         id: 'tc1-quiz',
-        title: 'Quiz: El ADN de Going',
+        title: 'Quiz: El ADN de Going App',
         format: 'quiz',
         duration: '3 min',
         quiz: [
           {
-            question: 'Como proveedor Going, ¿cuál es tu rol principal?',
+            question: 'Como proveedor Going App, ¿cuál es tu rol principal?',
             options: [
               'Transportar pasajeros del punto A al punto B',
-              'Ser embajador de Ecuador y de la calidad Going',
+              'Ser embajador de Ecuador y de la calidad Going App',
               'Conseguir la mayor cantidad de viajes posibles',
               'Mantener el vehículo limpio',
             ],
@@ -340,7 +340,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
             question: 'Si un pasajero está molesto, ¿cuál es el primer paso?',
             options: [
               'Explicar por qué no es tu culpa',
-              'Llamar al soporte Going inmediatamente',
+              'Llamar al soporte Going App inmediatamente',
               'Escuchar sin interrumpir y validar su sentimiento',
               'Ofrecer un descuento',
             ],
@@ -351,7 +351,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
             question: '¿Por qué la calidad de tu servicio afecta a Ecuador?',
             options: [
               'No afecta, es solo tu calificación personal',
-              'Afecta al posicionamiento de Going en la bolsa',
+              'Afecta al posicionamiento de Going App en la bolsa',
               'Cada experiencia excelente fomenta el turismo en el país',
               'Solo afecta si el pasajero es extranjero',
             ],
@@ -389,7 +389,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
   <li><strong>Cobros y comisiones:</strong> Cómo se calcula tu ganancia, cuándo se deposita y cómo revisar tu historial.</li>
   <li><strong>Botón de emergencia:</strong> Cómo activar la alerta de seguridad y qué sucede al pulsarlo.</li>
 </ul>
-<blockquote><strong>Tip Going:</strong> Activa las notificaciones push para no perder ninguna reserva. Las solicitudes tienen ventana de aceptación de 30 segundos.</blockquote>
+<blockquote><strong>Tip Going App:</strong> Activa las notificaciones push para no perder ninguna reserva. Las solicitudes tienen ventana de aceptación de 30 segundos.</blockquote>
         `,
       },
       {
@@ -398,10 +398,10 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
         format: 'text',
         duration: '5 min',
         content: `
-<h2>📱 Preguntas frecuentes — Plataforma Going</h2>
+<h2>📱 Preguntas frecuentes — Plataforma Going App</h2>
 
 <h3>¿Qué hago si la app no carga?</h3>
-<p>Cierra completamente la app y ábrela de nuevo. Si el problema persiste, verifica tu conexión a internet. Going funciona con 3G o superior.</p>
+<p>Cierra completamente la app y ábrela de nuevo. Si el problema persiste, verifica tu conexión a internet. Going App funciona con 3G o superior.</p>
 
 <h3>¿Cómo cancelo una reserva sin penalización?</h3>
 <p>Puedes cancelar sin costo hasta <strong>10 minutos</strong> después de aceptar una reserva. Pasado ese tiempo, la cancelación puede afectar tu tasa de aceptación.</p>
@@ -413,7 +413,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
 <p>En el menú principal ve a <strong>Soporte → Reportar incidencia</strong>. Describe lo ocurrido con detalles. El equipo responde en máximo 2 horas.</p>
 
 <h3>¿Qué es la calificación mínima?</h3>
-<p>Going requiere mantener <strong>4.5 estrellas o más</strong> para seguir recibiendo reservas. Si bajas de ese umbral recibirás un aviso y orientación para mejorar.</p>
+<p>Going App requiere mantener <strong>4.5 estrellas o más</strong> para seguir recibiendo reservas. Si bajas de ese umbral recibirás un aviso y orientación para mejorar.</p>
         `,
       },
       {
@@ -438,7 +438,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
             question: '¿Qué calificación mínima debes mantener?',
             options: ['3.0 ★', '4.0 ★', '4.5 ★', '5.0 ★'],
             correct: 2,
-            explanation: 'Going requiere 4.5 estrellas o más. Por debajo de ese umbral se activa el plan de mejora.',
+            explanation: 'Going App requiere 4.5 estrellas o más. Por debajo de ese umbral se activa el plan de mejora.',
           },
         ],
       },
@@ -454,7 +454,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
     title: 'Fotografía con el Celular',
     subtitle: 'Fotos que venden el vibe',
     description: 'Luz natural, ángulos, composición y edición gratis. Convierte tu teléfono en una cámara profesional para mostrar tu alojamiento.',
-    badge: 'Fotógrafo Going',
+    badge: 'Fotógrafo Going App',
     lessons: [
       {
         id: 'a1-l1',
@@ -581,7 +581,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
     title: 'El Arte del Storytelling',
     subtitle: 'Cuenta tu historia, vende tu experiencia',
     description: 'Técnicas para estructurar la historia de tu comunidad, artesanía o taller. Cómo crear momentos memorables que hagan que los viajeros te recomienden.',
-    badge: 'Narrador Going',
+    badge: 'Narrador Going App',
     lessons: [
       {
         id: 'g1-l1',
@@ -664,10 +664,10 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
     Icon: IconMap,
     school: 'Escuela de Viajeros',
     schoolColor: COLORS.brand.yellowDark,
-    title: 'Viaja Inteligente con Going',
+    title: 'Viaja Inteligente con Going App',
     subtitle: 'Guía completa del pasajero',
     description: 'Cómo reservar, rastrear tu viaje, comunicarte con el conductor y usar todas las funciones de la app.',
-    badge: 'Viajero Going Pro',
+    badge: 'Viajero Going App Pro',
     lessons: [
       {
         id: 'v1-l1',
@@ -675,13 +675,13 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
         format: 'text',
         duration: '5 min',
         content: `
-<h2>Tu Primer Viaje con Going — Paso a Paso</h2>
+<h2>Tu Primer Viaje con Going App — Paso a Paso</h2>
 
-<p>Going es más que pedir un taxi. Es una experiencia completa. Aquí aprenderás a aprovecharla al máximo.</p>
+<p>Going App es más que pedir un taxi. Es una experiencia completa. Aquí aprenderás a aprovecharla al máximo.</p>
 
 <h3>🚗 Pidiendo un viaje</h3>
 <ol>
-  <li><strong>Abre la app Going</strong> e inicia sesión.</li>
+  <li><strong>Abre la app Going App</strong> e inicia sesión.</li>
   <li>En la pantalla principal, ingresa tu destino en el campo de búsqueda.</li>
   <li>Confirma tu punto de recogida (puedes arrastrarlo en el mapa).</li>
   <li>Elige el <strong>tipo de vehículo</strong>: Automóvil, SUV, SUV XL, VAN, o Compartido.</li>
@@ -706,7 +706,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
         duration: '3 min',
         quiz: [
           {
-            question: '¿Qué debes revisar ANTES de confirmar un viaje en Going?',
+            question: '¿Qué debes revisar ANTES de confirmar un viaje en Going App?',
             options: [
               'El nombre del conductor',
               'El precio estimado del viaje',
@@ -720,7 +720,7 @@ Bienvenido a <strong>Going en Ruta</strong>, el podcast oficial de la Academia G
             question: '¿Cómo debes coordinar con el conductor si necesitas darle instrucciones?',
             options: [
               'Llamarle al número personal que te da la app',
-              'Usar el chat dentro de la app Going',
+              'Usar el chat dentro de la app Going App',
               'Escribirle por WhatsApp',
               'Esperar a que llegue para hablar en persona',
             ],

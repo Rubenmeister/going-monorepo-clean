@@ -1,5 +1,5 @@
 /**
- * Theme tokens — Going Ecuador mobile-user-app
+ * Theme tokens — Going App Ecuador mobile-user-app
  *
  * Dos modos (light + dark) que la app conmuta vía useColorScheme + override
  * manual en settings. Mismos NOMBRES de tokens en ambos modos — cada
@@ -56,7 +56,7 @@ export interface ThemeTokens {
   premiumText:   string;
 
   // ── Brand identity ─────────────────────────────────────────
-  // Decisión rev 2026-05-28 (alineado con Going Branding Guidelines 2024 +
+  // Decisión rev 2026-05-28 (alineado con Going App Branding Guidelines 2024 +
   // webapp Hero v6):
   //   brandRed    → primary CTA (Reservar, Continuar, Pagar). Color principal.
   //   brandYellow → CTA de momentos especiales (Iniciar viaje, Cobrar)
@@ -71,9 +71,9 @@ export interface ThemeTokens {
   brandRedDark:    string;   // hover/pressed state del rojo
   brandNavy:       string;   // @deprecated alias → brandRed
   brandNavyDark:   string;   // @deprecated alias → brandRedDark
-  brandYellow:     string;   // amarillo Going (guía 2024 #FFD253)
+  brandYellow:     string;   // amarillo Going App (guía 2024 #FFD253)
   brandYellowDark: string;
-  brandBlack:      string;   // negro Going (sobrio, header dark, Envíos)
+  brandBlack:      string;   // negro Going App (sobrio, header dark, Envíos)
 
   // Texto sobre superficies de marca
   textOnRed:     string;   // blanco
@@ -112,13 +112,13 @@ export const darkTokens: ThemeTokens = {
   premiumBg:     'rgba(255,215,0,0.06)',
   premiumText:   'rgba(255,215,0,0.85)',
 
-  brandRed:        '#FF4C41',  // guía Going 2024 — rojo coral del logo
+  brandRed:        '#FF4C41',  // guía Going App 2024 — rojo coral del logo
   brandRedDark:    '#E03A30',  // pressed/hover del rojo
   brandNavy:       '#FF4C41',  // @deprecated alias → brandRed (cambio 2026-05-28)
   brandNavyDark:   '#E03A30',  // @deprecated alias → brandRedDark
-  brandYellow:     '#FFD253',  // guía Going 2024 (era #FFCD00, alineado a #FFD253)
+  brandYellow:     '#FFD253',  // guía Going App 2024 (era #FFCD00, alineado a #FFD253)
   brandYellowDark: '#E6B83A',
-  brandBlack:      '#000000',  // negro Going (guía 2024)
+  brandBlack:      '#000000',  // negro Going App (guía 2024)
   textOnRed:       '#ffffff',
   textOnYellow:    '#000000',
   textOnNavy:      '#ffffff',  // @deprecated alias → textOnRed
@@ -160,13 +160,13 @@ export const lightTokens: ThemeTokens = {
   premiumBg:     'rgba(201,162,39,0.08)',
   premiumText:   '#8B6F00',
 
-  brandRed:        '#FF4C41',  // guía Going 2024 — rojo coral del logo
+  brandRed:        '#FF4C41',  // guía Going App 2024 — rojo coral del logo
   brandRedDark:    '#D63828',  // pressed/hover (más profundo en modo light)
   brandNavy:       '#FF4C41',  // @deprecated alias → brandRed
   brandNavyDark:   '#D63828',  // @deprecated alias → brandRedDark
-  brandYellow:     '#FFD253',  // guía Going 2024
+  brandYellow:     '#FFD253',  // guía Going App 2024
   brandYellowDark: '#E6B83A',
-  brandBlack:      '#000000',  // negro Going
+  brandBlack:      '#000000',  // negro Going App
   textOnRed:       '#ffffff',
   textOnYellow:    '#000000',
   textOnNavy:      '#ffffff',  // @deprecated alias → textOnRed

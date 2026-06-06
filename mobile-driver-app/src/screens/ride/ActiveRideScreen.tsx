@@ -24,7 +24,7 @@ const STEPS = ['Camino al pasajero', 'Pasajero a bordo', 'Viaje completado'];
 const PAYMENT_LABELS: Record<string, string> = {
   cash:   'Efectivo',
   card:   'Tarjeta',
-  wallet: 'Going Credits',
+  wallet: 'Going App Credits',
 };
 const PAYMENT_ICONS: Record<string, string> = {
   cash:   'cash-outline',
@@ -168,7 +168,7 @@ export function ActiveRideScreen() {
           onPress: () =>
             Alert.alert(
               'Pago pendiente',
-              'Contacta al soporte de Going si el pasajero se negó a pagar.',
+              'Contacta al soporte de Going App si el pasajero se negó a pagar.',
               [{ text: 'Entendido' }]
             ),
         },

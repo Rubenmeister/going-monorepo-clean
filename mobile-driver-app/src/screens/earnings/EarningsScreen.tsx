@@ -105,7 +105,7 @@ export function EarningsScreen() {
       const period = `${fmt(oldest)} – ${fmt(newest)}`;
 
       await exportEarningsPDF({
-        driverName:    'Conductor Going',
+        driverName:    'Conductor Going App',
         vehicleType:   'SUV',
         period,
         totalEarnings: summary.total,

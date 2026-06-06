@@ -24,10 +24,10 @@ import WebSocket from 'ws';
  *
  * Distinto del set de voces Chirp 3 HD que usamos en voice.service (Kore /
  * Despina / Charon / Algenib). Aquí mapeamos manualmente los personajes
- * Going a voces Realtime equivalentes en voice-gateway.service.ts:
+ * Going App a voces Realtime equivalentes en voice-gateway.service.ts:
  *
- *   Going female → 'shimmer' (Kore) | 'sage'    (Despina)
- *   Going male   → 'verse'   (Charon) | 'echo'  (Algenib)
+ *   Going App female → 'shimmer' (Kore) | 'sage'    (Despina)
+ *   Going App male   → 'verse'   (Charon) | 'echo'  (Algenib)
  *
  * El mapeo final vive en VoiceGateway (Día 3); este adapter solo expone el
  * tipo y deja que el caller decida.
@@ -155,7 +155,7 @@ const DEFAULT_MODEL = 'gpt-realtime-mini';
  *
  *   const session = adapter.createSession({
  *     voice: 'shimmer',
- *     instructions: 'You are Going customer support...',
+ *     instructions: 'You are Going App customer support...',
  *     tools: [createBookingTool, escalateToHumanTool],
  *   });
  *   session.on('session.ready', () => { ... });

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Promociones — Going Ecuador',
+  title: 'Promociones — Going App Ecuador',
   description: 'Descuentos y ofertas especiales en viajes compartidos, privados y envíos por Ecuador.',
 };
 
@@ -73,7 +73,7 @@ export default function PromocionesPage() {
             🎉 Ofertas exclusivas
           </div>
           <h1 className="font-serif text-5xl font-black text-white leading-tight mb-4">
-            Promociones Going
+            Promociones Going App
           </h1>
           <p className="text-lg text-white/55 max-w-xl mx-auto">
             Descuentos reales en cada viaje. Copia el código y aplícalo al reservar en la app o la web.
@@ -106,7 +106,7 @@ export default function PromocionesPage() {
 
         <div className="mt-16 bg-[#011627] rounded-3xl p-10 text-center">
           <h2 className="font-serif text-3xl font-black text-white mb-3">¿Tienes un código?</h2>
-          <p className="text-white/50 mb-6">Aplícalo directamente al reservar tu viaje en la app de Going.</p>
+          <p className="text-white/50 mb-6">Aplícalo directamente al reservar tu viaje en la app de Going App.</p>
           <Link href="https://app.goingec.com" className="inline-block px-8 py-4 rounded-xl bg-[#ff4c41] text-white font-black text-[15px] hover:bg-[#e03d32] transition-all">
             Ir a la app →
           </Link>

@@ -1,5 +1,5 @@
 /**
- * Going – LinkedIn Publisher
+ * Going App – LinkedIn Publisher
  * Token: LINKEDIN_ACCESS_TOKEN (LinkedIn API v2)
  * Organization ID: LINKEDIN_ORG_ID
  */

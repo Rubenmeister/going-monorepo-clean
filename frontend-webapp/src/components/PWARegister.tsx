@@ -28,13 +28,13 @@ export function PWARegister() {
               navigator.serviceWorker.controller
             ) {
               // Nueva versión disponible — se activará en la próxima visita
-              console.info("[Going SW] Nueva versión disponible.");
+              console.info("[Going App SW] Nueva versión disponible.");
             }
           });
         });
       })
       .catch((err) => {
-        console.warn("[Going SW] Registro fallido:", err);
+        console.warn("[Going App SW] Registro fallido:", err);
       });
   }, []);
 

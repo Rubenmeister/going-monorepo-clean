@@ -1,30 +1,27 @@
-FROM node:20-alpine AS builder
-
+# --- ETAPA 1: CONSTRUCCIÓN (BUILD) ---
+# pnpm + Nx sobre el monorepo. node_modules y dist se excluyen vía .dockerignore.
+FROM node:20-slim AS builder
 WORKDIR /app
+RUN npm install -g pnpm
+COPY . .
+RUN pnpm install --no-frozen-lockfile
+ARG SERVICE_NAME
+ENV NX_GENERATE_PRUNED_LOCKFILE=false
+RUN pnpm exec nx run ${SERVICE_NAME}:build --skip-nx-cache
 
-COPY package.json ./
-RUN npm install --legacy-peer-deps
-
-COPY tsconfig.build.json ./
-COPY src ./src
-
-RUN ./node_modules/.bin/tsc -p tsconfig.build.json; exit 0
-
-FROM node:20-alpine
-
+# --- ETAPA 2: PRODUCCIÓN ---
+# dist/<servicio> es autocontenido (webpack + generatePackageJson):
+# main.js + package.json podado con SOLO las deps de runtime (todas de npm).
+FROM node:20-slim AS final
 WORKDIR /app
-
-COPY package.json ./
-RUN npm install --omit=dev --legacy-peer-deps
-
-COPY --from=builder /app/dist ./dist
-
+RUN npm install -g pnpm
+ARG SERVICE_NAME
 ENV NODE_ENV=production
-ENV PORT=8080
-
 EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
-
-CMD ["node", "dist/main.js"]
+COPY --from=builder /app/dist/${SERVICE_NAME}/ ./
+# Se ignora el lockfile podado (trae refs file: rotas) y se instala prod
+# con node_modules aplanado (--shamefully-hoist) para que el bundle de
+# webpack resuelva sus deps transitivas (p.ej. tslib).
+RUN rm -f pnpm-lock.yaml package-lock.json \
+    && pnpm install --prod --no-frozen-lockfile --shamefully-hoist
+CMD ["node", "main.js"]

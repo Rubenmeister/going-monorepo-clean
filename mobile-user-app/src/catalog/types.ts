@@ -1,5 +1,5 @@
 /**
- * Tipos compartidos del catálogo Going (mobile-user-app).
+ * Tipos compartidos del catálogo Going App (mobile-user-app).
  *
  * Estos tipos viven aquí (no en backend) porque son enums que se usan en
  * pickers de UI, store local (Zustand), y AsyncStorage para preferencias.

@@ -42,7 +42,7 @@ export class VoiceCallEntity {
   from!: string;                    // E.164 ej. "+593984037949"
 
   @Prop({ required: true, type: String })
-  to!: string;                      // E.164 del número Going
+  to!: string;                      // E.164 del número Going App
 
   @Prop({ required: true, type: String, default: 'twilio_voice' })
   channel!: VoiceCallChannel;

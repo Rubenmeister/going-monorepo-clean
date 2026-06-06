@@ -1,6 +1,6 @@
 {
-  "name": "Going Ecuador",
-  "short_name": "Going",
+  "name": "Going App Ecuador",
+  "short_name": "Going App",
   "description": "Transporte, tours, alojamiento y servicios corporativos en un solo lugar.",
   "start_url": "/",
   "id": "/",
@@ -48,7 +48,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Panel de Control Going Empresas"
+      "label": "Panel de Control Going App Empresas"
     }
   ],
   "shortcuts": [

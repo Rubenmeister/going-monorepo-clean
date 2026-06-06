@@ -1,5 +1,5 @@
 {
-  // deploy: Dockerfiles estandarizados a pnpm (build+runtime verificado) — fuerza rebuild
+  // deploy: rebrand Going App + fix billing/voice Dockerfiles — fuerza rebuild
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",

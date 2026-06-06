@@ -1,5 +1,5 @@
 /**
- * ThemeProvider — Going Ecuador mobile-user-app
+ * ThemeProvider — Going App Ecuador mobile-user-app
  *
  * Provee el theme actual (light o dark) a toda la app vía Context.
  * Resuelve el modo con esta prioridad:

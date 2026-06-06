@@ -366,7 +366,7 @@ export default function ExperiencesPage() {
           </h2>
           <p className="text-white/70 mb-8 text-lg">
             Únete a los miles de viajeros que descubren Ecuador desde adentro
-            con Going.
+            con Going App.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -393,7 +393,7 @@ export default function ExperiencesPage() {
             <div className="md:w-2/5 flex-shrink-0">
               <img
                 src="/images/BALLET JACCHIGUA.jpg"
-                alt="Promotor local Going Ecuador"
+                alt="Promotor local Going App Ecuador"
                 className="w-full h-full object-cover"
                 style={{ minHeight: '360px', maxHeight: '500px' }}
               />
@@ -409,7 +409,7 @@ export default function ExperiencesPage() {
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
                 ¿Eres guía, artesano, chef o tienes algo único que mostrar de tu comunidad?
-                Únete como Promotor Local Going y lleva tu oferta a viajeros de todo el mundo.
+                Únete como Promotor Local Going App y lleva tu oferta a viajeros de todo el mundo.
               </p>
               <div className="grid grid-cols-2 gap-3 mb-8">
                 {[

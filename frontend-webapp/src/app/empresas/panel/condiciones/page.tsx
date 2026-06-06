@@ -39,7 +39,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
         titulo: "Crédito Corporativo",
         contenido: [
           "Tu cuenta dispone de una línea de crédito corporativo para cubrir los Bookings aprobados durante el período de facturación. El límite específico fue acordado en tu contrato y puedes consultarlo en la sección de Configuración.",
-          "Going podrá revisar el límite de crédito periódicamente en función de tu historial de pagos.",
+          "Going App podrá revisar el límite de crédito periódicamente en función de tu historial de pagos.",
         ],
       },
       {
@@ -47,7 +47,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
         contenido: [
           "Recibirás una factura mensual consolidada con todos los Bookings del período. El pago deberá realizarse dentro de los 40 días calendario siguientes a la fecha de emisión.",
           { tipo: "lista", items: [
-            "Transferencia bancaria a la cuenta designada por Going.",
+            "Transferencia bancaria a la cuenta designada por Going App.",
             "Débito automático (si está habilitado en tu cuenta).",
             "Otros medios autorizados según tu contrato.",
           ]},
@@ -74,7 +74,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
       {
         titulo: "Suspensión de Cuenta",
         contenido: [
-          "Going podrá suspender temporalmente tu cuenta en caso de:",
+          "Going App podrá suspender temporalmente tu cuenta en caso de:",
           { tipo: "lista", items: [
             "Mora en el pago de facturas por más de 15 días.",
             "Superación del límite de crédito sin regularización.",
@@ -112,7 +112,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
       {
         titulo: "Facturación",
         contenido: [
-          "Going emite una factura electrónica por cada Booking completado, a nombre del RUC registrado en tu cuenta. Las facturas están disponibles en el panel de Facturación dentro de las 24 horas siguientes al servicio.",
+          "Going App emite una factura electrónica por cada Booking completado, a nombre del RUC registrado en tu cuenta. Las facturas están disponibles en el panel de Facturación dentro de las 24 horas siguientes al servicio.",
         ],
       },
       {
@@ -159,8 +159,8 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
       {
         titulo: "Liquidación",
         contenido: [
-          "Going liquida las comisiones acumuladas dentro de los 15 días calendario siguientes a la fecha de ejecución del último Viaje del período. Recibirás una notificación con el detalle de la liquidación.",
-          "Para recibir el pago deberás emitir tu factura a Going dentro de los 3 días hábiles siguientes a la notificación.",
+          "Going App liquida las comisiones acumuladas dentro de los 15 días calendario siguientes a la fecha de ejecución del último Viaje del período. Recibirás una notificación con el detalle de la liquidación.",
+          "Para recibir el pago deberás emitir tu factura a Going App dentro de los 3 días hábiles siguientes a la notificación.",
         ],
       },
       {
@@ -178,7 +178,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
       {
         titulo: "Retención de Comisiones",
         contenido: [
-          "Going puede retener o recuperar comisiones ya pagadas en caso de:",
+          "Going App puede retener o recuperar comisiones ya pagadas en caso de:",
           { tipo: "lista", items: [
             "Bookings cancelados con posterioridad al pago de la comisión.",
             "Disputas de pago no resueltas en 30 días.",
@@ -190,7 +190,7 @@ const CONDICIONES: Record<TipoCuenta, { subtitulo: string; secciones: Seccion[] 
         titulo: "Obligaciones de la Agencia",
         contenido: [
           { tipo: "lista", items: [
-            "Mantener vigente tu Registro de Turismo y comunicar a Going cualquier suspensión.",
+            "Mantener vigente tu Registro de Turismo y comunicar a Going App cualquier suspensión.",
             "No delegar el acceso a tu cuenta a personas ajenas a la Agencia sin autorización.",
             "Emitir facturas de comisión dentro de los plazos establecidos.",
             "Mantener confidencialidad sobre tarifas y condiciones comerciales acordadas.",
@@ -205,7 +205,7 @@ const COMMON_SECTIONS: Seccion[] = [
   {
     titulo: "Privacidad y Datos",
     contenido: [
-      "Going trata tus datos conforme a su Política de Privacidad y a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).",
+      "Going App trata tus datos conforme a su Política de Privacidad y a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).",
     ],
   },
   {
@@ -329,7 +329,7 @@ export default function CondicionesPage() {
         </div>
 
         <p className="text-xs text-slate-400 text-center pb-4">
-          Versión 1.0 · {new Date().getFullYear()} Going · Para el contrato completo con sus anexos, contacta a tu ejecutivo de cuenta.
+          Versión 1.0 · {new Date().getFullYear()} Going App · Para el contrato completo con sus anexos, contacta a tu ejecutivo de cuenta.
         </p>
       </div>
     </div>

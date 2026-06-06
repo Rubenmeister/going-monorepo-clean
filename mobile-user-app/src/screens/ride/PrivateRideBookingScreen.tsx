@@ -495,7 +495,7 @@ export function PrivateRideBookingScreen() {
               </View>
             )}
             <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>Servicio Going</Text>
+              <Text style={styles.priceLbl}>Servicio Going App</Text>
               <Text style={[styles.priceVal, { color: tokens.success }]}>incluido</Text>
             </View>
             <View style={[styles.priceRow, styles.priceTotalRow]}>

@@ -24,7 +24,7 @@ const TIER_CONFIG: Record<string, { color: string; bg: string; icon: string; lab
 const REWARDS = [
   { points: 500,  label: 'Descuento $2',          icon: '🎟️', desc: '2 USD en tu próximo viaje' },
   { points: 1000, label: 'Viaje gratis $5',        icon: '🚗', desc: 'Válido para viajes hasta $5' },
-  { points: 2000, label: 'Hospedaje 10% off',      icon: '🏨', desc: 'Descuento en alojamientos Going' },
+  { points: 2000, label: 'Hospedaje 10% off',      icon: '🏨', desc: 'Descuento en alojamientos Going App' },
   { points: 5000, label: 'Tour de Galápagos -20%', icon: '🌋', desc: 'Descuento en tours seleccionados' },
 ];
 
@@ -78,7 +78,7 @@ export default function PuntosPage() {
             className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
             ←
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Going Puntos</h1>
+          <h1 className="text-xl font-bold text-gray-900">Going App Puntos</h1>
           <span className="ml-auto text-sm font-bold px-3 py-1 rounded-full" style={{ background: tier.bg, color: tier.color }}>
             {tier.icon} {tier.label}
           </span>
@@ -89,7 +89,7 @@ export default function PuntosPage() {
 
         {/* Balance card */}
         <div className="rounded-3xl p-6 text-white shadow-lg" style={{ background: 'linear-gradient(135deg, #ff4c41, #c0392b)' }}>
-          <p className="text-white/70 text-sm mb-1">Tus puntos Going</p>
+          <p className="text-white/70 text-sm mb-1">Tus puntos Going App</p>
           {loading ? (
             <div className="h-14 w-32 bg-white/20 rounded-2xl animate-pulse" />
           ) : (

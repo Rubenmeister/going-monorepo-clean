@@ -1,5 +1,5 @@
 /**
- * CorporateScreen — Going Empresas
+ * CorporateScreen — Going App Empresas
  *
  * Muestra el estado de la cuenta corporativa del usuario.
  * - Si no tiene cuenta: explica beneficios y permite solicitar acceso
@@ -63,7 +63,7 @@ export function CorporateScreen() {
     } catch {
       // Fallback: abrir WhatsApp con mensaje pre-llenado
       const msg = encodeURIComponent(
-        `Hola Going Empresas, me llamo ${user?.firstName ?? ''} ${user?.lastName ?? ''} y quiero solicitar una cuenta corporativa. Mi email: ${user?.email ?? ''}`
+        `Hola Going App Empresas, me llamo ${user?.firstName ?? ''} ${user?.lastName ?? ''} y quiero solicitar una cuenta corporativa. Mi email: ${user?.email ?? ''}`
       );
       Linking.openURL(`https://wa.me/593984037949?text=${msg}`).catch(() =>
         Alert.alert('Error', 'No se pudo enviar la solicitud. Escríbenos a empresas@goingec.com')
@@ -80,7 +80,7 @@ export function CorporateScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-        {/* Logo Going — versión blanca sobre fondo azul */}
+        {/* Logo Going App — versión blanca sobre fondo azul */}
         <Image
           source={require('../../../assets/going-logo-horizontal-white.png')}
           style={styles.headerLogo}
@@ -168,7 +168,7 @@ export function CorporateScreen() {
             </View>
 
             {/* Beneficios */}
-            <Text style={styles.sectionTitle}>¿Qué incluye Going Empresas?</Text>
+            <Text style={styles.sectionTitle}>¿Qué incluye Going App Empresas?</Text>
             {BENEFITS.map((b, i) => (
               <View key={i} style={styles.benefitRow}>
                 <View style={styles.benefitIconBg}>

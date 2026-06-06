@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Going - Conductor",
+    "name": "Going App - Conductor",
     "slug": "going-driver-app",
     "scheme": "goingdriver",
     "version": "2.0.0",
@@ -19,11 +19,11 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.going.conductor",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Going necesita tu ubicación para mostrar tu posición a las personas pasajeras y asignarte viajes cercanos.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Going rastrea tu ubicación en segundo plano mientras estás en línea para asignar viajes y actualizar la posición a las personas pasajeras durante el servicio.",
-        "NSLocationAlwaysUsageDescription": "Going rastrea tu ubicación mientras conduces para asignar viajes cercanos y compartir tu posición con las personas pasajeras.",
-        "NSCameraUsageDescription": "Going usa la cámara para que puedas subir tu foto de perfil, documentos del vehículo y fotos de incidencias durante el servicio.",
-        "NSPhotoLibraryUsageDescription": "Going accede a tu galería para que puedas seleccionar fotos de perfil y documentos del vehículo."
+        "NSLocationWhenInUseUsageDescription": "Going App necesita tu ubicación para mostrar tu posición a las personas pasajeras y asignarte viajes cercanos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Going App rastrea tu ubicación en segundo plano mientras estás en línea para asignar viajes y actualizar la posición a las personas pasajeras durante el servicio.",
+        "NSLocationAlwaysUsageDescription": "Going App rastrea tu ubicación mientras conduces para asignar viajes cercanos y compartir tu posición con las personas pasajeras.",
+        "NSCameraUsageDescription": "Going App usa la cámara para que puedas subir tu foto de perfil, documentos del vehículo y fotos de incidencias durante el servicio.",
+        "NSPhotoLibraryUsageDescription": "Going App accede a tu galería para que puedas seleccionar fotos de perfil y documentos del vehículo."
       }
     },
     "android": {
@@ -70,7 +70,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Going necesita tu ubicación en segundo plano para mostrar tu posición a los pasajeros."
+          "locationAlwaysAndWhenInUsePermission": "Going App necesita tu ubicación en segundo plano para mostrar tu posición a los pasajeros."
         }
       ],
       "expo-system-ui",

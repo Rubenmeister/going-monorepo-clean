@@ -276,7 +276,7 @@ export default function AccommodationPage() {
       <section className="bg-white py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
-            ¿Por qué reservar con Going?
+            ¿Por qué reservar con Going App?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {BENEFITS.map((b) => (
@@ -338,8 +338,8 @@ export default function AccommodationPage() {
           <div className="rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row" style={{ background: '#1e1b4b' }}>
             <div className="md:w-2/5 flex-shrink-0">
               <img
-                src="/images/Going homes.png"
-                alt="Anfitrión Going Ecuador"
+                src="/images/Going App homes.png"
+                alt="Anfitrión Going App Ecuador"
                 className="w-full h-full object-cover"
                 style={{ minHeight: '360px', maxHeight: '500px' }}
               />
@@ -354,14 +354,14 @@ export default function AccommodationPage() {
                 <span style={{ color: '#a78bfa' }}>ingresos reales</span>
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Anfitriones Going generan ingresos recurrentes hospedando viajeros verificados.
+                Anfitriones Going App generan ingresos recurrentes hospedando viajeros verificados.
                 Tú controlas tu calendario, tus precios y tus reglas. Pagos seguros antes de cada llegada.
               </p>
               <div className="grid grid-cols-2 gap-3 mb-8">
                 {[
                   { icon: '📅', text: 'Control total de tu calendario' },
                   { icon: '🛡️', text: 'Pagos seguros garantizados' },
-                  { icon: '⭐', text: 'Perfil verificado por Going' },
+                  { icon: '⭐', text: 'Perfil verificado por Going App' },
                   { icon: '📚', text: 'Academia gratuita para anfitriones' },
                 ].map(r => (
                   <div key={r.text} className="flex items-center gap-2 text-sm text-gray-300">

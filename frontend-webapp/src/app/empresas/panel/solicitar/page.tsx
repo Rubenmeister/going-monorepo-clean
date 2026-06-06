@@ -255,7 +255,7 @@ export default function SolicitarViajePage() {
     try {
       await crearBooking(session!.accessToken, {
         userId:      session!.user.id ?? session!.user._id ?? '',
-        serviceId:  crypto.randomUUID(), // asignado por Going al procesar
+        serviceId:  crypto.randomUUID(), // asignado por Going App al procesar
         serviceType: serviceType as any,
         totalPrice: { amount: parseFloat(estimatedAmount) || 0, currency: "USD" },
         startDate:  isoStart,
@@ -287,7 +287,7 @@ export default function SolicitarViajePage() {
           <p className="text-slate-500 text-sm mb-6">
             {requiresApproval
               ? "Tu solicitud está pendiente. Recibirás una notificación al ser procesada."
-              : "Tu reserva fue registrada. Going coordinará el servicio y recibirás los detalles por email."}
+              : "Tu reserva fue registrada. Going App coordinará el servicio y recibirás los detalles por email."}
           </p>
           <div className="flex gap-3 justify-center">
             <button
@@ -759,7 +759,7 @@ export default function SolicitarViajePage() {
               </Field>
               <div className="flex items-end">
                 <div className="text-xs text-slate-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 w-full">
-                  Tarifas corporativas Going incluyen IVA y cargo B2B
+                  Tarifas corporativas Going App incluyen IVA y cargo B2B
                 </div>
               </div>
             </div>
