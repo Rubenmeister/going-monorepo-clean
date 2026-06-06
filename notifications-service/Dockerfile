@@ -1,57 +1,27 @@
 # --- ETAPA 1: CONSTRUCCIÓN (BUILD) ---
-# Usamos una imagen Node ligera para compilar
+# pnpm + Nx sobre el monorepo. node_modules y dist se excluyen vía .dockerignore.
 FROM node:20-slim AS builder
-
-# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
-
-# Copia los archivos de configuración de paquetes (npm/package-lock)
-# Usamos la carpeta raíz del monorepo (el contexto de build)
-COPY package.json package-lock.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
-# Copia los archivos de configuración de Nest/Next/etc que estén en la raíz
-# COPY .eslintrc.json ./
-
-# Instala las dependencias (solo de producción por ahora)
-RUN npm install --omit=dev
-
-# Copia todo el código del monorepo
+RUN npm install -g pnpm
 COPY . .
+RUN pnpm install --no-frozen-lockfile
+ARG SERVICE_NAME
+ENV NX_GENERATE_PRUNED_LOCKFILE=false
+RUN pnpm exec nx run ${SERVICE_NAME}:build --skip-nx-cache
 
-# Expón el puerto de tu servicio (ej. 3001)
-ARG SERVICE_NAME=notifications-service
-
-# Ejecuta el comando de construcción de Nx para el servicio específico
-# Esto transpila el código TypeScript a JavaScript en 'dist/apps/payment-service'
-# Asegúrate de que el comando en package.json sea `nx build payment-service`
-RUN npx nx run ${SERVICE_NAME}:build
-
-# --- ETAPA 2: PRODUCCIÓN (FINAL) ---
-# Usamos una imagen aún más pequeña para el runtime (ejecución)
-FROM node:20-alpine AS final
-
-# Recrea el directorio de trabajo
+# --- ETAPA 2: PRODUCCIÓN ---
+# dist/<servicio> es autocontenido (webpack + generatePackageJson):
+# main.js + package.json podado con SOLO las deps de runtime (todas de npm).
+FROM node:20-slim AS final
 WORKDIR /app
-
-# Copia SOLO la carpeta 'dist' del servicio construido
-# El puerto 3001 es el que definimos en main.ts
-ARG SERVICE_NAME=notifications-service
-EXPOSE 3002
-
-# Copia los archivos necesarios para la ejecución:
-# 1. package.json y package-lock.json
-COPY --from=builder /app/package.json /app/package-lock.json ./
-
-# 2. Copia SÓLO las dependencias de producción (más seguro y pequeño)
-RUN npm install --omit=dev --ignore-scripts
-
-# 3. Copia el código compilado
-COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
-
-# 4. Copia el .env si lo necesitas para la ejecución
-# (Idealmente, usarías secretos de K8s/Docker Swarm, pero para testing local)
-# COPY .env .env 
-
-# Comando para iniciar la aplicación Node compilada
-CMD ["node", "dist/main.js"]
+RUN npm install -g pnpm
+ARG SERVICE_NAME
+ENV NODE_ENV=production
+EXPOSE 8080
+COPY --from=builder /app/dist/${SERVICE_NAME}/ ./
+# Se ignora el lockfile podado (trae refs file: rotas) y se instala prod
+# con node_modules aplanado (--shamefully-hoist) para que el bundle de
+# webpack resuelva sus deps transitivas (p.ej. tslib).
+RUN rm -f pnpm-lock.yaml package-lock.json \
+    && pnpm install --prod --no-frozen-lockfile --shamefully-hoist
+CMD ["node", "main.js"]

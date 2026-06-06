@@ -1,33 +1,27 @@
 # --- ETAPA 1: CONSTRUCCIÓN (BUILD) ---
+# pnpm + Nx sobre el monorepo. node_modules y dist se excluyen vía .dockerignore.
 FROM node:20-slim AS builder
-
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-COPY nx.json ./
-COPY tsconfig.base.json ./
-
-RUN npm install
-
+RUN npm install -g pnpm
 COPY . .
+RUN pnpm install --no-frozen-lockfile
+ARG SERVICE_NAME
+ENV NX_GENERATE_PRUNED_LOCKFILE=false
+RUN pnpm exec nx run ${SERVICE_NAME}:build --skip-nx-cache
 
-ARG SERVICE_NAME=analytics-service
-
-RUN npx nx run ${SERVICE_NAME}:build
-
-# --- ETAPA 2: PRODUCCIÓN (FINAL) ---
-FROM node:20-alpine AS final
-
+# --- ETAPA 2: PRODUCCIÓN ---
+# dist/<servicio> es autocontenido (webpack + generatePackageJson):
+# main.js + package.json podado con SOLO las deps de runtime (todas de npm).
+FROM node:20-slim AS final
 WORKDIR /app
-
-COPY --from=builder /app/package.json /app/package-lock.json ./
-
-RUN npm install --omit=dev --ignore-scripts
-
-ARG SERVICE_PORT=3010
-EXPOSE ${SERVICE_PORT}
-
-ARG SERVICE_NAME=analytics-service
-COPY --from=builder /app/dist/apps/${SERVICE_NAME} ./dist/
-
-CMD ["node", "dist/main.js"]
+RUN npm install -g pnpm
+ARG SERVICE_NAME
+ENV NODE_ENV=production
+EXPOSE 8080
+COPY --from=builder /app/dist/${SERVICE_NAME}/ ./
+# Se ignora el lockfile podado (trae refs file: rotas) y se instala prod
+# con node_modules aplanado (--shamefully-hoist) para que el bundle de
+# webpack resuelva sus deps transitivas (p.ej. tslib).
+RUN rm -f pnpm-lock.yaml package-lock.json \
+    && pnpm install --prod --no-frozen-lockfile --shamefully-hoist
+CMD ["node", "main.js"]
