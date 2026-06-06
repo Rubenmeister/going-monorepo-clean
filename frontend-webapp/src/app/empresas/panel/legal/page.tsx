@@ -60,7 +60,7 @@ const SECTIONS: DocSection[] = [
         status: "proximo",
       },
       {
-        title: "Política de Datos para Going Empresas",
+        title: "Política de Datos para Going App Empresas",
         desc: "Addendum LOPDP para clientes corporativos que gestionan datos de empleados en la plataforma.",
         href: "#",
         status: "proximo",
@@ -68,10 +68,10 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
-    label: "Marco legal Going aplicable",
+    label: "Marco legal Going App aplicable",
     docs: [
       {
-        title: "Términos y Condiciones de Going",
+        title: "Términos y Condiciones de Going App",
         desc: "Las reglas generales que rigen el uso de la plataforma.",
         href: "/legal/terms",
         external: true,
@@ -79,7 +79,7 @@ const SECTIONS: DocSection[] = [
       },
       {
         title: "Política de Privacidad (LOPDP)",
-        desc: "Cómo Going recopila, usa y protege los datos personales conforme a la legislación ecuatoriana.",
+        desc: "Cómo Going App recopila, usa y protege los datos personales conforme a la legislación ecuatoriana.",
         href: "/legal/privacy",
         external: true,
         status: "vigente",
@@ -100,7 +100,7 @@ const SECTIONS: DocSection[] = [
       },
       {
         title: "Centro Legal completo",
-        desc: "Acceso al índice de los 26 documentos legales públicos de Going.",
+        desc: "Acceso al índice de los 26 documentos legales públicos de Going App.",
         href: "/legal",
         external: true,
         status: "vigente",
@@ -132,7 +132,7 @@ export default function LegalCorporativoPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-black text-slate-900 mb-2">Legal Corporativo</h1>
         <p className="text-slate-600 max-w-2xl">
-          Instrumentos legales aplicables a tu cuenta empresarial Going y
+          Instrumentos legales aplicables a tu cuenta empresarial Going App y
           marco legal general de la plataforma operada por Thorn AI
           Technologies S.A.S.
         </p>
@@ -166,7 +166,7 @@ export default function LegalCorporativoPage() {
                   </p>
                   {doc.external && (
                     <p className="mt-3 text-xs text-blue-600 font-medium">
-                      Centro Legal Going →
+                      Centro Legal Going App →
                     </p>
                   )}
                 </div>
@@ -200,7 +200,7 @@ export default function LegalCorporativoPage() {
       <div className="mt-10 bg-blue-50 border border-blue-100 rounded-2xl p-6">
         <p className="font-bold text-slate-900 mb-2">Empresa responsable</p>
         <p className="text-sm text-slate-700 leading-relaxed mb-3">
-          Going es una marca operada por <strong>Thorn AI Technologies
+          Going App es una marca operada por <strong>Thorn AI Technologies
           S.A.S.</strong>, RUC <strong>1793176925001</strong>, con domicilio en
           Echeverría N2-170 y Crespo Toral, Quito, Ecuador. Para asuntos
           legales o contractuales corporativos, escríbenos a{" "}

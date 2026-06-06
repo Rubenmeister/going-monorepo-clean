@@ -34,7 +34,7 @@ function FadeIn({ children, delay = 0, direction = 'up', className = '' }: {
 const VALUES = [
   { icon: '💡', title: 'Innovación', desc: 'Impulsamos la transformación del sector turístico mediante tecnología moderna: sistemas de seguimiento, respuesta inmediata y capacitación continua.' },
   { icon: '🤝', title: 'Colaboración', desc: 'Fomentamos relaciones horizontales entre personas usuarias, prestadoras de servicios y anfitrionas locales. Todos en igualdad.' },
-  { icon: '⭐', title: 'Calidad', desc: 'Ofrecemos un servicio de excelencia que supera las expectativas. Cada experiencia Going está pensada para el detalle.' },
+  { icon: '⭐', title: 'Calidad', desc: 'Ofrecemos un servicio de excelencia que supera las expectativas. Cada experiencia Going App está pensada para el detalle.' },
   { icon: '🌱', title: 'Sostenibilidad', desc: 'Protegemos el medio ambiente con prácticas eco-responsables, reducción de la huella de carbono y opciones de movilidad compartida.' },
   { icon: '🌍', title: 'Inclusión', desc: 'Generamos oportunidades para todas las personas, sin importar su origen o condición social. El turismo justo es posible.' },
   { icon: '🔍', title: 'Transparencia', desc: 'Garantizamos visibilidad plena de las operaciones y decisiones dentro de la plataforma para construir confianza real.' },
@@ -96,7 +96,7 @@ function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; ti
 const MILESTONES = [
   { year: '2023', title: 'La idea nace', desc: 'Los fundadores se plantean modernizar el flujo coordinador de transporte y demás servicios turísticos mediante el uso de WhatsApp.' },
   { year: '2024', title: 'Primer piloto', desc: 'Lanzamos en Quito el primer plan piloto y la primera app web.' },
-  { year: '2025', title: 'La primera SuperApp de turismo colaborativo', desc: 'Creamos la primera Superapp de turismo colaborativo de Latinoamérica: Going.' },
+  { year: '2025', title: 'La primera SuperApp de turismo colaborativo', desc: 'Creamos la primera Superapp de turismo colaborativo de Latinoamérica: Going App.' },
   { year: '2026', title: 'La primera SuperApp al aire', desc: 'Lanzamos las primeras rutas cercanas a Quito y su aeropuerto para el transporte de pasajeros en modalidad compartida y privada, además del servicio de envíos puerta a puerta. En el segundo semestre se abren todas las rutas hacia Quito y su aeropuerto, las rutas de Guayaquil y Cuenca para cubrir todo el territorio nacional, y el servicio de tours para operadores turísticos y experiencias locales para anfitriones en cada localidad.' },
   { year: '2027', title: 'Alojamiento nacional y transporte eléctrico', desc: 'Se despliega el servicio de alojamiento con anfitriones a nivel nacional. Empieza el giro al transporte eléctrico. Se inicia la planificación del uso de drones aéreos en las operaciones de transfers y desplazamientos turísticos.' },
   { year: '2028', title: 'Drones y transporte autónomo', desc: 'Se inicia la implementación de los servicios de dron aéreo y transporte terrestre autónomo para todo el país.' },
@@ -119,7 +119,7 @@ export default function QuienesSomosPage() {
               🇪🇨 La primera SuperApp de turismo colaborativo de Latinoamérica
             </div>
             <h1 className="font-black text-white mb-6 leading-tight" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)' }}>
-              Somos Going
+              Somos Going App
             </h1>
             <p className="text-white/80 text-xl leading-relaxed">
               Transformamos la experiencia de viaje en Ecuador conectando viajeros, conductoras y conductores, anfitriones y proveedores locales en una sola plataforma integral, sostenible e inclusiva.
@@ -129,7 +129,7 @@ export default function QuienesSomosPage() {
           <div className="flex-1 w-full md:max-w-md">
             <img
               src="/images/pasajeros.JPG"
-              alt="Pasajeros Going en Ecuador"
+              alt="Pasajeros Going App en Ecuador"
               className="w-full rounded-3xl shadow-2xl object-cover"
               style={{ maxHeight: '420px' }}
             />
@@ -190,7 +190,7 @@ export default function QuienesSomosPage() {
           <FadeIn className="text-center mb-14">
             <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que nos mueve</span>
             <h2 className="text-4xl font-black text-gray-900 mb-3">Nuestros Valores</h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">Principios que guían cada decisión, cada línea de código y cada experiencia Going.</p>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto">Principios que guían cada decisión, cada línea de código y cada experiencia Going App.</p>
           </FadeIn>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -213,7 +213,7 @@ export default function QuienesSomosPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going App</h2>
               <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
             </div>
           </FadeIn>
@@ -277,7 +277,7 @@ export default function QuienesSomosPage() {
           <FadeIn>
             <div className="text-5xl mb-6">🇪🇨</div>
             <h2 className="text-4xl font-black text-white mb-4">
-              ¿Quieres ser parte de Going?
+              ¿Quieres ser parte de Going App?
             </h2>
             <p className="text-white/80 text-lg mb-10 leading-relaxed">
               Únete como viajero, conductora o conductor, anfitriona o anfitrión, o proveedor de servicios.<br />

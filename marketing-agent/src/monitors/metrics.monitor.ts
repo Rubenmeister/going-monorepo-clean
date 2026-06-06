@@ -20,7 +20,7 @@ import {
 // Cada job empuja a este recolector. `runMarketingMonitor` lo retorna y
 // `index.ts` lo envuelve en un AgentRunEvent que se publica al
 // cerebro-service. El world model usa estas métricas para entender la
-// salud de la presencia digital de Going semana a semana.
+// salud de la presencia digital de Going App semana a semana.
 
 export interface RunCollector {
   metrics:         Record<string, number | string>;
@@ -357,7 +357,7 @@ async function generateInsights(metrics: PlatformMetrics[]): Promise<string[]> {
       max_tokens: 400,
       messages: [{
         role: 'user',
-        content: `Eres analista de marketing digital para Going Ecuador (plataforma de transporte).
+        content: `Eres analista de marketing digital para Going App Ecuador (plataforma de transporte).
 Analiza estas métricas de la semana y genera 3-4 insights accionables en español, cada uno en una línea:
 
 ${summary}

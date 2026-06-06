@@ -1,5 +1,5 @@
 /**
- * Firestore service — Aplicaciones de proveedores Going
+ * Firestore service — Aplicaciones de proveedores Going App
  * Colección: provider_applications
  */
 import {

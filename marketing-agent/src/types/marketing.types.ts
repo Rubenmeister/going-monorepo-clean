@@ -136,7 +136,7 @@ export interface MarketingAlert {
 }
 
 // ─── Secrets Expected in GCP Secret Manager ──────────────────
-// ─── Going Social Media Handles ──────────────────────────────
+// ─── Going App Social Media Handles ──────────────────────────────
 // instagram:  @goingappecuador   → instagram.com/goingappecuador
 // facebook:   goingappecuador    → facebook.com/goingappecuador
 // tiktok:     @goingappecuador   → tiktok.com/@goingappecuador

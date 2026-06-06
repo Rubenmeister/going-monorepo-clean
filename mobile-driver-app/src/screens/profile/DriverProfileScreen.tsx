@@ -73,7 +73,7 @@ export function DriverProfileScreen() {
           { icon: 'document-text-outline', label: 'Mis documentos', route: 'Documents' as const },
           { icon: 'star-outline',          label: 'Mis calificaciones', route: 'Ratings' as const },
           { icon: 'shield-checkmark-outline', label: 'Centro Legal', route: 'Legal' as const },
-          { icon: 'help-circle-outline',   label: 'Soporte Going', route: 'Support' as const },
+          { icon: 'help-circle-outline',   label: 'Soporte Going App', route: 'Support' as const },
         ].map(({ icon, label, route }) => (
           <TouchableOpacity key={label} style={styles.menuItem} onPress={() => navigation.navigate(route)}>
             <Ionicons
@@ -92,7 +92,7 @@ export function DriverProfileScreen() {
         <Ionicons name="log-out-outline" size={20} color="#DC2626" />
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
-      <Text style={styles.version}>Going Conductor v2.0.0</Text>
+      <Text style={styles.version}>Going App Conductor v2.0.0</Text>
     </ScrollView>
   );
 }

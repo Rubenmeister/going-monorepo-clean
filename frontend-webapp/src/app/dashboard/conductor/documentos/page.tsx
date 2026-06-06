@@ -132,7 +132,7 @@ export default function DocumentosPage() {
 
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-xs text-blue-800">
         💡 <span className="font-bold">¿Necesitas actualizar un documento?</span> Abre la app móvil
-        de Going Conductor y ve a tu perfil. Las cargas se procesan en 24–48h.
+        de Going App Conductor y ve a tu perfil. Las cargas se procesan en 24–48h.
       </div>
     </div>
   );

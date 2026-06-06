@@ -271,7 +271,7 @@ export default function CotizacionPage() {
             )}
             {submitOk && (
               <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
-                ✅ Cotización enviada. Un ejecutivo de Going te contactará en menos de 24 horas.
+                ✅ Cotización enviada. Un ejecutivo de Going App te contactará en menos de 24 horas.
               </div>
             )}
 
@@ -281,7 +281,7 @@ export default function CotizacionPage() {
             </button>
 
             <p className="text-xs text-slate-400 text-center">
-              Going responde en &lt;24h hábiles con una propuesta personalizada y tarifa B2B
+              Going App responde en &lt;24h hábiles con una propuesta personalizada y tarifa B2B
             </p>
           </form>
         </div>

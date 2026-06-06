@@ -1,7 +1,7 @@
 /**
- * EnviosScreen — Envíos y Encomiendas Going
+ * EnviosScreen — Envíos y Encomiendas Going App
  *
- * Colores: Rojo Going (#FF4C41) SOLO en bordes, iconos y acentos.
+ * Colores: Rojo Going App (#FF4C41) SOLO en bordes, iconos y acentos.
  * Flujo: Form → Tracking → Entrega (foto conductor + OTP)
  */
 import React, { useState, useEffect, useRef } from 'react';

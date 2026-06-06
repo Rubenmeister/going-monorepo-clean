@@ -275,7 +275,7 @@ export default function DestinationsPage() {
               border: '1px solid #ff4c4160',
             }}
           >
-            🌍 Destinos Going
+            🌍 Destinos Going App
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow-md">
             Descubre Ecuador

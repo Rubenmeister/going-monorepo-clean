@@ -1,5 +1,5 @@
 /**
- * Going — Agora In-App Call Manager
+ * Going App — Agora In-App Call Manager
  *
  * Lógica:
  * 1. Chequea calidad de red (ping al API < 300ms)

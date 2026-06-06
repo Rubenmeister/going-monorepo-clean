@@ -15,10 +15,10 @@ const ACTIVITIES = [
 ];
 
 const BENEFITS = [
-  { icon: '🌎', title: 'Acceso a viajeros globales', desc: 'Turistas de aventura internacionales buscan exactamente lo que tú ofreces. Going los conecta contigo.' },
+  { icon: '🌎', title: 'Acceso a viajeros globales', desc: 'Turistas de aventura internacionales buscan exactamente lo que tú ofreces. Going App los conecta contigo.' },
   { icon: '📋', title: 'Gestión de grupos sin fricción', desc: 'App para confirmaciones, waivers digitales, comunicación pre-tour y check-in de participantes.' },
   { icon: '💳', title: 'Pagos en dólares, garantizados', desc: 'Cobras el 100% por adelantado. Sin problemas de no-shows. DATAFAST o transferencia.' },
-  { icon: '🤝', title: 'Red de alianzas Going', desc: 'Conéctate con hoteles, guías y transportistas de la plataforma para crear paquetes completos.' },
+  { icon: '🤝', title: 'Red de alianzas Going App', desc: 'Conéctate con hoteles, guías y transportistas de la plataforma para crear paquetes completos.' },
   { icon: '📊', title: 'Analytics de tu negocio', desc: 'Ocupación, ingresos, demografía de clientes, reseñas y tendencias. Todo en un panel.' },
   { icon: '🛡️', title: 'Soporte en seguros y normativas', desc: 'Te orientamos sobre MINTUR, LUAE, seguros de responsabilidad civil y requisitos por actividad.' },
 ];
@@ -33,7 +33,7 @@ const REQUIREMENTS: { icon: string; item: string; note: string; required: boolea
 
 const PACKS = [
   { name: 'Operador Básico', price: 'Gratis', color: '#6b7280', features: ['1 actividad listada', 'Hasta 50 plazas/mes', 'Pagos DATAFAST', 'Soporte por email'], cta: 'Empezar gratis' },
-  { name: 'Operador Pro', price: '$29/mes', color: '#d97706', features: ['Actividades ilimitadas', 'Plazas ilimitadas', 'Panel de analytics', 'Badge verificado', 'Alianzas Going', 'Soporte prioritario'], cta: 'Activar Pro', highlight: true },
+  { name: 'Operador Pro', price: '$29/mes', color: '#d97706', features: ['Actividades ilimitadas', 'Plazas ilimitadas', 'Panel de analytics', 'Badge verificado', 'Alianzas Going App', 'Soporte prioritario'], cta: 'Activar Pro', highlight: true },
   { name: 'Agencia / Empresa', price: 'A convenir', color: '#ff4c41', features: ['Todo en Pro', 'Multi-usuario', 'API personalizada', 'Facturación corporativa', 'Account manager dedicado'], cta: 'Contactar ventas' },
 ];
 
@@ -48,7 +48,7 @@ export default function OperadoresPage() {
         <div className="max-w-5xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
             style={{ backgroundColor: '#d9770622', color: '#fcd34d' }}>
-            🧗 Operadores de Aventura Going
+            🧗 Operadores de Aventura Going App
           </span>
           <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
             Ecuador tiene<br />
@@ -56,7 +56,7 @@ export default function OperadoresPage() {
           </h1>
           <p className="text-amber-200 text-lg max-w-xl mb-8 leading-relaxed">
             Lleva a viajeros de todo el mundo a vivir lo más extremo y hermoso del Ecuador.
-            Going gestiona las reservas, pagos y grupos para que tú te concentres en la experiencia.
+            Going App gestiona las reservas, pagos y grupos para que tú te concentres en la experiencia.
           </p>
           <div className="flex flex-wrap gap-4 mb-10">
             <Link href="/auth/register?rol=operator"
@@ -89,7 +89,7 @@ export default function OperadoresPage() {
       <div id="actividades" className="py-16 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-3">Actividades que puedes ofrecer</h2>
-          <p className="text-gray-500 text-center mb-10">Desde trekking en el Cotopaxi hasta buceo en Galápagos. Si Ecuador lo tiene, Going lo conecta.</p>
+          <p className="text-gray-500 text-center mb-10">Desde trekking en el Cotopaxi hasta buceo en Galápagos. Si Ecuador lo tiene, Going App lo conecta.</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {ACTIVITIES.map(a => (
               <div key={a.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow text-center">

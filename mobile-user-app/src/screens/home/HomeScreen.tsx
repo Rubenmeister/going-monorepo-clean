@@ -1,5 +1,5 @@
 /**
- * HomeScreen — Going Ecuador
+ * HomeScreen — Going App Ecuador
  *
  * Dashboard limpio (mockup #5 canónico): greeting + 3 cards de productos
  * core (Compartido / Privado / Envíos) + sugerencias rápidas (rutas
@@ -297,10 +297,10 @@ export default function HomeScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ── FAB Asistente Going ─────────────────────────────────
+      {/* ── FAB Asistente Going App ─────────────────────────────────
           Botón flotante para abrir el asistente de voz. Esquina
           inferior derecha, sobre el contenido scrolleable. Usa el
-          brandRed Going como acento (es la única acción en el screen
+          brandRed Going App como acento (es la única acción en el screen
           que es brand-pop, separada de las cards de productos). */}
       <TouchableOpacity
         style={styles.assistantFab}
@@ -309,11 +309,11 @@ export default function HomeScreen() {
           navigation.navigate('Assistant');
         }}
         activeOpacity={0.85}
-        accessibilityLabel="Hablar con el Asistente Going"
+        accessibilityLabel="Hablar con el Asistente Going App"
         accessibilityRole="button"
       >
         <Ionicons name="mic" size={24} color={tokens.textOnRed} />
-        <Text style={styles.assistantFabText}>Hablar con Going</Text>
+        <Text style={styles.assistantFabText}>Hablar con Going App</Text>
       </TouchableOpacity>
     </View>
   );
@@ -324,7 +324,7 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: t.bg },
 
-    // ── FAB Asistente Going ────────────────────────────────
+    // ── FAB Asistente Going App ────────────────────────────────
     assistantFab: {
       position: 'absolute',
       bottom: 24,

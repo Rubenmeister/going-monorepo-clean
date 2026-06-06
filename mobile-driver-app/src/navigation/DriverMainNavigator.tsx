@@ -219,7 +219,7 @@ function DriverStack({ navigation }: any) {
       <Stack.Screen
         name="Support"
         component={SupportScreen}
-        options={{ title: 'Soporte Going' }}
+        options={{ title: 'Soporte Going App' }}
       />
       <Stack.Screen
         name="Legal"
@@ -229,12 +229,12 @@ function DriverStack({ navigation }: any) {
       <Stack.Screen
         name="Assistant"
         component={DriverAssistantScreen}
-        options={{ title: 'Asistente Going' }}
+        options={{ title: 'Asistente Going App' }}
       />
       <Stack.Screen
         name="Academia"
         component={AcademiaScreen}
-        options={{ title: 'Academia Going', headerShown: false }}
+        options={{ title: 'Academia Going App', headerShown: false }}
       />
 
       {/* ── Agenda de rutas ── */}

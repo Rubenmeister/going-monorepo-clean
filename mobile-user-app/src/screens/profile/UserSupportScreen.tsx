@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: '¿Cómo pago mi viaje?',
-    a: 'Going acepta tarjetas de crédito/débito y Mercado Pago. Puedes gestionar tus métodos en Perfil → Métodos de pago.',
+    a: 'Going App acepta tarjetas de crédito/débito y Mercado Pago. Puedes gestionar tus métodos en Perfil → Métodos de pago.',
   },
   {
     q: '¿Qué es el modo Empresa?',
@@ -37,7 +37,7 @@ const FAQS = [
   },
   {
     q: '¿Los conductores están verificados?',
-    a: 'Sí. Todos los conductores Going pasan por verificación de documentos, antecedentes y capacitación antes de operar.',
+    a: 'Sí. Todos los conductores Going App pasan por verificación de documentos, antecedentes y capacitación antes de operar.',
   },
   {
     q: '¿Puedo rastrear mi viaje en tiempo real?',

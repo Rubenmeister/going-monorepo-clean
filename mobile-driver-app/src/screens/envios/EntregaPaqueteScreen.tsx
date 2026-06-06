@@ -236,7 +236,7 @@ export function EntregaPaqueteScreen() {
         )}
         <View style={s.earnRow}>
           <Ionicons name="star" size={18} color={GOLD} />
-          <Text style={s.earnText}>+5 pts Going por este envío</Text>
+          <Text style={s.earnText}>+5 pts Going App por este envío</Text>
         </View>
         <TouchableOpacity style={s.doneBtn} onPress={() => navigation.navigate('Panel' as any)} activeOpacity={0.85}>
           <Text style={s.doneBtnText}>Volver al panel</Text>

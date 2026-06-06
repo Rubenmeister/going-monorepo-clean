@@ -62,7 +62,7 @@ export default function HistorialPage() {
           <div className="bg-white rounded-3xl border border-gray-100 p-10 text-center">
             <p className="text-5xl mb-3">🚕</p>
             <p className="text-lg font-bold text-gray-700">Sin viajes aún</p>
-            <p className="text-sm text-gray-400 mt-1">¡Reserva tu primer viaje con Going!</p>
+            <p className="text-sm text-gray-400 mt-1">¡Reserva tu primer viaje con Going App!</p>
             <Link href="/ride"
               className="inline-block mt-4 px-6 py-3 rounded-2xl text-white font-bold text-sm"
               style={{ backgroundColor: '#ff4c41' }}>

@@ -6,7 +6,7 @@ import './global.css';
 // que envían errores JS al cerebro-service. 10% sampling por sesión.
 import '@/lib/cerebro-tracker';
 
-// ── Fuentes oficiales Going (Brand Guidelines 2024) ───────────────────────
+// ── Fuentes oficiales Going App (Brand Guidelines 2024) ───────────────────────
 // Cargadas via next/font/google que: (a) hace self-host automático, (b)
 // expone CSS variables consumibles desde design-tokens.ts y Tailwind, y
 // (c) elimina FOUC vs <link rel="stylesheet"> manual.
@@ -25,12 +25,12 @@ const roboto = Roboto({
 });
 
 export const metadata = {
-  title: 'Going Ecuador: Nos movemos contigo',
+  title: 'Going App Ecuador: Nos movemos contigo',
   description: 'Transporte compartido y privado entre ciudades del Ecuador. Reserva tu viaje en segundos.',
-  applicationName: 'Going Ecuador',
+  applicationName: 'Going App Ecuador',
   appleWebApp: {
     capable: true,
-    title: 'Going',
+    title: 'Going App',
     statusBarStyle: 'default',
   },
 };
@@ -55,7 +55,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Going" />
+        <meta name="apple-mobile-web-app-title" content="Going App" />
         <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />

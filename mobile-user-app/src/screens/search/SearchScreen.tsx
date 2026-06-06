@@ -18,7 +18,7 @@ import { searchAPI } from '../../services/api';
 const GOING_BLUE   = '#FF4C41';
 const GOING_YELLOW = '#FFD253';
 
-// ── Regiones de Ecuador (rutas iniciales Going) ──────────────────────────────
+// ── Regiones de Ecuador (rutas iniciales Going App) ──────────────────────────────
 type RegionId = 'todas' | 'sierra_norte' | 'sierra_centro' | 'costa' | 'aeropuerto';
 
 const REGIONS: { id: RegionId; label: string; cities: string[]; icon: string }[] = [
@@ -231,7 +231,7 @@ export function SearchScreen() {
       ) : (
         <View style={styles.center}>
           <Ionicons name="compass-outline" size={56} color="#D1D5DB" />
-          <Text style={styles.hintText}>Explora destinos Going en Ecuador</Text>
+          <Text style={styles.hintText}>Explora destinos Going App en Ecuador</Text>
         </View>
       )}
     </View>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Términos y Condiciones — Going',
+  title: 'Términos y Condiciones — Going App',
   description:
     'Términos y Condiciones de uso de la plataforma Thorn AI Technologies S.A.S. conforme a la legislación ecuatoriana.',
 };
@@ -13,9 +13,9 @@ const SECTIONS = [
     id: 'objeto',
     icon: '📄',
     title: '1. Objeto y Ámbito de Aplicación',
-    content: `Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going, operada por Thorn AI Technologies S.A.S. (RUC: 1793176925001), con domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
+    content: `Los presentes Términos y Condiciones regulan el acceso y uso de la plataforma tecnológica Going App, operada por Thorn AI Technologies S.A.S. (RUC: 1793176925001), con domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
 
-Al registrarte, acceder o usar la aplicación Going, declaras haber leído, comprendido y aceptado íntegramente estos Términos. Si no estás de acuerdo, debes abstenerte de usar el servicio.
+Al registrarte, acceder o usar la aplicación Going App, declaras haber leído, comprendido y aceptado íntegramente estos Términos. Si no estás de acuerdo, debes abstenerte de usar el servicio.
 
 Esta aceptación constituye un contrato vinculante entre tú y Thorn AI Technologies S.A.S., de conformidad con el Código Civil ecuatoriano y la Ley de Comercio Electrónico (Ley No. 2002-67).`,
   },
@@ -23,11 +23,11 @@ Esta aceptación constituye un contrato vinculante entre tú y Thorn AI Technolo
     id: 'naturaleza',
     icon: '🚗',
     title: '2. Naturaleza del Servicio',
-    content: `Going es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.
+    content: `Going App es una plataforma tecnológica intermediaria que conecta a usuarios con conductores independientes que ofrecen servicios de transporte comercial de pasajeros y envío de paquetes en Ecuador.
 
 Thorn AI Technologies S.A.S. NO es una empresa de transporte. Los conductores son prestadores independientes que actúan conforme a la Ley Orgánica de Transporte Terrestre, Tránsito y Seguridad Vial (LOTTTSV) y sus reglamentos.
 
-Going opera bajo las categorías:
+Going App opera bajo las categorías:
 (i) Viajes interurbanos e intercantonal en vehículos SUV, VAN y BUS.
 (ii) Envíos y mensajería urbana e interurbana.
 (iii) Tours turísticos con operadores certificados.
@@ -39,11 +39,11 @@ Going opera bajo las categorías:
     title: '3. Registro y Cuenta de Usuario',
     content: `Para acceder al servicio debes crear una cuenta proporcionando: nombre completo, número de cédula o pasaporte, correo electrónico, número de teléfono móvil y contraseña segura.
 
-Te comprometes a proporcionar información veraz, completa y actualizada. Going se reserva el derecho de suspender o eliminar cuentas con información falsa o incompleta.
+Te comprometes a proporcionar información veraz, completa y actualizada. Going App se reserva el derecho de suspender o eliminar cuentas con información falsa o incompleta.
 
 Eres el único responsable de mantener la confidencialidad de tus credenciales y de todas las actividades que ocurran bajo tu cuenta. Notifica inmediatamente a soporte@goingec.com si sospechas de uso no autorizado.
 
-Going puede requerir verificación de identidad adicional (documento de identidad, selfie) para cumplir con obligaciones legales de debida diligencia.`,
+Going App puede requerir verificación de identidad adicional (documento de identidad, selfie) para cumplir con obligaciones legales de debida diligencia.`,
   },
   {
     id: 'pagos',
@@ -58,7 +58,7 @@ Medios de pago aceptados:
 
 Precio mínimo de viaje: USD 5.00. Las tarifas incluyen el IVA aplicable en Ecuador según el Código Tributario vigente.
 
-Going emitirá comprobantes de pago electrónicos según las disposiciones del Servicio de Rentas Internas (SRI).`,
+Going App emitirá comprobantes de pago electrónicos según las disposiciones del Servicio de Rentas Internas (SRI).`,
   },
   {
     id: 'cancelaciones',
@@ -80,14 +80,14 @@ Viajes compartidos (Compartido):
     id: 'conductor-req',
     icon: '📋',
     title: '6. Requisitos y Obligaciones del Conductor',
-    content: `Para operar como conductor en Going debes cumplir:
+    content: `Para operar como conductor en Going App debes cumplir:
 
 Requisitos de ingreso:
 • Licencia de conducir profesional tipo C mínimo (para vehículos de transporte de pasajeros).
 • Vehículo modelo 2018 o posterior, en buen estado mecánico.
 • Seguro SOAT vigente.
 • Antecedentes penales limpios (certificado actualizado).
-• Aprobación de la evaluación de manejo y atención al cliente de Going.
+• Aprobación de la evaluación de manejo y atención al cliente de Going App.
 
 Obligaciones durante el servicio:
 • Mantener el vehículo limpio y en condiciones óptimas.
@@ -96,7 +96,7 @@ Obligaciones durante el servicio:
 • Calificar al pasajero tras cada viaje.
 • Reportar incidentes de seguridad de forma inmediata.
 
-Comisión de plataforma: Going cobra entre el 15% y el 20% del valor del viaje según el tipo de servicio. El saldo neto se transfiere semanalmente a la cuenta bancaria registrada.`,
+Comisión de plataforma: Going App cobra entre el 15% y el 20% del valor del viaje según el tipo de servicio. El saldo neto se transfiere semanalmente a la cuenta bancaria registrada.`,
   },
   {
     id: 'conducta',
@@ -108,25 +108,25 @@ Comisión de plataforma: Going cobra entre el 15% y el 20% del valor del viaje s
 • Daño intencional al vehículo o a las pertenencias del otro.
 • Transporte de sustancias ilegales, armas o materiales peligrosos.
 • Uso fraudulento de la plataforma (cuentas falsas, calificaciones manipuladas).
-• Solicitar o aceptar pagos fuera de la plataforma para servicios Going.
+• Solicitar o aceptar pagos fuera de la plataforma para servicios Going App.
 • Usar la función SOS de manera frívola o fraudulenta.
 • Grabar a otros usuarios sin su consentimiento.
 
-Going se reserva el derecho de suspender o eliminar permanentemente cuentas que incumplan estas normas, sin derecho a reembolso de saldos pendientes en casos de infracción grave.`,
+Going App se reserva el derecho de suspender o eliminar permanentemente cuentas que incumplan estas normas, sin derecho a reembolso de saldos pendientes en casos de infracción grave.`,
   },
   {
     id: 'seguridad-sos',
     icon: '🆘',
     title: '8. Función SOS y Seguridad',
-    content: `Going incorpora una función de emergencia SOS accesible desde la pantalla de viaje activo. Al activarla:
+    content: `Going App incorpora una función de emergencia SOS accesible desde la pantalla de viaje activo. Al activarla:
 
-• Se notifica automáticamente al equipo de seguridad de Going.
+• Se notifica automáticamente al equipo de seguridad de Going App.
 • Se comparte la ubicación en tiempo real con los contactos de confianza registrados.
 • Se puede iniciar llamada directa al ECU 911 desde la aplicación.
 
 El uso indebido o fraudulento de la función SOS (falsas alarmas reiteradas) podrá resultar en la suspensión de la cuenta.
 
-Going recomienda a los usuarios:
+Going App recomienda a los usuarios:
 • Verificar la placa y modelo del vehículo antes de abordar.
 • Compartir el código de viaje con un familiar o amigo.
 • No compartir información personal con el conductor más allá de lo necesario para el viaje.`,
@@ -143,15 +143,15 @@ Going recomienda a los usuarios:
 • Conducta de los conductores fuera del contexto del servicio contratado.
 • Interrupciones del servicio por mantenimiento, actualizaciones o causas técnicas.
 
-En los casos en que Going sea declarado responsable por resolución judicial firme, la responsabilidad máxima estará limitada al valor pagado por el servicio específico que originó el daño.
+En los casos en que Going App sea declarado responsable por resolución judicial firme, la responsabilidad máxima estará limitada al valor pagado por el servicio específico que originó el daño.
 
-Going mantiene un proceso de verificación de antecedentes para conductores, pero no garantiza la exactitud o vigencia permanente de dicha información.`,
+Going App mantiene un proceso de verificación de antecedentes para conductores, pero no garantiza la exactitud o vigencia permanente de dicha información.`,
   },
   {
     id: 'propiedad-intelectual',
     icon: '©️',
     title: '10. Propiedad Intelectual',
-    content: `Todos los derechos de propiedad intelectual de la aplicación Going, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de Thorn AI Technologies S.A.S. y están protegidos por el Código Orgánico de la Economía Social de los Conocimientos y los tratados internacionales aplicables.
+    content: `Todos los derechos de propiedad intelectual de la aplicación Going App, incluyendo pero no limitado a: código fuente, diseño, logotipos, marcas comerciales, textos, gráficos, interfaz de usuario y bases de datos, son propiedad exclusiva de Thorn AI Technologies S.A.S. y están protegidos por el Código Orgánico de la Economía Social de los Conocimientos y los tratados internacionales aplicables.
 
 Se prohíbe expresamente: reproducir, distribuir, modificar, crear obras derivadas, realizar ingeniería inversa, descompilar o desensamblar cualquier parte de la aplicación sin autorización escrita previa de Thorn AI Technologies S.A.S.
 
@@ -167,7 +167,7 @@ Tus datos se usan para: prestación del servicio, seguridad de la plataforma, co
 
 Tienes derecho a: acceder, rectificar, suprimir, oponerte al tratamiento y portar tus datos. Ejerce estos derechos escribiendo a privacidad@goingec.com.
 
-Going no vende datos personales a terceros. Los datos compartidos con conductores se limitan al nombre, foto de perfil y ubicación de recogida durante el servicio activo.`,
+Going App no vende datos personales a terceros. Los datos compartidos con conductores se limitan al nombre, foto de perfil y ubicación de recogida durante el servicio activo.`,
   },
   {
     id: 'modificaciones',
@@ -207,7 +207,7 @@ export default function TerminosPage() {
       <div className="bg-[#0033A0] py-16 px-6">
         <div className="max-w-3xl mx-auto">
           <p className="text-[13px] font-black text-[#FFCD00] uppercase tracking-widest mb-3">
-            Legal · Going
+            Legal · Going App
           </p>
           <h1 className="text-4xl font-black text-white mb-4">
             Términos y Condiciones
@@ -226,7 +226,7 @@ export default function TerminosPage() {
           <div>
             <p className="font-black text-yellow-800 text-sm mb-1">Importante</p>
             <p className="text-yellow-700 text-sm leading-relaxed">
-              Al usar Going aceptas estos Términos. Going es una <strong>plataforma tecnológica intermediaria</strong>,
+              Al usar Going App aceptas estos Términos. Going App es una <strong>plataforma tecnológica intermediaria</strong>,
               no una empresa de transporte. Los conductores son proveedores independientes.
             </p>
           </div>

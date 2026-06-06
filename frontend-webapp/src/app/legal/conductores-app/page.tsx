@@ -1,8 +1,8 @@
 import { LegalPlaceholder } from '../_components/LegalPlaceholder';
 
 export const metadata = {
-  title: 'Guías de la Driver App — Going',
-  description: 'Procedimientos operativos para conductoras y conductores en la Driver App de Going.',
+  title: 'Guías de la Driver App — Going App',
+  description: 'Procedimientos operativos para conductoras y conductores en la Driver App de Going App.',
 };
 
 export default function ConductoresAppPage() {

@@ -17,7 +17,7 @@ interface Review {
 }
 
 /**
- * ReviewsList — Muestra las reseñas/valoraciones públicas de Going.
+ * ReviewsList — Muestra las reseñas/valoraciones públicas de Going App.
  * Ideal para mostrar en la Home o página de rutas como testimonio social.
  */
 export function ReviewsList() {

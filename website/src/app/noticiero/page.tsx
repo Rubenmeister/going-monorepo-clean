@@ -3,16 +3,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Noticiero Going — Actualidad y Noticias',
-  description: 'Las últimas noticias de Going Ecuador: nuevas rutas, actualizaciones de la app y noticias de movilidad.',
+  title: 'Noticiero Going App — Actualidad y Noticias',
+  description: 'Las últimas noticias de Going App Ecuador: nuevas rutas, actualizaciones de la app y noticias de movilidad.',
 };
 
 const NEWS = [
-  { title: 'Going lanza nueva ruta Quito–Ambato–Baños con frecuencias cada 30 minutos', excerpt: 'Más de 200 asientos disponibles diariamente con conductores verificados y vehículos 2023 en adelante. La ruta conecta la Sierra Centro de lunes a domingo.', date: '8 Abr 2026', img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=80', cat: 'Rutas', featured: true },
-  { title: 'Nueva función: comparte tu tracking en tiempo real con familia y amigos', excerpt: 'La versión 2.4 de la app de Going incluye la posibilidad de compartir un link de seguimiento con cualquier persona.', date: '5 Abr 2026', img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400&q=80', cat: 'App', featured: false },
-  { title: 'Going supera los 50,000 usuarios activos en Ecuador', excerpt: 'En menos de 6 meses de operación, la plataforma consolida su presencia en la Sierra ecuatoriana.', date: '2 Abr 2026', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80', cat: 'Empresa', featured: false },
-  { title: 'Pago con DeUna disponible en Going a partir de mayo', excerpt: 'Los usuarios podrán pagar sus viajes con el sistema de pagos de billetera móvil del BCE.', date: '28 Mar 2026', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', cat: 'Pagos', featured: false },
-  { title: 'Going Corporativo: movilidad empresarial para Quito y Guayaquil', excerpt: 'Las empresas ya pueden gestionar la movilidad de su equipo desde el portal corporativo con facturación centralizada.', date: '20 Mar 2026', img: 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=400&q=80', cat: 'Corporativo', featured: false },
+  { title: 'Going App lanza nueva ruta Quito–Ambato–Baños con frecuencias cada 30 minutos', excerpt: 'Más de 200 asientos disponibles diariamente con conductores verificados y vehículos 2023 en adelante. La ruta conecta la Sierra Centro de lunes a domingo.', date: '8 Abr 2026', img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=80', cat: 'Rutas', featured: true },
+  { title: 'Nueva función: comparte tu tracking en tiempo real con familia y amigos', excerpt: 'La versión 2.4 de la app de Going App incluye la posibilidad de compartir un link de seguimiento con cualquier persona.', date: '5 Abr 2026', img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400&q=80', cat: 'App', featured: false },
+  { title: 'Going App supera los 50,000 usuarios activos en Ecuador', excerpt: 'En menos de 6 meses de operación, la plataforma consolida su presencia en la Sierra ecuatoriana.', date: '2 Abr 2026', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80', cat: 'Empresa', featured: false },
+  { title: 'Pago con DeUna disponible en Going App a partir de mayo', excerpt: 'Los usuarios podrán pagar sus viajes con el sistema de pagos de billetera móvil del BCE.', date: '28 Mar 2026', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', cat: 'Pagos', featured: false },
+  { title: 'Going App Corporativo: movilidad empresarial para Quito y Guayaquil', excerpt: 'Las empresas ya pueden gestionar la movilidad de su equipo desde el portal corporativo con facturación centralizada.', date: '20 Mar 2026', img: 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=400&q=80', cat: 'Corporativo', featured: false },
 ];
 
 export default function NoticeroPage() {
@@ -22,8 +22,8 @@ export default function NoticeroPage() {
       <div className="bg-[#011627] py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Actualidad</div>
-          <h1 className="font-serif text-5xl font-black text-white mb-3">Noticiero Going</h1>
-          <p className="text-[16px] text-white/50">Noticias, actualizaciones y todo lo que pasa en Going Ecuador.</p>
+          <h1 className="font-serif text-5xl font-black text-white mb-3">Noticiero Going App</h1>
+          <p className="text-[16px] text-white/50">Noticias, actualizaciones y todo lo que pasa en Going App Ecuador.</p>
         </div>
       </div>
 

@@ -37,7 +37,7 @@ export async function sendEmailCampaign(campaign: EmailCampaign): Promise<void> 
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      name: `Going – ${campaign.subject} – ${new Date().toISOString().slice(0, 10)}`,
+      name: `Going App – ${campaign.subject} – ${new Date().toISOString().slice(0, 10)}`,
       send_to: { list_ids: [listId] },
       email_config: {
         subject: campaign.subject,
@@ -106,7 +106,7 @@ export async function sendTransactionalEmail(to: string, subject: string, htmlBo
     },
     body: JSON.stringify({
       personalizations: [{ to: [{ email: to }] }],
-      from: { email: 'marketing@goingec.com', name: 'Going Ecuador' },
+      from: { email: 'marketing@goingec.com', name: 'Going App Ecuador' },
       subject,
       content: [{ type: 'text/html', value: htmlBody }],
     }),
@@ -140,13 +140,13 @@ function buildEmailHtml(campaign: EmailCampaign): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1>Going Ecuador 🚗</h1>
+      <h1>Going App Ecuador 🚗</h1>
     </div>
     <div class="body">
       ${campaign.bodyHtml}
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} Going Ecuador – <a href="https://goingec.com">goingec.com</a>
+      © ${new Date().getFullYear()} Going App Ecuador – <a href="https://goingec.com">goingec.com</a>
       &nbsp;|&nbsp; <a href="https://www.instagram.com/goingappecuador/">Instagram</a>
       &nbsp;|&nbsp; <a href="https://www.facebook.com/goingappecuador">Facebook</a>
       &nbsp;|&nbsp; <a href="https://www.tiktok.com/@goingappecuador">TikTok</a>

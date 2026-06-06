@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Revista Going — Cultura y Turismo en Ecuador',
-  description: 'La revista de Going Ecuador. Destinos, cultura, gastronomía y estilo de vida ecuatoriano.',
+  title: 'Revista Going App — Cultura y Turismo en Ecuador',
+  description: 'La revista de Going App Ecuador. Destinos, cultura, gastronomía y estilo de vida ecuatoriano.',
 };
 
 const FEATURED = {
@@ -34,7 +34,7 @@ export default function RevistaPage() {
       <div className="bg-[#011627] py-16 px-6 border-b border-white/[0.06]">
         <div className="max-w-4xl mx-auto">
           <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Publicación mensual</div>
-          <h1 className="font-serif text-5xl font-black text-white mb-3">Revista Going</h1>
+          <h1 className="font-serif text-5xl font-black text-white mb-3">Revista Going App</h1>
           <p className="text-[16px] text-white/50">Cultura, destinos y estilo de vida ecuatoriano.</p>
         </div>
       </div>

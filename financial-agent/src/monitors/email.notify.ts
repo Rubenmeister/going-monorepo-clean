@@ -1,5 +1,5 @@
 /**
- * Going Financial Agent — Notificaciones por Gmail (nodemailer)
+ * Going App Financial Agent — Notificaciones por Gmail (nodemailer)
  * Reemplaza Telegram para notificaciones internas.
  *
  * Variables de entorno requeridas:
@@ -35,7 +35,7 @@ function htmlToText(html: string): string {
 function extractSubject(html: string): string {
   const match = /<b>(.*?)<\/b>/.exec(html);
   const raw   = match ? match[1].replace(/<[^>]+>/g, '') : 'Notificación';
-  return `Going Finanzas — ${raw}`;
+  return `Going App Finanzas — ${raw}`;
 }
 
 function wrapHtml(body: string): string {
@@ -49,11 +49,11 @@ function wrapHtml(body: string): string {
 <body style="font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px">
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
     <div style="background:#1a73e8;padding:16px 24px">
-      <h2 style="color:#fff;margin:0;font-size:18px">💰 Going Financial Agent</h2>
+      <h2 style="color:#fff;margin:0;font-size:18px">💰 Going App Financial Agent</h2>
     </div>
     <div style="padding:24px;color:#333;line-height:1.6">${formatted}</div>
     <div style="background:#f5f5f5;padding:12px 24px;font-size:12px;color:#999;text-align:center">
-      Going Ecuador — Agente Financiero automático
+      Going App Ecuador — Agente Financiero automático
     </div>
   </div>
 </body>
@@ -78,7 +78,7 @@ export async function sendGmail(html: string): Promise<void> {
 
   try {
     await transport.sendMail({
-      from: `Going Financial Agent <${from}>`,
+      from: `Going App Financial Agent <${from}>`,
       to,
       subject,
       text: htmlToText(html),

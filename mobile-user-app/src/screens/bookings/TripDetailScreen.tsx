@@ -118,7 +118,7 @@ export function TripDetailScreen() {
 
   const handleShare = async () => {
     await Share.share({
-      message: `Mi viaje Going\n${trip.origin ? `Desde: ${trip.origin}\n` : ''}${
+      message: `Mi viaje Going App\n${trip.origin ? `Desde: ${trip.origin}\n` : ''}${
         trip.destination ? `Hasta: ${trip.destination}\n` : ''
       }Estado: ${st.label}${trip.amount != null ? `\nTotal: $${trip.amount.toFixed(2)}` : ''}`,
     });

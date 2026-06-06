@@ -5,8 +5,8 @@ import Link from 'next/link';
 const STORY = {
   title: 'Nuestra Historia',
   paragraphs: [
-    'Going nació en Ecuador con una visión simple: conectar a las personas con los mejores destinos, servicios y experiencias de su país, todo desde una sola plataforma.',
-    'Fundada por ecuatorianas y ecuatorianos apasionados por el turismo y la tecnología, Going reúne transporte, alojamiento, tours, experiencias, envíos y pagos en un ecosistema digital que funciona por igual para quienes viajan, hospedan y conducen.',
+    'Going App nació en Ecuador con una visión simple: conectar a las personas con los mejores destinos, servicios y experiencias de su país, todo desde una sola plataforma.',
+    'Fundada por ecuatorianas y ecuatorianos apasionados por el turismo y la tecnología, Going App reúne transporte, alojamiento, tours, experiencias, envíos y pagos en un ecosistema digital que funciona por igual para quienes viajan, hospedan y conducen.',
     'Hoy operamos en las cuatro regiones del Ecuador — Sierra, Costa, Amazonía y Galápagos — con el compromiso de impulsar el turismo local, generar oportunidades y poner a Ecuador en el mapa de cada viajero y viajera moderna.',
   ],
 };
@@ -83,9 +83,9 @@ const SERVICES_SUMMARY = [
 // ── END EDITABLE CONTENT ───────────────────────────────────────────
 
 export const metadata = {
-  title: 'Sobre Going | La plataforma de viajes de Ecuador',
+  title: 'Sobre Going App | La plataforma de viajes de Ecuador',
   description:
-    'Conoce la historia, misión y valores de Going — la plataforma que conecta a viajeros con lo mejor de Ecuador.',
+    'Conoce la historia, misión y valores de Going App — la plataforma que conecta a viajeros con lo mejor de Ecuador.',
 };
 
 export default function AboutPage() {
@@ -109,7 +109,7 @@ export default function AboutPage() {
             Hecho en Ecuador 🇪🇨
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Conoce <span style={{ color: '#ff4c41' }}>Going</span>
+            Conoce <span style={{ color: '#ff4c41' }}>Going App</span>
           </h1>
           <p className="text-xl text-white/75 max-w-2xl mx-auto leading-relaxed">
             La plataforma que conecta a quienes viajan, hospedan y conducen con
@@ -220,7 +220,7 @@ export default function AboutPage() {
           Nuestros valores
         </h2>
         <p className="text-gray-500 text-center mb-12 text-lg">
-          Los principios que guían cada decisión en Going
+          Los principios que guían cada decisión en Going App
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {TEAM_VALUES.map((v) => (
@@ -244,7 +244,7 @@ export default function AboutPage() {
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Todo lo que Going ofrece
+            Todo lo que Going App ofrece
           </h2>
           <p className="text-gray-500 mb-10">
             Un ecosistema completo para tu viaje por Ecuador
@@ -276,7 +276,7 @@ export default function AboutPage() {
             ¿Listo para explorar Ecuador?
           </h2>
           <p className="text-white/70 mb-10 text-lg">
-            Únete a la comunidad Going y descubre el país como nunca antes.
+            Únete a la comunidad Going App y descubre el país como nunca antes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

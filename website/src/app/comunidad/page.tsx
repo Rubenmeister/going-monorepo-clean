@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Comunidad Going — Viajeros y Conductores de Ecuador',
-  description: 'Únete a la comunidad de Going Ecuador. Pasajeros, conductores y anfitriones que construyen una mejor movilidad.',
+  title: 'Comunidad Going App — Viajeros y Conductores de Ecuador',
+  description: 'Únete a la comunidad de Going App Ecuador. Pasajeros, conductores y anfitriones que construyen una mejor movilidad.',
 };
 
 export default function ComunidadPage() {
@@ -17,7 +17,7 @@ export default function ComunidadPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#011627]/95 to-[#0a2540]/80" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-4">Comunidad Going</div>
+          <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-4">Comunidad Going App</div>
           <h1 className="font-serif text-5xl font-black text-white leading-tight mb-4">
             Somos más que un servicio
           </h1>
@@ -58,10 +58,10 @@ export default function ComunidadPage() {
           <div>
             <div className="text-[11px] font-black tracking-[3px] uppercase text-[#ff4c41] mb-3">Para conductores</div>
             <h2 className="font-serif text-4xl font-black text-[#011627] leading-tight mb-4">
-              Genera ingresos<br />manejando Going
+              Genera ingresos<br />manejando Going App
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
-              Únete a más de 1,200 conductores que ya trabajan con Going. Tú eliges tus horarios, tus rutas y cuánto quieres ganar.
+              Únete a más de 1,200 conductores que ya trabajan con Going App. Tú eliges tus horarios, tus rutas y cuánto quieres ganar.
             </p>
             <div className="space-y-3 mb-8">
               {['✅ Gana entre $800 y $2,000 al mes', '✅ Tú decides tus horarios y rutas', '✅ Pagos semanales puntuales', '✅ Soporte 24/7 y comunidad de conductores', '✅ App fácil de usar, sin complicaciones'].map(b => (
@@ -73,11 +73,11 @@ export default function ComunidadPage() {
             </Link>
           </div>
           <div className="relative h-[400px] rounded-3xl overflow-hidden">
-            <Image src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=700&q=85" alt="Conductor Going" fill className="object-cover" />
+            <Image src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=700&q=85" alt="Conductor Going App" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#011627]/60 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4">
               <p className="text-white font-black text-[16px] mb-1">Carlos Mendoza</p>
-              <p className="text-white/60 text-[13px]">Conductor Going · 847 viajes · 4.92 ★</p>
+              <p className="text-white/60 text-[13px]">Conductor Going App · 847 viajes · 4.92 ★</p>
             </div>
           </div>
         </div>
@@ -88,8 +88,8 @@ export default function ComunidadPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               { text: 'El PIN de seguridad me dio mucha confianza. Supe exactamente a qué vehículo subir.', name: 'Ana Rodríguez', route: 'Quito → Baños', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80' },
-              { text: 'Como conductor, Going me da estabilidad. La app es muy fácil y los pagos son puntuales.', name: 'Carlos Mendoza', route: 'Conductor · 847 viajes', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80' },
-              { text: 'Mejor que el bus y más barato que el taxi. Siempre viajo Going de Latacunga a Quito.', name: 'María Toapanta', route: 'Latacunga → Quito', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
+              { text: 'Como conductor, Going App me da estabilidad. La app es muy fácil y los pagos son puntuales.', name: 'Carlos Mendoza', route: 'Conductor · 847 viajes', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80' },
+              { text: 'Mejor que el bus y más barato que el taxi. Siempre viajo Going App de Latacunga a Quito.', name: 'María Toapanta', route: 'Latacunga → Quito', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
               { text: 'El tracking en vivo me tranquiliza cuando viaja mi hija. Sé exactamente dónde está.', name: 'Rosa Guerrero', route: 'Ibarra → Quito', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80' },
             ].map(t => (
               <div key={t.name} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-5 hover:shadow-lg transition-all">

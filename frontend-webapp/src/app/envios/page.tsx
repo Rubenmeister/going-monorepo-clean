@@ -74,7 +74,7 @@ export default function EnviosPage() {
       {/* Ventajas */}
       <section className="py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-gray-900 font-black text-4xl text-center mb-12">¿Por qué enviar con Going?</h2>
+          <h2 className="text-gray-900 font-black text-4xl text-center mb-12">¿Por qué enviar con Going App?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {[
               { icon: '⚡', text: 'Entrega mismo día' },

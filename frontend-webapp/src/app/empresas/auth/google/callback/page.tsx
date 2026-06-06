@@ -95,7 +95,7 @@ function GoogleCallbackInner() {
           <>
             <div className="w-10 h-10 mx-auto mb-4 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
             <h1 className="text-lg font-bold text-slate-900 mb-1">Validando sesión…</h1>
-            <p className="text-sm text-slate-500">Estamos verificando tu cuenta con Going.</p>
+            <p className="text-sm text-slate-500">Estamos verificando tu cuenta con Going App.</p>
           </>
         )}
 
@@ -115,7 +115,7 @@ function GoogleCallbackInner() {
             </h1>
             <p className="text-sm text-slate-600 mb-5">
               Iniciaste sesión con Google correctamente, pero tu correo aún no
-              está asociado a ningún cliente corporativo de Going. Pide a tu
+              está asociado a ningún cliente corporativo de Going App. Pide a tu
               administrador que te invite, o solicita una cuenta nueva.
             </p>
             <div className="flex gap-3 justify-center">

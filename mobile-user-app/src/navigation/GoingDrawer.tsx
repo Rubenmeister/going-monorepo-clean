@@ -51,7 +51,7 @@ const ACCOUNT_ITEMS: MenuItem[] = [
 ];
 
 const MORE_ITEMS: MenuItem[] = [
-  { icon: 'school-outline',       label: 'Academia Going',       screen: 'Academy' },
+  { icon: 'school-outline',       label: 'Academia Going App',       screen: 'Academy' },
   { icon: 'shield-checkmark-outline', label: 'Centro Legal',         screen: 'Legal' },
   { icon: 'help-circle-outline',  label: 'Ayuda y soporte',      screen: 'UserSupport' },
 ];
@@ -107,7 +107,7 @@ export function GoingDrawer(props: DrawerContentComponentProps) {
     <View style={styles.container}>
       {/* ── Header / Profile ── */}
       <View style={styles.header}>
-        {/* Logo Going — versión blanca sobre fondo rojo */}
+        {/* Logo Going App — versión blanca sobre fondo rojo */}
         <Image
           source={require('../../assets/going-logo-horizontal-white.png')}
           style={styles.headerLogo}
@@ -122,7 +122,7 @@ export function GoingDrawer(props: DrawerContentComponentProps) {
             <Text style={styles.userEmail}>{user?.email ?? ''}</Text>
             <View style={styles.goldBadge}>
               <Ionicons name="star" size={10} color="#FFD700" />
-              <Text style={styles.goldText}>Going Gold</Text>
+              <Text style={styles.goldText}>Going App Gold</Text>
             </View>
           </View>
         </View>

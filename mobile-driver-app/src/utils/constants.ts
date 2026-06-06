@@ -1,5 +1,5 @@
 /**
- * Going — Shared App Constants (Driver App)
+ * Going App — Shared App Constants (Driver App)
  * Single source of truth for brand colors, API URL, and timing constants.
  */
 

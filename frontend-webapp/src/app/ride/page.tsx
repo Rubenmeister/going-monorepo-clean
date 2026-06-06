@@ -80,7 +80,7 @@ function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 
         <p className="text-sm text-gray-500 mt-0.5">Elige el tipo de servicio que necesitas</p>
       </div>
 
-      {/* Viaje Compartido — rojo Going */}
+      {/* Viaje Compartido — rojo Going App */}
       <button
         onClick={() => onSelect('compartido')}
         className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-red-50/50 active:scale-[0.98] transition-all text-left"
@@ -103,7 +103,7 @@ function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 
         <IconArrowRight size={18} className="text-gray-300" />
       </button>
 
-      {/* Viaje Privado — amarillo Going */}
+      {/* Viaje Privado — amarillo Going App */}
       <button
         onClick={() => onSelect('privado')}
         className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-yellow-50/50 active:scale-[0.98] transition-all text-left"
@@ -121,7 +121,7 @@ function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 
         <IconArrowRight size={18} className="text-gray-300" />
       </button>
 
-      {/* Envíos — negro Going */}
+      {/* Envíos — negro Going App */}
       <button
         onClick={() => onSelect('envios')}
         className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all text-left"
@@ -251,7 +251,7 @@ function ConfirmationPanel({
         </p>
       </div>
 
-      {/* ── Continuar a pago — CTA principal rojo Going ── */}
+      {/* ── Continuar a pago — CTA principal rojo Going App ── */}
       <button
         onClick={onContinue}
         className="w-full text-white font-bold text-base py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all hover:opacity-90"

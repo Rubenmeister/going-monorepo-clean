@@ -110,7 +110,7 @@ export function formatDeadlinesForTelegram(deadlines: TaxDeadline[]): string {
   const soon    = deadlines.filter(d => d.urgency === 'soon');
   const ok      = deadlines.filter(d => d.urgency === 'ok');
 
-  const lines: string[] = ['📅 <b>Calendario Tributario Going — SRI Ecuador</b>', ''];
+  const lines: string[] = ['📅 <b>Calendario Tributario Going App — SRI Ecuador</b>', ''];
 
   if (urgent.length > 0) {
     lines.push('🔴 <b>URGENTE (≤3 días):</b>');

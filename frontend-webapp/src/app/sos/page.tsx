@@ -11,7 +11,7 @@ export default function SOSPage() {
             Asistencia de Emergencia
           </h1>
           <p className="text-gray-500 text-lg">
-            Disponible 24/7 para toda la comunidad Going
+            Disponible 24/7 para toda la comunidad Going App
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function SOSPage() {
               'Siempre verifica la identidad del conductor antes de subir al vehículo.',
               'Comparte los detalles de tu viaje con un contacto de confianza.',
               'Mantén tus objetos de valor seguros y fuera de la vista.',
-              'Reporta cualquier problema de seguridad de inmediato a Going.',
+              'Reporta cualquier problema de seguridad de inmediato a Going App.',
               'Espera tu transporte en áreas bien iluminadas y concurridas.',
             ].map((tip) => (
               <li key={tip} className="flex items-start gap-3">
@@ -129,7 +129,7 @@ export default function SOSPage() {
               },
               {
                 q: '¿Tiene costo el servicio de emergencia?',
-                a: 'La asistencia básica de emergencia es gratuita para toda la comunidad Going. Servicios adicionales pueden tener costos según la naturaleza de la emergencia.',
+                a: 'La asistencia básica de emergencia es gratuita para toda la comunidad Going App. Servicios adicionales pueden tener costos según la naturaleza de la emergencia.',
               },
             ].map((faq) => (
               <details

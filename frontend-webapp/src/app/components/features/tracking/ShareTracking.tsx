@@ -102,7 +102,7 @@ export function ShareTracking({ rideId, origin, destination }: ShareTrackingProp
           const phone = c.value.replace(/\D/g, '');
           if (!phone) return; // Ignorar si quedó vacío tras limpiar
           const msg = encodeURIComponent(
-            `Estoy viajando con Going de ${origin} a ${destination}. Sigue mi viaje en tiempo real: ${link}`
+            `Estoy viajando con Going App de ${origin} a ${destination}. Sigue mi viaje en tiempo real: ${link}`
           );
           window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
         });

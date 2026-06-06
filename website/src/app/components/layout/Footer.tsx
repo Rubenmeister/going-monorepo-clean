@@ -22,7 +22,7 @@ const FOOTER_COLS = [
   {
     title: 'Editorial',
     links: [
-      { label: 'Noticiero Going', href: '/noticiero' },
+      { label: 'Noticiero Going App', href: '/noticiero' },
       { label: 'Revista', href: '/revista' },
       { label: 'Blog', href: '/blog' },
       { label: 'Destinos', href: '/destinos' },
@@ -35,7 +35,7 @@ const FOOTER_COLS = [
       { label: 'Soy pasajero', href: 'https://app.goingec.com/register' },
       { label: 'Quiero ser conductor', href: '/comunidad#conductores' },
       { label: 'Anfitriones', href: '/comunidad#anfitriones' },
-      { label: 'Academia Going', href: '/academia' },
+      { label: 'Academia Going App', href: '/academia' },
       { label: 'Sostenibilidad', href: '/quienes-somos#sostenibilidad' },
     ],
   },
@@ -68,7 +68,7 @@ export function Footer() {
           <div className="col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
               <GoingLogo size={22} />
-              <span className="text-xl font-black">Going</span>
+              <span className="text-xl font-black">Going App</span>
             </div>
             <p className="text-sm text-white/40 leading-relaxed mb-5">
               Nos movemos contigo.<br />
@@ -135,7 +135,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[12px] text-white/25">
-            © 2026 Going — marca operada por Thorn AI Technologies S.A.S.
+            © 2026 Going App — marca operada por Thorn AI Technologies S.A.S.
           </p>
           <div className="flex gap-2">
             <Link href="https://app.goingec.com" className="text-[12px] text-white/35 hover:text-white/60 transition-colors">

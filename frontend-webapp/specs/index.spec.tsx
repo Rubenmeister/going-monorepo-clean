@@ -16,7 +16,7 @@ function Hello({ name }: { name: string }) {
 
 describe('frontend-webapp testing pipeline', () => {
   it('renderiza un componente con JSX/TSX', () => {
-    render(<Hello name="Going" />);
-    expect(screen.getByText('Hola, Going')).toBeTruthy();
+    render(<Hello name="Going App" />);
+    expect(screen.getByText('Hola, Going App')).toBeTruthy();
   });
 });

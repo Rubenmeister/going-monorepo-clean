@@ -1,10 +1,10 @@
 /**
- * DriverAssistantScreen — Asistente Going para conductoras y conductores.
+ * DriverAssistantScreen — Asistente Going App para conductoras y conductores.
  *
  * Análogo al AssistantScreen del mobile-user-app pero adaptado al contexto
  * de quien conduce:
  *
- *   · CTA principal "Llamar al Equipo Going" — abre dial al número Twilio
+ *   · CTA principal "Llamar al Equipo Going App" — abre dial al número Twilio
  *     voice-call-service (Uyari). El AI atiende y puede:
  *       - resolver dudas operativas (cómo aceptar viaje, cómo cobrar)
  *       - explicar reglas (cero tolerancia, modo híbrido, wellness guard)
@@ -13,7 +13,7 @@
  *   · WhatsApp directo para mensajes (alternativa a llamada)
  *   · Banner LOPDP — privacidad de las llamadas
  *
- * Diseño: NAVY (alias del brandRed Going) como acento principal, igual que
+ * Diseño: NAVY (alias del brandRed Going App) como acento principal, igual que
  * el resto de la driver-app. Sin theme adaptativo (driver-app no tiene
  * tokens semánticos todavía — eso es follow-up post-launch).
  */
@@ -77,10 +77,10 @@ export function DriverAssistantScreen() {
         <View style={styles.heroIcon}>
           <Ionicons name="mic" size={40} color={COLORS.brandYellow} />
         </View>
-        <Text style={styles.heroTitle}>Asistente Going</Text>
+        <Text style={styles.heroTitle}>Asistente Going App</Text>
         <Text style={styles.heroSubtitle}>
           ¿Tenés una duda durante un viaje? ¿Necesitás ayuda con un cobro o
-          una emergencia? Llamá al Asistente Going. Estamos 24/7.
+          una emergencia? Llamá al Asistente Going App. Estamos 24/7.
         </Text>
       </View>
 
@@ -89,7 +89,7 @@ export function DriverAssistantScreen() {
         style={[styles.callButton, calling && styles.callButtonActive]}
         onPress={handleCallAssistant}
         activeOpacity={0.85}
-        accessibilityLabel="Llamar al Asistente Going"
+        accessibilityLabel="Llamar al Asistente Going App"
       >
         <Ionicons
           name={calling ? 'call' : 'call-outline'}
@@ -98,7 +98,7 @@ export function DriverAssistantScreen() {
         />
         <View style={styles.callTextWrap}>
           <Text style={styles.callButtonTitle}>
-            {calling ? 'Abriendo llamada...' : 'Llamar al Equipo Going'}
+            {calling ? 'Abriendo llamada...' : 'Llamar al Equipo Going App'}
           </Text>
           <Text style={styles.callButtonPhone}>{ASSISTANT_PHONE_DISPLAY}</Text>
         </View>
@@ -107,7 +107,7 @@ export function DriverAssistantScreen() {
 
       <Text style={styles.callHint}>
         Tu operadora puede aplicar tarifas locales de llamada. La conversación
-        con Going es siempre gratuita.
+        con Going App es siempre gratuita.
       </Text>
 
       {/* Qué puedo preguntarle */}
@@ -138,7 +138,7 @@ export function DriverAssistantScreen() {
           <Ionicons name="logo-whatsapp" size={22} color={COLORS.whatsapp} />
         </View>
         <View style={styles.altBody}>
-          <Text style={styles.altTitle}>WhatsApp Going</Text>
+          <Text style={styles.altTitle}>WhatsApp Going App</Text>
           <Text style={styles.altSubtitle}>
             {WHATSAPP_DISPLAY} · soporte conductor en minutos
           </Text>
@@ -163,7 +163,7 @@ export function DriverAssistantScreen() {
         <View style={styles.emergencyRow}>
           <Ionicons name="call" size={16} color={COLORS.NAVY} />
           <Text style={styles.emergencyBold}>{ASSISTANT_PHONE_DISPLAY}</Text>
-          <Text style={styles.emergencyText}> · Asistente Going con handoff a operador</Text>
+          <Text style={styles.emergencyText}> · Asistente Going App con handoff a operador</Text>
         </View>
       </View>
 
@@ -172,7 +172,7 @@ export function DriverAssistantScreen() {
         <Ionicons name="shield-checkmark" size={18} color={COLORS.NAVY} />
         <Text style={styles.infoText}>
           <Text style={styles.infoTextBold}>Privacidad:</Text>{' '}
-          Las llamadas con el Asistente Going se procesan respetando la Ley
+          Las llamadas con el Asistente Going App se procesan respetando la Ley
           Orgánica de Protección de Datos Personales (LOPDP) del Ecuador.
           Se conserva un registro de la llamada para mejorar el servicio.
         </Text>

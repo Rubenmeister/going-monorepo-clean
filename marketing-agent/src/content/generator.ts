@@ -13,7 +13,7 @@ const AI_CONTENT_MODEL = process.env.AI_CONTENT_MODEL || 'claude-sonnet-4-5';
 
 // ============================================================
 // Content Generator – uses Claude to generate platform-specific
-// marketing content for Going
+// marketing content for Going App
 // ============================================================
 
 export async function generateContent(request: ContentRequest): Promise<GeneratedContent> {
@@ -97,7 +97,7 @@ export async function generateNewsletter(context: {
   highlights: string[];
   cta?: string;
 }): Promise<string> {
-  const prompt = `Eres el editor de comunicaciones de Going, plataforma de transporte en Ecuador.
+  const prompt = `Eres el editor de comunicaciones de Going App, plataforma de transporte en Ecuador.
 
 Escribe un boletín semanal profesional y amigable con la siguiente información:
 Título: ${context.title}
@@ -131,11 +131,11 @@ export async function generatePressRelease(context: {
   contactName?: string;
   contactEmail?: string;
 }): Promise<string> {
-  const prompt = `Redacta un comunicado de prensa profesional para Going (plataforma de transporte Ecuador).
+  const prompt = `Redacta un comunicado de prensa profesional para Going App (plataforma de transporte Ecuador).
 Titular: ${context.headline}
 Información: ${context.body}
 ${context.quote ? `Cita del directivo: "${context.quote}"` : ''}
-Contacto: ${context.contactName || 'Equipo Going'} — ${context.contactEmail || 'info@goingec.com'}
+Contacto: ${context.contactName || 'Equipo Going App'} — ${context.contactEmail || 'info@goingec.com'}
 
 Formato estándar de comunicado de prensa. Extensión: 400-600 palabras. Estilo periodístico formal.`;
 
@@ -176,15 +176,15 @@ function buildDefaultImagePrompt(req: ContentRequest): string {
   const topicImages: Record<string, string> = {
     route_highlight: 'Scenic road in Ecuador with mountains or coast, modern SUV on highway, golden hour lighting, travel photography style',
     driver_spotlight: 'Professional driver smiling next to a clean modern SUV in Ecuador, warm and trustworthy, brand photography',
-    promotion: 'Bold discount announcement graphic, modern design, Going brand colors (red and white), travel theme',
+    promotion: 'Bold discount announcement graphic, modern design, Going App brand colors (red and white), travel theme',
     testimonial: 'Happy passenger giving thumbs up inside a clean modern vehicle, Ecuador cityscape background',
     safety_tip: 'Safety-focused graphic, seatbelt, road, professional driver, clean modern design',
-    company_milestone: 'Celebration confetti graphic with number milestone, Going brand colors, festive',
+    company_milestone: 'Celebration confetti graphic with number milestone, Going App brand colors, festive',
     destination_guide: `Beautiful Ecuador destination photo, travel magazine style, vibrant colors`,
     product_feature: 'Modern smartphone showing a navigation/transport app, clean UI, Ecuador map',
     behind_the_scenes: 'Team of young professionals in a modern office, working on laptops, casual and authentic',
     seasonal: 'Festive Ecuador celebration, warm family imagery with travel theme',
-    general: 'Modern transport in Ecuador, professional, clean Going brand aesthetic',
+    general: 'Modern transport in Ecuador, professional, clean Going App brand aesthetic',
   };
   return topicImages[req.topic] || topicImages.general;
 }

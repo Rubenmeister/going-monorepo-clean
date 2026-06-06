@@ -116,20 +116,20 @@ function LoginForm() {
       >
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10">
-          <Image src="/going-logo-white-h.png" alt="Going" width={180} height={62} className="h-12 w-auto object-contain" priority />
+          <Image src="/going-logo-white-h.png" alt="Going App" width={180} height={62} className="h-12 w-auto object-contain" priority />
         </div>
         <div className="relative z-10 text-white">
           <h2 className="text-4xl font-bold mb-4 leading-tight">La plataforma de movilidad y servicios de Ecuador</h2>
           <p className="text-white/80 text-lg mb-10">Transporte, alojamiento, tours y mucho más. Todo en un lugar.</p>
         </div>
-        <div className="relative z-10 text-white/50 text-xs">© 2026 Going · Ecuador</div>
+        <div className="relative z-10 text-white/50 text-xs">© 2026 Going App · Ecuador</div>
       </div>
 
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8 flex justify-center">
-            <Image src="/going-logo-h.png" alt="Going" width={160} height={50} priority />
+            <Image src="/going-logo-h.png" alt="Going App" width={160} height={50} priority />
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Bienvenido de vuelta</h1>

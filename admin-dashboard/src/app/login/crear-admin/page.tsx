@@ -105,7 +105,7 @@ export default function CrearAdminPage() {
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">🛡️</div>
           <h1 className="text-2xl font-bold text-gray-900">Crear cuenta de administrador</h1>
-          <p className="text-gray-500 mt-1 text-sm">Acceso exclusivo para personal de Going</p>
+          <p className="text-gray-500 mt-1 text-sm">Acceso exclusivo para personal de Going App</p>
         </div>
 
         {error && (

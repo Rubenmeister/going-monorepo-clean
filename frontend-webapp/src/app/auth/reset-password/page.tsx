@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
           </div>
           <h2 className="text-3xl font-black text-white mb-4">Casi listo</h2>
           <p className="text-blue-200 text-lg leading-relaxed">
-            Estás a un paso de recuperar tu cuenta Going. Elegí una contraseña que recuerdes.
+            Estás a un paso de recuperar tu cuenta Going App. Elegí una contraseña que recuerdes.
           </p>
         </div>
       </div>

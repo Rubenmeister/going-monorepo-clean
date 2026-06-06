@@ -1,7 +1,7 @@
 /**
  * MongoDB Atlas connection for financial-agent.
  *
- * Going usa cluster compartido `going-cluster.vy28mpj.mongodb.net` con DBs
+ * Going App usa cluster compartido `going-cluster.vy28mpj.mongodb.net` con DBs
  * separadas por servicio. financial-agent lee de:
  *   - going-bookings  → rides         (transport-service)
  *   - going-payments  → transactions  (payment-service)

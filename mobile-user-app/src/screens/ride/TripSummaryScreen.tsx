@@ -84,7 +84,7 @@ export function TripSummaryScreen() {
   const methodLabel = useMemo(() => {
     switch (p.paymentMethod) {
       case 'cash':     return 'Efectivo';
-      case 'wallet':   return 'Wallet Going';
+      case 'wallet':   return 'Wallet Going App';
       case 'datafast': return 'Tarjeta · Datafast';
       case 'deuna':    return 'QR · De Una';
       case 'card':     return 'Tarjeta';
@@ -99,8 +99,8 @@ export function TripSummaryScreen() {
     hapticLight();
     try {
       await Share.share({
-        message: `Acabo de llegar a ${p.destination} con Going. Excelente servicio 🚗`,
-        title: 'Going Ecuador',
+        message: `Acabo de llegar a ${p.destination} con Going App. Excelente servicio 🚗`,
+        title: 'Going App Ecuador',
       });
     } catch { /* canceled */ }
   }, [p.destination]);
@@ -127,11 +127,11 @@ export function TripSummaryScreen() {
       '',
       'IVA: 0% (transporte de pasajeros exento — Art. 56 LRTI)',
       '',
-      'Going Ecuador · goingec.com',
+      'Going App Ecuador · goingec.com',
     ].filter(Boolean).join('\n');
 
     try {
-      await Share.share({ message: lines, title: 'Recibo Going' });
+      await Share.share({ message: lines, title: 'Recibo Going App' });
     } catch { /* canceled */ }
   }, [p, methodLabel, durationLabel]);
 
@@ -139,13 +139,13 @@ export function TripSummaryScreen() {
     hapticLight();
     Alert.alert(
       '¿Tuviste algún problema?',
-      'Elige cómo contactar a Going:',
+      'Elige cómo contactar a Going App:',
       [
         {
           text: 'WhatsApp Soporte',
           onPress: () => {
             const msg = encodeURIComponent(
-              `Hola Going, tuve un inconveniente con el viaje ${p.referenceCode ?? p.rideId.slice(0, 8)}. Me podrían ayudar?`,
+              `Hola Going App, tuve un inconveniente con el viaje ${p.referenceCode ?? p.rideId.slice(0, 8)}. Me podrían ayudar?`,
             );
             // Número de soporte unificado (memoria del proyecto)
             Linking.openURL(`https://wa.me/593984037949?text=${msg}`).catch(() =>
@@ -301,7 +301,7 @@ export function TripSummaryScreen() {
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={handleSupport}
-            accessibilityLabel="Contactar a soporte Going"
+            accessibilityLabel="Contactar a soporte Going App"
           >
             <Ionicons name="headset-outline" size={20} color={tokens.brandNavy} />
             <Text style={styles.actionText}>Soporte</Text>

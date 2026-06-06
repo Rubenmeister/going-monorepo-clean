@@ -14,11 +14,11 @@ import { IconArrowLeft, IconBook } from '../../components/icons';
  *   4. Pie con datos de Thorn AI Technologies (RUC + domicilio)
  *
  * El texto completo de cada política se libera por lotes desde el Marco Legal
- * Integral de Going (33 documentos en 4 etapas). Esta vista pública mantiene
+ * Integral de Going App (33 documentos en 4 etapas). Esta vista pública mantiene
  * la información esencial visible mientras se finaliza la versión definitiva
  * con el equipo jurídico.
  *
- * Diseño: brand-aligned (rojo Going como acento), Going Branding Guidelines.
+ * Diseño: brand-aligned (rojo Going App como acento), Going App Branding Guidelines.
  */
 export interface LegalPlaceholderProps {
   /** Título principal mostrado en H1 (ej. "Normas Comunitarias"). */
@@ -77,7 +77,7 @@ export function LegalPlaceholder({ title, summary, breadcrumb }: LegalPlaceholde
             Resumen ejecutivo
           </h2>
           <p className="text-gray-600 leading-relaxed mb-3">
-            Esta política forma parte del Marco Legal Integral de Going. El
+            Esta política forma parte del Marco Legal Integral de Going App. El
             resumen anterior describe el propósito, alcance y audiencia del
             documento. El texto completo se libera por lotes y cualquier
             actualización se notifica a las personas usuarias registradas con
@@ -123,7 +123,7 @@ export function LegalPlaceholder({ title, summary, breadcrumb }: LegalPlaceholde
         {/* Pie con datos empresa */}
         <div className="mt-12 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-500 leading-relaxed">
-            Going es una marca operada por{' '}
+            Going App es una marca operada por{' '}
             <strong>Thorn AI Technologies S.A.S.</strong>, RUC{' '}
             <strong>1793176925001</strong>, con domicilio en Echeverría N2-170 y
             Crespo Toral, Quito, Ecuador.

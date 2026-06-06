@@ -40,7 +40,7 @@ async function adminPost(token: string, path: string, body: any) {
 const STEP_DEFINITIONS = [
   { key:'registro',     label:'Registro básico',       icon:'📝', desc:'Datos personales completos' },
   { key:'documentos',   label:'Documentos subidos',    icon:'📄', desc:'Cédula, licencia, SOAT' },
-  { key:'verificacion', label:'Verificación aprobada', icon:'✅', desc:'Revisión del equipo Going' },
+  { key:'verificacion', label:'Verificación aprobada', icon:'✅', desc:'Revisión del equipo Going App' },
   { key:'capacitacion', label:'Capacitación online',   icon:'🎓', desc:'Módulos de servicio y seguridad' },
   { key:'primer_viaje', label:'Primer viaje',          icon:'🚗', desc:'Primer viaje completado' },
 ];

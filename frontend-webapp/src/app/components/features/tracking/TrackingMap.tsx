@@ -120,7 +120,7 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
         .setLngLat([dropoff.lon, dropoff.lat])
         .addTo(map);
 
-      /* Driver marker — Going brand */
+      /* Driver marker — Going App brand */
       const driverEl = document.createElement('div');
       driverEl.innerHTML = `<div style="
         width:32px;height:32px;border-radius:50%;background:#ff4c41;

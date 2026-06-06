@@ -5,10 +5,10 @@ import Link from 'next/link';
 
 const BENEFITS = [
   { icon: '🗺️', title: 'Diseña tus propios tours', desc: 'Crea experiencias únicas con tu itinerario, precio, idioma y cupo máximo.' },
-  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going te conecta con turistas de 40+ países que buscan promotores locales auténticos.' },
-  { icon: '💰', title: 'Fija tus tarifas', desc: 'Tú decides cuánto cobras. Sin comisiones ocultas — Going cobra solo el 15% al cierre.' },
+  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going App te conecta con turistas de 40+ países que buscan promotores locales auténticos.' },
+  { icon: '💰', title: 'Fija tus tarifas', desc: 'Tú decides cuánto cobras. Sin comisiones ocultas — Going App cobra solo el 15% al cierre.' },
   { icon: '🧳', title: 'Gestión de grupos', desc: 'La app maneja reservas, pagos y comunicación con el grupo antes y durante el tour.' },
-  { icon: '📚', title: 'Academia Going gratuita', desc: 'Cursos de storytelling, manejo de grupos, seguridad exterior e inglés turístico.' },
+  { icon: '📚', title: 'Academia Going App gratuita', desc: 'Cursos de storytelling, manejo de grupos, seguridad exterior e inglés turístico.' },
   { icon: '⭐', title: 'Reputación visible', desc: 'Tu calificación y reseñas son públicas. Un buen perfil llena tu agenda solo.' },
 ];
 
@@ -28,7 +28,7 @@ const LEVELS = [
 ];
 
 const TESTIMONIALS = [
-  { name: 'Andrés V.', city: 'Quito', type: 'Guía cultural', earn: '$1,400/mes', quote: 'Paso de vender mis tours en Instagram a tener una agenda llena. Going me da visibilidad con turistas que de otra forma no me encontrarían.' },
+  { name: 'Andrés V.', city: 'Quito', type: 'Guía cultural', earn: '$1,400/mes', quote: 'Paso de vender mis tours en Instagram a tener una agenda llena. Going App me da visibilidad con turistas que de otra forma no me encontrarían.' },
   { name: 'Karina T.', city: 'Amazonia', type: 'Ecoturismo', earn: '$2,100/mes', quote: 'Mis tours de biodiversidad amazónica son los más reservados de mi zona. Turistas de Alemania, Francia y EE.UU.' },
 ];
 
@@ -43,7 +43,7 @@ export default function GuiasPage() {
         <div className="max-w-5xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
             style={{ backgroundColor: '#0891b233', color: '#67e8f9' }}>
-            🏺 Promotores Locales Going
+            🏺 Promotores Locales Going App
           </span>
           <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
             Ecuador te pertenece.<br />
@@ -84,7 +84,7 @@ export default function GuiasPage() {
       <div id="tour-types" className="py-16 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-3">¿Qué tipo de tours puedes ofrecer?</h2>
-          <p className="text-gray-500 text-center mb-10">Cualquier formato que sea tuyo y auténtico tiene demanda en Going.</p>
+          <p className="text-gray-500 text-center mb-10">Cualquier formato que sea tuyo y auténtico tiene demanda en Going App.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {TOUR_TYPES.map(t => (
               <div key={t.type} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
@@ -136,7 +136,7 @@ export default function GuiasPage() {
       {/* ── Testimonios ── */}
       <div className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Guías que ya trabajan con Going</h2>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Guías que ya trabajan con Going App</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {TESTIMONIALS.map(t => (
               <div key={t.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
