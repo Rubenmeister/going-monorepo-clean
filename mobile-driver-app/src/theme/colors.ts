@@ -1,5 +1,5 @@
 /**
- * Going Driver App — Paleta de marca (Going Branding Guidelines 2024)
+ * Going App Driver App — Paleta de marca (Going App Branding Guidelines 2024)
  *
  * Fuente única de verdad para colores. Reemplaza los hex hardcoded por
  * tokens semánticos para que cambios futuros de marca se hagan en un solo
@@ -7,7 +7,7 @@
  *
  * Decisión 2026-05-28 (sprint #119):
  *   La driver-app venía usando navy #0033A0 + amarillo #FFCD00 como primary
- *   identity. Esto viola la Going Branding Guide 2024 (rojo #FF4C41 +
+ *   identity. Esto viola la Going App Branding Guide 2024 (rojo #FF4C41 +
  *   amarillo #FFD253 + negro #000000).
  *
  *   Este archivo introduce los tokens correctos. Para minimizar regresiones
@@ -27,18 +27,18 @@
  *   });
  */
 
-// ─── Paleta de marca Going 2024 ─────────────────────────────────────────────
+// ─── Paleta de marca Going App 2024 ─────────────────────────────────────────────
 export const COLORS = {
   // ── Brand identity ────────────────────────────────────────────
-  /** Rojo coral Going — primary CTA, headers, identidad principal. */
+  /** Rojo coral Going App — primary CTA, headers, identidad principal. */
   brandRed:        '#FF4C41',
-  /** Rojo Going hover/pressed. */
+  /** Rojo Going App hover/pressed. */
   brandRedDark:    '#E03A30',
-  /** Amarillo Going — accents, badges, momentos especiales (Iniciar viaje). */
+  /** Amarillo Going App — accents, badges, momentos especiales (Iniciar viaje). */
   brandYellow:     '#FFD253',
-  /** Amarillo Going hover/pressed. */
+  /** Amarillo Going App hover/pressed. */
   brandYellowDark: '#E6B83A',
-  /** Negro Going — tercer accent (Envíos, dark mode header). */
+  /** Negro Going App — tercer accent (Envíos, dark mode header). */
   brandBlack:      '#000000',
 
   // ── Aliases legacy (driver app pre-2026-05-28) ────────────────

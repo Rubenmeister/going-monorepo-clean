@@ -34,7 +34,7 @@ const CHAT_ENDPOINT = SUPPORT_DIRECT
 export default function SupportChat() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: 'bot', text: '¡Hola! Soy el asistente de Going 👋 ¿En qué puedo ayudarte?' },
+    { role: 'bot', text: '¡Hola! Soy el asistente de Going App 👋 ¿En qué puedo ayudarte?' },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -110,7 +110,7 @@ export default function SupportChat() {
           <div style={{ backgroundColor: '#ff4c41', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</div>
             <div>
-              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>Asistente Going</div>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>Asistente Going App</div>
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 }}>Siempre disponible</div>
             </div>
           </div>

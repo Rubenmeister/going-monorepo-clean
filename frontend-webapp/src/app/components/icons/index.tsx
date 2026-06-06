@@ -1,8 +1,8 @@
 /**
- * Going Icon Library — SVG icons reutilizables.
+ * Going App Icon Library — SVG icons reutilizables.
  *
  * Reemplazo sistemático de los emojis (🚗📦📍etc.) que estaban dispersos en
- * la UI. La política de marca Going es: cero emojis, solo SVG con paleta
+ * la UI. La política de marca Going App es: cero emojis, solo SVG con paleta
  * controlada y stroke consistente.
  *
  * Uso:
@@ -363,7 +363,7 @@ export const IconCamera = (p: IconProps) => (
 
 // ─── Academia / Educación ─────────────────────────────────────────────────
 
-/** 🎓 Birrete (Academia Going) */
+/** 🎓 Birrete (Academia Going App) */
 export const IconGraduation = (p: IconProps) => (
   <Svg {...p}>
     <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
@@ -530,10 +530,10 @@ export const IconShare = (p: IconProps) => (
   </Svg>
 );
 
-/** Logo placeholder Going — para futuro brand mark */
+/** Logo placeholder Going App — para futuro brand mark */
 export const IconLogo = (p: IconProps) => (
   <Svg {...p} fill="currentColor" stroke="none">
-    {/* Going wordmark stylized — círculo con G central. Reemplazar por SVG oficial cuando esté la marca. */}
+    {/* Going App wordmark stylized — círculo con G central. Reemplazar por SVG oficial cuando esté la marca. */}
     <circle cx="12" cy="12" r="10" />
     <text x="12" y="16" textAnchor="middle" fontSize="11" fontWeight="900" fill="#fff" fontFamily="sans-serif">G</text>
   </Svg>

@@ -98,7 +98,7 @@ export default function VozPreferenciasPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-900">Preferencias de voz</h1>
         <p className="text-slate-600 mt-1">
-          Configura el idioma y la voz que Going usa al hablar contigo en
+          Configura el idioma y la voz que Going App usa al hablar contigo en
           llamadas telefónicas y en la app.
         </p>
       </div>
@@ -121,7 +121,7 @@ export default function VozPreferenciasPage() {
           <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
             <h2 className="font-bold text-slate-900 mb-1">Idioma</h2>
             <p className="text-sm text-slate-500 mb-4">
-              Going te hablará en este idioma. Kichwa está disponible como parte
+              Going App te hablará en este idioma. Kichwa está disponible como parte
               de nuestra identidad cultural.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -147,7 +147,7 @@ export default function VozPreferenciasPage() {
           <section className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
             <h2 className="font-bold text-slate-900 mb-1">Voz</h2>
             <p className="text-sm text-slate-500 mb-4">
-              Opcional. Si dejas <strong>Automática</strong>, Going elige la
+              Opcional. Si dejas <strong>Automática</strong>, Going App elige la
               mejor voz según tu idioma.
             </p>
             <select

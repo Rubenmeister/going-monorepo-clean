@@ -15,25 +15,25 @@ import {
 } from '../components/icons';
 
 /**
- * Hub legal de Going — índice del Marco Legal público.
+ * Hub legal de Going App — índice del Marco Legal público.
  *
  * Estructura derivada del Marco Legal Integral (33 documentos en 4 etapas).
  * Esta vista pública expone 26 documentos organizados por audiencia + tema.
- * Los instrumentos internos (Going Legal institucional, Manual de Operaciones
+ * Los instrumentos internos (Going App Legal institucional, Manual de Operaciones
  * CIIU, contratos templates, SLA corporativos, NDA) NO se incluyen aquí.
  *
  * Fragmentación resuelta:
  *   · Privacidad: Aviso (doc 12) + Términos (doc 13) → /legal/privacy unificada
  *   · Envíos: Condiciones (21) + T&C (22) + Normativas (23) → /legal/envios-condiciones consolidada
  *
- * Brand v6: rojo Going como acento principal · sin emojis · SVG icons del
- * library · paleta Going Branding Guidelines 2024.
+ * Brand v6: rojo Going App como acento principal · sin emojis · SVG icons del
+ * library · paleta Going App Branding Guidelines 2024.
  */
 const HIGHLIGHTS = [
   {
     href: '/legal/terms',
     title: 'Términos y Condiciones',
-    desc: 'Las reglas generales que rigen el uso de la plataforma Going.',
+    desc: 'Las reglas generales que rigen el uso de la plataforma Going App.',
     Icon: IconBook,
     bg: COLORS.brand.redBg,
     color: COLORS.brand.red,
@@ -102,7 +102,7 @@ const SECTIONS: SectionGroup[] = [
       {
         href: '/legal/conductores',
         title: 'Normativa de Conductoras y Conductores',
-        desc: 'Requisitos, derechos y obligaciones de quienes conducen para Going.',
+        desc: 'Requisitos, derechos y obligaciones de quienes conducen para Going App.',
       },
       {
         href: '/legal/conductores-app',
@@ -117,7 +117,7 @@ const SECTIONS: SectionGroup[] = [
       {
         href: '/legal/conductores-elegirnos',
         title: 'Por Qué Elegirnos',
-        desc: 'Propuesta de valor de Going para conductoras y conductores.',
+        desc: 'Propuesta de valor de Going App para conductoras y conductores.',
       },
     ],
   },
@@ -130,11 +130,11 @@ const SECTIONS: SectionGroup[] = [
       {
         href: '/legal/usuarios',
         title: 'Normativa de Usuarias y Usuarios',
-        desc: 'Reglas para quienes usan Going para reservar viajes y envíos.',
+        desc: 'Reglas para quienes usan Going App para reservar viajes y envíos.',
       },
       {
         href: '/legal/usuarios-primer-viaje',
-        title: 'Tu Primer Viaje con Going',
+        title: 'Tu Primer Viaje con Going App',
         desc: 'Guía paso a paso para tu primera experiencia.',
       },
       {
@@ -150,20 +150,20 @@ const SECTIONS: SectionGroup[] = [
     ],
   },
   {
-    label: 'Going Envíos',
+    label: 'Going App Envíos',
     Icon: IconPackage,
     color: COLORS.brand.black,
     bg: COLORS.gray[100],
     docs: [
       {
         href: '/legal/envios-condiciones',
-        title: 'Condiciones de Going Envíos',
+        title: 'Condiciones de Going App Envíos',
         desc: 'T&C consolidados: cobertura, peso, valor, seguros y responsabilidades.',
       },
       {
         href: '/legal/envios-prohibidos',
         title: 'Artículos Prohibidos',
-        desc: 'Lista detallada de productos que no pueden enviarse por Going.',
+        desc: 'Lista detallada de productos que no pueden enviarse por Going App.',
       },
       {
         href: '/legal/envios-manejo',
@@ -186,11 +186,11 @@ const SECTIONS: SectionGroup[] = [
       {
         href: '/legal/referidos',
         title: 'Programa de Referidos',
-        desc: 'Cómo invitar amistades y ganar crédito Going Cash.',
+        desc: 'Cómo invitar amistades y ganar crédito Going App Cash.',
       },
       {
         href: '/legal/tarjeta-regalo',
-        title: 'Tarjeta de Regalo Going',
+        title: 'Tarjeta de Regalo Going App',
         desc: 'Condiciones de compra, canje y vigencia (físicas y digitales).',
       },
     ],
@@ -208,7 +208,7 @@ const SECTIONS: SectionGroup[] = [
       },
       {
         href: '/legal/glosario',
-        title: 'Glosario de Servicios Going',
+        title: 'Glosario de Servicios Going App',
         desc: 'Definiciones oficiales: Transfers, Destinos, Envíos, Cash.',
       },
       {
@@ -219,7 +219,7 @@ const SECTIONS: SectionGroup[] = [
       {
         href: '/legal/marcas',
         title: 'Política de Marcas Registradas',
-        desc: 'Protección de la marca Going y reporte de uso no autorizado.',
+        desc: 'Protección de la marca Going App y reporte de uso no autorizado.',
       },
       {
         href: '/legal/privacy-empleados',
@@ -246,10 +246,10 @@ export default function LegalPage() {
             className="text-4xl font-black text-gray-900 mb-3"
             style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
           >
-            Centro Legal Going
+            Centro Legal Going App
           </h1>
           <p className="text-base text-gray-600 max-w-2xl">
-            Todos los documentos que regulan el uso de la plataforma Going, los
+            Todos los documentos que regulan el uso de la plataforma Going App, los
             derechos y obligaciones de la comunidad, y el tratamiento de los
             datos personales conforme a la legislación ecuatoriana.
           </p>
@@ -356,7 +356,7 @@ export default function LegalPage() {
             Empresa responsable y contacto
           </p>
           <p className="mb-3 leading-relaxed">
-            Going es una marca operada por{' '}
+            Going App es una marca operada por{' '}
             <strong>Thorn AI Technologies S.A.S.</strong>, RUC{' '}
             <strong>1793176925001</strong>, con domicilio en Echeverría N2-170 y
             Crespo Toral, Quito, Ecuador.
@@ -399,7 +399,7 @@ export default function LegalPage() {
             Jurisdicción y legislación aplicable
           </p>
           <p>
-            Todos los documentos legales de Going se rigen por las leyes de la
+            Todos los documentos legales de Going App se rigen por las leyes de la
             República del Ecuador, incluyendo la Ley Orgánica de Protección de
             Datos Personales (LOPDP), regulaciones de la Agencia Nacional de
             Tránsito (ANT) y normativa tributaria del Servicio de Rentas

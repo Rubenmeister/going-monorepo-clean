@@ -120,7 +120,7 @@ export default function PaymentScreen({ route }: PaymentScreenProps) {
       <View style={styles.header}>
         <Ionicons name="lock-closed" size={32} color={GOING_BLUE} />
         <Text style={styles.title}>Pago Seguro</Text>
-        <Text style={styles.subtitle}>Going protege tu transacción</Text>
+        <Text style={styles.subtitle}>Going App protege tu transacción</Text>
       </View>
 
       {/* Amount display */}

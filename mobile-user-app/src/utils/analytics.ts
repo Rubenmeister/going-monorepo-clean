@@ -1,5 +1,5 @@
 /**
- * Going Analytics – User App
+ * Going App Analytics – User App
  * Wrapper tipado sobre @react-native-firebase/analytics.
  * Si la librería no está instalada (dev / CI), todos los calls
  * son no-ops silenciosos — nunca rompe la app.

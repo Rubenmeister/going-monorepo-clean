@@ -34,7 +34,7 @@ const festivities = [
     emoji: '🌊',
     title: 'Año Nuevo en las playas',
     locations: 'Salinas · Montañita · Atacames',
-    desc: 'Año nuevo en las playas ecuatorianas. Transporte desde Quito y Guayaquil con precios fijados por anticipado. Alojamientos Going disponibles a metros del mar.',
+    desc: 'Año nuevo en las playas ecuatorianas. Transporte desde Quito y Guayaquil con precios fijados por anticipado. Alojamientos Going App disponibles a metros del mar.',
     color: '#3b82f6',
   },
   {
@@ -50,7 +50,7 @@ const festivities = [
     emoji: '✝️',
     title: 'Semana Santa en Quito',
     locations: 'Quito · Centro Histórico',
-    desc: 'Las procesiones más imponentes de Latinoamérica. Conductores Going especializados en turismo religioso. Tours del Centro Histórico con guías certificados.',
+    desc: 'Las procesiones más imponentes de Latinoamérica. Conductores Going App especializados en turismo religioso. Tours del Centro Histórico con guías certificados.',
     color: '#8b5cf6',
   },
   {
@@ -58,7 +58,7 @@ const festivities = [
     emoji: '☀️',
     title: 'Inti Raymi — Fiesta del Sol',
     locations: 'Otavalo · Cotacachi · Sierra Norte',
-    desc: 'La festividad indígena más importante del Ecuador. Going conecta a viajeros con comunidades locales, guías kichwa y alojamientos comunitarios auténticos.',
+    desc: 'La festividad indígena más importante del Ecuador. Going App conecta a viajeros con comunidades locales, guías kichwa y alojamientos comunitarios auténticos.',
     color: '#f59e0b',
   },
   {
@@ -82,13 +82,13 @@ const festivities = [
     emoji: '🎆',
     title: 'Fiestas de Quito y Navidad',
     locations: 'Quito · Todo Ecuador',
-    desc: 'El mes más festivo del año. Chivas, desfiles, conciertos, mercados navideños. Going opera en modo festividad: más conductores, tarifas congeladas, disponibilidad garantizada.',
+    desc: 'El mes más festivo del año. Chivas, desfiles, conciertos, mercados navideños. Going App opera en modo festividad: más conductores, tarifas congeladas, disponibilidad garantizada.',
     color: '#ff4c41',
   },
 ];
 
 const benefits = [
-  { emoji: '🔒', title: 'Tarifas congeladas en temporada alta', desc: 'Going congela las tarifas durante las festividades para que puedas planificar sin miedo a sobrecostos de última hora.' },
+  { emoji: '🔒', title: 'Tarifas congeladas en temporada alta', desc: 'Going App congela las tarifas durante las festividades para que puedas planificar sin miedo a sobrecostos de última hora.' },
   { emoji: '📅', title: 'Reserva con 15 días de anticipación', desc: 'Abre reservas de transporte y alojamiento hasta 15 días antes de cada festividad. Primero en reservar, primero en salir.' },
   { emoji: '📦', title: 'Paquetes festividad completos', desc: 'Transporte de ida y vuelta + alojamiento + tour opcional. Un solo pago, cero complicaciones logísticas.' },
   { emoji: '⭐', title: 'Conductor de confianza por festividad', desc: 'Solicita el mismo conductor para toda la festividad. Alguien que ya conoce tus necesidades y tu destino.' },
@@ -100,7 +100,7 @@ export default function FestividadesPage() {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/going-logo-h.png" alt="Going" width={120} height={40} className="h-9 w-auto" /></Link>
+          <Link href="/"><Image src="/going-logo-h.png" alt="Going App" width={120} height={40} className="h-9 w-auto" /></Link>
           <div className="flex items-center gap-4">
             <Link href="/auth/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">Iniciar sesión</Link>
             <Link href="/auth/register" className="text-sm text-white font-bold px-4 py-2 rounded-xl" style={{ backgroundColor: '#ff4c41' }}>Unirse</Link>
@@ -118,7 +118,7 @@ export default function FestividadesPage() {
           <FadeIn>
             <span className="inline-block text-red-100 text-sm font-semibold tracking-widest uppercase mb-4">Festividades Ecuatorianas</span>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-              Vive las fiestas de Ecuador<br />con Going
+              Vive las fiestas de Ecuador<br />con Going App
             </h1>
             <p className="text-xl text-red-100 max-w-2xl mx-auto mb-10">
               Transporte seguro, alojamiento especial y tours exclusivos en cada festividad
@@ -141,7 +141,7 @@ export default function FestividadesPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Calendario de festividades 2026</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Going opera en modo especial durante cada festividad del Ecuador</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Going App opera en modo especial durante cada festividad del Ecuador</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -199,7 +199,7 @@ export default function FestividadesPage() {
             <div className="rounded-3xl border border-gray-100 p-10 md:p-14 text-center shadow-sm" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fff 100%)' }}>
               <div className="text-6xl mb-6">👨‍👩‍👧‍👦</div>
               <blockquote className="text-xl md:text-2xl text-gray-700 font-medium leading-relaxed mb-8 italic">
-                &ldquo;Para el Carnaval del año pasado, reservamos con Going 12 días antes. Nos asignaron a Don Luis como conductor para todo el fin de semana en Guaranda. Él nos llevó a la Mama Negra, al desfile y hasta a una hacienda privada que nosotros nunca hubiéramos encontrado solos. Y el precio fue el mismo que reservamos desde el principio, sin sorpresas.&rdquo;
+                &ldquo;Para el Carnaval del año pasado, reservamos con Going App 12 días antes. Nos asignaron a Don Luis como conductor para todo el fin de semana en Guaranda. Él nos llevó a la Mama Negra, al desfile y hasta a una hacienda privada que nosotros nunca hubiéramos encontrado solos. Y el precio fue el mismo que reservamos desde el principio, sin sorpresas.&rdquo;
               </blockquote>
               <div>
                 <div className="font-bold text-gray-900 text-lg">Familia Vásquez-Herrera</div>

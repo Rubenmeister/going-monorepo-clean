@@ -108,7 +108,7 @@ export default function ConductorLayout({ children }: { children: React.ReactNod
               ☰
             </button>
             <Link href="/dashboard/conductor">
-              <Image src="/going-logo-h.png" alt="Going" width={110} height={36} className="h-8 w-auto object-contain" priority />
+              <Image src="/going-logo-h.png" alt="Going App" width={110} height={36} className="h-8 w-auto object-contain" priority />
             </Link>
             <span className="hidden sm:inline-block text-xs bg-blue-100 text-[#0033A0] px-2.5 py-1 rounded-full font-bold">
               Conductor

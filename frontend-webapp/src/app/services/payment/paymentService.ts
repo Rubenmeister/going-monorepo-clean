@@ -1,5 +1,5 @@
 /**
- * PaymentService — Cliente HTTP para la pasarela de pagos Going/DATAFAST.
+ * PaymentService — Cliente HTTP para la pasarela de pagos Going App/DATAFAST.
  *
  * Flujos soportados:
  *  - redirect   → backend retorna redirectUrl, frontend redirige

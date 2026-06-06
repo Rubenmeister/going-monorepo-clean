@@ -1,5 +1,5 @@
 /**
- * Going – Generador de reporte de ganancias en PDF
+ * Going App – Generador de reporte de ganancias en PDF
  * Usa expo-print (HTML → PDF nativo iOS/Android) + expo-sharing
  *
  * Instalación:
@@ -139,7 +139,7 @@ function buildHtml(p: ReportParams): string {
     </div>
     <div>
       <div class="label">Plataforma</div>
-      <div class="value">Going Ecuador</div>
+      <div class="value">Going App Ecuador</div>
     </div>
   </div>
 
@@ -158,7 +158,7 @@ function buildHtml(p: ReportParams): string {
   </table>
 
   <div class="footer">
-    <div>© 2026 <strong>Going</strong> · goingapp.ec</div>
+    <div>© 2026 <strong>Going App</strong> · goingapp.ec</div>
     <div>Este documento es un resumen informativo de actividad en plataforma.</div>
   </div>
 
@@ -193,7 +193,7 @@ export async function exportEarningsPDF(params: ReportParams): Promise<void> {
     if (canShare) {
       await Sharing.shareAsync(uri, {
         mimeType: 'application/pdf',
-        dialogTitle: `Reporte Going ${params.period}`,
+        dialogTitle: `Reporte Going App ${params.period}`,
         UTI: 'com.adobe.pdf',
       });
       return;

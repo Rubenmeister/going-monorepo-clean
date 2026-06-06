@@ -47,7 +47,7 @@ export function Navbar() {
 }
 
 /**
- * Logo component — imagen principal con fallback de texto Going
+ * Logo component — imagen principal con fallback de texto Going App
  */
 function Logo({ onLogoClick }: { onLogoClick: () => void }) {
   return (
@@ -57,7 +57,7 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
     >
       <Image
         src="/going-logo-h.png"
-        alt="Going Ecuador"
+        alt="Going App Ecuador"
         width={120}
         height={40}
         priority
@@ -70,7 +70,7 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
             const span = document.createElement('span');
             span.className = 'logo-text-fallback';
             span.style.cssText = `color:${COLORS.brand.red};font-weight:900;font-size:22px;letter-spacing:-1px`;
-            span.textContent = 'Going';
+            span.textContent = 'Going App';
             parent.appendChild(span);
           }
         }}
@@ -99,7 +99,7 @@ const PROVIDER_ITEMS: ProviderItem[] = [
 ];
 
 /**
- * Discover dropdown items — categorías del producto Going.
+ * Discover dropdown items — categorías del producto Going App.
  *
  * ORDEN DE NEGOCIO (decidido por user):
  *   1. Envíos    → producto activo, prioritario en el catálogo
@@ -215,7 +215,7 @@ function NavLinks({ t }: { t: (key: string) => string }) {
         {providerOpen && (
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider px-4 pt-2 pb-1">
-              Proveedores Going
+              Proveedores Going App
             </p>
             {PROVIDER_ITEMS.map(item => (
               <div key={item.href} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors group">
@@ -290,7 +290,7 @@ const USER_MENU_ITEMS: UserMenuItem[] = [
   { Icon: IconHome,       label: 'Dashboard',    href: '/dashboard/pasajero' },
   { Icon: IconBookmark,   label: 'Mis Reservas', href: '/bookings'           },
   { Icon: IconUser,       label: 'Mi Cuenta',    href: '/account'            },
-  { Icon: IconStar,       label: 'Puntos Going', href: '/puntos'             },
+  { Icon: IconStar,       label: 'Puntos Going App', href: '/puntos'             },
   { Icon: IconCard,       label: 'Wallet',       href: '/payment/wallet'     },
   { Icon: IconGraduation, label: 'Academia',     href: '/academy'            },
 ];

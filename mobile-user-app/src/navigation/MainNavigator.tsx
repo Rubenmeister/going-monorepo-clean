@@ -83,7 +83,7 @@ import { GoingDrawer } from './GoingDrawer';
 const GOING_RED  = '#C0392B';
 const DARK       = '#1A1A2E';
 
-// ── Going logo en header de navegación ────────────────────────────────────────
+// ── Going App logo en header de navegación ────────────────────────────────────────
 function GoingHeaderLogo() {
   return (
     <Image
@@ -284,7 +284,7 @@ function MainStack() {
       <Stack.Screen name="Terms"               component={TermsScreen}                options={{ title: 'Términos y condiciones' }} />
       <Stack.Screen name="Privacy"             component={PrivacyPolicyScreen}        options={{ title: 'Política de privacidad' }} />
       <Stack.Screen name="Legal"               component={UserLegalScreen}            options={{ title: 'Centro Legal' }} />
-      <Stack.Screen name="Assistant"           component={AssistantScreen}            options={{ title: 'Asistente Going' }} />
+      <Stack.Screen name="Assistant"           component={AssistantScreen}            options={{ title: 'Asistente Going App' }} />
       <Stack.Screen name="SavedAddresses"      component={SavedAddressesScreen}       options={{ title: 'Mis direcciones' }} />
       <Stack.Screen name="Wallet"              component={WalletScreen}               options={{ title: 'Mi billetera' }} />
       <Stack.Screen name="Corporate"           component={CorporateScreen}            options={{ headerShown: false }} />

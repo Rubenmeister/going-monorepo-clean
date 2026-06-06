@@ -15,7 +15,7 @@
  *  Los recargos de tiempo y de día se SUMAN (ej. feriado nocturno = +25% +20%)
  *
  * Recargo por segmento de cliente (aumento sobre precio base):
- *  · Agencias    → +25%  (incluye comisión que Going paga al intermediario)
+ *  · Agencias    → +25%  (incluye comisión que Going App paga al intermediario)
  *  · Empresas    → +25%  (servicio premium: mejor vehículo, conductor top, espera sin extras, pago diferido)
  *  · Público     → sin recargo adicional
  *
@@ -114,7 +114,7 @@ const AVERAGE_SPEED_KMH = 75;
 // dentro de la ciudad se cobran con un modelo de taxímetro:
 //   precio = base + (km × valor_km) + (min × valor_min)   [+ surge dinámico]
 //
-// ⚠️ VALORES PLACEHOLDER — ajustar a la tarifa real de Going.
+// ⚠️ VALORES PLACEHOLDER — ajustar a la tarifa real de Going App.
 //    Pensados como referencia para Quito/Guayaquil; revísalos antes de
 //    producción.
 const URBAN_BASE_FARE     = 1.50;  // banderazo / arranque (USD)
@@ -329,7 +329,7 @@ interface ClientSurchargeResult {
 
 /**
  * Recargo por segmento:
- *  · Agencias  +25% — tarifa incluye la comisión que Going abona al intermediario
+ *  · Agencias  +25% — tarifa incluye la comisión que Going App abona al intermediario
  *  · Empresas  +25% — servicio premium (vehículo top, conductor mejor calificado,
  *                       tiempo de espera sin cobro extra, facturación diferida)
  *  · Público   0%   — precio estándar

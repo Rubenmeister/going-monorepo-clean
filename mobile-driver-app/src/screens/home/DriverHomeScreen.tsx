@@ -26,7 +26,7 @@ import { API_BASE_URL } from '../../utils/constants';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
-// Going Branding Guidelines 2024 (sprint #119 — 2026-05-28)
+// Going App Branding Guidelines 2024 (sprint #119 — 2026-05-28)
 const NAVY   = '#FF4C41';  // @deprecated alias → brandRed. Migración progresiva.
 const YELLOW = '#FFD253';
 

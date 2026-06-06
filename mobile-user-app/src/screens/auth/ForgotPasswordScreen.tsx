@@ -64,7 +64,7 @@ export function ForgotPasswordScreen({ navigation }: any) {
       </TouchableOpacity>
 
       <View style={styles.header}>
-        {/* Logo Going — rojo + letras negras (fondo blanco) */}
+        {/* Logo Going App — rojo + letras negras (fondo blanco) */}
         <Image
           source={require('../../../assets/going-logo.png')}
           style={styles.logo}

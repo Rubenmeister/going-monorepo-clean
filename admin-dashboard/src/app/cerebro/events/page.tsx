@@ -38,7 +38,7 @@ const AGENT_LABELS: Record<string, string> = {
   'financial-agent':            '💰 Financial',
   'content-agent':              '📰 Content',
   'marketing-agent':            '📣 Marketing',
-  'going-agent':                '🤖 Going',
+  'going-agent':                '🤖 Going App',
   'customer-support-service':   '💬 Customer Support',
 };
 

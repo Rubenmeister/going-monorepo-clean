@@ -1,5 +1,5 @@
 /**
- * Going – WhatsApp Publisher (via Twilio)
+ * Going App – WhatsApp Publisher (via Twilio)
  * Usa las credenciales de Twilio ya existentes en Secret Manager:
  *   TWILIO_ACCOUNT_SID
  *   TWILIO_AUTH_TOKEN

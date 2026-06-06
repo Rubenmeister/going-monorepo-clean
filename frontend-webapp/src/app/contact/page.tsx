@@ -103,7 +103,7 @@ export default function ContactPage() {
           <h1 className="text-5xl font-bold mb-4">Contáctanos</h1>
           <p className="text-xl text-white/75">
             Estamos aquí para ayudarte. Cuéntanos cómo podemos hacer tu
-            experiencia Going aún mejor.
+            experiencia Going App aún mejor.
           </p>
         </div>
       </section>

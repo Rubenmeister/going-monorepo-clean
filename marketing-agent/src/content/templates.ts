@@ -11,7 +11,7 @@ export interface PromptTemplate {
   hashtags: string[];
 }
 
-// ─── Going social media handles ──────────────────────────────
+// ─── Going App social media handles ──────────────────────────────
 export const GOING_SOCIAL = {
   instagram:  '@goingappecuador',
   facebook:   'facebook.com/goingappecuador',
@@ -26,8 +26,8 @@ export const GOING_SOCIAL = {
 };
 
 const GOING_BRAND_VOICE = `
-Eres el community manager de Going, una plataforma de transporte terrestre premium en Ecuador.
-Going conecta pasajeros con conductores verificados para viajes seguros, cómodos y confiables.
+Eres el community manager de Going App, una plataforma de transporte terrestre premium en Ecuador.
+Going App conecta pasajeros con conductores verificados para viajes seguros, cómodos y confiables.
 Rutas principales: Quito, Guayaquil, Cuenca, Manta, Ambato y destinos turísticos.
 Redes sociales: Instagram/TikTok/Threads @goingappecuador | X @GoingAppecuador | FB goingappecuador.
 Tono de marca: moderno, cercano, confiable y emocionante. Usa emojis con moderación.
@@ -35,7 +35,7 @@ Siempre escribe en español ecuatoriano (tuteo). Máximo 1-2 oraciones de hashta
 Nunca uses más de 5 hashtags en Instagram/Facebook. En X máximo 3.
 `;
 
-const BASE_HASHTAGS = ['#Going', '#GoingEc', '#TransporteSeguro', '#Ecuador'];
+const BASE_HASHTAGS = ['#Going App', '#GoingEc', '#TransporteSeguro', '#Ecuador'];
 const ROUTE_HASHTAGS = ['#ViajeSeguro', '#TravelEcuador', '#RoadTrip'];
 const DRIVER_HASHTAGS = ['#ConductoresGoing', '#TeamGoing', '#Conductores'];
 const PROMO_HASHTAGS = ['#Oferta', '#Descuento', '#ViajaMás'];
@@ -71,7 +71,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   driver_spotlight: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post para destacar a un conductor de Going.
+      userPrompt: (ctx) => `Escribe un post para destacar a un conductor de Going App.
         Nombre: ${ctx.name || 'Carlos'}.
         ${ctx.city ? `Ciudad: ${ctx.city}.` : ''}
         ${ctx.trips ? `Viajes completados: ${ctx.trips}.` : ''}
@@ -91,7 +91,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   promotion: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post de promoción/descuento para Going.
+      userPrompt: (ctx) => `Escribe un post de promoción/descuento para Going App.
         ${ctx.discount ? `Descuento: ${ctx.discount}%.` : ''}
         ${ctx.route ? `Ruta: ${ctx.route}.` : 'Para todas las rutas.'}
         ${ctx.validUntil ? `Válido hasta: ${ctx.validUntil}.` : ''}
@@ -105,11 +105,11 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   testimonial: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post compartiendo una reseña positiva de un pasajero de Going.
+      userPrompt: (ctx) => `Escribe un post compartiendo una reseña positiva de un pasajero de Going App.
         Reseña: "${ctx.review || 'Excelente servicio, conductor muy amable y puntual.'}"
         ${ctx.passenger ? `Pasajero: ${ctx.passenger}.` : ''}
         ${ctx.route ? `Ruta: ${ctx.route}.` : ''}
-        Agradece al cliente y refuerza los valores de Going.`,
+        Agradece al cliente y refuerza los valores de Going App.`,
       hashtags: [...BASE_HASHTAGS, '#Testimonios', '#ClientesFelices'],
       maxTokens: 250,
     },
@@ -118,8 +118,8 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   safety_tip: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: () => `Escribe un tip de seguridad vial o de viaje para los pasajeros de Going.
-        Debe ser educativo, breve (máx 100 palabras) y reforzar la imagen de Going como plataforma segura.
+      userPrompt: () => `Escribe un tip de seguridad vial o de viaje para los pasajeros de Going App.
+        Debe ser educativo, breve (máx 100 palabras) y reforzar la imagen de Going App como plataforma segura.
         Varía el tema: cinturón de seguridad, verificar conductor, compartir ubicación, etc.`,
       hashtags: [...BASE_HASHTAGS, '#Seguridad', '#ViajeSeguro'],
       maxTokens: 200,
@@ -129,7 +129,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   company_milestone: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post celebrando un logro de Going.
+      userPrompt: (ctx) => `Escribe un post celebrando un logro de Going App.
         Logro: ${ctx.milestone || '1000 viajes completados'}.
         Agradece a la comunidad (pasajeros y conductores). Tono celebratorio y emotivo.`,
       hashtags: [...BASE_HASHTAGS, '#Milestone', '#Comunidad', '#Gracias'],
@@ -141,7 +141,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
     default: {
       systemPrompt: GOING_BRAND_VOICE,
       userPrompt: (ctx) => `Escribe contenido sobre el destino "${ctx.destination || 'Cuenca'}" en Ecuador.
-        Menciona 3 lugares imperdibles. Conecta con Going como la mejor forma de llegar.
+        Menciona 3 lugares imperdibles. Conecta con Going App como la mejor forma de llegar.
         Tono de guía de viajes: inspirador y práctico.`,
       hashtags: [...BASE_HASHTAGS, '#TurismoEcuador', '#DescubreEcuador'],
       maxTokens: 400,
@@ -151,7 +151,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   behind_the_scenes: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post de "detrás de cámaras" de Going.
+      userPrompt: (ctx) => `Escribe un post de "detrás de cámaras" de Going App.
         Tema: ${ctx.topic || 'el equipo trabajando para mejorar la plataforma'}.
         Tono cercano y auténtico. Humaniza la marca.`,
       hashtags: [...BASE_HASHTAGS, '#TeamGoing', '#Startup', '#Ecuador'],
@@ -162,7 +162,7 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   product_feature: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post anunciando una función nueva de la app Going.
+      userPrompt: (ctx) => `Escribe un post anunciando una función nueva de la app Going App.
         Feature: ${ctx.feature || 'nueva función de rastreo en tiempo real'}.
         Explica el beneficio para el usuario en 2-3 oraciones. Incluye llamado a actualizar la app.`,
       hashtags: [...BASE_HASHTAGS, '#AppGoing', '#Tecnología', '#Innovación'],
@@ -173,8 +173,8 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   community: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post sobre el impacto de Going en la comunidad ecuatoriana.
-        ${ctx.context || 'Going genera empleo para conductores y facilita el transporte seguro.'}
+      userPrompt: (ctx) => `Escribe un post sobre el impacto de Going App en la comunidad ecuatoriana.
+        ${ctx.context || 'Going App genera empleo para conductores y facilita el transporte seguro.'}
         Tono positivo y social.`,
       hashtags: [...BASE_HASHTAGS, '#Comunidad', '#ImpactoSocial', '#Ecuador'],
       maxTokens: 300,
@@ -184,9 +184,9 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   seasonal: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post de temporada/festivo para Going.
+      userPrompt: (ctx) => `Escribe un post de temporada/festivo para Going App.
         Ocasión: ${ctx.occasion || 'Feriado de Navidad'}.
-        Saluda a la comunidad y menciona que Going está disponible para sus viajes. Cálido y festivo.`,
+        Saluda a la comunidad y menciona que Going App está disponible para sus viajes. Cálido y festivo.`,
       hashtags: [...BASE_HASHTAGS, '#Feriado', '#FelicesViajes'],
       maxTokens: 200,
     },
@@ -195,8 +195,8 @@ export const TEMPLATES: Record<ContentTopic, Partial<Record<Platform | 'default'
   general: {
     default: {
       systemPrompt: GOING_BRAND_VOICE,
-      userPrompt: (ctx) => `Escribe un post para Going.
-        Tema: ${ctx.topic || 'viajar cómodo y seguro por Ecuador con Going'}.
+      userPrompt: (ctx) => `Escribe un post para Going App.
+        Tema: ${ctx.topic || 'viajar cómodo y seguro por Ecuador con Going App'}.
         Tono: ${ctx.tone || 'amigable y motivador'}.`,
       hashtags: BASE_HASHTAGS,
       maxTokens: 300,

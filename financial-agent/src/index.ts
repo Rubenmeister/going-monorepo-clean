@@ -22,7 +22,7 @@ import {
 } from '@going-platform/cerebro-contracts';
 
 // ============================================================
-// Going – Financial Agent Entry Point
+// Going App – Financial Agent Entry Point
 // Cloud Run Job (Cloud Scheduler: 0 8,9,12,20 * * * Ecuador time)
 // ============================================================
 
@@ -61,7 +61,7 @@ async function smokeTestMongoDB(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log('💰 Going Financial Agent starting...');
+  console.log('💰 Going App Financial Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);
 
   // Modo command (Orchestrator override COMMAND_JSON).

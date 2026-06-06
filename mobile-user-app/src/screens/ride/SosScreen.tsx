@@ -5,7 +5,7 @@
  *   1. ECU 911    → tel:911 directo (+ POST /sos background con
  *                   emergencyDialerTriggered:true para que ops sepa)
  *   2. Notificar contactos → Share native (WhatsApp/SMS/etc) con info viaje
- *   3. Soporte Going → POST /sos al emergency-service nuevo → ops Telegram
+ *   3. Soporte Going App → POST /sos al emergency-service nuevo → ops Telegram
  *
  * Plus:
  *   - Selector emergencyType collapsible (medical/accident/robbery/...)
@@ -186,7 +186,7 @@ export function SosScreen() {
       Alert.alert('Error', 'No se puede hacer la llamada desde este dispositivo.'),
     );
 
-    // 2. En background, notificar a ops Going que el cliente llamó al 911
+    // 2. En background, notificar a ops Going App que el cliente llamó al 911
     //    (para coordinar con autoridades). Sin bloquear UI.
     postSos({ emergencyDialerTriggered: true })
       .then((ok) => {
@@ -203,7 +203,7 @@ export function SosScreen() {
       : '';
 
     const msg = [
-      '🆘 *ALERTA DE SEGURIDAD - Going*',
+      '🆘 *ALERTA DE SEGURIDAD - Going App*',
       '',
       'Te comparto mi ubicación y datos del viaje en curso.',
       '',
@@ -214,17 +214,17 @@ export function SosScreen() {
       destinationAddress ? `🏁 Destino: ${destinationAddress}`              : null,
       mapsLink           ? `📌 Ubicación actual: ${mapsLink}`               : null,
       '',
-      'Enviado desde la app Going.',
+      'Enviado desde la app Going App.',
     ].filter(Boolean).join('\n');
 
     try {
-      await Share.share({ message: msg, title: 'Alerta Going' });
+      await Share.share({ message: msg, title: 'Alerta Going App' });
     } catch {
       // user canceled — silent
     }
   }, [rideId, driverName, driverPlate, originAddress, destinationAddress, currentLat, currentLng]);
 
-  // ── Acción 3: Alertar a Going (POST /sos al emergency-service) ─────────
+  // ── Acción 3: Alertar a Going App (POST /sos al emergency-service) ─────────
   const handleAlertGoing = useCallback(async () => {
     hapticHeavy();
     setSendingSos(true);
@@ -235,7 +235,7 @@ export function SosScreen() {
       setSosResult('success');
       Alert.alert(
         '🆘 Alerta enviada',
-        'Going recibió tu alerta. Un agente de seguridad la está revisando ahora y se coordinará con autoridades si es necesario.',
+        'Going App recibió tu alerta. Un agente de seguridad la está revisando ahora y se coordinará con autoridades si es necesario.',
         [{ text: 'OK' }],
       );
     } else {
@@ -324,7 +324,7 @@ export function SosScreen() {
           <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
 
-        {/* 3. Soporte Going (POST /sos al emergency-service) */}
+        {/* 3. Soporte Going App (POST /sos al emergency-service) */}
         <TouchableOpacity
           style={[
             styles.actionCard,
@@ -334,7 +334,7 @@ export function SosScreen() {
           onPress={handleAlertGoing}
           disabled={sendingSos || sosResult === 'success'}
           activeOpacity={0.82}
-          accessibilityLabel="Alertar al equipo de seguridad Going"
+          accessibilityLabel="Alertar al equipo de seguridad Going App"
         >
           <View style={[styles.actionIcon, styles.actionIconGoing]}>
             {sendingSos ? (
@@ -347,14 +347,14 @@ export function SosScreen() {
           </View>
           <View style={styles.actionInfo}>
             <Text style={styles.actionTitle}>
-              {sosResult === 'success' ? '✓ Alerta enviada' : 'Soporte Going'}
+              {sosResult === 'success' ? '✓ Alerta enviada' : 'Soporte Going App'}
             </Text>
             <Text style={styles.actionSub}>
               {sosResult === 'success'
                 ? 'Equipo de seguridad notificado'
                 : sendingSos
                 ? 'Enviando alerta...'
-                : 'Equipo de seguridad Going'}
+                : 'Equipo de seguridad Going App'}
             </Text>
           </View>
           {!sendingSos && sosResult !== 'success' && (
@@ -469,7 +469,7 @@ export function SosScreen() {
 
         {/* ── Nota legal ──────────────────────────────────────────────── */}
         <Text style={styles.legalNote}>
-          Going no reemplaza a los servicios de emergencia oficiales. En caso de peligro inmediato llama al 911.
+          Going App no reemplaza a los servicios de emergencia oficiales. En caso de peligro inmediato llama al 911.
         </Text>
       </ScrollView>
     </View>

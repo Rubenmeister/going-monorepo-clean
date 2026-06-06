@@ -22,7 +22,7 @@ const BENEFITS: Record<Role, { icon: string; text: string }[]> = {
   user:     [{ icon:'✓', text:'Reserva transporte al instante' }, { icon:'✓', text:'Reserva experiencias y tours' }, { icon:'✓', text:'Envía paquetes en todo Ecuador' }, { icon:'✓', text:'Alojamiento verificado y seguro' }],
   driver:   [{ icon:'💰', text:'Gana hasta $2,800/mes' }, { icon:'⏰', text:'Horario completamente flexible' }, { icon:'📱', text:'App intuitiva y soporte 24/7' }, { icon:'🛡️', text:'Seguro de accidentes incluido' }],
   host:     [{ icon:'🏠', text:'Publica tu espacio en minutos' }, { icon:'📅', text:'Gestiona reservas fácilmente' }, { icon:'💳', text:'Pagos seguros y puntuales' }, { icon:'⭐', text:'Reseñas verificadas' }],
-  guide:    [{ icon:'🗺️', text:'Diseña tus propios tours' }, { icon:'🌍', text:'Conecta con viajeros del mundo' }, { icon:'💰', text:'Fija tus propias tarifas' }, { icon:'📚', text:'Academia Going gratuita' }],
+  guide:    [{ icon:'🗺️', text:'Diseña tus propios tours' }, { icon:'🌍', text:'Conecta con viajeros del mundo' }, { icon:'💰', text:'Fija tus propias tarifas' }, { icon:'📚', text:'Academia Going App gratuita' }],
   operator: [{ icon:'🎒', text:'Ofrece aventuras y expediciones' }, { icon:'📋', text:'Gestión de grupos y reservas' }, { icon:'🤝', text:'Alianzas con hoteles y guías' }, { icon:'📈', text:'Analytics y ganancias' }],
 };
 
@@ -120,13 +120,13 @@ function RegisterForm() {
         <div className="absolute inset-0 opacity-25 transition-colors duration-300" style={{ backgroundColor: active.color }} />
 
         <div className="relative z-10">
-          <Image src="/going-logo-white-h.png" alt="Going" width={180} height={62} className="h-12 w-auto object-contain" priority />
+          <Image src="/going-logo-white-h.png" alt="Going App" width={180} height={62} className="h-12 w-auto object-contain" priority />
         </div>
         <div className="relative z-10 text-white">
           <div className="text-5xl mb-4">{active.emoji}</div>
           <h2 className="text-3xl font-bold mb-3 leading-tight">
-            {selectedRole === 'user'     ? 'Únete a la comunidad Going' :
-             selectedRole === 'driver'   ? 'Conviértete en conductor Going' :
+            {selectedRole === 'user'     ? 'Únete a la comunidad Going App' :
+             selectedRole === 'driver'   ? 'Conviértete en conductor Going App' :
              selectedRole === 'host'     ? 'Comparte tu espacio con el mundo' :
              selectedRole === 'guide'    ? 'Muestra lo mejor de Ecuador' :
                                           'Opera aventuras increíbles'}
@@ -140,14 +140,14 @@ function RegisterForm() {
             ))}
           </div>
         </div>
-        <div className="relative z-10 text-white/50 text-xs">© 2026 Going · Ecuador</div>
+        <div className="relative z-10 text-white/50 text-xs">© 2026 Going App · Ecuador</div>
       </div>
 
       {/* Right panel */}
       <div className="flex-1 flex items-start justify-center p-6 bg-white overflow-y-auto">
         <div className="w-full max-w-md py-8">
           <div className="lg:hidden mb-6 flex justify-center">
-            <Image src="/going-logo-h.png" alt="Going" width={160} height={50} priority />
+            <Image src="/going-logo-h.png" alt="Going App" width={160} height={50} priority />
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Crear tu cuenta</h1>
@@ -155,7 +155,7 @@ function RegisterForm() {
 
           {/* Role selector */}
           <div className="mb-5">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">¿Cómo quieres usar Going?</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">¿Cómo quieres usar Going App?</p>
             <div className="grid grid-cols-3 gap-2 mb-2">
               {ROLES.slice(0, 3).map(role => (
                 <button key={role.value} type="button" onClick={() => setSelectedRole(role.value)}

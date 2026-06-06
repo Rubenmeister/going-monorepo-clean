@@ -12,7 +12,7 @@ const sections = [
   { id: 'reembolsos',      title: '7. Cancelaciones y Reembolsos' },
   { id: 'obligaciones',    title: '8. Obligaciones del Usuario' },
   { id: 'conductores',     title: '9. Conductores y Proveedores' },
-  { id: 'responsabilidad', title: '10. Responsabilidad de Going' },
+  { id: 'responsabilidad', title: '10. Responsabilidad de Going App' },
   { id: 'propiedad',       title: '11. Propiedad Intelectual' },
   { id: 'privacidad',      title: '12. Privacidad y Protección de Datos' },
   { id: 'modificaciones',  title: '13. Modificaciones a los Términos' },
@@ -59,9 +59,9 @@ export default function TermsPage() {
             <p>
               Los presentes Términos y Condiciones (en adelante, &quot;Términos&quot;) regulan el acceso, uso y
               contratación de los servicios ofrecidos por <strong>Thorn AI Technologies S.A.S.</strong>{' '}
-              (RUC <strong>1793176925001</strong>), titular de la marca <strong>Going</strong>
-              (en adelante, &quot;Going&quot; o &quot;la Empresa&quot;), a través del sitio web{' '}
-              <strong>app.goingec.com</strong> y las aplicaciones móviles Going Pasajero y Going Conductor,
+              (RUC <strong>1793176925001</strong>), titular de la marca <strong>Going App</strong>
+              (en adelante, &quot;Going App&quot; o &quot;la Empresa&quot;), a través del sitio web{' '}
+              <strong>app.goingec.com</strong> y las aplicaciones móviles Going App Pasajero y Going App Conductor,
               con domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
             </p>
             <p className="mt-2">
@@ -74,9 +74,9 @@ export default function TermsPage() {
           <section id="definiciones">
             <h2 className="text-xl font-bold text-gray-900 mb-3">2. Definiciones</h2>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Plataforma:</strong> el sitio web goingec.com y la aplicación móvil Going.</li>
+              <li><strong>Plataforma:</strong> el sitio web goingec.com y la aplicación móvil Going App.</li>
               <li><strong>Usuario / Pasajero:</strong> toda persona natural o jurídica que accede o utiliza la plataforma para solicitar servicios.</li>
-              <li><strong>Conductor / Proveedor:</strong> conductor verificado, anfitrión, operador de tours u otro prestador de servicios registrado en Going.</li>
+              <li><strong>Conductor / Proveedor:</strong> conductor verificado, anfitrión, operador de tours u otro prestador de servicios registrado en Going App.</li>
               <li><strong>Servicio:</strong> cualquier servicio disponible en la plataforma, incluyendo transporte, envíos, tours y experiencias.</li>
               <li><strong>Reserva:</strong> la contratación de un servicio a través de la plataforma.</li>
               <li><strong>Token de Verificación:</strong> código de seguridad de un solo uso para validar el inicio o la entrega de un servicio.</li>
@@ -89,11 +89,11 @@ export default function TermsPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>Proporcionar información veraz, completa y actualizada.</li>
               <li>Mantener la confidencialidad de sus credenciales de acceso.</li>
-              <li>Notificar a Going de inmediato ante cualquier uso no autorizado de su cuenta.</li>
+              <li>Notificar a Going App de inmediato ante cualquier uso no autorizado de su cuenta.</li>
               <li>Ser mayor de 18 años o contar con autorización del representante legal.</li>
             </ul>
             <p className="mt-3">
-              Going se reserva el derecho de suspender o eliminar cuentas que proporcionen
+              Going App se reserva el derecho de suspender o eliminar cuentas que proporcionen
               información falsa o que incumplan estos Términos.
             </p>
           </section>
@@ -101,7 +101,7 @@ export default function TermsPage() {
           <section id="servicios">
             <h2 className="text-xl font-bold text-gray-900 mb-3">4. Servicios Disponibles</h2>
             <p className="mb-3">
-              Going ofrece los siguientes servicios <strong>activos</strong> a través de su plataforma:
+              Going App ofrece los siguientes servicios <strong>activos</strong> a través de su plataforma:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
@@ -131,7 +131,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">5. Proceso de Reserva y Contratación</h2>
             <p>
               La contratación se perfecciona cuando la persona usuaria completa el proceso de reserva en la
-              plataforma y recibe la confirmación por notificación en la aplicación. Going actúa como
+              plataforma y recibe la confirmación por notificación en la aplicación. Going App actúa como
               intermediario tecnológico entre la persona usuaria y el proveedor del servicio.
             </p>
             <p className="mt-2">
@@ -141,8 +141,8 @@ export default function TermsPage() {
               el servicio con personas de confianza.
             </p>
             <p className="mt-2">
-              Going no garantiza la disponibilidad permanente de todos los servicios. En caso de que
-              un servicio no pueda prestarse por causas imputables a Going, se ofrecerá al usuario una
+              Going App no garantiza la disponibilidad permanente de todos los servicios. En caso de que
+              un servicio no pueda prestarse por causas imputables a Going App, se ofrecerá al usuario una
               alternativa equivalente o el reembolso íntegro del valor pagado.
             </p>
           </section>
@@ -154,7 +154,7 @@ export default function TermsPage() {
               aplicables según la legislación ecuatoriana (IVA).
             </p>
             <p className="mb-3 font-semibold text-gray-700">
-              Going opera <strong>sin efectivo</strong>: todos los pagos se procesan electrónicamente
+              Going App opera <strong>sin efectivo</strong>: todos los pagos se procesan electrónicamente
               dentro de la aplicación, para mayor seguridad de pasajeras, pasajeros y
               conductoras/conductores.
             </p>
@@ -162,7 +162,7 @@ export default function TermsPage() {
               <li>
                 <strong>Tarjeta de crédito o débito:</strong> Mastercard, Visa, American Express y
                 Diners Club, procesadas a través de pasarelas certificadas PCI DSS.
-                Going no almacena datos completos de tarjetas.
+                Going App no almacena datos completos de tarjetas.
               </li>
               <li>
                 <strong>Datafast:</strong> pasarela de pago certificada del Ecuador, integrada
@@ -177,7 +177,7 @@ export default function TermsPage() {
                 La persona usuaria recibirá su comprobante al correo registrado.
               </li>
               <li>
-                Going se reserva el derecho de modificar precios en cualquier momento,
+                Going App se reserva el derecho de modificar precios en cualquier momento,
                 sin afectar reservas ya confirmadas.
               </li>
             </ul>
@@ -214,7 +214,7 @@ export default function TermsPage() {
               <li>No reproducir, distribuir, modificar o explotar comercialmente el contenido de la plataforma sin autorización expresa.</li>
               <li>No intentar acceder a áreas restringidas o realizar ingeniería inversa de la plataforma.</li>
               <li>No usar la plataforma para actividades ilegales, fraudulentas o que dañen a terceros.</li>
-              <li>Tratar con respeto a quienes conducen, proveen servicios y forman parte de la comunidad Going.</li>
+              <li>Tratar con respeto a quienes conducen, proveen servicios y forman parte de la comunidad Going App.</li>
               <li>Proporcionar información veraz en reservas, envíos y perfiles.</li>
               <li>No enviar objetos prohibidos por ley ecuatoriana ni contenido peligroso a través del servicio de envíos.</li>
             </ul>
@@ -223,7 +223,7 @@ export default function TermsPage() {
           <section id="conductores">
             <h2 className="text-xl font-bold text-gray-900 mb-3">9. Conductores y Proveedores</h2>
             <p className="mb-3">
-              Los conductores y proveedores de servicios en Going son personas independientes que
+              Los conductores y proveedores de servicios en Going App son personas independientes que
               operan bajo los requisitos mínimos exigidos por la plataforma:
             </p>
             <ul className="list-disc pl-6 space-y-2">
@@ -234,21 +234,21 @@ export default function TermsPage() {
               <li>Cumplimiento de las normativas de la ANT y demás autoridades competentes.</li>
             </ul>
             <p className="mt-3">
-              Going se reserva el derecho de suspender o dar de baja a cualquier conductor o proveedor
+              Going App se reserva el derecho de suspender o dar de baja a cualquier conductor o proveedor
               que incumpla estos requisitos o reciba calificaciones negativas reiteradas.
             </p>
           </section>
 
           <section id="responsabilidad">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">10. Responsabilidad de Going</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">10. Responsabilidad de Going App</h2>
             <p>
-              Going actúa como plataforma tecnológica intermediaria. Los servicios de transporte,
-              tours y envíos son prestados por proveedores independientes. Going no es responsable
+              Going App actúa como plataforma tecnológica intermediaria. Los servicios de transporte,
+              tours y envíos son prestados por proveedores independientes. Going App no es responsable
               por daños o perjuicios derivados de la conducta de los proveedores, casos fortuitos
               o de fuerza mayor.
             </p>
             <p className="mt-2">
-              Going garantiza la disponibilidad de la plataforma con una meta de uptime del 99%,
+              Going App garantiza la disponibilidad de la plataforma con una meta de uptime del 99%,
               sin perjuicio de interrupciones por mantenimiento programado, ataques informáticos
               u otras causas fuera de su control.
             </p>
@@ -257,7 +257,7 @@ export default function TermsPage() {
           <section id="propiedad">
             <h2 className="text-xl font-bold text-gray-900 mb-3">11. Propiedad Intelectual</h2>
             <p>
-              Todos los contenidos de la plataforma Going (marca, logotipo, diseño, código,
+              Todos los contenidos de la plataforma Going App (marca, logotipo, diseño, código,
               textos, imágenes y videos) son propiedad de Thorn AI Technologies S.A.S. y están
               protegidos por la legislación ecuatoriana e internacional de propiedad intelectual.
               Su reproducción total o parcial sin autorización expresa está prohibida.
@@ -271,8 +271,8 @@ export default function TermsPage() {
               <Link href="/legal/privacy" className="text-blue-600 hover:underline font-medium">
                 Política de Privacidad
               </Link>{' '}
-              de Going y por la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).
-              Going recopila únicamente los datos necesarios para prestar los servicios contratados
+              de Going App y por la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).
+              Going App recopila únicamente los datos necesarios para prestar los servicios contratados
               y no los comparte con terceros sin consentimiento, salvo obligación legal.
             </p>
           </section>
@@ -280,7 +280,7 @@ export default function TermsPage() {
           <section id="modificaciones">
             <h2 className="text-xl font-bold text-gray-900 mb-3">13. Modificaciones a los Términos</h2>
             <p>
-              Going se reserva el derecho de modificar los presentes Términos en cualquier momento.
+              Going App se reserva el derecho de modificar los presentes Términos en cualquier momento.
               Los cambios significativos serán notificados al usuario con al menos{' '}
               <strong>15 días de anticipación</strong> mediante correo electrónico o aviso en la
               plataforma. El uso continuado del servicio tras la publicación de los cambios
@@ -290,7 +290,7 @@ export default function TermsPage() {
 
           <section id="regulacion">
             <h2 className="text-xl font-bold text-gray-900 mb-3">14. Regulación y Jurisdicción Aplicable</h2>
-            <p className="mb-3">Going Ecuador opera bajo el marco legal ecuatoriano, incluyendo:</p>
+            <p className="mb-3">Going App Ecuador opera bajo el marco legal ecuatoriano, incluyendo:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
                 <strong>ANT (Agencia Nacional de Tránsito):</strong> para servicios de transporte
@@ -322,7 +322,7 @@ export default function TermsPage() {
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Atención al cliente: <strong>soporte@goingec.com</strong></li>
               <li>Privacidad / DPO: <strong>privacidad@goingec.com</strong></li>
-              <li>WhatsApp Going: <strong>+593 98 403 7949</strong></li>
+              <li>WhatsApp Going App: <strong>+593 98 403 7949</strong></li>
               <li>Dirección: <strong>Echeverría N2-170 y Crespo Toral, Quito, Ecuador</strong></li>
             </ul>
           </section>
@@ -330,7 +330,7 @@ export default function TermsPage() {
           <div className="border-t pt-6">
             <p className="text-sm text-gray-500 italic">
               Estos Términos y Condiciones constituyen el acuerdo completo entre la persona usuaria y
-              Thorn AI Technologies S.A.S. (titular de la marca Going) respecto al uso de la
+              Thorn AI Technologies S.A.S. (titular de la marca Going App) respecto al uso de la
               plataforma, y reemplazan cualquier acuerdo anterior sobre la misma materia.
             </p>
             <p className="text-sm text-gray-500 mt-2">Última actualización: 28 de mayo de 2026</p>

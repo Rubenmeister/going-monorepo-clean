@@ -33,8 +33,8 @@ const SEGMENTS = [
 const TEMPLATES = [
   { label:'Oferta especial',   title:'¡Oferta exclusiva para ti! 🎉', body:'Usa el código PROMO20 y obtén 20% de descuento en tu próximo viaje. ¡Solo por hoy!' },
   { label:'Actualiza docs',    title:'Actualiza tus documentos 📄',   body:'Tienes documentos por vencer. Actualiza tu SOAT y matrícula para seguir operando.' },
-  { label:'Nueva función',     title:'¡Novedad en la app! 🚀',        body:'Hemos lanzado una nueva función. Descubre cómo mejorar tu experiencia Going.' },
-  { label:'Recordatorio',      title:'Te echamos de menos 👋',        body:'Hace tiempo que no usas Going. Vuelve y disfruta de nuestros servicios.' },
+  { label:'Nueva función',     title:'¡Novedad en la app! 🚀',        body:'Hemos lanzado una nueva función. Descubre cómo mejorar tu experiencia Going App.' },
+  { label:'Recordatorio',      title:'Te echamos de menos 👋',        body:'Hace tiempo que no usas Going App. Vuelve y disfruta de nuestros servicios.' },
 ];
 
 export default function PushPage() {

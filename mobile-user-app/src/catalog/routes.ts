@@ -1,5 +1,5 @@
 /**
- * Rutas oficiales de viajes compartidos Going — IDA + VUELTA.
+ * Rutas oficiales de viajes compartidos Going App — IDA + VUELTA.
  *
  * stopPrices = precio por asiento desde cada parada hasta el final de la
  * ruta. Se combina con QUITO_ZONES surcharge cuando aplica.

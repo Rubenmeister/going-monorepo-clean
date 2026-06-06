@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
                 ¿Olvidaste tu contraseña?
               </h1>
               <p className="text-gray-500 mb-8">
-                Ingresa el correo asociado a tu cuenta Going y te enviaremos instrucciones para restablecerla.
+                Ingresa el correo asociado a tu cuenta Going App y te enviaremos instrucciones para restablecerla.
               </p>
 
               {error && (

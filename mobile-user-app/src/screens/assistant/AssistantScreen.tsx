@@ -1,13 +1,13 @@
 /**
- * AssistantScreen — Asistente Going por voz
+ * AssistantScreen — Asistente Going App por voz
  *
- * Pantalla dedicada al "Asistente Going" (alias Uyari) — el agente de voz
+ * Pantalla dedicada al "Asistente Going App" (alias Uyari) — el agente de voz
  * que responde llamadas, asiste con cotizaciones, ayuda con dudas y escala
  * a operador humano cuando hace falta.
  *
  * Versión MVP (soft launch v2.0):
  *   · Botón principal "Llamar al Asistente" → abre el dial del celular y
- *     marca al número Twilio de Going (+593 2 401 8841). Funciona en
+ *     marca al número Twilio de Going App (+593 2 401 8841). Funciona en
  *     CUALQUIER teléfono Android/iOS sin permisos de micrófono, sin
  *     handling de PCM, sin latencia variable.
  *   · La llamada entra al voice-call-service (Uyari) deployado en Cloud Run
@@ -40,13 +40,13 @@ import { hapticLight, hapticMedium } from '../../utils/haptics';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
-// Número Twilio Going Voice — backend Uyari (voice-call-service). El número
+// Número Twilio Going App Voice — backend Uyari (voice-call-service). El número
 // vive como TWILIO_VOICE_NUMBER en el env del service; acá lo hardcodeamos
 // porque es display/dial y no cambia sin redeploy de la app.
 const ASSISTANT_PHONE         = '+59324018841';
 const ASSISTANT_PHONE_DISPLAY = '+593 2 401 8841';
 
-// WhatsApp Going — fallback texto + soporte operador.
+// WhatsApp Going App — fallback texto + soporte operador.
 const WHATSAPP_PHONE          = '+593984037949';
 const WHATSAPP_DISPLAY        = '+593 98 403 7949';
 
@@ -104,9 +104,9 @@ export function AssistantScreen() {
         <View style={styles.heroIcon}>
           <Ionicons name="mic" size={42} color={tokens.brandYellow} />
         </View>
-        <Text style={styles.heroTitle}>Asistente Going</Text>
+        <Text style={styles.heroTitle}>Asistente Going App</Text>
         <Text style={styles.heroSubtitle}>
-          Hablá con Going como con un amigo. Te ayudo con cotizaciones,
+          Hablá con Going App como con un amigo. Te ayudo con cotizaciones,
           horarios, rutas y cualquier duda. Estoy disponible 24/7.
         </Text>
       </View>
@@ -116,7 +116,7 @@ export function AssistantScreen() {
         style={[styles.callButton, calling && styles.callButtonActive]}
         onPress={handleCallAssistant}
         activeOpacity={0.85}
-        accessibilityLabel="Llamar al Asistente Going"
+        accessibilityLabel="Llamar al Asistente Going App"
       >
         <View style={styles.callButtonInner}>
           <Ionicons
@@ -136,7 +136,7 @@ export function AssistantScreen() {
 
       <Text style={styles.callHint}>
         Tu operadora puede aplicar tarifas locales de llamada. La conversación
-        con Going es siempre gratuita.
+        con Going App es siempre gratuita.
       </Text>
 
       {/* Qué puedo preguntarle */}
@@ -168,7 +168,7 @@ export function AssistantScreen() {
             <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
           </View>
           <View style={styles.altBody}>
-            <Text style={styles.altTitle}>WhatsApp Going</Text>
+            <Text style={styles.altTitle}>WhatsApp Going App</Text>
             <Text style={styles.altSubtitle}>{WHATSAPP_DISPLAY} · respondemos en minutos</Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={tokens.textTertiary} />
@@ -197,7 +197,7 @@ export function AssistantScreen() {
         <Ionicons name="shield-checkmark" size={18} color={tokens.brandRed} />
         <Text style={styles.infoText}>
           <Text style={styles.infoTextBold}>Privacidad:</Text>{' '}
-          Las llamadas con el Asistente Going se procesan respetando la Ley
+          Las llamadas con el Asistente Going App se procesan respetando la Ley
           Orgánica de Protección de Datos Personales (LOPDP) del Ecuador. Si
           activás la función SOS durante un viaje, podemos compartir tu
           ubicación con tus contactos de confianza.

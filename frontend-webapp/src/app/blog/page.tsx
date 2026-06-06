@@ -6,7 +6,7 @@ const blogPosts = [
   {
     id: 1,
     slug: 'consejos-conduccion-segura',
-    title: 'Los 10 mejores consejos para conducir con seguridad en Going',
+    title: 'Los 10 mejores consejos para conducir con seguridad en Going App',
     excerpt:
       'Aprende las prácticas esenciales de seguridad que te protegerán a ti y a tus pasajeros en cada viaje.',
     author: 'María Santos',
@@ -30,7 +30,7 @@ const blogPosts = [
     slug: 'guia-nuevos-pasajeros',
     title: 'Todo lo que necesitas saber como nuevo pasajero',
     excerpt:
-      'Una guía completa para ayudar a los nuevos usuarios a sacarle el máximo provecho a Going.',
+      'Una guía completa para ayudar a los nuevos usuarios a sacarle el máximo provecho a Going App.',
     author: 'Ana García',
     date: '2026-02-10',
     category: 'Popular',
@@ -39,9 +39,9 @@ const blogPosts = [
 ];
 
 export const metadata = {
-  title: 'Blog Going — Consejos e Historias',
+  title: 'Blog Going App — Consejos e Historias',
   description:
-    'Lee los últimos consejos, historias e ideas de la comunidad Going Ecuador.',
+    'Lee los últimos consejos, historias e ideas de la comunidad Going App Ecuador.',
 };
 
 export default function BlogPage() {
@@ -53,7 +53,7 @@ export default function BlogPage() {
       <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white py-16 md:py-24">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Blog Going
+            Blog Going App
           </h1>
           <p className="text-lg md:text-xl text-primary-100">
             Consejos, historias e ideas de nuestra comunidad
@@ -136,7 +136,7 @@ export default function BlogPage() {
             ¿Tienes algo que compartir con la comunidad?
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            Comparte tu historia como conductora, conductor, anfitrión o viajero Going.
+            Comparte tu historia como conductora, conductor, anfitrión o viajero Going App.
           </p>
           <Link
             href="/contact"

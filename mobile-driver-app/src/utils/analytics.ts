@@ -1,5 +1,5 @@
 /**
- * Going Analytics – Driver App
+ * Going App Analytics – Driver App
  * Wrapper tipado sobre @react-native-firebase/analytics.
  * Silent fallback si la librería no está instalada.
  *

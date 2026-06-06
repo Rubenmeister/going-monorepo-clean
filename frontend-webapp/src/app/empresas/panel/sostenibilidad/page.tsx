@@ -265,9 +265,9 @@ export default function SostenibilidadPage() {
           <h2 className="font-bold text-slate-900 mb-4">Reducción & compensación</h2>
           <div className="space-y-3">
             {[
-              { icon:'🌱', title:'Programa de compensación', desc:'Going planta 1 árbol por cada $50 en servicios Going Eco. Actívalo en Configuración.', action:'Activar Going Eco →', color:'#16a34a' },
+              { icon:'🌱', title:'Programa de compensación', desc:'Going App planta 1 árbol por cada $50 en servicios Going Eco. Actívalo en Configuración.', action:'Activar Going Eco →', color:'#16a34a' },
               { icon:'🚌', title:'Fomentar viajes compartidos', desc:'Los traslados al aeropuerto en grupo reducen hasta un 60% las emisiones por persona.', action:'Ver opciones →', color:'#2563eb' },
-              { icon:'⚡', title:'Vehículos eléctricos',        desc:'Going tiene flota EV disponible en Quito. Emiten 75% menos CO₂ que gasolina.', action:'Filtrar solo EV →', color:'#7c3aed' },
+              { icon:'⚡', title:'Vehículos eléctricos',        desc:'Going App tiene flota EV disponible en Quito. Emiten 75% menos CO₂ que gasolina.', action:'Filtrar solo EV →', color:'#7c3aed' },
             ].map(t => (
               <div key={t.title} className="flex gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                 <span className="text-2xl flex-shrink-0">{t.icon}</span>
@@ -289,7 +289,7 @@ export default function SostenibilidadPage() {
         <div className="flex-1">
           <p className="font-bold text-lg">Comprometidos con los ODS de la ONU</p>
           <p className="text-green-200 text-sm mt-0.5">
-            Going contribuye al <strong>ODS 13 (Acción por el Clima)</strong> y al <strong>ODS 11 (Ciudades sostenibles)</strong>.
+            Going App contribuye al <strong>ODS 13 (Acción por el Clima)</strong> y al <strong>ODS 11 (Ciudades sostenibles)</strong>.
             Este reporte es válido para incluir en memorias de sostenibilidad corporativa.
           </p>
         </div>

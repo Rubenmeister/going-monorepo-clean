@@ -124,7 +124,7 @@ export default function OperadoresPanel() {
             <button onClick={() => setSidebarOpen(o => !o)}
               className="lg:hidden w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200">☰</button>
             <Link href="/services/operadores">
-              <span className="text-xl font-black" style={{ color: '#d97706' }}>🧗 Going Operadores</span>
+              <span className="text-xl font-black" style={{ color: '#d97706' }}>🧗 Going App Operadores</span>
             </Link>
           </div>
           <div className="flex items-center gap-3">

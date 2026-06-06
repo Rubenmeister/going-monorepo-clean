@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Going Brand Colors — Official (from brand guidelines 2024)
+        // Going App Brand Colors — Official (from brand guidelines 2024)
         primary: '#ff4c41',
         'primary-50': '#fff2f2',
         'primary-100': '#ffe4e2',
@@ -19,7 +19,7 @@ module.exports = {
         'primary-800': '#b31811',
         'primary-900': '#991008',
 
-        // Going Color Aliases
+        // Going App Color Aliases
         'going-red': '#ff4c41',
         'going-red-dark': '#e63a2f',
         'going-red-light': '#fff2f2',

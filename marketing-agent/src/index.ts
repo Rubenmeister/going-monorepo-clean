@@ -17,7 +17,7 @@ import {
 } from '@going-platform/cerebro-contracts';
 
 // ============================================================
-// Going – Marketing Agent Entry Point
+// Going App – Marketing Agent Entry Point
 // Runs as Cloud Run Job (triggered by Cloud Scheduler: lunes 9am Ecuador)
 // ============================================================
 
@@ -30,7 +30,7 @@ if (missing.length > 0) {
 }
 
 async function main(): Promise<void> {
-  console.log('🚀 Going Marketing Agent starting...');
+  console.log('🚀 Going App Marketing Agent starting...');
   console.log(`Time: ${new Date().toISOString()}`);
 
   // Modo command (Orchestrator override COMMAND_JSON).

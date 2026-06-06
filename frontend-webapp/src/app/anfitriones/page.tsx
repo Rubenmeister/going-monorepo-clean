@@ -8,7 +8,7 @@ const BENEFITS = [
   { icon: '📅', title: 'Tú controlas tu calendario', desc: 'Bloquea fechas cuando quieras. Sin compromisos fijos ni mínimos de disponibilidad.' },
   { icon: '🛡️', title: 'Pagos seguros', desc: 'Cobras antes de que llegue el huésped. DATAFAST o transferencia directa a tu cuenta.' },
   { icon: '⭐', title: 'Perfil verificado', desc: 'Nuestro equipo verifica tu espacio y documentos. Eso genera confianza y más reservas.' },
-  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going conecta con turistas de LATAM, Europa y EE.UU que buscan experiencias auténticas en Ecuador.' },
+  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going App conecta con turistas de LATAM, Europa y EE.UU que buscan experiencias auténticas en Ecuador.' },
   { icon: '📚', title: 'Academia gratuita', desc: 'Cursos de fotografía, limpieza profesional, reseñas y diseño de espacios. Todo gratis.' },
 ];
 
@@ -25,13 +25,13 @@ const STEPS = [
   { n: 1, icon: '📝', title: 'Crea tu cuenta', desc: 'Regístrate como Anfitrión en menos de 2 minutos.' },
   { n: 2, icon: '🏠', title: 'Describe tu espacio', desc: 'Tipo, comodidades, precio y fotos. Nuestro equipo te ayuda si lo necesitas.' },
   { n: 3, icon: '📋', title: 'Verifica documentos', desc: 'Cédula y título de propiedad. Proceso 100% digital, 2–3 días hábiles.' },
-  { n: 4, icon: '🎉', title: 'Empieza a recibir reservas', desc: 'Tu listing aparece en Going y empiezas a ganar desde la primera noche.' },
+  { n: 4, icon: '🎉', title: 'Empieza a recibir reservas', desc: 'Tu listing aparece en Going App y empiezas a ganar desde la primera noche.' },
 ];
 
 const TESTIMONIALS = [
   { name: 'Carmen R.', city: 'Cuenca', type: 'Casa colonial', earn: '$1,200/mes', quote: 'En 6 meses llenamos el calendario casi todos los fines de semana. Los turistas extranjeros adoran el centro histórico.', stars: 5 },
   { name: 'Diego M.', city: 'Tena', type: 'Cabaña amazónica', earn: '$1,800/mes', quote: 'Tenía la cabaña desocupada. Ahora es mi principal fuente de ingresos. Los viajeros de aventura pagan muy bien.', stars: 5 },
-  { name: 'Sofía L.', city: 'Quito Norte', type: 'Apartamento', earn: '$680/mes', quote: 'Fácil de manejar desde la app. Los pagos siempre a tiempo y el soporte de Going es excelente.', stars: 5 },
+  { name: 'Sofía L.', city: 'Quito Norte', type: 'Apartamento', earn: '$680/mes', quote: 'Fácil de manejar desde la app. Los pagos siempre a tiempo y el soporte de Going App es excelente.', stars: 5 },
 ];
 
 export default function AnfitrionesPage() {
@@ -50,7 +50,7 @@ export default function AnfitrionesPage() {
           <div className="flex-1 text-center md:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full"
               style={{ backgroundColor: '#7c3aed33', color: '#a78bfa' }}>
-              🏡 Anfitriones Going
+              🏡 Anfitriones Going App
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
               Tu espacio es<br />
@@ -88,7 +88,7 @@ export default function AnfitrionesPage() {
           {/* Imagen */}
           <div className="flex-1 w-full md:max-w-md">
             <img
-              src="/images/Going homes.png"
+              src="/images/Going App homes.png"
               alt="Going Homes – alojamientos en Ecuador"
               className="w-full rounded-3xl shadow-2xl object-cover"
               style={{ maxHeight: '440px' }}
@@ -101,7 +101,7 @@ export default function AnfitrionesPage() {
       <div className="py-16 px-6 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-3">¿Qué puedes publicar?</h2>
-          <p className="text-gray-500 text-center mb-10">Desde una habitación hasta una hacienda — todo tiene demanda en Going.</p>
+          <p className="text-gray-500 text-center mb-10">Desde una habitación hasta una hacienda — todo tiene demanda en Going App.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {PROPERTY_TYPES.map(pt => (
               <div key={pt.type} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
@@ -118,7 +118,7 @@ export default function AnfitrionesPage() {
       {/* ── Beneficios ── */}
       <div className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Por qué Going es diferente</h2>
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Por qué Going App es diferente</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {BENEFITS.map(b => (
               <div key={b.title} className="flex gap-4">
@@ -191,7 +191,7 @@ export default function AnfitrionesPage() {
       <div className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-white mb-4">¿Listo para publicar tu espacio?</h2>
-          <p className="text-purple-200 mb-8">Únete a más de 3,200 hosts que ya generan ingresos con Going.</p>
+          <p className="text-purple-200 mb-8">Únete a más de 3,200 hosts que ya generan ingresos con Going App.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?rol=host"
               className="px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg text-base"

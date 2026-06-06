@@ -1,7 +1,7 @@
 /**
  * UserLegalScreen
  *
- * Centro Legal in-app para personas usuarias de Going (pasajeras / pasajeros
+ * Centro Legal in-app para personas usuarias de Going App (pasajeras / pasajeros
  * y remitentes de envíos). Reúne los documentos del Marco Legal Integral
  * aplicables a quienes usan la plataforma:
  *
@@ -16,10 +16,10 @@
  *   · Asistencia al Usuario
  *   · Compartir en Caso de Emergencia (SOS)
  *   · Términos de Pago del Servicio
- *   · Condiciones de Going Envíos
+ *   · Condiciones de Going App Envíos
  *   · Artículos Prohibidos en Envíos
  *   · Programa de Referidos
- *   · Tarjeta de Regalo Going
+ *   · Tarjeta de Regalo Going App
  *
  * Los obligatorios T&C y Privacidad navegan a las pantallas internas (que ya
  * tienen el texto completo). El resto abre la versión completa en
@@ -63,7 +63,7 @@ const MANDATORY: LegalDoc[] = [
     icon: 'document-text',
     title: 'Términos y Condiciones',
     summary:
-      'Las reglas generales que rigen tu uso de la plataforma Going como persona usuaria.',
+      'Las reglas generales que rigen tu uso de la plataforma Going App como persona usuaria.',
     screen: 'Terms',
     mandatory: true,
   },
@@ -124,7 +124,7 @@ const COMPLEMENTARY: LegalDoc[] = [
   },
   {
     icon: 'cube',
-    title: 'Condiciones de Going Envíos',
+    title: 'Condiciones de Going App Envíos',
     summary:
       'Términos del servicio de envío de paquetes: cobertura, peso, valor, seguros y responsabilidades.',
     url: `${LEGAL_BASE}/envios-condiciones`,
@@ -133,19 +133,19 @@ const COMPLEMENTARY: LegalDoc[] = [
     icon: 'ban',
     title: 'Artículos Prohibidos en Envíos',
     summary:
-      'Productos que no pueden enviarse por Going (sustancias, armas, productos restringidos).',
+      'Productos que no pueden enviarse por Going App (sustancias, armas, productos restringidos).',
     url: `${LEGAL_BASE}/envios-prohibidos`,
   },
   {
     icon: 'gift',
     title: 'Programa de Referidos',
     summary:
-      'Cómo invitar amistades a Going y ganar crédito Going Cash cuando completen su primer viaje.',
+      'Cómo invitar amistades a Going App y ganar crédito Going App Cash cuando completen su primer viaje.',
     url: `${LEGAL_BASE}/referidos`,
   },
   {
     icon: 'wallet',
-    title: 'Tarjeta de Regalo Going',
+    title: 'Tarjeta de Regalo Going App',
     summary:
       'Condiciones de compra, canje y vigencia de las tarjetas de regalo (físicas y digitales).',
     url: `${LEGAL_BASE}/tarjeta-regalo`,
@@ -175,7 +175,7 @@ export function UserLegalScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Centro Legal Going</Text>
+        <Text style={styles.title}>Centro Legal Going App</Text>
         <Text style={styles.subtitle}>
           Documentos que rigen tu uso de la plataforma y los derechos que
           tienes sobre tus datos personales en Ecuador.
@@ -191,7 +191,7 @@ export function UserLegalScreen() {
         <Text style={styles.sosText}>
           En cualquier viaje activo puedes activar el SOS desde la pantalla
           del viaje, compartir tu ubicación con contactos de confianza y
-          llamar directo al ECU 911 desde la app. Going registra cada
+          llamar directo al ECU 911 desde la app. Going App registra cada
           incidente para tu protección.
         </Text>
       </View>
@@ -255,7 +255,7 @@ export function UserLegalScreen() {
       <View style={styles.companyCard}>
         <Text style={styles.companyLabel}>Empresa responsable</Text>
         <Text style={styles.companyText}>
-          Going es una marca operada por{' '}
+          Going App es una marca operada por{' '}
           <Text style={styles.companyBold}>Thorn AI Technologies S.A.S.</Text>,
           RUC <Text style={styles.companyBold}>1793176925001</Text>, con
           domicilio en Echeverría N2-170 y Crespo Toral, Quito, Ecuador.
@@ -274,7 +274,7 @@ export function UserLegalScreen() {
           style={styles.whatsappBtn}
         >
           <Ionicons name="logo-whatsapp" size={16} color="#25D366" />
-          <Text style={styles.whatsappText}>WhatsApp Going +593 98 403 7949</Text>
+          <Text style={styles.whatsappText}>WhatsApp Going App +593 98 403 7949</Text>
         </TouchableOpacity>
       </View>
 

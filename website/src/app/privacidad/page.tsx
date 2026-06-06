@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidad — Going',
+  title: 'Política de Privacidad — Going App',
   description:
-    'Política de Privacidad de Thorn AI Technologies S.A.S. (titular de la marca Going) conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
+    'Política de Privacidad de Thorn AI Technologies S.A.S. (titular de la marca Going App) conforme a la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).',
 };
 
 const LAST_UPDATE = '25 de abril de 2026';
@@ -13,7 +13,7 @@ const SECTIONS = [
     id: 'responsable',
     icon: '🏢',
     title: '1. Responsable del Tratamiento',
-    content: `Thorn AI Technologies S.A.S., titular de la marca Going (en adelante "Going" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going Pasajero y Going Conductor.
+    content: `Thorn AI Technologies S.A.S., titular de la marca Going App (en adelante "Going App" o "la Empresa"), con RUC 1793176925001 y domicilio en Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador, es el Responsable del Tratamiento de tus datos personales recopilados a través de la plataforma app.goingec.com y las aplicaciones móviles Going App Pasajero y Going App Conductor.
 
 Contacto del Delegado de Protección de Datos (DPD):
 • Correo: privacidad@goingec.com
@@ -82,7 +82,7 @@ Tras los plazos indicados, los datos serán suprimidos de forma segura o anonimi
     id: 'destinatarios',
     icon: '🤝',
     title: '5. Destinatarios y Encargados del Tratamiento',
-    content: `Going comparte datos con los siguientes encargados del tratamiento bajo contrato de confidencialidad:
+    content: `Going App comparte datos con los siguientes encargados del tratamiento bajo contrato de confidencialidad:
 
 Operaciones del servicio:
 • Conductores registrados: nombre, foto de perfil y ubicación de recogida (solo durante el viaje activo).
@@ -99,7 +99,7 @@ Proveedores de pago (Encargados del Tratamiento):
 
 Autoridades competentes: cuando así lo exija la ley ecuatoriana, resolución judicial o administrativa.
 
-Going NO vende datos personales a terceros ni los usa para publicidad de terceros.`,
+Going App NO vende datos personales a terceros ni los usa para publicidad de terceros.`,
   },
   {
     id: 'derechos',
@@ -122,7 +122,7 @@ Escribe a privacidad@goingec.com con asunto "SOLICITUD DERECHOS LOPDP" indicando
     id: 'seguridad',
     icon: '🔒',
     title: '7. Seguridad de los Datos',
-    content: `Going Ecuador implementa medidas técnicas y organizativas apropiadas para proteger tus datos personales:
+    content: `Going App Ecuador implementa medidas técnicas y organizativas apropiadas para proteger tus datos personales:
 
 • Cifrado TLS 1.3 para todas las comunicaciones entre la app y nuestros servidores.
 • Cifrado AES-256 para datos sensibles almacenados en base de datos.
@@ -137,11 +137,11 @@ En caso de incidente de seguridad que afecte tus datos, te notificaremos en un p
     id: 'menores',
     icon: '👶',
     title: '8. Protección de Menores de Edad',
-    content: `Los servicios de Going Ecuador están dirigidos exclusivamente a personas mayores de 18 años.
+    content: `Los servicios de Going App Ecuador están dirigidos exclusivamente a personas mayores de 18 años.
 
 No recopilamos intencionalmente datos de menores de 18 años. Si descubrimos que hemos recopilado datos de un menor sin el consentimiento verificable de sus padres o tutores, procederemos a eliminar dicha información inmediatamente.
 
-Si eres padre, madre o tutor y crees que tu hijo/a ha proporcionado datos a Going sin tu consentimiento, contáctanos en privacidad@goingec.com.
+Si eres padre, madre o tutor y crees que tu hijo/a ha proporcionado datos a Going App sin tu consentimiento, contáctanos en privacidad@goingec.com.
 
 Conforme al Art. 15 de la LOPDP, el tratamiento de datos de menores de 18 años requiere el consentimiento expreso y verificable de sus representantes legales.`,
   },
@@ -164,7 +164,7 @@ Puedes obtener información detallada sobre las transferencias internacionales y
     id: 'actualizaciones',
     icon: '🔄',
     title: '10. Actualizaciones de esta Política',
-    content: `Going Ecuador puede actualizar esta Política de Privacidad para reflejar cambios en nuestras prácticas, en la legislación aplicable o en los servicios que ofrecemos.
+    content: `Going App Ecuador puede actualizar esta Política de Privacidad para reflejar cambios en nuestras prácticas, en la legislación aplicable o en los servicios que ofrecemos.
 
 Te notificaremos de cambios sustanciales mediante:
 • Notificación push en la aplicación con al menos 15 días de anticipación.
@@ -196,7 +196,7 @@ export default function PrivacidadPage() {
       <div className="bg-[#0033A0] py-16 px-6">
         <div className="max-w-3xl mx-auto">
           <p className="text-[13px] font-black text-[#FFCD00] uppercase tracking-widest mb-3">
-            Legal · Going Ecuador
+            Legal · Going App Ecuador
           </p>
           <h1 className="text-4xl font-black text-white mb-4">
             Política de Privacidad
@@ -215,7 +215,7 @@ export default function PrivacidadPage() {
           <div>
             <p className="font-black text-[#0033A0] text-sm mb-1">Resumen sencillo</p>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Going recopila solo los datos necesarios para prestarte el servicio de transporte y envíos.
+              Going App recopila solo los datos necesarios para prestarte el servicio de transporte y envíos.
               No vendemos tus datos. Puedes eliminar tu cuenta y tus datos en cualquier momento.
               Cumplimos la ley ecuatoriana de protección de datos (LOPDP).
             </p>
@@ -260,7 +260,7 @@ export default function PrivacidadPage() {
             privacidad@goingec.com
           </a>
           <p className="text-white/40 text-xs mt-4">
-            Thorn AI Technologies S.A.S. (titular de la marca Going) · RUC 1793176925001 · Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
+            Thorn AI Technologies S.A.S. (titular de la marca Going App) · RUC 1793176925001 · Calle Echeverría N2-170 y Crespo Toral, Quito, Ecuador<br />
             Última actualización: {LAST_UPDATE}
           </p>
           <div className="mt-6 flex justify-center gap-4">

@@ -76,7 +76,7 @@ export default function ConfiguracionPage() {
             )}
           </dl>
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-xs text-slate-400">Para modificar estos datos contacta al equipo de Going.</p>
+            <p className="text-xs text-slate-400">Para modificar estos datos contacta al equipo de Going App.</p>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export default function ConfiguracionPage() {
             <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Próximamente</span>
           </div>
           <p className="text-sm text-slate-500">
-            Conecta Going con tu ERP (SAP, Oracle), sistema de facturación electrónica o Slack.
+            Conecta Going App con tu ERP (SAP, Oracle), sistema de facturación electrónica o Slack.
           </p>
         </div>
 

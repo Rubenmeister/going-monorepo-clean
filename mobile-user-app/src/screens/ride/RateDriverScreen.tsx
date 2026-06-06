@@ -143,15 +143,15 @@ export function RateDriverScreen() {
   const handleShare = useCallback(async () => {
     try {
       await Share.share({
-        message: `¡Acabo de viajar con Going! 🚗 ${driverName} fue un excelente conductor. Descarga la app en goingec.com`,
-        title: 'Going Ecuador',
+        message: `¡Acabo de viajar con Going App! 🚗 ${driverName} fue un excelente conductor. Descarga la app en goingec.com`,
+        title: 'Going App Ecuador',
       });
     } catch { /* canceled */ }
   }, [driverName]);
 
   // Reportar problema grave → SosScreen con context del viaje. El SOS le
   // permite al usuario llamar al 911, notificar contactos, o alertar a
-  // ops Going con priority RED.
+  // ops Going App con priority RED.
   const handleReportSerious = useCallback(() => {
     hapticHeavy();
     (navigation.navigate as any)('Sos', {
@@ -350,7 +350,7 @@ export function RateDriverScreen() {
           <View style={styles.tipSection}>
             <Text style={styles.sectionTitle}>Propina al conductor</Text>
             <Text style={styles.tipSubtitle}>
-              100% va directo a {driverFirstName} · sin comisión Going
+              100% va directo a {driverFirstName} · sin comisión Going App
             </Text>
             <View style={styles.tipRow}>
               {TIP_AMOUNTS.map(t => (

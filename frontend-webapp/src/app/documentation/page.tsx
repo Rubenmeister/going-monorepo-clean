@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Going Platform - Documentación Completa',
-  description: 'Documentación completa de la plataforma Going',
+  description: 'Documentación completa de la plataforma Going App',
 };
 
 export default function DocumentationPage() {

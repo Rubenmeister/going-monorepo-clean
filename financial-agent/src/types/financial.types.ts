@@ -1,6 +1,6 @@
 // ============================================================
 // GOING – Financial Agent Types
-// Comisión Going: 20% | Conductor: 80% | IVA Ecuador: 15%
+// Comisión Going App: 20% | Conductor: 80% | IVA Ecuador: 15%
 // ============================================================
 
 // ─── Ride / Transacción ──────────────────────────────────────
@@ -57,7 +57,7 @@ export interface DriverPayout {
   // Breakdown
   totalRides: number;
   totalFareCollected: number;    // Total cobrado a pasajeros
-  goingCommissionTotal: number;  // 20% que retiene Going
+  goingCommissionTotal: number;  // 20% que retiene Going App
   driverEarningsGross: number;   // 80% bruto
   adjustments: number;           // Bonos, penalidades, etc.
   driverEarningsNet: number;     // Lo que se le paga al conductor
@@ -122,7 +122,7 @@ export interface RevenueReport {
 
   // Totales
   totalRevenue: number;           // Total facturado
-  goingRevenue: number;           // Comisión Going (20%)
+  goingRevenue: number;           // Comisión Going App (20%)
   driverRevenue: number;          // Ingresos conductores (80%)
   ivaCollected: number;           // IVA 15% cobrado
   totalRides: number;
@@ -176,7 +176,7 @@ export interface FinancialAlert {
   createdAt: Date;
 }
 
-// ─── Constantes financieras Going ────────────────────────────
+// ─── Constantes financieras Going App ────────────────────────────
 export const GOING_COMMISSION_RATE = 0.20;     // 20%
 export const DRIVER_RATE           = 0.80;     // 80%
 export const IVA_RATE              = 0.15;     // 15% Ecuador

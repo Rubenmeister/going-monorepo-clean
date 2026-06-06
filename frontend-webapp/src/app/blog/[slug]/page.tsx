@@ -23,7 +23,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const post = {
     title: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    author: 'Going Editorial Team',
+    author: 'Going App Editorial Team',
     date: new Date().toISOString().split('T')[0],
     readTime: 5,
   };
@@ -64,7 +64,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 {post.author}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Writer at Going
+                Writer at Going App
               </p>
             </div>
           </div>

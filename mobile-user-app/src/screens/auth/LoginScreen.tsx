@@ -1,5 +1,5 @@
 /**
- * LoginScreen — Going Ecuador
+ * LoginScreen — Going App Ecuador
  *
  * Flujo:
  *  - Biometría auto al abrir si está habilitada
@@ -85,7 +85,7 @@ export function LoginScreen() {
       setBiometricType(type);
       if (available && enabled === 'true') {
         setBiometricEnabled(true);
-        const success = await authenticateWithBiometrics('Ingresa a Going');
+        const success = await authenticateWithBiometrics('Ingresa a Going App');
         if (success) {
           hapticSuccess();
           analyticsLogin('biometric');
@@ -134,7 +134,7 @@ export function LoginScreen() {
           {/* Eyebrow chip flotante */}
           <View style={styles.eyebrowChip}>
             <View style={styles.eyebrowDot} />
-            <Text style={styles.eyebrowText}>Acceso · Going</Text>
+            <Text style={styles.eyebrowText}>Acceso · Going App</Text>
           </View>
 
           <Image source={logoSource} style={styles.logo} resizeMode="contain" />
@@ -165,7 +165,7 @@ export function LoginScreen() {
               style={styles.biometricBtn}
               onPress={async () => {
                 hapticMedium();
-                const success = await authenticateWithBiometrics('Ingresa a Going');
+                const success = await authenticateWithBiometrics('Ingresa a Going App');
                 if (success) hapticSuccess();
                 else hapticError();
               }}
@@ -245,7 +245,7 @@ export function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading}
             activeOpacity={0.88}
-            accessibilityLabel="Entrar a Going"
+            accessibilityLabel="Entrar a Going App"
           >
             {isLoading ? (
               <ActivityIndicator color={tokens.textInverse} />

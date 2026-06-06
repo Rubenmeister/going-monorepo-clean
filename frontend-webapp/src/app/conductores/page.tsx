@@ -154,7 +154,7 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={200}>
               <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 leading-relaxed">
-                Únete a más de 12,000 conductoras y conductores Going en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
+                Únete a más de 12,000 conductoras y conductores Going App en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
               </p>
             </FadeIn>
             <FadeIn delay={300}>
@@ -185,7 +185,7 @@ export default function ConductoresPage() {
             <FadeIn delay={200} direction="right">
               <img
                 src="/images/SUV de lujo.png"
-                alt="SUV de lujo Going"
+                alt="SUV de lujo Going App"
                 className="w-full rounded-3xl shadow-2xl object-cover"
                 style={{ maxHeight: '440px' }}
               />
@@ -203,7 +203,7 @@ export default function ConductoresPage() {
               <div className="md:w-2/5 flex-shrink-0">
                 <img
                   src="/images/SUV de lujo.png"
-                  alt="Conductor Going en el Aeropuerto Internacional Mariscal Sucre"
+                  alt="Conductor Going App en el Aeropuerto Internacional Mariscal Sucre"
                   className="w-full h-full object-cover"
                   style={{ minHeight: '320px' }}
                 />
@@ -211,10 +211,10 @@ export default function ConductoresPage() {
               {/* Contenido */}
               <div className="flex-1 p-8 md:p-10" style={{ background: '#1a1a1a' }}>
                 <span className="inline-block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#ff4c41' }}>
-                  Comunidad Going
+                  Comunidad Going App
                 </span>
                 <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-6 leading-snug">
-                  ¿Por qué te conviene unirte a la comunidad Going?
+                  ¿Por qué te conviene unirte a la comunidad Going App?
                 </h2>
                 <ul className="space-y-3">
                   {[
@@ -224,7 +224,7 @@ export default function ConductoresPage() {
                     { icon: '📍', text: 'Rutas inteligentes que optimizan tu tiempo y ganancias.' },
                     { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
                     { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
-                    { icon: '🎓', text: 'Academia Going gratuita para mejorar tu servicio.' },
+                    { icon: '🎓', text: 'Academia Going App gratuita para mejorar tu servicio.' },
                     { icon: '🤝', text: 'Red de apoyo activa con más de 12,000 conductoras y conductores.' },
                   ].map((item) => (
                     <li key={item.text} className="flex items-start gap-3">
@@ -239,7 +239,7 @@ export default function ConductoresPage() {
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white text-sm hover:opacity-90 transition-all"
                     style={{ background: '#ff4c41' }}
                   >
-                    Quiero ser conductor Going →
+                    Quiero ser conductor Going App →
                   </Link>
                 </div>
               </div>
@@ -308,17 +308,17 @@ export default function ConductoresPage() {
           <FadeIn>
             <div className="text-center mb-10">
               <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4 px-3 py-1.5 rounded-full" style={{ backgroundColor: 'rgba(255,76,65,0.1)', color: '#ff4c41' }}>
-                🗺️ Cobertura Going
+                🗺️ Cobertura Going App
               </span>
               <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>Nuevas rutas disponibles</h2>
-              <p className="text-gray-500 max-w-xl mx-auto">Más zonas, más viajes, más ingresos. Going expande su red de rutas para que siempre tengas demanda cerca.</p>
+              <p className="text-gray-500 max-w-xl mx-auto">Más zonas, más viajes, más ingresos. Going App expande su red de rutas para que siempre tengas demanda cerca.</p>
             </div>
           </FadeIn>
           <FadeIn delay={100} direction="up">
             <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
               <img
                 src="/images/nuevas%20rutas.png"
-                alt="Nuevas rutas Going — cobertura y expansión de zonas"
+                alt="Nuevas rutas Going App — cobertura y expansión de zonas"
                 className="w-full object-contain"
                 style={{ maxHeight: '520px', background: '#fff' }}
               />
@@ -363,7 +363,7 @@ export default function ConductoresPage() {
             </div>
           </FadeIn>
           <FadeIn delay={80}>
-            <Step num={1} title="Descarga la app Going" desc="Disponible en Android. iOS próximamente." />
+            <Step num={1} title="Descarga la app Going App" desc="Disponible en Android. iOS próximamente." />
           </FadeIn>
           <FadeIn delay={160}>
             <Step num={2} title="Completa tus datos" desc="Nombre, email, teléfono y contraseña. Rápido y seguro." />
@@ -389,7 +389,7 @@ export default function ConductoresPage() {
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Por qué conductoras y conductores eligen Going</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Por qué conductoras y conductores eligen Going App</h2>
               <p style={{ color: '#94a3b8' }}>Más que una plataforma. Una comunidad.</p>
             </div>
           </FadeIn>
@@ -399,7 +399,7 @@ export default function ConductoresPage() {
             <FadeIn delay={120}><BenefitCard icon="🛡️" title="Seguro incluido" desc="Cobertura en cada viaje sin costo adicional. Maneja con tranquilidad." /></FadeIn>
             <FadeIn delay={180}><BenefitCard icon="📱" title="App intuitiva" desc="Acepta viajes, navega y cobra desde una sola pantalla. Sin complicaciones." /></FadeIn>
             <FadeIn delay={240}><BenefitCard icon="🏆" title="Programa Diamond" desc="Llega a Diamond y accede a clientes empresariales premium con tarifas más altas." /></FadeIn>
-            <FadeIn delay={300}><BenefitCard icon="🎓" title="Academia gratuita" desc="Capacitación online para conductoras y conductores en la Academia Going. Mejora tu servicio." /></FadeIn>
+            <FadeIn delay={300}><BenefitCard icon="🎓" title="Academia gratuita" desc="Capacitación online para conductoras y conductores en la Academia Going App. Mejora tu servicio." /></FadeIn>
           </div>
         </div>
       </section>
@@ -409,14 +409,14 @@ export default function ConductoresPage() {
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Lo que dicen en la comunidad Going</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Lo que dicen en la comunidad Going App</h2>
               <p className="text-gray-500">Historias reales de personas reales.</p>
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FadeIn delay={0}><Testimonial quote="En 6 meses con Going, pagué mis deudas y hasta ahorré para la educación de mis hijos." name="Carlos V." city="Quito" /></FadeIn>
+            <FadeIn delay={0}><Testimonial quote="En 6 meses con Going App, pagué mis deudas y hasta ahorré para la educación de mis hijos." name="Carlos V." city="Quito" /></FadeIn>
             <FadeIn delay={100}><Testimonial quote="Antes trabajaba 12 horas en una empresa. Ahora trabajo 8 horas para mí y gano lo mismo." name="Roberto M." city="Guayaquil" /></FadeIn>
-            <FadeIn delay={200}><Testimonial quote="Soy conductora y madre. Going me permite organizarme sin depender de nadie." name="Ana P." city="Cuenca" /></FadeIn>
+            <FadeIn delay={200}><Testimonial quote="Soy conductora y madre. Going App me permite organizarme sin depender de nadie." name="Ana P." city="Cuenca" /></FadeIn>
           </div>
         </div>
       </section>
@@ -430,13 +430,13 @@ export default function ConductoresPage() {
                 <div className="flex-1 text-white">
                   <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
                     style={{ backgroundColor: '#ff4c4122', color: '#ff6b60' }}>
-                    📚 Academia Going — 100% Gratuita
+                    📚 Academia Going App — 100% Gratuita
                   </span>
                   <h2 className="text-2xl md:text-3xl font-extrabold mb-3">
                     Capacítate. Gana insignias.<br />Gana más dinero.
                   </h2>
                   <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                    La Academia Going tiene cursos especiales para conductores: seguridad vial en Ecuador,
+                    La Academia Going App tiene cursos especiales para conductores: seguridad vial en Ecuador,
                     inglés turístico básico (en formato podcast para escuchar mientras manejas), mecánica
                     preventiva y el arte de recibir pasajeros. Completa la Ruta del Volante y consigue
                     el badge <strong style={{ color: '#ff6b60' }}>Aliado Oro</strong> para aparecer primero en los resultados.
@@ -449,7 +449,7 @@ export default function ConductoresPage() {
                   <Link href="/academy"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm hover:opacity-90 transition-opacity"
                     style={{ backgroundColor: '#ff4c41', color: '#fff' }}>
-                    Ir a la Academia Going →
+                    Ir a la Academia Going App →
                   </Link>
                 </div>
                 <div className="flex-shrink-0 grid grid-cols-3 gap-3">
@@ -494,7 +494,7 @@ export default function ConductoresPage() {
 
       {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="py-10 px-6 text-center" style={{ background: '#1a1a1a', color: '#666' }}>
-        <Link href="/" className="font-extrabold text-lg mb-2 block" style={{ color: '#ff4c41' }}>Going</Link>
+        <Link href="/" className="font-extrabold text-lg mb-2 block" style={{ color: '#ff4c41' }}>Going App</Link>
         <p className="text-xs mb-4">Movilidad inteligente en Ecuador</p>
         <div className="flex justify-center gap-6 text-xs">
           <Link href="/legal/terms" className="hover:text-white transition-colors">Términos</Link>

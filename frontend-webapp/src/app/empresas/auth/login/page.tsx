@@ -83,7 +83,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         {/* Logo */}
         <Link href="/" className="block text-center">
-          <p className="text-2xl font-bold text-blue-600">Going</p>
+          <p className="text-2xl font-bold text-blue-600">Going App</p>
           <p className="text-xs text-slate-600 mt-1">Para Empresas</p>
         </Link>
 
@@ -245,7 +245,7 @@ export default function LoginPage() {
 
             <div className="mt-8 pt-6 border-t border-slate-200 text-center">
               <Link href="/" className="text-sm text-slate-600 hover:text-slate-900">
-                ← Volver a Going
+                ← Volver a Going App
               </Link>
             </div>
           </>

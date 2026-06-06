@@ -1,7 +1,7 @@
 /**
- * AcademiaScreen — Academia Going (Mockup #21).
+ * AcademiaScreen — Academia Going App (Mockup #21).
  *
- * Tutorial in-app: 7 módulos para aprender a usar Going (ride sharing,
+ * Tutorial in-app: 7 módulos para aprender a usar Going App (ride sharing,
  * envíos, rewards, seguridad SOS, etc.). Cada módulo es accordion con
  * descripción + botón "Comenzar".
  *
@@ -47,11 +47,11 @@ interface AcademyModule {
 }
 
 const MODULES: AcademyModule[] = [
-  { id: 1, icon: '🗺️', title: 'Conoce Ecuador con Going',           desc: 'Las 3 rutas principales, destinos y tiempos de viaje.',         duration: '5 min', minutes: 5, level: 'Básico'     },
+  { id: 1, icon: '🗺️', title: 'Conoce Ecuador con Going App',           desc: 'Las 3 rutas principales, destinos y tiempos de viaje.',         duration: '5 min', minutes: 5, level: 'Básico'     },
   { id: 2, icon: '🚗', title: 'Cómo funciona el Viaje Compartido',   desc: 'Paradas, asientos, pagos y código OTP del conductor.',          duration: '4 min', minutes: 4, level: 'Básico'     },
   { id: 3, icon: '🔒', title: 'Viaje Privado: tu vehículo, tu horario', desc: 'SUV, VAN y BUS. Cuándo usar cada uno y cómo reservar.',     duration: '6 min', minutes: 6, level: 'Intermedio' },
   { id: 4, icon: '📦', title: 'Envíos seguros de punto a punto',      desc: 'OTP de entrega, foto de confirmación y rastreo GPS.',          duration: '4 min', minutes: 4, level: 'Básico'     },
-  { id: 5, icon: '⭐', title: 'Going Rewards: puntos y beneficios',    desc: 'Cómo acumular puntos y canjear descuentos y viajes.',          duration: '3 min', minutes: 3, level: 'Básico'     },
+  { id: 5, icon: '⭐', title: 'Going App Rewards: puntos y beneficios',    desc: 'Cómo acumular puntos y canjear descuentos y viajes.',          duration: '3 min', minutes: 3, level: 'Básico'     },
   { id: 6, icon: '🆘', title: 'Seguridad: función SOS y emergencias',  desc: 'Cómo usar el SOS, compartir tu viaje y el ECU 911.',           duration: '3 min', minutes: 3, level: 'Básico'     },
   { id: 7, icon: '🏔️', title: 'Turismo por la Sierra ecuatoriana',     desc: 'Destinos recomendados, volcanes, mercados y más.',             duration: '8 min', minutes: 8, level: 'Avanzado'   },
 ];
@@ -104,7 +104,7 @@ export function AcademiaScreen() {
         <View style={styles.heroIconWrap}>
           <Text style={styles.heroEmoji}>🎓</Text>
         </View>
-        <Text style={styles.heroTitle}>Academia Going</Text>
+        <Text style={styles.heroTitle}>Academia Going App</Text>
         <Text style={styles.heroSub}>
           Aprende a sacarle el máximo provecho a tu app
         </Text>
@@ -180,7 +180,7 @@ export function AcademiaScreen() {
         <TouchableOpacity
           style={styles.supportCard}
           onPress={() => navigation.navigate('UserSupport')}
-          accessibilityLabel="Hablar con soporte Going"
+          accessibilityLabel="Hablar con soporte Going App"
         >
           <View style={styles.supportIcon}>
             <Ionicons name="headset-outline" size={22} color={tokens.brandNavy} />
