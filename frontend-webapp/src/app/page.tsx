@@ -438,10 +438,10 @@ export default function HomePage() {
           {/* ── HEAD del hero: logo color + headline + texto descriptivo ── */}
           <FadeIn dir="up" className="text-center max-w-3xl mb-10">
             <img
-              src="/going-logo-h.png"
+              src="/images/Going_Logotipo_Color_V_800px.png"
               alt="Going App"
-              className="h-14 mx-auto mb-6"
-              style={{ filter: 'drop-shadow(0 2px 12px rgba(255,255,255,0.6))' }}
+              className="h-32 mx-auto mb-6"
+              style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
 
             <h1
