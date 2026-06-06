@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
@@ -13,7 +13,9 @@ export class UpdateRatingUseCase {
   private readonly GRACE_PERIOD_HOURS = 24;
 
   constructor(
+    @Inject(IRatingRepository)
     private ratingRepository: IRatingRepository,
+    @Inject(IDriverProfileRepository)
     private driverProfileRepository: IDriverProfileRepository
   ) {}
 
