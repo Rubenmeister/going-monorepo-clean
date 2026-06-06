@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import {
   IRatingRepository,
   IDriverProfileRepository,
@@ -11,7 +11,9 @@ import {
 @Injectable()
 export class DeleteRatingUseCase {
   constructor(
+    @Inject(IRatingRepository)
     private ratingRepository: IRatingRepository,
+    @Inject(IDriverProfileRepository)
     private driverProfileRepository: IDriverProfileRepository
   ) {}
 
