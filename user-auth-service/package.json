@@ -22,7 +22,7 @@
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/websockets": "^11.0.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "@types/cookie-parser": "^1.4.8",
     "class-transformer": "^0.5.1",
