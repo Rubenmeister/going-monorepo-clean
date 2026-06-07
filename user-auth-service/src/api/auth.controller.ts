@@ -4,6 +4,7 @@ import {
   Get,
   Put,
   Patch,
+  Delete,
   Body,
   UseGuards,
   HttpCode,
@@ -852,6 +853,53 @@ export class AuthController {
       phone: u?.phone,
       roles: u?.roles,
     };
+  }
+
+  /**
+   * DELETE /auth/me — eliminación de cuenta (borrado SUAVE / anonimización).
+   * Verifica la contraseña (si la cuenta tiene una), borra los datos personales
+   * y marca la cuenta como 'deleted'. Se conserva el registro (integridad con
+   * viajes/pagos/facturas) pero sin PII y sin poder volver a iniciar sesión.
+   */
+  @Delete('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async deleteCurrentUser(
+    @CurrentUser('userId') userId: UUID,
+    @Body() body: { password?: string },
+  ) {
+    const user = await this.userModel.findOne({ id: userId });
+    if (!user) throw new UnauthorizedException('Usuario no encontrado');
+
+    // Si la cuenta tiene contraseña, exigir confirmarla.
+    if (user.passwordHash) {
+      if (!body?.password) {
+        throw new BadRequestException('Confirma tu contraseña para eliminar la cuenta.');
+      }
+      const ok = await bcrypt.compare(body.password, user.passwordHash);
+      if (!ok) throw new UnauthorizedException('Contraseña incorrecta.');
+    }
+
+    const scrambled = await bcrypt.hash(`${randomUUID()}${randomUUID()}`, 10);
+    await this.userModel.updateOne(
+      { id: userId },
+      {
+        $set: {
+          status: 'deleted',
+          deletedAt: new Date(),
+          email: `deleted_${userId}@deleted.going`,
+          firstName: 'Cuenta',
+          lastName: 'eliminada',
+          phone: null,
+          passwordHash: scrambled,
+          mfaEnabled: false,
+        },
+        $unset: { mfaSecret: '', recoveryCodes: '' },
+      },
+    );
+
+    this.logger.warn(`[account-deletion] Cuenta anonimizada (soft-delete): ${userId}`);
+    return { ok: true, deleted: true };
   }
 
   // ─── Voice preference (Voice Sem 3A) ────────────────────────────────────

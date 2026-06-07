@@ -49,4 +49,8 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   (TOTP/speakeasy) + challenge en login. Frontend conectado: página
   `/account/2fa` (activar con QR + códigos de recuperación / desactivar) y
   segundo paso en el login (`/api/auth/mfa/verify-login` + UI de código).
-- [ ] **Eliminación de cuenta**: pendiente de flujo backend.
+- [x] **Eliminación de cuenta** (borrado suave): HECHO. `DELETE /auth/me`
+  (user-auth) verifica contraseña, anonimiza PII (email/nombre/teléfono),
+  invalida el login (passwordHash aleatorio, status='deleted') y conserva el
+  registro para integridad con viajes/pagos. Frontend: modal de confirmación
+  (contraseña + escribir "ELIMINAR") en `/account` → cierra sesión.
