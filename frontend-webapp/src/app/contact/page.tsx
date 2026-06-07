@@ -85,6 +85,18 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // No había backend de contacto: enviamos el mensaje por WhatsApp con los
+    // datos del formulario prellenados (antes el form no enviaba a ningún lado).
+    const lines = [
+      `Hola Going App, soy ${form.name || 'un usuario'}.`,
+      form.topic   ? `Tema: ${form.topic}`      : '',
+      form.message ? `Mensaje: ${form.message}` : '',
+      form.email   ? `Email: ${form.email}`     : '',
+      form.phone   ? `Teléfono: ${form.phone}`  : '',
+    ].filter(Boolean).join('\n');
+    if (typeof window !== 'undefined') {
+      window.open(`https://wa.me/593991234567?text=${encodeURIComponent(lines)}`, '_blank', 'noopener');
+    }
     setSent(true);
     setForm({ name: '', email: '', phone: '', topic: '', message: '' });
   };
@@ -175,11 +187,11 @@ export default function ContactPage() {
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">✅</div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  ¡Mensaje enviado!
+                  ¡Te llevamos a WhatsApp!
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  Gracias por escribirnos. Te respondemos en menos de 24 horas
-                  hábiles.
+                  Abrimos WhatsApp con tu mensaje listo para enviar. Si no se
+                  abrió, escríbenos al <strong>+593 99 123 4567</strong>.
                 </p>
                 <button
                   onClick={() => setSent(false)}

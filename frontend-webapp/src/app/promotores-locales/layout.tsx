@@ -1,5 +1,11 @@
-// Promotores Locales is a public marketing page — el RoleGuard 'guide'
-// bloqueaba a no-guides de leer la propuesta de valor antes de registrarse.
-export default function PromotoresLocalesLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Promotores locales | Going App Ecuador',
+  description: 'Gana siendo promotor local de Going App en tu ciudad.',
+};
+
+// Layout de ruta pública — solo define metadata SEO de la sección.
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
 }

@@ -1,7 +1,11 @@
-// Anfitriones is a public marketing page — el RoleGuard 'host' bloqueaba
-// a no-hosts (incluidos visitantes anónimos) de leer la propuesta de valor
-// antes de registrarse. /anfitriones/registro también es público (form
-// para SER host). La guarda por rol va en /anfitriones/panel cuando exista.
-export default function AnfitrioneLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sé anfitrión | Going App Ecuador',
+  description: 'Hospeda viajeros y genera ingresos como anfitrión local con Going App.',
+};
+
+// Layout de ruta pública — solo define metadata SEO de la sección.
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
 }
