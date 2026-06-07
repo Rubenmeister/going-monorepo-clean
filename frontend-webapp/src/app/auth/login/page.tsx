@@ -16,6 +16,8 @@ function LoginForm() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
   const [showPw, setShowPw]     = useState(false);
+  const [mfaToken, setMfaToken] = useState('');
+  const [mfaCode, setMfaCode]   = useState('');
 
   // Si el usuario ya está autenticado, redirigir directamente
   useEffect(() => {
@@ -65,40 +67,64 @@ function LoginForm() {
         return;
       }
 
-      // user-auth-service returns { accessToken, refreshToken, expiresIn, user }
+      // 2FA: si el usuario tiene 2FA activado, el backend NO devuelve tokens
+      // todavía — devuelve { mfaRequired, mfaToken } y pide el código TOTP.
+      if (data?.mfaRequired && data?.mfaToken) {
+        setMfaToken(data.mfaToken);
+        setError('');
+        return;
+      }
+
       const token = data.accessToken || data.token;
       if (!token) {
         setError('Error al iniciar sesión: no se recibió token. Contacta soporte.');
         return;
       }
-
-      // setStoredAuth actualiza el Zustand store (fuente de verdad para el
-      // Navbar y demás componentes reactivos) y espeja en localStorage para
-      // código legacy. La cookie httpOnly going_webapp_session ya viene del
-      // proxy /api/auth/login en el Set-Cookie header — el middleware la usa
-      // para permitir el acceso a rutas protegidas.
-      setStoredAuth(token, data.refreshToken ?? null, data.user ?? null);
-
-      // Redirect based on role
-      const roles: string[] = data.user?.roles || data.roles || [];
-      const from = searchParams.get('from');
-      if (from) {
-        window.location.href = from;
-      } else if (roles.includes('admin') || roles.includes('staff')) {
-        window.location.href = '/dashboard';
-      } else if (roles.includes('driver')) {
-        window.location.href = '/services/conductores';
-      } else if (roles.includes('host')) {
-        window.location.href = '/services/anfitriones';
-      } else if (roles.includes('operator')) {
-        window.location.href = '/services/operadores';
-      } else {
-        // pasajero → panel principal
-        window.location.href = '/dashboard/pasajero';
-      }
+      completeLogin(data);
 
     } catch {
       setError('No se pudo conectar con el servidor. Verifica tu conexión.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // setStoredAuth actualiza el Zustand store (fuente de verdad para el Navbar)
+  // y espeja en localStorage. La cookie httpOnly going_webapp_session viene del
+  // proxy en el Set-Cookie. Redirige según rol.
+  const completeLogin = (data: any) => {
+    const token = data.accessToken || data.token;
+    setStoredAuth(token, data.refreshToken ?? null, data.user ?? null);
+    const roles: string[] = data.user?.roles || data.roles || [];
+    const from = searchParams.get('from');
+    if (from) window.location.href = from;
+    else if (roles.includes('admin') || roles.includes('staff')) window.location.href = '/dashboard';
+    else if (roles.includes('driver')) window.location.href = '/services/conductores';
+    else if (roles.includes('host')) window.location.href = '/services/anfitriones';
+    else if (roles.includes('operator')) window.location.href = '/services/operadores';
+    else window.location.href = '/dashboard/pasajero';
+  };
+
+  const verifyMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/auth/mfa/verify-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mfaToken, code: mfaCode.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.message || 'Código inválido. Intenta de nuevo.');
+        return;
+      }
+      const token = data.accessToken || data.token;
+      if (!token) { setError('No se recibió token tras la verificación.'); return; }
+      completeLogin(data);
+    } catch {
+      setError('No se pudo conectar con el servidor.');
     } finally {
       setLoading(false);
     }
@@ -133,8 +159,8 @@ function LoginForm() {
             <Image src="/going-logo-h.png" alt="Going App" width={160} height={50} priority />
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Bienvenido de vuelta</h1>
-          <p className="text-gray-500 mb-8">Ingresa a tu cuenta para continuar</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{mfaToken ? 'Verificación en dos pasos' : 'Bienvenido de vuelta'}</h1>
+          <p className="text-gray-500 mb-8">{mfaToken ? 'Ingresa el código de 6 dígitos de tu app de autenticación' : 'Ingresa a tu cuenta para continuar'}</p>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
@@ -142,6 +168,34 @@ function LoginForm() {
             </div>
           )}
 
+          {mfaToken ? (
+            <form onSubmit={verifyMfa} className="space-y-5">
+              <input
+                inputMode="numeric" maxLength={6} value={mfaCode} autoFocus
+                onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl text-center text-2xl tracking-[0.4em] font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ff4c41] bg-gray-50"
+              />
+              <button
+                type="submit" disabled={loading || mfaCode.length < 6}
+                className="w-full py-3.5 rounded-xl font-bold text-white transition-all disabled:opacity-60 shadow-sm hover:shadow-md active:scale-[0.98]"
+                style={{ backgroundColor: '#ff4c41' }}
+              >
+                {loading ? 'Verificando…' : 'Verificar'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMfaToken(''); setMfaCode(''); setError(''); }}
+                className="w-full text-sm text-gray-500 hover:text-gray-700"
+              >
+                ← Volver al inicio de sesión
+              </button>
+              <p className="text-xs text-gray-400 text-center">
+                ¿Perdiste tu app? Ingresa uno de tus códigos de recuperación.
+              </p>
+            </form>
+          ) : (
+          <>
           {/* Social login */}
           <div className="space-y-3 mb-6">
             <a
@@ -222,6 +276,8 @@ function LoginForm() {
               <span key={s} className="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full">{s}</span>
             ))}
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
