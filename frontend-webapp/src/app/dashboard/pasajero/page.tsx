@@ -96,7 +96,7 @@ export default function PassengerDashboard() {
       .catch(() => setRides([]))
       .finally(() => setLoadingRides(false));
 
-    authFetch(`${API_URL}/payment/wallet/${decoded.id}/balance`)
+    authFetch(`${API_URL}/payments/wallet/${decoded.id}/balance`)
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setWalletBalance(data.balance ?? data.amount ?? 0); })
       .catch(() => {});

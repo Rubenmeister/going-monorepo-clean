@@ -25,11 +25,13 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
 
 ## Cuenta / Pagos (Grupo C)
 
-- [ ] **Editar perfil**: la cuenta hace `PATCH /auth/me` con `{firstName,lastName,phone}`.
-  Confirmar que el backend expone ese método (si no, devolverá error y el
-  usuario verá "No se pudo guardar").
+- [x] **Editar perfil**: HECHO — `user-auth-service` expone `PATCH /auth/me`
+  (`{firstName,lastName,phone}`). La webapp ya guarda contra él.
 - [ ] **Preferencias de notificación**: hoy se guardan en `localStorage` del
   dispositivo. Falta endpoint de settings para persistirlas por usuario.
-- [ ] **Wallet**: Recargar y Transferir están deshabilitados ("Pronto") — faltan
-  los flujos/endpoints de pago (`/payment/recharge`, `/payment/transfer`).
+- [~] **Wallet del pasajero**: Slice 1 HECHO — `payment-service` tiene el ledger
+  real (saldo + movimientos) y `GET /payments/wallet/:userId/balance|transactions`;
+  la webapp ya consulta el endpoint correcto (antes pegaba a `/payment/...`).
+  Pendiente Slice 2: **recarga** real (intent Datafast/DeUna + acreditación
+  idempotente en el webhook + página `/payment/recharge`) y **transferencias**.
 - [ ] **2FA de usuario** y **eliminación de cuenta**: pendientes de flujo backend.
