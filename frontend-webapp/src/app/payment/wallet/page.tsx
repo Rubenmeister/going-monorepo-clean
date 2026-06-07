@@ -70,20 +70,19 @@ export default function WalletPage() {
           <p className="text-white/50 text-xs">Going App Wallet · {name}</p>
         </div>
 
-        {/* Acciones rápidas — Recargar ya funcional (Datafast/DeUna).
-            Transferir queda pendiente (fase 2). Historial salta a los
-            movimientos de abajo. */}
+        {/* Acciones rápidas — Recargar y Transferir funcionales.
+            Historial salta a los movimientos de abajo. */}
         <div className="grid grid-cols-3 gap-3">
           <Link href="/payment/recharge"
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
             <span className="text-2xl">➕</span>
             <span className="text-xs font-semibold text-gray-700">Recargar</span>
           </Link>
-          <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 opacity-60 cursor-not-allowed">
+          <Link href="/payment/transfer"
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
             <span className="text-2xl">📤</span>
             <span className="text-xs font-semibold text-gray-700">Transferir</span>
-            <span className="absolute top-1.5 right-1.5 text-[9px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">Pronto</span>
-          </div>
+          </Link>
           <a href="#movimientos"
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
             <span className="text-2xl">🧾</span>

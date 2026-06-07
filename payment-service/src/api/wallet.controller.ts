@@ -7,11 +7,13 @@ import {
   Query,
   UseGuards,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '@going-monorepo-clean/shared-infrastructure';
 import { WalletService } from '../application/wallet.service';
 import { RechargeService } from '../application/recharge.service';
+import { UserLookupClient } from '../application/user-lookup-client.service';
 
 /**
  * Wallet del pasajero.
@@ -26,6 +28,7 @@ export class WalletController {
   constructor(
     private readonly wallet: WalletService,
     private readonly rechargeSvc: RechargeService,
+    private readonly lookup: UserLookupClient,
   ) {}
 
   @Get(':userId/balance')
@@ -76,6 +79,31 @@ export class WalletController {
     @CurrentUser('userId') userId: string,
   ) {
     return this.rechargeSvc.confirm(userId, ref);
+  }
+
+  /**
+   * POST /payments/wallet/transfer — transfiere saldo a otro usuario,
+   * identificado por email o teléfono.
+   */
+  @Post('transfer')
+  @UseGuards(AuthGuard('jwt'))
+  async transfer(
+    @Body() body: { toEmail?: string; toPhone?: string; amount: number },
+    @CurrentUser('userId') userId: string,
+  ) {
+    const amount = Number(body?.amount);
+    if (!(amount > 0)) throw new BadRequestException('Monto inválido');
+
+    const recipient = await this.lookup.lookup({ email: body?.toEmail, phone: body?.toPhone });
+    if (!recipient) {
+      throw new BadRequestException('No encontramos un usuario con ese correo o teléfono');
+    }
+    if (recipient.userId === userId) {
+      throw new BadRequestException('No puedes transferirte a ti mismo');
+    }
+
+    const result = await this.wallet.transfer(userId, recipient.userId, amount);
+    return { ...result, recipientName: recipient.firstName };
   }
 
   private assertSelfOrAdmin(userId: string, currentUserId: string, roles: string[] = []) {
