@@ -437,17 +437,10 @@ export default function HomePage() {
 
           {/* ── HEAD del hero: logo color + headline + texto descriptivo ── */}
           <FadeIn dir="up" className="text-center max-w-3xl mb-10">
-            <img
-              src="/images/Going_Logotipo_Color_V_800px.png"
-              alt="Going App"
-              className="h-48 mx-auto mb-6"
-              style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
-            />
-
             <h1
-              className="font-black text-gray-900 mb-5 leading-[0.95]"
+              className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
               style={{
-                fontSize: 'clamp(2.5rem, 7vw, 4.5rem)',
+                fontSize: 'clamp(1.6rem, 6.2vw, 4rem)',
                 fontFamily: 'var(--font-nunito-sans), sans-serif',
                 // Text-shadow blanco sutil para legibilidad sobre cielo claro
                 // sin necesidad de overlay opaco que tape la foto.
@@ -467,6 +460,16 @@ export default function HomePage() {
               viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
               todo desde tu teléfono.
             </p>
+          </FadeIn>
+
+          {/* ── Celular Going App: imagen central del hero (muestra la marca) ── */}
+          <FadeIn dir="up" delay={0.12} className="mb-10">
+            <img
+              src="/images/going-phone.png"
+              alt="App Going App en un celular"
+              className="h-[340px] sm:h-[440px] md:h-[500px] w-auto mx-auto"
+              style={{ filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.20))' }}
+            />
           </FadeIn>
 
           {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
