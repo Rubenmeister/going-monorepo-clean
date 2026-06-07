@@ -29,9 +29,10 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   (`{firstName,lastName,phone}`). La webapp ya guarda contra él.
 - [ ] **Preferencias de notificación**: hoy se guardan en `localStorage` del
   dispositivo. Falta endpoint de settings para persistirlas por usuario.
-- [~] **Wallet del pasajero**: Slice 1 HECHO — `payment-service` tiene el ledger
-  real (saldo + movimientos) y `GET /payments/wallet/:userId/balance|transactions`;
-  la webapp ya consulta el endpoint correcto (antes pegaba a `/payment/...`).
-  Pendiente Slice 2: **recarga** real (intent Datafast/DeUna + acreditación
-  idempotente en el webhook + página `/payment/recharge`) y **transferencias**.
+- [~] **Wallet del pasajero**: Slice 1 + 2 HECHOS — ledger real, balance/
+  transactions, y **recarga** (Datafast/DeUna): `POST /payments/wallet/recharge`
+  + confirmación por estado `POST .../recharge/:ref/confirm` + acreditación
+  idempotente, con **webhook** como backstop. Página `/payment/recharge` lista.
+  ⚠️ Requiere credenciales reales (`DATAFAST_*`, `DEUNA_*`) en staging para
+  probar el pago de punta a punta. Pendiente: **transferencias** entre usuarios.
 - [ ] **2FA de usuario** y **eliminación de cuenta**: pendientes de flujo backend.

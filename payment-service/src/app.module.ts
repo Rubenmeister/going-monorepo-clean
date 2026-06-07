@@ -22,6 +22,7 @@ import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-c
 import { DriverEarningsController } from './api/driver-earnings.controller';
 import { WalletController } from './api/wallet.controller';
 import { WalletService } from './application/wallet.service';
+import { RechargeService } from './application/recharge.service';
 import {
   Wallet,
   WalletSchema,
@@ -80,6 +81,7 @@ import {
     CompleteRideUseCase,
     CreatePayoutUseCase,
     WalletService,
+    RechargeService,
     JwtStrategy,
     // Routing provider (OSRM por default). Cambiar a GraphHopper/Mapbox
     // reemplazando el useClass.
