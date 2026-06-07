@@ -36,6 +36,7 @@ function RegisterForm() {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPw, setShowPw] = useState(false);
 
   const active = ROLES.find(r => r.value === selectedRole)!;
 
@@ -235,8 +236,15 @@ function RegisterForm() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1.5">Contraseña</label>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="Mínimo 8 caracteres" autoComplete="new-password" required minLength={8}
-                className="w-full px-3.5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
+              <div className="relative">
+                <input name="password" type={showPw ? 'text' : 'password'} value={form.password} onChange={handleChange} placeholder="Mínimo 8 caracteres" autoComplete="new-password" required minLength={8}
+                  className="w-full px-3.5 py-3 pr-11 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] text-gray-900 bg-gray-50 text-sm" />
+                <button type="button" onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-base"
+                  aria-label={showPw ? 'Ocultar contraseña' : 'Ver contraseña'}>
+                  {showPw ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             {selectedRole !== 'user' && (

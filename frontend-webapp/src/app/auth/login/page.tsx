@@ -15,6 +15,7 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
+  const [showPw, setShowPw]     = useState(false);
 
   // Si el usuario ya está autenticado, redirigir directamente
   useEffect(() => {
@@ -179,11 +180,18 @@ function LoginForm() {
                 <label className="text-sm font-semibold text-gray-700">Contraseña</label>
                 <Link href="/auth/forgot-password" className="text-xs text-[#ff4c41] hover:underline font-medium">¿Olvidaste tu contraseña?</Link>
               </div>
-              <input
-                name="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" autoComplete="current-password" required
-                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
-              />
+              <div className="relative">
+                <input
+                  name="password" type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••" autoComplete="current-password" required
+                  className="w-full px-4 py-3.5 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#ff4c41] focus:border-transparent text-gray-900 bg-gray-50 transition-all"
+                />
+                <button type="button" onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg"
+                  aria-label={showPw ? 'Ocultar contraseña' : 'Ver contraseña'}>
+                  {showPw ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
             <button
               type="submit" disabled={loading}
