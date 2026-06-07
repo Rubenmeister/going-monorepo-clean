@@ -132,9 +132,53 @@ async function reverseGeocodeMapbox(lat: number, lon: number): Promise<Location>
   } catch { return fallback; }
 }
 
+/* ── Search Box API (suggest + retrieve) ──────────────────────────────────
+   Mejor autocompletado de POIs/negocios que el geocoding v5, ideal para
+   ciudades donde hay pocas direcciones "postales". Flujo en 2 pasos:
+   suggest (devuelve mapbox_id) → retrieve (devuelve coordenadas). */
+interface Suggestion extends Location { mapboxId?: string; title?: string; subtitle?: string; }
+const SEARCHBOX = 'https://api.mapbox.com/search/searchbox/v1';
+
+async function searchBoxSuggest(q: string, sessionToken: string, prox: { lat: number; lon: number }): Promise<Suggestion[]> {
+  if (!MAPBOX_TOKEN) return [];
+  const url = `${SEARCHBOX}/suggest?q=${encodeURIComponent(q)}&language=es&country=ec&limit=6`
+    + `&proximity=${prox.lon},${prox.lat}&session_token=${sessionToken}&access_token=${MAPBOX_TOKEN}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('searchbox suggest failed');
+  const json = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((json.suggestions as any[]) ?? []).map((s: any) => ({
+    address: s.full_address || s.place_formatted || s.name,
+    lat: 0, lon: 0,
+    mapboxId: s.mapbox_id,
+    title: s.name,
+    subtitle: s.full_address || s.place_formatted || '',
+  }));
+}
+
+async function searchBoxRetrieve(mapboxId: string, sessionToken: string): Promise<Location | null> {
+  if (!MAPBOX_TOKEN) return null;
+  try {
+    const url = `${SEARCHBOX}/retrieve/${mapboxId}?session_token=${sessionToken}&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const f = (json.features as any[])?.[0];
+    if (!f?.geometry?.coordinates) return null;
+    const [lon, lat] = f.geometry.coordinates;
+    return { address: f.properties?.full_address || f.properties?.name || '', lat, lon, city: f.properties?.context?.place?.name };
+  } catch { return null; }
+}
+
+function newSessionToken(): string {
+  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+}
+
 export function LocationSelector({ type, value, onChange, placeholder }: LocationSelectorProps) {
   const [input, setInput] = useState('');
-  const [suggestions, setSuggestions] = useState<Location[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const sessionToken = useRef<string>(newSessionToken());
   const [savedEntries, setSavedEntries] = useState<SavedEntry[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -180,7 +224,12 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     try {
       setIsLoading(true);
       setError(null);
-      const locations = await searchMapbox(query);
+      // Sesgo de proximidad: a la ubicación ya elegida, o a Quito por defecto.
+      const prox = value?.lat ? { lat: value.lat, lon: value.lon } : { lat: -0.1807, lon: -78.4678 };
+      // 1º Search Box (mejores POIs); si no hay resultados, geocoding v5.
+      let locations: Suggestion[] = [];
+      try { locations = await searchBoxSuggest(query, sessionToken.current, prox); } catch { locations = []; }
+      if (locations.length === 0) locations = await searchMapbox(query);
       if (locations.length === 0) {
         setSuggestions([]);
         setError('No se encontraron ubicaciones');
@@ -220,12 +269,19 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     setShowSuggestions(false);
   };
 
-  const handleSelect = (location: Location) => {
-    onChange(location);
-    setInput(location.address);
+  const handleSelect = async (location: Suggestion) => {
+    let resolved: Location = location;
+    // Search Box: resolver coordenadas reales con retrieve antes de fijar.
+    if (location.mapboxId && !location.lat) {
+      const r = await searchBoxRetrieve(location.mapboxId, sessionToken.current);
+      if (r) resolved = r;
+    }
+    onChange(resolved);
+    setInput(resolved.address);
     setShowSuggestions(false);
     setSuggestions([]);
     setError(null);
+    sessionToken.current = newSessionToken(); // nueva sesión tras seleccionar
   };
 
   const handleClear = () => {
@@ -388,9 +444,9 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
                     <span className="text-base">📍</span>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 truncate">
-                        {location.city || location.address.split(',')[0]}
+                        {location.title || location.city || location.address.split(',')[0]}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">{location.address}</p>
+                      <p className="text-xs text-gray-400 truncate">{location.subtitle || location.address}</p>
                     </div>
                   </button>
                 ))}

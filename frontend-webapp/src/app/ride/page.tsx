@@ -8,6 +8,7 @@ import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { getStoredToken } from '@/lib/providers/auth-client';
 import { COLORS } from '../components/design-tokens';
 import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';
+import { StaticRouteMap } from '../components/features/tracking/StaticRouteMap';
 
 /* ─── Lazy-loaded heavy components ─────────────────────────────────── */
 const RideRequestForm = dynamic(
@@ -151,12 +152,14 @@ interface ConfirmationPanelProps {
   origin: string;
   destination: string;
   estimatedFare: number;
+  pickup?: { lat: number; lon: number };
+  dropoff?: { lat: number; lon: number };
   onContinue: () => void;
 }
 
 function ConfirmationPanel({
   rideToken, driverName, driverPlate, driverPhoto,
-  origin, destination, estimatedFare, onContinue,
+  origin, destination, estimatedFare, pickup, dropoff, onContinue,
 }: ConfirmationPanelProps) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(rideToken)}&size=200x200&margin=10&color=0033A0`;
   const shortToken = rideToken.length > 8 ? rideToken.slice(-8).toUpperCase() : rideToken.toUpperCase();
@@ -166,6 +169,13 @@ function ConfirmationPanel({
 
   return (
     <div className="space-y-4">
+
+      {/* ── Miniatura del mapa de la ruta (Static Images API) ── */}
+      {pickup && dropoff && (
+        <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+          <StaticRouteMap pickup={pickup} dropoff={dropoff} width={600} height={200} className="w-full h-auto block" />
+        </div>
+      )}
 
       {/* ── Conductor confirmado ── */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -445,6 +455,8 @@ function RidePageInner() {
             origin={activeRide.pickup?.address ?? ''}
             destination={activeRide.dropoff?.address ?? ''}
             estimatedFare={activeRide.estimatedFare}
+            pickup={activeRide.pickup}
+            dropoff={activeRide.dropoff}
             onContinue={handleConfirmationContinue}
           />
         )}
