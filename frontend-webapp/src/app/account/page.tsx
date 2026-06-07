@@ -10,6 +10,7 @@ import {
   IconMoney, IconArrowRight, IconWarning, IconInfo, IconGraduation,
   IconChevronDown, IconShield, IconBell,
 } from '../components/icons';
+import { enablePush } from '../lib/push';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
@@ -157,6 +158,30 @@ export default function AccountPage() {
       try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
       return next;
     });
+  };
+
+  // ── Push del navegador (web-push) ──
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMsg, setPushMsg]   = useState<string | null>(null);
+
+  const handleEnablePush = async () => {
+    setPushBusy(true);
+    setPushMsg(null);
+    const r = await enablePush();
+    if (r.ok) {
+      setPushMsg('ok');
+    } else {
+      const map: Record<string, string> = {
+        'no-config': 'Las notificaciones del navegador aún no están configuradas en este entorno.',
+        'unsupported': 'Tu navegador no soporta notificaciones push.',
+        'denied': 'Permiso denegado. Actívalo en los ajustes del navegador.',
+        'no-token': 'No se pudo obtener el token de notificaciones.',
+        'register-failed': 'No se pudo registrar el dispositivo. Intenta más tarde.',
+        'error': 'Ocurrió un error activando las notificaciones.',
+      };
+      setPushMsg(map[r.reason] || 'No se pudo activar.');
+    }
+    setPushBusy(false);
   };
 
   const handleSaveProfile = async () => {
@@ -737,6 +762,22 @@ export default function AccountPage() {
                 })}
               </div>
               <p className="text-xs text-gray-400 mt-3">Tus preferencias se guardan en este dispositivo.</p>
+
+              {/* Push del navegador (web-push) */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={handleEnablePush}
+                  disabled={pushBusy || pushMsg === 'ok'}
+                  className="w-full px-4 py-3 rounded-xl text-sm font-semibold flex justify-between items-center transition-colors disabled:opacity-70"
+                  style={{ backgroundColor: pushMsg === 'ok' ? '#ECFDF5' : '#F9FAFB', color: pushMsg === 'ok' ? '#15803d' : '#374151', border: '1px solid #E5E7EB' }}
+                >
+                  <span>{pushMsg === 'ok' ? '✓ Notificaciones activadas en este navegador' : 'Activar notificaciones en este navegador'}</span>
+                  {pushBusy && <span className="w-4 h-4 border-2 border-gray-300 border-t-[#ff4c41] rounded-full animate-spin" />}
+                </button>
+                {pushMsg && pushMsg !== 'ok' && (
+                  <p className="text-xs text-amber-700 mt-2">{pushMsg}</p>
+                )}
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">

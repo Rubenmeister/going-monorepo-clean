@@ -9,9 +9,12 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   (ventanas 1h y 5min, idempotente por `reminder1hSentAt`/`reminder5mSentAt`) y
   envía push vía `notifications-service /api/notifications/send` (FCM) + evento
   WS `ride:reminder`.
-  - ⚠️ El push llega a dispositivos con token registrado (app móvil). Falta
-    **web-push** en la webapp (service worker FCM + registro de token) para que
-    el navegador reciba el aviso — tarea aparte.
+  - [x] **web-push del navegador**: HECHO — service worker FCM
+    (`public/firebase-messaging-sw.js`), helper `lib/push.ts` (permiso + token)
+    y endpoint `POST /notifications/device-token` (notifications-service) para
+    registrar el token. Toggle "Activar notificaciones" en `/account` (Ajustes).
+    ⚠️ Requiere configurar `NEXT_PUBLIC_FIREBASE_VAPID_KEY` (+ `appId`) para que
+    `getToken` funcione; sin ellos el botón avisa "no configurado".
 - [x] **Asignación interna del conductor más opcionado** para reservas: YA
   existía — `ScheduledRideDispatcherCron` abre el canal y dispara el matching a
   `scheduledAt − MATCH_LEAD_TIME_MINUTES` (60 por defecto) y emite por WS.
