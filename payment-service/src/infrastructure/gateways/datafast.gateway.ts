@@ -4,6 +4,7 @@ import { Result, ok, err } from 'neverthrow';
 import {
   IPaymentGateway,
   PaymentIntentResult,
+  PaymentIntentOptions,
 } from '@going-monorepo-clean/domains-payment-core';
 import { Money } from '@going-monorepo-clean/shared-domain';
 import * as crypto from 'crypto';
@@ -77,7 +78,8 @@ export class DatafastGateway implements IPaymentGateway {
    * POST /v1/checkouts
    */
   async createPaymentIntent(
-    amount: Money
+    amount: Money,
+    options?: PaymentIntentOptions,
   ): Promise<Result<PaymentIntentResult, Error>> {
     if (!this.isConfigured) {
       return err(
@@ -91,7 +93,7 @@ export class DatafastGateway implements IPaymentGateway {
         amount: (amount.amount / 100).toFixed(2), // USD en decimales
         currency: amount.currency || 'USD',
         paymentType: 'DB', // DB = Debit (cobro directo)
-        'merchantTransactionId': `going-${Date.now()}`,
+        'merchantTransactionId': options?.reference || `going-${Date.now()}`,
         'descriptor': 'Going Transporte',
       });
 

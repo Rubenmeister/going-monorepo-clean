@@ -4,6 +4,7 @@ import { Result, ok, err } from 'neverthrow';
 import {
   IPaymentGateway,
   PaymentIntentResult,
+  PaymentIntentOptions,
 } from '@going-monorepo-clean/domains-payment-core';
 import { Money } from '@going-monorepo-clean/shared-domain';
 import * as crypto from 'crypto';
@@ -66,7 +67,8 @@ export class DeunaGateway implements IPaymentGateway {
    *   4. DeUna confirma via webhook con { orderId, status: 'paid' }
    */
   async createPaymentIntent(
-    amount: Money
+    amount: Money,
+    options?: PaymentIntentOptions,
   ): Promise<Result<PaymentIntentResult, Error>> {
     if (!this.isConfigured) {
       return err(
@@ -75,7 +77,7 @@ export class DeunaGateway implements IPaymentGateway {
     }
 
     try {
-      const orderId = `going-${Date.now()}`;
+      const orderId = options?.reference || `going-${Date.now()}`;
 
       const body = {
         merchantId: this.merchantId,
