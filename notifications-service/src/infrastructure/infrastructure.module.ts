@@ -52,6 +52,6 @@ import { Message, MessageSchema } from './schemas/message.schema';
       useClass: CompositeNotificationGateway,
     },
   ],
-  exports: [INotificationRepository, INotificationGateway, IMessageRepository],
+  exports: [INotificationRepository, INotificationGateway, IMessageRepository, DeviceTokenRepository],
 })
 export class InfrastructureModule {}

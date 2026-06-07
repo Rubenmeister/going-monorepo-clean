@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Delete,
   BadRequestException,
   NotFoundException,
   ForbiddenException,
@@ -19,6 +20,7 @@ import {
 import { INotificationRepository } from '@going-monorepo-clean/domains-notification-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser } from '../domain/ports';
+import { DeviceTokenRepository } from '../infrastructure/persistence/device-token.repository';
 
 /**
  * Auth: todas las rutas exigen JWT válido. Antes era 100% público — un
@@ -33,7 +35,32 @@ export class NotificationController {
     private readonly getUserNotificationsUseCase: GetUserNotificationsUseCase,
     @Inject(INotificationRepository)
     private readonly notificationRepo: INotificationRepository,
+    private readonly deviceTokenRepo: DeviceTokenRepository,
   ) {}
+
+  /**
+   * POST /notifications/device-token — registra el token de push del
+   * dispositivo del usuario actual (web/móvil). Lo usa la webapp tras pedir
+   * permiso de notificaciones (FCM). Idempotente (upsert por token).
+   */
+  @Post('device-token')
+  async registerDeviceToken(
+    @CurrentUser() caller: any,
+    @Body() body: { token?: string; platform?: 'web' | 'android' | 'ios'; deviceId?: string },
+  ) {
+    const userId = caller?.id ?? caller?.userId ?? caller?.sub;
+    if (!body?.token) throw new BadRequestException('token requerido');
+    await this.deviceTokenRepo.upsert(userId, body.token, body.platform ?? 'web', body.deviceId);
+    return { ok: true };
+  }
+
+  /** DELETE /notifications/device-token — desactiva el token (logout / opt-out). */
+  @Delete('device-token')
+  async removeDeviceToken(@Body() body: { token?: string }) {
+    if (!body?.token) throw new BadRequestException('token requerido');
+    await this.deviceTokenRepo.deactivateTokens([body.token]);
+    return { ok: true };
+  }
 
   /**
    * POST /notifications/send — crear nueva notificación
