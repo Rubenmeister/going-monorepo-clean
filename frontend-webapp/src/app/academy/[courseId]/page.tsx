@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, ComponentType } from 'react';
+import { useState, useEffect, useRef, ComponentType } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { COLORS } from '../../components/design-tokens';
@@ -379,7 +379,7 @@ Bienvenido a <strong>Going App en Ruta</strong>, el podcast oficial de la Academ
         title: 'Video: Recorrido completo por la app',
         format: 'video',
         duration: '7 min',
-        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        // videoUrl pendiente de grabación → cae al placeholder "video próximamente".
         videoDescription: `
 <h3>¿Qué vas a aprender en este video?</h3>
 <ul>
@@ -993,6 +993,22 @@ export default function CoursePage() {
   const course = COURSES_DB[courseId];
   const [currentLesson, setCurrentLesson] = useState(0);
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+
+  // Persistencia del progreso por curso (no hay backend de academy todavía).
+  const progressLoaded = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`going_academy_progress_${courseId}`);
+      if (raw) setCompletedLessons(new Set(JSON.parse(raw)));
+    } catch { /* ignore */ }
+    progressLoaded.current = true;
+  }, [courseId]);
+  useEffect(() => {
+    if (!progressLoaded.current) return; // no sobrescribir antes de cargar
+    try {
+      localStorage.setItem(`going_academy_progress_${courseId}`, JSON.stringify([...completedLessons]));
+    } catch { /* ignore */ }
+  }, [courseId, completedLessons]);
 
   if (!course) {
     return (
