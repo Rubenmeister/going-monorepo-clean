@@ -35,7 +35,7 @@ interface MapboxBounds {
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-function loadMapbox(): Promise<void> {
+export function loadMapbox(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
   if (window.mapboxgl) return Promise.resolve();
 

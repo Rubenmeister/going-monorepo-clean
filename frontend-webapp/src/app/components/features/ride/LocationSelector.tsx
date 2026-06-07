@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { Location } from '@/types';
+import { MapPicker } from './MapPicker';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -139,6 +140,9 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [pickCoords, setPickCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [confirmingMap, setConfirmingMap] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -255,6 +259,17 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     );
   };
 
+  /* Confirmar el punto elegido en el mapa → geocodificación inversa + select. */
+  const handleConfirmMap = async () => {
+    if (!pickCoords) return;
+    setConfirmingMap(true);
+    const loc = await reverseGeocodeMapbox(pickCoords.lat, pickCoords.lon);
+    handleSelect(loc);
+    setShowMap(false);
+    setPickCoords(null);
+    setConfirmingMap(false);
+  };
+
   useEffect(() => () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); }, []);
 
   return (
@@ -327,6 +342,18 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
               </button>
             )}
 
+            {/* Fijar punto exacto en el mapa (pin arrastrable) — origen y destino */}
+            <button type="button" onClick={() => { setShowMap(true); setShowSuggestions(false); }}
+              className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 border-b border-gray-100">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-800">Fijar punto en el mapa</p>
+                <p className="text-xs text-gray-400">Arrastra el pin al lugar exacto</p>
+              </div>
+            </button>
+
             {/* Sección: Guardadas */}
             {!input.trim() && savedEntries.length > 0 && (
               <>
@@ -384,6 +411,27 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
           </div>
         )}
       </div>
+
+      {/* Panel del mapa para fijar el punto exacto (pin arrastrable) */}
+      {showMap && (
+        <div className="mt-2 rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
+          <MapPicker
+            value={value ?? pickCoords ?? undefined}
+            accent={dotColor}
+            onPick={(lat, lon) => setPickCoords({ lat, lon })}
+          />
+          <div className="flex gap-2 mt-2">
+            <button type="button" onClick={() => { setShowMap(false); setPickCoords(null); }}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button type="button" onClick={handleConfirmMap} disabled={!pickCoords || confirmingMap}
+              className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50" style={{ backgroundColor: '#0033A0' }}>
+              {confirmingMap ? 'Fijando…' : 'Confirmar ubicación'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
