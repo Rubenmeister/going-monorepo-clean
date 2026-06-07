@@ -440,7 +440,7 @@ export default function HomePage() {
             <img
               src="/images/Going_Logotipo_Color_V_800px.png"
               alt="Going App"
-              className="h-32 mx-auto mb-6"
+              className="h-48 mx-auto mb-6"
               style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
 
