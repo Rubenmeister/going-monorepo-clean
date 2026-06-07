@@ -29,10 +29,13 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   (`{firstName,lastName,phone}`). La webapp ya guarda contra él.
 - [ ] **Preferencias de notificación**: hoy se guardan en `localStorage` del
   dispositivo. Falta endpoint de settings para persistirlas por usuario.
-- [~] **Wallet del pasajero**: Slice 1 + 2 HECHOS — ledger real, balance/
-  transactions, y **recarga** (Datafast/DeUna): `POST /payments/wallet/recharge`
-  + confirmación por estado `POST .../recharge/:ref/confirm` + acreditación
-  idempotente, con **webhook** como backstop. Página `/payment/recharge` lista.
-  ⚠️ Requiere credenciales reales (`DATAFAST_*`, `DEUNA_*`) en staging para
-  probar el pago de punta a punta. Pendiente: **transferencias** entre usuarios.
+- [x] **Wallet del pasajero**: COMPLETO — ledger, balance/transactions,
+  **recarga** (Datafast/DeUna, confirmación por estado + webhook idempotente) y
+  **transferencias** entre usuarios (`POST /payments/wallet/transfer`, resuelve
+  al receptor por email/teléfono vía `GET /auth/internal/lookup-user`; débito+
+  crédito atómico idempotente con reverso). Páginas `/payment/recharge` y
+  `/payment/transfer` listas.
+  ⚠️ La recarga real necesita credenciales `DATAFAST_*`/`DEUNA_*`; la
+  transferencia necesita `INTERNAL_SERVICE_TOKEN` + `USER_AUTH_SERVICE_URL` en
+  payment-service (igual que el LoyaltyClient existente).
 - [ ] **2FA de usuario** y **eliminación de cuenta**: pendientes de flujo backend.
