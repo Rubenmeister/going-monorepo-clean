@@ -17,9 +17,10 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
 
 ## Envío
 
-- [ ] **Tracking real** (estado en vivo del envío): la pantalla de seguimiento
-  actual es demo. Conectar a `/parcels/:id` + WebSocket y redirigir a
-  `/envios/tracking/[trackingId]` tras crear el envío.
+- [x] **Tracking real** (estado en vivo del envío): HECHO. Tras crear el envío,
+  `cotizar` redirige a `/envios/tracking/[trackingCode]`, que consulta el
+  endpoint real `GET /parcels/track/:trackingCode` y refresca cada 10s. Se
+  eliminó la pantalla demo. (Mejora futura: WebSocket en vez de polling.)
 - [ ] **Adjuntar foto del paquete** al backend (hoy solo previsualización local).
 
 ## Cuenta / Pagos (Grupo C)
