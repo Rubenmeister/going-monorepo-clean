@@ -433,7 +433,7 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 lg:py-20 flex flex-col items-center" style={{ minHeight: '100vh' }}>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 lg:py-14 flex flex-col items-center" style={{ minHeight: '100vh' }}>
 
           {/* ── Logo arriba (marca paraguas centrada) ── */}
           <FadeIn dir="up" className="text-center mb-8">
@@ -445,38 +445,27 @@ export default function HomePage() {
             />
           </FadeIn>
 
-          {/* ── Texto + celular a un costado (2 columnas en desktop) ── */}
-          <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
-            <FadeIn dir="up" className="text-center md:text-left">
-              <h1
-                className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
-                style={{
-                  fontSize: 'clamp(1.5rem, 5vw, 3rem)',
-                  fontFamily: 'var(--font-nunito-sans), sans-serif',
-                  textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
-                }}
-              >
-                Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
-              </h1>
-              <p
-                className="text-base sm:text-lg text-gray-700 max-w-xl mx-auto md:mx-0 leading-relaxed"
-                style={{ textShadow: '0 1px 12px rgba(255,255,255,0.9)' }}
-              >
-                La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
-                viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
-                todo desde tu teléfono.
-              </p>
-            </FadeIn>
-
-            <FadeIn dir="up" delay={0.12} className="flex justify-center md:justify-end">
-              <img
-                src="/images/going-phone.png"
-                alt="App Going App en un celular"
-                className="h-[320px] sm:h-[420px] md:h-[520px] w-auto"
-                style={{ filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.20))' }}
-              />
-            </FadeIn>
-          </div>
+          {/* ── Headline + texto (centrado) ── */}
+          <FadeIn dir="up" className="text-center max-w-3xl mb-10">
+            <h1
+              className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
+              style={{
+                fontSize: 'clamp(1.6rem, 6vw, 4rem)',
+                fontFamily: 'var(--font-nunito-sans), sans-serif',
+                textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
+              }}
+            >
+              Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
+            </h1>
+            <p
+              className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
+              style={{ textShadow: '0 1px 12px rgba(255,255,255,0.9)' }}
+            >
+              La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
+              viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
+              todo desde tu teléfono.
+            </p>
+          </FadeIn>
 
           {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
              Cards simples y limpias: icono + título + descripción + CTA.
@@ -484,8 +473,19 @@ export default function HomePage() {
              cuando se ajusten tarifas; el detalle de tarifa/cupos vive
              en /ride y /envios/cotizar, fuente única.
           */}
-          <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <FadeIn dir="up" delay={0.15} className="w-full max-w-6xl">
+            <div className="grid grid-cols-1 md:grid-cols-[210px_1fr] gap-6 items-center mb-8">
+
+              {/* Celular pequeño a un costado de las cajas (un poco más arriba) */}
+              <img
+                src="/images/going-phone.png"
+                alt="App Going App en un celular"
+                className="w-[140px] md:w-[185px] h-auto mx-auto md:-mt-10"
+                style={{ filter: 'drop-shadow(0 18px 40px rgba(0,0,0,0.20))' }}
+              />
+
+              {/* Las 3 cajas en fila */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
               {/* 3 CARDS DE SERVICIOS — usan <ServiceCard /> con tilt 3D
                  siguiendo el cursor + título escala en hover. Sin emojis ni
@@ -519,6 +519,7 @@ export default function HomePage() {
                 ctaColor={COLORS.brand.black}
               />
 
+              </div>
             </div>
           </FadeIn>
 
