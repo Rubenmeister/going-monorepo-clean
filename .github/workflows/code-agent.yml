@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0      # needed for git diff
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
 
