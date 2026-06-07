@@ -11,7 +11,7 @@ import {
   IconChevronDown, IconShield, IconBell,
 } from '../components/icons';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 async function authHeaders(): Promise<HeadersInit> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
@@ -20,6 +20,16 @@ async function authHeaders(): Promise<HeadersInit> {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
+
+// Preferencias de notificación — persistidas en localStorage (no había backend
+// de settings). Claves estables para no depender del índice/orden.
+const NOTIF_OPTIONS = [
+  { key: 'email',  label: 'Notificaciones por Email',  def: true  },
+  { key: 'sms',    label: 'Notificaciones por SMS',    def: true  },
+  { key: 'promos', label: 'Ofertas y Promociones',     def: false },
+  { key: 'trips',  label: 'Actualizaciones de viajes', def: true  },
+] as const;
+const NOTIF_PREFS_KEY = 'going_notif_prefs';
 
 interface RideHistory {
   tripId: string;
@@ -117,6 +127,57 @@ export default function AccountPage() {
   const [addressLoading, setAddressLoading] = useState(false);
   const [deletingMethod,  setDeletingMethod]  = useState<string | null>(null);
   const [deletingAddress, setDeletingAddress] = useState<string | null>(null);
+
+  // ── Edición de perfil ──
+  const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile]   = useState(false);
+  const [profileMsg, setProfileMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  // ── Preferencias de notificación (localStorage) ──
+  const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (auth.user) {
+      const u = auth.user as { firstName?: string; lastName?: string; phone?: string; email?: string };
+      setProfile({ firstName: u.firstName || '', lastName: u.lastName || '', phone: u.phone || '', email: u.email || '' });
+    }
+  }, [auth.user]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(NOTIF_PREFS_KEY);
+      if (raw) setNotifPrefs(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
+
+  const toggleNotif = (key: string, def: boolean) => {
+    setNotifPrefs(prev => {
+      const next = { ...prev, [key]: !(prev[key] ?? def) };
+      try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    setProfileMsg(null);
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ firstName: profile.firstName, lastName: profile.lastName, phone: profile.phone }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setProfileMsg({ type: 'ok', text: 'Perfil actualizado.' });
+      setEditingProfile(false);
+    } catch {
+      setProfileMsg({ type: 'err', text: 'No se pudo guardar el perfil. Intenta más tarde.' });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   useEffect(() => {
     if (!auth.user) return;
@@ -265,19 +326,64 @@ export default function AccountPage() {
         {/* ─── Perfil ─── */}
         {activeTab === 'profile' && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-            <h2 className="text-lg font-bold text-gray-900">Información de perfil</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Información de perfil</h2>
+              {!editingProfile && (
+                <button onClick={() => { setEditingProfile(true); setProfileMsg(null); }}
+                  className="text-sm font-semibold" style={{ color: COLORS.brand.red }}>Editar</button>
+              )}
+            </div>
+
+            {profileMsg && (
+              <div className={`text-sm rounded-xl px-4 py-2.5 ${profileMsg.type === 'ok' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {profileMsg.text}
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 block">Nombre</label>
-                <input type="text" defaultValue={auth.user.firstName || ''} readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none" />
+                <input type="text" value={profile.firstName} readOnly={!editingProfile}
+                  onChange={e => setProfile(p => ({ ...p, firstName: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-xl border text-gray-900 text-sm focus:outline-none ${editingProfile ? 'border-gray-300 bg-white focus:ring-2 focus:ring-[#ff4c41]' : 'border-gray-200 bg-gray-50'}`} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 block">Apellido</label>
+                <input type="text" value={profile.lastName} readOnly={!editingProfile}
+                  onChange={e => setProfile(p => ({ ...p, lastName: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-xl border text-gray-900 text-sm focus:outline-none ${editingProfile ? 'border-gray-300 bg-white focus:ring-2 focus:ring-[#ff4c41]' : 'border-gray-200 bg-gray-50'}`} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 block">Teléfono</label>
+                <input type="tel" value={profile.phone} readOnly={!editingProfile}
+                  onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
+                  placeholder={editingProfile ? '+593 99 000 0000' : '—'}
+                  className={`w-full px-4 py-3 rounded-xl border text-gray-900 text-sm focus:outline-none ${editingProfile ? 'border-gray-300 bg-white focus:ring-2 focus:ring-[#ff4c41]' : 'border-gray-200 bg-gray-50'}`} />
               </div>
               <div>
                 <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 block">Email</label>
-                <input type="email" defaultValue={auth.user.email || ''} readOnly
+                <input type="email" value={profile.email} readOnly
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none" />
               </div>
             </div>
+
+            {editingProfile && (
+              <div className="flex gap-3">
+                <button onClick={handleSaveProfile} disabled={savingProfile}
+                  className="px-5 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-60"
+                  style={{ backgroundColor: COLORS.brand.red }}>
+                  {savingProfile ? 'Guardando…' : 'Guardar'}
+                </button>
+                <button onClick={() => {
+                    setEditingProfile(false); setProfileMsg(null);
+                    const u = auth.user as { firstName?: string; lastName?: string; phone?: string; email?: string };
+                    setProfile({ firstName: u?.firstName || '', lastName: u?.lastName || '', phone: u?.phone || '', email: u?.email || '' });
+                  }}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50">
+                  Cancelar
+                </button>
+              </div>
+            )}
             <div className="pt-2 flex gap-3">
               <Link href="/ride"
                 className="flex-1 py-3 rounded-xl text-center text-white text-sm font-bold inline-flex items-center justify-center gap-2"
@@ -619,18 +725,18 @@ export default function AccountPage() {
                 Notificaciones
               </h2>
               <div className="space-y-3">
-                {[
-                  { label: 'Notificaciones por Email',   enabled: true },
-                  { label: 'Notificaciones por SMS',     enabled: true },
-                  { label: 'Ofertas y Promociones',      enabled: false },
-                  { label: 'Actualizaciones de viajes',  enabled: true },
-                ].map((s, i) => (
-                  <label key={i} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer">
-                    <span className="text-sm text-gray-700 font-medium">{s.label}</span>
-                    <input type="checkbox" defaultChecked={s.enabled} className="w-5 h-5 cursor-pointer accent-[#ff4c41]" />
-                  </label>
-                ))}
+                {NOTIF_OPTIONS.map((s) => {
+                  const checked = notifPrefs[s.key] ?? s.def;
+                  return (
+                    <label key={s.key} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer">
+                      <span className="text-sm text-gray-700 font-medium">{s.label}</span>
+                      <input type="checkbox" checked={checked} onChange={() => toggleNotif(s.key, s.def)}
+                        className="w-5 h-5 cursor-pointer accent-[#ff4c41]" />
+                    </label>
+                  );
+                })}
               </div>
+              <p className="text-xs text-gray-400 mt-3">Tus preferencias se guardan en este dispositivo.</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -639,14 +745,14 @@ export default function AccountPage() {
                 Seguridad
               </h2>
               <div className="space-y-3">
-                <button className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                <Link href="/auth/forgot-password" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
                   <span>Cambiar Contraseña</span>
                   <IconArrowRight size={14} className="text-gray-400" />
-                </button>
-                <button className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                </Link>
+                <div className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-400 flex justify-between items-center cursor-not-allowed">
                   <span>Autenticación de Dos Factores</span>
-                  <IconArrowRight size={14} className="text-gray-400" />
-                </button>
+                  <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-full">Pronto</span>
+                </div>
               </div>
             </div>
 
