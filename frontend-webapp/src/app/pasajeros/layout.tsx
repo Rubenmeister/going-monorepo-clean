@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Operadores turísticos | Going App Ecuador',
-  description: 'Publica y vende tus tours con Going App. Únete como operador turístico.',
+  title: 'Para pasajeros | Going App Ecuador',
+  description: 'Viaja compartido o privado entre ciudades del Ecuador. Reserva en segundos con Going App.',
 };
 
 // Layout de ruta pública — solo define metadata SEO de la sección.

@@ -25,6 +25,7 @@ const roboto = Roboto({
 });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.goingec.com'),
   title: 'Going App Ecuador: Nos movemos contigo',
   description: 'Transporte compartido y privado entre ciudades del Ecuador. Reserva tu viaje en segundos.',
   applicationName: 'Going App Ecuador',
@@ -32,6 +33,20 @@ export const metadata = {
     capable: true,
     title: 'Going App',
     statusBarStyle: 'default',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_EC',
+    siteName: 'Going App',
+    title: 'Going App Ecuador: Nos movemos contigo',
+    description: 'La SuperApp de movilidad y servicios del Ecuador: viajes, envíos, alojamiento, tours y experiencias.',
+    images: [{ url: '/images/going-hero.jpg', width: 1200, height: 630, alt: 'Going App Ecuador' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Going App Ecuador: Nos movemos contigo',
+    description: 'La SuperApp de movilidad y servicios del Ecuador.',
+    images: ['/images/going-hero.jpg'],
   },
 };
 
