@@ -29,7 +29,6 @@ const PACKAGE_TYPES = [
   { id: 'large',  label: 'Grande',  desc: '16–30 kg', price: 15 },
 ] as const;
 type PkgId = typeof PACKAGE_TYPES[number]['id'];
-type ScreenView = 'form' | 'tracking' | 'delivered';
 
 interface Suggestion { display_name: string; lat: string; lon: string; }
 
@@ -38,7 +37,6 @@ const IcoUp    = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="non
 const IcoDown  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 12 8"/><polyline points="16 12 12 16 8 12"/></svg>;
 const IcoCube  = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L11 21.73a2 2 0 0 0 2 0L20 17.73A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
 const IcoLock  = () => <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-const IcoCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 const IcoPin   = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>;
 const IcoPhone = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1.28h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
 const IcoPerson = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
@@ -331,7 +329,6 @@ export default function EnviosCotizarPage() {
   // Nombre real del remitente (sesión ya iniciada) en lugar de "Tú (sesión activa)".
   const senderName = ((auth.user as any)?.firstName || (auth.user as any)?.name || 'Tú') as string;
 
-  const [view,           setView]           = useState<ScreenView>('form');
   const [pkgType,        setPkgType]        = useState<PkgId>('small');
   const [pkgDesc,        setPkgDesc]        = useState('');
   const [senderAddr,     setSenderAddr]     = useState('');
@@ -343,8 +340,6 @@ export default function EnviosCotizarPage() {
   const [recipientLat,   setRecipientLat]   = useState<number | null>(null);
   const [recipientLon,   setRecipientLon]   = useState<number | null>(null);
   const [loading,        setLoading]        = useState(false);
-  const [otpCode,        setOtpCode]        = useState('');
-  const [trackingRef,    setTrackingRef]    = useState('');
   const [errors,         setErrors]         = useState<string[]>([]);
   // Esquema de pago — A/B/C/D (igual que mobile EnviosScreen).
   // 'A' por default (sender + card) es el más rápido y seguro para el sender.
@@ -378,8 +373,6 @@ export default function EnviosCotizarPage() {
   // Precio mostrado: cotización autoritativa del backend si ya está disponible;
   // si no, el estimado local por tamaño (fallback antes de elegir direcciones).
   const totalPrice  = quotedPrice ?? selectedPkg.price;
-  // Etiqueta de pago según el esquema elegido (NO asumir "Pagado").
-  const paymentLabel = { A: 'Tarjeta', B: 'Efectivo al recoger', C: 'Paga destinatario', D: 'Contra entrega' }[paymentScheme];
 
   // Cotización autoritativa: cuando hay origen + destino + tamaño, pedimos el
   // precio real al backend (urbano flat / interurbano por tier). /parcels/quote
@@ -477,15 +470,21 @@ export default function EnviosCotizarPage() {
       }
 
       const data = await res.json();
-      setTrackingRef(data?.trackingCode ?? data?.id ?? '');
-      setOtpCode(data?.otpPin ?? '');
+      const trackingCode = data?.trackingCode ?? data?.id ?? '';
 
       // Caso A: backend devuelve paymentUrl. Abrimos en nueva tab para pagar.
       if (data?.paymentUrl) {
         window.open(data.paymentUrl, '_blank', 'noopener');
       }
 
-      setView('tracking');
+      // Ir al SEGUIMIENTO REAL del envío (estado en vivo desde el backend vía
+      // GET /parcels/track/:trackingCode, refresco cada 10s), en lugar de la
+      // pantalla demo anterior.
+      if (trackingCode) {
+        router.push(`/envios/tracking/${encodeURIComponent(trackingCode)}`);
+      } else {
+        router.push('/envios/mis-envios');
+      }
     } catch (err: any) {
       setErrors([err?.message || 'No se pudo conectar con el servidor.']);
     } finally {
@@ -493,209 +492,6 @@ export default function EnviosCotizarPage() {
     }
   };
 
-  // ── TRACKING VIEW ──────────────────────────────────────────────────────────
-  if (view === 'tracking') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b-4 sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ borderBottomColor: RED }}>
-          <button onClick={() => setView('form')}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-            style={{ backgroundColor: '#FFF0EF', color: RED }}>
-            ←
-          </button>
-          <span className="font-black text-gray-900">Seguimiento del envío</span>
-          <span className="ml-auto text-xs text-gray-400 font-mono">#{trackingRef}</span>
-        </div>
-
-        <div className="max-w-2xl mx-auto px-4 py-5 space-y-3">
-          {/* Status banner */}
-          <div className="flex items-center gap-3 rounded-2xl px-4 py-3.5 border"
-            style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
-            <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: RED }} />
-            <div className="flex-1">
-              <p className="text-sm font-black" style={{ color: RED }}>Conductor recogiendo el paquete</p>
-              <p className="text-xs text-amber-700 mt-0.5">Estimado: ~15 minutos</p>
-            </div>
-            <span className="text-gray-400 text-xs">›</span>
-          </div>
-
-          {/* Remitente / Destinatario */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
-            {/* Remitente */}
-            <div className="flex items-start gap-3 p-4">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFF0EF' }}>
-                <IcoUp />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Remitente</p>
-                <p className="text-sm font-black text-gray-900">Remitente</p>
-                <p className="text-xs text-gray-500 truncate">{senderAddr}</p>
-              </div>
-            </div>
-            <div className="h-px bg-gray-50 mx-4" />
-            {/* Destinatario */}
-            <div className="flex items-start gap-3 p-4">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F0FDF4' }}>
-                <IcoDown />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Destinatario</p>
-                <p className="text-sm font-black text-gray-900">{recipientName}</p>
-                <p className="text-xs text-gray-500 truncate">{recipientAddr}</p>
-                <p className="text-xs font-bold" style={{ color: RED }}>{recipientPhone}</p>
-              </div>
-              {/* OTP Box */}
-              <div className="flex-shrink-0 rounded-xl px-3 py-2 border text-center"
-                style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA' }}>
-                <p className="text-xs font-black" style={{ color: RED }}>CÓDIGO OTP</p>
-                <p className="text-2xl font-black" style={{ color: RED }}>{otpCode}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Ruta */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
-              <IcoPin />
-              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>Ruta del envío</span>
-            </div>
-            <div className="px-4 py-4 space-y-2">
-              <div className="flex items-start gap-3">
-                <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: RED }} />
-                <div>
-                  <p className="text-sm font-bold text-gray-900 truncate">{senderAddr || 'Origen'}</p>
-                  <p className="text-xs text-gray-500">Recogida · Ahora</p>
-                </div>
-              </div>
-              <div className="w-px h-4 ml-1" style={{ backgroundColor: '#FEE2E2' }} />
-              <div className="flex items-start gap-3">
-                <span className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: GREEN }} />
-                <div>
-                  <p className="text-sm font-bold text-gray-900 truncate">{recipientAddr || 'Destino'}</p>
-                  <p className="text-xs text-gray-500">Entrega estimada · ~2h 30min</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Paquete */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
-              <IcoCube />
-              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>
-                Paquete · {selectedPkg.label.toUpperCase()}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-50 text-gray-700">
-                <IconPackage size={22} />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-gray-900">{selectedPkg.label} · {selectedPkg.desc}</p>
-                <p className="text-xs text-gray-500">${totalPrice.toFixed(2)}</p>
-              </div>
-              <div className="flex items-center gap-1 rounded-full px-3 py-1 border border-gray-200" style={{ backgroundColor: '#F9FAFB' }}>
-                <span className="text-xs font-bold text-gray-600">{paymentLabel}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Botones */}
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => { if (recipientPhone) window.location.href = `tel:${recipientPhone}`; }}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm"
-              style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA', color: RED }}>
-              <IcoPhone /> Llamar
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                const text = `Seguimiento de mi envío Going App: #${trackingRef}`;
-                try {
-                  if (typeof navigator !== 'undefined' && navigator.share) {
-                    await navigator.share({ title: 'Envío Going App', text });
-                  } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                    await navigator.clipboard.writeText(text);
-                  }
-                } catch { /* usuario canceló */ }
-              }}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm border-gray-200 text-gray-700 bg-gray-50">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              Compartir
-            </button>
-            <button onClick={() => setView('delivered')}
-              className="flex-2 flex items-center justify-center gap-1.5 rounded-xl py-3 px-4 font-bold text-sm text-white shadow-md"
-              style={{ backgroundColor: RED, flex: 2 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              Confirmar entrega
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── DELIVERED VIEW ─────────────────────────────────────────────────────────
-  if (view === 'delivered') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b-4 sticky top-0 z-10 px-4 py-3 flex items-center gap-3" style={{ borderBottomColor: RED }}>
-          <button onClick={() => router.push('/envios')}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-            style={{ backgroundColor: '#FFF0EF', color: RED }}>
-            ←
-          </button>
-          <span className="font-black text-gray-900">Entrega confirmada</span>
-        </div>
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
-          {/* Success */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex flex-col items-center text-center"
-            style={{ borderLeftWidth: 4, borderLeftColor: GREEN }}>
-            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#ECFDF5' }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill={GREEN} stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/><polyline fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points="20 6 9 17 4 12"/></svg>
-            </div>
-            <p className="text-2xl font-black text-gray-900 mb-1">¡Paquete entregado!</p>
-            <p className="text-sm text-gray-500">Entregado a <strong>{recipientName}</strong> · Confirmado con código OTP</p>
-          </div>
-
-          {/* Resumen */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
-            style={{ borderLeftWidth: 4, borderLeftColor: RED }}>
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span className="text-xs font-black tracking-widest uppercase" style={{ color: RED }}>Resumen</span>
-            </div>
-            <div className="px-4 py-2 divide-y divide-gray-50">
-              {[
-                { label: 'Estado',        value: '✓ Entregado',             color: GREEN },
-                { label: 'Destinatario',  value: recipientName,              color: undefined },
-                { label: 'Referencia',    value: trackingRef,                color: undefined },
-                { label: 'Hora',          value: new Date().toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }), color: undefined },
-                { label: 'OTP',           value: '✓ Verificado',             color: GREEN },
-              ].map(row => (
-                <div key={row.label} className="flex items-center justify-between py-2.5">
-                  <span className="text-sm text-gray-500">{row.label}</span>
-                  <span className="text-sm font-bold" style={{ color: row.color ?? '#111827' }}>{row.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button onClick={() => { setView('form'); setPkgDesc(''); setSenderAddr(''); setRecipientName(''); setRecipientPhone(''); setRecipientAddr(''); }}
-            className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-2 shadow-md"
-            style={{ backgroundColor: RED }}>
-            Nuevo envío <IcoArrow />
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // ── FORM VIEW ──────────────────────────────────────────────────────────────
   return (
