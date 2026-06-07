@@ -532,6 +532,10 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           )}
 
           {/* ── Categoría: Confort / Premium ─────────────────────────── */}
+          {/* Solo para privado/ciudad: en COMPARTIDO el precio es único por
+              asiento (no hay tiers), y mostrar Confort/Premium aquí enseñaba
+              precios de viaje PRIVADO — confuso. */}
+          {mode !== 'compartido' && (
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Categoría</p>
             <div className="grid grid-cols-2 gap-2">
@@ -561,6 +565,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
               })}
             </div>
           </div>
+          )}
 
           {/* ── Fecha y hora ─────────────────────────────────────────── */}
           {/* En modo privado se oculta por default (viaje inmediato es el caso
