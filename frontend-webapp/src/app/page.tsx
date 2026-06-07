@@ -438,9 +438,9 @@ export default function HomePage() {
           {/* ── Logo arriba (marca paraguas centrada) ── */}
           <FadeIn dir="up" className="text-center mb-8">
             <img
-              src="/images/Going_Logotipo_Color_V_800px.png"
+              src="/going-logo-h.png"
               alt="Going App"
-              className="h-24 md:h-28 mx-auto"
+              className="h-16 md:h-20 mx-auto"
               style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
           </FadeIn>
@@ -474,18 +474,17 @@ export default function HomePage() {
              en /ride y /envios/cotizar, fuente única.
           */}
           <FadeIn dir="up" delay={0.15} className="w-full max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-[210px_1fr] gap-6 items-center mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_210px] gap-6 items-center mb-8">
 
-              {/* Celular pequeño a un costado de las cajas (un poco más arriba) */}
+              {/* Celular pequeño a la derecha de las cajas (sin sombra) */}
               <img
                 src="/images/going-phone.png"
                 alt="App Going App en un celular"
-                className="w-[140px] md:w-[185px] h-auto mx-auto md:-mt-10"
-                style={{ filter: 'drop-shadow(0 18px 40px rgba(0,0,0,0.20))' }}
+                className="w-[150px] md:w-[200px] h-auto mx-auto md:order-2"
               />
 
               {/* Las 3 cajas en fila */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:order-1">
 
               {/* 3 CARDS DE SERVICIOS — usan <ServiceCard /> con tilt 3D
                  siguiendo el cursor + título escala en hover. Sin emojis ni
