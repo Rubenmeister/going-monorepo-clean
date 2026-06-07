@@ -317,7 +317,11 @@ function RidePageInner() {
       !!getStoredToken();
 
     if (!auth.user && !hasLocalToken) {
-      router.replace(`/auth/login?from=/ride`);
+      // Preservar la ruta COMPLETA (incl. ?type=shared|van|city) para que al
+      // volver del login/registro caiga directo en el tipo de viaje elegido,
+      // sin pasar otra vez por el selector ("dar vueltas").
+      const current = `${window.location.pathname}${window.location.search}`;
+      router.replace(`/auth/login?from=${encodeURIComponent(current)}`);
     }
   }, [auth.isLoading, auth.user, router]);
 
