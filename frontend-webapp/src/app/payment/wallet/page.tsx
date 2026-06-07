@@ -28,8 +28,8 @@ export default function WalletPage() {
 
     const userId = (p?.id || p?.sub || p?.userId || '') as string;
     Promise.allSettled([
-      authFetch(`${API_URL}/payment/wallet/${userId}/balance`).then(r => r.ok ? r.json() : null),
-      authFetch(`${API_URL}/payment/wallet/${userId}/transactions?limit=10`).then(r => r.ok ? r.json() : null),
+      authFetch(`${API_URL}/payments/wallet/${userId}/balance`).then(r => r.ok ? r.json() : null),
+      authFetch(`${API_URL}/payments/wallet/${userId}/transactions?limit=10`).then(r => r.ok ? r.json() : null),
     ]).then(([balRes, txRes]) => {
       if (balRes.status === 'fulfilled' && balRes.value) {
         setBalance(balRes.value.balance ?? balRes.value.amount ?? 0);
