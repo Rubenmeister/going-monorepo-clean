@@ -37,7 +37,7 @@ const ChatInterface = dynamic(
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
 type ServiceMode = 'compartido' | 'privado' | 'ciudad' | null;
-type Step = 'request' | 'reserved' | 'tracking' | 'confirmation' | 'payment' | 'accounting' | 'rating';
+type Step = 'request' | 'tracking' | 'confirmation' | 'payment' | 'accounting' | 'rating';
 
 const STEPS: Step[] = ['request', 'tracking', 'confirmation', 'payment', 'accounting', 'rating'];
 
@@ -263,69 +263,6 @@ function ConfirmationPanel({
   );
 }
 
-/* ─── Reserved Panel (viaje programado · sin búsqueda en vivo) ───────────
-   Para reservas a futuro NO buscamos conductor en vivo: el backend asigna al
-   conductor más opcionado poco antes del viaje. Esta pantalla confirma la
-   reserva en lugar de mandar al usuario a la pantalla de "buscando conductor". */
-function ReservedPanel({
-  scheduledAt, origin, destination, fare, onNewTrip, onGoBookings,
-}: {
-  scheduledAt?: Date;
-  origin: string;
-  destination: string;
-  fare: number;
-  onNewTrip: () => void;
-  onGoBookings: () => void;
-}) {
-  const when = scheduledAt ? new Date(scheduledAt) : null;
-  const fmt = when
-    ? when.toLocaleString('es-EC', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-    : null;
-
-  return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/>
-          </svg>
-        </div>
-        <p className="text-xl font-black text-gray-900 mb-1">¡Reserva confirmada!</p>
-        {fmt && <p className="text-sm text-gray-600 capitalize">{fmt}</p>}
-        <p className="text-xs text-gray-400 mt-2 max-w-xs">
-          Asignaremos al conductor más opcionado poco antes de tu viaje. Te avisaremos cuando esté en camino.
-        </p>
-      </div>
-
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="mt-1 w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS.brand.red }} />
-          <div><p className="text-xs text-gray-400 font-medium">Origen</p><p className="text-sm font-semibold text-gray-800">{origin}</p></div>
-        </div>
-        <div className="ml-1.5 border-l-2 border-dashed border-gray-200 h-4" />
-        <div className="flex items-start gap-3">
-          <div className="mt-1 w-3 h-3 rounded-full bg-[#0033A0] flex-shrink-0" />
-          <div><p className="text-xs text-gray-400 font-medium">Destino</p><p className="text-sm font-semibold text-gray-800">{destination}</p></div>
-        </div>
-        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-sm text-gray-500">Tarifa garantizada</span>
-          <span className="text-lg font-bold text-gray-900">${fare.toFixed(2)}</span>
-        </div>
-      </div>
-
-      <button onClick={onGoBookings}
-        className="w-full text-white font-bold text-base py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all hover:opacity-90"
-        style={{ backgroundColor: COLORS.brand.red }}>
-        Ver mis reservas
-      </button>
-      <button onClick={onNewTrip}
-        className="w-full text-gray-600 font-bold text-sm py-3 rounded-2xl border border-gray-200 hover:bg-gray-50 transition-all">
-        Solicitar otro viaje
-      </button>
-    </div>
-  );
-}
-
 /* ─── Page ──────────────────────────────────────────────────────────── */
 function RidePageInner() {
   const router             = useRouter();
@@ -382,9 +319,11 @@ function RidePageInner() {
   useEffect(() => {
     if (activeRide && step === 'request') {
       setPaymentAmount(activeRide.estimatedFare);
-      // Reserva programada → pantalla de confirmación (sin búsqueda en vivo).
-      // Inmediato → seguimiento/búsqueda de conductor.
-      setStep(activeRide.status === 'reserved' ? 'reserved' : 'tracking');
+      // Tanto inmediato como reservado van al panel de seguimiento. El panel
+      // NO busca conductor en vivo si el estado es 'reserved' (muestra el
+      // aviso de reserva y avisará ~1h/5min antes), y continúa el ciclo
+      // completo: conductor en camino → compartir → SOS → fin de viaje → pago.
+      setStep('tracking');
     }
   }, [activeRide, step]);
 
@@ -440,7 +379,6 @@ function RidePageInner() {
             </button>
             <h1 className="text-xl font-bold text-gray-900">
               {step === 'request'      ? (serviceMode ? (serviceMode === 'compartido' ? 'Viaje Compartido' : serviceMode === 'ciudad' ? 'En la ciudad' : 'Viaje Privado') : 'Solicitar viaje') :
-               step === 'reserved'     ? 'Reserva confirmada' :
                step === 'tracking'     ? 'Tu viaje'           :
                step === 'confirmation' ? 'Confirmación'       :
                step === 'payment'      ? 'Pago'               :
@@ -459,11 +397,9 @@ function RidePageInner() {
             </button>
           )}
         </div>
-        {step !== 'reserved' && (
-          <div className="max-w-2xl mx-auto">
-            <RideStepper step={step} />
-          </div>
-        )}
+        <div className="max-w-2xl mx-auto">
+          <RideStepper step={step} />
+        </div>
       </div>
 
       {/* ── Contenido ── */}
@@ -487,18 +423,6 @@ function RidePageInner() {
         {/* Paso 1b: Formulario de viaje */}
         {step === 'request' && serviceMode !== null && (
           <RideRequestForm defaultMode={serviceMode} />
-        )}
-
-        {/* Reserva programada confirmada (sin búsqueda de conductor en vivo) */}
-        {step === 'reserved' && activeRide && (
-          <ReservedPanel
-            scheduledAt={activeRide.scheduledAt}
-            origin={activeRide.pickup?.address ?? ''}
-            destination={activeRide.dropoff?.address ?? ''}
-            fare={activeRide.estimatedFare}
-            onNewTrip={() => { clearRide(); setServiceMode(null); setStep('request'); }}
-            onGoBookings={() => router.push('/ride/historial')}
-          />
         )}
 
         {/* Paso 2: Seguimiento en tiempo real */}

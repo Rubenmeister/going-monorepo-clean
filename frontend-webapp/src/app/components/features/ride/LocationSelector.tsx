@@ -111,6 +111,26 @@ async function searchMapbox(query: string): Promise<Location[]> {
   });
 }
 
+/* GPS → dirección legible (geocodificación inversa). En ciudades donde la
+   búsqueda por texto trae pocas direcciones, esto permite fijar el punto
+   exacto donde está el usuario (estilo "enviar ubicación" de WhatsApp). */
+async function reverseGeocodeMapbox(lat: number, lon: number): Promise<Location> {
+  const fallback: Location = { address: `Mi ubicación (${lat.toFixed(5)}, ${lon.toFixed(5)})`, lat, lon };
+  if (!MAPBOX_TOKEN) return fallback;
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?country=ec&language=es&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return fallback;
+    const json = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const f = (json.features as any[])?.[0];
+    if (!f) return fallback;
+    const city = f.context?.find((c: { id: string; text: string }) =>
+      c.id.startsWith('place') || c.id.startsWith('locality'))?.text;
+    return { address: f.place_name, lat, lon, city };
+  } catch { return fallback; }
+}
+
 export function LocationSelector({ type, value, onChange, placeholder }: LocationSelectorProps) {
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<Location[]>([]);
@@ -118,6 +138,7 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -210,6 +231,30 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     setError(null);
   };
 
+  /* "Enviar mi ubicación actual" (GPS) — para fijar el punto exacto cuando la
+     búsqueda por texto no encuentra la dirección en la ciudad. */
+  const handleUseGps = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setError('Tu navegador no soporta ubicación'); setShowSuggestions(true); return;
+    }
+    setGpsLoading(true); setError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const loc = await reverseGeocodeMapbox(pos.coords.latitude, pos.coords.longitude);
+        handleSelect(loc);
+        setGpsLoading(false);
+      },
+      (err) => {
+        setGpsLoading(false);
+        setShowSuggestions(true);
+        setError(err.code === err.PERMISSION_DENIED
+          ? 'Permiso de ubicación denegado. Actívalo en el navegador.'
+          : 'No pudimos detectar tu ubicación. Escríbela manualmente.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
   useEffect(() => () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); }, []);
 
   return (
@@ -265,6 +310,22 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
 
         {showSuggestions && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
+
+            {/* Enviar mi ubicación actual (GPS, estilo WhatsApp) — solo origen */}
+            {type === 'pickup' && (
+              <button type="button" onClick={handleUseGps} disabled={gpsLoading}
+                className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 disabled:opacity-60">
+                <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF2FF', color: '#0033A0' }}>
+                  {gpsLoading
+                    ? <span className="w-4 h-4 border-2 border-[#0033A0]/30 border-t-[#0033A0] rounded-full animate-spin" />
+                    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#0033A0]">{gpsLoading ? 'Detectando tu ubicación…' : 'Usar mi ubicación actual'}</p>
+                  <p className="text-xs text-gray-400">Fija el punto exacto donde estás (GPS)</p>
+                </div>
+              </button>
+            )}
 
             {/* Sección: Guardadas */}
             {!input.trim() && savedEntries.length > 0 && (
