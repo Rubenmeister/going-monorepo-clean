@@ -200,4 +200,68 @@ export class ScheduledRideDispatcherCron {
       }
     }
   }
+
+  // ── Recordatorios push de viajes reservados (1h y 5min antes) ─────────────
+
+  /**
+   * Cada minuto: envía recordatorio ~1h antes y ~5min antes a cada reserva.
+   * Idempotente por flag (reminder1hSentAt / reminder5mSentAt). El push llega a
+   * los dispositivos registrados del usuario vía notifications-service (FCM);
+   * además emite un evento WS para apps abiertas.
+   */
+  @Cron(CronExpression.EVERY_MINUTE, { name: 'scheduled-ride-reminders' })
+  async sendDueReminders(): Promise<void> {
+    if (!this.isEnabled()) return;
+    if (typeof this.rideRepo.findUpcomingNeedingReminder !== 'function') return;
+    // Ventanas sin solape: 1h → (now+5min, now+60min]; 5min → (now, now+5min].
+    await this.remindBucket('reminder1hSentAt', 5, 60, 'Tu viaje reservado se acerca');
+    await this.remindBucket('reminder5mSentAt', 0, 5, 'Tu viaje está por salir');
+  }
+
+  private notificationsUrl(): string {
+    return (this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || 'http://localhost:3005').replace(/\/$/, '');
+  }
+
+  private async remindBucket(field: string, fromMin: number, toMin: number, title: string): Promise<void> {
+    let due: any[];
+    try {
+      due = await this.rideRepo.findUpcomingNeedingReminder!(field, fromMin, toMin, 100);
+    } catch (e) {
+      this.logger.error(`[reminder] query ${field} falló: ${(e as Error).message}`);
+      return;
+    }
+    if (!due || due.length === 0) return;
+
+    for (const ride of due) {
+      try {
+        // Marca idempotente ANTES de enviar (evita duplicados multi-pod).
+        await this.rideRepo.update(ride.id, { [field]: new Date() });
+        const mins = ride.scheduledAt
+          ? Math.max(1, Math.round((new Date(ride.scheduledAt).getTime() - Date.now()) / 60_000))
+          : toMin;
+        const body = `Tu viaje reservado sale en ~${mins} min.`;
+        await this.sendReminderPush(ride.userId, title, body, ride.id);
+        try {
+          this.eventsGateway['server']?.to(`ride:${ride.id}`).emit('ride:reminder', {
+            rideId: ride.id, minutes: mins, title, body,
+          });
+        } catch { /* WS best-effort */ }
+      } catch (e) {
+        this.logger.error(`[reminder] ride=${ride.id} ${field} falló: ${(e as Error).message}`);
+      }
+    }
+  }
+
+  private async sendReminderPush(userId: string, title: string, body: string, rideId: string): Promise<void> {
+    if (!userId) return;
+    try {
+      await fetch(`${this.notificationsUrl()}/api/notifications/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, title, body, channel: 'PUSH', data: { type: 'ride_reminder', rideId } }),
+      });
+    } catch (e) {
+      this.logger.warn(`[reminder] push a user=${userId} falló: ${(e as Error).message}`);
+    }
+  }
 }
