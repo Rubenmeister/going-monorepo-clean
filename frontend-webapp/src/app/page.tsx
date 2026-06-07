@@ -429,39 +429,48 @@ export default function HomePage() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.92) 90%, rgba(255,255,255,1) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 55%, rgba(255,255,255,0.35) 100%)',
           }}
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 lg:py-20 flex flex-col items-center" style={{ minHeight: '100vh' }}>
+        {/* ── Celular flotando a la derecha, sobre la foto del hero ──
+            Va FUERA del flujo centrado (absolute) para que el logo, el texto
+            y las 3 cajas queden perfectamente centrados y solo el teléfono
+            quede a un costado, sobre el paisaje. Solo en pantallas anchas
+            (en móvil estorbaría al contenido centrado). */}
+        <img
+          src="/images/going-phone-clean.png"
+          alt="App Going App en un celular"
+          className="hidden lg:block absolute right-2 xl:right-12 top-[15%] z-20 w-[235px] xl:w-[290px] h-auto pointer-events-none"
+        />
 
-          {/* ── HEAD del hero: logo color + headline + texto descriptivo ── */}
-          <FadeIn dir="up" className="text-center max-w-3xl mb-10">
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 lg:py-14 flex flex-col items-center" style={{ minHeight: '100vh' }}>
+
+          {/* ── Logo arriba (marca paraguas centrada) ── */}
+          <FadeIn dir="up" className="text-center mb-8">
             <img
-              src="/images/Going_Logotipo_Color_V_800px.png"
+              src="/images/going-logo-v-trans.png"
               alt="Going App"
-              className="h-48 mx-auto mb-6"
+              className="h-24 md:h-32 mx-auto"
               style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
+          </FadeIn>
 
+          {/* ── Headline + texto (centrado) ── */}
+          <FadeIn dir="up" className="text-center max-w-3xl mb-10">
             <h1
-              className="font-black text-gray-900 mb-5 leading-[0.95]"
+              className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
               style={{
-                fontSize: 'clamp(2.5rem, 7vw, 4.5rem)',
+                fontSize: 'clamp(1.6rem, 6vw, 4rem)',
                 fontFamily: 'var(--font-nunito-sans), sans-serif',
-                // Text-shadow blanco sutil para legibilidad sobre cielo claro
-                // sin necesidad de overlay opaco que tape la foto.
                 textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
               }}
             >
               Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
             </h1>
-
             <p
               className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
-              style={{
-                textShadow: '0 1px 12px rgba(255,255,255,0.9)',
-              }}
+              style={{ textShadow: '0 1px 12px rgba(255,255,255,0.9)' }}
             >
               La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
               viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
@@ -475,7 +484,7 @@ export default function HomePage() {
              cuando se ajusten tarifas; el detalle de tarifa/cupos vive
              en /ride y /envios/cotizar, fuente única.
           */}
-          <FadeIn dir="up" delay={0.15} className="w-full max-w-5xl">
+          <FadeIn dir="up" delay={0.15} className="w-full max-w-6xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
               {/* 3 CARDS DE SERVICIOS — usan <ServiceCard /> con tilt 3D
