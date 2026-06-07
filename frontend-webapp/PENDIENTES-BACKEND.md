@@ -38,4 +38,8 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   ⚠️ La recarga real necesita credenciales `DATAFAST_*`/`DEUNA_*`; la
   transferencia necesita `INTERNAL_SERVICE_TOKEN` + `USER_AUTH_SERVICE_URL` en
   payment-service (igual que el LoyaltyClient existente).
-- [ ] **2FA de usuario** y **eliminación de cuenta**: pendientes de flujo backend.
+- [x] **2FA de usuario**: HECHO — el backend (user-auth) ya tenía MfaController
+  (TOTP/speakeasy) + challenge en login. Frontend conectado: página
+  `/account/2fa` (activar con QR + códigos de recuperación / desactivar) y
+  segundo paso en el login (`/api/auth/mfa/verify-login` + UI de código).
+- [ ] **Eliminación de cuenta**: pendiente de flujo backend.
