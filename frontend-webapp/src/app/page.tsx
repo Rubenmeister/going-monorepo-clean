@@ -429,7 +429,7 @@ export default function HomePage() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.42) 50%, rgba(255,255,255,0.97) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.92) 90%, rgba(255,255,255,1) 100%)',
           }}
         />
 
