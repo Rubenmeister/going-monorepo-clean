@@ -14,6 +14,7 @@ import { MercadoPagoGateway } from '../infrastructure/gateways/mercadopago.gatew
 import { DatafastGateway } from '../infrastructure/gateways/datafast.gateway';
 import { DeunaGateway } from '../infrastructure/gateways/deuna.gateway';
 import { IPaymentRepository } from '../domain/ports';
+import { WalletService } from '../application/wallet.service';
 
 @Controller('webhooks')
 export class WebhookController {
@@ -26,7 +27,33 @@ export class WebhookController {
     private readonly deunaGateway: DeunaGateway,
     @Inject(IPaymentRepository)
     private readonly paymentRepository: IPaymentRepository,
+    private readonly walletService: WalletService,
   ) {}
+
+  /**
+   * Si el pago corresponde a una recarga de wallet (metadata.type), acredita
+   * el saldo de forma idempotente (ref = paymentId) y marca el pago completado.
+   * Devuelve true si era una recarga (para que el handler no siga con la lógica
+   * de viaje/envío). Es un backstop del flujo de confirmación por estado.
+   */
+  private async creditWalletIfRecharge(payment: any): Promise<boolean> {
+    const meta = payment?.metadata instanceof Map
+      ? Object.fromEntries(payment.metadata)
+      : (payment?.metadata ?? {});
+    if (meta?.type !== 'wallet_recharge') return false;
+
+    const userId = meta.userId || payment.passengerId;
+    try {
+      if (payment.status !== 'completed') {
+        await this.walletService.credit(userId, payment.amount, 'Recarga de wallet', payment.id);
+        await this.paymentRepository.update(payment.id, { status: 'completed', completedAt: new Date() });
+      }
+      this.logger.log(`Wallet recargado vía webhook: ref=${payment.id} userId=${userId}`);
+    } catch (e) {
+      this.logger.error(`Error acreditando recarga ${payment.id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    return true;
+  }
 
   /**
    * POST /webhooks/stripe
@@ -175,7 +202,7 @@ export class WebhookController {
    */
   private async handleDatafastPaymentApproved(event: any): Promise<void> {
     try {
-      const tripId = event.metadata?.tripId || event.orderId;
+      const tripId = event.metadata?.tripId || event.merchantTransactionId || event.orderId;
       if (!tripId) {
         this.logger.warn('Datafast approved event missing tripId/orderId metadata');
         return;
@@ -187,6 +214,9 @@ export class WebhookController {
         this.logger.warn(`No payment found for Datafast tripId: ${tripId}`);
         return;
       }
+
+      // Recarga de wallet → acreditar saldo y terminar (no es viaje/envío).
+      if (await this.creditWalletIfRecharge(payment)) return;
 
       // Update payment status to completed
       await this.paymentRepository.update(payment.id, {
@@ -301,6 +331,9 @@ export class WebhookController {
         this.logger.warn(`No payment found for DeUna orderId: ${orderId}`);
         return;
       }
+
+      // Recarga de wallet → acreditar saldo y terminar (no es viaje/envío).
+      if (await this.creditWalletIfRecharge(payment)) return;
 
       // Update payment status to completed
       await this.paymentRepository.update(payment.id, {
