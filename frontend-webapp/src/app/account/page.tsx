@@ -11,6 +11,7 @@ import {
   IconChevronDown, IconShield, IconBell,
 } from '../components/icons';
 import { enablePush } from '../lib/push';
+import { authFetch, clearStoredAuth } from '@/lib/providers/auth-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
@@ -182,6 +183,36 @@ export default function AccountPage() {
       setPushMsg(map[r.reason] || 'No se pudo activar.');
     }
     setPushBusy(false);
+  };
+
+  // ── Eliminación de cuenta (borrado suave) ──
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword]   = useState('');
+  const [deleteConfirm, setDeleteConfirm]     = useState('');
+  const [deleteBusy, setDeleteBusy]           = useState(false);
+  const [deleteError, setDeleteError]         = useState<string | null>(null);
+
+  const handleDeleteAccount = async () => {
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      const res = await authFetch(`${API_BASE}/auth/me`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setDeleteError(d?.message || 'No se pudo eliminar la cuenta.');
+        return;
+      }
+      await clearStoredAuth();
+      window.location.href = '/';
+    } catch {
+      setDeleteError('No se pudo conectar con el servidor.');
+    } finally {
+      setDeleteBusy(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -802,14 +833,44 @@ export default function AccountPage() {
                 <IconWarning size={18} />
                 Zona de Peligro
               </h2>
-              <p className="text-gray-600 text-sm mb-4">Esta acción es irreversible.</p>
-              <button className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors">
+              <p className="text-gray-600 text-sm mb-4">Esta acción es irreversible. Se borran tus datos personales y no podrás iniciar sesión.</p>
+              <button onClick={() => { setShowDeleteModal(true); setDeleteError(null); }}
+                className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors">
                 Eliminar Cuenta
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+            <div className="px-6 pt-6 pb-4 text-center border-b border-gray-100">
+              <div className="text-4xl mb-2">⚠️</div>
+              <h3 className="text-lg font-black text-gray-900">Eliminar tu cuenta</h3>
+              <p className="text-sm text-gray-500 mt-1">Es irreversible. Borraremos tus datos personales y no podrás iniciar sesión.</p>
+            </div>
+            <div className="p-6 space-y-3">
+              {deleteError && <div className="text-sm bg-red-50 text-red-700 border border-red-200 rounded-xl px-3 py-2">{deleteError}</div>}
+              <input type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)}
+                placeholder="Tu contraseña"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+              <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
+                placeholder="Escribe ELIMINAR para confirmar"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500" />
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteConfirm(''); setDeleteError(null); }}
+                  className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50">Cancelar</button>
+                <button onClick={handleDeleteAccount} disabled={deleteBusy || deleteConfirm !== 'ELIMINAR'}
+                  className="flex-1 py-3 rounded-xl text-white text-sm font-bold disabled:opacity-50 bg-red-600 hover:bg-red-700">
+                  {deleteBusy ? 'Eliminando…' : 'Eliminar definitivamente'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

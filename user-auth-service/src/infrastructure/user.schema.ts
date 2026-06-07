@@ -30,9 +30,13 @@ export class UserModelSchema {
   @Prop({
     type: String,
     required: true,
-    enum: ['pending_verification', 'active', 'suspended'],
+    enum: ['pending_verification', 'active', 'suspended', 'deleted'],
   })
   status: string;
+
+  /** Instante de eliminación de cuenta (borrado suave / anonimización). */
+  @Prop()
+  deletedAt?: Date;
 
   @Prop()
   createdAt: Date;
