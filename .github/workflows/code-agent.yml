@@ -10,6 +10,11 @@ on:
         required: false
         default: ''
 
+# El job postea un comentario con el reporte → necesita escribir en el PR.
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   code-review:
     runs-on: ubuntu-latest
@@ -22,7 +27,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -59,9 +64,10 @@ jobs:
             const fs = require('fs');
             if (!fs.existsSync('code-agent-report.json')) return;
             const report = JSON.parse(fs.readFileSync('code-agent-report.json', 'utf8'));
-            const critical = report.issues.filter(i => i.severity === 'critical').length;
-            const high = report.issues.filter(i => i.severity === 'high').length;
-            const total = report.issues.length;
+            const issues = Array.isArray(report.issues) ? report.issues : [];
+            const critical = issues.filter(i => i.severity === 'critical').length;
+            const high = issues.filter(i => i.severity === 'high').length;
+            const total = issues.length;
             const emoji = critical > 0 ? '🔴' : high > 0 ? '🟠' : total > 0 ? '🟡' : '✅';
             let body = `## ${emoji} Code Agent Report\n\n`;
             body += `**${report.scannedFiles}** files scanned · **${total}** issues found\n\n`;
@@ -69,7 +75,7 @@ jobs:
               body += '✅ No issues found. Code looks great!\n';
             } else {
               const byFile = {};
-              for (const issue of report.issues) {
+              for (const issue of issues) {
                 if (!byFile[issue.file]) byFile[issue.file] = [];
                 byFile[issue.file].push(issue);
               }
@@ -83,9 +89,13 @@ jobs:
                 }
               }
             }
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body,
-            });
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            } catch (e) {
+              core.warning('No se pudo postear el comentario del Code Agent: ' + e.message);
+            }
