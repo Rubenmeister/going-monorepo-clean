@@ -20,6 +20,14 @@ import { ProcessPaymentUseCase } from './application/use-cases/process-payment.u
 import { CompleteRideUseCase } from './application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-case';
 import { DriverEarningsController } from './api/driver-earnings.controller';
+import { WalletController } from './api/wallet.controller';
+import { WalletService } from './application/wallet.service';
+import {
+  Wallet,
+  WalletSchema,
+  WalletTransaction,
+  WalletTransactionSchema,
+} from './infrastructure/schemas/wallet.schema';
 import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import {
   IRoutingProvider,
@@ -46,6 +54,10 @@ import {
       },
     }),
     InfrastructureModule, // exports ITransactionRepository, IPaymentRepository, IPayoutRepository, gateways
+    MongooseModule.forFeature([
+      { name: Wallet.name, schema: WalletSchema },
+      { name: WalletTransaction.name, schema: WalletTransactionSchema },
+    ]),
   ],
   controllers: [
     PaymentController,             // POST /payments/intent, POST /payments/estimate
@@ -53,6 +65,7 @@ import {
     WebhookController,             // POST /webhooks/stripe, POST /webhooks/mercadopago
     HealthController,
     DriverEarningsController,      // GET /drivers/me/wallet, GET /drivers/me/earnings, POST /drivers/me/withdraw
+    WalletController,              // GET /payments/wallet/:userId/balance|transactions
   ],
   providers: [
     // Domain lib use cases (use ITransactionRepository + IPaymentGateway from InfrastructureModule)
@@ -66,6 +79,7 @@ import {
     ProcessPaymentUseCase,
     CompleteRideUseCase,
     CreatePayoutUseCase,
+    WalletService,
     JwtStrategy,
     // Routing provider (OSRM por default). Cambiar a GraphHopper/Mapbox
     // reemplazando el useClass.
