@@ -429,7 +429,7 @@ export default function HomePage() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.42) 50%, rgba(255,255,255,0.97) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.92) 90%, rgba(255,255,255,1) 100%)',
           }}
         />
 
@@ -440,7 +440,7 @@ export default function HomePage() {
             <img
               src="/images/Going_Logotipo_Color_V_800px.png"
               alt="Going App"
-              className="h-32 mx-auto mb-6"
+              className="h-48 mx-auto mb-6"
               style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
 
