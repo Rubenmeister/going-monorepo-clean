@@ -369,7 +369,7 @@ export default function PassengerDashboard() {
             { icon: '🏠', label: 'Inicio',    href: '/dashboard/pasajero' },
             { icon: '🚗', label: 'Viaje',     href: '/ride' },
             { icon: '💳', label: 'Wallet',    href: '/payment/wallet' },
-            { icon: '🕐', label: 'Historial', href: '/ride/historial' },
+            { icon: '🕐', label: 'Historial', href: '/bookings' },
             { icon: '🆘', label: 'SOS',       href: '/sos' },
           ].map(item => (
             <Link key={item.href} href={item.href}
