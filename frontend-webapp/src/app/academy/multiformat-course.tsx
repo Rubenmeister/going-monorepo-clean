@@ -102,6 +102,482 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
       { question: '¿Qué te permite el Going App Wallet?', options: ['Solo ver saldo', 'Recargar y transferir saldo', 'Pedir préstamos', 'Nada'], correct: 1, explanation: 'El Wallet permite recargar saldo (Datafast/DeUna) y transferirlo a otros usuarios.' },
     ],
   },
+
+  // ─── TRONCO COMÚN ─────────────────────────────────────────────────────────
+  tc1: {
+    id: 'tc1',
+    school: 'Tronco Común',
+    schoolColor: COLORS.brand.red,
+    title: 'El ADN de Going App',
+    subtitle: 'Filosofía y hospitalidad ecuatoriana',
+    description:
+      'Quiénes somos, por qué existimos y cómo cada persona de la comunidad Going App se convierte en embajadora del Ecuador. La base cultural que sostiene todo lo demás.',
+    readingHtml: `
+<h2>1. Nuestra misión</h2>
+<p>Going App nació para <strong>conectar al Ecuador</strong> — sus personas, sus destinos y su economía — con tecnología simple y confiable. No somos solo una app de viajes y envíos: somos una red de personas que se cuidan entre sí.</p>
+<p>Cada viaje, cada hospedaje, cada experiencia y cada envío es una oportunidad de mostrar lo mejor del país: su calidez, su honestidad y su diversidad.</p>
+
+<h2>2. Hospitalidad ecuatoriana</h2>
+<p>La hospitalidad es nuestro sello. Significa <strong>recibir bien, escuchar y resolver</strong>. No importa el rol que tengas en la plataforma: el trato cálido y respetuoso es lo que distingue a Going App de cualquier otra opción.</p>
+<ul>
+  <li><strong>Saluda con calidez:</strong> una sonrisa y un “bienvenido” genuino cambian toda la experiencia.</li>
+  <li><strong>Cuida los detalles:</strong> puntualidad, limpieza y claridad generan confianza.</li>
+  <li><strong>Pon a la persona primero:</strong> detrás de cada solicitud hay alguien con una necesidad real.</li>
+</ul>
+
+<h2>3. Empatía y resolución pacífica</h2>
+<p>Las cosas no siempre salen perfectas. Lo que nos define es <strong>cómo respondemos</strong>. Ante un malentendido:</p>
+<ol>
+  <li><strong>Escucha</strong> sin interrumpir.</li>
+  <li><strong>Reconoce</strong> la molestia de la otra persona.</li>
+  <li><strong>Propón una solución</strong> concreta.</li>
+  <li>Si no se resuelve, <strong>usa los canales de soporte</strong> de la app — nunca la confrontación.</li>
+</ol>
+<blockquote><strong>Regla de oro:</strong> nunca discutas de política, religión ni temas personales. Mantén la conversación amable y profesional.</blockquote>
+
+<h2>4. Embajadores del país</h2>
+<p>Muchas de las personas que usan Going App son turistas que conocen Ecuador por primera vez a través de ti. Eres la <strong>primera impresión del país</strong>. Tu amabilidad puede ser la razón por la que alguien regrese — o por la que recomiende Ecuador al mundo.</p>
+<p>Ser embajador también significa <strong>cuidar la reputación de la comunidad</strong>: actuar con honestidad en los cobros, respetar los acuerdos y representar los valores de Going App en cada interacción.</p>
+`,
+    slides: [
+      { title: 'Nuestra misión', points: ['Conectar al Ecuador con tecnología simple', 'Una red de personas que se cuidan', 'Cada interacción muestra lo mejor del país'] },
+      { title: 'Hospitalidad ecuatoriana', points: ['Recibir bien, escuchar y resolver', 'Calidez, puntualidad y limpieza', 'La persona siempre primero'] },
+      { title: 'Empatía y resolución', points: ['Escucha sin interrumpir', 'Reconoce la molestia', 'Propón una solución', 'Usa soporte, nunca la confrontación'] },
+      { title: 'Regla de oro', points: ['Nada de política ni religión', 'Trato amable y profesional', 'Honestidad en todo acuerdo'] },
+      { title: 'Embajadores del país', points: ['Eres la primera impresión de Ecuador', 'Tu amabilidad invita a volver', 'Cuidas la reputación de la comunidad'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido al primer episodio de la Academia Going App. Hoy hablamos del ADN de Going App: quiénes somos, por qué existimos y cómo cada persona de nuestra comunidad se convierte en embajadora del Ecuador.',
+      segments: [
+        { title: 'Nuestra misión', text: 'Going App nació para conectar al Ecuador: sus personas, sus destinos y su economía, con tecnología simple y confiable. No somos solo una app de viajes y envíos; somos una red de personas que se cuidan entre sí. Cada viaje y cada envío es una oportunidad de mostrar la calidez y la honestidad del país.' },
+        { title: 'Hospitalidad ecuatoriana', text: 'La hospitalidad es nuestro sello: recibir bien, escuchar y resolver. Sin importar tu rol, el trato cálido y respetuoso es lo que distingue a Going App. Saluda con calidez, cuida los detalles como la puntualidad y la limpieza, y pon siempre a la persona primero.' },
+        { title: 'Empatía y resolución pacífica', text: 'Las cosas no siempre salen perfectas, y lo que nos define es cómo respondemos. Ante un malentendido: escucha sin interrumpir, reconoce la molestia, propón una solución concreta y, si hace falta, usa los canales de soporte de la app. Nunca la confrontación. Y recuerda la regla de oro: nada de política, religión ni temas personales.' },
+        { title: 'Embajadores del país', text: 'Para muchos turistas, tú eres la primera impresión del Ecuador. Tu amabilidad puede ser la razón por la que alguien regrese o recomiende el país al mundo. Ser embajador también es cuidar la reputación de la comunidad: honestidad en los cobros y respeto por cada acuerdo.' },
+      ],
+    },
+    quiz: [
+      { question: 'Ante un malentendido con un usuario, lo PRIMERO que debes hacer es…', options: ['Defender tu punto', 'Escuchar sin interrumpir', 'Cancelar el servicio', 'Subir el tono'], correct: 1, explanation: 'La resolución pacífica empieza por escuchar y reconocer la molestia de la otra persona.' },
+      { question: '¿Qué temas se deben evitar en la conversación?', options: ['El clima', 'Recomendaciones turísticas', 'Política, religión y temas personales', 'La ruta'], correct: 2, explanation: 'La regla de oro: mantener la conversación amable y profesional, sin política, religión ni temas personales.' },
+      { question: '¿Por qué se dice que somos “embajadores del país”?', options: ['Por un cargo oficial', 'Porque para muchos turistas somos la primera impresión del Ecuador', 'Por un uniforme', 'No es cierto'], correct: 1, explanation: 'Para muchos visitantes, la comunidad Going App es su primer contacto real con el país.' },
+    ],
+  },
+  tc3: {
+    id: 'tc3',
+    school: 'Tronco Común',
+    schoolColor: COLORS.brand.red,
+    title: 'Sostenibilidad y Respeto',
+    subtitle: 'Turismo responsable',
+    description:
+      'Cómo cuidar el entorno natural y cultural del Ecuador, respetar a las comunidades locales y dar un trato inclusivo a toda la comunidad usuaria.',
+    readingHtml: `
+<h2>1. No dejar rastro</h2>
+<p>El Ecuador es uno de los países más biodiversos del planeta. Protegerlo es responsabilidad de todos. El principio de <strong>“no dejar rastro”</strong> es simple: el lugar debe quedar igual o mejor de como lo encontramos.</p>
+<ul>
+  <li><strong>Maneja tu basura:</strong> nunca la dejes en miradores, playas, páramos ni senderos.</li>
+  <li><strong>Respeta la flora y fauna:</strong> no alimentes animales silvestres ni extraigas plantas.</li>
+  <li><strong>Cuida el agua y la energía:</strong> en hospedajes y experiencias, usa solo lo necesario.</li>
+</ul>
+
+<h2>2. Respeto a las comunidades locales</h2>
+<p>Muchos destinos están dentro de territorios de comunidades y pueblos. Visitar es un privilegio que exige respeto:</p>
+<ul>
+  <li><strong>Pide permiso</strong> antes de tomar fotos a personas, casas o ceremonias.</li>
+  <li><strong>Valora la cultura local:</strong> tradiciones, idioma y formas de vida no son un “espectáculo”.</li>
+  <li><strong>Apoya la economía local:</strong> compra artesanías y servicios directamente a sus productores.</li>
+  <li><strong>Negocia con justicia:</strong> regatear de forma agresiva el trabajo de alguien no es respetuoso.</li>
+</ul>
+
+<h2>3. Trato inclusivo</h2>
+<p>Going App es para <strong>todas las personas</strong>. La discriminación por origen, género, religión, orientación, discapacidad o cualquier otra condición está estrictamente prohibida.</p>
+<ul>
+  <li><strong>Lenguaje respetuoso</strong> con todas las personas.</li>
+  <li><strong>Accesibilidad:</strong> ofrece ayuda a quien la necesite (movilidad, equipaje, orientación).</li>
+  <li><strong>Cero tolerancia</strong> al acoso de cualquier tipo.</li>
+</ul>
+<blockquote>Rechazar o maltratar a una persona por su identidad o condición puede significar la <strong>suspensión de la cuenta</strong>.</blockquote>
+
+<h2>4. Tu huella positiva</h2>
+<p>El turismo responsable no es solo evitar daño: es <strong>dejar algo bueno</strong>. Recomendar destinos menos saturados, compartir buenas prácticas y tratar a cada persona con dignidad construye un Ecuador que vale la pena visitar una y otra vez.</p>
+`,
+    slides: [
+      { title: 'No dejar rastro', points: ['El lugar queda igual o mejor', 'Maneja tu basura siempre', 'No alimentes fauna ni extraigas flora', 'Cuida agua y energía'] },
+      { title: 'Respeto a comunidades', points: ['Pide permiso para fotos', 'La cultura no es espectáculo', 'Apoya la economía local', 'Negocia con justicia'] },
+      { title: 'Trato inclusivo', points: ['Going App es para todas las personas', 'Lenguaje respetuoso', 'Ofrece accesibilidad', 'Cero tolerancia al acoso'] },
+      { title: 'Cero discriminación', points: ['Prohibida por origen, género, religión…', 'Discriminar = posible suspensión', 'Dignidad para cada persona'] },
+      { title: 'Tu huella positiva', points: ['No solo evitar daño: dejar algo bueno', 'Recomienda destinos responsables', 'Construye un Ecuador que invita a volver'] },
+    ],
+    podcast: {
+      intro: 'En este episodio del Tronco Común hablamos de sostenibilidad y respeto: cómo cuidar el entorno natural y cultural del Ecuador y dar un trato inclusivo a toda la comunidad.',
+      segments: [
+        { title: 'No dejar rastro', text: 'El Ecuador es uno de los países más biodiversos del planeta y protegerlo es tarea de todos. El principio de no dejar rastro es simple: el lugar debe quedar igual o mejor de como lo encontramos. Maneja tu basura, no alimentes a la fauna silvestre, no extraigas plantas y usa el agua y la energía con conciencia.' },
+        { title: 'Respeto a las comunidades', text: 'Muchos destinos están en territorios de comunidades y pueblos. Visitar es un privilegio: pide permiso antes de fotografiar personas o ceremonias, valora la cultura local que no es un espectáculo, apoya la economía comprando directamente a los productores y negocia siempre con justicia.' },
+        { title: 'Trato inclusivo', text: 'Going App es para todas las personas. La discriminación por origen, género, religión, orientación o discapacidad está estrictamente prohibida. Usa lenguaje respetuoso, ofrece accesibilidad a quien la necesite y mantén cero tolerancia al acoso. Rechazar o maltratar a alguien por su identidad puede significar la suspensión de la cuenta.' },
+        { title: 'Tu huella positiva', text: 'El turismo responsable no es solo evitar daño: es dejar algo bueno. Recomendar destinos menos saturados, compartir buenas prácticas y tratar a cada persona con dignidad construye un Ecuador que vale la pena visitar una y otra vez.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Qué significa el principio de “no dejar rastro”?', options: ['Ir rápido', 'Que el lugar quede igual o mejor de como lo encontramos', 'No usar la app', 'No hablar con nadie'], correct: 1, explanation: 'No dejar rastro es devolver el entorno en igual o mejor estado: gestionar la basura y respetar flora y fauna.' },
+      { question: 'Antes de fotografiar a personas o ceremonias en una comunidad debes…', options: ['Hacerlo sin avisar', 'Pedir permiso', 'Pagar siempre', 'Publicarlo de inmediato'], correct: 1, explanation: 'El respeto a las comunidades exige pedir permiso; la cultura local no es un espectáculo.' },
+      { question: 'La discriminación a un usuario por su identidad o condición puede provocar…', options: ['Nada', 'Una advertencia verbal', 'La suspensión de la cuenta', 'Un descuento'], correct: 2, explanation: 'Going App aplica cero tolerancia: la discriminación o el acoso pueden derivar en suspensión de la cuenta.' },
+    ],
+  },
+
+  // ─── ESCUELA DE CONDUCTORES ───────────────────────────────────────────────
+  c1: {
+    id: 'c1',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'La Primera Impresión',
+    subtitle: 'Módulo 1 — Ruta del Volante',
+    description:
+      'El arte de recibir. Checklist del vehículo, el saludo Going App, uso del lanyard y manejo del equipaje. Los primeros 30 segundos definen la calificación del viaje.',
+    readingHtml: `
+<h2>1. Tu vehículo, Going App-ready</h2>
+<p>Antes de encender el motor, tu vehículo debe estar listo. No es solo un auto: es la primera extensión de la hospitalidad que el viajero experimentará.</p>
+<ul>
+  <li><strong>Interior impecable:</strong> asientos limpios, piso sin basura, sin olores fuertes. Una fragancia suave está bien; evita perfumes intensos.</li>
+  <li><strong>Seguridad primero:</strong> llantas, frenos, combustible y luces revisados.</li>
+  <li><strong>Temperatura lista:</strong> aire o calefacción según el clima, antes de que suba el pasajero.</li>
+  <li><strong>Cargador disponible:</strong> un cable USB accesible siempre se agradece.</li>
+</ul>
+<blockquote><strong>El estándar Going App:</strong> “Un auto limpio es el primer saludo que das antes de abrir la boca.”</blockquote>
+
+<h2>2. Tu identificación visible</h2>
+<p>El <strong>lanyard de Going App</strong> es tu insignia de confianza. Úsalo siempre visible: los pasajeros lo buscan para identificarte. Verifica también que tu perfil en la app (foto y placa) coincida con la realidad.</p>
+
+<h2>3. El saludo Going App</h2>
+<p>El momento del “hola” define todo el viaje. Sal del vehículo con una sonrisa genuina y di las palabras mágicas:</p>
+<blockquote><strong>“¡Bienvenido a Going App! Soy [tu nombre].”</strong></blockquote>
+<p>El protocolo de llegada:</p>
+<ol>
+  <li><strong>Sal del vehículo</strong> — no esperes dentro.</li>
+  <li><strong>Sonríe</strong> de forma genuina.</li>
+  <li><strong>Muestra tu lanyard.</strong></li>
+  <li><strong>Di la frase</strong> de bienvenida.</li>
+  <li><strong>Ayuda con el equipaje</strong> activamente, sin esperar que te lo pidan.</li>
+</ol>
+
+<h2>4. Si el pasajero no habla español</h2>
+<p>Usa la traducción del chat de la app. Un simple <em>“Welcome! I'm your Going App driver”</em> hace una gran diferencia. En el curso de Inglés Turístico aprenderás más frases útiles.</p>
+
+<h2>5. Lo que NO debes hacer</h2>
+<ul>
+  <li>Estar en el teléfono cuando llega el pasajero.</li>
+  <li>Pedir datos personales (número privado, redes).</li>
+  <li>Comentar sobre política o religión.</li>
+  <li>Iniciar el viaje sin confirmar el nombre del pasajero.</li>
+</ul>
+`,
+    slides: [
+      { title: 'Vehículo Going App-ready', points: ['Interior impecable, sin olores fuertes', 'Llantas, frenos, luces revisados', 'Temperatura lista antes de subir', 'Cargador USB a mano'] },
+      { title: 'Identificación visible', points: ['Lanyard siempre visible', 'Foto y placa coinciden con la app', 'Eres tu insignia de confianza'] },
+      { title: 'El saludo Going App', points: ['Sal del auto', 'Sonríe genuinamente', 'Muestra el lanyard', '“¡Bienvenido a Going App! Soy…”'] },
+      { title: 'Equipaje y empatía', points: ['Ayuda activamente con maletas', 'Confirma el nombre del pasajero', 'Usa traducción si no habla español'] },
+      { title: 'Lo que NO hacer', points: ['Nada de teléfono al recibir', 'No pedir datos personales', 'Nada de política ni religión'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a la Ruta del Volante. En este primer módulo hablamos de la primera impresión: cómo recibir a tu pasajero de forma que los primeros treinta segundos jueguen a tu favor.',
+      segments: [
+        { title: 'Vehículo listo', text: 'Antes de encender el motor, tu vehículo debe estar Going App-ready. Interior impecable y sin olores fuertes, seguridad revisada en llantas, frenos y luces, temperatura lista según el clima y un cargador USB a mano. Recuerda: un auto limpio es el primer saludo que das antes de abrir la boca.' },
+        { title: 'El saludo perfecto', text: 'El momento del hola define todo el viaje. Sal del vehículo, sonríe de forma genuina, muestra tu lanyard y di las palabras mágicas: bienvenido a Going App, soy tu nombre. Y ayuda con el equipaje activamente, sin esperar a que te lo pidan.' },
+        { title: 'Turistas y barreras de idioma', text: 'Si el pasajero no habla español, usa la traducción del chat de la app. Un simple welcome, I am your Going App driver hace una gran diferencia. En el curso de Inglés Turístico aprenderás muchas más frases útiles.' },
+        { title: 'Errores a evitar', text: 'Para terminar, lo que no debes hacer: estar en el teléfono cuando llega el pasajero, pedir datos personales, comentar sobre política o religión, o iniciar el viaje sin confirmar el nombre del pasajero.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Qué se recomienda hacer al llegar a recoger al pasajero?', options: ['Esperar dentro del auto', 'Salir del vehículo y saludar con una sonrisa', 'Tocar la bocina', 'Llamarlo por teléfono'], correct: 1, explanation: 'El protocolo Going App es salir del vehículo, sonreír, mostrar el lanyard y dar la bienvenida.' },
+      { question: 'El lanyard de Going App sirve para…', options: ['Decoración', 'Que el pasajero te identifique y genere confianza', 'Cumplir un trámite', 'Nada en especial'], correct: 1, explanation: 'El lanyard es tu insignia de confianza: los pasajeros lo buscan para identificarte.' },
+      { question: 'Si el pasajero no habla español, lo mejor es…', options: ['Hablar más fuerte', 'Usar la traducción del chat de la app', 'Cancelar el viaje', 'Ignorarlo'], correct: 1, explanation: 'La app traduce el chat; una frase de bienvenida en su idioma marca la diferencia.' },
+      { question: '¿Cuál de estas acciones NO debes hacer?', options: ['Ayudar con el equipaje', 'Confirmar el nombre del pasajero', 'Comentar sobre política', 'Mostrar tu lanyard'], correct: 2, explanation: 'Nunca comentes sobre política o religión; mantén el trato amable y profesional.' },
+    ],
+  },
+  c2: {
+    id: 'c2',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'Seguridad Vial Ecuador',
+    subtitle: 'Manejo defensivo por región',
+    description:
+      'Manejo defensivo en Costa, Sierra y Amazonía: curvas de montaña, lluvia tropical, neblina y respuesta ante emergencias viales. Tu seguridad y la de tus pasajeros, primero.',
+    readingHtml: `
+<h2>1. Principios del manejo defensivo</h2>
+<p>Manejar a la defensiva es <strong>anticipar el error de los demás</strong> y dejar siempre una salida.</p>
+<ul>
+  <li><strong>Distancia de seguridad:</strong> regla de los 3 segundos; con lluvia, dóblala.</li>
+  <li><strong>Velocidad según la vía,</strong> no según el límite máximo.</li>
+  <li><strong>Cinturón siempre,</strong> tú y todos los pasajeros.</li>
+  <li><strong>Sin distracciones:</strong> el teléfono va en soporte; nunca en la mano.</li>
+</ul>
+
+<h2>2. Sierra — curvas y altura</h2>
+<ul>
+  <li><strong>Curvas de montaña:</strong> reduce ANTES de la curva, acelera suave a la salida. Nunca frenes en plena curva.</li>
+  <li><strong>Neblina (páramo):</strong> luces bajas (las altas reflejan), baja la velocidad y usa la línea de borde como guía.</li>
+  <li><strong>Pendientes largas:</strong> baja en marcha reducida para no quemar los frenos (freno motor).</li>
+</ul>
+
+<h2>3. Costa — calor, lluvia y tráfico</h2>
+<ul>
+  <li><strong>Lluvia tropical:</strong> el primer aguacero saca el aceite del asfalto: extrema cuidado. Evita frenazos.</li>
+  <li><strong>Hidroplaneo:</strong> si el volante se siente “liviano”, suelta el acelerador sin frenar de golpe.</li>
+  <li><strong>Calor:</strong> revisa presión de llantas y temperatura del motor.</li>
+</ul>
+
+<h2>4. Amazonía — vías mixtas</h2>
+<ul>
+  <li><strong>Vías de lastre/barro:</strong> velocidad baja y constante, sin movimientos bruscos.</li>
+  <li><strong>Fauna y peatones</strong> pueden aparecer de repente: máxima atención.</li>
+  <li><strong>Tramos sin señal:</strong> avisa tu ruta antes de salir y lleva combustible de sobra.</li>
+</ul>
+
+<h2>5. Ante una emergencia vial</h2>
+<ol>
+  <li><strong>Oríllate</strong> en un lugar seguro y enciende las luces de emergencia.</li>
+  <li><strong>Triángulos/conos</strong> a buena distancia.</li>
+  <li><strong>Protege a los pasajeros</strong> primero.</li>
+  <li><strong>Llama a emergencias: 911.</strong> Usa el botón SOS de la app si está disponible.</li>
+  <li><strong>No muevas heridos</strong> salvo peligro inminente.</li>
+</ol>
+<blockquote>Conducir cansado es tan peligroso como conducir bajo efectos del alcohol. Descansa antes de manejar.</blockquote>
+`,
+    slides: [
+      { title: 'Manejo defensivo', points: ['Anticipa el error de los demás', 'Regla de 3 segundos (doble con lluvia)', 'Cinturón para todos', 'Teléfono en soporte, nunca en la mano'] },
+      { title: 'Sierra', points: ['Reduce antes de la curva', 'Neblina: luces bajas', 'Pendientes: usa freno motor'] },
+      { title: 'Costa', points: ['Primer aguacero = asfalto resbaloso', 'Hidroplaneo: suelta el acelerador', 'Revisa llantas y temperatura'] },
+      { title: 'Amazonía', points: ['Lastre/barro: lento y constante', 'Atento a fauna y peatones', 'Avisa tu ruta; lleva combustible extra'] },
+      { title: 'Emergencia vial', points: ['Oríllate y luces de emergencia', 'Señaliza con triángulos', 'Protege a los pasajeros', 'Llama al 911 / botón SOS'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Seguridad Vial Ecuador. En este episodio repasamos el manejo defensivo según la región: Sierra, Costa y Amazonía, y qué hacer ante una emergencia.',
+      segments: [
+        { title: 'Manejo defensivo', text: 'Manejar a la defensiva es anticipar el error de los demás y dejar siempre una salida. Mantén la distancia de seguridad con la regla de los tres segundos, y dóblala cuando llueve. Ajusta la velocidad a la vía, no al límite máximo, usa el cinturón siempre y deja el teléfono en el soporte, nunca en la mano.' },
+        { title: 'Sierra: curvas y neblina', text: 'En la Sierra, reduce antes de entrar a la curva y acelera suave a la salida; nunca frenes en plena curva. Con neblina del páramo usa luces bajas, porque las altas reflejan, y baja la velocidad. En pendientes largas, usa el freno motor para no quemar los frenos.' },
+        { title: 'Costa y Amazonía', text: 'En la Costa, el primer aguacero saca el aceite del asfalto y lo vuelve resbaloso: extrema el cuidado y evita frenazos. Si sientes el volante liviano por hidroplaneo, suelta el acelerador sin frenar de golpe. En la Amazonía, en vías de lastre o barro maneja lento y constante, atento a fauna y peatones, y avisa tu ruta porque hay tramos sin señal.' },
+        { title: 'Ante una emergencia', text: 'Si ocurre una emergencia: oríllate en un lugar seguro con las luces de emergencia, señaliza con triángulos, protege primero a los pasajeros y llama al 911 o usa el botón SOS de la app. No muevas a una persona herida salvo peligro inminente. Y recuerda: conducir cansado es tan peligroso como conducir bajo efectos del alcohol.' },
+      ],
+    },
+    quiz: [
+      { question: 'Con lluvia, la distancia de seguridad debe…', options: ['Reducirse', 'Mantenerse igual', 'Duplicarse (regla de 3 s → 6 s)', 'No importa'], correct: 2, explanation: 'Con piso mojado la frenada es más larga: dobla la regla de los 3 segundos.' },
+      { question: 'En curvas de montaña, lo correcto es…', options: ['Frenar dentro de la curva', 'Reducir antes y acelerar suave a la salida', 'Acelerar al entrar', 'Apagar las luces'], correct: 1, explanation: 'Se reduce antes de la curva y se acelera de forma progresiva a la salida; nunca se frena en plena curva.' },
+      { question: 'Con neblina en el páramo conviene usar…', options: ['Luces altas', 'Luces bajas', 'Sin luces', 'Solo intermitentes'], correct: 1, explanation: 'Las luces altas reflejan en la neblina y encandilan; se usan luces bajas y baja velocidad.' },
+      { question: 'Ante una emergencia vial, ¿a qué número llamas?', options: ['132', '911', '171', '101'], correct: 1, explanation: 'El número único de emergencias en Ecuador es el 911; además puedes usar el botón SOS de la app.' },
+    ],
+  },
+  c3: {
+    id: 'c3',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'Mecánica Preventiva Básica',
+    subtitle: 'Cuida tu vehículo, cuida tu ingreso',
+    description:
+      'Revisión diaria, cambio de llanta en ruta, control de niveles y cuándo ir al taller antes de que el problema sea urgente (y caro). Un vehículo cuidado es ingreso asegurado.',
+    readingHtml: `
+<h2>1. El chequeo diario (2 minutos)</h2>
+<p>Antes de empezar tu jornada, una rutina corta evita el 90% de los imprevistos. Recuerda el acrónimo <strong>“LLANTAS”</strong> de forma simple:</p>
+<ul>
+  <li><strong>Luces:</strong> delanteras, traseras, freno y direccionales.</li>
+  <li><strong>Llantas:</strong> presión y estado (sin cortes ni desgaste irregular).</li>
+  <li><strong>Aceite y fluidos:</strong> nivel correcto (ver sección 3).</li>
+  <li><strong>Niveles de combustible:</strong> nunca empieces casi vacío.</li>
+  <li><strong>Frenos:</strong> sin ruidos ni pedal esponjoso.</li>
+</ul>
+
+<h2>2. Cambio de llanta en ruta</h2>
+<ol>
+  <li><strong>Oríllate</strong> en piso firme y plano; luces de emergencia y triángulos.</li>
+  <li><strong>Afloja</strong> los pernos ANTES de levantar el auto con la gata.</li>
+  <li><strong>Levanta</strong> con la gata en el punto de apoyo correcto del chasis.</li>
+  <li><strong>Cambia</strong> la llanta y ajusta los pernos en cruz (no en círculo).</li>
+  <li><strong>Baja</strong> el auto y aprieta firme. Revisa presión pronto.</li>
+</ol>
+<blockquote>La llanta de repuesto tipo “galleta” es temporal: máx. 80 km/h y cámbiala pronto.</blockquote>
+
+<h2>3. Control de niveles</h2>
+<ul>
+  <li><strong>Aceite de motor:</strong> con el motor frío, varilla entre MIN y MAX.</li>
+  <li><strong>Refrigerante:</strong> nunca abras el radiador caliente.</li>
+  <li><strong>Líquido de frenos y dirección:</strong> dentro del rango marcado.</li>
+  <li><strong>Limpiaparabrisas:</strong> agua con limpiador; visibilidad es seguridad.</li>
+</ul>
+
+<h2>4. Señales de que algo anda mal</h2>
+<ul>
+  <li><strong>Luz de check engine</strong> encendida fija o parpadeando.</li>
+  <li><strong>Ruidos nuevos:</strong> chirridos al frenar, golpeteos, silbidos.</li>
+  <li><strong>Olores:</strong> a quemado, a gasolina o dulzón (refrigerante).</li>
+  <li><strong>Vibraciones</strong> en el volante a cierta velocidad.</li>
+</ul>
+<p><strong>Regla de oro:</strong> ir al taller a tiempo cuesta menos que una reparación de emergencia… y evita que pierdas días de trabajo.</p>
+`,
+    slides: [
+      { title: 'Chequeo diario', points: ['Luces completas', 'Llantas: presión y estado', 'Aceite y fluidos', 'Combustible y frenos'] },
+      { title: 'Cambiar llanta', points: ['Afloja pernos antes de levantar', 'Gata en el punto correcto', 'Aprieta en cruz, no en círculo', 'Repuesto “galleta”: máx. 80 km/h'] },
+      { title: 'Niveles', points: ['Aceite con motor frío', 'Refrigerante: nunca en caliente', 'Frenos y dirección en rango', 'Agua de limpiaparabrisas'] },
+      { title: 'Señales de alerta', points: ['Check engine encendido', 'Ruidos u olores nuevos', 'Vibraciones en el volante'] },
+      { title: 'Regla de oro', points: ['Taller a tiempo cuesta menos', 'Evita perder días de trabajo', 'Vehículo cuidado = ingreso seguro'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Mecánica Preventiva Básica. Aquí aprenderás a cuidar tu vehículo con rutinas simples, porque cuidar tu auto es cuidar tu ingreso.',
+      segments: [
+        { title: 'El chequeo diario', text: 'Antes de empezar tu jornada, dos minutos de revisión evitan la mayoría de los imprevistos. Revisa luces delanteras, traseras y direccionales; presión y estado de las llantas; niveles de aceite y fluidos; combustible suficiente; y que los frenos no hagan ruido ni se sientan esponjosos.' },
+        { title: 'Cambio de llanta en ruta', text: 'Si pinchas, oríllate en piso firme y plano, pon luces de emergencia y triángulos. Afloja los pernos antes de levantar el auto con la gata, ubica la gata en el punto de apoyo correcto, cambia la llanta y ajusta los pernos en cruz, no en círculo. Recuerda que la llanta de repuesto tipo galleta es temporal: máximo ochenta por hora.' },
+        { title: 'Control de niveles', text: 'Revisa el aceite con el motor frío, manteniéndolo entre el mínimo y el máximo de la varilla. Nunca abras el radiador en caliente. Mantén el líquido de frenos y de dirección dentro de su rango, y no descuides el agua del limpiaparabrisas, porque la visibilidad también es seguridad.' },
+        { title: 'Cuándo ir al taller', text: 'Presta atención a las señales: la luz de check engine, ruidos nuevos al frenar, olores a quemado o dulzón, y vibraciones en el volante. La regla de oro es simple: ir al taller a tiempo cuesta mucho menos que una reparación de emergencia, y evita que pierdas días de trabajo.' },
+      ],
+    },
+    quiz: [
+      { question: 'Al cambiar una llanta, los pernos se aflojan…', options: ['Después de levantar el auto', 'Antes de levantar el auto con la gata', 'No se aflojan', 'Con el motor encendido'], correct: 1, explanation: 'Se aflojan antes de levantar, porque con la rueda en el aire giraría sin poder destrabar los pernos.' },
+      { question: 'El nivel de aceite se revisa con el motor…', options: ['Muy caliente', 'Frío y en piso plano', 'En movimiento', 'Da igual'], correct: 1, explanation: 'Con el motor frío y el auto nivelado la lectura de la varilla es confiable.' },
+      { question: 'La llanta de repuesto tipo “galleta”…', options: ['Es permanente', 'Permite cualquier velocidad', 'Es temporal, máx. ~80 km/h', 'No debe usarse nunca'], correct: 2, explanation: 'Es temporal: limita la velocidad y debe reemplazarse pronto por una llanta normal.' },
+      { question: '¿Cuál es una señal de alerta para ir al taller?', options: ['El auto está limpio', 'Luz de check engine encendida', 'El tanque lleno', 'Llantas nuevas'], correct: 1, explanation: 'El check engine, ruidos, olores o vibraciones nuevas indican que conviene revisar a tiempo.' },
+    ],
+  },
+  c4: {
+    id: 'c4',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'Inglés Turístico Básico',
+    subtitle: 'Atiende turistas internacionales',
+    description:
+      'Frases esenciales para recibir, guiar y despedir a turistas que no hablan español. Pensado para escuchar y repetir mientras conduces sin pasajeros.',
+    readingHtml: `
+<h2>1. Saludo y bienvenida</h2>
+<ul>
+  <li><strong>Welcome to Going App! I'm [name].</strong> — ¡Bienvenido a Going App! Soy [nombre].</li>
+  <li><strong>How are you today?</strong> — ¿Cómo está hoy?</li>
+  <li><strong>Let me help you with your luggage.</strong> — Déjeme ayudarle con su equipaje.</li>
+  <li><strong>Please, fasten your seatbelt.</strong> — Por favor, abróchese el cinturón.</li>
+</ul>
+
+<h2>2. Durante el viaje</h2>
+<ul>
+  <li><strong>We are going to [place].</strong> — Vamos a [lugar].</li>
+  <li><strong>The trip takes about 20 minutes.</strong> — El viaje toma unos 20 minutos.</li>
+  <li><strong>Is the temperature okay?</strong> — ¿Está bien la temperatura?</li>
+  <li><strong>Would you like music?</strong> — ¿Desea música?</li>
+  <li><strong>Do you need to make a stop?</strong> — ¿Necesita hacer una parada?</li>
+</ul>
+
+<h2>3. Recomendaciones y cultura</h2>
+<ul>
+  <li><strong>This is a good place to eat.</strong> — Este es un buen lugar para comer.</li>
+  <li><strong>You should try the local food: encebollado, ceviche.</strong> — Debería probar la comida local.</li>
+  <li><strong>It is safe, but take care of your belongings.</strong> — Es seguro, pero cuide sus pertenencias.</li>
+</ul>
+
+<h2>4. Pago y despedida</h2>
+<ul>
+  <li><strong>The fare is shown in the app.</strong> — La tarifa aparece en la app.</li>
+  <li><strong>You can pay by card or cash.</strong> — Puede pagar con tarjeta o efectivo.</li>
+  <li><strong>Here we are. Have a great trip!</strong> — Aquí estamos. ¡Que tenga un gran viaje!</li>
+  <li><strong>Please rate your trip in the app. Thank you!</strong> — Por favor, califique su viaje. ¡Gracias!</li>
+</ul>
+
+<h2>5. Si no entiendes</h2>
+<ul>
+  <li><strong>Sorry, could you repeat that?</strong> — Disculpe, ¿podría repetir?</li>
+  <li><strong>One moment, I'll use the app to translate.</strong> — Un momento, usaré la app para traducir.</li>
+</ul>
+<blockquote>No necesitas hablar inglés perfecto. Una sonrisa, buena actitud y estas frases bastan para que el turista se sienta bienvenido.</blockquote>
+`,
+    slides: [
+      { title: 'Bienvenida', points: ['Welcome to Going App! I\'m [name].', 'Let me help with your luggage.', 'Please, fasten your seatbelt.'] },
+      { title: 'Durante el viaje', points: ['We are going to [place].', 'The trip takes about 20 minutes.', 'Is the temperature okay?', 'Do you need a stop?'] },
+      { title: 'Recomendaciones', points: ['This is a good place to eat.', 'Try the local food.', 'Take care of your belongings.'] },
+      { title: 'Pago y despedida', points: ['You can pay by card or cash.', 'Have a great trip!', 'Please rate your trip. Thank you!'] },
+      { title: 'Si no entiendes', points: ['Could you repeat that?', 'I\'ll use the app to translate.', 'Una sonrisa siempre ayuda'] },
+    ],
+    podcast: {
+      intro: 'Welcome! Bienvenido a Inglés Turístico Básico. Escucha y repite estas frases mientras conduces sin pasajeros. No buscamos un inglés perfecto, sino que el turista se sienta bienvenido.',
+      segments: [
+        { title: 'Saludo y bienvenida', text: 'Empecemos con la bienvenida. Welcome to Going App, I am name. Bienvenido a Going App, soy nombre. How are you today. Cómo está hoy. Let me help you with your luggage. Déjeme ayudarle con su equipaje. Please, fasten your seatbelt. Por favor, abróchese el cinturón.' },
+        { title: 'Durante el viaje', text: 'Durante el viaje. We are going to. Vamos a. The trip takes about twenty minutes. El viaje toma unos veinte minutos. Is the temperature okay. Está bien la temperatura. Would you like music. Desea música. Do you need to make a stop. Necesita hacer una parada.' },
+        { title: 'Pago y despedida', text: 'Para el pago y la despedida. You can pay by card or cash. Puede pagar con tarjeta o efectivo. Here we are, have a great trip. Aquí estamos, que tenga un gran viaje. Please rate your trip in the app, thank you. Por favor, califique su viaje en la app, gracias.' },
+        { title: 'Si no entiendes', text: 'Y si no entiendes algo, no te preocupes. Sorry, could you repeat that. Disculpe, podría repetir. One moment, I will use the app to translate. Un momento, usaré la app para traducir. Recuerda: una sonrisa y buena actitud valen más que un inglés perfecto.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Cómo le pides a un pasajero que se abroche el cinturón?', options: ['Open the door, please', 'Please, fasten your seatbelt', 'Stop the car', 'Pay the fare'], correct: 1, explanation: '“Please, fasten your seatbelt” = por favor, abróchese el cinturón.' },
+      { question: '“The trip takes about 20 minutes” significa…', options: ['El viaje cuesta 20 dólares', 'El viaje toma unos 20 minutos', 'Faltan 20 km', 'Pare en 20 metros'], correct: 1, explanation: '“Takes about 20 minutes” = toma unos 20 minutos.' },
+      { question: 'Si no entendiste algo, dices…', options: ['Goodbye', 'Sorry, could you repeat that?', 'Thank you', 'Turn left'], correct: 1, explanation: '“Could you repeat that?” pide amablemente que repitan.' },
+      { question: 'Para invitar a calificar el viaje, dices…', options: ['Please rate your trip in the app', 'Open the window', 'I am hungry', 'See the map'], correct: 0, explanation: '“Please rate your trip in the app” invita a calificar el servicio.' },
+    ],
+  },
+  c5: {
+    id: 'c5',
+    school: 'Escuela de Conductores',
+    schoolColor: COLORS.brand.red,
+    title: 'Primeros Auxilios en Ruta',
+    subtitle: 'Responde antes de que llegue la ayuda',
+    description:
+      'Cómo actuar ante un accidente, mareo o malestar de un pasajero mientras llega la ayuda profesional. Incluye nociones de RCP y uso del botiquín. Contenido informativo, no sustituye una certificación.',
+    readingHtml: `
+<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+<strong>Aviso importante:</strong> este curso es <strong>informativo</strong> y no reemplaza una certificación oficial de primeros auxilios (Cruz Roja, ECU 911 u otra entidad acreditada). Ante cualquier emergencia, llama siempre al <strong>911</strong>.
+</div>
+
+<h2>1. Lo primero: tu seguridad y la escena</h2>
+<ol>
+  <li><strong>Evalúa el entorno:</strong> ¿hay tráfico, fuego, cables? No te conviertas en otra víctima.</li>
+  <li><strong>Señaliza y protege</strong> la zona (luces, triángulos).</li>
+  <li><strong>Llama al 911</strong> e indica ubicación, número de personas y estado.</li>
+</ol>
+
+<h2>2. Botiquín básico</h2>
+<ul>
+  <li>Guantes desechables, gasas y vendas estériles.</li>
+  <li>Antiséptico, esparadrapo y tijeras.</li>
+  <li>Suero fisiológico y bolsas de frío instantáneo.</li>
+  <li>Agua y una manta térmica.</li>
+</ul>
+
+<h2>3. Situaciones frecuentes</h2>
+<ul>
+  <li><strong>Mareo o náusea:</strong> detente con seguridad, aire fresco, agua a sorbos. Si empeora, llama al 911.</li>
+  <li><strong>Desmayo:</strong> recuéstalo y eleva las piernas; verifica que respire. Si no despierta, llama al 911.</li>
+  <li><strong>Herida con sangrado:</strong> presión directa con gasa limpia; no retires objetos clavados.</li>
+  <li><strong>Atragantamiento:</strong> si no puede toser ni hablar, maniobra de Heimlich (compresiones bajo el esternón).</li>
+</ul>
+
+<h2>4. RCP — nociones básicas</h2>
+<p>Si una persona <strong>no responde y no respira normalmente</strong>:</p>
+<ol>
+  <li><strong>Llama al 911</strong> (o pide a alguien que llame) y consigue un DEA si hay.</li>
+  <li><strong>Compresiones en el centro del pecho:</strong> fuerte y rápido, ~100–120 por minuto, dejando subir el pecho.</li>
+  <li><strong>No te detengas</strong> hasta que llegue ayuda o la persona reaccione.</li>
+</ol>
+<blockquote>Aprender RCP en un curso presencial certificado salva vidas. Este módulo es solo una guía de referencia.</blockquote>
+
+<h2>5. Qué NO hacer</h2>
+<ul>
+  <li>No muevas a un herido salvo peligro inminente (riesgo de lesión de columna).</li>
+  <li>No des comida ni bebida a alguien con pérdida de conciencia.</li>
+  <li>No retires cascos ni objetos clavados.</li>
+</ul>
+`,
+    slides: [
+      { title: 'Primero, la escena', points: ['Evalúa el entorno (tráfico, fuego)', 'Señaliza y protege', 'Llama al 911 con ubicación y estado'] },
+      { title: 'Botiquín básico', points: ['Guantes, gasas y vendas', 'Antiséptico y tijeras', 'Suero, frío instantáneo', 'Agua y manta térmica'] },
+      { title: 'Situaciones frecuentes', points: ['Mareo: aire fresco y agua', 'Desmayo: eleva las piernas', 'Sangrado: presión directa', 'Atragantamiento: Heimlich'] },
+      { title: 'RCP básico', points: ['Llama al 911', 'Compresiones al centro del pecho', '100–120 por minuto', 'No te detengas hasta que llegue ayuda'] },
+      { title: 'Qué NO hacer', points: ['No mover heridos sin necesidad', 'No dar comida si hay inconsciencia', 'No retirar objetos clavados'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Primeros Auxilios en Ruta. Antes de empezar, un recordatorio: este contenido es informativo y no reemplaza una certificación oficial. Ante cualquier emergencia, llama siempre al 911.',
+      segments: [
+        { title: 'Lo primero: la escena', text: 'Lo primero siempre es tu seguridad. Evalúa el entorno: tráfico, fuego, cables. No te conviertas en otra víctima. Señaliza y protege la zona con luces y triángulos, y llama al 911 indicando la ubicación, el número de personas y su estado.' },
+        { title: 'Situaciones frecuentes', text: 'Ante mareo o náusea, detente con seguridad, da aire fresco y agua a sorbos. En un desmayo, recuesta a la persona y eleva sus piernas, verificando que respire. Si hay una herida con sangrado, aplica presión directa con gasa limpia y no retires objetos clavados. Y si alguien se atraganta y no puede toser ni hablar, aplica la maniobra de Heimlich.' },
+        { title: 'Nociones de RCP', text: 'Si una persona no responde y no respira con normalidad, llama al 911 o pide a alguien que lo haga, y comienza compresiones en el centro del pecho, fuerte y rápido, a un ritmo de cien a ciento veinte por minuto, dejando que el pecho vuelva a subir. No te detengas hasta que llegue la ayuda o la persona reaccione. Aprender RCP en un curso presencial certificado salva vidas.' },
+        { title: 'Qué no hacer', text: 'Para cerrar, lo que no debes hacer: no muevas a un herido salvo peligro inminente, por el riesgo de lesión de columna; no des comida ni bebida a alguien con pérdida de conciencia; y no retires cascos ni objetos clavados. Tu calma y una llamada al 911 ya son una gran ayuda.' },
+      ],
+    },
+    quiz: [
+      { question: 'Lo PRIMERO ante un accidente es…', options: ['Mover a los heridos', 'Asegurar la escena y tu propia seguridad', 'Tomar fotos', 'Buscar testigos'], correct: 1, explanation: 'Primero la seguridad: evaluar el entorno y señalizar evita que haya más víctimas.' },
+      { question: 'Ante una herida con sangrado debes…', options: ['Retirar cualquier objeto clavado', 'Aplicar presión directa con gasa limpia', 'Dar de beber', 'Esperar sin hacer nada'], correct: 1, explanation: 'La presión directa controla el sangrado; los objetos clavados no se retiran.' },
+      { question: 'El ritmo aproximado de las compresiones de RCP es…', options: ['20–30 por minuto', '50–60 por minuto', '100–120 por minuto', '200 por minuto'], correct: 2, explanation: 'Las compresiones se realizan a unas 100 a 120 por minuto, fuertes y constantes.' },
+      { question: '¿Cuál es una acción que NO debes hacer?', options: ['Llamar al 911', 'Mover a un herido sin necesidad', 'Señalizar la zona', 'Usar guantes del botiquín'], correct: 1, explanation: 'No se mueve a un herido salvo peligro inminente, por el riesgo de agravar lesiones de columna.' },
+    ],
+  },
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────
