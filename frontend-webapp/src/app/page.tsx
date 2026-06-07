@@ -429,48 +429,54 @@ export default function HomePage() {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.92) 90%, rgba(255,255,255,1) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 55%, rgba(255,255,255,0.35) 100%)',
           }}
         />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 lg:py-20 flex flex-col items-center" style={{ minHeight: '100vh' }}>
 
-          {/* ── HEAD del hero: logo color + headline + texto descriptivo ── */}
-          <FadeIn dir="up" className="text-center max-w-3xl mb-10">
-            <h1
-              className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
-              style={{
-                fontSize: 'clamp(1.6rem, 6.2vw, 4rem)',
-                fontFamily: 'var(--font-nunito-sans), sans-serif',
-                // Text-shadow blanco sutil para legibilidad sobre cielo claro
-                // sin necesidad de overlay opaco que tape la foto.
-                textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
-              }}
-            >
-              Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
-            </h1>
-
-            <p
-              className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
-              style={{
-                textShadow: '0 1px 12px rgba(255,255,255,0.9)',
-              }}
-            >
-              La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
-              viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
-              todo desde tu teléfono.
-            </p>
-          </FadeIn>
-
-          {/* ── Celular Going App: imagen central del hero (muestra la marca) ── */}
-          <FadeIn dir="up" delay={0.12} className="mb-10">
+          {/* ── Logo arriba (marca paraguas centrada) ── */}
+          <FadeIn dir="up" className="text-center mb-8">
             <img
-              src="/images/going-phone.png"
-              alt="App Going App en un celular"
-              className="h-[340px] sm:h-[440px] md:h-[500px] w-auto mx-auto"
-              style={{ filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.20))' }}
+              src="/images/Going_Logotipo_Color_V_800px.png"
+              alt="Going App"
+              className="h-24 md:h-28 mx-auto"
+              style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
             />
           </FadeIn>
+
+          {/* ── Texto + celular a un costado (2 columnas en desktop) ── */}
+          <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
+            <FadeIn dir="up" className="text-center md:text-left">
+              <h1
+                className="font-black text-gray-900 mb-5 leading-[0.95] whitespace-nowrap"
+                style={{
+                  fontSize: 'clamp(1.5rem, 5vw, 3rem)',
+                  fontFamily: 'var(--font-nunito-sans), sans-serif',
+                  textShadow: '0 2px 24px rgba(255,255,255,0.85), 0 1px 2px rgba(255,255,255,0.95)',
+                }}
+              >
+                Nos movemos <span style={{ color: COLORS.brand.red }}>contigo.</span>
+              </h1>
+              <p
+                className="text-base sm:text-lg text-gray-700 max-w-xl mx-auto md:mx-0 leading-relaxed"
+                style={{ textShadow: '0 1px 12px rgba(255,255,255,0.9)' }}
+              >
+                La app de movilidad del Ecuador. Pide tu viaje dentro de la ciudad,
+                viaja compartido entre ciudades o envía tus paquetes puerta a puerta —
+                todo desde tu teléfono.
+              </p>
+            </FadeIn>
+
+            <FadeIn dir="up" delay={0.12} className="flex justify-center md:justify-end">
+              <img
+                src="/images/going-phone.png"
+                alt="App Going App en un celular"
+                className="h-[320px] sm:h-[420px] md:h-[520px] w-auto"
+                style={{ filter: 'drop-shadow(0 22px 48px rgba(0,0,0,0.20))' }}
+              />
+            </FadeIn>
+          </div>
 
           {/* ── 3 PRODUCTOS PRINCIPALES — corazón del hero ──
              Cards simples y limpias: icono + título + descripción + CTA.
