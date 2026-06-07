@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { Location } from '@/types';
+import { MapPicker } from './MapPicker';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -111,13 +112,81 @@ async function searchMapbox(query: string): Promise<Location[]> {
   });
 }
 
+/* GPS → dirección legible (geocodificación inversa). En ciudades donde la
+   búsqueda por texto trae pocas direcciones, esto permite fijar el punto
+   exacto donde está el usuario (estilo "enviar ubicación" de WhatsApp). */
+async function reverseGeocodeMapbox(lat: number, lon: number): Promise<Location> {
+  const fallback: Location = { address: `Mi ubicación (${lat.toFixed(5)}, ${lon.toFixed(5)})`, lat, lon };
+  if (!MAPBOX_TOKEN) return fallback;
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?country=ec&language=es&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return fallback;
+    const json = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const f = (json.features as any[])?.[0];
+    if (!f) return fallback;
+    const city = f.context?.find((c: { id: string; text: string }) =>
+      c.id.startsWith('place') || c.id.startsWith('locality'))?.text;
+    return { address: f.place_name, lat, lon, city };
+  } catch { return fallback; }
+}
+
+/* ── Search Box API (suggest + retrieve) ──────────────────────────────────
+   Mejor autocompletado de POIs/negocios que el geocoding v5, ideal para
+   ciudades donde hay pocas direcciones "postales". Flujo en 2 pasos:
+   suggest (devuelve mapbox_id) → retrieve (devuelve coordenadas). */
+interface Suggestion extends Location { mapboxId?: string; title?: string; subtitle?: string; }
+const SEARCHBOX = 'https://api.mapbox.com/search/searchbox/v1';
+
+async function searchBoxSuggest(q: string, sessionToken: string, prox: { lat: number; lon: number }): Promise<Suggestion[]> {
+  if (!MAPBOX_TOKEN) return [];
+  const url = `${SEARCHBOX}/suggest?q=${encodeURIComponent(q)}&language=es&country=ec&limit=6`
+    + `&proximity=${prox.lon},${prox.lat}&session_token=${sessionToken}&access_token=${MAPBOX_TOKEN}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('searchbox suggest failed');
+  const json = await res.json();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((json.suggestions as any[]) ?? []).map((s: any) => ({
+    address: s.full_address || s.place_formatted || s.name,
+    lat: 0, lon: 0,
+    mapboxId: s.mapbox_id,
+    title: s.name,
+    subtitle: s.full_address || s.place_formatted || '',
+  }));
+}
+
+async function searchBoxRetrieve(mapboxId: string, sessionToken: string): Promise<Location | null> {
+  if (!MAPBOX_TOKEN) return null;
+  try {
+    const url = `${SEARCHBOX}/retrieve/${mapboxId}?session_token=${sessionToken}&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const f = (json.features as any[])?.[0];
+    if (!f?.geometry?.coordinates) return null;
+    const [lon, lat] = f.geometry.coordinates;
+    return { address: f.properties?.full_address || f.properties?.name || '', lat, lon, city: f.properties?.context?.place?.name };
+  } catch { return null; }
+}
+
+function newSessionToken(): string {
+  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+}
+
 export function LocationSelector({ type, value, onChange, placeholder }: LocationSelectorProps) {
   const [input, setInput] = useState('');
-  const [suggestions, setSuggestions] = useState<Location[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const sessionToken = useRef<string>(newSessionToken());
   const [savedEntries, setSavedEntries] = useState<SavedEntry[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [pickCoords, setPickCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [confirmingMap, setConfirmingMap] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -155,7 +224,12 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     try {
       setIsLoading(true);
       setError(null);
-      const locations = await searchMapbox(query);
+      // Sesgo de proximidad: a la ubicación ya elegida, o a Quito por defecto.
+      const prox = value?.lat ? { lat: value.lat, lon: value.lon } : { lat: -0.1807, lon: -78.4678 };
+      // 1º Search Box (mejores POIs); si no hay resultados, geocoding v5.
+      let locations: Suggestion[] = [];
+      try { locations = await searchBoxSuggest(query, sessionToken.current, prox); } catch { locations = []; }
+      if (locations.length === 0) locations = await searchMapbox(query);
       if (locations.length === 0) {
         setSuggestions([]);
         setError('No se encontraron ubicaciones');
@@ -195,12 +269,19 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     setShowSuggestions(false);
   };
 
-  const handleSelect = (location: Location) => {
-    onChange(location);
-    setInput(location.address);
+  const handleSelect = async (location: Suggestion) => {
+    let resolved: Location = location;
+    // Search Box: resolver coordenadas reales con retrieve antes de fijar.
+    if (location.mapboxId && !location.lat) {
+      const r = await searchBoxRetrieve(location.mapboxId, sessionToken.current);
+      if (r) resolved = r;
+    }
+    onChange(resolved);
+    setInput(resolved.address);
     setShowSuggestions(false);
     setSuggestions([]);
     setError(null);
+    sessionToken.current = newSessionToken(); // nueva sesión tras seleccionar
   };
 
   const handleClear = () => {
@@ -208,6 +289,41 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     setSuggestions(DEFAULT_LOCATIONS.slice(0, 6));
     setShowSuggestions(true);
     setError(null);
+  };
+
+  /* "Enviar mi ubicación actual" (GPS) — para fijar el punto exacto cuando la
+     búsqueda por texto no encuentra la dirección en la ciudad. */
+  const handleUseGps = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setError('Tu navegador no soporta ubicación'); setShowSuggestions(true); return;
+    }
+    setGpsLoading(true); setError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const loc = await reverseGeocodeMapbox(pos.coords.latitude, pos.coords.longitude);
+        handleSelect(loc);
+        setGpsLoading(false);
+      },
+      (err) => {
+        setGpsLoading(false);
+        setShowSuggestions(true);
+        setError(err.code === err.PERMISSION_DENIED
+          ? 'Permiso de ubicación denegado. Actívalo en el navegador.'
+          : 'No pudimos detectar tu ubicación. Escríbela manualmente.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
+  /* Confirmar el punto elegido en el mapa → geocodificación inversa + select. */
+  const handleConfirmMap = async () => {
+    if (!pickCoords) return;
+    setConfirmingMap(true);
+    const loc = await reverseGeocodeMapbox(pickCoords.lat, pickCoords.lon);
+    handleSelect(loc);
+    setShowMap(false);
+    setPickCoords(null);
+    setConfirmingMap(false);
   };
 
   useEffect(() => () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); }, []);
@@ -266,6 +382,34 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
         {showSuggestions && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
 
+            {/* Enviar mi ubicación actual (GPS, estilo WhatsApp) — solo origen */}
+            {type === 'pickup' && (
+              <button type="button" onClick={handleUseGps} disabled={gpsLoading}
+                className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-3 border-b border-gray-100 disabled:opacity-60">
+                <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF2FF', color: '#0033A0' }}>
+                  {gpsLoading
+                    ? <span className="w-4 h-4 border-2 border-[#0033A0]/30 border-t-[#0033A0] rounded-full animate-spin" />
+                    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-[#0033A0]">{gpsLoading ? 'Detectando tu ubicación…' : 'Usar mi ubicación actual'}</p>
+                  <p className="text-xs text-gray-400">Fija el punto exacto donde estás (GPS)</p>
+                </div>
+              </button>
+            )}
+
+            {/* Fijar punto exacto en el mapa (pin arrastrable) — origen y destino */}
+            <button type="button" onClick={() => { setShowMap(true); setShowSuggestions(false); }}
+              className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-3 border-b border-gray-100">
+              <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-800">Fijar punto en el mapa</p>
+                <p className="text-xs text-gray-400">Arrastra el pin al lugar exacto</p>
+              </div>
+            </button>
+
             {/* Sección: Guardadas */}
             {!input.trim() && savedEntries.length > 0 && (
               <>
@@ -300,9 +444,9 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
                     <span className="text-base">📍</span>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 truncate">
-                        {location.city || location.address.split(',')[0]}
+                        {location.title || location.city || location.address.split(',')[0]}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">{location.address}</p>
+                      <p className="text-xs text-gray-400 truncate">{location.subtitle || location.address}</p>
                     </div>
                   </button>
                 ))}
@@ -323,6 +467,27 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
           </div>
         )}
       </div>
+
+      {/* Panel del mapa para fijar el punto exacto (pin arrastrable) */}
+      {showMap && (
+        <div className="mt-2 rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
+          <MapPicker
+            value={value ?? pickCoords ?? undefined}
+            accent={dotColor}
+            onPick={(lat, lon) => setPickCoords({ lat, lon })}
+          />
+          <div className="flex gap-2 mt-2">
+            <button type="button" onClick={() => { setShowMap(false); setPickCoords(null); }}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button type="button" onClick={handleConfirmMap} disabled={!pickCoords || confirmingMap}
+              className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50" style={{ backgroundColor: '#0033A0' }}>
+              {confirmingMap ? 'Fijando…' : 'Confirmar ubicación'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

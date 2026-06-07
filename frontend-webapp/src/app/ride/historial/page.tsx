@@ -3,16 +3,26 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { authFetch, getStoredToken, parseJwtPayload, redirectToLogin } from '@/lib/providers/auth-client';
+import { StaticRouteMap } from '../../components/features/tracking/StaticRouteMap';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
+// Origen/destino pueden venir en varios shapes según el backend; extraemos coords.
+interface GeoPoint { address?: string; lat?: number; lon?: number; latitude?: number; longitude?: number; coordinates?: number[] }
 interface Ride {
   _id: string;
   status: string;
-  origin?: { address: string };
-  destination?: { address: string };
+  origin?: GeoPoint;
+  destination?: GeoPoint;
   fare?: number;
   createdAt?: string;
+}
+
+function coordOf(p?: GeoPoint): { lat: number; lon: number } | undefined {
+  if (!p) return undefined;
+  const lat = p.lat ?? p.latitude ?? (Array.isArray(p.coordinates) ? p.coordinates[1] : undefined);
+  const lon = p.lon ?? p.longitude ?? (Array.isArray(p.coordinates) ? p.coordinates[0] : undefined);
+  return typeof lat === 'number' && typeof lon === 'number' ? { lat, lon } : undefined;
 }
 
 const STATUS: Record<string, { label: string; color: string }> = {
@@ -76,10 +86,18 @@ export default function HistorialPage() {
               const date = ride.createdAt
                 ? new Date(ride.createdAt).toLocaleDateString('es-EC', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '';
+              const oCoord = coordOf(ride.origin);
+              const dCoord = coordOf(ride.destination);
               return (
                 <div key={ride._id}
                   className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:shadow-sm transition-shadow">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">🚗</div>
+                  {oCoord && dCoord ? (
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                      <StaticRouteMap pickup={oCoord} dropoff={dCoord} width={120} height={120} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">🚗</div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">
                       {ride.destination?.address ?? 'Destino desconocido'}

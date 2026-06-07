@@ -52,6 +52,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
   const [extraStops,    setExtraStops]    = useState<Location[]>([]);
   const [currentFare,   setCurrentFare]   = useState(activeRide?.estimatedFare ?? 0);
   const [showVerify,    setShowVerify]    = useState(false);
+  const [showEndTrip,   setShowEndTrip]   = useState(false);
   const [noDriverSlots,        setNoDriverSlots]        = useState<TimeSlot[]>([]);
   const [loadingNoDriverSlots, setLoadingNoDriverSlots] = useState(false);
   /** Segundos transcurridos buscando conductor — driver del countdown UX. */
@@ -307,8 +308,9 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-gray-700 space-y-1.5">
           <p className="font-bold text-[#0033A0] flex items-center gap-1.5">📅 Tu viaje está reservado</p>
           <p className="text-xs text-gray-600">
-            Buscaremos a tu conductor <strong>una hora antes</strong> de la salida. En ese momento
-            verás aquí sus datos y podrás contactarlo. El precio <strong>${currentFare.toFixed(2)}</strong> queda garantizado.
+            Te avisaremos <strong>1 hora antes</strong> y <strong>5 minutos antes</strong> de la salida.
+            Asignaremos a tu conductor cerca de esa hora; entonces verás aquí sus datos y podrás
+            contactarlo. El precio <strong>${currentFare.toFixed(2)}</strong> queda garantizado.
           </p>
         </div>
       )}
@@ -436,6 +438,20 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
         </Link>
       )}
 
+      {/* ══ FINALIZAR VIAJE · token de fin de viaje ══
+         El pasajero confirma el fin del viaje con un código (estilo OTP, como
+         la entrega de envíos). Al confirmar, el viaje pasa a 'completed' y el
+         flujo avanza al comprobante + pago. */}
+      {status === 'in_progress' && (
+        <button
+          onClick={() => setShowEndTrip(true)}
+          className="w-full py-3.5 rounded-2xl font-black text-white text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90"
+          style={{ backgroundColor: '#10b981' }}
+        >
+          🏁 Finalizar viaje
+        </button>
+      )}
+
       {/* ══ BOTÓN CANCELAR (solo si pending) ══ */}
       {status === 'pending' && (
         <button
@@ -454,6 +470,69 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
           onVerified={() => { setVerified(true); setShowVerify(false); }}
         />
       )}
+
+      {/* ══ MODAL FIN DE VIAJE ══ */}
+      {showEndTrip && (
+        <EndTripModal
+          rideId={rideId}
+          onConfirm={() => { setShowEndTrip(false); if (activeRide) updateRideStatus(activeRide.tripId, 'completed'); }}
+          onClose={() => setShowEndTrip(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Modal de fin de viaje (token / OTP de cierre) ── */
+function EndTripModal({
+  rideId, onConfirm, onClose,
+}: {
+  rideId: string;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  // Código de cierre determinístico, distinto del PIN de inicio (últimos 4):
+  // tomamos los primeros 4 dígitos del id para diferenciarlo.
+  const endCode = rideId.replace(/\D/g, '').padStart(8, '0').slice(0, 4);
+  const [confirmed, setConfirmed] = useState(false);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-4">
+      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+        <div className="px-6 pt-6 pb-4 text-center border-b border-gray-100">
+          <div className="text-4xl mb-2">🏁</div>
+          <h3 className="text-lg font-black text-gray-900">Token de fin de viaje</h3>
+          <p className="text-sm text-gray-400 mt-1">Confirma que llegaste a tu destino</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+            Dicta este código a tu conductor para cerrar el viaje
+          </p>
+          <div className="bg-gray-50 rounded-2xl p-5 text-center">
+            <p className="text-5xl font-black tracking-widest text-gray-900 font-mono">{endCode}</p>
+          </div>
+          <label
+            className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 cursor-pointer"
+            onClick={() => setConfirmed(!confirmed)}
+          >
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${confirmed ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
+              {confirmed && <span className="text-white text-xs font-bold">✓</span>}
+            </div>
+            <span className="text-sm text-gray-700 font-medium">Llegué a mi destino y el conductor confirmó</span>
+          </label>
+          <button
+            onClick={onConfirm}
+            disabled={!confirmed}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm transition-all disabled:opacity-40 hover:opacity-90"
+            style={{ backgroundColor: '#10b981' }}
+          >
+            ✅ Finalizar viaje
+          </button>
+          <button onClick={onClose} className="w-full py-2.5 text-xs text-gray-400 font-medium hover:underline">
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

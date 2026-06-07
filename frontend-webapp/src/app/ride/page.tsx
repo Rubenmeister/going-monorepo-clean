@@ -2,12 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRideStore } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { getStoredToken } from '@/lib/providers/auth-client';
 import { COLORS } from '../components/design-tokens';
 import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';
+import { StaticRouteMap } from '../components/features/tracking/StaticRouteMap';
 
 /* ─── Lazy-loaded heavy components ─────────────────────────────────── */
 const RideRequestForm = dynamic(
@@ -36,7 +37,7 @@ const ChatInterface = dynamic(
 );
 
 /* ─── Types ─────────────────────────────────────────────────────────── */
-type ServiceMode = 'compartido' | 'privado' | null;
+type ServiceMode = 'compartido' | 'privado' | 'ciudad' | null;
 type Step = 'request' | 'tracking' | 'confirmation' | 'payment' | 'accounting' | 'rating';
 
 const STEPS: Step[] = ['request', 'tracking', 'confirmation', 'payment', 'accounting', 'rating'];
@@ -151,12 +152,14 @@ interface ConfirmationPanelProps {
   origin: string;
   destination: string;
   estimatedFare: number;
+  pickup?: { lat: number; lon: number };
+  dropoff?: { lat: number; lon: number };
   onContinue: () => void;
 }
 
 function ConfirmationPanel({
   rideToken, driverName, driverPlate, driverPhoto,
-  origin, destination, estimatedFare, onContinue,
+  origin, destination, estimatedFare, pickup, dropoff, onContinue,
 }: ConfirmationPanelProps) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(rideToken)}&size=200x200&margin=10&color=0033A0`;
   const shortToken = rideToken.length > 8 ? rideToken.slice(-8).toUpperCase() : rideToken.toUpperCase();
@@ -166,6 +169,13 @@ function ConfirmationPanel({
 
   return (
     <div className="space-y-4">
+
+      {/* ── Miniatura del mapa de la ruta (Static Images API) ── */}
+      {pickup && dropoff && (
+        <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+          <StaticRouteMap pickup={pickup} dropoff={dropoff} width={600} height={200} className="w-full h-auto block" />
+        </div>
+      )}
 
       {/* ── Conductor confirmado ── */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -266,11 +276,25 @@ function ConfirmationPanel({
 /* ─── Page ──────────────────────────────────────────────────────────── */
 function RidePageInner() {
   const router             = useRouter();
+  const searchParams       = useSearchParams();
   const { auth }           = useMonorepoApp();
   const { activeRide, clearRide, resetForRetry } = useRideStore();
 
+  // Tipo de servicio inicial leído de la URL (?type=shared|van|city) para que
+  // "Reservar/Cotizar" desde el home lleve DIRECTO al formulario, sin volver a
+  // preguntar "¿cómo quieres viajar?".
+  const typeParam = searchParams.get('type');
+  const initialMode: ServiceMode =
+    typeParam === 'shared' || typeParam === 'compartido' ? 'compartido' :
+    typeParam === 'city'   || typeParam === 'ciudad'     ? 'ciudad'     :
+    typeParam === 'van'    || typeParam === 'private' || typeParam === 'privado' ? 'privado' :
+    null;
+
   const [step, setStep]               = useState<Step>('request');
-  const [serviceMode, setServiceMode] = useState<ServiceMode>(null);
+  const [serviceMode, setServiceMode] = useState<ServiceMode>(initialMode);
+
+  // Nombre del usuario logueado para el saludo (sesión ya persistida).
+  const firstName = ((auth.user as any)?.firstName || (auth.user as any)?.name?.split(' ')[0] || '') as string;
   const [paymentAmount, setPaymentAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
@@ -305,6 +329,10 @@ function RidePageInner() {
   useEffect(() => {
     if (activeRide && step === 'request') {
       setPaymentAmount(activeRide.estimatedFare);
+      // Tanto inmediato como reservado van al panel de seguimiento. El panel
+      // NO busca conductor en vivo si el estado es 'reserved' (muestra el
+      // aviso de reserva y avisará ~1h/5min antes), y continúa el ciclo
+      // completo: conductor en camino → compartir → SOS → fin de viaje → pago.
       setStep('tracking');
     }
   }, [activeRide, step]);
@@ -354,13 +382,13 @@ function RidePageInner() {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => step === 'request' ? router.push('/dashboard/pasajero') : router.back()}
+              onClick={() => step === 'request' ? router.push('/') : router.back()}
               className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
             >
               ←
             </button>
             <h1 className="text-xl font-bold text-gray-900">
-              {step === 'request'      ? (serviceMode ? (serviceMode === 'compartido' ? 'Viaje Compartido' : 'Viaje Privado') : 'Solicitar viaje') :
+              {step === 'request'      ? (serviceMode ? (serviceMode === 'compartido' ? 'Viaje Compartido' : serviceMode === 'ciudad' ? 'En la ciudad' : 'Viaje Privado') : 'Solicitar viaje') :
                step === 'tracking'     ? 'Tu viaje'           :
                step === 'confirmation' ? 'Confirmación'       :
                step === 'payment'      ? 'Pago'               :
@@ -386,6 +414,13 @@ function RidePageInner() {
 
       {/* ── Contenido ── */}
       <div className="max-w-2xl mx-auto px-4 py-6">
+
+        {/* Saludo al usuario logueado (sesión ya iniciada) */}
+        {step === 'request' && firstName && (
+          <p className="text-sm text-gray-500 mb-3">
+            Hola, <span className="font-bold text-gray-800">{firstName}</span> 👋
+          </p>
+        )}
 
         {/* Paso 1a: Elegir tipo de servicio */}
         {step === 'request' && serviceMode === null && (
@@ -420,6 +455,8 @@ function RidePageInner() {
             origin={activeRide.pickup?.address ?? ''}
             destination={activeRide.dropoff?.address ?? ''}
             estimatedFare={activeRide.estimatedFare}
+            pickup={activeRide.pickup}
+            dropoff={activeRide.dropoff}
             onContinue={handleConfirmationContinue}
           />
         )}

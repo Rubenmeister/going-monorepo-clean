@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COLORS } from '../../components/design-tokens';
 import { IconPackage, IconMailbox, IconCard, IconMoney, IconMobile, IconUsers } from '../../components/icons';
+import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
+
+// Borrador del formulario: si el usuario debe iniciar sesión al solicitar,
+// guardamos lo que llevaba lleno y lo restauramos al volver (no perder datos).
+const ENVIO_DRAFT_KEY = 'going_envio_draft';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 const RED   = COLORS.brand.red;   // rojo Going App — origen/CTA principales
@@ -322,6 +327,9 @@ function FieldRow({ icon, children }: { icon: React.ReactNode; children: React.R
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function EnviosCotizarPage() {
   const router = useRouter();
+  const { auth } = useMonorepoApp();
+  // Nombre real del remitente (sesión ya iniciada) en lugar de "Tú (sesión activa)".
+  const senderName = ((auth.user as any)?.firstName || (auth.user as any)?.name || 'Tú') as string;
 
   const [view,           setView]           = useState<ScreenView>('form');
   const [pkgType,        setPkgType]        = useState<PkgId>('small');
@@ -342,11 +350,36 @@ export default function EnviosCotizarPage() {
   // 'A' por default (sender + card) es el más rápido y seguro para el sender.
   const [paymentScheme,  setPaymentScheme]  = useState<'A' | 'B' | 'C' | 'D'>('A');
   const [quotedPrice,    setQuotedPrice]    = useState<number | null>(null);
+  const [photoPreview,   setPhotoPreview]   = useState<string | null>(null);
+
+  // Restaurar borrador al volver de login (si lo hubiera) y limpiarlo.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = sessionStorage.getItem(ENVIO_DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.pkgType)        setPkgType(d.pkgType);
+      if (d.pkgDesc)        setPkgDesc(d.pkgDesc);
+      if (d.senderAddr)     setSenderAddr(d.senderAddr);
+      if (d.senderLat != null) setSenderLat(d.senderLat);
+      if (d.senderLon != null) setSenderLon(d.senderLon);
+      if (d.recipientName)  setRecipientName(d.recipientName);
+      if (d.recipientPhone) setRecipientPhone(d.recipientPhone);
+      if (d.recipientAddr)  setRecipientAddr(d.recipientAddr);
+      if (d.recipientLat != null) setRecipientLat(d.recipientLat);
+      if (d.recipientLon != null) setRecipientLon(d.recipientLon);
+      if (d.paymentScheme)  setPaymentScheme(d.paymentScheme);
+    } catch { /* ignore */ }
+    finally { sessionStorage.removeItem(ENVIO_DRAFT_KEY); }
+  }, []);
 
   const selectedPkg = PACKAGE_TYPES.find(p => p.id === pkgType)!;
   // Precio mostrado: cotización autoritativa del backend si ya está disponible;
   // si no, el estimado local por tamaño (fallback antes de elegir direcciones).
   const totalPrice  = quotedPrice ?? selectedPkg.price;
+  // Etiqueta de pago según el esquema elegido (NO asumir "Pagado").
+  const paymentLabel = { A: 'Tarjeta', B: 'Efectivo al recoger', C: 'Paga destinatario', D: 'Contra entrega' }[paymentScheme];
 
   // Cotización autoritativa: cuando hay origen + destino + tamaño, pedimos el
   // precio real al backend (urbano flat / interurbano por tier). /parcels/quote
@@ -393,6 +426,14 @@ export default function EnviosCotizarPage() {
       const { getStoredToken, redirectToLogin } = await import('@/lib/providers/auth-client');
       const token = getStoredToken();
       if (!token) {
+        // Guardar borrador para restaurarlo al volver del login (no perder datos).
+        try {
+          sessionStorage.setItem(ENVIO_DRAFT_KEY, JSON.stringify({
+            pkgType, pkgDesc, senderAddr, senderLat, senderLon,
+            recipientName, recipientPhone, recipientAddr, recipientLat, recipientLon,
+            paymentScheme,
+          }));
+        } catch { /* ignore */ }
         redirectToLogin('/envios/cotizar');
         return;
       }
@@ -557,20 +598,34 @@ export default function EnviosCotizarPage() {
                 <p className="text-sm font-bold text-gray-900">{selectedPkg.label} · {selectedPkg.desc}</p>
                 <p className="text-xs text-gray-500">${totalPrice.toFixed(2)}</p>
               </div>
-              <div className="flex items-center gap-1 rounded-full px-3 py-1" style={{ backgroundColor: '#ECFDF5' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill={GREEN} stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-                <span className="text-xs font-bold" style={{ color: GREEN }}>Pagado</span>
+              <div className="flex items-center gap-1 rounded-full px-3 py-1 border border-gray-200" style={{ backgroundColor: '#F9FAFB' }}>
+                <span className="text-xs font-bold text-gray-600">{paymentLabel}</span>
               </div>
             </div>
           </div>
 
           {/* Botones */}
           <div className="flex gap-2 pt-2">
-            <button className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm"
+            <button
+              type="button"
+              onClick={() => { if (recipientPhone) window.location.href = `tel:${recipientPhone}`; }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm"
               style={{ backgroundColor: '#FFF0EF', borderColor: '#FECACA', color: RED }}>
               <IcoPhone /> Llamar
             </button>
-            <button className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm border-gray-200 text-gray-700 bg-gray-50">
+            <button
+              type="button"
+              onClick={async () => {
+                const text = `Seguimiento de mi envío Going App: #${trackingRef}`;
+                try {
+                  if (typeof navigator !== 'undefined' && navigator.share) {
+                    await navigator.share({ title: 'Envío Going App', text });
+                  } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                    await navigator.clipboard.writeText(text);
+                  }
+                } catch { /* usuario canceló */ }
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl py-3 border font-bold text-sm border-gray-200 text-gray-700 bg-gray-50">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               Compartir
             </button>
@@ -675,7 +730,8 @@ export default function EnviosCotizarPage() {
         {/* QUIÉN ENVÍA */}
         <SectionCard icon={<IcoUp />} title="Quién envía">
           <FieldRow icon={<IcoPerson />}>
-            <span className="text-sm font-semibold text-gray-700">Tú (sesión activa)</span>
+            <span className="text-sm font-semibold text-gray-700">{senderName}</span>
+            <span className="text-xs text-gray-400 ml-1">(tú)</span>
           </FieldRow>
           <LocationInput
             label="Dirección de recogida"
@@ -767,15 +823,34 @@ export default function EnviosCotizarPage() {
             className="w-full bg-gray-50 rounded-xl px-3 py-3 border border-gray-100 text-sm text-gray-800 placeholder-gray-400 outline-none resize-none focus:border-red-200"
           />
 
-          {/* Foto opcional */}
-          <div className="flex items-center gap-2 rounded-xl px-3 py-3 border-2 border-dashed text-center justify-center cursor-pointer hover:bg-red-50 transition-colors"
+          {/* Foto opcional — funcional: previsualización local del paquete */}
+          <label className="flex items-center gap-3 rounded-xl px-3 py-3 border-2 border-dashed cursor-pointer hover:bg-red-50 transition-colors"
             style={{ borderColor: '#FECACA' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            <div>
-              <p className="text-xs font-bold" style={{ color: RED }}>Foto del paquete</p>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => setPhotoPreview(typeof reader.result === 'string' ? reader.result : null);
+                reader.readAsDataURL(file);
+              }}
+            />
+            {photoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photoPreview} alt="Foto del paquete" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            )}
+            <div className="flex-1">
+              <p className="text-xs font-bold" style={{ color: RED }}>
+                {photoPreview ? 'Foto añadida · toca para cambiar' : 'Foto del paquete'}
+              </p>
               <p className="text-xs text-gray-400">Opcional · recomendado para reclamaciones</p>
             </div>
-          </div>
+          </label>
         </SectionCard>
 
         {/* CÓMO SE PAGA — 4 escenarios (mismo que mobile) */}

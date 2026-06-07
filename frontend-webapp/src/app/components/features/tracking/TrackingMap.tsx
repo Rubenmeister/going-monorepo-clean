@@ -35,7 +35,7 @@ interface MapboxBounds {
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-function loadMapbox(): Promise<void> {
+export function loadMapbox(): Promise<void> {
   if (typeof window === 'undefined') return Promise.resolve();
   if (window.mapboxgl) return Promise.resolve();
 
@@ -60,6 +60,43 @@ function loadMapbox(): Promise<void> {
   });
 }
 
+/* Ruta real por calles + tráfico (Directions API, perfil driving-traffic). */
+interface RouteResult { coords: number[][]; congestion: string[]; distanceM: number; durationSec: number; }
+async function fetchRoute(from: [number, number], to: [number, number]): Promise<RouteResult | null> {
+  if (!MAPBOX_TOKEN) return null;
+  try {
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${from[0]},${from[1]};${to[0]},${to[1]}`
+      + `?geometries=geojson&overview=full&annotations=congestion&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const r = json.routes?.[0];
+    if (!r?.geometry?.coordinates) return null;
+    return {
+      coords: r.geometry.coordinates,
+      congestion: r.legs?.[0]?.annotation?.congestion ?? [],
+      distanceM: r.distance ?? 0,
+      durationSec: r.duration ?? 0,
+    };
+  } catch { return null; }
+}
+
+/* Color por nivel de congestión para pintar la ruta segmento a segmento. */
+const CONGESTION_COLOR: Record<string, string> = {
+  low: '#22c55e', moderate: '#f59e0b', heavy: '#ef4444', severe: '#7f1d1d', unknown: '#ff4c41',
+};
+
+/* Rumbo (grados) entre dos puntos — para orientar el marcador del conductor. */
+function bearingBetween(from: [number, number], to: [number, number]): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const toDeg = (r: number) => (r * 180) / Math.PI;
+  const dLon = toRad(to[0] - from[0]);
+  const y = Math.sin(dLon) * Math.cos(toRad(to[1]));
+  const x = Math.cos(toRad(from[1])) * Math.sin(toRad(to[1]))
+          - Math.sin(toRad(from[1])) * Math.cos(toRad(to[1])) * Math.cos(dLon);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
 /* ─────────────────────────────────────────────
    MAP COMPONENT
    ───────────────────────────────────────────── */
@@ -69,13 +106,17 @@ interface MapProps {
   driverLocation?: { lat: number; lon: number };
   distance?: number;
   duration?: number;
+  /** Muestra "conductores cercanos" (puntitos) alrededor del origen al buscar. */
+  showNearbyDrivers?: boolean;
 }
 
-export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration }: MapProps) {
+export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration, showNearbyDrivers }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const driverMarkerRef = useRef<MapboxMarker | null>(null);
+  const lastDriverPos = useRef<[number, number] | null>(null);
   const [ready, setReady] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<{ km: number; min: number } | null>(null);
   const [loadError, setLoadError] = useState(false);
   const noToken = !MAPBOX_TOKEN;
 
@@ -93,11 +134,24 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
 
     const map = new mbgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/navigation-day-v1',
       center: [(pickup.lon + dropoff.lon) / 2, (pickup.lat + dropoff.lat) / 2],
       zoom: 12,
+      pitch: 45,
+      antialias: true,
       scrollZoom: false,
     });
+
+    // Puck de ubicación del usuario (punto azul que late + rumbo).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (map as any).addControl(new (mbgl as any).GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true,
+      }), 'top-right');
+    } catch { /* control opcional */ }
 
     map.on('load', () => {
       /* Pickup marker — green pin */
@@ -159,11 +213,81 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
           'line-color': '#ff4c41',
-          'line-width': 4,
+          'line-width': 5,
           'line-dasharray': [2, 2],
-          'line-opacity': 0.75,
+          'line-opacity': 0.85,
         },
       });
+
+      // Ruta REAL por calles + TRÁFICO (Directions API): reemplaza la recta.
+      fetchRoute([pickup.lon, pickup.lat], [dropoff.lon, dropoff.lat]).then(route => {
+        if (!route || route.coords.length < 2) return;
+        const { coords, congestion, distanceM, durationSec } = route;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const m = map as any;
+
+        // ETA y distancia reales con tráfico.
+        setRouteInfo({ km: distanceM / 1000, min: Math.round(durationSec / 60) });
+
+        if (congestion.length === coords.length - 1) {
+          // Pinta segmento a segmento según el nivel de tráfico.
+          const features = coords.slice(0, -1).map((c, i) => ({
+            type: 'Feature' as const,
+            properties: { congestion: congestion[i] || 'unknown' },
+            geometry: { type: 'LineString' as const, coordinates: [c, coords[i + 1]] },
+          }));
+          try {
+            m.getSource('route')?.setData({ type: 'FeatureCollection', features });
+            m.setPaintProperty('route', 'line-color', [
+              'match', ['get', 'congestion'],
+              'low', CONGESTION_COLOR.low,
+              'moderate', CONGESTION_COLOR.moderate,
+              'heavy', CONGESTION_COLOR.heavy,
+              'severe', CONGESTION_COLOR.severe,
+              CONGESTION_COLOR.unknown,
+            ]);
+            m.setPaintProperty('route', 'line-dasharray', [1, 0]);
+          } catch { /* noop */ }
+        } else {
+          // Sin datos de congestión: línea sólida simple con la geometría real.
+          try {
+            m.getSource('route')?.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: coords } });
+            m.setPaintProperty('route', 'line-dasharray', [1, 0]);
+          } catch { /* noop */ }
+        }
+      });
+
+      // Conductores cercanos (puntitos) alrededor del origen mientras se busca.
+      if (showNearbyDrivers) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const m = map as any;
+        for (let i = 0; i < 5; i++) {
+          const dLat = (Math.random() - 0.5) * 0.012;
+          const dLon = (Math.random() - 0.5) * 0.012;
+          const el = document.createElement('div');
+          el.innerHTML = `<div style="width:22px;height:22px;border-radius:50%;background:#0033A0;border:2px solid white;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;">🚗</div>`;
+          try { new mbgl.Marker({ element: el }).setLngLat([pickup.lon + dLon, pickup.lat + dLat]).addTo(m); } catch { /* noop */ }
+        }
+      }
+
+      // Edificios 3D — efecto navegación premium.
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (map as any).addLayer({
+          id: '3d-buildings',
+          source: 'composite',
+          'source-layer': 'building',
+          filter: ['==', 'extrude', 'true'],
+          type: 'fill-extrusion',
+          minzoom: 14,
+          paint: {
+            'fill-extrusion-color': '#d9dbe0',
+            'fill-extrusion-height': ['get', 'height'],
+            'fill-extrusion-base': ['get', 'min_height'],
+            'fill-extrusion-opacity': 0.6,
+          },
+        });
+      } catch { /* el estilo puede no exponer 'building' */ }
 
       /* Fit to bounds */
       const bounds = new mbgl.LngLatBounds();
@@ -182,10 +306,33 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  /* Live driver position updates */
+  /* Live driver position — animación suave entre puntos + rotación por rumbo. */
   useEffect(() => {
-    if (!driverMarkerRef.current || !driverLocation) return;
-    driverMarkerRef.current.setLngLat([driverLocation.lon, driverLocation.lat]);
+    const marker = driverMarkerRef.current;
+    if (!marker || !driverLocation) return;
+    const to: [number, number] = [driverLocation.lon, driverLocation.lat];
+    const from = lastDriverPos.current ?? to;
+    lastDriverPos.current = to;
+
+    // Rotar el marcador según la dirección de avance.
+    if (from[0] !== to[0] || from[1] !== to[1]) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (marker as any).setRotation?.(bearingBetween(from, to));
+      } catch { /* setRotation opcional */ }
+    }
+
+    // Interpolación suave (~1s) en vez de salto.
+    const startT = performance.now();
+    const dur = 1000;
+    let raf = 0;
+    const frame = (now: number) => {
+      const t = Math.min((now - startT) / dur, 1);
+      marker.setLngLat([from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]);
+      if (t < 1) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
   }, [driverLocation?.lat, driverLocation?.lon]);
 
   /* ── No token ── */
@@ -229,10 +376,11 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
         </div>
       )}
 
-      {(distance !== undefined || duration !== undefined) && (
-        <div className="absolute bottom-3 left-3 bg-white rounded-xl px-3 py-2 shadow-md z-10 flex gap-3 text-xs font-semibold text-gray-700">
-          {distance !== undefined && <span>📍 {distance.toFixed(1)} km</span>}
-          {duration !== undefined && <span>⏱️ ~{duration} min</span>}
+      {(routeInfo || distance !== undefined || duration !== undefined) && (
+        <div className="absolute bottom-3 left-3 bg-white rounded-xl px-3 py-2 shadow-md z-10 flex items-center gap-3 text-xs font-semibold text-gray-700">
+          <span>📍 {(routeInfo?.km ?? distance ?? 0).toFixed(1)} km</span>
+          <span>⏱️ ~{routeInfo?.min ?? duration} min</span>
+          {routeInfo && <span className="text-[10px] font-bold text-[#0033A0] bg-blue-50 px-1.5 py-0.5 rounded-full">con tráfico</span>}
         </div>
       )}
     </div>
@@ -250,6 +398,7 @@ export function TrackingMap() {
       driverLocation={activeRide.driverLocation}
       distance={activeRide.distance}
       duration={activeRide.duration}
+      showNearbyDrivers={activeRide.status === 'pending'}
     />
   );
 }
