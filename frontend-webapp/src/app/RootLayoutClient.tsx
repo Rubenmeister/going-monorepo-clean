@@ -34,6 +34,14 @@ const APP_PREFIXES = [
   '/sos',
   '/academy',
   '/tracking',
+  // Portales de rol (post-login): tienen su propio shell/sidebar, así que
+  // ocultamos el Navbar/Footer de marketing para evitar el header duplicado.
+  // OJO: solo estas 4 rutas — /services y el resto (/services/transport, tours,
+  // accommodation, envios…) son marketing y SÍ llevan Navbar.
+  '/services/conductores',
+  '/services/operadores',
+  '/services/promotores-locales',
+  '/services/anfitriones',
 ];
 
 function useIsAppRoute() {
