@@ -53,6 +53,10 @@ export class RideModelSchema {
   /** Instante en que el canal se cerró (cron de limpieza post-viaje). */
   @Prop() channelClosedAt: Date;
 
+  // ── Recordatorios de viaje reservado (idempotencia: una vez cada uno) ──────
+  @Prop() reminder1hSentAt: Date;   // aviso ~1 hora antes
+  @Prop() reminder5mSentAt: Date;   // aviso ~5 minutos antes
+
   // ── Identidad y tokens ────────────────────────────────────────────────────
   @Prop() pickupToken: string;          // QR para verificar identidad al subir
   @Prop() deliveryToken: string;        // token generado al llegar, confirma entrega

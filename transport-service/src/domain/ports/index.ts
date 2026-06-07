@@ -547,6 +547,12 @@ export interface IRideRepository {
    */
   findScheduledDue?(threshold: Date, limit?: number): Promise<any[]>;
   /**
+   * Viajes reservados próximos que aún no recibieron un recordatorio dado.
+   * `field` = 'reminder1hSentAt' | 'reminder5mSentAt'. Devuelve los rides con
+   * scheduledAt en (now+fromMin, now+toMin], sin terminar y con ese flag vacío.
+   */
+  findUpcomingNeedingReminder?(field: string, fromMin: number, toMin: number, limit?: number): Promise<any[]>;
+  /**
    * Marca que un conductor rechazó este viaje (idempotente).
    * Usado por POST /rides/:id/reject para que el viaje no aparezca de nuevo
    * en GET /rides/pending para ese conductor específico.
