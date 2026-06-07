@@ -4,13 +4,17 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
 
 ## Viaje
 
-- [ ] **Avisos 1 hora y 5 minutos antes** de un viaje reservado.
-  - Requiere: scheduler en backend + push notifications (web push / FCM) o SMS.
-  - La webapp ya anuncia estos avisos en el panel de seguimiento, pero el envío
-    real lo debe disparar el backend.
-- [ ] **Asignación interna del conductor más opcionado** para reservas.
-  - El backend debe asignar al conductor ~1 h antes de la salida y emitir el
-    evento `ride:driver_accepted` por WebSocket (la webapp ya lo escucha).
+- [x] **Avisos 1 hora y 5 minutos antes** de un viaje reservado: HECHO.
+  `ScheduledRideReminderCron` (en transport-service) busca reservas próximas
+  (ventanas 1h y 5min, idempotente por `reminder1hSentAt`/`reminder5mSentAt`) y
+  envía push vía `notifications-service /api/notifications/send` (FCM) + evento
+  WS `ride:reminder`.
+  - ⚠️ El push llega a dispositivos con token registrado (app móvil). Falta
+    **web-push** en la webapp (service worker FCM + registro de token) para que
+    el navegador reciba el aviso — tarea aparte.
+- [x] **Asignación interna del conductor más opcionado** para reservas: YA
+  existía — `ScheduledRideDispatcherCron` abre el canal y dispara el matching a
+  `scheduledAt − MATCH_LEAD_TIME_MINUTES` (60 por defecto) y emite por WS.
 - [ ] **Token de fin de viaje real**: hoy el código de cierre se genera en el
   cliente (determinístico por `rideId`). Idealmente el backend emite/valida el
   código de fin para que el conductor lo confirme contra el servidor.

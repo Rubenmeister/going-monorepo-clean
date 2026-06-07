@@ -152,6 +152,32 @@ export class MongooseRideRepository implements IRideRepository {
     return docs.map((d) => this._toRideData(d));
   }
 
+  /**
+   * Viajes reservados próximos que aún no recibieron el recordatorio `field`.
+   * Ventana: scheduledAt en (now+fromMin, now+toMin], status no terminal, flag
+   * vacío. Idempotencia: el cron setea el flag tras enviar.
+   */
+  async findUpcomingNeedingReminder(
+    field: string,
+    fromMin: number,
+    toMin: number,
+    limit = 100,
+  ): Promise<any[]> {
+    const now = Date.now();
+    const lower = new Date(now + fromMin * 60_000);
+    const upper = new Date(now + toMin * 60_000);
+    const docs = await this.model
+      .find({
+        scheduledAt: { $gt: lower, $lte: upper },
+        status: { $nin: ['completed', 'cancelled', 'no_driver'] },
+        $or: [{ [field]: { $exists: false } }, { [field]: null }],
+      })
+      .limit(limit)
+      .sort({ scheduledAt: 1 })
+      .lean();
+    return docs.map((d) => this._toRideData(d));
+  }
+
   async delete(id: string): Promise<void> {
     await this.model.findByIdAndDelete(id);
   }
