@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Patch,
   Body,
   UseGuards,
   HttpCode,
@@ -807,6 +808,49 @@ export class AuthController {
       email,
       roles,
       authenticated: !!userId,
+    };
+  }
+
+  /**
+   * PATCH /auth/me
+   * Actualiza los datos personales del usuario autenticado
+   * (firstName, lastName, phone). El email no se cambia aquí (requiere
+   * verificación). Consumido por la webapp: edición de perfil en /account y
+   * en el dashboard del conductor.
+   */
+  @Patch('me')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async updateCurrentUser(
+    @CurrentUser('userId') userId: UUID,
+    @Body() body: { firstName?: string; lastName?: string; phone?: string },
+  ) {
+    const update: Record<string, unknown> = {};
+    if (typeof body.firstName === 'string') update.firstName = body.firstName.trim();
+    if (typeof body.lastName === 'string') update.lastName = body.lastName.trim();
+    if (typeof body.phone === 'string') update.phone = body.phone.trim();
+
+    if (Object.keys(update).length === 0) {
+      throw new BadRequestException('Nada que actualizar (firstName, lastName o phone).');
+    }
+
+    const res = await this.userModel.updateOne({ id: userId }, { $set: update });
+    if (res.matchedCount === 0) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    const u = await this.userModel
+      .findOne({ id: userId })
+      .select('id email firstName lastName phone roles')
+      .lean();
+
+    return {
+      id: u?.id,
+      email: u?.email,
+      firstName: u?.firstName,
+      lastName: u?.lastName,
+      phone: u?.phone,
+      roles: u?.roles,
     };
   }
 
