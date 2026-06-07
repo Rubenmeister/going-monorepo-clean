@@ -113,6 +113,34 @@ export class WalletService {
     return { balance: updated.balance };
   }
 
+  /**
+   * Transfiere saldo de un usuario a otro. Débito (condicionado a saldo) y
+   * crédito son idempotentes por `ref`; si el crédito falla tras el débito,
+   * se revierte (re-crédito al emisor). Devuelve el saldo final del emisor.
+   */
+  async transfer(fromUserId: string, toUserId: string, amount: number, ref?: string): Promise<{ balance: number }> {
+    if (!(amount > 0)) throw new BadRequestException('El monto debe ser mayor a 0');
+    if (fromUserId === toUserId) throw new BadRequestException('No puedes transferirte a ti mismo');
+
+    const base = ref || `tf_${randomUUID()}`;
+    const outRef = `${base}:out`;
+    const inRef = `${base}:in`;
+
+    // 1) Débito del emisor (atómico, falla si no hay saldo). Idempotente.
+    const out = await this.debit(fromUserId, amount, 'Transferencia enviada', outRef);
+
+    // 2) Crédito al receptor. Si falla, revertir el débito.
+    try {
+      await this.credit(toUserId, amount, 'Transferencia recibida', inRef);
+    } catch (e) {
+      this.logger.error(`Crédito de transferencia falló (${base}); revirtiendo débito`);
+      await this.credit(fromUserId, amount, 'Reverso de transferencia', `${base}:rev`);
+      throw e;
+    }
+
+    return { balance: out.balance };
+  }
+
   private async writeTx(
     userId: string,
     type: 'credit' | 'debit',

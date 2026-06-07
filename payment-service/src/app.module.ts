@@ -23,6 +23,7 @@ import { DriverEarningsController } from './api/driver-earnings.controller';
 import { WalletController } from './api/wallet.controller';
 import { WalletService } from './application/wallet.service';
 import { RechargeService } from './application/recharge.service';
+import { UserLookupClient } from './application/user-lookup-client.service';
 import {
   Wallet,
   WalletSchema,
@@ -82,6 +83,7 @@ import {
     CreatePayoutUseCase,
     WalletService,
     RechargeService,
+    UserLookupClient,
     JwtStrategy,
     // Routing provider (OSRM por default). Cambiar a GraphHopper/Mapbox
     // reemplazando el useClass.

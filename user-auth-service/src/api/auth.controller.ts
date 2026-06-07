@@ -910,6 +910,31 @@ export class AuthController {
   }
 
   /**
+   * GET /auth/internal/lookup-user?email=|phone= — resuelve un usuario a su
+   * userId (service-to-service, para transferencias de wallet). Protegido por
+   * el RequestSignatureMiddleware (HMAC) aplicado a /auth/internal/*. Solo
+   * devuelve userId + nombre (no más PII).
+   */
+  @Get('internal/lookup-user')
+  @HttpCode(200)
+  async internalLookupUser(@Req() req: Request) {
+    const email = String(req.query?.email ?? '').trim().toLowerCase();
+    const phone = String(req.query?.phone ?? '').trim();
+    if (!email && !phone) {
+      throw new BadRequestException('email o phone requerido');
+    }
+    const query = email ? { email } : { phone };
+    const u = await this.userModel.findOne(query).select('id firstName lastName').lean();
+    if (!u) return { found: false };
+    return {
+      found: true,
+      userId: (u as any).id,
+      firstName: (u as any).firstName ?? '',
+      lastName: (u as any).lastName ?? '',
+    };
+  }
+
+  /**
    * GET /auth/me/voice-preference — devuelve { language, voice } del user
    * actual. Si no se ha configurado, retorna defaults derivados del país
    * detectado por el phone (EC→es, US→en, fallback es).
