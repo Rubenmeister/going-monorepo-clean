@@ -449,7 +449,7 @@ export default function HomePage() {
           {/* ── Logo arriba (marca paraguas centrada) ── */}
           <FadeIn dir="up" className="text-center mb-8">
             <img
-              src="/images/going-logo-v.png"
+              src="/images/going-logo-v-trans.png"
               alt="Going App"
               className="h-24 md:h-32 mx-auto"
               style={{ filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.12))' }}
