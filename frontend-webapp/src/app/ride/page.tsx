@@ -72,7 +72,7 @@ function RideStepper({ step }: { step: Step }) {
      Privado    → amarillo
      Envíos     → negro
 */
-function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 'envios') => void }) {
+function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 'ciudad' | 'envios') => void }) {
   return (
     <div className="space-y-3">
       {/* Bienvenida */}
@@ -118,6 +118,24 @@ function ServicePicker({ onSelect }: { onSelect: (m: 'compartido' | 'privado' | 
         <div className="flex-1 min-w-0">
           <span className="text-base font-black text-gray-900 block mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Viaje Privado</span>
           <p className="text-sm text-gray-500">Auto, SUV, VAN, Minibús o Bus · de 1 a 30 personas</p>
+        </div>
+        <IconArrowRight size={18} className="text-gray-300" />
+      </button>
+
+      {/* En la ciudad — azul Going App · taxi urbano inmediato */}
+      <button
+        onClick={() => onSelect('ciudad')}
+        className="w-full flex items-center gap-3 bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm hover:bg-blue-50/50 active:scale-[0.98] transition-all text-left"
+        style={{ borderColor: COLORS.gray[100] }}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = COLORS.brand.blue + '4D')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = COLORS.gray[100])}
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#EEF2FF', color: COLORS.brand.blue }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-base font-black text-gray-900 block mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>En la ciudad</span>
+          <p className="text-sm text-gray-500">Carrera inmediata dentro de tu ciudad · al instante</p>
         </div>
         <IconArrowRight size={18} className="text-gray-300" />
       </button>

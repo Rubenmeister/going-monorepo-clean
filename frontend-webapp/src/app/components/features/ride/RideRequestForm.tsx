@@ -135,7 +135,9 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     createRide,
   } = useRideService();
 
-  const [mode, setMode]                   = useState<TransportMode>(defaultMode ?? 'privado');
+  // El tipo de servicio se fija desde el selector (defaultMode) y no cambia
+  // dentro del formulario — el toggle se quitó para no re-mostrar opciones.
+  const [mode]                            = useState<TransportMode>(defaultMode ?? 'privado');
   const [passengers, setPassengers]       = useState(1);
   const [simpleVehicle, setSimpleVehicle] = useState<SimpleVehicle>('suv');
   const [tier, setTier]                   = useState<ServiceTier>('confort');
@@ -425,53 +427,21 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
 
           <div className="border-t border-gray-100" />
 
-          {/* Toggle Privado / Compartido + contador */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-2xl border border-gray-200 overflow-hidden flex-shrink-0">
-              {([
-                { key: 'ciudad'     as TransportMode, Icon: IcoCity,   label: 'En la ciudad' },
-                { key: 'privado'    as TransportMode, Icon: IcoLock,   label: 'Privado' },
-                { key: 'compartido' as TransportMode, Icon: IcoPeople, label: 'Compartido' },
-              ]).map(opt => (
-                <button key={opt.key} type="button"
-                  onClick={() => {
-                    setMode(opt.key);
-                    if (opt.key === 'compartido') setPassengers(p => Math.min(p, 3));
-                    // 'ciudad' y 'privado' son inmediatos por default — al
-                    // entrar reseteamos cualquier programación previa.
-                    // ('ciudad' además NO ofrece programar: siempre busca
-                    // conductor ya, al estilo ride-hailing.)
-                    if (opt.key === 'privado' || opt.key === 'ciudad') {
-                      setShowSchedule(false);
-                      setScheduledDate('');
-                      setScheduledTime('');
-                      setIsScheduled(false);
-                    }
-                  }}
-                  className={`px-4 py-2.5 text-sm font-bold transition-all flex items-center gap-1.5 ${
-                    mode === opt.key
-                      ? 'bg-[#0033A0] text-white'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <opt.Icon />{opt.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Contador de personas */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button type="button" onClick={() => setPassengers(p => Math.max(1, p - 1))}
-                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
-                −
-              </button>
-              <span className="text-lg font-black text-[#0033A0] min-w-[2rem] text-center">{passengers}</span>
-              <button type="button" onClick={() => setPassengers(p => Math.min(maxPax, p + 1))}
-                className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
-                +
-              </button>
-              <span className="text-sm text-gray-500">{passengers === 1 ? 'persona' : 'personas'}</span>
-            </div>
+          {/* Pasajeros — el tipo de servicio ya se eligió en la pantalla
+              anterior (selector). Para cambiarlo se usa "← Cambiar" en el
+              header; no repetimos el switch aquí para no confundir. */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-auto">Pasajeros</span>
+            <button type="button" onClick={() => setPassengers(p => Math.max(1, p - 1))}
+              className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
+              −
+            </button>
+            <span className="text-lg font-black text-[#0033A0] min-w-[2rem] text-center">{passengers}</span>
+            <button type="button" onClick={() => setPassengers(p => Math.min(maxPax, p + 1))}
+              className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 font-bold text-gray-700 text-lg flex items-center justify-center transition-all active:scale-95">
+              +
+            </button>
+            <span className="text-sm text-gray-500">{passengers === 1 ? 'persona' : 'personas'}</span>
           </div>
 
           {/* ── Selector de vehículo (Privado/Ciudad) o SUV Compartida ─────── */}
