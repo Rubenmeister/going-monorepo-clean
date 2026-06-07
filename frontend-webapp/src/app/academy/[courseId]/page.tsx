@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, ComponentType } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { COLORS } from '../../components/design-tokens';
+import { MULTIFORMAT_COURSES, MultiFormatCourse } from '../multiformat-course';
 import {
   IconUser, IconGlobe, IconMobile, IconCamera, IconBook, IconMap,
   IconBook as IconReading, IconHeadphones, IconPlay, IconChart, IconQuiz,
@@ -985,7 +986,7 @@ function LessonContent({ lesson, schoolColor }: { lesson: Lesson; schoolColor: s
 /* ─────────────────────────────────────────────
    MAIN PAGE
    ───────────────────────────────────────────── */
-export default function CoursePage() {
+function LegacyCourseView() {
   const params = useParams();
   const router = useRouter();
   const courseId = params?.courseId as string;
@@ -1192,4 +1193,20 @@ export default function CoursePage() {
       </div>
     </div>
   );
+}
+
+/* ─────────────────────────────────────────────
+   DISPATCHER
+   Los cursos con contenido multiformato (texto/PDF, manual gráfico,
+   podcast TTS, video y evaluación) se renderizan con MultiFormatCourse.
+   El resto usa la vista clásica de lecciones (LegacyCourseView).
+   ───────────────────────────────────────────── */
+export default function CoursePage() {
+  const params = useParams();
+  const courseId = params?.courseId as string;
+
+  if (courseId && MULTIFORMAT_COURSES[courseId]) {
+    return <MultiFormatCourse courseId={courseId} />;
+  }
+  return <LegacyCourseView />;
 }
