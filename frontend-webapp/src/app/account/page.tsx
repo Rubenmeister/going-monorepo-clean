@@ -749,10 +749,10 @@ export default function AccountPage() {
                   <span>Cambiar Contraseña</span>
                   <IconArrowRight size={14} className="text-gray-400" />
                 </Link>
-                <div className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-400 flex justify-between items-center cursor-not-allowed">
+                <Link href="/account/2fa" className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 flex justify-between items-center hover:bg-gray-50 transition-colors">
                   <span>Autenticación de Dos Factores</span>
-                  <span className="text-[10px] font-bold bg-gray-100 px-2 py-0.5 rounded-full">Pronto</span>
-                </div>
+                  <IconArrowRight size={14} className="text-gray-400" />
+                </Link>
               </div>
             </div>
 
