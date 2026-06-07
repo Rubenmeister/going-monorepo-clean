@@ -60,6 +60,30 @@ export function loadMapbox(): Promise<void> {
   });
 }
 
+/* Ruta real por calles (Directions API) → array de coordenadas [lon,lat]. */
+async function fetchRouteGeometry(from: [number, number], to: [number, number]): Promise<number[][] | null> {
+  if (!MAPBOX_TOKEN) return null;
+  try {
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${from[0]},${from[1]};${to[0]},${to[1]}`
+      + `?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.routes?.[0]?.geometry?.coordinates ?? null;
+  } catch { return null; }
+}
+
+/* Rumbo (grados) entre dos puntos — para orientar el marcador del conductor. */
+function bearingBetween(from: [number, number], to: [number, number]): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const toDeg = (r: number) => (r * 180) / Math.PI;
+  const dLon = toRad(to[0] - from[0]);
+  const y = Math.sin(dLon) * Math.cos(toRad(to[1]));
+  const x = Math.cos(toRad(from[1])) * Math.sin(toRad(to[1]))
+          - Math.sin(toRad(from[1])) * Math.cos(toRad(to[1])) * Math.cos(dLon);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
 /* ─────────────────────────────────────────────
    MAP COMPONENT
    ───────────────────────────────────────────── */
@@ -75,6 +99,7 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const driverMarkerRef = useRef<MapboxMarker | null>(null);
+  const lastDriverPos = useRef<[number, number] | null>(null);
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const noToken = !MAPBOX_TOKEN;
@@ -93,11 +118,24 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
 
     const map = new mbgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/navigation-day-v1',
       center: [(pickup.lon + dropoff.lon) / 2, (pickup.lat + dropoff.lat) / 2],
       zoom: 12,
+      pitch: 45,
+      antialias: true,
       scrollZoom: false,
     });
+
+    // Puck de ubicación del usuario (punto azul que late + rumbo).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (map as any).addControl(new (mbgl as any).GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true,
+      }), 'top-right');
+    } catch { /* control opcional */ }
 
     map.on('load', () => {
       /* Pickup marker — green pin */
@@ -159,11 +197,43 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
           'line-color': '#ff4c41',
-          'line-width': 4,
+          'line-width': 5,
           'line-dasharray': [2, 2],
-          'line-opacity': 0.75,
+          'line-opacity': 0.85,
         },
       });
+
+      // Ruta REAL por calles (Directions API): reemplaza la línea recta.
+      fetchRouteGeometry([pickup.lon, pickup.lat], [dropoff.lon, dropoff.lat]).then(coords => {
+        if (!coords || coords.length < 2) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const src = (map as any).getSource?.('route');
+        if (src?.setData) {
+          src.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: coords } });
+        }
+        // línea sólida cuando es ruta real
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        try { (map as any).setPaintProperty('route', 'line-dasharray', [1, 0]); } catch { /* noop */ }
+      });
+
+      // Edificios 3D — efecto navegación premium.
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (map as any).addLayer({
+          id: '3d-buildings',
+          source: 'composite',
+          'source-layer': 'building',
+          filter: ['==', 'extrude', 'true'],
+          type: 'fill-extrusion',
+          minzoom: 14,
+          paint: {
+            'fill-extrusion-color': '#d9dbe0',
+            'fill-extrusion-height': ['get', 'height'],
+            'fill-extrusion-base': ['get', 'min_height'],
+            'fill-extrusion-opacity': 0.6,
+          },
+        });
+      } catch { /* el estilo puede no exponer 'building' */ }
 
       /* Fit to bounds */
       const bounds = new mbgl.LngLatBounds();
@@ -182,10 +252,33 @@ export function MapboxMap({ pickup, dropoff, driverLocation, distance, duration 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  /* Live driver position updates */
+  /* Live driver position — animación suave entre puntos + rotación por rumbo. */
   useEffect(() => {
-    if (!driverMarkerRef.current || !driverLocation) return;
-    driverMarkerRef.current.setLngLat([driverLocation.lon, driverLocation.lat]);
+    const marker = driverMarkerRef.current;
+    if (!marker || !driverLocation) return;
+    const to: [number, number] = [driverLocation.lon, driverLocation.lat];
+    const from = lastDriverPos.current ?? to;
+    lastDriverPos.current = to;
+
+    // Rotar el marcador según la dirección de avance.
+    if (from[0] !== to[0] || from[1] !== to[1]) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (marker as any).setRotation?.(bearingBetween(from, to));
+      } catch { /* setRotation opcional */ }
+    }
+
+    // Interpolación suave (~1s) en vez de salto.
+    const startT = performance.now();
+    const dur = 1000;
+    let raf = 0;
+    const frame = (now: number) => {
+      const t = Math.min((now - startT) / dur, 1);
+      marker.setLngLat([from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]);
+      if (t < 1) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
   }, [driverLocation?.lat, driverLocation?.lon]);
 
   /* ── No token ── */
