@@ -474,13 +474,13 @@ export default function HomePage() {
              en /ride y /envios/cotizar, fuente única.
           */}
           <FadeIn dir="up" delay={0.15} className="w-full max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_210px] gap-6 items-center mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_230px] gap-6 items-center mb-8">
 
-              {/* Celular pequeño a la derecha de las cajas (sin sombra) */}
+              {/* Celular a la derecha, sobre el fondo (sin reflejo/sombra) */}
               <img
                 src="/images/going-phone.png"
                 alt="App Going App en un celular"
-                className="w-[150px] md:w-[200px] h-auto mx-auto md:order-2"
+                className="w-[160px] md:w-[215px] h-auto ml-auto md:order-2 md:-mr-4"
               />
 
               {/* Las 3 cajas en fila */}
