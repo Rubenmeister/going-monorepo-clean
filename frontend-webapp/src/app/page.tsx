@@ -433,6 +433,17 @@ export default function HomePage() {
           }}
         />
 
+        {/* ── Celular flotando a la derecha, sobre la foto del hero ──
+            Va FUERA del flujo centrado (absolute) para que el logo, el texto
+            y las 3 cajas queden perfectamente centrados y solo el teléfono
+            quede a un costado, sobre el paisaje. Solo en pantallas anchas
+            (en móvil estorbaría al contenido centrado). */}
+        <img
+          src="/images/going-phone-clean.png"
+          alt="App Going App en un celular"
+          className="hidden lg:block absolute right-2 xl:right-12 top-[15%] z-20 w-[235px] xl:w-[290px] h-auto pointer-events-none"
+        />
+
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 lg:py-14 flex flex-col items-center" style={{ minHeight: '100vh' }}>
 
           {/* ── Logo arriba (marca paraguas centrada) ── */}
@@ -474,17 +485,7 @@ export default function HomePage() {
              en /ride y /envios/cotizar, fuente única.
           */}
           <FadeIn dir="up" delay={0.15} className="w-full max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_230px] gap-6 items-center mb-8">
-
-              {/* Celular a la derecha, sobre el fondo (sin reflejo/sombra) */}
-              <img
-                src="/images/going-phone.png"
-                alt="App Going App en un celular"
-                className="w-[160px] md:w-[215px] h-auto ml-auto md:order-2 md:-mr-4"
-              />
-
-              {/* Las 3 cajas en fila */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:order-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
 
               {/* 3 CARDS DE SERVICIOS — usan <ServiceCard /> con tilt 3D
                  siguiendo el cursor + título escala en hover. Sin emojis ni
@@ -518,7 +519,6 @@ export default function HomePage() {
                 ctaColor={COLORS.brand.black}
               />
 
-              </div>
             </div>
           </FadeIn>
 
