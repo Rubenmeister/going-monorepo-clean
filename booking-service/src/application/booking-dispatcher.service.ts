@@ -128,6 +128,10 @@ export class BookingDispatcherService {
         sub:   booking.userId,
         email: `booking-dispatcher@going.com.ec`,
         role:  'user',
+        // Propaga la empresa: transport deriva isCorporate del companyId del
+        // JWT. Sin esto, un viaje corporativo despachado se marcaría como B2C
+        // y el conductor no recibiría su payout corporativo.
+        ...(booking.companyId ? { companyId: booking.companyId } : {}),
         // Hint para transport-service que esto viene del dispatcher,
         // no del usuario directo. Útil para logs/auditoría.
         source: 'booking-dispatcher',
