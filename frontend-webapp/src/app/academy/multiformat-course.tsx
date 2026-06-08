@@ -844,6 +844,190 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
       { question: 'La mejor forma de tener buenas reseñas es…', options: ['Pedirlas insistentemente', 'Prevenir: expectativas claras y buen recibimiento', 'Bajar el precio', 'Responder solo las positivas'], correct: 1, explanation: 'Prevenir con expectativas claras, comunicación e instrucciones sencillas evita la mayoría de las malas reseñas.' },
     ],
   },
+
+  // ─── ESCUELA DE VIAJEROS ──────────────────────────────────────────────────
+  v1: {
+    id: 'v1',
+    school: 'Escuela de Viajeros',
+    schoolColor: COLORS.brand.yellowDark,
+    title: 'Viaja Inteligente con Going App',
+    subtitle: 'Guía completa del pasajero',
+    description:
+      'Cómo reservar, rastrear tu viaje, comunicarte con el conductor y usar todas las funciones de seguridad para que cada viaje sea fácil y tranquilo.',
+    readingHtml: `
+<h2>1. Pide tu viaje en segundos</h2>
+<ul>
+  <li><strong>Elige el servicio:</strong> compartido (pagas tu asiento), privado (todo el vehículo) o en la ciudad (carrera inmediata).</li>
+  <li><strong>Origen y destino:</strong> escríbelos, usa tu ubicación (GPS) o fija el punto en el mapa.</li>
+  <li><strong>Ahora o después:</strong> un viaje puede ser inmediato o <strong>reservado</strong> para una fecha/hora futura.</li>
+</ul>
+
+<h2>2. Antes de subir: verifica</h2>
+<ul>
+  <li><strong>Confirma el vehículo:</strong> placa, modelo y foto del conductor deben coincidir con la app.</li>
+  <li><strong>Pregunta tu nombre:</strong> un buen conductor confirmará a quién recoge.</li>
+  <li>Si algo no coincide, <strong>no subas</strong> y repórtalo.</li>
+</ul>
+
+<h2>3. Durante el viaje</h2>
+<ul>
+  <li><strong>Sigue la ruta</strong> en el mapa en tiempo real.</li>
+  <li><strong>Comparte tu viaje</strong> con alguien de confianza desde el panel.</li>
+  <li><strong>Chat con traducción</strong> si no hablas el mismo idioma.</li>
+  <li><strong>Botón SOS</strong> para emergencias durante el trayecto.</li>
+</ul>
+
+<h2>4. Al llegar</h2>
+<ul>
+  <li>Confirma el <strong>fin del viaje</strong> con el código que te muestra la app.</li>
+  <li><strong>Califica</strong> a tu conductor: tu opinión mejora la comunidad.</li>
+  <li>Revisa tu <strong>recibo</strong> en el historial.</li>
+</ul>
+<blockquote>Consejo: guarda tus direcciones frecuentes (Casa, Trabajo) para pedir aún más rápido.</blockquote>
+`,
+    slides: [
+      { title: 'Pide en segundos', points: ['Elige servicio', 'Origen y destino (texto/GPS/mapa)', 'Inmediato o reservado'] },
+      { title: 'Verifica antes de subir', points: ['Placa, modelo y foto coinciden', 'Confirma tu nombre', 'Si no coincide, no subas'] },
+      { title: 'Durante el viaje', points: ['Sigue la ruta en vivo', 'Comparte tu viaje', 'Chat con traducción', 'Botón SOS'] },
+      { title: 'Al llegar', points: ['Confirma el código de fin', 'Califica al conductor', 'Revisa tu recibo'] },
+      { title: 'Tips', points: ['Guarda Casa y Trabajo', 'Activa notificaciones', 'Mantén la app actualizada'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Viaja Inteligente con Going App. En este episodio te llevamos paso a paso por un viaje perfecto: pedir, verificar, viajar seguro y calificar.',
+      segments: [
+        { title: 'Pedir el viaje', text: 'Pedir un viaje toma segundos. Elige el servicio: compartido, privado o en la ciudad. Indica origen y destino escribiéndolos, usando tu ubicación por GPS o fijando el punto en el mapa. Y decide si lo quieres inmediato o reservado para más tarde.' },
+        { title: 'Verifica antes de subir', text: 'Tu seguridad empieza antes de subir. Confirma que la placa, el modelo y la foto del conductor coincidan con lo que muestra la app, y deja que el conductor confirme tu nombre. Si algo no coincide, no subas y repórtalo.' },
+        { title: 'Durante el viaje', text: 'Durante el trayecto puedes seguir la ruta en el mapa en tiempo real, compartir tu viaje con alguien de confianza, usar el chat con traducción automática y contar con el botón SOS para emergencias.' },
+        { title: 'Al llegar', text: 'Al llegar, confirma el fin del viaje con el código que te muestra la app, califica a tu conductor para mejorar la comunidad y revisa tu recibo en el historial. Un consejo: guarda tus direcciones frecuentes para pedir aún más rápido.' },
+      ],
+    },
+    quiz: [
+      { question: 'Antes de subir al vehículo debes verificar…', options: ['Solo el color', 'Placa, modelo y foto del conductor', 'Nada', 'El precio'], correct: 1, explanation: 'Confirma que placa, modelo y foto coincidan con la app; si no, no subas.' },
+      { question: 'Para que alguien siga tu viaje en tiempo real puedes…', options: ['Llamarlo', 'Usar “compartir viaje” en el panel', 'Mandar una foto', 'No se puede'], correct: 1, explanation: 'La función de compartir viaje envía un enlace de seguimiento en vivo.' },
+      { question: 'Un viaje reservado es aquel que…', options: ['Se paga doble', 'Se programa para una fecha/hora futura', 'No tiene conductor', 'Es gratis'], correct: 1, explanation: 'Reservado = programado a futuro; el conductor se asigna cerca de la hora.' },
+      { question: 'Al terminar el viaje conviene…', options: ['Cerrar la app sin más', 'Confirmar el código de fin y calificar', 'Pedir otro de inmediato', 'Borrar el historial'], correct: 1, explanation: 'Confirmar el fin y calificar cierra el viaje correctamente y ayuda a la comunidad.' },
+    ],
+  },
+  v2: {
+    id: 'v2',
+    school: 'Escuela de Viajeros',
+    schoolColor: COLORS.brand.yellowDark,
+    title: 'Guía de Envíos',
+    subtitle: 'Empaques, tarifas y seguimiento',
+    description:
+      'Cómo preparar tu paquete, elegir el tamaño correcto, entender la tarifa, hacer seguimiento en vivo y confirmar la entrega con código.',
+    readingHtml: `
+<h2>1. Prepara tu paquete</h2>
+<ul>
+  <li><strong>Empaca bien:</strong> caja firme, relleno para lo frágil y cinta resistente.</li>
+  <li><strong>Sella y etiqueta:</strong> datos del destinatario claros y legibles.</li>
+  <li><strong>Foto del paquete:</strong> adjúntala al crear el envío como respaldo del estado.</li>
+</ul>
+
+<h2>2. Elige el tamaño correcto</h2>
+<ul>
+  <li><strong>Pequeño</strong> (0–5 kg), <strong>Mediano</strong> (6–15 kg), <strong>Grande</strong> (16–30 kg).</li>
+  <li>El precio sale de tu <strong>origen, destino y tamaño</strong>: lo ves antes de confirmar.</li>
+  <li>Para rutas entre ciudades, la tarifa real la calcula el sistema por corredor.</li>
+</ul>
+
+<h2>3. ¿Quién paga?</h2>
+<ul>
+  <li><strong>Tú (remitente)</strong> con tarjeta o efectivo, o</li>
+  <li><strong>El destinatario</strong>, con link de pago o efectivo contra entrega.</li>
+</ul>
+
+<h2>4. Seguimiento y entrega</h2>
+<ul>
+  <li><strong>Rastreo en vivo</strong> del envío desde que lo recogen.</li>
+  <li><strong>Entrega con código OTP:</strong> el destinatario da un código que confirma la entrega.</li>
+  <li>Prohibido enviar artículos ilegales, peligrosos o de alto valor sin declarar.</li>
+</ul>
+<blockquote>Un buen empaque y una dirección clara son el 90% de un envío sin problemas.</blockquote>
+`,
+    slides: [
+      { title: 'Prepara el paquete', points: ['Caja firme + relleno', 'Sella y etiqueta claro', 'Adjunta foto del paquete'] },
+      { title: 'Elige el tamaño', points: ['Pequeño 0–5 kg', 'Mediano 6–15 kg', 'Grande 16–30 kg', 'Ves el precio antes de confirmar'] },
+      { title: '¿Quién paga?', points: ['Remitente: tarjeta o efectivo', 'Destinatario: link o contra entrega'] },
+      { title: 'Seguimiento', points: ['Rastreo en vivo', 'Entrega con código OTP', 'Nada ilegal ni peligroso'] },
+      { title: 'Tip', points: ['Buen empaque + dirección clara', '= envío sin problemas'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a la Guía de Envíos de Going App. Aprenderás a empacar, elegir tamaño y tarifa, y seguir tu paquete hasta la entrega.',
+      segments: [
+        { title: 'Prepara el paquete', text: 'Empaca bien: una caja firme, relleno para lo frágil y cinta resistente. Sella y etiqueta con los datos del destinatario claros, y adjunta una foto del paquete al crear el envío como respaldo de su estado.' },
+        { title: 'Tamaño y tarifa', text: 'Elige el tamaño correcto: pequeño hasta cinco kilos, mediano de seis a quince y grande de dieciséis a treinta. El precio sale de tu origen, destino y tamaño, y lo ves antes de confirmar. Para rutas entre ciudades, el sistema calcula la tarifa real por corredor.' },
+        { title: 'Quién paga', text: 'Puedes pagar tú como remitente, con tarjeta o efectivo, o puede pagar el destinatario, con un link de pago o en efectivo contra entrega. Tú eliges el esquema al crear el envío.' },
+        { title: 'Seguimiento y entrega', text: 'Sigues tu envío en vivo desde que lo recogen, y la entrega se confirma con un código de un solo uso que da el destinatario. Recuerda: está prohibido enviar artículos ilegales, peligrosos o de alto valor sin declarar. Un buen empaque y una dirección clara son el noventa por ciento de un envío sin problemas.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Cómo se confirma la entrega de un envío?', options: ['Con una firma', 'Con un código OTP del destinatario', 'Con una llamada', 'No se confirma'], correct: 1, explanation: 'El destinatario entrega un código OTP que confirma la entrega.' },
+      { question: 'El precio del envío depende de…', options: ['El clima', 'Origen, destino y tamaño del paquete', 'La hora', 'El color de la caja'], correct: 1, explanation: 'La tarifa se calcula por origen, destino y tamaño; la ves antes de confirmar.' },
+      { question: 'Un paquete de 10 kg corresponde a tamaño…', options: ['Pequeño', 'Mediano', 'Grande', 'No se puede enviar'], correct: 1, explanation: 'Mediano cubre de 6 a 15 kg.' },
+      { question: '¿Qué NO debes enviar?', options: ['Ropa', 'Documentos', 'Artículos ilegales o peligrosos', 'Un libro'], correct: 2, explanation: 'Está prohibido enviar artículos ilegales, peligrosos o de alto valor sin declarar.' },
+    ],
+  },
+  v3: {
+    id: 'v3',
+    school: 'Escuela de Viajeros',
+    schoolColor: COLORS.brand.yellowDark,
+    title: 'Pagos y Facturación',
+    subtitle: 'Datafast, efectivo y recibos',
+    description:
+      'Métodos de pago aceptados, el Wallet de Going App, cómo obtener tus recibos y qué hacer ante un cobro que no reconoces.',
+    readingHtml: `
+<h2>1. Formas de pago</h2>
+<ul>
+  <li><strong>Tarjeta (Datafast)</strong> y <strong>DeUna</strong> para pago digital seguro.</li>
+  <li><strong>Going App Wallet:</strong> saldo prepago que puedes <em>recargar</em> y <em>transferir</em> a otro usuario.</li>
+  <li><strong>Efectivo</strong> al conductor cuando aplica.</li>
+</ul>
+
+<h2>2. El Wallet de Going App</h2>
+<ul>
+  <li><strong>Recarga</strong> con Datafast o DeUna y paga tus viajes con saldo.</li>
+  <li><strong>Transfiere</strong> saldo a otra persona por su correo o teléfono.</li>
+  <li>Revisa tu <strong>historial de movimientos</strong> (recargas, viajes, transferencias).</li>
+</ul>
+
+<h2>3. Antes de confirmar, ves el precio</h2>
+<ul>
+  <li><strong>Tarifa fija</strong> en rutas conocidas o <strong>estimado</strong> por distancia real.</li>
+  <li>En reservas, el precio puede quedar <strong>garantizado</strong> al momento de reservar.</li>
+</ul>
+
+<h2>4. Recibos y cobros</h2>
+<ul>
+  <li>Cada viaje/envío queda en tu <strong>historial</strong> con su recibo.</li>
+  <li>Si necesitas <strong>factura</strong>, registra tus datos fiscales en tu perfil.</li>
+  <li>¿Un cobro que no reconoces? Repórtalo desde soporte con el detalle del viaje.</li>
+</ul>
+<blockquote>Nunca compartas tu contraseña ni los códigos que te llegan por SMS: Going App jamás te los pedirá.</blockquote>
+`,
+    slides: [
+      { title: 'Formas de pago', points: ['Tarjeta (Datafast) y DeUna', 'Wallet: recarga y transfiere', 'Efectivo cuando aplica'] },
+      { title: 'Going App Wallet', points: ['Recarga y paga con saldo', 'Transfiere por correo/teléfono', 'Revisa tus movimientos'] },
+      { title: 'Precio claro', points: ['Tarifa fija o estimado', 'Lo ves antes de confirmar', 'Reservas: precio garantizado'] },
+      { title: 'Recibos y cobros', points: ['Recibo en el historial', 'Factura: datos fiscales en el perfil', 'Cobro raro → soporte'] },
+      { title: 'Seguridad', points: ['Nunca compartas tu contraseña', 'Ni los códigos SMS', 'Going App jamás los pide'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Pagos y Facturación de Going App. Verás los métodos de pago, el Wallet, cómo obtener recibos y cómo cuidar tu dinero.',
+      segments: [
+        { title: 'Formas de pago', text: 'Puedes pagar con tarjeta a través de Datafast, con DeUna, con el saldo de tu Going App Wallet, o en efectivo al conductor cuando aplica. Todas son opciones seguras dentro de la app.' },
+        { title: 'El Wallet', text: 'El Wallet de Going App es tu saldo prepago. Lo recargas con Datafast o DeUna, pagas tus viajes con ese saldo e incluso puedes transferirlo a otra persona usando su correo o teléfono. Y siempre puedes revisar tu historial de movimientos.' },
+        { title: 'Precio claro', text: 'Antes de confirmar siempre ves el precio: una tarifa fija en rutas conocidas o un estimado calculado por distancia real. En las reservas, el precio puede quedar garantizado desde el momento en que reservas.' },
+        { title: 'Recibos y seguridad', text: 'Cada viaje y envío queda en tu historial con su recibo; si necesitas factura, registra tus datos fiscales en el perfil. Si ves un cobro que no reconoces, repórtalo desde soporte con el detalle del viaje. Y lo más importante: nunca compartas tu contraseña ni los códigos que te llegan por SMS, porque Going App jamás te los pedirá.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Qué te permite el Going App Wallet?', options: ['Solo ver saldo', 'Recargar y transferir saldo', 'Pedir préstamos', 'Nada'], correct: 1, explanation: 'El Wallet permite recargar (Datafast/DeUna) y transferir saldo a otros usuarios.' },
+      { question: 'Para obtener factura de tus viajes debes…', options: ['Llamar al conductor', 'Registrar tus datos fiscales en el perfil', 'Pagar extra', 'No se puede'], correct: 1, explanation: 'Con tus datos fiscales en el perfil, el sistema puede emitir la factura.' },
+      { question: 'Going App te pedirá tu contraseña o códigos SMS…', options: ['Sí, por teléfono', 'Sí, por correo', 'Nunca', 'Solo a veces'], correct: 2, explanation: 'Going App jamás pide tu contraseña ni los códigos SMS: no los compartas con nadie.' },
+      { question: 'Antes de confirmar un viaje…', options: ['No sabes el precio', 'Ves el precio (tarifa fija o estimado)', 'Pagas siempre después', 'El precio cambia al azar'], correct: 1, explanation: 'Siempre ves el precio antes de confirmar: tarifa fija o estimado por distancia.' },
+    ],
+  },
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────
