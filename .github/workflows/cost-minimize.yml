@@ -1,0 +1,96 @@
+name: Cost — Minimize Cloud Run scaling
+
+# Ajuste de costos pre-lanzamiento. La palanca dominante de costo en Cloud Run
+# es min-instances >= 1 (te cobran CPU+memoria 24/7 aunque no haya tráfico).
+# Este workflow pone min-instances en el valor elegido (por defecto 0 = escala
+# a cero) en TODOS los servicios de Cloud Run de la región, sin rebuild.
+#
+# ⚠️ Con min-instances=0 los servicios escalan a cero cuando no hay tráfico:
+#   - La primera petición tras inactividad tiene cold-start (unos segundos).
+#   - Los @Cron internos NO se ejecutan mientras el servicio está en cero
+#     (p. ej. recordatorios de viaje, dispatch programado). Aceptable
+#     pre-lanzamiento; al salir a producción, subir min a 1 en los servicios
+#     con crons o mover esos crons a Cloud Scheduler.
+#
+# Para REVERTIR (volver a caliente): re-ejecutar con min_instances=1.
+
+on:
+  workflow_dispatch:
+    inputs:
+      min_instances:
+        description: 'min-instances a aplicar (0 = escala a cero / mínimo costo)'
+        required: true
+        default: '0'
+        type: string
+      max_instances:
+        description: 'max-instances (vacío = no tocar). Tope de seguridad anti-gasto.'
+        required: false
+        default: ''
+        type: string
+      only_service:
+        description: 'Un solo servicio (vacío = todos)'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: cost-minimize-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GCP_REGION: us-central1
+
+jobs:
+  minimize:
+    name: Minimizar escalado
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Update scaling
+        run: |
+          set -euo pipefail
+          MIN="${{ inputs.min_instances }}"
+          MAX="${{ inputs.max_instances }}"
+          ONLY="${{ inputs.only_service }}"
+
+          if [ -n "$ONLY" ]; then
+            SERVICES="$ONLY"
+          else
+            SERVICES=$(gcloud run services list --region "${{ env.GCP_REGION }}" --format='value(metadata.name)')
+          fi
+
+          echo "Aplicando min-instances=$MIN ${MAX:+max-instances=$MAX} a:"
+          echo "$SERVICES"
+
+          FAILED=0
+          for s in $SERVICES; do
+            ARGS=(--region "${{ env.GCP_REGION }}" --platform managed --min-instances="$MIN" --quiet)
+            if [ -n "$MAX" ]; then ARGS+=(--max-instances="$MAX"); fi
+            echo "── $s ──"
+            if gcloud run services update "$s" "${ARGS[@]}"; then
+              echo "ok: $s"
+            else
+              echo "::warning::no se pudo actualizar $s"
+              FAILED=$((FAILED+1))
+            fi
+          done
+
+          echo "Listo. Servicios con error: $FAILED"
+
+      - name: Resumen
+        run: |
+          echo "Escalado actual (min/max por servicio):"
+          gcloud run services list --region "${{ env.GCP_REGION }}" \
+            --format='table(metadata.name, spec.template.metadata.annotations["autoscaling.knative.dev/minScale"], spec.template.metadata.annotations["autoscaling.knative.dev/maxScale"])' \
+            || true
