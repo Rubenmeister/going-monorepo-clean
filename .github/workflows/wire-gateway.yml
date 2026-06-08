@@ -34,5 +34,25 @@ jobs:
       - name: Set project
         run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Ensure routed backends are publicly invocable
+        # El api-gateway proxea por HTTP sin adjuntar ID token de servicio, así
+        # que los backends que rutea deben permitir invocación pública (allUsers
+        # → roles/run.invoker). Cada servicio igual valida su propio JWT, por lo
+        # que esto NO los deja sin protección. Idempotente: re-aplicarlo es
+        # inofensivo. Necesario para servicios nuevos en prod (p. ej. ratings).
+        run: |
+          REGION=us-central1
+          SERVICES="ratings-service analytics-service social-service corporate-service emergency-service voice-call-service"
+          for svc in $SERVICES; do
+            if gcloud run services describe "$svc" --region "$REGION" --platform managed >/dev/null 2>&1; then
+              echo "→ allUsers invoker en $svc"
+              gcloud run services add-iam-policy-binding "$svc" \
+                --region "$REGION" --platform managed \
+                --member="allUsers" --role="roles/run.invoker" --quiet || true
+            else
+              echo "· $svc no existe en prod, se omite"
+            fi
+          done
+
       - name: Wire api-gateway service URLs
         run: bash scripts/update-gateway-urls.sh
