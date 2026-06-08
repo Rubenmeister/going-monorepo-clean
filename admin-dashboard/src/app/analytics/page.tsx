@@ -24,17 +24,21 @@ interface ServiceStats {
   isReal?: boolean;
 }
 
-/* ─── Demo fallback ─────────────────────────────────────────────────────── */
-function demoStats(tab: ServiceTab): ServiceStats {
-  const MAP: Record<ServiceTab, ServiceStats> = {
-    transporte:   { label:'Transporte',   icon:'🚗', color:'#0033A0', total:1842, revenue:42680, active:74,  avgRating:4.8, completionRate:94.2, vsLastWeek:{volume:12,revenue:8 } },
-    envios:       { label:'Envíos',       icon:'📦', color:'#f59e0b', total: 436, revenue: 8720, active:28,  avgRating:4.6, completionRate:91.0, vsLastWeek:{volume: 7,revenue:5 } },
-    tours:        { label:'Tours',        icon:'🗺️', color:'#16a34a', total: 218, revenue:16350, active:42,  avgRating:4.9, completionRate:98.0, vsLastWeek:{volume:15,revenue:20} },
-    experiencias: { label:'Experiencias', icon:'🎭', color:'#8b5cf6', total: 184, revenue: 7360, active:31,  avgRating:4.7, completionRate:96.0, vsLastWeek:{volume: 9,revenue:11} },
-    alojamientos: { label:'Alojamientos', icon:'🏨', color:'#ec4899', total: 312, revenue:24960, active:18,  avgRating:4.6, completionRate:92.0, vsLastWeek:{volume: 4,revenue: 6} },
-    global:       { label:'Global',       icon:'🌐', color:'#ff4c41', total:2992, revenue:100070,active:193, avgRating:4.7, completionRate:94.3, vsLastWeek:{volume:10,revenue:9 } },
+/* ─── Base (sin datos) ──────────────────────────────────────────────────────
+ * Solo provee label/icono/color para poder renderizar las tarjetas; las
+ * métricas van en CERO. Antes esto devolvía números inventados que se mostraban
+ * como si fueran reales — eso engañaba al admin. Ahora, si el backend no
+ * responde, se ve 0 / "Sin datos", no cifras falsas. */
+function emptyStats(tab: ServiceTab): ServiceStats {
+  const META: Record<ServiceTab, Pick<ServiceStats,'label'|'icon'|'color'>> = {
+    transporte:   { label:'Transporte',   icon:'🚗', color:'#0033A0' },
+    envios:       { label:'Envíos',       icon:'📦', color:'#f59e0b' },
+    tours:        { label:'Tours',        icon:'🗺️', color:'#16a34a' },
+    experiencias: { label:'Experiencias', icon:'🎭', color:'#8b5cf6' },
+    alojamientos: { label:'Alojamientos', icon:'🏨', color:'#ec4899' },
+    global:       { label:'Global',       icon:'🌐', color:'#ff4c41' },
   };
-  return MAP[tab];
+  return { ...META[tab], total:0, revenue:0, active:0, avgRating:0, completionRate:0, vsLastWeek:{volume:0,revenue:0} };
 }
 
 
@@ -59,7 +63,7 @@ const pct = (v: number) => v > 0 ? `+${v}%` : `${v}%`;
 function DataBadge({ isReal }: { isReal?: boolean }) {
   return isReal
     ? <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">● Datos reales</span>
-    : <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">◐ Datos estimados</span>;
+    : <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">◐ Sin datos</span>;
 }
 
 function BarChart({ data, color, valueKey, labelFn }: {
@@ -232,11 +236,11 @@ export default function AnalyticsPage() {
 
       /* ── Other services ── */
       const serviceData: Record<ServiceTab, ServiceStats> = {} as any;
-      TABS.forEach(t => { serviceData[t.key] = demoStats(t.key); });
+      TABS.forEach(t => { serviceData[t.key] = emptyStats(t.key); });
 
       if (tStats) {
         serviceData.transporte = {
-          ...demoStats('transporte'),
+          ...emptyStats('transporte'),
           total:          tStats.totalTrips    ?? 0,
           revenue:        tStats.totalRevenue  ?? 0,
           active:         tStats.activeDrivers ?? 0,
@@ -256,17 +260,17 @@ export default function AnalyticsPage() {
         ]);
         if (svcStats) {
           serviceData[svcKey] = {
-            ...demoStats(svcKey),
+            ...emptyStats(svcKey),
             total:          svcStats.total ?? svcStats.count ?? count,
-            revenue:        svcStats.totalRevenue ?? svcStats.revenue ?? demoStats(svcKey).revenue,
-            active:         svcStats.active ?? svcStats.activeProviders ?? demoStats(svcKey).active,
-            avgRating:      svcStats.avgRating ?? demoStats(svcKey).avgRating,
-            completionRate: svcStats.completionRate ?? demoStats(svcKey).completionRate,
+            revenue:        svcStats.totalRevenue ?? svcStats.revenue ?? emptyStats(svcKey).revenue,
+            active:         svcStats.active ?? svcStats.activeProviders ?? emptyStats(svcKey).active,
+            avgRating:      svcStats.avgRating ?? emptyStats(svcKey).avgRating,
+            completionRate: svcStats.completionRate ?? emptyStats(svcKey).completionRate,
             vsLastWeek:     svcStats.vsLastWeek ?? {volume:0,revenue:0},
             isReal: true,
           };
         } else if (count > 0) {
-          serviceData[svcKey] = { ...demoStats(svcKey), total: count };
+          serviceData[svcKey] = { ...emptyStats(svcKey), total: count };
         }
       }
 
@@ -279,17 +283,17 @@ export default function AnalyticsPage() {
         safeCount(token, '/payments?status=paid&limit=1'),
         safeGet<any>(token, '/admin/stats/retention'),
       ]);
-      const repeatCount = usersRepeat?.repeatUsers ?? usersRepeat?.retention ?? Math.round((paymentsPaid||0)*0.42);
+      const repeatCount = usersRepeat?.repeatUsers ?? usersRepeat?.retention ?? 0;
       setFunnel([
-        {label:'Usuarios registrados',   value: usersTotal   || 3840, color:'#0033A0'},
-        {label:'Reservas creadas',        value: bookingsTotal|| 1842, color:'#f59e0b'},
-        {label:'Pagos completados',       value: paymentsPaid || 1540, color:'#16a34a'},
-        {label:'Usuarios que repiten',    value: repeatCount  ||  648, color:'#ff4c41'},
+        {label:'Usuarios registrados',   value: usersTotal,    color:'#0033A0'},
+        {label:'Reservas creadas',        value: bookingsTotal, color:'#f59e0b'},
+        {label:'Pagos completados',       value: paymentsPaid,  color:'#16a34a'},
+        {label:'Usuarios que repiten',    value: repeatCount,   color:'#ff4c41'},
       ]);
 
     } catch {
       const fallback = {} as Record<ServiceTab,ServiceStats>;
-      TABS.forEach(t => { fallback[t.key] = demoStats(t.key); });
+      TABS.forEach(t => { fallback[t.key] = emptyStats(t.key); });
       setServiceStats(fallback);
     } finally {
       setLoading(false);
@@ -312,11 +316,11 @@ export default function AnalyticsPage() {
   );
 
   const tab = TABS.find(t => t.key === activeTab)!;
-  const sv  = serviceStats[activeTab] ?? demoStats(activeTab);
+  const sv  = serviceStats[activeTab] ?? emptyStats(activeTab);
   const kpi = KPI_LABELS[activeTab];
 
   const allServices = TABS.filter(t => t.key !== 'global').map(t => {
-    const s = serviceStats[t.key] ?? demoStats(t.key);
+    const s = serviceStats[t.key] ?? emptyStats(t.key);
     return { label:t.label, icon:t.icon, color:t.color, ops:s.total, revenue:s.revenue };
   });
   const globalRevenue = allServices.reduce((s,x) => s+x.revenue, 0);
