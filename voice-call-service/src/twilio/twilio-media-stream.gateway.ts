@@ -167,16 +167,36 @@ export class TwilioMediaStreamGateway
           // call. El bridge maneja todo el ciclo de vida (tools, transcript,
           // outcome) y nos provee callbacks para enviar audio back via la WS.
           if (!this.loopbackEnabled && streamSid && callSid) {
-            await this.bridge.startCallSession({
-              streamSid,
-              callId: callSid,
-              runId:  runId ?? undefined,
-              from:   from  ?? undefined,
-              sendAudioBack: (b64) => this.sendAudioToStream(streamSid!, b64),
-              clearAudioBack: () => this.clearStream(streamSid!),
-            }).catch((err) =>
-              this.logger.error(`[twilio-stream] bridge.startCallSession fallo: ${(err as Error).message}`),
-            );
+            let session = null;
+            try {
+              session = await this.bridge.startCallSession({
+                streamSid,
+                callId: callSid,
+                runId:  runId ?? undefined,
+                from:   from  ?? undefined,
+                sendAudioBack: (b64) => this.sendAudioToStream(streamSid!, b64),
+                clearAudioBack: () => this.clearStream(streamSid!),
+              });
+            } catch (err) {
+              this.logger.error(`[twilio-stream] bridge.startCallSession fallo: ${(err as Error).message}`);
+            }
+
+            // startCallSession devuelve null si la IA no está disponible (o
+            // lanza). Honrar el contrato del bridge: NO dejar al usuario en
+            // silencio — cerrar el stream limpiamente y registrar el outcome
+            // para que el status-callback no lo cuente como atendido. Twilio
+            // termina la llamada en vez de mantener dead-air hasta el timeout.
+            if (!session) {
+              this.logger.error(
+                `[twilio-stream] sesión de IA no disponible para callSid=${callSid?.slice(0, 12)} — cerrando stream`,
+              );
+              await this.voice
+                .onCallEnded(callSid, { outcome: 'failed_technical' })
+                .catch(() => { /* best-effort */ });
+              if (streamSid) this.streamsBySid.delete(streamSid);
+              try { ws.close(1011, 'ai-unavailable'); } catch { /* ignore */ }
+              return;
+            }
           }
           break;
         }
