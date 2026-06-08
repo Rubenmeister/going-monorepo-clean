@@ -230,7 +230,7 @@ jobs:
                 --min-instances 0 \
                 --max-instances 5 \
                 --timeout 300 \
-                --set-env-vars "NODE_ENV=staging" \
+                --update-env-vars "NODE_ENV=staging" \
                 --set-secrets "${{ steps.secrets.outputs.flags }}" \
                 --quiet
               ;;
@@ -322,7 +322,7 @@ jobs:
                 --min-instances 0 \
                 --max-instances 10 \
                 --timeout 300 \
-                --set-env-vars "NODE_ENV=production" \
+                --update-env-vars "NODE_ENV=production" \
                 --set-secrets "${{ steps.secrets.outputs.flags }}" \
                 --quiet
               ;;
