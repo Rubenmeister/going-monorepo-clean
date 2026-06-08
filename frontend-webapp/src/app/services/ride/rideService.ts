@@ -143,6 +143,18 @@ class RideService {
     if (!res.ok) return { token: '', channel: rideId, enabled: false };
     return res.json();
   }
+
+  /**
+   * Token de fin de viaje emitido por el servidor. El pasajero lo muestra y el
+   * conductor lo confirma contra el servidor (POST /confirm-delivery), que es
+   * quien cierra el viaje. Sustituye al código que antes se generaba en el
+   * cliente a partir del rideId.
+   */
+  async getEndToken(rideId: string): Promise<{ endToken: string; status: string; verified: boolean }> {
+    const res = await authFetch(`${API_URL}/rides/${rideId}/end-token`);
+    if (!res.ok) throw new Error('No se pudo obtener el código de fin de viaje');
+    return res.json();
+  }
 }
 
 export const rideService = new RideService();
