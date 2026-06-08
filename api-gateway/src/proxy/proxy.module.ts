@@ -197,6 +197,7 @@ export class ProxyModule implements NestModule {
       bookings: this.configService.get<string>('BOOKING_SERVICE_URL', ''),
       invoices: this.configService.get<string>('BILLING_SERVICE_URL', ''),
       analytics: this.configService.get<string>('ANALYTICS_SERVICE_URL', ''),
+      ratings: this.configService.get<string>('RATINGS_SERVICE_URL', ''),
       support: this.configService.get<string>('CUSTOMER_SUPPORT_SERVICE_URL', ''),
       social: this.configService.get<string>('SOCIAL_SERVICE_URL', 'http://localhost:3019'),
       corporate: this.configService.get<string>('CORPORATE_SERVICE_URL', 'http://localhost:3022'),
@@ -344,6 +345,9 @@ export class ProxyModule implements NestModule {
     guard('recurring-trips', svc.bookings);
     guard('invoices', svc.invoices);
     guard('analytics', svc.analytics);
+    // /ratings → ratings-service. Reputación de conductores + agregados que
+    // alimentan estadísticas y toma de decisiones (admin-dashboard, app).
+    guard('ratings', svc.ratings);
     guard('social', svc.social);
     guard('corporate', svc.corporate);
 
@@ -410,6 +414,7 @@ export class ProxyModule implements NestModule {
     guardExact('notifications', svc.notifications, allMethods);
     guardExact('invoices', svc.invoices, allMethods);
     guardExact('analytics', svc.analytics, allMethods);
+    guardExact('ratings', svc.ratings, allMethods);
     guardExact('social', svc.social, allMethods);
     // /sos es solo POST; /incidents soporta GET (lista) y PATCH no aplica al
     // root sino a /incidents/:id (cubierto por el `guard('incidents', ...)`).

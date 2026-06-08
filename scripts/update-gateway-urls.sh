@@ -41,6 +41,12 @@ ENVIOS_URL=$(get_url envios-service)
 NOTIFICATIONS_URL=$(get_url notifications-service)
 TRACKING_URL=$(get_url tracking-service)
 BOOKING_URL=$(get_url booking-service)
+ANALYTICS_URL=$(get_url analytics-service)
+RATINGS_URL=$(get_url ratings-service)
+SOCIAL_URL=$(get_url social-service)
+CORPORATE_URL=$(get_url corporate-service)
+EMERGENCY_URL=$(get_url emergency-service)
+VOICE_CALL_URL=$(get_url voice-call-service)
 
 echo ""
 echo "=== URLs encontradas ==="
@@ -54,6 +60,12 @@ echo "  envios-service       : ${ENVIOS_URL:-NOT DEPLOYED}"
 echo "  notifications-service: ${NOTIFICATIONS_URL:-NOT DEPLOYED}"
 echo "  tracking-service     : ${TRACKING_URL:-NOT DEPLOYED}"
 echo "  booking-service      : ${BOOKING_URL:-NOT DEPLOYED}"
+echo "  analytics-service    : ${ANALYTICS_URL:-NOT DEPLOYED}"
+echo "  ratings-service      : ${RATINGS_URL:-NOT DEPLOYED}"
+echo "  social-service       : ${SOCIAL_URL:-NOT DEPLOYED}"
+echo "  corporate-service    : ${CORPORATE_URL:-NOT DEPLOYED}"
+echo "  emergency-service    : ${EMERGENCY_URL:-NOT DEPLOYED}"
+echo "  voice-call-service   : ${VOICE_CALL_URL:-NOT DEPLOYED}"
 echo "========================"
 echo ""
 
@@ -62,7 +74,7 @@ echo "Actualizando variables de entorno del api-gateway..."
 gcloud run services update api-gateway \
   --region "$REGION" \
   --platform managed \
-  --update-env-vars "^|^CORS_ORIGINS=https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com|USER_AUTH_SERVICE_URL=${USER_AUTH_URL}|TRANSPORT_SERVICE_URL=${TRANSPORT_URL}|PAYMENT_SERVICE_URL=${PAYMENT_URL}|TOURS_SERVICE_URL=${TOURS_URL}|ANFITRIONES_SERVICE_URL=${ANFITRIONES_URL}|EXPERIENCIAS_SERVICE_URL=${EXPERIENCIAS_URL}|ENVIOS_SERVICE_URL=${ENVIOS_URL}|NOTIFICATIONS_SERVICE_URL=${NOTIFICATIONS_URL}|TRACKING_SERVICE_URL=${TRACKING_URL}|BOOKING_SERVICE_URL=${BOOKING_URL}"
+  --update-env-vars "^|^CORS_ORIGINS=https://app.goingec.com,https://admin.goingec.com,https://empresas.goingec.com|USER_AUTH_SERVICE_URL=${USER_AUTH_URL}|TRANSPORT_SERVICE_URL=${TRANSPORT_URL}|PAYMENT_SERVICE_URL=${PAYMENT_URL}|TOURS_SERVICE_URL=${TOURS_URL}|ANFITRIONES_SERVICE_URL=${ANFITRIONES_URL}|EXPERIENCIAS_SERVICE_URL=${EXPERIENCIAS_URL}|ENVIOS_SERVICE_URL=${ENVIOS_URL}|NOTIFICATIONS_SERVICE_URL=${NOTIFICATIONS_URL}|TRACKING_SERVICE_URL=${TRACKING_URL}|BOOKING_SERVICE_URL=${BOOKING_URL}|ANALYTICS_SERVICE_URL=${ANALYTICS_URL}|RATINGS_SERVICE_URL=${RATINGS_URL}|SOCIAL_SERVICE_URL=${SOCIAL_URL}|CORPORATE_SERVICE_URL=${CORPORATE_URL}|EMERGENCY_SERVICE_URL=${EMERGENCY_URL}|VOICE_CALL_SERVICE_URL=${VOICE_CALL_URL}"
 
 echo ""
 echo "✓ api-gateway actualizado con las URLs reales de los microservicios."
