@@ -149,9 +149,6 @@ function SolicitudContent() {
                   />
                   <div className="flex-1">
                     <p className="font-semibold text-slate-900">{value.label}</p>
-                    <p className="text-xs text-slate-600 mt-1">
-                      Pago a {value.plazo} días
-                    </p>
                   </div>
                 </label>
               ))}

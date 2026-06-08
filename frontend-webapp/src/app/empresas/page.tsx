@@ -73,10 +73,6 @@ export default function EmpresasLanding() {
                   <>
                     <div className="flex items-center gap-2 text-sm text-slate-700">
                       <span className="text-lg">✓</span>
-                      Crédito y pago a {value.plazo} días
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                      <span className="text-lg">✓</span>
                       Aprobaciones multinivel
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-700">
@@ -93,10 +89,6 @@ export default function EmpresasLanding() {
                   <>
                     <div className="flex items-center gap-2 text-sm text-slate-700">
                       <span className="text-lg">✓</span>
-                      Pago por viaje
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                      <span className="text-lg">✓</span>
                       Tarjeta o efectivo
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-700">
@@ -111,10 +103,6 @@ export default function EmpresasLanding() {
                 )}
                 {key === "agencia" && (
                   <>
-                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                      <span className="text-lg">✓</span>
-                      Comisión a {value.plazo} días
-                    </div>
                     <div className="flex items-center gap-2 text-sm text-slate-700">
                       <span className="text-lg">✓</span>
                       Reservas a nombre de terceros
