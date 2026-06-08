@@ -39,6 +39,24 @@ export class CompleteRideUseCase {
       completedAt: Date;
     };
   }> {
+    // Idempotencia por viaje: si ya existe un Payment para este tripId (p. ej.
+    // el flujo digital lo creó vía intent/webhook), NO crear otro — evita doble
+    // conteo de ganancias/comisión. El efectivo/wallet, que no tienen intent
+    // previo, sí crean el Payment aquí.
+    const existing = await this.paymentRepository.findByTrip(input.tripId);
+    if (existing) {
+      return {
+        payment: existing,
+        completion: {
+          tripId: input.tripId,
+          finalFare: existing.amount ?? input.finalFare,
+          driverEarnings: existing.driverAmount ?? 0,
+          platformRevenue: existing.platformFee ?? 0,
+          completedAt: existing.completedAt ?? new Date(),
+        },
+      };
+    }
+
     // Process the payment
     const payment = await this.processPaymentUseCase.execute({
       tripId: input.tripId,
@@ -53,8 +71,13 @@ export class CompleteRideUseCase {
       throw new Error('Payment processing failed');
     }
 
-    // Create or update driver payout entry
-    await this.recordDriverPayout(input.driverId, payment);
+    // Saldo retirable (Payout) SOLO cuando la plataforma retiene los fondos.
+    // En EFECTIVO el conductor ya cobró en mano (modelo "comisión por cobrar"):
+    // no se le genera saldo a retirar; su comisión del 20% queda registrada en
+    // payment.platformFee para conciliarla luego contra sus ganancias digitales.
+    if (input.paymentMethod !== 'cash') {
+      await this.recordDriverPayout(input.driverId, payment);
+    }
 
     // Award puntos de fidelidad al pasajero (fire-and-forget).
     // El cliente HTTP filtra solo Tipo B implícitamente: el endpoint

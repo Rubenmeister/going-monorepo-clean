@@ -451,6 +451,12 @@ export class RideController {
     const txnId      = completeResult?.paymentTxnId;
     const realAmount = completeResult?.finalFare ?? (dto.distanceKm * 0.5 + 2.5);
 
+    // Registrar la ganancia/comisión del conductor en payment-service (modelo
+    // "comisión por cobrar"). Idempotente por tripId; sólo efectivo/wallet se
+    // registran aquí — el digital (tarjeta/Datafast/DeUna) ya pasa por su
+    // propio flujo de intent+webhook. No bloquea la finalización si falla.
+    await this.recordDriverEarning(rideId, realAmount, dto);
+
     if (gatewayRef && txnId) {
       try {
         const captureResult = await this.paymentService.capture({
@@ -467,6 +473,49 @@ export class RideController {
     }
 
     return completeResult;
+  }
+
+  /**
+   * Registra la ganancia del conductor (y su comisión del 20%) llamando a
+   * payment-service POST /payments/complete-ride. Idempotente por tripId allá.
+   * Sólo cash/wallet: el digital se registra por su propio flujo intent+webhook.
+   * Nunca lanza — si falla, se loguea y la finalización del viaje continúa.
+   */
+  private async recordDriverEarning(
+    rideId: string,
+    finalFare: number,
+    dto: CompleteRideDto,
+  ): Promise<void> {
+    try {
+      const ride: any = await this.rideRepo.findById(rideId);
+      const method = (ride?.paymentMethod || 'cash') as string;
+      if (method !== 'cash' && method !== 'wallet') return; // digital → otro flujo
+      if (!ride?.driverId || !ride?.userId) {
+        this.logger.warn(`No se registra ganancia de ${rideId}: faltan driverId/userId`);
+        return;
+      }
+      const paymentUrl = process.env.PAYMENT_SERVICE_URL || 'http://localhost:3007';
+      const res = await fetch(`${paymentUrl}/payments/complete-ride`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tripId:         rideId,
+          passengerId:    ride.userId,
+          driverId:       ride.driverId,
+          finalFare,
+          actualDistance: dto.distanceKm,
+          actualDuration: dto.durationSeconds,
+          paymentMethod:  method,
+        }),
+      });
+      if (!res.ok) {
+        this.logger.error(`Registro de ganancia ${rideId}: HTTP ${res.status}`);
+      } else {
+        this.logger.log(`Ganancia del conductor registrada para viaje ${rideId} (${method})`);
+      }
+    } catch (err: any) {
+      this.logger.error(`Error registrando ganancia de ${rideId}: ${err?.message}`);
+    }
   }
 
   /**
