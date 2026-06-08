@@ -87,6 +87,16 @@ export class RideModelSchema {
    * Usado por el servicio de ganancias para contabilizar ingresos en efectivo.
    */
   @Prop({ default: false }) cashConfirmed: boolean;
+
+  /**
+   * Resultado de la captura del cobro digital al completar el viaje:
+   * 'captured' | 'failed'. Permite reconciliar/reintentar las capturas que
+   * fallaron (el viaje se completa igual para no bloquear al conductor, pero
+   * la captura fallida queda registrada en vez de perderse).
+   */
+  @Prop({ index: true }) paymentCaptureStatus: string;
+  /** Momento de la última captura fallida (para el job de reconciliación). */
+  @Prop() paymentCaptureFailedAt: Date;
 }
 
 export type RideDocument = RideModelSchema & Document;
