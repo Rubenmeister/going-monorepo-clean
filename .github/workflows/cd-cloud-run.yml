@@ -79,9 +79,14 @@ jobs:
             analytics-service
             ratings-service
             envios-service
+            customer-support-service
+            voice-call-service
           )
 
-          AFFECTED=$(npx nx show projects --affected --base=origin/main~1 --head=HEAD 2>/dev/null || echo "")
+          # Base/head de nx-set-shas (último deploy exitoso → HEAD). Más robusto
+          # que origin/main~1: si un run quedó cancelado (p. ej. por concurrencia),
+          # el siguiente sigue viendo esos commits y no se pierde el deploy.
+          AFFECTED=$(npx nx show projects --affected --base="${NX_BASE:-origin/main~1}" --head="${NX_HEAD:-HEAD}" 2>/dev/null || echo "")
 
           DEPLOY_LIST="["
           FIRST=true
@@ -196,18 +201,38 @@ jobs:
 
       - name: Deploy to Cloud Run (staging)
         run: |
-          gcloud run deploy ${{ matrix.service }}-staging \
-            --image ${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${{ matrix.service }}:${{ github.sha }} \
-            --region ${{ env.GCP_REGION }} \
-            --platform managed \
-            --memory 512Mi \
-            --cpu 1 \
-            --min-instances 0 \
-            --max-instances 5 \
-            --timeout 300 \
-            --set-env-vars "NODE_ENV=staging" \
-            --set-secrets "${{ steps.secrets.outputs.flags }}" \
-            --quiet
+          SERVICE="${{ matrix.service }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${SERVICE}:${{ github.sha }}"
+          case "$SERVICE" in
+            customer-support-service|voice-call-service)
+              # Preservar config externa (secretos/env/escalado fijados fuera
+              # del CD): actualizar SOLO la imagen. Y solo si el servicio ya
+              # existe, para no crear un staging vacío sin claves.
+              if gcloud run services describe "${SERVICE}-staging" --region "${{ env.GCP_REGION }}" --platform managed >/dev/null 2>&1; then
+                gcloud run deploy "${SERVICE}-staging" \
+                  --image "$IMAGE" \
+                  --region "${{ env.GCP_REGION }}" \
+                  --platform managed \
+                  --quiet
+              else
+                echo "::notice::${SERVICE}-staging no existe; se omite el deploy a staging (preserva config externa)"
+              fi
+              ;;
+            *)
+              gcloud run deploy "${SERVICE}-staging" \
+                --image "$IMAGE" \
+                --region "${{ env.GCP_REGION }}" \
+                --platform managed \
+                --memory 512Mi \
+                --cpu 1 \
+                --min-instances 0 \
+                --max-instances 5 \
+                --timeout 300 \
+                --set-env-vars "NODE_ENV=staging" \
+                --set-secrets "${{ steps.secrets.outputs.flags }}" \
+                --quiet
+              ;;
+          esac
 
       - name: Verify deployment health
         run: |
@@ -264,18 +289,38 @@ jobs:
 
       - name: Deploy to Cloud Run (production)
         run: |
-          gcloud run deploy ${{ matrix.service }} \
-            --image ${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${{ matrix.service }}:${{ github.sha }} \
-            --region ${{ env.GCP_REGION }} \
-            --platform managed \
-            --memory 1Gi \
-            --cpu 1 \
-            --min-instances 1 \
-            --max-instances 10 \
-            --timeout 300 \
-            --set-env-vars "NODE_ENV=production" \
-            --set-secrets "${{ steps.secrets.outputs.flags }}" \
-            --quiet
+          SERVICE="${{ matrix.service }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${SERVICE}:${{ github.sha }}"
+          case "$SERVICE" in
+            customer-support-service|voice-call-service)
+              # Preservar config externa (secretos/env/escalado): actualizar
+              # SOLO la imagen. Solo si el servicio ya existe en producción.
+              if gcloud run services describe "${SERVICE}" --region "${{ env.GCP_REGION }}" --platform managed >/dev/null 2>&1; then
+                gcloud run deploy "${SERVICE}" \
+                  --image "$IMAGE" \
+                  --region "${{ env.GCP_REGION }}" \
+                  --platform managed \
+                  --quiet
+              else
+                echo "::error::${SERVICE} no existe en producción; abortando para no crear un servicio sin secretos"
+                exit 1
+              fi
+              ;;
+            *)
+              gcloud run deploy "${SERVICE}" \
+                --image "$IMAGE" \
+                --region "${{ env.GCP_REGION }}" \
+                --platform managed \
+                --memory 1Gi \
+                --cpu 1 \
+                --min-instances 1 \
+                --max-instances 10 \
+                --timeout 300 \
+                --set-env-vars "NODE_ENV=production" \
+                --set-secrets "${{ steps.secrets.outputs.flags }}" \
+                --quiet
+              ;;
+          esac
 
       - name: Verify deployment health
         run: |
