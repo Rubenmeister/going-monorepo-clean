@@ -33,11 +33,14 @@ export class CorporateInvoiceRepository {
       .exec() as any;
   }
 
-  async findById(id: string): Promise<CorporateInvoiceSchema | null> {
-    return this.model.findById(id).lean().exec() as any;
+  /** Scoped por companyId: una empresa NO puede leer la factura de otra. */
+  async findById(companyId: string, id: string): Promise<CorporateInvoiceSchema | null> {
+    return this.model.findOne({ _id: id, companyId }).lean().exec() as any;
   }
 
+  /** Scoped por companyId: solo actualiza si la factura es de esa empresa. */
   async updateStatus(
+    companyId: string,
     id: string,
     status: string,
     paidAt: Date | null = null,
@@ -45,7 +48,7 @@ export class CorporateInvoiceRepository {
     const patch: Record<string, unknown> = { status };
     if (status === 'paid') patch.paidAt = paidAt ?? new Date();
     return this.model
-      .findByIdAndUpdate(id, { $set: patch }, { new: true, lean: true })
+      .findOneAndUpdate({ _id: id, companyId }, { $set: patch }, { new: true, lean: true })
       .exec() as any;
   }
 }

@@ -3,6 +3,7 @@ import {
   Logger,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CompanySettingsRepository } from '../infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from '../infrastructure/persistence/approval-workflow.repository';
@@ -194,13 +195,14 @@ export class CorporateService {
   }
 
   async decideApproval(
+    companyId: string,
     id: string,
     decision: 'approved' | 'rejected',
     decidedBy: string,
     comments: string,
   ) {
-    const wf = await this.approvalRepo.findById(id);
-    if (!wf) throw new Error(`Approval workflow ${id} not found`);
+    const wf = await this.approvalRepo.findById(companyId, id);
+    if (!wf) throw new NotFoundException(`Approval workflow ${id} no encontrado`);
 
     // Documentos previos a la cadena multinivel: sintetiza un único nivel.
     const existingChain = ((wf as any).approvalChain ?? []) as any[];
@@ -217,7 +219,7 @@ export class CorporateService {
       );
     }
 
-    const result = await this.approvalRepo.update(id, {
+    const result = await this.approvalRepo.update(companyId, id, {
       approvalChain: r.chain as any,
       currentLevel: r.currentLevel,
       status: r.status,
@@ -541,12 +543,12 @@ export class CorporateService {
     return this.invoiceRepo.findByCompany(companyId);
   }
 
-  async getCorporateInvoice(id: string) {
-    return this.invoiceRepo.findById(id);
+  async getCorporateInvoice(companyId: string, id: string) {
+    return this.invoiceRepo.findById(companyId, id);
   }
 
-  async markInvoicePaid(id: string) {
-    return this.invoiceRepo.updateStatus(id, 'paid', new Date());
+  async markInvoicePaid(companyId: string, id: string) {
+    return this.invoiceRepo.updateStatus(companyId, id, 'paid', new Date());
   }
 
   /** Número de factura determinista por (empresa, mes): INV-YYYYMM-XXXXXXXX. */
