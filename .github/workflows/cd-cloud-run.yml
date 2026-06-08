@@ -206,7 +206,7 @@ jobs:
           SERVICE="${{ matrix.service }}"
           IMAGE="${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${SERVICE}:${{ github.sha }}"
           case "$SERVICE" in
-            customer-support-service|voice-call-service|corporate-service|emergency-service)
+            customer-support-service|voice-call-service|corporate-service|emergency-service|api-gateway)
               # Preservar config externa (secretos/env/escalado fijados fuera
               # del CD): actualizar SOLO la imagen. Y solo si el servicio ya
               # existe, para no crear un staging vacío sin claves.
@@ -298,7 +298,7 @@ jobs:
           SERVICE="${{ matrix.service }}"
           IMAGE="${{ env.REGISTRY }}/${{ env.GCP_PROJECT }}/${SERVICE}:${{ github.sha }}"
           case "$SERVICE" in
-            customer-support-service|voice-call-service|corporate-service|emergency-service)
+            customer-support-service|voice-call-service|corporate-service|emergency-service|api-gateway)
               # Preservar config externa (secretos/env/escalado): actualizar
               # SOLO la imagen. Solo si el servicio ya existe en producción.
               if gcloud run services describe "${SERVICE}" --region "${{ env.GCP_REGION }}" --platform managed >/dev/null 2>&1; then
