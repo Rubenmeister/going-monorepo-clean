@@ -8,6 +8,7 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
   UseGuards,
   Inject,
 } from '@nestjs/common';
@@ -168,6 +169,30 @@ export class BookingController {
   @Get('my')
   async getMyBookings(@CurrentUser() user: AuthUser): Promise<any> {
     return this.findBookingsByUserUseCase.execute(user.id as UUID);
+  }
+
+  /**
+   * GET /api/bookings/admin?status=Y&page=N&limit=M
+   * Lista TODAS las reservas (panel admin). Requiere rol admin. A diferencia
+   * de GET /bookings (que exige companyId), este lista globalmente para el
+   * Admin Dashboard. Declarado ANTES de :bookingId para no chocar con la ruta
+   * por parámetro.
+   */
+  @Get('admin')
+  async listAllForAdmin(
+    @CurrentUser() user: AuthUser,
+    @Query('status') status?: string,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+  ): Promise<any[]> {
+    const isAdmin = (user.roles ?? [user.role]).includes('admin');
+    if (!isAdmin) throw new ForbiddenException('Solo admin');
+    const limitN = Math.max(1, Math.min(500, limit ? parseInt(limit, 10) : 100));
+    const pageN = Math.max(1, page ? parseInt(page, 10) : 1);
+    const skip = (pageN - 1) * limitN;
+    const result = await this.bookingRepo.findAll({ status, limit: limitN, skip });
+    if (result.isErr()) throw result.error;
+    return result.value.map((b) => b.toPrimitives());
   }
 
   /**

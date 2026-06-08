@@ -104,6 +104,9 @@ export default function PayoutsPage() {
 
   return (
     <AdminLayout userName={auth.user?.firstName ?? 'Admin'} onLogout={auth.logout}>
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        ⚠️ <strong>Backend en construcción:</strong> los pagos a proveedores aún no son persistentes (almacenamiento temporal; se reinician al redeploy del servicio). No los uses para decisiones definitivas.
+      </div>
       {toast && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow text-sm font-medium text-white ${toast.ok?'bg-green-600':'bg-red-600'}`}>
           {toast.msg}

@@ -87,6 +87,24 @@ export class MongooseBookingRepository implements IBookingRepository {
     }
   }
 
+  async findAll(
+    opts: { status?: string; limit: number; skip: number },
+  ): Promise<Result<Booking[], Error>> {
+    try {
+      const query: Record<string, unknown> = {};
+      if (opts.status) query.status = opts.status;
+      const docs = await this.model
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(opts.skip)
+        .limit(opts.limit)
+        .exec();
+      return ok(docs.map(this.toDomain));
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   async findDispatchReady(
     beforeDate: Date,
     limit = 100,
