@@ -14,8 +14,9 @@ export class ApprovalWorkflowRepository {
     return this.model.find({ companyId, status: 'pending' }).sort({ createdAt: -1 }).lean().exec() as any;
   }
 
-  async findById(id: string): Promise<ApprovalWorkflowSchema | null> {
-    return this.model.findById(id).lean().exec() as any;
+  /** Scoped por companyId: una empresa NO puede ver/decidir flujos de otra. */
+  async findById(companyId: string, id: string): Promise<ApprovalWorkflowSchema | null> {
+    return this.model.findOne({ _id: id, companyId }).lean().exec() as any;
   }
 
   async create(data: Partial<ApprovalWorkflowSchema>): Promise<ApprovalWorkflowSchema> {
@@ -24,11 +25,12 @@ export class ApprovalWorkflowRepository {
   }
 
   async update(
+    companyId: string,
     id: string,
     patch: Partial<ApprovalWorkflowSchema>,
   ): Promise<ApprovalWorkflowSchema | null> {
-    return this.model.findByIdAndUpdate(
-      id,
+    return this.model.findOneAndUpdate(
+      { _id: id, companyId },
       { $set: patch },
       { new: true, lean: true },
     ).exec() as any;
