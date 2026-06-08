@@ -155,6 +155,25 @@ class RideService {
     if (!res.ok) throw new Error('No se pudo obtener el código de fin de viaje');
     return res.json();
   }
+
+  /**
+   * Dispara una alerta SOS durante un viaje activo. El backend registra la
+   * alerta (log severity ALERT para ops) y emite `ride:sos` a admins/ops por
+   * WebSocket. Best-effort en ubicación: si el navegador no da GPS, se envía
+   * sin coordenadas.
+   */
+  async sendSos(
+    rideId: string,
+    body: { currentLat?: number; currentLng?: number; message?: string } = {},
+  ): Promise<{ rideId: string; alertId: string; received: true }> {
+    const res = await authFetch(`${API_URL}/rides/${rideId}/sos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('No se pudo enviar la alerta SOS');
+    return res.json();
+  }
 }
 
 export const rideService = new RideService();

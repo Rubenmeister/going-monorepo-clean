@@ -25,6 +25,12 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   marca `status='completed'` y emite `ride:delivery_confirmed`. El frontend ya
   no calcula el código a partir del `rideId`: el `EndTripModal` lo pide al
   servidor y el panel cierra el viaje al recibir el evento del backend.
+- [x] **SOS / emergencia conectado**: HECHO. El botón SOS del panel de viaje ya
+  no es solo un enlace informativo: abre un modal que ofrece llamada directa al
+  911 y dispara la alerta real `POST /rides/:rideId/sos` (registra la alerta con
+  severidad alta para ops y emite `ride:sos` por WebSocket), adjuntando la
+  ubicación por geolocalización (best-effort). (El endpoint ya existía en
+  transport-service; faltaba conectarlo desde la webapp.)
 
 ## Envío
 
