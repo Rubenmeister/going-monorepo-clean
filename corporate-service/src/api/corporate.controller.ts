@@ -1,6 +1,7 @@
 import {
   Controller, Get, Post, Put, Patch, Body, Param, Query,
   Req, Logger, BadRequestException, NotFoundException,
+  UnauthorizedException, ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { CorporateService } from './corporate.service';
@@ -89,16 +90,16 @@ export class CorporateController {
 
   /** GET /corporate/billing/invoices/:id */
   @Get('billing/invoices/:id')
-  async getCorporateInvoice(@Param('id') id: string) {
-    const invoice = await this.svc.getCorporateInvoice(id);
+  async getCorporateInvoice(@Param('id') id: string, @Req() req: Request) {
+    const invoice = await this.svc.getCorporateInvoice(this.extractCompanyId(req), id);
     if (!invoice) throw new NotFoundException(`Factura ${id} no encontrada`);
     return invoice;
   }
 
   /** PATCH /corporate/billing/invoices/:id/pay — marca la factura como pagada */
   @Patch('billing/invoices/:id/pay')
-  async payCorporateInvoice(@Param('id') id: string) {
-    const invoice = await this.svc.markInvoicePaid(id);
+  async payCorporateInvoice(@Param('id') id: string, @Req() req: Request) {
+    const invoice = await this.svc.markInvoicePaid(this.extractCompanyId(req), id);
     if (!invoice) throw new NotFoundException(`Factura ${id} no encontrada`);
     return invoice;
   }
@@ -128,8 +129,9 @@ export class CorporateController {
     if (!body.decision || !['approved', 'rejected'].includes(body.decision)) {
       throw new BadRequestException('decision must be "approved" or "rejected"');
     }
+    const companyId = this.extractCompanyId(req);
     const decidedBy = this.extractUserId(req);
-    return this.svc.decideApproval(id, body.decision, decidedBy, body.comments ?? '');
+    return this.svc.decideApproval(companyId, id, body.decision, decidedBy, body.comments ?? '');
   }
 
   /** GET /corporate/reports/summary */
@@ -317,6 +319,7 @@ export class CorporateController {
    */
   @Get('companies')
   async listCompanies(@Req() req: Request, @Query('limit') limit = '200') {
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     return this.svc.listAllCompanies(token, +limit);
   }
@@ -326,6 +329,7 @@ export class CorporateController {
    */
   @Get('companies/:id')
   async getCompany(@Param('id') id: string, @Req() req: Request) {
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     const company = await this.svc.getCompanyById(token, id);
     if (!company) throw new NotFoundException(`Empresa ${id} no encontrada`);
@@ -341,6 +345,7 @@ export class CorporateController {
     @Body() body: any,
     @Req() req: Request,
   ) {
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     return this.svc.updateCompany(token, id, body);
   }
@@ -356,6 +361,7 @@ export class CorporateController {
     @Body() body: { tipoCuenta?: string },
     @Req() req: Request,
   ) {
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     const userId = this.extractUserId(req);
     return this.svc.approveCompany(token, id, body?.tipoCuenta ?? 'negocio', userId);
@@ -371,6 +377,7 @@ export class CorporateController {
     @Body() body: { motivo?: string },
     @Req() req: Request,
   ) {
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     const userId = this.extractUserId(req);
     return this.svc.rejectCompany(token, id, body?.motivo ?? '', userId);
@@ -389,6 +396,7 @@ export class CorporateController {
     if (!body?.status || !['active', 'suspended'].includes(body.status)) {
       throw new BadRequestException('status must be "active" or "suspended"');
     }
+    this.requireAdmin(req);
     const token = this.extractToken(req);
     const userId = this.extractUserId(req);
     return this.svc.updateCompanyStatus(token, id, body.status, userId);
@@ -402,10 +410,10 @@ export class CorporateController {
   }
 
   private extractCompanyId(req: Request): string {
-    // Try JWT claim first (set by api-gateway after token verification)
-    const fromHeader = (req.headers as any)['x-company-id'];
-    if (fromHeader) return fromHeader;
-    // Decode JWT payload without verifying (gateway already verified)
+    // El companyId SOLO sale del claim del JWT (el api-gateway ya verificó la
+    // firma). NO confiamos en el header `x-company-id` del cliente — sería
+    // suplantable. Y si el token no trae companyId, 401 en vez de caer a un
+    // pool 'default' compartido (fuga cross-tenant).
     const token = this.extractToken(req);
     if (token) {
       try {
@@ -413,7 +421,22 @@ export class CorporateController {
         if (payload.companyId) return payload.companyId;
       } catch { /* ignore */ }
     }
-    return 'default';
+    throw new UnauthorizedException('companyId no presente en el token');
+  }
+
+  /** Exige rol admin (operaciones de gestión de empresas). */
+  private requireAdmin(req: Request): void {
+    const token = this.extractToken(req);
+    let roles: string[] = [];
+    if (token) {
+      try {
+        const p = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        roles = Array.isArray(p.roles) ? p.roles : (p.role ? [p.role] : []);
+      } catch { /* ignore */ }
+    }
+    if (!roles.includes('admin')) {
+      throw new ForbiddenException('Se requiere rol admin');
+    }
   }
 
   private extractUserId(req: Request): string {
