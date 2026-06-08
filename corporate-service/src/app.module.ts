@@ -8,10 +8,16 @@ import { CompanySettingsSchema, CompanySettingsSchemaDefinition } from './infras
 import { ApprovalWorkflowSchema, ApprovalWorkflowSchemaDefinition } from './infrastructure/schemas/approval-workflow.schema';
 import { SpendingLimitSchema, SpendingLimitSchemaDefinition } from './infrastructure/schemas/spending-limit.schema';
 import { CorporateInvoiceSchema, CorporateInvoiceSchemaDefinition } from './infrastructure/schemas/corporate-invoice.schema';
+import { TeamInvitationSchema, TeamInvitationSchemaDefinition } from './infrastructure/schemas/team-invitation.schema';
+import { QuoteSchema, QuoteSchemaDefinition } from './infrastructure/schemas/quote.schema';
+import { DashcamClipRequestSchema, DashcamClipRequestSchemaDefinition } from './infrastructure/schemas/dashcam-clip-request.schema';
 import { CompanySettingsRepository } from './infrastructure/persistence/company-settings.repository';
 import { ApprovalWorkflowRepository } from './infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from './infrastructure/persistence/spending-limit.repository';
 import { CorporateInvoiceRepository } from './infrastructure/persistence/corporate-invoice.repository';
+import { TeamInvitationRepository } from './infrastructure/persistence/team-invitation.repository';
+import { QuoteRepository } from './infrastructure/persistence/quote.repository';
+import { DashcamClipRequestRepository } from './infrastructure/persistence/dashcam-clip-request.repository';
 
 @Module({
   imports: [
@@ -31,9 +37,12 @@ import { CorporateInvoiceRepository } from './infrastructure/persistence/corpora
       { name: ApprovalWorkflowSchema.name, schema: ApprovalWorkflowSchemaDefinition },
       { name: SpendingLimitSchema.name, schema: SpendingLimitSchemaDefinition },
       { name: CorporateInvoiceSchema.name, schema: CorporateInvoiceSchemaDefinition },
+      { name: TeamInvitationSchema.name, schema: TeamInvitationSchemaDefinition },
+      { name: QuoteSchema.name, schema: QuoteSchemaDefinition },
+      { name: DashcamClipRequestSchema.name, schema: DashcamClipRequestSchemaDefinition },
     ]),
   ],
   controllers: [CorporateController, HealthController],
-  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository],
+  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository, TeamInvitationRepository, QuoteRepository, DashcamClipRequestRepository],
 })
 export class AppModule {}
