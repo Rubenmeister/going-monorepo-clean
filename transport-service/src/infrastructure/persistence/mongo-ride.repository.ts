@@ -143,6 +143,16 @@ export class MongoRideRepository implements IRideRepository {
     return this.mapToEntity(doc);
   }
 
+  /** Compare-and-swap atómico: acepta el viaje sólo si sigue en 'requested'. */
+  async acceptIfRequested(rideId: string, driverId: string): Promise<any | null> {
+    const doc = await this.rideModel.findOneAndUpdate(
+      { rideId, status: 'requested' },
+      { $set: { driverId, status: 'accepted', acceptedAt: new Date() } },
+      { new: true },
+    );
+    return doc ? this.mapToEntity(doc) : null;
+  }
+
   async findRecent(limit: number): Promise<any[]> {
     const docs = await this.rideModel
       .find({ status: 'requested' })

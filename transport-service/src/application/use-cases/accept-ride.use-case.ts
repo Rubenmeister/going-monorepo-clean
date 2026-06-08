@@ -15,22 +15,14 @@ export class AcceptRideUseCase {
   async execute(input: { rideId: string; driverId: string }): Promise<any> {
     const { rideId, driverId } = input;
 
-    // Get ride
-    const ride = await this.rideRepo.findById(rideId);
-    if (!ride) {
-      throw new Error(`Ride ${rideId} not found`);
+    // Compare-and-swap atómico: asigna el conductor sólo si el viaje sigue en
+    // 'requested'. Si otro conductor ya lo tomó (o no existe), devuelve null.
+    const updated = await this.rideRepo.acceptIfRequested(rideId, driverId);
+    if (!updated) {
+      const existing = await this.rideRepo.findById(rideId);
+      if (!existing) throw new Error(`Ride ${rideId} not found`);
+      throw new Error(`Ride is already ${existing.status}`);
     }
-
-    if (ride.status !== 'requested') {
-      throw new Error(`Ride is already ${ride.status}`);
-    }
-
-    // Accept ride
-    const updated = await this.rideRepo.update(rideId, {
-      driverId,
-      status: 'accepted',
-      acceptedAt: new Date(),
-    });
 
     // Push notification to passenger that driver was assigned
     const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
@@ -38,10 +30,10 @@ export class AcceptRideUseCase {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userId: ride.userId,
+        userId: updated.userId,
         title: '🚗 ¡Conductor asignado!',
         body: 'Un conductor aceptó tu viaje y está en camino',
-        data: { rideId: ride.id, actionUrl: '/transport' }
+        data: { rideId: updated.id, actionUrl: '/transport' }
       }),
     }).catch(() => {}); // non-blocking
 

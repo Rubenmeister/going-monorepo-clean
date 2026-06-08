@@ -95,6 +95,22 @@ export class MongooseRideRepository implements IRideRepository {
     return this._toRideData(doc);
   }
 
+  /**
+   * Compare-and-swap atómico: acepta el viaje SOLO si sigue en 'requested'.
+   * Si dos conductores aceptan a la vez, sólo uno matchea el filtro; el otro
+   * recibe null. Evita la doble-aceptación del read-then-write.
+   */
+  async acceptIfRequested(rideId: string, driverId: string): Promise<any | null> {
+    const doc = await this.model
+      .findOneAndUpdate(
+        { _id: rideId, status: 'requested' },
+        { $set: { driverId, status: 'accepted', acceptedAt: new Date() } },
+        { new: true },
+      )
+      .lean();
+    return doc ? this._toRideData(doc) : null;
+  }
+
   async findRecent(limit: number): Promise<any[]> {
     const docs = await this.model
       .find()

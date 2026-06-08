@@ -541,6 +541,12 @@ export interface IRideRepository {
   findRecent(limit: number): Promise<any[]>;
   findByStatus(status: string, limit?: number, excludeDriverId?: string): Promise<any[]>;
   /**
+   * Compare-and-swap atómico: asigna el conductor SOLO si el viaje sigue en
+   * 'requested'. Devuelve el viaje actualizado, o null si otro conductor ya lo
+   * tomó (evita doble-aceptación bajo concurrencia).
+   */
+  acceptIfRequested(rideId: string, driverId: string): Promise<any | null>;
+  /**
    * Viajes reservados (status='scheduled') cuya hora programada cae dentro
    * de la ventana de despacho (scheduledAt <= threshold) y que aún no fueron
    * disparados. Usado por ScheduledRideDispatcherCron.
