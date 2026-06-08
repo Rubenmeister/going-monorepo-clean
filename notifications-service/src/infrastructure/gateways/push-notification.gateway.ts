@@ -21,23 +21,53 @@ export class FirebasePushNotificationGateway
 
   onModuleInit() {
     try {
-      // Initialize Firebase Admin SDK when module loads
-      // This assumes GOOGLE_APPLICATION_CREDENTIALS env variable is set
-      // In production, load credentials from config service
       const admin = require('firebase-admin');
 
-      if (!admin.apps.length) {
+      // Ya inicializado (otro módulo) → reutiliza.
+      if (admin.apps.length) {
+        this.messaging = admin.messaging();
+        this.logger.log('Firebase Admin SDK ya inicializado — reutilizando');
+        return;
+      }
+
+      const projectId =
+        process.env.FIREBASE_PROJECT_ID ||
+        process.env.GCP_PROJECT_ID ||
+        'going-5d1ae';
+
+      // 1) Service account explícito (secreto FIREBASE_SERVICE_ACCOUNT, JSON).
+      const saJson =
+        process.env.FIREBASE_SERVICE_ACCOUNT ||
+        process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+      if (saJson) {
+        admin.initializeApp({
+          credential: admin.credential.cert(JSON.parse(saJson)),
+          projectId,
+        });
+        this.messaging = admin.messaging();
+        this.logger.log('Firebase Admin SDK inicializado (service account)');
+        return;
+      }
+
+      // 2) Application Default Credentials (service account de Cloud Run).
+      //    Funciona si la SA tiene permiso de FCM en el proyecto Firebase.
+      try {
+        admin.initializeApp({
+          credential: admin.credential.applicationDefault(),
+          projectId,
+        });
+        this.messaging = admin.messaging();
+        this.logger.log('Firebase Admin SDK inicializado (ADC)');
+        return;
+      } catch (adcErr: any) {
         this.logger.warn(
-          'Firebase Admin SDK not initialized - using mock mode'
+          `Sin credenciales Firebase (ADC falló: ${adcErr?.message}) — modo mock`,
         );
         this.messaging = null;
-      } else {
-        this.messaging = admin.messaging();
-        this.logger.log('Firebase Admin SDK initialized successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       this.logger.warn(
-        `Firebase Admin SDK initialization failed: ${error.message}`
+        `Firebase Admin SDK init falló: ${error?.message} — modo mock`,
       );
       this.messaging = null;
     }
@@ -123,8 +153,8 @@ export class FirebasePushNotificationGateway
     }
 
     try {
-      // Firebase sendAll supports up to 500 tokens
-      const response = await this.messaging.sendAll(
+      // firebase-admin v12: sendAll() fue removido → sendEach() (hasta 500 msgs).
+      const response = await this.messaging.sendEach(
         deviceTokens.map((token) => ({
           ...message,
           token,
