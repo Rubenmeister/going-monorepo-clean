@@ -722,6 +722,42 @@ export class RideController {
   }
 
   /**
+   * Token de FIN DE VIAJE emitido por el servidor.
+   * Sustituye al código que antes se calculaba en el cliente a partir del
+   * rideId (determinístico e inseguro). El pasajero muestra este código y el
+   * conductor lo confirma vía POST /confirm-delivery, que lo valida contra el
+   * servidor antes de cerrar el viaje.
+   * GET /api/rides/:rideId/end-token
+   */
+  @Get(':rideId/end-token')
+  async getEndToken(
+    @Param('rideId') rideId: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ endToken: string; status: string; verified: boolean }> {
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    // Solo el dueño del viaje (o un admin) puede ver su código de cierre.
+    if (ride.userId !== user.id && user.role !== 'admin') {
+      throw new BadRequestException('No autorizado para este viaje');
+    }
+
+    // No se emiten códigos para viajes ya cerrados o cancelados.
+    const terminal = ['completed', 'cancelled', 'canceled'];
+    let endToken = ride.deliveryToken;
+    if (!endToken && !terminal.includes(ride.status)) {
+      endToken = this.tokenService.generateDeliveryToken(rideId);
+      await this.rideRepo.update(rideId, { deliveryToken: endToken });
+    }
+
+    return {
+      endToken: endToken ?? '',
+      status: ride.status,
+      verified: !!ride.deliveryVerified,
+    };
+  }
+
+  /**
    * Obtener link de seguimiento público
    * GET /api/rides/:rideId/share-link
    */

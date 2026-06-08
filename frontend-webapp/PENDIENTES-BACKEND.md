@@ -18,9 +18,13 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
 - [x] **Asignación interna del conductor más opcionado** para reservas: YA
   existía — `ScheduledRideDispatcherCron` abre el canal y dispara el matching a
   `scheduledAt − MATCH_LEAD_TIME_MINUTES` (60 por defecto) y emite por WS.
-- [ ] **Token de fin de viaje real**: hoy el código de cierre se genera en el
-  cliente (determinístico por `rideId`). Idealmente el backend emite/valida el
-  código de fin para que el conductor lo confirme contra el servidor.
+- [x] **Token de fin de viaje real**: HECHO. El backend **emite** el código de
+  cierre (`GET /rides/:rideId/end-token`, 6 dígitos generados por
+  `TokenService.generateDeliveryToken`, guardado en el `Ride`) y lo **valida**
+  cuando el conductor lo confirma (`POST /rides/:rideId/confirm-delivery`), que
+  marca `status='completed'` y emite `ride:delivery_confirmed`. El frontend ya
+  no calcula el código a partir del `rideId`: el `EndTripModal` lo pide al
+  servidor y el panel cierra el viaje al recibir el evento del backend.
 
 ## Envío
 
