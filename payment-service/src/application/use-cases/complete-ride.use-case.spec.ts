@@ -1,7 +1,7 @@
 import { CompleteRideUseCase } from './complete-ride.use-case';
 
 describe('CompleteRideUseCase', () => {
-  let paymentRepo: Record<string, unknown>;
+  let paymentRepo: { findByTrip: jest.Mock };
   let payoutRepo: {
     findByDriverAndPeriod: jest.Mock;
     create: jest.Mock;
@@ -11,6 +11,7 @@ describe('CompleteRideUseCase', () => {
   let loyalty: { awardPointsForRide: jest.Mock };
   let uc: CompleteRideUseCase;
 
+  // Por defecto efectivo (modelo "comisión por cobrar": no genera payout).
   const input = {
     tripId: 't1',
     passengerId: 'p1',
@@ -21,15 +22,22 @@ describe('CompleteRideUseCase', () => {
     paymentMethod: 'cash' as const,
   };
 
+  // Variante wallet/digital (la plataforma retiene fondos → sí genera payout).
+  const walletInput = { ...input, paymentMethod: 'wallet' as const };
+
   const completedPayment = {
     id: 'pay1',
     status: 'completed',
+    amount: 100,
     driverAmount: 80,
     platformFee: 20,
   };
 
   beforeEach(() => {
-    paymentRepo = {};
+    paymentRepo = {
+      // Sin pago previo para el viaje → la ruta normal procede.
+      findByTrip: jest.fn().mockResolvedValue(null),
+    };
     payoutRepo = {
       findByDriverAndPeriod: jest.fn().mockResolvedValue(null),
       create: jest.fn(async (p) => ({ ...p })),
@@ -61,9 +69,9 @@ describe('CompleteRideUseCase', () => {
     );
   });
 
-  it('crea un payout semanal nuevo para el conductor', async () => {
+  it('crea un payout semanal nuevo para el conductor (método no-efectivo)', async () => {
     processPayment.execute.mockResolvedValue(completedPayment);
-    await uc.execute(input);
+    await uc.execute(walletInput);
     expect(payoutRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({
         driverId: 'd1',
@@ -73,7 +81,7 @@ describe('CompleteRideUseCase', () => {
     );
   });
 
-  it('acumula sobre un payout existente de la misma semana', async () => {
+  it('acumula sobre un payout existente de la misma semana (método no-efectivo)', async () => {
     payoutRepo.findByDriverAndPeriod.mockResolvedValue({
       id: 'po-existing',
       amount: 50,
@@ -83,12 +91,35 @@ describe('CompleteRideUseCase', () => {
       transactionIds: ['old'],
     });
     processPayment.execute.mockResolvedValue(completedPayment);
-    await uc.execute(input);
+    await uc.execute(walletInput);
     expect(payoutRepo.update).toHaveBeenCalledWith(
       'po-existing',
       expect.objectContaining({ amount: 130, transactionCount: 2 })
     );
     expect(payoutRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('en EFECTIVO no genera payout retirable (el conductor ya cobró en mano)', async () => {
+    processPayment.execute.mockResolvedValue(completedPayment);
+    await uc.execute(input); // cash
+    expect(payoutRepo.create).not.toHaveBeenCalled();
+    expect(payoutRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('es idempotente: si ya existe un Payment del viaje, no reprocesa ni duplica', async () => {
+    paymentRepo.findByTrip.mockResolvedValue({
+      id: 'pay-existing',
+      status: 'completed',
+      amount: 100,
+      driverAmount: 80,
+      platformFee: 20,
+      completedAt: new Date(),
+    });
+    const r = await uc.execute(input);
+    expect(processPayment.execute).not.toHaveBeenCalled();
+    expect(payoutRepo.create).not.toHaveBeenCalled();
+    expect(r.completion.driverEarnings).toBe(80);
+    expect(r.completion.platformRevenue).toBe(20);
   });
 
   it('lanza si el pago no llega a completarse', async () => {
