@@ -26,7 +26,7 @@ export class ProcessPaymentUseCase {
     durationMinutes?: number;
     weightKg?: number;
     quantity?: number;
-    paymentMethod: 'card' | 'wallet' | 'cash' | 'datafast' | 'deuna';
+    paymentMethod: 'card' | 'wallet' | 'cash' | 'datafast' | 'deuna' | 'corporate';
     paymentMethodId?: string;
   }): Promise<any> {
     // Calculate fees dynamically based on service type
@@ -78,10 +78,17 @@ export class ProcessPaymentUseCase {
       createdAt: new Date(),
     });
 
-    // Efectivo y wallet: pago confirmado al instante (sin procesador externo)
+    // Efectivo, wallet y corporate: pago confirmado al instante (sin procesador
+    // externo). En 'corporate' no se cobra al pasajero — la empresa se factura
+    // mensualmente aparte; aquí solo se registra el Payment (con el split 80/20)
+    // para que el conductor reciba su 80% en el payout semanal.
     // Datafast y DeUna: el checkoutId/orderId se maneja en el controller,
-    // aquí solo se registra el intento — se completa vía webhook
-    if (input.paymentMethod === 'cash' || input.paymentMethod === 'wallet') {
+    // aquí solo se registra el intento — se completa vía webhook.
+    if (
+      input.paymentMethod === 'cash' ||
+      input.paymentMethod === 'wallet' ||
+      input.paymentMethod === 'corporate'
+    ) {
       return await this.paymentRepository.update(payment.id, {
         status: 'completed',
         completedAt: new Date(),

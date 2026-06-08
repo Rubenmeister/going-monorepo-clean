@@ -122,6 +122,9 @@ export class RideController {
       // MATCH_LEAD_TIME_MINUTES antes. Inmediato sigue con el default.
       initialStatus: isFutureScheduled ? 'scheduled' : undefined,
       lockedFare: isFutureScheduled ? dto.lockedFare : undefined,
+      // Viaje de empresa: se marca 'corporate' (facturación mensual a la
+      // empresa; el conductor cobra su 80% en el payout semanal igual).
+      paymentMethod: isCorporate ? 'corporate' : undefined,
     });
 
     if (isFutureScheduled) {
@@ -489,7 +492,11 @@ export class RideController {
     try {
       const ride: any = await this.rideRepo.findById(rideId);
       const method = (ride?.paymentMethod || 'cash') as string;
-      if (method !== 'cash' && method !== 'wallet') return; // digital → otro flujo
+      // Efectivo/wallet/corporate se registran aquí. El digital (tarjeta/
+      // Datafast/DeUna) pasa por su propio flujo de intent+webhook.
+      // 'corporate' = la empresa se factura aparte; el conductor cobra su 80%
+      // en el payout semanal igual.
+      if (method !== 'cash' && method !== 'wallet' && method !== 'corporate') return;
       if (!ride?.driverId || !ride?.userId) {
         this.logger.warn(`No se registra ganancia de ${rideId}: faltan driverId/userId`);
         return;

@@ -44,6 +44,13 @@ export class RequestRideUseCase {
     initialStatus?: string;
     /** Precio garantizado fijado al reservar (solo viajes programados). */
     lockedFare?: number;
+    /**
+     * Método de pago del viaje. 'corporate' = facturación mensual a la empresa;
+     * la plataforma igual le acredita al conductor su 80% en el payout semanal
+     * (facturación separada empresa↔conductor). Si no se especifica, el método
+     * se resuelve al cobrar (efectivo/tarjeta/etc.).
+     */
+    paymentMethod?: string;
   }): Promise<any> {
     const {
       userId,
@@ -104,6 +111,7 @@ export class RequestRideUseCase {
       // Reserva programada: el viaje queda "en agenda" sin buscar conductor.
       ...(input.initialStatus ? { status: input.initialStatus } : {}),
       ...(input.lockedFare != null ? { lockedFare: input.lockedFare } : {}),
+      ...(input.paymentMethod ? { paymentMethod: input.paymentMethod } : {}),
     });
 
     // Save to database

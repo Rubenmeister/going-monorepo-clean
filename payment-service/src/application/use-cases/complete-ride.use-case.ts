@@ -27,7 +27,7 @@ export class CompleteRideUseCase {
     finalFare: number;
     actualDistance: number;
     actualDuration: number;
-    paymentMethod: 'card' | 'wallet' | 'cash';
+    paymentMethod: 'card' | 'wallet' | 'cash' | 'corporate';
     paymentMethodId?: string;
   }): Promise<{
     payment: any;
