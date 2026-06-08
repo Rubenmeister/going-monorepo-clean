@@ -1028,6 +1028,190 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
       { question: 'Antes de confirmar un viaje…', options: ['No sabes el precio', 'Ves el precio (tarifa fija o estimado)', 'Pagas siempre después', 'El precio cambia al azar'], correct: 1, explanation: 'Siempre ves el precio antes de confirmar: tarifa fija o estimado por distancia.' },
     ],
   },
+
+  // ─── ESCUELA DE GUÍAS LOCALES ─────────────────────────────────────────────
+  g1: {
+    id: 'g1',
+    school: 'Escuela de Guías Locales',
+    schoolColor: COLORS.state.success,
+    title: 'El Arte del Storytelling',
+    subtitle: 'Cuenta tu historia, vende tu experiencia',
+    description:
+      'Cómo estructurar la historia de tu comunidad, tu taller o tu ruta para crear momentos memorables que los viajeros recomienden y repitan.',
+    readingHtml: `
+<h2>1. Por qué importan las historias</h2>
+<p>La gente no recuerda datos: recuerda <strong>emociones e historias</strong>. Una experiencia con un buen relato se siente única y se recomienda sola. Tu conocimiento local es tu mayor ventaja.</p>
+
+<h2>2. La estructura de un buen relato</h2>
+<ol>
+  <li><strong>Gancho:</strong> abre con una pregunta o un dato sorprendente que despierte curiosidad.</li>
+  <li><strong>Desarrollo:</strong> lleva al grupo por un hilo claro (tiempo, lugar o personaje).</li>
+  <li><strong>Clímax:</strong> el momento más memorable — guárdalo para el punto justo.</li>
+  <li><strong>Cierre:</strong> conecta la historia con algo que el viajero se lleva (una lección, una foto, una emoción).</li>
+</ol>
+
+<h2>3. Hazlo vivo</h2>
+<ul>
+  <li><strong>Involucra los sentidos:</strong> qué se ve, se huele, se escucha, se prueba.</li>
+  <li><strong>Detalles concretos</strong> y nombres reales superan a las generalidades.</li>
+  <li><strong>Haz preguntas</strong> al grupo: una experiencia es diálogo, no monólogo.</li>
+  <li><strong>Respeta la verdad:</strong> no inventes; lo auténtico conecta más.</li>
+</ul>
+
+<h2>4. Momentos “fotografiables”</h2>
+<p>Diseña al menos un <strong>momento memorable</strong> por experiencia: un mirador, una degustación, una demostración. Es lo que el viajero comparte y lo que llena tu calendario.</p>
+<blockquote>Una buena historia convierte una visita en un recuerdo — y un recuerdo en una recomendación.</blockquote>
+`,
+    slides: [
+      { title: '¿Por qué historias?', points: ['Se recuerdan emociones, no datos', 'Tu conocimiento local es tu ventaja', 'Una buena historia se recomienda sola'] },
+      { title: 'Estructura', points: ['Gancho que despierta curiosidad', 'Desarrollo con hilo claro', 'Clímax memorable', 'Cierre con algo que se llevan'] },
+      { title: 'Hazlo vivo', points: ['Involucra los sentidos', 'Detalles y nombres reales', 'Haz preguntas al grupo', 'Respeta la verdad'] },
+      { title: 'Momento memorable', points: ['Diseña 1 por experiencia', 'Mirador, degustación, demo', 'Es lo que comparten'] },
+      { title: 'Resultado', points: ['Visita → recuerdo', 'Recuerdo → recomendación', 'Recomendación → más reservas'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a El Arte del Storytelling. Hoy verás cómo convertir tu conocimiento local en experiencias que los viajeros recuerdan y recomiendan.',
+      segments: [
+        { title: 'Por qué importan', text: 'La gente no recuerda datos, recuerda emociones e historias. Una experiencia con un buen relato se siente única y se recomienda sola. Tu conocimiento local, la historia de tu comunidad o tu taller, es tu mayor ventaja.' },
+        { title: 'La estructura', text: 'Un buen relato tiene cuatro partes. Un gancho que abre con una pregunta o un dato sorprendente. Un desarrollo con un hilo claro, ya sea el tiempo, el lugar o un personaje. Un clímax, el momento más memorable, que guardas para el punto justo. Y un cierre que conecta la historia con algo que el viajero se lleva.' },
+        { title: 'Hazlo vivo', text: 'Para que la historia cobre vida, involucra los sentidos: qué se ve, se huele, se escucha y se prueba. Usa detalles concretos y nombres reales en lugar de generalidades, y haz preguntas al grupo, porque una experiencia es un diálogo y no un monólogo. Y sobre todo, respeta la verdad: lo auténtico conecta más.' },
+        { title: 'Momentos memorables', text: 'Diseña al menos un momento memorable por experiencia: un mirador, una degustación, una demostración. Es lo que el viajero comparte en sus redes y lo que termina llenando tu calendario. Una buena historia convierte una visita en un recuerdo, y un recuerdo en una recomendación.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Con qué conviene ABRIR una experiencia?', options: ['Una lista de reglas', 'Un gancho que despierte curiosidad', 'El precio', 'Una disculpa'], correct: 1, explanation: 'El gancho (pregunta o dato sorprendente) capta la atención desde el inicio.' },
+      { question: 'Para que una historia cobre vida conviene…', options: ['Solo dar fechas', 'Involucrar los sentidos y dar detalles concretos', 'Hablar sin pausa', 'Leer un guion'], correct: 1, explanation: 'Los sentidos y los detalles reales hacen vívido el relato.' },
+      { question: 'Una experiencia memorable es…', options: ['Un monólogo largo', 'Un diálogo con el grupo', 'Solo caminar', 'Improvisar todo'], correct: 1, explanation: 'Hacer preguntas e involucrar al grupo convierte la visita en diálogo.' },
+      { question: 'El “momento fotografiable” sirve para…', options: ['Rellenar tiempo', 'Que el viajero lo comparta y te recomiende', 'Cobrar más', 'Terminar antes'], correct: 1, explanation: 'Ese momento memorable es lo que se comparte y atrae nuevas reservas.' },
+    ],
+  },
+  g2: {
+    id: 'g2',
+    school: 'Escuela de Guías Locales',
+    schoolColor: COLORS.state.success,
+    title: 'Manejo de Grupos',
+    subtitle: 'De 2 a 20 personas',
+    description:
+      'Técnicas para mantener la atención, gestionar los tiempos, manejar personas difíciles y garantizar la seguridad de todo el grupo.',
+    readingHtml: `
+<h2>1. Empieza con el pie derecho</h2>
+<ul>
+  <li><strong>Preséntate y pon reglas claras:</strong> puntos de encuentro, horarios y señales.</li>
+  <li><strong>Cuenta cabezas</strong> al inicio y en cada parada (la “regla del conteo”).</li>
+  <li><strong>Acuerda un punto de reunión</strong> por si alguien se separa.</li>
+</ul>
+
+<h2>2. Mantén la atención</h2>
+<ul>
+  <li><strong>Ubícate donde todos te vean y oigan;</strong> espera a que el grupo se acomode antes de hablar.</li>
+  <li><strong>Ritmo variado:</strong> alterna caminar, contar y dejar explorar.</li>
+  <li><strong>Incluye a todos:</strong> mira a las orillas del grupo, no solo al centro.</li>
+</ul>
+
+<h2>3. Gestiona los tiempos</h2>
+<ul>
+  <li><strong>Avisa los tiempos</strong> (“15 minutos aquí”) y respétalos.</li>
+  <li><strong>Margen para imprevistos:</strong> baños, fotos, ritmo de los más lentos.</li>
+  <li><strong>Cierra a tiempo:</strong> terminar puntual también es calidad.</li>
+</ul>
+
+<h2>4. Personas difíciles y seguridad</h2>
+<ul>
+  <li><strong>El que se adelanta o se queda:</strong> asígnale un rol (ayudar a cerrar el grupo).</li>
+  <li><strong>El que monopoliza:</strong> agradece y redirige al resto con una pregunta.</li>
+  <li><strong>Seguridad primero:</strong> conoce a tu grupo (movilidad, salud), lleva agua y un botiquín, y ten claro el plan ante una emergencia.</li>
+</ul>
+<blockquote>Un grupo bien manejado se siente cuidado: esa sensación es la que deja 5 estrellas.</blockquote>
+`,
+    slides: [
+      { title: 'Empieza bien', points: ['Preséntate y pon reglas', 'Cuenta cabezas (inicio y paradas)', 'Acuerda punto de reunión'] },
+      { title: 'Mantén la atención', points: ['Ubícate donde te vean/oigan', 'Ritmo variado', 'Incluye a las orillas del grupo'] },
+      { title: 'Gestiona el tiempo', points: ['Avisa y respeta tiempos', 'Margen para imprevistos', 'Cierra puntual'] },
+      { title: 'Personas difíciles', points: ['Al que se adelanta: dale un rol', 'Al que monopoliza: redirige', 'Agradece y sigue'] },
+      { title: 'Seguridad', points: ['Conoce a tu grupo', 'Agua y botiquín', 'Plan ante emergencia'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Manejo de Grupos. Aprenderás a mantener la atención, gestionar el tiempo, manejar personas difíciles y cuidar la seguridad de grupos de 2 a 20 personas.',
+      segments: [
+        { title: 'Empieza con el pie derecho', text: 'Arranca presentándote y poniendo reglas claras: puntos de encuentro, horarios y señales. Cuenta cabezas al inicio y en cada parada, lo que llamamos la regla del conteo, y acuerda un punto de reunión por si alguien se separa.' },
+        { title: 'Mantén la atención', text: 'Para mantener la atención, ubícate donde todos te vean y te oigan, y espera a que el grupo se acomode antes de hablar. Usa un ritmo variado, alternando caminar, contar y dejar explorar, e incluye a todos mirando también a las orillas del grupo, no solo al centro.' },
+        { title: 'Gestiona los tiempos', text: 'Avisa los tiempos, por ejemplo quince minutos en este punto, y respétalos. Deja margen para imprevistos como baños, fotos o el ritmo de los más lentos. Y cierra a tiempo, porque terminar puntual también es parte de la calidad.' },
+        { title: 'Difíciles y seguridad', text: 'Con la persona que se adelanta o se queda atrás, asígnale un rol, como ayudar a cerrar el grupo. Con quien monopoliza, agradece y redirige al resto con una pregunta. Y la seguridad primero: conoce a tu grupo, su movilidad y salud, lleva agua y botiquín, y ten claro el plan ante una emergencia. Un grupo bien manejado se siente cuidado, y esa sensación es la que deja cinco estrellas.' },
+      ],
+    },
+    quiz: [
+      { question: 'La “regla del conteo” consiste en…', options: ['Cobrar por persona', 'Contar cabezas al inicio y en cada parada', 'Contar el dinero', 'Limitar el grupo'], correct: 1, explanation: 'Contar al grupo en cada parada evita que alguien se quede atrás.' },
+      { question: 'Antes de empezar a hablar al grupo conviene…', options: ['Hablar caminando rápido', 'Ubicarte donde todos te vean/oigan y esperar que se acomoden', 'Hablar de espaldas', 'Adelantarte solo'], correct: 1, explanation: 'Posición y atención del grupo aseguran que el mensaje llegue a todos.' },
+      { question: 'Ante una persona que monopoliza la conversación…', options: ['La ignoras', 'Agradeces y rediriges al resto con una pregunta', 'Terminas el tour', 'Discutes'], correct: 1, explanation: 'Agradecer y redirigir mantiene el equilibrio sin generar conflicto.' },
+      { question: '¿Qué es esencial para la seguridad del grupo?', options: ['Ir más rápido', 'Conocer al grupo, llevar agua/botiquín y un plan de emergencia', 'No hacer paradas', 'Improvisar la ruta'], correct: 1, explanation: 'Conocer al grupo y estar preparado (agua, botiquín, plan) es la base de la seguridad.' },
+    ],
+  },
+  g3: {
+    id: 'g3',
+    school: 'Escuela de Guías Locales',
+    schoolColor: COLORS.state.success,
+    title: 'Seguridad en Exteriores',
+    subtitle: 'Turismo de naturaleza seguro',
+    description:
+      'Evaluación de riesgos, protocolo ante lesiones, comunicación en zonas sin señal y buenas prácticas para actividades de naturaleza. Contenido informativo, no sustituye una certificación.',
+    readingHtml: `
+<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+<strong>Aviso:</strong> este curso es <strong>informativo</strong>. Las actividades de riesgo (alta montaña, ríos, etc.) requieren formación y certificaciones específicas y, cuando aplique, permisos del Ministerio de Turismo. Ante una emergencia, llama al <strong>911</strong>.
+</div>
+
+<h2>1. Evalúa el riesgo ANTES de salir</h2>
+<ul>
+  <li><strong>Clima y terreno:</strong> revisa el pronóstico y el estado del sendero/río.</li>
+  <li><strong>El grupo:</strong> condición física, salud, calzado y ropa adecuados.</li>
+  <li><strong>Plan B:</strong> ten siempre una ruta o decisión alternativa (cancelar es válido).</li>
+</ul>
+
+<h2>2. Lleva lo esencial</h2>
+<ul>
+  <li>Botiquín, agua suficiente, abrigo/impermeable y snacks.</li>
+  <li>Carga completa en el teléfono + batería externa; silbato.</li>
+  <li>Lista de contactos de emergencia y datos de salud del grupo.</li>
+</ul>
+
+<h2>3. Comunicación en zonas sin señal</h2>
+<ul>
+  <li><strong>Deja tu plan</strong> (ruta y hora de regreso) con alguien de confianza antes de salir.</li>
+  <li><strong>Puntos de encuentro</strong> y señales acordadas (silbato, gestos).</li>
+  <li>Descarga <strong>mapas offline</strong>; no dependas solo de la señal móvil.</li>
+</ul>
+
+<h2>4. Ante una lesión</h2>
+<ol>
+  <li><strong>Detén la actividad</strong> y asegura la zona.</li>
+  <li><strong>Atiende</strong> según primeros auxilios básicos (no muevas a un herido grave salvo peligro).</li>
+  <li><strong>Pide ayuda:</strong> 911; da ubicación lo más precisa posible.</li>
+  <li><strong>Mantén al grupo</strong> junto, calmado y abrigado.</li>
+</ol>
+<blockquote>La mejor decisión de seguridad muchas veces es no arriesgar: un buen guía sabe cuándo dar la vuelta.</blockquote>
+`,
+    slides: [
+      { title: 'Evalúa antes de salir', points: ['Clima y terreno', 'Condición y equipo del grupo', 'Ten un Plan B (cancelar es válido)'] },
+      { title: 'Lleva lo esencial', points: ['Botiquín, agua, abrigo', 'Teléfono cargado + batería', 'Silbato y contactos de emergencia'] },
+      { title: 'Sin señal', points: ['Deja tu plan y hora de regreso', 'Puntos de encuentro y señales', 'Mapas offline'] },
+      { title: 'Ante una lesión', points: ['Detén y asegura la zona', 'Primeros auxilios básicos', 'Llama al 911 con ubicación', 'Grupo junto y calmado'] },
+      { title: 'Criterio', points: ['No arriesgar también es decisión', 'Saber cuándo dar la vuelta', 'La seguridad va primero'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Seguridad en Exteriores. Un recordatorio antes de empezar: este contenido es informativo y no reemplaza una certificación; ante una emergencia, llama al 911.',
+      segments: [
+        { title: 'Evalúa el riesgo', text: 'La seguridad empieza antes de salir. Revisa el clima y el estado del terreno, evalúa al grupo en condición física, salud, calzado y ropa, y ten siempre un plan B. Recuerda que cancelar o cambiar la ruta es una decisión válida y a veces la más responsable.' },
+        { title: 'Lleva lo esencial', text: 'Lleva siempre lo esencial: botiquín, agua suficiente, abrigo o impermeable y algo de comida. El teléfono con carga completa y una batería externa, un silbato, y la lista de contactos de emergencia junto con los datos de salud del grupo.' },
+        { title: 'Zonas sin señal', text: 'En zonas sin señal, deja tu plan, la ruta y la hora de regreso, con alguien de confianza antes de salir. Acuerda puntos de encuentro y señales como el silbato o gestos, y descarga mapas offline para no depender solo de la señal móvil.' },
+        { title: 'Ante una lesión', text: 'Si ocurre una lesión, detén la actividad y asegura la zona, atiende según primeros auxilios básicos sin mover a un herido grave salvo peligro, pide ayuda al 911 dando la ubicación más precisa posible, y mantén al grupo junto, calmado y abrigado. La mejor decisión de seguridad muchas veces es no arriesgar: un buen guía sabe cuándo dar la vuelta.' },
+      ],
+    },
+    quiz: [
+      { question: 'Si el clima o el terreno se ven peligrosos, lo correcto es…', options: ['Seguir igual', 'Tener un plan B, incluso cancelar', 'Ir más rápido', 'Dividir el grupo'], correct: 1, explanation: 'Un plan B (o cancelar) es una decisión de seguridad válida y responsable.' },
+      { question: 'Antes de entrar a una zona sin señal debes…', options: ['No avisar a nadie', 'Dejar tu ruta y hora de regreso con alguien de confianza', 'Apagar el teléfono', 'Improvisar'], correct: 1, explanation: 'Dejar el plan con alguien permite activar ayuda si no regresas a tiempo.' },
+      { question: 'Ante una lesión grave, ¿qué NO debes hacer?', options: ['Asegurar la zona', 'Llamar al 911', 'Mover al herido sin necesidad', 'Mantener al grupo calmado'], correct: 2, explanation: 'No se mueve a un herido grave salvo peligro inminente.' },
+      { question: 'Este curso…', options: ['Certifica para alta montaña', 'Es informativo y no sustituye certificación', 'Reemplaza al 911', 'No menciona riesgos'], correct: 1, explanation: 'Es informativo; las actividades de riesgo requieren formación y permisos específicos.' },
+    ],
+  },
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────
