@@ -53,6 +53,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
   const [currentFare,   setCurrentFare]   = useState(activeRide?.estimatedFare ?? 0);
   const [showVerify,    setShowVerify]    = useState(false);
   const [showEndTrip,   setShowEndTrip]   = useState(false);
+  const [showSos,       setShowSos]       = useState(false);
   const [noDriverSlots,        setNoDriverSlots]        = useState<TimeSlot[]>([]);
   const [loadingNoDriverSlots, setLoadingNoDriverSlots] = useState(false);
   /** Segundos transcurridos buscando conductor — driver del countdown UX. */
@@ -432,15 +433,18 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
         />
       )}
 
-      {/* ══ BOTÓN SOS ══ */}
+      {/* ══ BOTÓN SOS ══
+         Abre el modal de emergencia, que llama al endpoint real
+         POST /rides/:rideId/sos (registra alerta + notifica a ops) además de
+         ofrecer llamada directa al 911. */}
       {(status === 'accepted' || status === 'in_progress') && (
-        <Link
-          href="/sos"
+        <button
+          onClick={() => setShowSos(true)}
           className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all hover:opacity-90"
           style={{ backgroundColor: '#7f1d1d', color: '#fff' }}
         >
           🆘 Emergencia / SOS
-        </Link>
+        </button>
       )}
 
       {/* ══ FINALIZAR VIAJE · token de fin de viaje ══
@@ -483,6 +487,11 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
           onConfirm={() => { setShowEndTrip(false); if (activeRide) updateRideStatus(activeRide.tripId, 'completed'); }}
           onClose={() => setShowEndTrip(false)}
         />
+      )}
+
+      {/* ══ MODAL SOS / EMERGENCIA ══ */}
+      {showSos && (
+        <SosModal rideId={rideId} onClose={() => setShowSos(false)} />
       )}
     </div>
   );
@@ -558,6 +567,84 @@ function EndTripModal({
           </button>
           <button onClick={onClose} className="w-full py-2.5 text-xs text-gray-400 font-medium hover:underline">
             Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Modal SOS / emergencia ──
+   Ofrece la llamada directa al 911 y, además, dispara la alerta real al
+   backend (POST /rides/:rideId/sos), que la registra y notifica a ops por
+   WebSocket. La ubicación se adjunta best-effort vía geolocalización. */
+function SosModal({ rideId, onClose }: { rideId: string; onClose: () => void }) {
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const sendAlert = () => {
+    setState('sending');
+    const post = (coords?: { currentLat: number; currentLng: number }) => {
+      rideService.sendSos(rideId, { ...coords, message: 'SOS desde la app del pasajero' })
+        .then(() => setState('sent'))
+        .catch(() => setState('error'));
+    };
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => post({ currentLat: pos.coords.latitude, currentLng: pos.coords.longitude }),
+        () => post(),  // sin permiso/seguridad de GPS → enviar sin coordenadas
+        { enableHighAccuracy: true, timeout: 5000 },
+      );
+    } else {
+      post();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-end justify-center p-4">
+      <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+        <div className="px-6 pt-6 pb-4 text-center" style={{ backgroundColor: '#7f1d1d', color: '#fff' }}>
+          <div className="text-4xl mb-1">🆘</div>
+          <h3 className="text-lg font-black">Emergencia</h3>
+          <p className="text-xs opacity-90 mt-1">Si tu vida corre peligro, llama directamente al 911.</p>
+        </div>
+        <div className="p-6 space-y-3">
+          <a
+            href="tel:911"
+            className="w-full py-3.5 rounded-2xl font-black text-white text-sm flex items-center justify-center gap-2 hover:opacity-90"
+            style={{ backgroundColor: '#dc2626' }}
+          >
+            📞 Llamar al 911
+          </a>
+
+          {state === 'sent' ? (
+            <div className="text-center rounded-2xl p-4 bg-green-50">
+              <p className="text-2xl mb-1">✅</p>
+              <p className="text-sm font-bold text-green-700">Alerta enviada a Going App</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Soporte fue notificado con tu viaje y ubicación. Mantén la calma.
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={sendAlert}
+              disabled={state === 'sending'}
+              className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all disabled:opacity-50 hover:opacity-90"
+              style={{ backgroundColor: '#7f1d1d', color: '#fff' }}
+            >
+              {state === 'sending' ? 'Enviando alerta…' : 'Enviar alerta a soporte Going App'}
+            </button>
+          )}
+          {state === 'error' && (
+            <p className="text-xs text-red-600 text-center">
+              No se pudo enviar la alerta. Intenta de nuevo o llama al 911.
+            </p>
+          )}
+
+          <Link href="/sos" className="block text-center text-xs text-gray-500 font-medium hover:underline">
+            Ver todos los contactos de emergencia
+          </Link>
+          <button onClick={onClose} className="w-full py-2 text-xs text-gray-400 font-medium hover:underline">
+            Cerrar
           </button>
         </div>
       </div>
