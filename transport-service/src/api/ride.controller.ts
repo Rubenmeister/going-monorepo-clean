@@ -468,9 +468,17 @@ export class RideController {
           amountUsd:     realAmount,
         });
         this.logger.log(`Viaje ${rideId} completado — pago ${captureResult.status} $${realAmount}`);
+        this.rideRepo.update(rideId, { paymentCaptureStatus: 'captured' }).catch(() => {});
         return { ...completeResult, paymentStatus: captureResult.status, chargedAmount: realAmount };
       } catch (err: any) {
-        this.logger.error(`Capture fallido para viaje ${rideId}: ${err?.message}`);
+        this.logger.error(`Capture fallido para viaje ${rideId}: ${err?.message} — se marca para reconciliación`);
+        // El viaje se completa igual (no bloqueamos al conductor), pero la
+        // captura fallida queda PERSISTIDA para reintento/conciliación en vez
+        // de perderse silenciosamente.
+        this.rideRepo.update(rideId, {
+          paymentCaptureStatus:   'failed',
+          paymentCaptureFailedAt: new Date(),
+        }).catch(() => {});
         return { ...completeResult, paymentStatus: 'capture_failed', chargedAmount: 0 };
       }
     }
