@@ -56,3 +56,22 @@ jobs:
 
       - name: Wire api-gateway service URLs
         run: bash scripts/update-gateway-urls.sh
+
+      - name: Wire inter-service URLs (transport → payment)
+        # transport-service llama a payment-service por HTTP para registrar la
+        # ganancia/comisión del conductor al completar un viaje. Le inyecta
+        # PAYMENT_SERVICE_URL. Con --update-env-vars (merge) sobrevive a los
+        # deploys (el CD ya no usa --set-env-vars que borraba el env).
+        run: |
+          REGION=us-central1
+          PAYMENT_URL=$(gcloud run services describe payment-service \
+            --region "$REGION" --platform managed --format 'value(status.url)' 2>/dev/null || echo "")
+          if [ -n "$PAYMENT_URL" ] && gcloud run services describe transport-service \
+               --region "$REGION" --platform managed >/dev/null 2>&1; then
+            echo "→ transport-service PAYMENT_SERVICE_URL=$PAYMENT_URL"
+            gcloud run services update transport-service \
+              --region "$REGION" --platform managed \
+              --update-env-vars "PAYMENT_SERVICE_URL=${PAYMENT_URL}" --quiet
+          else
+            echo "· payment-service o transport-service no disponible; se omite"
+          fi
