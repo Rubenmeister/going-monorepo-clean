@@ -99,11 +99,14 @@ describe('CompleteRideUseCase', () => {
     expect(payoutRepo.create).not.toHaveBeenCalled();
   });
 
-  it('en EFECTIVO no genera payout retirable (el conductor ya cobró en mano)', async () => {
+  it('en EFECTIVO resta la comisión (-platformFee) al payout semanal', async () => {
+    // El conductor ya cobró el 100% en mano → debe el 20% de comisión, que se
+    // RESTA de su payout semanal (Fase 2 — neteo de comisión de efectivo).
     processPayment.execute.mockResolvedValue(completedPayment);
     await uc.execute(input); // cash
-    expect(payoutRepo.create).not.toHaveBeenCalled();
-    expect(payoutRepo.update).not.toHaveBeenCalled();
+    expect(payoutRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ driverId: 'd1', amount: -20, netAmount: -20 }),
+    );
   });
 
   it('es idempotente: si ya existe un Payment del viaje, no reprocesa ni duplica', async () => {
