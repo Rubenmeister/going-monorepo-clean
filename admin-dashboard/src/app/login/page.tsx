@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 
 const AUTH_TOKEN_KEY = 'authToken';
 const SESSION_COOKIE = 'going_admin_session';
-const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api-gateway-780842550857.us-central1.run.app';
+const API_GW = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 function setSessionCookie(value: boolean) {
   if (value) {

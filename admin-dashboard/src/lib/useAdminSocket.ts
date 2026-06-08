@@ -81,7 +81,7 @@ export function useAdminSocket(handlers: AdminSocketHandlers = {}) {
 
     const WS_URL = process.env.NEXT_PUBLIC_WS_URL
       || process.env.NEXT_PUBLIC_API_URL
-      || 'https://api-gateway-780842550857.us-central1.run.app';
+      || 'https://api.goingec.com';
 
     try {
       setStatus('connecting');

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 
-const API = 'https://api-gateway-780842550857.us-central1.run.app';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
 async function adminFetch<T>(token: string, path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {

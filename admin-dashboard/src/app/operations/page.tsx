@@ -284,7 +284,7 @@ export default function OperationsPage() {
         const io = (await loadSocketIO()) as IoFn;
         if (!mounted) return;
 
-        const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api-gateway-780842550857.us-central1.run.app';
+        const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.goingec.com';
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket = (io as any)(API, {
