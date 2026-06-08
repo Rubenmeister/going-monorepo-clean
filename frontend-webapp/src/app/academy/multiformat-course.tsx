@@ -1212,6 +1212,195 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
       { question: 'Este curso…', options: ['Certifica para alta montaña', 'Es informativo y no sustituye certificación', 'Reemplaza al 911', 'No menciona riesgos'], correct: 1, explanation: 'Es informativo; las actividades de riesgo requieren formación y permisos específicos.' },
     ],
   },
+
+  // ─── ESCUELA DE OPERADORES ────────────────────────────────────────────────
+  o1: {
+    id: 'o1',
+    school: 'Escuela de Operadores',
+    schoolColor: '#8B5CF6',
+    title: 'Logística de Grupos Grandes',
+    subtitle: 'De 20 a 200 personas',
+    description:
+      'Coordinación de transporte, alojamiento y actividades para grupos grandes y tours de varios días, y cómo manejar imprevistos sin que se caiga la operación.',
+    readingHtml: `
+<h2>1. Planifica con antelación</h2>
+<ul>
+  <li><strong>Itinerario maestro:</strong> horarios, traslados, comidas y actividades en un solo documento compartido.</li>
+  <li><strong>Confirma proveedores</strong> por escrito (transporte, hospedaje, restaurantes) con cupos y horarios.</li>
+  <li><strong>Buffer de tiempo:</strong> agrega márgenes entre bloques; los grupos grandes siempre van más lentos.</li>
+</ul>
+
+<h2>2. Divide y coordina</h2>
+<ul>
+  <li><strong>Subgrupos con líder:</strong> para 50+ personas, asigna responsables por bus o sección.</li>
+  <li><strong>Listas y conteo:</strong> manifiesto por vehículo; cuenta en cada traslado.</li>
+  <li><strong>Canal de comunicación</strong> único con el equipo (radio o grupo de mensajería).</li>
+</ul>
+
+<h2>3. Transporte y alojamiento</h2>
+<ul>
+  <li><strong>Capacidad correcta:</strong> usa el tipo de vehículo adecuado (van, minibús, bus) según el grupo.</li>
+  <li><strong>Rooming list</strong> entregada al hotel con antelación; check-in agrupado.</li>
+  <li><strong>Necesidades especiales:</strong> accesibilidad, dietas y salud anotadas por persona.</li>
+</ul>
+
+<h2>4. Imprevistos</h2>
+<ul>
+  <li><strong>Plan B por bloque:</strong> qué hacer si llueve, si un proveedor falla o si hay retraso.</li>
+  <li><strong>Fondo de contingencia</strong> y contactos de respaldo (otro transporte, otro restaurante).</li>
+  <li><strong>Comunica a tiempo:</strong> un grupo informado tolera mucho mejor un cambio.</li>
+</ul>
+<blockquote>La diferencia entre un operador bueno y uno excelente es cómo resuelve lo que sale mal, no lo que sale bien.</blockquote>
+`,
+    slides: [
+      { title: 'Planifica', points: ['Itinerario maestro compartido', 'Proveedores confirmados por escrito', 'Buffer de tiempo entre bloques'] },
+      { title: 'Divide y coordina', points: ['Subgrupos con líder', 'Manifiesto y conteo por vehículo', 'Un solo canal de comunicación'] },
+      { title: 'Transporte y hospedaje', points: ['Capacidad correcta del vehículo', 'Rooming list anticipada', 'Necesidades especiales anotadas'] },
+      { title: 'Imprevistos', points: ['Plan B por bloque', 'Fondo y contactos de respaldo', 'Comunica los cambios a tiempo'] },
+      { title: 'Clave', points: ['Lo que define a un operador', 'es cómo resuelve lo que sale mal'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Logística de Grupos Grandes. Verás cómo coordinar transporte, alojamiento y actividades para grupos de 20 a 200 personas sin que se caiga la operación.',
+      segments: [
+        { title: 'Planifica con antelación', text: 'Todo arranca con un itinerario maestro: horarios, traslados, comidas y actividades en un solo documento compartido. Confirma a tus proveedores por escrito, con cupos y horarios, y agrega buffers de tiempo entre bloques, porque los grupos grandes siempre se mueven más lento de lo que crees.' },
+        { title: 'Divide y coordina', text: 'Para grupos de más de cincuenta personas, divide en subgrupos con un líder por bus o sección. Lleva un manifiesto por vehículo y cuenta en cada traslado. Y mantén un único canal de comunicación con tu equipo, ya sea radio o un grupo de mensajería.' },
+        { title: 'Transporte y alojamiento', text: 'Usa el tipo de vehículo adecuado según el tamaño del grupo, van, minibús o bus. Entrega la rooming list al hotel con antelación para un check-in agrupado, y anota por persona las necesidades especiales: accesibilidad, dietas y temas de salud.' },
+        { title: 'Imprevistos', text: 'Ten un plan B por bloque: qué hacer si llueve, si un proveedor falla o si hay un retraso. Maneja un fondo de contingencia y contactos de respaldo, y comunica los cambios a tiempo, porque un grupo informado tolera mucho mejor un cambio. La diferencia entre un operador bueno y uno excelente es cómo resuelve lo que sale mal.' },
+      ],
+    },
+    quiz: [
+      { question: 'Para coordinar un grupo de 50+ personas conviene…', options: ['Manejar todo solo', 'Dividir en subgrupos con líder por bus/sección', 'No hacer listas', 'Improvisar'], correct: 1, explanation: 'Subgrupos con responsables y manifiesto por vehículo hacen manejable la operación.' },
+      { question: '¿Por qué agregar “buffers” de tiempo?', options: ['Para terminar antes', 'Porque los grupos grandes van más lento y surgen imprevistos', 'Para cobrar más', 'No sirven'], correct: 1, explanation: 'Los márgenes absorben demoras inevitables en grupos grandes.' },
+      { question: 'Los proveedores deben confirmarse…', options: ['De palabra', 'Por escrito, con cupos y horarios', 'El mismo día', 'No hace falta'], correct: 1, explanation: 'La confirmación por escrito evita malentendidos de cupo y horario.' },
+      { question: 'Lo que distingue a un gran operador es…', options: ['Que nunca pasa nada', 'Cómo resuelve los imprevistos', 'El precio más bajo', 'Improvisar siempre'], correct: 1, explanation: 'La excelencia está en la respuesta ante lo que sale mal (plan B, respaldo, comunicación).' },
+    ],
+  },
+  o2: {
+    id: 'o2',
+    school: 'Escuela de Operadores',
+    schoolColor: '#8B5CF6',
+    title: 'Normativas del Ministerio de Turismo',
+    subtitle: 'Opera dentro del marco legal',
+    description:
+      'Panorama de los requisitos para operar turismo en Ecuador: registro y licencias, permisos, seguros obligatorios y buenas prácticas. Contenido orientativo, no asesoría legal.',
+    readingHtml: `
+<div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+<strong>Nota:</strong> este curso es <strong>orientativo</strong> y resume buenas prácticas. La normativa cambia: confirma siempre los requisitos vigentes con el <strong>Ministerio de Turismo</strong> y un asesor. No es asesoría legal.
+</div>
+
+<h2>1. Registro y licencia</h2>
+<ul>
+  <li><strong>Registro de Turismo</strong> y la <strong>Licencia Única Anual de Funcionamiento (LUAF)</strong> son la base para operar legalmente.</li>
+  <li>La <strong>categoría</strong> (agencia/operadora) define qué servicios puedes vender.</li>
+  <li>Mantén tus datos y renovaciones <strong>al día</strong>.</li>
+</ul>
+
+<h2>2. Permisos según la actividad</h2>
+<ul>
+  <li><strong>Áreas protegidas:</strong> permisos y guías autorizados para parques nacionales.</li>
+  <li><strong>Guías especializados</strong> (naturaleza, aventura) con su credencial vigente.</li>
+  <li><strong>Transporte turístico</strong> habilitado para el traslado de pasajeros.</li>
+</ul>
+
+<h2>3. Seguros y seguridad</h2>
+<ul>
+  <li><strong>Seguro de responsabilidad civil</strong> y de asistencia al viajero según la actividad.</li>
+  <li><strong>Protocolos de seguridad</strong> documentados, especialmente en turismo de aventura.</li>
+  <li><strong>Consentimiento informado</strong> del pasajero en actividades de riesgo.</li>
+</ul>
+
+<h2>4. Buenas prácticas</h2>
+<ul>
+  <li><strong>Información veraz</strong> en publicidad y precios (sin sorpresas).</li>
+  <li><strong>Facturación</strong> y comprobantes en regla.</li>
+  <li><strong>Sostenibilidad y comunidades:</strong> cumple las normas ambientales y de respeto cultural.</li>
+</ul>
+<blockquote>Operar en regla no es solo evitar multas: es la base de la confianza del viajero y de tu reputación.</blockquote>
+`,
+    slides: [
+      { title: 'Registro y licencia', points: ['Registro de Turismo + LUAF', 'La categoría define qué vendes', 'Renovaciones al día'] },
+      { title: 'Permisos', points: ['Áreas protegidas: permisos y guías', 'Guías especializados con credencial', 'Transporte turístico habilitado'] },
+      { title: 'Seguros y seguridad', points: ['Responsabilidad civil', 'Protocolos documentados', 'Consentimiento en actividades de riesgo'] },
+      { title: 'Buenas prácticas', points: ['Información veraz', 'Facturación en regla', 'Sostenibilidad y respeto cultural'] },
+      { title: 'Recuerda', points: ['La normativa cambia', 'Confirma con el Ministerio', 'Operar en regla = confianza'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Normativas del Ministerio de Turismo. Antes de empezar: este contenido es orientativo, no asesoría legal; confirma siempre los requisitos vigentes con el Ministerio y un asesor.',
+      segments: [
+        { title: 'Registro y licencia', text: 'La base para operar legalmente es estar inscrito en el Registro de Turismo y contar con la Licencia Única Anual de Funcionamiento. Tu categoría, como agencia u operadora, define qué servicios puedes vender. Mantén tus datos y renovaciones al día.' },
+        { title: 'Permisos por actividad', text: 'Según lo que hagas, necesitarás permisos específicos: para operar en áreas protegidas y parques nacionales, guías autorizados y credenciales vigentes para actividades de naturaleza o aventura, y transporte turístico habilitado para trasladar pasajeros.' },
+        { title: 'Seguros y seguridad', text: 'Contrata los seguros que correspondan, como responsabilidad civil y asistencia al viajero. Documenta tus protocolos de seguridad, sobre todo en turismo de aventura, y usa consentimiento informado del pasajero en las actividades de riesgo.' },
+        { title: 'Buenas prácticas', text: 'Da información veraz en tu publicidad y precios, sin sorpresas; mantén tu facturación y comprobantes en regla; y cumple las normas ambientales y de respeto a las comunidades. Operar en regla no es solo evitar multas: es la base de la confianza del viajero y de tu reputación. Y recuerda, la normativa cambia, así que confirma siempre lo vigente.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Cuál es la base para operar turismo legalmente en Ecuador?', options: ['Solo una página web', 'Registro de Turismo y la LUAF', 'Nada', 'Un permiso municipal cualquiera'], correct: 1, explanation: 'El Registro de Turismo y la Licencia Única Anual de Funcionamiento (LUAF) son el punto de partida.' },
+      { question: 'Para operar en un parque nacional necesitas…', options: ['Nada especial', 'Permisos y guías autorizados', 'Solo un seguro', 'Pagar entrada nada más'], correct: 1, explanation: 'Las áreas protegidas exigen permisos y guías autorizados.' },
+      { question: 'En actividades de riesgo es buena práctica…', options: ['No documentar nada', 'Protocolos de seguridad y consentimiento informado', 'Ir sin seguro', 'Ocultar los riesgos'], correct: 1, explanation: 'Protocolos documentados y consentimiento informado protegen al viajero y al operador.' },
+      { question: 'Sobre la normativa, lo correcto es…', options: ['Asumir que nunca cambia', 'Confirmar los requisitos vigentes con el Ministerio', 'Ignorarla', 'Copiar a otro operador'], correct: 1, explanation: 'La normativa cambia; siempre verifica lo vigente con la autoridad y un asesor.' },
+    ],
+  },
+  o3: {
+    id: 'o3',
+    school: 'Escuela de Operadores',
+    schoolColor: '#8B5CF6',
+    title: 'Integración con la App Going App',
+    subtitle: 'Automatiza tu gestión',
+    description:
+      'Cómo sincronizar reservas, manejar tu disponibilidad, cobrar con la plataforma y leer tus métricas para crecer con menos trabajo manual.',
+    readingHtml: `
+<h2>1. Publica y mantén tu oferta</h2>
+<ul>
+  <li><strong>Fichas claras:</strong> título, descripción honesta, fotos buenas y precio correcto.</li>
+  <li><strong>Disponibilidad real:</strong> mantén tu calendario actualizado para evitar sobreventas.</li>
+  <li><strong>Cupos y horarios</strong> bien definidos por salida.</li>
+</ul>
+
+<h2>2. Reservas sin fricción</h2>
+<ul>
+  <li><strong>Confirmación rápida:</strong> responde y confirma a tiempo; la velocidad mejora tu posición.</li>
+  <li><strong>Sincroniza</strong> para que una reserva descuente cupo automáticamente.</li>
+  <li><strong>Comunica</strong> los detalles (punto de encuentro, qué llevar) desde la plataforma.</li>
+</ul>
+
+<h2>3. Cobros y pagos</h2>
+<ul>
+  <li><strong>Pago integrado:</strong> deja que la plataforma gestione el cobro de forma segura.</li>
+  <li><strong>Políticas claras</strong> de cancelación y reembolso, visibles para el cliente.</li>
+  <li><strong>Concilia</strong> tus liquidaciones con tu propia contabilidad.</li>
+</ul>
+
+<h2>4. Métricas para crecer</h2>
+<ul>
+  <li><strong>Conversión:</strong> cuántas visitas terminan en reserva (mejora fotos/precio si es baja).</li>
+  <li><strong>Calificaciones:</strong> tu reputación impulsa más ventas; cuida cada reseña.</li>
+  <li><strong>Ocupación:</strong> identifica tus mejores fechas y ajusta cupos/promos.</li>
+</ul>
+<blockquote>Automatizar lo repetitivo te libera tiempo para lo que de verdad importa: la calidad de la experiencia.</blockquote>
+`,
+    slides: [
+      { title: 'Publica tu oferta', points: ['Fichas claras y honestas', 'Disponibilidad real (evita sobreventa)', 'Cupos y horarios por salida'] },
+      { title: 'Reservas', points: ['Confirma rápido', 'Sincroniza el cupo', 'Comunica detalles desde la plataforma'] },
+      { title: 'Cobros', points: ['Pago integrado y seguro', 'Políticas claras de cancelación', 'Concilia tus liquidaciones'] },
+      { title: 'Métricas', points: ['Conversión', 'Calificaciones', 'Ocupación por fecha'] },
+      { title: 'Beneficio', points: ['Automatiza lo repetitivo', 'Gana tiempo para la calidad', 'Crece con menos trabajo manual'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Integración con la App Going App. Verás cómo automatizar tu gestión: publicar, recibir reservas, cobrar y leer tus métricas para crecer con menos trabajo manual.',
+      segments: [
+        { title: 'Publica y mantén tu oferta', text: 'Empieza con fichas claras: un buen título, una descripción honesta, fotos de calidad y el precio correcto. Mantén tu disponibilidad real y el calendario actualizado para evitar sobreventas, con cupos y horarios bien definidos por cada salida.' },
+        { title: 'Reservas sin fricción', text: 'La velocidad importa: responde y confirma a tiempo, porque mejora tu posición. Sincroniza para que cada reserva descuente cupo automáticamente, y comunica los detalles, como el punto de encuentro y qué llevar, desde la misma plataforma.' },
+        { title: 'Cobros y pagos', text: 'Deja que la plataforma gestione el cobro de forma segura, define políticas claras de cancelación y reembolso visibles para el cliente, y concilia tus liquidaciones con tu propia contabilidad para que los números cuadren.' },
+        { title: 'Métricas para crecer', text: 'Mira tus métricas: la conversión, es decir cuántas visitas terminan en reserva, y si es baja mejora fotos o precio. Cuida tus calificaciones, porque tu reputación impulsa más ventas. Y revisa tu ocupación para identificar tus mejores fechas y ajustar cupos o promociones. Automatizar lo repetitivo te libera tiempo para lo que de verdad importa: la calidad de la experiencia.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Por qué mantener la disponibilidad actualizada?', options: ['Por estética', 'Para evitar sobreventas y malas experiencias', 'No importa', 'Para subir el precio'], correct: 1, explanation: 'Un calendario real evita vender cupos que no existen.' },
+      { question: 'Confirmar las reservas rápido…', options: ['No cambia nada', 'Mejora tu posición y la experiencia', 'Molesta al cliente', 'Es opcional siempre'], correct: 1, explanation: 'La rapidez de respuesta mejora tu posicionamiento y la satisfacción.' },
+      { question: 'Si tu conversión (visitas → reservas) es baja, conviene…', options: ['Ignorarlo', 'Revisar fotos, descripción y precio', 'Subir el precio', 'Cerrar la ficha'], correct: 1, explanation: 'Una conversión baja suele mejorar afinando fotos, descripción y precio.' },
+      { question: 'El beneficio de automatizar lo repetitivo es…', options: ['Más trabajo manual', 'Liberar tiempo para la calidad de la experiencia', 'Perder control', 'Nada'], correct: 1, explanation: 'Automatizar reservas/cobros/métricas deja tiempo para lo que importa: la experiencia.' },
+    ],
+  },
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────
