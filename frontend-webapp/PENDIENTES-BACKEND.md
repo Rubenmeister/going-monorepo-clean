@@ -32,7 +32,10 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
   `cotizar` redirige a `/envios/tracking/[trackingCode]`, que consulta el
   endpoint real `GET /parcels/track/:trackingCode` y refresca cada 10s. Se
   eliminó la pantalla demo. (Mejora futura: WebSocket en vez de polling.)
-- [ ] **Adjuntar foto del paquete** al backend (hoy solo previsualización local).
+- [x] **Adjuntar foto del paquete** al backend: HECHO. Tras crear el envío, la
+  webapp sube la foto (multipart) a `POST /parcels/:id/photo` (envios-service),
+  que valida dueño/tamaño (≤2 MB) y la guarda como data URL en el `Parcel`
+  (`packagePhotoUrl`, sin almacenamiento externo). Disponible en `GET /parcels/:id`.
 
 ## Cuenta / Pagos (Grupo C)
 

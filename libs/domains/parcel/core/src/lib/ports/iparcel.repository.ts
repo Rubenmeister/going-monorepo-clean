@@ -12,4 +12,6 @@ export interface IParcelRepository {
   findByUserId(userId: UUID): Promise<Result<Parcel[], Error>>;
   findByDriverId(driverId: UUID): Promise<Result<Parcel[], Error>>;
   findByTrackingCode(trackingCode: string): Promise<Result<Parcel | null, Error>>;
+  /** Adjunta la foto del paquete (data URL) sin pasar por la entidad de dominio. */
+  setPackagePhoto(id: UUID, packagePhotoUrl: string): Promise<Result<void, Error>>;
 }

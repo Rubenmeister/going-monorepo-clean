@@ -112,6 +112,10 @@ export class ParcelModelSchema {
 
   @Prop()
   otpLockedUntil?: Date;
+
+  // Foto del paquete (data URL base64) adjuntada por el remitente.
+  @Prop()
+  packagePhotoUrl?: string;
 }
 
 export const ParcelSchema = SchemaFactory.createForClass(ParcelModelSchema);

@@ -54,6 +54,9 @@ export interface ParcelProps {
   // OTP rate-limiting (anti brute-force, OTP es 4 dígitos = 10K combos)
   otpAttempts?: number;
   otpLockedUntil?: Date;
+  // Foto del paquete (data URL/base64) adjuntada por el remitente al crear el
+  // envío. Se setea después de crear vía POST /parcels/:id/photo.
+  packagePhotoUrl?: string;
 }
 
 export class Parcel {
@@ -79,6 +82,7 @@ export class Parcel {
   readonly cashConfirmedBy?: UUID;
   readonly otpAttempts?: number;
   readonly otpLockedUntil?: Date;
+  readonly packagePhotoUrl?: string;
 
   private constructor(props: ParcelProps) {
     this.id = props.id;
@@ -103,6 +107,7 @@ export class Parcel {
     this.cashConfirmedBy = props.cashConfirmedBy;
     this.otpAttempts = props.otpAttempts;
     this.otpLockedUntil = props.otpLockedUntil;
+    this.packagePhotoUrl = props.packagePhotoUrl;
   }
 
   /**
@@ -201,6 +206,7 @@ export class Parcel {
       cashConfirmedBy: this.cashConfirmedBy,
       otpAttempts: this.otpAttempts,
       otpLockedUntil: this.otpLockedUntil,
+      packagePhotoUrl: this.packagePhotoUrl,
     };
   }
 

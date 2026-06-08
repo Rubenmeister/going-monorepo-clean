@@ -76,6 +76,15 @@ export class MongooseParcelRepository implements IParcelRepository {
     }
   }
 
+  async setPackagePhoto(id: UUID, packagePhotoUrl: string): Promise<Result<void, Error>> {
+    try {
+      await this.model.updateOne({ id }, { $set: { packagePhotoUrl } }).exec();
+      return ok(undefined);
+    } catch (error) {
+      return err(new Error(error.message));
+    }
+  }
+
   private toDomain(doc: ParcelDocument): Parcel {
     return Parcel.fromPrimitives(doc.toObject() as any);
   }
