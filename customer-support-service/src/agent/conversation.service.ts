@@ -56,6 +56,10 @@ export class ConversationService {
   private readonly logger = new Logger(ConversationService.name);
   // In-memory cache for active conversations
   private conversations = new Map<string, Conversation>();
+  // Single-flight: creaciones en curso por userId, para que peticiones
+  // concurrentes de un userId NUEVO compartan la misma promesa en lugar de
+  // crear dos conversaciones (race condition que perdía mensajes).
+  private pending = new Map<string, Promise<Conversation>>();
   private conversationCount = 0; // used to alternate gender
 
   constructor(
@@ -65,10 +69,25 @@ export class ConversationService {
   ) {}
 
   async getOrCreate(userId: string, channel: 'whatsapp' | 'telegram' | 'web' = 'whatsapp'): Promise<Conversation> {
-    // Check cache first
-    if (this.conversations.has(userId)) {
-      return this.conversations.get(userId)!;
-    }
+    // Check cache first (rápido, síncrono).
+    const cached = this.conversations.get(userId);
+    if (cached) return cached;
+
+    // Single-flight: si ya hay una creación/carga en curso para este userId,
+    // reusar la MISMA promesa evita dos lecturas a Mongo y dos objetos nuevos.
+    const inFlight = this.pending.get(userId);
+    if (inFlight) return inFlight;
+
+    const promise = this.loadOrCreate(userId, channel)
+      .finally(() => this.pending.delete(userId));
+    this.pending.set(userId, promise);
+    return promise;
+  }
+
+  private async loadOrCreate(userId: string, channel: 'whatsapp' | 'telegram' | 'web'): Promise<Conversation> {
+    // Re-check por si otra promesa pobló la cache mientras esperábamos.
+    const cached = this.conversations.get(userId);
+    if (cached) return cached;
 
     // Check MongoDB
     let mongoConv = null;
