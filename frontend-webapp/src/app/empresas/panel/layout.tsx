@@ -8,7 +8,7 @@
 import { useAuthRedirect, signOut } from "@/lib/empresas/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { ROLES, TIPOS_CUENTA } from "@/lib/empresas/constants";
 import { getNavItems, getContexto } from "@/lib/empresas/permisos";
 import NotificationBell from "@/components/empresas/NotificationBell";
@@ -16,6 +16,13 @@ import NotificationBell from "@/components/empresas/NotificationBell";
 export default function EmpresasLayout({ children }: { children: ReactNode }) {
   const { session, status } = useAuthRedirect();
   const pathname = usePathname();
+  // Drawer móvil: el sidebar se oculta off-canvas en pantallas chicas y se abre
+  // con la hamburguesa. En md+ queda fijo y siempre visible.
+  const [mobileOpen, setMobileOpen] = useState(false);
+  // Cierra el drawer al navegar a otra sección.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   if (status === "loading") {
     return (
@@ -36,8 +43,21 @@ export default function EmpresasLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 w-64 h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden">
+      {/* Backdrop (solo móvil, cuando el drawer está abierto) */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-900/40 md:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — drawer en móvil (off-canvas), fijo en md+ */}
+      <aside
+        className={`fixed left-0 top-0 w-64 h-screen bg-white border-r border-slate-200 flex flex-col overflow-hidden z-50 transition-transform duration-200 md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
 
         {/* Logo + empresa */}
         <div className="p-5 border-b border-slate-200 shrink-0">
@@ -107,14 +127,26 @@ export default function EmpresasLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Contenido */}
-      <div className="ml-64 flex flex-col min-h-screen">
+      {/* Contenido — sin margen en móvil, 256px en md+ */}
+      <div className="md:ml-64 flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-8 py-3 flex items-center justify-between">
-          {/* Breadcrumb / página actual */}
-          <p className="text-sm text-slate-500">
-            {navItems.find((item) => pathname === item.href || pathname?.startsWith(item.href + "/"))?.label ?? "Panel"}
-          </p>
+        <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 md:px-8 py-3 flex items-center justify-between">
+          {/* Hamburguesa (solo móvil) + breadcrumb */}
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Abrir menú"
+              className="md:hidden -ml-1 p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <p className="text-sm text-slate-500 truncate">
+              {navItems.find((item) => pathname === item.href || pathname?.startsWith(item.href + "/"))?.label ?? "Panel"}
+            </p>
+          </div>
 
           {/* Acciones header */}
           <div className="flex items-center gap-2">
@@ -134,7 +166,7 @@ export default function EmpresasLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8">
           {children}
         </main>
       </div>
