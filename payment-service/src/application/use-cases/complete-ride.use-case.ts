@@ -71,13 +71,17 @@ export class CompleteRideUseCase {
       throw new Error('Payment processing failed');
     }
 
-    // Saldo retirable (Payout) SOLO cuando la plataforma retiene los fondos.
-    // En EFECTIVO el conductor ya cobró en mano (modelo "comisión por cobrar"):
-    // no se le genera saldo a retirar; su comisión del 20% queda registrada en
-    // payment.platformFee para conciliarla luego contra sus ganancias digitales.
-    if (input.paymentMethod !== 'cash') {
-      await this.recordDriverPayout(input.driverId, payment);
-    }
+    // Payout SEMANAL del conductor (la plataforma le paga 1 vez/semana,
+    // agregando TODOS sus viajes). Delta de cada viaje al neto semanal:
+    //  - retenido por la plataforma (digital/corporate/wallet): +driverAmount (80%).
+    //  - EFECTIVO: el conductor ya cobró el 100% en mano → se RESTA su comisión
+    //    -platformFee (20%), que le debe a la plataforma.
+    // Neto semanal = Σ(80% digital/corporate) − Σ(20% comisión de efectivo).
+    const weeklyDelta =
+      input.paymentMethod === 'cash'
+        ? -(payment.platformFee ?? 0)
+        : (payment.driverAmount ?? 0);
+    await this.recordDriverPayout(input.driverId, payment, weeklyDelta);
 
     // Award puntos de fidelidad al pasajero (fire-and-forget).
     // El cliente HTTP filtra solo Tipo B implícitamente: el endpoint
@@ -105,7 +109,9 @@ export class CompleteRideUseCase {
 
   private async recordDriverPayout(
     driverId: string,
-    payment: any
+    payment: any,
+    /** Monto a sumar al payout semanal: +80% (retenido) o -20% (comisión cash). */
+    delta: number,
   ): Promise<void> {
     try {
       // Get current date for payout period (weekly)
@@ -127,13 +133,11 @@ export class CompleteRideUseCase {
       );
 
       if (existingPayout) {
-        // Update existing payout
+        // Acumula el delta (puede restar, p. ej. comisión de efectivo).
         await this.payoutRepository.update(existingPayout.id, {
-          amount: existingPayout.amount + payment.driverAmount,
+          amount: existingPayout.amount + delta,
           netAmount:
-            existingPayout.netAmount +
-            payment.driverAmount -
-            (existingPayout.fees || 0),
+            existingPayout.netAmount + delta - (existingPayout.fees || 0),
           transactionCount: existingPayout.transactionCount + 1,
           transactionIds: [
             ...(existingPayout.transactionIds || []),
@@ -141,12 +145,12 @@ export class CompleteRideUseCase {
           ],
         });
       } else {
-        // Create new payout for the week
+        // Crea el payout de la semana con el primer delta.
         const payoutId = uuidv4();
         await this.payoutRepository.create({
           id: payoutId,
           driverId,
-          amount: payment.driverAmount,
+          amount: delta,
           currency: 'USD',
           status: 'pending',
           paymentMethod: 'bank_account',
@@ -155,7 +159,7 @@ export class CompleteRideUseCase {
           transactionCount: 1,
           transactionIds: [payment.id],
           fees: 0,
-          netAmount: payment.driverAmount,
+          netAmount: delta,
         });
       }
     } catch (error) {
