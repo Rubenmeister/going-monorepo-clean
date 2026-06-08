@@ -1,0 +1,38 @@
+name: Wire — API Gateway service URLs
+
+# Cablea las variables de entorno *_SERVICE_URL (y CORS_ORIGINS) del
+# api-gateway descubriendo las URLs reales de cada microservicio en Cloud Run.
+# Es la versión CI de scripts/update-gateway-urls.sh: usa --update-env-vars
+# (merge, no borra otras vars), así que es idempotente y seguro re-correrlo.
+#
+# Correr después de desplegar un servicio nuevo que el gateway deba rutear
+# (p. ej. ratings-service) para que el gateway apunte a su URL.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  wire:
+    name: Wire api-gateway URLs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Set project
+        run: gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Wire api-gateway service URLs
+        run: bash scripts/update-gateway-urls.sh
