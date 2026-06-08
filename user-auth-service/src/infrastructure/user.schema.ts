@@ -24,6 +24,14 @@ export class UserModelSchema {
   @Prop()
   phone?: string;
 
+  /**
+   * Preferencias de notificación por usuario (email, sms, promos, trips…).
+   * Persistidas por cuenta para que sigan al usuario entre dispositivos
+   * (antes solo vivían en localStorage del navegador).
+   */
+  @Prop({ type: Object, default: {} })
+  notificationPreferences?: Record<string, boolean>;
+
   @Prop([String])
   roles: string[];
 

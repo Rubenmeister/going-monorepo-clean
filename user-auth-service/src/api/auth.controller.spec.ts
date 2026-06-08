@@ -63,7 +63,18 @@ describe('AuthController (Integration)', () => {
           },
         },
         { provide: OauthStateService, useValue: { validateReturnTo: jest.fn(), verify: jest.fn() } },
-        { provide: getModelToken(UserModelSchema.name), useValue: {} },
+        {
+          provide: getModelToken(UserModelSchema.name),
+          useValue: {
+            // getCurrentUser enriquece con notificationPreferences vía
+            // findOne().select().lean(); el mock devuelve null (→ {}).
+            findOne: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                lean: jest.fn().mockResolvedValue(null),
+              }),
+            }),
+          },
+        },
         { provide: LoyaltyPointsService, useValue: { award: jest.fn(), getBalance: jest.fn(), redeem: jest.fn() } },
         { provide: MfaService, useValue: { verifyChallenge: jest.fn() } },
       ],
@@ -209,6 +220,7 @@ describe('AuthController (Integration)', () => {
         userId,
         email,
         roles,
+        notificationPreferences: {},
         authenticated: true,
       });
     });
