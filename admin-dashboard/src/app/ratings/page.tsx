@@ -68,29 +68,13 @@ function AlertBadge({ avg }: { avg: number }) {
   return <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold">⚠ Bajo</span>;
 }
 
-/* Demo fallback data */
-function demoRatings(): RatingEntry[] {
-  const names = ['Carlos Mendoza','Diana Torres','Luis Pinta','Ana Suárez','Marco Reyes','Valeria Cruz'];
-  const comments = ['Excelente servicio','Muy puntual','Coche limpio','Buen trato','Ruta perfecta','Llegó tarde','Sin comentario'];
-  return Array.from({ length: 48 }, (_, i) => ({
-    id: `r-${i}`,
-    driverId: `d-${i % 6}`,
-    driverName: names[i % 6],
-    bookingId: `b-${i}`,
-    score: [5,5,5,4,4,3,2,1][i % 8],
-    comment: comments[i % 7],
-    serviceType: ['transporte','tours','experiencias'][i % 3],
-    createdAt: new Date(Date.now() - i * 86400000 * 2).toISOString(),
-  }));
-}
-
 export default function RatingsPage() {
   const { auth } = useMonorepoApp();
   const token: string = typeof window !== 'undefined' ? localStorage.getItem('authToken') ?? '' : '';
 
   const [ratings, setRatings]     = useState<RatingEntry[]>([]);
   const [loading, setLoading]     = useState(true);
-  const [isDemo, setIsDemo]       = useState(false);
+  const [error, setError]         = useState(false);
   const [filterSvc, setFilterSvc] = useState('');
   const [filterScore, setFilterScore] = useState('');
   const [page, setPage]           = useState(0);
@@ -101,10 +85,12 @@ export default function RatingsPage() {
     const data = await safeGet<RatingEntry[] | { data?: RatingEntry[]; items?: RatingEntry[] }>(token, '/ratings?limit=200');
     if (data) {
       const list = Array.isArray(data) ? data : (data.data ?? data.items ?? []);
-      if (list.length > 0) { setRatings(list); setIsDemo(false); }
-      else { setRatings(demoRatings()); setIsDemo(true); }
+      setRatings(list);
+      setError(false);
     } else {
-      setRatings(demoRatings()); setIsDemo(true);
+      // La API falló: NO mostramos datos de ejemplo (engañan al admin).
+      setRatings([]);
+      setError(true);
     }
     setLoading(false);
   }, [token]);
@@ -155,7 +141,7 @@ export default function RatingsPage() {
           <p className="text-sm text-gray-500 mt-1">Satisfacción de usuarios en toda la plataforma</p>
         </div>
         <div className="flex items-center gap-3">
-          {isDemo && <span className="text-xs px-3 py-1 bg-amber-100 text-amber-700 rounded-full font-semibold">◐ Datos de ejemplo</span>}
+          {error && <span className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-full font-semibold">⚠ No se pudieron cargar los ratings</span>}
           <button onClick={load} className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
             ↺ Actualizar
           </button>

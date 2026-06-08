@@ -27,12 +27,12 @@ interface User {
   firstName: string;
   lastName: string;
   roles: string[];
-  status: 'active' | 'inactive' | 'suspended';
+  status: string;
   createdAt: string;
 }
 
 export default function UsersManagementPage() {
-  const { auth } = useMonorepoApp();
+  const { auth, domain } = useMonorepoApp();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,36 +46,9 @@ export default function UsersManagementPage() {
 
     const loadUsers = async () => {
       try {
-        // TODO: Fetch users from backend
-        setUsers([
-          {
-            id: '1',
-            email: 'user1@example.com',
-            firstName: 'Juan',
-            lastName: 'Pérez',
-            roles: ['customer'],
-            status: 'active',
-            createdAt: '2025-01-15',
-          },
-          {
-            id: '2',
-            email: 'host@example.com',
-            firstName: 'María',
-            lastName: 'García',
-            roles: ['host'],
-            status: 'active',
-            createdAt: '2025-01-20',
-          },
-          {
-            id: '3',
-            email: 'driver@example.com',
-            firstName: 'Carlos',
-            lastName: 'López',
-            roles: ['driver'],
-            status: 'inactive',
-            createdAt: '2025-01-10',
-          },
-        ]);
+        // Datos reales del backend (mismo origen que /clients).
+        const res = await domain.admin.getUsers({ limit: 100 });
+        setUsers((res?.users ?? []) as User[]);
         setLoading(false);
       } catch (error) {
         console.error('Error loading users:', error);
@@ -85,7 +58,7 @@ export default function UsersManagementPage() {
     };
 
     loadUsers();
-  }, [auth.user, router]);
+  }, [auth.user, router, domain]);
 
   if (auth.isLoading) {
     return <Loading fullHeight size="lg" message="Verificando sesión..." />;
