@@ -29,6 +29,11 @@ export interface IBookingRepository {
    * Ordenado por startDate asc para procesar primero los más urgentes.
    */
   findDispatchReady(beforeDate: Date, limit?: number): Promise<Result<Booking[], Error>>;
+  /**
+   * Listar TODAS las reservas (uso admin / panel). Filtro opcional por estado
+   * y paginación. No filtra por empresa ni usuario — solo lo usa el admin.
+   */
+  findAll(opts: { status?: string; limit: number; skip: number }): Promise<Result<Booking[], Error>>;
 }
 
 export const IBookingRepository = Symbol('IBookingRepository');

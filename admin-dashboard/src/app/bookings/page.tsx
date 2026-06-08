@@ -251,17 +251,12 @@ export default function BookingsPage() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [pending, all] = await Promise.allSettled([
-        adminFetch<Booking[]>(token, '/transport/pending'),
-        adminFetch<{ data?: Booking[]; items?: Booking[] }>(token, '/bookings?limit=200'),
-      ]);
-      const pendingList = pending.status === 'fulfilled' ? (Array.isArray(pending.value) ? pending.value : []) : [];
-      const allList = all.status === 'fulfilled'
-        ? (all.value?.data ?? all.value?.items ?? (Array.isArray(all.value) ? all.value as unknown as Booking[] : []))
-        : [];
-      const map = new Map<string, Booking>();
-      [...allList, ...pendingList].forEach(b => map.set(b.id, b));
-      setBookings(Array.from(map.values()).sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')));
+      // Endpoint admin real: lista global de reservas. Antes se pegaba a
+      // /transport/pending (inexistente) y a /bookings sin companyId (el
+      // backend lo rechaza con 400). Ahora GET /bookings/admin lista todas.
+      const all = await adminFetch<{ data?: Booking[]; items?: Booking[] } | Booking[]>(token, '/bookings/admin?limit=200');
+      const allList = Array.isArray(all) ? all : (all?.data ?? all?.items ?? []);
+      setBookings([...allList].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')));
     } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Error'); }
     finally { setLoading(false); }
   }, [token]);
