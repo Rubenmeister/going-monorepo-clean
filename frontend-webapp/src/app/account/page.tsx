@@ -23,8 +23,9 @@ async function authHeaders(): Promise<HeadersInit> {
   };
 }
 
-// Preferencias de notificación — persistidas en localStorage (no había backend
-// de settings). Claves estables para no depender del índice/orden.
+// Preferencias de notificación — persistidas por usuario en el backend
+// (PATCH/GET /auth/me) con localStorage como caché local. Claves estables
+// para no depender del índice/orden.
 const NOTIF_OPTIONS = [
   { key: 'email',  label: 'Notificaciones por Email',  def: true  },
   { key: 'sms',    label: 'Notificaciones por SMS',    def: true  },
@@ -147,16 +148,45 @@ export default function AccountPage() {
   }, [auth.user]);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(NOTIF_PREFS_KEY);
-      if (raw) setNotifPrefs(JSON.parse(raw));
-    } catch { /* ignore */ }
+    let cancelled = false;
+    (async () => {
+      // 1) Cache local para una UI inmediata.
+      try {
+        const raw = localStorage.getItem(NOTIF_PREFS_KEY);
+        if (raw && !cancelled) setNotifPrefs(JSON.parse(raw));
+      } catch { /* ignore */ }
+      // 2) Fuente de verdad: preferencias persistidas por usuario en el backend.
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/auth/me`, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        const prefs = data?.notificationPreferences;
+        if (prefs && typeof prefs === 'object' && !cancelled) {
+          setNotifPrefs(prefs);
+          try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(prefs)); } catch { /* ignore */ }
+        }
+      } catch { /* sin red: nos quedamos con la cache local */ }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const toggleNotif = (key: string, def: boolean) => {
     setNotifPrefs(prev => {
       const next = { ...prev, [key]: !(prev[key] ?? def) };
       try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      // Persistir en el backend por usuario (best-effort; la cache local ya
+      // quedó guardada, así que la UI no se bloquea si falla la red).
+      (async () => {
+        try {
+          const headers = await authHeaders();
+          await fetch(`${API_BASE}/auth/me`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ notificationPreferences: next }),
+          });
+        } catch { /* offline: se sincroniza la próxima vez que se guarde */ }
+      })();
       return next;
     });
   };
@@ -792,7 +822,7 @@ export default function AccountPage() {
                   );
                 })}
               </div>
-              <p className="text-xs text-gray-400 mt-3">Tus preferencias se guardan en este dispositivo.</p>
+              <p className="text-xs text-gray-400 mt-3">Tus preferencias se guardan en tu cuenta y te siguen en todos tus dispositivos.</p>
 
               {/* Push del navegador (web-push) */}
               <div className="mt-4 pt-4 border-t border-gray-100">

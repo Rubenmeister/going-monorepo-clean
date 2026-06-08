@@ -804,10 +804,22 @@ export class AuthController {
     @CurrentUser('email') email: string,
     @CurrentUser('roles') roles: string[]
   ) {
+    // Enriquecemos con las preferencias de notificación persistidas (para que
+    // la webapp las cargue ya sincronizadas entre dispositivos). Best-effort:
+    // si la lectura falla, devolvemos {} sin romper el endpoint.
+    let notificationPreferences: Record<string, boolean> = {};
+    if (userId) {
+      const u = await this.userModel
+        .findOne({ id: userId })
+        .select('notificationPreferences')
+        .lean();
+      notificationPreferences = (u?.notificationPreferences as Record<string, boolean>) ?? {};
+    }
     return {
       userId,
       email,
       roles,
+      notificationPreferences,
       authenticated: !!userId,
     };
   }
@@ -824,15 +836,29 @@ export class AuthController {
   @HttpCode(200)
   async updateCurrentUser(
     @CurrentUser('userId') userId: UUID,
-    @Body() body: { firstName?: string; lastName?: string; phone?: string },
+    @Body() body: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      notificationPreferences?: Record<string, unknown>;
+    },
   ) {
     const update: Record<string, unknown> = {};
     if (typeof body.firstName === 'string') update.firstName = body.firstName.trim();
     if (typeof body.lastName === 'string') update.lastName = body.lastName.trim();
     if (typeof body.phone === 'string') update.phone = body.phone.trim();
+    // Preferencias de notificación: sanitizamos a un mapa de booleanos para no
+    // guardar tipos arbitrarios que mande el cliente.
+    if (body.notificationPreferences && typeof body.notificationPreferences === 'object') {
+      const prefs: Record<string, boolean> = {};
+      for (const [k, v] of Object.entries(body.notificationPreferences)) {
+        prefs[k] = !!v;
+      }
+      update.notificationPreferences = prefs;
+    }
 
     if (Object.keys(update).length === 0) {
-      throw new BadRequestException('Nada que actualizar (firstName, lastName o phone).');
+      throw new BadRequestException('Nada que actualizar (firstName, lastName, phone o notificationPreferences).');
     }
 
     const res = await this.userModel.updateOne({ id: userId }, { $set: update });
@@ -842,7 +868,7 @@ export class AuthController {
 
     const u = await this.userModel
       .findOne({ id: userId })
-      .select('id email firstName lastName phone roles')
+      .select('id email firstName lastName phone roles notificationPreferences')
       .lean();
 
     return {
@@ -852,6 +878,7 @@ export class AuthController {
       lastName: u?.lastName,
       phone: u?.phone,
       roles: u?.roles,
+      notificationPreferences: u?.notificationPreferences ?? {},
     };
   }
 

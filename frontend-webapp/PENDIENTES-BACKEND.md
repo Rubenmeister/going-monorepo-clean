@@ -47,8 +47,11 @@ Items que la webapp **no puede resolver sola** porque dependen del backend.
 
 - [x] **Editar perfil**: HECHO — `user-auth-service` expone `PATCH /auth/me`
   (`{firstName,lastName,phone}`). La webapp ya guarda contra él.
-- [ ] **Preferencias de notificación**: hoy se guardan en `localStorage` del
-  dispositivo. Falta endpoint de settings para persistirlas por usuario.
+- [x] **Preferencias de notificación**: HECHO. Se persisten por usuario en
+  user-auth (`notificationPreferences` en el user schema). `PATCH /auth/me`
+  acepta el mapa de booleanos (sanitizado) y `GET /auth/me` lo devuelve. La
+  webapp (`/account` → Ajustes) las carga del backend y guarda cada cambio
+  contra él, con `localStorage` solo como caché local.
 - [x] **Wallet del pasajero**: COMPLETO — ledger, balance/transactions,
   **recarga** (Datafast/DeUna, confirmación por estado + webhook idempotente) y
   **transferencias** entre usuarios (`POST /payments/wallet/transfer`, resuelve
