@@ -96,6 +96,11 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
     'ride:completed': useCallback(() => {
       if (activeRide) updateRideStatus(activeRide.tripId, 'completed');
     }, [activeRide, updateRideStatus]),
+    // El conductor confirmó el token de fin de viaje contra el servidor:
+    // es el backend quien cierra el viaje (no el cliente).
+    'ride:delivery_confirmed': useCallback(() => {
+      if (activeRide) updateRideStatus(activeRide.tripId, 'completed');
+    }, [activeRide, updateRideStatus]),
     'ride:cancelled': useCallback(() => {
       onCancelled();
     }, [onCancelled]),
@@ -491,10 +496,24 @@ function EndTripModal({
   onConfirm: () => void;
   onClose: () => void;
 }) {
-  // Código de cierre determinístico, distinto del PIN de inicio (últimos 4):
-  // tomamos los primeros 4 dígitos del id para diferenciarlo.
-  const endCode = rideId.replace(/\D/g, '').padStart(8, '0').slice(0, 4);
+  // El código de cierre lo EMITE el servidor (6 dígitos). El conductor lo
+  // confirma contra el backend (POST /confirm-delivery), que es quien cierra
+  // el viaje. Ya no se calcula en el cliente a partir del rideId.
+  const [endCode, setEndCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+    rideService.getEndToken(rideId)
+      .then((r) => { if (!cancelled) setEndCode(r.endToken || null); })
+      .catch(() => { if (!cancelled) setError(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [rideId]);
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-4">
@@ -502,15 +521,24 @@ function EndTripModal({
         <div className="px-6 pt-6 pb-4 text-center border-b border-gray-100">
           <div className="text-4xl mb-2">🏁</div>
           <h3 className="text-lg font-black text-gray-900">Token de fin de viaje</h3>
-          <p className="text-sm text-gray-400 mt-1">Confirma que llegaste a tu destino</p>
+          <p className="text-sm text-gray-400 mt-1">El conductor confirma este código para cerrar el viaje</p>
         </div>
         <div className="p-6 space-y-4">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
             Dicta este código a tu conductor para cerrar el viaje
           </p>
           <div className="bg-gray-50 rounded-2xl p-5 text-center">
-            <p className="text-5xl font-black tracking-widest text-gray-900 font-mono">{endCode}</p>
+            {loading ? (
+              <p className="text-base font-medium text-gray-400 animate-pulse">Generando código…</p>
+            ) : error || !endCode ? (
+              <p className="text-sm font-medium text-red-500">No se pudo obtener el código. Revisa tu conexión e inténtalo de nuevo.</p>
+            ) : (
+              <p className="text-5xl font-black tracking-widest text-gray-900 font-mono">{endCode}</p>
+            )}
           </div>
+          <p className="text-[11px] text-gray-400 text-center">
+            El viaje se cierra cuando el conductor confirma el código en su app.
+          </p>
           <label
             className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 cursor-pointer"
             onClick={() => setConfirmed(!confirmed)}
