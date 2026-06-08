@@ -578,6 +578,272 @@ export const MULTIFORMAT_COURSES: Record<string, MultiFormatCourseData> = {
       { question: '¿Cuál es una acción que NO debes hacer?', options: ['Llamar al 911', 'Mover a un herido sin necesidad', 'Señalizar la zona', 'Usar guantes del botiquín'], correct: 1, explanation: 'No se mueve a un herido salvo peligro inminente, por el riesgo de agravar lesiones de columna.' },
     ],
   },
+
+  // ─── ESCUELA DE ANFITRIONES ───────────────────────────────────────────────
+  a1: {
+    id: 'a1',
+    school: 'Escuela de Anfitriones',
+    schoolColor: COLORS.system.blue,
+    title: 'Fotografía con el Celular',
+    subtitle: 'Fotos que venden el vibe',
+    description:
+      'Luz natural, ángulos, composición y edición gratuita. Convierte tu teléfono en una cámara que muestra lo mejor de tu alojamiento y llena tu calendario de reservas.',
+    readingHtml: `
+<h2>1. La luz lo es todo</h2>
+<p>La buena foto no necesita una cámara cara: necesita <strong>buena luz</strong>.</p>
+<ul>
+  <li><strong>Luz natural:</strong> fotografía de día, con cortinas y ventanas abiertas. Apaga las lámparas para evitar tonos amarillos.</li>
+  <li><strong>La “hora dorada”:</strong> la primera y la última hora de sol dan una luz cálida y favorecedora para exteriores.</li>
+  <li><strong>Evita el contraluz:</strong> no pongas la ventana justo detrás del objeto; deja que la luz entre de lado.</li>
+</ul>
+
+<h2>2. Prepara el espacio antes de disparar</h2>
+<ul>
+  <li><strong>Ordena y despeja:</strong> menos objetos = foto más limpia. Guarda cables, basura y artículos personales.</li>
+  <li><strong>Haz la cama</strong> y endereza cojines, toallas y cortinas.</li>
+  <li><strong>Añade un detalle de vida:</strong> una planta, flores o una taza dan calidez.</li>
+</ul>
+
+<h2>3. Composición y ángulos</h2>
+<ul>
+  <li><strong>Regla de los tercios:</strong> activa la cuadrícula del celular y ubica lo importante en las líneas.</li>
+  <li><strong>Toma a la altura del pecho,</strong> no desde arriba: muestra el espacio como se vive.</li>
+  <li><strong>Esquinas:</strong> fotografiar desde una esquina hace que la habitación se vea más amplia.</li>
+  <li><strong>Horizontal</strong> para espacios; vertical para detalles.</li>
+</ul>
+
+<h2>4. Edición gratuita</h2>
+<p>Con apps gratis (Snapseed, Lightroom móvil o el editor del propio teléfono):</p>
+<ul>
+  <li>Sube un poco el <strong>brillo</strong> y las <strong>sombras</strong>.</li>
+  <li>Endereza líneas verticales (paredes rectas).</li>
+  <li><strong>No exageres</strong> los filtros: la foto debe parecerse a la realidad o tendrás malas reseñas.</li>
+</ul>
+
+<h2>5. La foto de portada</h2>
+<p>La primera foto decide si alguien entra a tu anuncio. Elige la más <strong>luminosa y representativa</strong> (normalmente la sala o la mejor vista). Sube entre <strong>8 y 15 fotos</strong> que cuenten el recorrido del espacio.</p>
+<blockquote>Honestidad ante todo: muestra el lugar tal como es. La mejor reseña es un huésped que llega y encuentra justo lo que vio.</blockquote>
+`,
+    slides: [
+      { title: 'La luz lo es todo', points: ['Fotografía de día con luz natural', 'Apaga lámparas (evita amarillo)', 'Hora dorada para exteriores', 'Evita el contraluz'] },
+      { title: 'Prepara el espacio', points: ['Ordena y despeja', 'Haz la cama, endereza cojines', 'Añade una planta o flores'] },
+      { title: 'Composición', points: ['Activa la cuadrícula (tercios)', 'Dispara a la altura del pecho', 'Desde la esquina = más amplio', 'Horizontal para espacios'] },
+      { title: 'Edición gratuita', points: ['Sube brillo y sombras', 'Endereza las verticales', 'No exageres los filtros'] },
+      { title: 'Foto de portada', points: ['La 1ª foto decide la visita', 'Elige la más luminosa', 'Sube 8–15 fotos', 'Muestra el lugar tal como es'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Fotografía con el Celular. Hoy aprenderás a convertir tu teléfono en una herramienta que muestra lo mejor de tu alojamiento y llena tu calendario de reservas.',
+      segments: [
+        { title: 'La luz', text: 'La buena foto no necesita una cámara cara, necesita buena luz. Fotografía de día con luz natural, abre cortinas y ventanas y apaga las lámparas para evitar tonos amarillos. Para exteriores, aprovecha la hora dorada, la primera y la última hora de sol. Y evita el contraluz: deja que la luz entre de lado.' },
+        { title: 'Prepara y compón', text: 'Antes de disparar, ordena y despeja: menos objetos significan una foto más limpia. Haz la cama, endereza cojines y añade un detalle de vida como una planta. Para componer, activa la cuadrícula del celular y usa la regla de los tercios, dispara a la altura del pecho y, desde una esquina, la habitación se ve más amplia.' },
+        { title: 'Edición sin gastar', text: 'Con apps gratuitas como Snapseed o Lightroom móvil, sube un poco el brillo y las sombras y endereza las líneas verticales para que las paredes se vean rectas. Pero no exageres los filtros: la foto debe parecerse a la realidad, o tendrás malas reseñas.' },
+        { title: 'La portada', text: 'La primera foto decide si alguien entra a tu anuncio, así que elige la más luminosa y representativa, normalmente la sala o la mejor vista. Sube entre ocho y quince fotos que cuenten el recorrido del espacio. Y recuerda: honestidad ante todo, muestra el lugar tal como es.' },
+      ],
+    },
+    quiz: [
+      { question: '¿Cuál es el mejor momento para fotografiar interiores?', options: ['De noche con flash', 'De día con luz natural', 'Con todas las lámparas encendidas', 'No importa'], correct: 1, explanation: 'La luz natural de día da los mejores resultados; las lámparas añaden tonos amarillos.' },
+      { question: 'La regla de los tercios se aplica…', options: ['Recortando la foto en tres', 'Ubicando lo importante sobre las líneas de la cuadrícula', 'Tomando 3 fotos', 'Usando 3 filtros'], correct: 1, explanation: 'Se activa la cuadrícula y se sitúan los elementos clave sobre sus líneas.' },
+      { question: 'Sobre los filtros de edición, lo correcto es…', options: ['Exagerarlos al máximo', 'Usarlos con mesura para que la foto se parezca a la realidad', 'No editar nunca', 'Cambiar los colores reales'], correct: 1, explanation: 'Una edición sutil mejora la foto; exagerar genera expectativas falsas y malas reseñas.' },
+      { question: 'La foto de portada debería ser…', options: ['La más oscura', 'Una de detalle', 'La más luminosa y representativa', 'La del baño'], correct: 2, explanation: 'La portada decide la visita: elige la imagen más luminosa y representativa del espacio.' },
+    ],
+  },
+  a2: {
+    id: 'a2',
+    school: 'Escuela de Anfitriones',
+    schoolColor: COLORS.system.blue,
+    title: 'Limpieza Estándar Going App',
+    subtitle: 'El protocolo que construye confianza',
+    description:
+      'La secuencia de limpieza, los productos seguros, la desinfección entre huéspedes y la lista de verificación que convierten la limpieza en tu mejor reseña.',
+    readingHtml: `
+<h2>1. Por qué la limpieza vende</h2>
+<p>La limpieza es el factor número uno en las reseñas de alojamientos. Un espacio impecable <strong>genera confianza al instante</strong> y justifica tu precio. Un detalle sucio puede arruinar una reseña perfecta.</p>
+
+<h2>2. La secuencia correcta (de arriba a abajo, de limpio a sucio)</h2>
+<ol>
+  <li><strong>Ventila</strong> y recoge basura y ropa de cama usada.</li>
+  <li><strong>Polvo de arriba hacia abajo:</strong> repisas, muebles, superficies.</li>
+  <li><strong>Cocina:</strong> electrodomésticos, mesones y fregadero.</li>
+  <li><strong>Baño al final:</strong> inodoro de último, con paño exclusivo.</li>
+  <li><strong>Pisos al cierre:</strong> barre y trapea saliendo de la habitación.</li>
+</ol>
+<blockquote>Regla de oro: nunca uses el mismo paño para el baño y la cocina. Usa códigos de color para evitar contaminación cruzada.</blockquote>
+
+<h2>3. Productos seguros</h2>
+<ul>
+  <li><strong>Desengrasante</strong> para cocina; <strong>desinfectante</strong> para baño.</li>
+  <li><strong>Nunca mezcles</strong> cloro con amoniaco o con vinagre: liberan gases tóxicos.</li>
+  <li><strong>Ventila</strong> mientras usas químicos y guárdalos fuera del alcance.</li>
+  <li>Opciones nobles: vinagre y bicarbonato para limpieza diaria.</li>
+</ul>
+
+<h2>4. Desinfección entre huéspedes</h2>
+<p>Presta atención a los <strong>puntos de contacto</strong> que muchos olvidan:</p>
+<ul>
+  <li>Manijas, interruptores y controles remotos.</li>
+  <li>Llaves, mandos y superficies del baño.</li>
+  <li>Ropa de cama y toallas: <strong>siempre</strong> lavadas entre huéspedes, aunque parezcan sin usar.</li>
+</ul>
+
+<h2>5. Tu checklist final</h2>
+<ul>
+  <li>Cama tendida con ropa limpia y sin pelos ni manchas.</li>
+  <li>Baño seco, sin cabellos, con papel y amenidades repuestas.</li>
+  <li>Cocina sin grasa, basura vaciada, vajilla limpia.</li>
+  <li>Aroma neutro y fresco (sin perfumes fuertes).</li>
+  <li>Foto rápida del espacio listo: tu respaldo ante cualquier reclamo.</li>
+</ul>
+`,
+    slides: [
+      { title: 'La limpieza vende', points: ['Factor #1 en las reseñas', 'Genera confianza al instante', 'Justifica tu precio'] },
+      { title: 'La secuencia', points: ['Ventila y recoge', 'Polvo de arriba a abajo', 'Cocina, luego baño al final', 'Pisos al cierre'] },
+      { title: 'Productos seguros', points: ['Desengrasante / desinfectante', 'Nunca mezcles cloro con amoniaco', 'Ventila al usar químicos', 'Vinagre y bicarbonato a diario'] },
+      { title: 'Entre huéspedes', points: ['Desinfecta puntos de contacto', 'Manijas, interruptores, controles', 'Ropa de cama y toallas siempre lavadas'] },
+      { title: 'Checklist final', points: ['Cama impecable', 'Baño seco y repuesto', 'Cocina sin grasa', 'Aroma neutro + foto de respaldo'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Limpieza Estándar Going App. Aquí verás cómo la limpieza se convierte en tu mejor reseña, con una secuencia clara, productos seguros y una desinfección que da confianza.',
+      segments: [
+        { title: 'Por qué vende', text: 'La limpieza es el factor número uno en las reseñas de alojamientos. Un espacio impecable genera confianza al instante y justifica tu precio, mientras que un solo detalle sucio puede arruinar una reseña perfecta.' },
+        { title: 'La secuencia correcta', text: 'Limpia siempre de arriba hacia abajo y de lo más limpio a lo más sucio. Primero ventila y recoge basura y ropa de cama. Luego quita el polvo de arriba hacia abajo, sigue con la cocina y deja el baño para el final, con un paño exclusivo. Termina con los pisos, saliendo de la habitación. La regla de oro: nunca uses el mismo paño para el baño y la cocina.' },
+        { title: 'Productos seguros', text: 'Usa desengrasante para la cocina y desinfectante para el baño. Y muy importante: nunca mezcles cloro con amoniaco ni con vinagre, porque liberan gases tóxicos. Ventila mientras usas químicos y guárdalos fuera del alcance. Para el día a día, el vinagre y el bicarbonato son grandes aliados.' },
+        { title: 'Entre huéspedes y checklist', text: 'Entre un huésped y otro, desinfecta los puntos de contacto que muchos olvidan: manijas, interruptores, controles y mandos. La ropa de cama y las toallas se lavan siempre, aunque parezcan sin usar. Y antes de cerrar, revisa tu checklist: cama impecable, baño seco y repuesto, cocina sin grasa, aroma neutro y una foto rápida como respaldo.' },
+      ],
+    },
+    quiz: [
+      { question: '¿En qué orden se limpia?', options: ['De abajo hacia arriba', 'De arriba hacia abajo y de limpio a sucio', 'El baño primero', 'Al azar'], correct: 1, explanation: 'Se limpia de arriba hacia abajo y de lo más limpio a lo más sucio para no reensuciar.' },
+      { question: '¿Qué NUNCA debes mezclar?', options: ['Agua y jabón', 'Cloro con amoniaco', 'Vinagre y agua', 'Bicarbonato y agua'], correct: 1, explanation: 'Mezclar cloro con amoniaco (o con vinagre) libera gases tóxicos peligrosos.' },
+      { question: 'La ropa de cama entre huéspedes se debe…', options: ['Reutilizar si se ve limpia', 'Lavar siempre', 'Solo airear', 'Cambiar una vez al mes'], correct: 1, explanation: 'Se lava siempre entre huéspedes, aunque parezca sin usar: es higiene y confianza.' },
+      { question: '¿Cuál es un buen respaldo ante un reclamo de limpieza?', options: ['Discutir', 'Una foto del espacio ya listo', 'Bajar el precio', 'Ignorarlo'], correct: 1, explanation: 'Una foto del espacio limpio y listo documenta el estado de entrega.' },
+    ],
+  },
+  a3: {
+    id: 'a3',
+    school: 'Escuela de Anfitriones',
+    schoolColor: COLORS.system.blue,
+    title: 'Diseño con Bajo Presupuesto',
+    subtitle: 'Haz más con menos',
+    description:
+      'Ideas de decoración local, plantas, iluminación y pequeños detalles que hacen que los huéspedes recomienden tu lugar — sin gastar de más.',
+    readingHtml: `
+<h2>1. Menos es más</h2>
+<p>Un espacio recargado se ve pequeño y desordenado. El diseño que enamora suele ser <strong>limpio, claro y con intención</strong>. Antes de comprar, <strong>quita</strong>: despeja superficies y deja respirar el ambiente.</p>
+
+<h2>2. Iluminación: el cambio más barato</h2>
+<ul>
+  <li><strong>Luz cálida</strong> (2700–3000 K) crea ambiente acogedor; la luz blanca fría se siente de oficina.</li>
+  <li><strong>Varias fuentes</strong> de luz (lámpara de mesa, de pie) superan a un solo foco central.</li>
+  <li>Una <strong>tira LED o una lámpara</strong> económica transforma un rincón.</li>
+</ul>
+
+<h2>3. Lo local cuenta una historia</h2>
+<ul>
+  <li>Artesanía, textiles y cerámica <strong>ecuatorianos</strong> dan identidad y apoyan a productores.</li>
+  <li>Una foto o cuadro de un destino cercano conecta al huésped con el lugar.</li>
+  <li>Evita la decoración genérica: lo auténtico es más memorable y “fotografiable”.</li>
+</ul>
+
+<h2>4. Plantas y textiles</h2>
+<ul>
+  <li><strong>Plantas</strong> (reales de bajo mantenimiento o artificiales de calidad) dan vida y frescura.</li>
+  <li><strong>Textiles:</strong> cojines, una manta y cortinas combinadas cambian todo por poco dinero.</li>
+  <li>Mantén una <strong>paleta de 2–3 colores</strong> para que se vea ordenado.</li>
+</ul>
+
+<h2>5. Detalles que generan reseñas 5★</h2>
+<ul>
+  <li>Una bienvenida pequeña: agua, café, fruta o una nota escrita.</li>
+  <li>Wi-Fi visible y fácil, cargadores y un espejo de cuerpo entero.</li>
+  <li>Ganchos, perchas y espacio para maletas: comodidad real.</li>
+</ul>
+<blockquote>El objetivo no es lujo, es que el huésped se sienta <strong>cuidado</strong>. Esos detalles son los que se mencionan en las reseñas.</blockquote>
+`,
+    slides: [
+      { title: 'Menos es más', points: ['Espacios limpios y con intención', 'Antes de comprar, quita', 'Despeja superficies'] },
+      { title: 'Iluminación barata', points: ['Luz cálida (2700–3000 K)', 'Varias fuentes, no un solo foco', 'Una lámpara transforma un rincón'] },
+      { title: 'Lo local', points: ['Artesanía y textiles ecuatorianos', 'Apoya a productores', 'Auténtico = memorable y fotografiable'] },
+      { title: 'Plantas y textiles', points: ['Plantas dan vida', 'Cojines, manta, cortinas', 'Paleta de 2–3 colores'] },
+      { title: 'Detalles 5★', points: ['Bienvenida: agua, café, nota', 'Wi-Fi fácil y cargadores', 'Ganchos y espacio para maletas'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Diseño con Bajo Presupuesto. Verás cómo pequeños cambios de luz, color y detalles locales hacen que los huéspedes recomienden tu lugar sin gastar de más.',
+      segments: [
+        { title: 'Menos es más', text: 'Un espacio recargado se ve pequeño y desordenado. El diseño que enamora suele ser limpio, claro y con intención. Por eso, antes de comprar cosas nuevas, quita: despeja las superficies y deja respirar el ambiente.' },
+        { title: 'Iluminación', text: 'La iluminación es el cambio más barato y más efectivo. Usa luz cálida, de unos dos mil setecientos a tres mil grados, que crea un ambiente acogedor, en lugar de la luz blanca fría que se siente de oficina. Combina varias fuentes de luz en vez de un solo foco central; una lámpara económica puede transformar un rincón.' },
+        { title: 'Identidad local', text: 'Lo local cuenta una historia. La artesanía, los textiles y la cerámica ecuatorianos dan identidad a tu espacio y apoyan a productores. Una foto de un destino cercano conecta al huésped con el lugar. Evita la decoración genérica: lo auténtico es más memorable y más fotografiable.' },
+        { title: 'Plantas y detalles', text: 'Las plantas y los textiles dan vida por poco dinero: cojines, una manta y cortinas combinadas cambian todo, manteniendo una paleta de dos o tres colores. Y no olvides los detalles que generan reseñas de cinco estrellas: una pequeña bienvenida, wifi fácil, cargadores y espacio para las maletas. El objetivo no es lujo, es que el huésped se sienta cuidado.' },
+      ],
+    },
+    quiz: [
+      { question: 'El cambio más barato y efectivo en un espacio suele ser…', options: ['Cambiar los muebles', 'La iluminación', 'Pintar todo de nuevo', 'Comprar electrodomésticos'], correct: 1, explanation: 'Mejorar la luz (cálida y de varias fuentes) transforma el ambiente con poca inversión.' },
+      { question: '¿Qué tipo de luz crea un ambiente más acogedor?', options: ['Luz blanca fría', 'Luz cálida (2700–3000 K)', 'Luz de neón', 'Sin luz'], correct: 1, explanation: 'La luz cálida da calidez; la blanca fría se siente de oficina.' },
+      { question: 'Para que el espacio se vea ordenado conviene…', options: ['Usar 10 colores', 'Mantener una paleta de 2–3 colores', 'Llenar las superficies', 'No usar textiles'], correct: 1, explanation: 'Una paleta limitada de 2 a 3 colores transmite orden y armonía.' },
+      { question: 'Los detalles que más se mencionan en reseñas buscan que el huésped…', options: ['Gaste más', 'Se sienta cuidado', 'Se vaya rápido', 'No use el wifi'], correct: 1, explanation: 'No se trata de lujo sino de cuidado: bienvenida, comodidad y buenos básicos.' },
+    ],
+  },
+  a4: {
+    id: 'a4',
+    school: 'Escuela de Anfitriones',
+    schoolColor: COLORS.system.blue,
+    title: 'Manejo de Reseñas',
+    subtitle: 'Responde bien, crece más',
+    description:
+      'Cómo responder comentarios negativos sin perder la calma, agradecer los positivos y convertir cada crítica en una mejora real que sube tu calificación.',
+    readingHtml: `
+<h2>1. Por qué las reseñas mandan</h2>
+<p>Las reseñas son la <strong>moneda de confianza</strong> de la plataforma. Determinan tu posición en las búsquedas y la decisión final del huésped. Pero igual de importante que la calificación es <strong>cómo respondes</strong>: tus respuestas las leen los futuros huéspedes.</p>
+
+<h2>2. Responder reseñas positivas</h2>
+<ul>
+  <li><strong>Agradece</strong> de forma personal, mencionando algo específico de su estadía.</li>
+  <li><strong>Invita a volver</strong> con calidez.</li>
+  <li>Sé breve y genuino; evita respuestas copiadas e iguales para todos.</li>
+</ul>
+
+<h2>3. Responder reseñas negativas — el método LAPA</h2>
+<ol>
+  <li><strong>Lee</strong> con calma y no respondas en caliente.</li>
+  <li><strong>Agradece</strong> el comentario y <strong>reconoce</strong> lo que se pueda.</li>
+  <li><strong>Propón</strong> o explica la mejora, con respeto y sin excusas largas.</li>
+  <li><strong>Avanza:</strong> cierra en positivo, mostrando que aprendiste.</li>
+</ol>
+<blockquote>Nunca discutas, ataques ni culpes al huésped en público. Una respuesta serena ante una crítica injusta te hace ganar la confianza de quien la lee.</blockquote>
+
+<h2>4. De la crítica a la mejora</h2>
+<p>Cada queja repetida es información gratis:</p>
+<ul>
+  <li>“La cama era incómoda” → evalúa el colchón.</li>
+  <li>“El wifi fallaba” → mejora el plan o la ubicación del router.</li>
+  <li>“No sabía cómo entrar” → mejora tus instrucciones de llegada.</li>
+</ul>
+<p>Cuando resuelvas algo, <strong>menciónalo</strong> en tu anuncio o en la respuesta: demuestra que escuchas.</p>
+
+<h2>5. Buenas reseñas empiezan antes</h2>
+<p>La mejor gestión de reseñas es <strong>prevenir</strong>: expectativas claras en el anuncio, comunicación rápida, instrucciones sencillas y un pequeño gesto de bienvenida. Un huésped bien informado y bien recibido casi siempre califica mejor.</p>
+`,
+    slides: [
+      { title: 'Las reseñas mandan', points: ['Son la moneda de confianza', 'Definen tu posición y la decisión', 'Tus respuestas también se leen'] },
+      { title: 'Reseñas positivas', points: ['Agradece de forma personal', 'Menciona algo específico', 'Invita a volver', 'Evita respuestas copiadas'] },
+      { title: 'Negativas: método LAPA', points: ['Lee con calma', 'Agradece y reconoce', 'Propón la mejora', 'Avanza en positivo'] },
+      { title: 'De la crítica a la mejora', points: ['Cada queja repetida es información', 'Resuelve la causa real', 'Menciona lo que mejoraste'] },
+      { title: 'Prevenir es la clave', points: ['Expectativas claras en el anuncio', 'Comunicación rápida', 'Instrucciones sencillas', 'Gesto de bienvenida'] },
+    ],
+    podcast: {
+      intro: 'Bienvenido a Manejo de Reseñas. Aprenderás a responder con inteligencia, a convertir críticas en mejoras y a hacer que cada respuesta sume confianza.',
+      segments: [
+        { title: 'Por qué mandan', text: 'Las reseñas son la moneda de confianza de la plataforma: determinan tu posición en las búsquedas y la decisión final del huésped. Pero tan importante como la calificación es cómo respondes, porque tus respuestas las leen los futuros huéspedes.' },
+        { title: 'Responder lo positivo', text: 'Ante una reseña positiva, agradece de forma personal mencionando algo específico de la estadía e invita a volver con calidez. Sé breve y genuino, y evita respuestas copiadas e iguales para todos.' },
+        { title: 'El método LAPA', text: 'Para las reseñas negativas usa el método LAPA. Lee con calma y no respondas en caliente. Agradece el comentario y reconoce lo que se pueda. Propón o explica la mejora con respeto, sin excusas largas. Y avanza, cerrando en positivo. Nunca discutas ni culpes al huésped en público: una respuesta serena ante una crítica injusta gana la confianza de quien la lee.' },
+        { title: 'De la crítica a la mejora', text: 'Cada queja repetida es información gratis. Si dicen que la cama era incómoda, evalúa el colchón; si el wifi fallaba, mejora el plan o la ubicación del router. Cuando resuelvas algo, menciónalo. Y recuerda: la mejor gestión de reseñas es prevenir, con expectativas claras, comunicación rápida y un buen recibimiento.' },
+      ],
+    },
+    quiz: [
+      { question: 'Ante una reseña negativa, lo primero es…', options: ['Responder de inmediato y molesto', 'Leer con calma sin responder en caliente', 'Borrarla', 'Culpar al huésped'], correct: 1, explanation: 'El método LAPA empieza por leer con calma; nunca se responde en caliente.' },
+      { question: 'En público, ante una crítica injusta debes…', options: ['Discutir y defenderte fuerte', 'Mantener la calma y responder con respeto', 'Atacar al huésped', 'No responder nunca'], correct: 1, explanation: 'Una respuesta serena ante una crítica injusta gana la confianza de quien la lee.' },
+      { question: 'Una queja repetida (p. ej. “el wifi fallaba”) es…', options: ['Un ataque personal', 'Información gratis para mejorar', 'Algo que ignorar', 'Motivo para discutir'], correct: 1, explanation: 'Las quejas repetidas señalan la causa real a resolver; son una oportunidad de mejora.' },
+      { question: 'La mejor forma de tener buenas reseñas es…', options: ['Pedirlas insistentemente', 'Prevenir: expectativas claras y buen recibimiento', 'Bajar el precio', 'Responder solo las positivas'], correct: 1, explanation: 'Prevenir con expectativas claras, comunicación e instrucciones sencillas evita la mayoría de las malas reseñas.' },
+    ],
+  },
 };
 
 // ─── Componente ───────────────────────────────────────────────────────────
