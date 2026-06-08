@@ -14,7 +14,10 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   CreateParcelDto,
   CreateParcelUseCase,
@@ -408,6 +411,46 @@ export class ParcelController {
   @Get('user/:userId')
   async getParcelsByUser(@Param('userId') userId: UUID): Promise<any> {
     return this.findParcelsByUserUseCase.execute(userId);
+  }
+
+  /**
+   * Adjuntar la foto del paquete (la sube el remitente tras crear el envío).
+   * POST /api/parcels/:id/photo  — multipart, campo "photo".
+   * La foto se guarda como data URL en el documento (no requiere almacenamiento
+   * externo). Solo el dueño del envío (o un admin) puede adjuntarla.
+   */
+  @Post(':id/photo')
+  @UseInterceptors(FileInterceptor('photo'))
+  async uploadPackagePhoto(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: UUID,
+    @UploadedFile() photo?: { buffer?: Buffer; mimetype?: string; size?: number },
+  ): Promise<any> {
+    if (!photo?.buffer) {
+      throw new BadRequestException('No se recibió ninguna foto');
+    }
+    // Límite de tamaño: la foto se guarda como data URL en Mongo, así que la
+    // acotamos para no inflar el documento (~2 MB de archivo).
+    if ((photo.size ?? 0) > 2 * 1024 * 1024) {
+      throw new BadRequestException('La foto supera el tamaño máximo (2 MB)');
+    }
+
+    const found = await this.parcelRepository.findById(id);
+    if (found.isErr() || !found.value) throw new NotFoundException('Envío no encontrado');
+    const parcel = found.value.toPrimitives();
+
+    const roles = user.roles ?? (user.role ? [user.role] : []);
+    if (parcel.userId !== user.id && !roles.includes('admin')) {
+      throw new ForbiddenException('Sin permiso para este envío');
+    }
+
+    const mime = photo.mimetype || 'image/jpeg';
+    const dataUrl = `data:${mime};base64,${photo.buffer.toString('base64')}`;
+
+    const res = await this.parcelRepository.setPackagePhoto(id, dataUrl);
+    if (res.isErr()) throw new BadRequestException('No se pudo guardar la foto');
+
+    return { ok: true, id };
   }
 
   /**

@@ -472,6 +472,23 @@ export default function EnviosCotizarPage() {
       const data = await res.json();
       const trackingCode = data?.trackingCode ?? data?.id ?? '';
 
+      // Adjuntar la foto del paquete al backend (best-effort: no bloquea el
+      // flujo si falla). Convertimos el data URL local a Blob y lo subimos
+      // como multipart a POST /parcels/:id/photo.
+      const parcelId = data?.id;
+      if (parcelId && photoPreview) {
+        try {
+          const blob = await (await fetch(photoPreview)).blob();
+          const fd = new FormData();
+          fd.append('photo', blob, 'paquete.jpg');
+          await fetch(`${API}/parcels/${encodeURIComponent(parcelId)}/photo`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd,
+          });
+        } catch { /* foto opcional — no interrumpe el envío */ }
+      }
+
       // Caso A: backend devuelve paymentUrl. Abrimos en nueva tab para pagar.
       if (data?.paymentUrl) {
         window.open(data.paymentUrl, '_blank', 'noopener');
