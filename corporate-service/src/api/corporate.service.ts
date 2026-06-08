@@ -9,6 +9,9 @@ import { CompanySettingsRepository } from '../infrastructure/persistence/company
 import { ApprovalWorkflowRepository } from '../infrastructure/persistence/approval-workflow.repository';
 import { SpendingLimitRepository } from '../infrastructure/persistence/spending-limit.repository';
 import { CorporateInvoiceRepository } from '../infrastructure/persistence/corporate-invoice.repository';
+import { TeamInvitationRepository } from '../infrastructure/persistence/team-invitation.repository';
+import { QuoteRepository } from '../infrastructure/persistence/quote.repository';
+import { DashcamClipRequestRepository } from '../infrastructure/persistence/dashcam-clip-request.repository';
 import {
   computePeriodSpend,
   checkBudget,
@@ -42,6 +45,9 @@ export class CorporateService {
     private readonly approvalRepo: ApprovalWorkflowRepository,
     private readonly limitRepo: SpendingLimitRepository,
     private readonly invoiceRepo: CorporateInvoiceRepository,
+    private readonly invitationRepo: TeamInvitationRepository,
+    private readonly quoteRepo: QuoteRepository,
+    private readonly clipRequestRepo: DashcamClipRequestRepository,
   ) {
     this.bookingUrl  = process.env.BOOKING_SERVICE_URL  || 'http://localhost:3005';
     this.billingUrl  = process.env.BILLING_SERVICE_URL  || 'http://localhost:3008';
@@ -575,12 +581,10 @@ export class CorporateService {
 
   // ── Equipo: invitaciones ───────────────────────────────────────────────
 
-  private readonly invitationsByCompany: Map<string, any[]> = new Map();
-
   /**
-   * Crea una invitación. Por ahora la persistimos in-memory y delegamos el
-   * email al notifications-service cuando esté disponible. Sin email, la
-   * empresa puede compartir el link manualmente.
+   * Crea una invitación (persistida en Mongo) y delega el email al
+   * notifications-service cuando esté disponible. Sin email, la empresa puede
+   * compartir el link manualmente.
    */
   async inviteTeamMember(
     companyId: string,
@@ -600,9 +604,7 @@ export class CorporateService {
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
-    const arr = this.invitationsByCompany.get(companyId) ?? [];
-    arr.unshift(invitation);
-    this.invitationsByCompany.set(companyId, arr);
+    await this.invitationRepo.create(invitation);
 
     const baseUrl = process.env.APP_BASE_URL || 'https://app.goingec.com';
     const inviteLink = `${baseUrl}/empresas/auth/accept-invite?token=${invitationId}`;
@@ -617,13 +619,10 @@ export class CorporateService {
   }
 
   // ── Quotes (cotizaciones) ──────────────────────────────────────────────
-  // In-memory por ahora — el frontend mostraba demo data y no había
-  // persistencia. Si se necesita persistir, agregar un Schema/Repository
-  // siguiendo el patrón de SpendingLimitRepository.
-  private readonly quotesByCompany: Map<string, any[]> = new Map();
+  // Persistidas en Mongo (QuoteRepository).
 
   async listQuotes(companyId: string): Promise<{ quotes: any[] }> {
-    const quotes = this.quotesByCompany.get(companyId) ?? [];
+    const quotes = await this.quoteRepo.findByCompany(companyId);
     return { quotes };
   }
 
@@ -649,9 +648,7 @@ export class CorporateService {
       status: 'pending', // pending | quoted | accepted | rejected
       createdAt: new Date().toISOString(),
     };
-    const arr = this.quotesByCompany.get(companyId) ?? [];
-    arr.unshift(quote);
-    this.quotesByCompany.set(companyId, arr);
+    await this.quoteRepo.create(quote);
     this.logger.log(`Quote ${quote.id} created for company=${companyId} event="${quote.eventName}"`);
     return quote;
   }
@@ -782,13 +779,11 @@ export class CorporateService {
     }));
   }
 
-  // In-memory por ahora — cuando se cablee al dashcam-service real
-  // (no existe todavía), esto se reemplaza por un repo.
-  private readonly dashcamIncidentsByCompany: Map<string, any[]> = new Map();
-  private readonly clipRequestsByCompany: Map<string, any[]> = new Map();
-
-  async getDashcamIncidents(companyId: string): Promise<any[]> {
-    return this.dashcamIncidentsByCompany.get(companyId) ?? [];
+  // Las solicitudes de clip se persisten (DashcamClipRequestRepository). Los
+  // "incidents" provendrían de un dashcam-service real que aún no existe, así
+  // que por ahora se devuelve lista vacía.
+  async getDashcamIncidents(_companyId: string): Promise<any[]> {
+    return [];
   }
 
   async requestDashcamClip(companyId: string, userId: string, tripId: string) {
@@ -800,9 +795,7 @@ export class CorporateService {
       status: 'pending', // pending | ready | denied
       createdAt: new Date().toISOString(),
     };
-    const arr = this.clipRequestsByCompany.get(companyId) ?? [];
-    arr.unshift(request);
-    this.clipRequestsByCompany.set(companyId, arr);
+    await this.clipRequestRepo.create(request);
     this.logger.log(`Clip request ${request.id} for trip=${tripId} by user=${userId}`);
     return request;
   }
