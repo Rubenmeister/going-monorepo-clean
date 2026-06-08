@@ -1,17 +1,20 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json ./
-# Build standalone con npm: package.json es autocontenido (sin deps
-# workspace:*), así que pnpm NO participa aquí. --legacy-peer-deps evita el
-# ERESOLVE por peer-deps del ecosistema NestJS 11 — mismo criterio que el
-# Dockerfile genérico (Dockerfile.cloudrun-service usa --legacy-peer-deps).
+# El CD construye con contexto = raíz del monorepo (`docker build ... .`) y
+# `-f corporate-service/Dockerfile`, así que las rutas llevan el prefijo
+# `corporate-service/`. Build standalone con npm: el package.json es
+# autocontenido (sin deps workspace:*), por eso pnpm NO participa aquí.
+# --legacy-peer-deps evita el ERESOLVE de peer-deps del ecosistema NestJS 11
+# (mismo criterio que el Dockerfile genérico, Dockerfile.cloudrun-service).
+COPY corporate-service/package.json ./
 RUN npm install --legacy-peer-deps
-COPY . .
-RUN npm run build 2>/dev/null || npx tsc --skipLibCheck 2>/dev/null || true
+COPY corporate-service/ ./
+# tsconfig.json es autocontenido (outDir ./dist, src/ → dist/main.js).
+RUN npx tsc --skipLibCheck
 
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json ./
+COPY corporate-service/package.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 COPY --from=builder /app/dist ./dist
 EXPOSE 3022
