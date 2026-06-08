@@ -83,10 +83,8 @@ export default function ContactPage() {
   });
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // No había backend de contacto: enviamos el mensaje por WhatsApp con los
-    // datos del formulario prellenados (antes el form no enviaba a ningún lado).
     const lines = [
       `Hola Going App, soy ${form.name || 'un usuario'}.`,
       form.topic   ? `Tema: ${form.topic}`      : '',
@@ -94,6 +92,21 @@ export default function ContactPage() {
       form.email   ? `Email: ${form.email}`     : '',
       form.phone   ? `Teléfono: ${form.phone}`  : '',
     ].filter(Boolean).join('\n');
+
+    // Persistir la consulta en el backend de soporte para no perder el lead
+    // (antes el form SOLO abría WhatsApp y no guardaba nada). Best-effort:
+    // si falla, igual continuamos con el handoff a WhatsApp.
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+      const anonId = `web_anon_contact_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await fetch(`${API_BASE}/support/public/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: anonId, message: `[Formulario de contacto]\n${lines}` }),
+      });
+    } catch { /* sin red: no bloqueamos el handoff a WhatsApp */ }
+
+    // Handoff a WhatsApp con los datos prellenados.
     if (typeof window !== 'undefined') {
       window.open(`https://wa.me/593991234567?text=${encodeURIComponent(lines)}`, '_blank', 'noopener');
     }
