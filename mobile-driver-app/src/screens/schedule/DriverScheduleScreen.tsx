@@ -117,6 +117,20 @@ export function DriverScheduleScreen() {
   useEffect(() => { loadSlots(); }, []);
 
   const loadSlots = async () => {
+    // Fuente de verdad: la agenda guardada en el backend. Fallback a un
+    // borrador local si no hay red o el servidor aún no tiene agenda.
+    try {
+      const token = await AsyncStorage.getItem('driver_token');
+      const res = await axios.get(`${API_BASE_URL}/drivers/me/schedule`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const serverSlots = res.data?.slots;
+      if (Array.isArray(serverSlots) && serverSlots.length) {
+        setSlots(serverSlots);
+        await AsyncStorage.setItem('driver_schedule', JSON.stringify(serverSlots));
+        return;
+      }
+    } catch { /* sin red o sin agenda en el server → fallback local */ }
     try {
       const saved = await AsyncStorage.getItem('driver_schedule');
       if (saved) setSlots(JSON.parse(saved));
@@ -157,7 +171,27 @@ export function DriverScheduleScreen() {
     setSaving(true);
     try {
       const token = await AsyncStorage.getItem('driver_token');
-      await axios.post(`${API_BASE_URL}/drivers/me/schedule`, { slots }, {
+      // El backend espera el shape canónico { routeId, time, days, returnTrip }
+      // y filtra por routeId. Enviamos los campos ricos (para mostrar al volver)
+      // + los canónicos. El PRECIO no se envía: lo fija la plataforma por tramo
+      // (FARES), para no tener precios dispares entre conductores.
+      const payload = slots
+        .map((s) => {
+          const origin = ORIGIN_CITIES.find((c) => c.id === s.originId);
+          return {
+            ...s,
+            routeId: origin?.routeId,
+            time: s.departTime,
+            returnTrip: !!s.returnTime,
+          };
+        })
+        .filter((s) => !!s.routeId);
+
+      if (!payload.length) {
+        throw new Error('No se pudo resolver el corredor de los horarios.');
+      }
+
+      await axios.post(`${API_BASE_URL}/drivers/me/schedule`, { slots: payload }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await AsyncStorage.setItem('driver_schedule', JSON.stringify(slots));
@@ -167,9 +201,12 @@ export function DriverScheduleScreen() {
         [{ text: 'Perfecto', onPress: () => navigation.goBack() }]
       );
     } catch {
+      // Guardamos un borrador local, pero NO mostramos éxito si el server falló.
       await AsyncStorage.setItem('driver_schedule', JSON.stringify(slots));
-      hapticSuccess();
-      navigation.goBack();
+      Alert.alert(
+        'No se pudo guardar',
+        'Tu agenda quedó como borrador en este teléfono, pero NO se guardó en el servidor. Revisa tu conexión e intenta de nuevo.',
+      );
     } finally { setSaving(false); }
   };
 
