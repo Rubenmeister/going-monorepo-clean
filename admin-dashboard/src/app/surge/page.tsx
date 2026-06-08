@@ -129,6 +129,9 @@ export default function SurgePage() {
 
   return (
     <AdminLayout userName={auth.user?.firstName ?? 'Admin'} onLogout={auth.logout}>
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        ⚠️ <strong>Backend en construcción:</strong> las reglas de surge aún no son persistentes (almacenamiento temporal; se reinician al redeploy del servicio).
+      </div>
 
       {toastMsg && <div className="fixed top-6 right-6 z-50 bg-gray-900 text-white text-sm px-4 py-2.5 rounded-xl shadow-lg">{toastMsg}</div>}
 

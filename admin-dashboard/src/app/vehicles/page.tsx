@@ -318,6 +318,9 @@ export default function VehiclesPage() {
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        ⚠️ <strong>Backend en construcción:</strong> el listado de vehículos aún no está conectado a datos reales (el endpoint devuelve vacío). Se completará cuando el backend exponga la flota.
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Vehículos</h1>

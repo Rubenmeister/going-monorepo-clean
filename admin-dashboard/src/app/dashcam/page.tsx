@@ -168,6 +168,9 @@ export default function DashcamPage() {
 
   return (
     <AdminLayout userName={auth.user?.firstName ?? 'Admin'} onLogout={auth.logout}>
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        ⚠️ <strong>Backend en construcción:</strong> los incidentes de dashcam aún no son persistentes (almacenamiento temporal; se reinician al redeploy del servicio).
+      </div>
 
       {/* Toast */}
       {toastMsg && (
