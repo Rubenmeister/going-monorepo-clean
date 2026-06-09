@@ -32,7 +32,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.conductor",
-      "versionCode": 59,
+      "versionCode": 60,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
