@@ -47,6 +47,7 @@ import {
   type QuitoZone,
   type Category,
 } from '../../catalog';
+import { isInSharedCoverage } from '../../catalog/coverage';
 import { useTheme, type ThemeTokens } from '../../theme';
 import type { LocationResult } from '../shared/LocationPickerScreen';
 
@@ -176,6 +177,15 @@ export function SharedRideBookingScreen() {
   const handleConfirm = useCallback(async () => {
     if (!destination) {
       Alert.alert('Destino requerido', 'Por favor selecciona un destino antes de continuar.');
+      return;
+    }
+    // Restricción carpool: destino debe estar dentro de la cobertura compartida
+    // (ciudad de la tabla + buffer de 5 km). Solo validamos si tenemos coords.
+    if (destCoords && !isInSharedCoverage(destCoords.lat, destCoords.lng)) {
+      Alert.alert(
+        'Destino fuera de cobertura compartida',
+        'Going Compartido sólo opera en localidades cercanas a las rutas: Quito, Ambato, Latacunga, Salcedo, Ibarra, Otavalo, Atuntaqui, Riobamba, Santo Domingo, El Carmen, La Concordia, Cayambe, Tabacundo y Aeropuerto Tababela. Para llegar a otros lugares solicita un viaje privado.',
+      );
       return;
     }
     hapticMedium();

@@ -54,7 +54,9 @@ export class RideEventsGateway
   private readonly logger = new Logger(RideEventsGateway.name);
 
   // rideId → ya se envió la notificación de 10 min (evitar duplicados)
-  private readonly tenMinNotified = new Set<string>();
+  private readonly tenMinNotified   = new Set<string>();
+  private readonly threeMinNotified = new Set<string>();
+  private readonly arrivedNotified  = new Set<string>();
 
   // rideId → posición actual del conductor
   private readonly driverPositions = new Map<string, {
@@ -244,9 +246,18 @@ export class RideEventsGateway
       updatedAt: new Date(),
     });
 
-    // Calcular ETA al destino (simplificado: velocidad promedio 30 km/h en ciudad)
-    const etaSeconds = speed && speed > 0
-      ? Math.round((500 / speed) * 3600)   // ~500m restantes estimados
+    // Calcular ETA REAL al punto de recogida.
+    // Antes: hardcoded 500m / speed (mal — daba ETA fijo independiente de la
+    // distancia real). Ahora: distancia haversine del conductor al pickup,
+    // dividida por velocidad efectiva (la reportada si >5 km/h, sino fallback
+    // a 30 km/h promedio ciudad).
+    const route = this.rideRoutes.get(rideId);
+    const effectiveSpeedKmh = (speed && speed > 5) ? speed : 30;
+    const distanceToPickupKm = route
+      ? this.haversineKm(lat, lng, route.originLat, route.originLng)
+      : null;
+    const etaSeconds = distanceToPickupKm != null
+      ? Math.max(0, Math.round((distanceToPickupKm / effectiveSpeedKmh) * 3600))
       : null;
 
     const etaText = etaSeconds
@@ -255,15 +266,46 @@ export class RideEventsGateway
         : `${Math.round(etaSeconds / 60)} min`
       : null;
 
-    // Notificación de 10 minutos — emitir solo una vez por viaje
-    if (etaSeconds && etaSeconds <= 600 && !this.tenMinNotified.has(rideId)) {
+    // Notificaciones de proximidad — cada umbral se emite solo una vez por viaje.
+    const distanceMeters = distanceToPickupKm != null ? distanceToPickupKm * 1000 : null;
+
+    if (etaSeconds != null && etaSeconds <= 600 && !this.tenMinNotified.has(rideId)) {
       this.tenMinNotified.add(rideId);
-      this.server.to(`ride:${rideId}`).emit('ride:driver_10min', {
+      this.server.to(`ride:${rideId}`).emit('ride:driver_proximity', {
         rideId,
-        message: '🚗 Tu conductor llega en ~10 minutos. ¡Prepárate!',
+        threshold: '10min',
+        message:   '🚗 Tu conductora o conductor llega en ~10 minutos. ¡Prepárate!',
         etaSeconds,
+        distanceMeters,
       });
-      this.logger.log(`10-min notification sent for ride ${rideId}`);
+      // Compat con clientes viejos que escuchan ride:driver_10min:
+      this.server.to(`ride:${rideId}`).emit('ride:driver_10min', { rideId, message: '🚗 Tu conductora o conductor llega en ~10 minutos. ¡Prepárate!', etaSeconds });
+      this.logger.log(`[proximity] 10min ride=${rideId}`);
+    }
+
+    if (etaSeconds != null && etaSeconds <= 180 && !this.threeMinNotified.has(rideId)) {
+      this.threeMinNotified.add(rideId);
+      this.server.to(`ride:${rideId}`).emit('ride:driver_proximity', {
+        rideId,
+        threshold: '3min',
+        message:   '⏱️ Tu conductora o conductor llega en ~3 minutos. Sal al punto de encuentro.',
+        etaSeconds,
+        distanceMeters,
+      });
+      this.logger.log(`[proximity] 3min ride=${rideId}`);
+    }
+
+    // "Llegó" = a menos de 50 metros del punto de pickup
+    if (distanceMeters != null && distanceMeters <= 50 && !this.arrivedNotified.has(rideId)) {
+      this.arrivedNotified.add(rideId);
+      this.server.to(`ride:${rideId}`).emit('ride:driver_proximity', {
+        rideId,
+        threshold: 'arrived',
+        message:   '✅ Tu conductora o conductor ya llegó. Búscale en el punto de encuentro.',
+        etaSeconds: 0,
+        distanceMeters,
+      });
+      this.logger.log(`[proximity] arrived ride=${rideId}`);
     }
 
     // Calcular % de progreso si tenemos la ruta
@@ -366,6 +408,10 @@ export class RideEventsGateway
   ) {
     this.driverPositions.delete(data.rideId);
     this.rideRoutes.delete(data.rideId);
+    // Cleanup proximity flags para liberar memoria
+    this.tenMinNotified.delete(data.rideId);
+    this.threeMinNotified.delete(data.rideId);
+    this.arrivedNotified.delete(data.rideId);
 
     const completedAt = new Date();
 

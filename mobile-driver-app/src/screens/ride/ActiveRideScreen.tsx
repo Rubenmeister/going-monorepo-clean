@@ -1,5 +1,9 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator } from 'react-native';
+import axios from 'axios';
+
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_URL || 'https://api.goingec.com';
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +51,44 @@ export function ActiveRideScreen() {
   const [callLoading, setCallLoading] = useState(false);
   const [cashConfirmed, setCashConfirmed] = useState(false);
   const rideStartTimestamp = useRef<number | null>(null);
+
+  // PIN verificación de pasajero al subir
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [pinInput, setPinInput]               = useState('');
+  const [pinError, setPinError]               = useState<string | null>(null);
+  const [pinVerifying, setPinVerifying]       = useState(false);
+
+  const verifyPickupCode = async () => {
+    if (pinVerifying) return;
+    const code = pinInput.trim();
+    if (code.length !== 6) {
+      setPinError('El código tiene 6 dígitos.');
+      return;
+    }
+    setPinVerifying(true);
+    setPinError(null);
+    try {
+      const token = await AsyncStorage.getItem('driver_token');
+      await axios.post(
+        `${API_BASE}/rides/${rideId}/verify-pickup`,
+        { code },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {}, timeout: 8000 },
+      );
+      // OK — cerrar modal y avanzar a "Pasajero a bordo"
+      setPinModalVisible(false);
+      setPinInput('');
+      setStep(1);
+      rideStartTimestamp.current = Date.now();
+      socketRef.current?.emit('driver:started', { rideId });
+    } catch (e: any) {
+      setPinError(
+        e?.response?.data?.message ||
+          'Código inválido. Pídele al pasajero el código que ve en su pantalla.',
+      );
+    } finally {
+      setPinVerifying(false);
+    }
+  };
 
   const handleCallPassenger = async () => {
     if (callLoading) return;
@@ -185,9 +227,15 @@ export function ActiveRideScreen() {
 
   const advance = () => {
     hapticMedium();
+    // Step 0 → 1 (pasajero a bordo): PIN obligatorio. El advance lo dispara
+    // verifyPickupCode al validar contra backend.
+    if (step === 0) {
+      socketRef.current?.emit('driver:arrived', { rideId });
+      setPinModalVisible(true);
+      return;
+    }
     if (step < STEPS.length - 1) {
       setStep(step + 1);
-      if (step === 0) socketRef.current?.emit('driver:arrived', { rideId });
       if (step === 1) {
         rideStartTimestamp.current = Date.now();
         socketRef.current?.emit('driver:started', { rideId });
@@ -312,9 +360,88 @@ export function ActiveRideScreen() {
         onCallEnd={() => setCallSession(null)}
       />
     )}
+
+    <Modal
+      visible={pinModalVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => !pinVerifying && setPinModalVisible(false)}
+    >
+      <View style={pinStyles.overlay}>
+        <View style={pinStyles.card}>
+          <Text style={pinStyles.title}>Código del pasajero</Text>
+          <Text style={pinStyles.subtitle}>
+            Pídele al pasajero que te diga los 6 dígitos de su pantalla. Ingresa
+            el código para confirmar que es la persona correcta y arrancar el viaje.
+          </Text>
+          <TextInput
+            style={pinStyles.input}
+            value={pinInput}
+            onChangeText={(t) => { setPinInput(t.replace(/\D/g, '').slice(0, 6)); setPinError(null); }}
+            keyboardType="number-pad"
+            maxLength={6}
+            placeholder="——————"
+            placeholderTextColor="#D1D5DB"
+            autoFocus
+            editable={!pinVerifying}
+          />
+          {pinError && <Text style={pinStyles.error}>{pinError}</Text>}
+          <View style={pinStyles.btnRow}>
+            <TouchableOpacity
+              style={pinStyles.btnSecondary}
+              onPress={() => { setPinModalVisible(false); setPinInput(''); setPinError(null); }}
+              disabled={pinVerifying}
+            >
+              <Text style={pinStyles.btnSecondaryText}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={pinStyles.btnPrimary}
+              onPress={verifyPickupCode}
+              disabled={pinVerifying || pinInput.length !== 6}
+            >
+              {pinVerifying
+                ? <ActivityIndicator color="#FF4C41" />
+                : <Text style={pinStyles.btnPrimaryText}>Verificar y arrancar</Text>}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
     </Fragment>
   );
 }
+
+// ── PIN modal styles ───────────────────────────────────────────────────────
+const pinStyles = StyleSheet.create({
+  overlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  card: {
+    backgroundColor: '#fff', borderRadius: 18, padding: 24,
+    width: '100%', maxWidth: 360,
+  },
+  title: { fontSize: 20, fontWeight: '900', color: '#1a1a1a', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: '#666', marginBottom: 18, lineHeight: 18 },
+  input: {
+    borderWidth: 2, borderColor: '#E5E7EB', borderRadius: 12,
+    paddingVertical: 14, paddingHorizontal: 18,
+    fontSize: 28, fontWeight: '900', letterSpacing: 8,
+    textAlign: 'center', color: '#1a1a1a',
+  },
+  error: { color: '#dc2626', fontSize: 12, marginTop: 8, textAlign: 'center', fontWeight: '600' },
+  btnRow: { flexDirection: 'row', gap: 10, marginTop: 18 },
+  btnPrimary: {
+    flex: 1, backgroundColor: '#FFD253', paddingVertical: 14, borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnPrimaryText: { fontSize: 15, fontWeight: '900', color: '#FF4C41' },
+  btnSecondary: {
+    flex: 1, backgroundColor: '#F3F4F6', paddingVertical: 14, borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnSecondaryText: { fontSize: 15, fontWeight: '700', color: '#374151' },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

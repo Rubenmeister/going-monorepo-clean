@@ -109,6 +109,45 @@ export function resolveCity(lat: number, lng: number): CityCentroid | null {
   return best;
 }
 
+/**
+ * Resuelve la ciudad más cercana extendiendo el `radiusKm` con un buffer
+ * adicional. Diseñado para "cobertura compartida": un punto puede no estar
+ * dentro del polígono urbano (radiusKm) pero sí dentro de la zona accesible
+ * por la ruta carpool (radiusKm + bufferKm).
+ *
+ * Regla operativa Going (carpool 2026-06):
+ *   Sólo se aceptan viajes compartidos cuyo origen y destino estén dentro
+ *   de `radiusKm + 5` de alguna ciudad de la tabla. Fuera de esa zona, el
+ *   usuario debe pedir privado o ver "fuera de cobertura".
+ */
+export function resolveCityWithBuffer(
+  lat: number,
+  lng: number,
+  bufferKm = 5,
+): CityCentroid | null {
+  let best: CityCentroid | null = null;
+  let bestDist = Infinity;
+  for (const c of CITIES) {
+    const d = haversineKm(lat, lng, c.lat, c.lng);
+    if (d <= c.radiusKm + bufferKm && d < bestDist) {
+      best = c;
+      bestDist = d;
+    }
+  }
+  return best;
+}
+
+/**
+ * Indica si un punto está dentro de la cobertura compartida (radio + buffer).
+ */
+export function isInSharedCoverage(
+  lat: number,
+  lng: number,
+  bufferKm = 5,
+): boolean {
+  return resolveCityWithBuffer(lat, lng, bufferKm) !== null;
+}
+
 export type RouteClass = 'urban' | 'intercity' | 'airport_corridor' | 'out_of_coverage';
 
 export interface RouteClassification {
