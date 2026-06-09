@@ -10,6 +10,7 @@ import {
 import { Inject } from '@nestjs/common';
 import { CancelParcelUseCase } from '@going-monorepo-clean/domains-parcel-application';
 import { UUID } from '@going-monorepo-clean/shared-domain';
+import { pushNotify } from './push-notify';
 import { NearbyDriversService, RankedDriver } from './nearby-drivers.service';
 import { ParcelDispatchGateway } from '../gateways/parcel-dispatch.gateway';
 
@@ -256,26 +257,14 @@ export class ParcelMatchingOrchestrator implements OnModuleDestroy {
   }
 
   private async notifyUserNoDriverFound(cycle: DispatchCycle): Promise<void> {
-    try {
-      await fetch(`${this.notificationsUrl}/notifications/push`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: cycle.userId,
-          title: 'Sin conductor disponible',
-          body:
-            `No encontramos un conductor para tu envío de ${cycle.origin.address} ` +
-            `a ${cycle.destination.address}. Puedes reintentar más tarde.`,
-          data: {
-            type: 'PARCEL_NO_DRIVER',
-            parcelId: cycle.parcelId,
-          },
-        }),
-      });
-    } catch (e) {
-      this.logger.warn(
-        `No se pudo notificar al user ${cycle.userId}: ${(e as Error).message}`,
-      );
-    }
+    // Antes pegaba a /notifications/push (ruta inexistente) sin auth → 404.
+    // Ahora usa el canal S2S correcto (/notifications/send + JWT system).
+    await pushNotify({
+      userId: cycle.userId,
+      title: 'Sin conductor disponible',
+      body:
+        `No encontramos un conductor para tu envío de ${cycle.origin.address} ` +
+        `a ${cycle.destination.address}. Puedes reintentar más tarde.`,
+    });
   }
 }

@@ -30,6 +30,7 @@ import { IParcelRepository } from '@going-monorepo-clean/domains-parcel-core';
 import { UUID, MoneyDto } from '@going-monorepo-clean/shared-domain';
 import { JwtAuthGuard, CurrentUser, Public } from '../domain/ports';
 import { ParcelMatchingOrchestrator } from '../infrastructure/services/parcel-matching-orchestrator.service';
+import { pushNotify } from '../infrastructure/services/push-notify';
 import { PaymentIntentService } from '../infrastructure/services/payment-intent.service';
 import { SmsService } from '../infrastructure/services/sms.service';
 import { TrackingClientService } from '../infrastructure/services/tracking-client.service';
@@ -710,6 +711,13 @@ export class ParcelController {
     }
 
     this.logger.log(`Parcel ${id} → delivered (driver ${user.id}, trackingCode=${primitives.trackingCode})`);
+
+    // Push al remitente: su envío fue entregado (antes no se notificaba nada).
+    void pushNotify({
+      userId: primitives.userId,
+      title: '📦 ¡Tu envío fue entregado!',
+      body: `Tu paquete (${primitives.trackingCode}) llegó a destino.`,
+    });
 
     return {
       id: parcel.id,

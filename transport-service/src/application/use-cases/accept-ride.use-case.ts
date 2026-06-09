@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IRideRepository } from '../../domain/ports';
+import { pushNotify } from '../../infrastructure/push-notify';
 
 /**
  * Accept Ride Use Case
@@ -24,18 +25,12 @@ export class AcceptRideUseCase {
       throw new Error(`Ride is already ${existing.status}`);
     }
 
-    // Push notification to passenger that driver was assigned
-    const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
-    fetch(`${notifUrl}/api/notifications/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: updated.userId,
-        title: '🚗 ¡Conductor asignado!',
-        body: 'Un conductor aceptó tu viaje y está en camino',
-        data: { rideId: updated.id, actionUrl: '/transport' }
-      }),
-    }).catch(() => {}); // non-blocking
+    // Push al pasajero: conductor asignado (canal S2S correcto + JWT system).
+    void pushNotify({
+      userId: updated.userId,
+      title: '🚗 ¡Conductor asignado!',
+      body: 'Un conductor aceptó tu viaje y está en camino',
+    });
 
     return {
       rideId: updated.id,

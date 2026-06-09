@@ -46,6 +46,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DriverRatingModel, DriverRatingDocument } from './driver.controller';
 import { v4 as uuidv4 } from 'uuid';
+import { pushNotify } from '../infrastructure/push-notify';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
 interface AuthUser {
@@ -336,6 +337,13 @@ export class RideController {
       rideId,
       message: 'Tu conductor ha llegado al punto de recogida',
       arrivedAt: new Date(),
+    });
+
+    // Push (por si la app está en segundo plano).
+    void pushNotify({
+      userId: ride.userId,
+      title: '📍 Tu conductor llegó',
+      body: 'Tu conductor está en el punto de recogida.',
     });
 
     this.logger.log(`Driver ${user.id} arrived for ride ${rideId}`);
