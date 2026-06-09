@@ -1,92 +1,85 @@
 /**
- * Pricing canónico del frontend Going App (mobile).
+ * Pricing canónico del mobile Going.
  *
- * Por ahora estas tarifas viven en el frontend; el backend tiene su
- * propio cálculo en libs/pricing con FARES + applyDynamicPricing. Cuando
- * unifiquemos, el frontend pedirá quotes al backend en vez de calcular
- * local (autoritative pricing — TODO).
+ * Las TARIFAS son un mirror de `libs/pricing/lib/fares.ts` (truth source backend).
+ * Ver `./fares.ts` — si cambia la tabla del backend, actualizar ese archivo.
+ *
+ * Las funciones siguen exponiendo la misma firma para no romper call sites;
+ * internamente delegan a la tabla canónica vía `getFare()`.
+ *
+ * Surcharges legacy ELIMINADOS de mobile (Quito zone surcharge, frontSeat +$3):
+ *   - El backend NO los aplica → mostrarlos al usuario causaba que el precio
+ *     mostrado fuera mayor que el cobrado. Hasta que el negocio los agregue
+ *     a libs/pricing + backend fare-engine, los selectores de UI quedan
+ *     como configuración pero NO modifican el precio.
  */
 import { CityId, QuitoZone, TripMode, VehicleId } from './types';
 import { GOING_SHARED_ROUTES } from './routes';
-import { QUITO_ZONES } from './zones';
 import { VEHICLE_SPECS } from './vehicles';
+import { getFare, getPrivateFare, FARES, type VehicleKey } from './fares';
 
-/** Tarifa por persona según ciudad de origen y clase de vehículo. */
-export const PERSON_RATES: Record<CityId, { suv: number; van: number; bus: number }> = {
-  // ── Rutas Going App principales ────────────────────────────────────────────
-  aeropuerto_quito: { suv: 12, van: 10, bus: 9  },
-  quito:            { suv: 10, van: 8,  bus: 7  },
-  // ── Sierra Centro ─────────────────────────────────────────────────────
-  ambato:    { suv: 9,  van: 8,  bus: 7  },
-  banos:     { suv: 12, van: 10, bus: 9  },
-  latacunga: { suv: 8,  van: 7,  bus: 6  },
-  salcedo:   { suv: 9,  van: 8,  bus: 7  },
-  pillaro:   { suv: 10, van: 8,  bus: 7  },
-  cevallos:  { suv: 10, van: 8,  bus: 7  },
-  tisaleo:   { suv: 10, van: 8,  bus: 7  },
-  mocha:     { suv: 11, van: 9,  bus: 8  },
-  // ── Sierra Norte ──────────────────────────────────────────────────────
-  ibarra:    { suv: 11, van: 9,  bus: 8  },
-  otavalo:   { suv: 12, van: 10, bus: 9  },
-  atuntaqui: { suv: 12, van: 10, bus: 9  },
-  peguche:   { suv: 12, van: 10, bus: 9  },
-  tulcan:    { suv: 18, van: 15, bus: 13 },
-  // ── Costa / Santo Domingo ─────────────────────────────────────────────
-  el_carmen:    { suv: 14, van: 12, bus: 10 },
-  la_concordia: { suv: 13, van: 11, bus: 9  },
-  santo_domingo:{ suv: 13, van: 11, bus: 9  },
-  // ── Resto Ecuador ─────────────────────────────────────────────────────
-  guayaquil:  { suv: 18, van: 15, bus: 13 },
-  cuenca:     { suv: 20, van: 17, bus: 15 },
-  riobamba:   { suv: 17, van: 14, bus: 12 },
-  loja:       { suv: 25, van: 21, bus: 18 },
-  manta:      { suv: 22, van: 18, bus: 16 },
-  portoviejo: { suv: 22, van: 18, bus: 16 },
-  esmeraldas: { suv: 20, van: 17, bus: 15 },
-  machala:    { suv: 23, van: 19, bus: 17 },
-  babahoyo:   { suv: 19, van: 16, bus: 14 },
-  lago_agrio: { suv: 28, van: 24, bus: 20 },
-  tena:       { suv: 25, van: 21, bus: 18 },
-  puyo:       { suv: 22, van: 18, bus: 16 },
-  macas:      { suv: 28, van: 24, bus: 20 },
-  zamora:     { suv: 30, van: 25, bus: 22 },
-  guaranda:   { suv: 18, van: 15, bus: 13 },
+// Map de VehicleId (interno mobile) a VehicleKey (canon backend).
+// Mobile no expone minibus por ahora — solo el set que ofrece la app.
+const VEHICLE_TO_FARE_KEY: Record<VehicleId, VehicleKey> = {
+  suv:    'suv',
+  suv_xl: 'suv_xl',
+  van:    'van',
+  van_xl: 'van_xl',
+  bus:    'bus',
 };
 
 /**
- * Calcula el precio del viaje:
- *   - Compartido → tarifa por persona (1 asiento)
- *   - Privado    → tarifa por persona × capacidad del vehículo (vehículo completo)
+ * Calcula el precio del viaje usando la tabla canónica del backend.
+ *   - Compartido → tarifa por persona desde origin→Quito (ó Quito→origin)
+ *   - Privado    → vehículo completo (multiplicador del backend)
+ *
+ * Si la ruta no está en la tabla canónica, devuelve 0 (UI debe degradar
+ * mostrando "consultar precio" en lugar de mostrar un valor inventado).
  */
 export function calcPrice(city: CityId, vehicleId: VehicleId, mode: TripMode): number {
-  const rates = PERSON_RATES[city];
-  const { rateClass, capacity } = VEHICLE_SPECS[vehicleId];
-  const perPerson = rates[rateClass];
-  return mode === 'compartido' ? perPerson : perPerson * capacity;
+  // Mobile usa city como origen; Quito como hub habitual.
+  const sharedPerPerson = getFare(city, 'quito') ?? getFare('quito', city) ?? 0;
+  if (sharedPerPerson === 0) return 0;
+
+  if (mode === 'compartido') {
+    return sharedPerPerson;
+  }
+  const fareKey = VEHICLE_TO_FARE_KEY[vehicleId];
+  return getPrivateFare(sharedPerPerson, fareKey);
 }
 
 /**
- * Calcula el precio de un asiento en viaje compartido específico.
- *   - originStop: nombre de la parada de origen (ej: 'Ambato', 'Quito')
- *   - zone:       zona destino en Quito (aplica surcharge cuando termina en Quito)
- *   - frontSeat:  +$3 si elige asiento delantero
- *   - routeId:    ID de ruta específica (opcional, mejora precisión)
+ * Calcula el precio de un asiento en viaje compartido.
+ * Args zone y frontSeat se aceptan por compatibilidad de firma pero NO
+ * afectan el precio (el backend no los modela — ver docstring del módulo).
  */
 export function calcSharedSeatPrice(
   originStop: string,
-  zone: QuitoZone = 'quito_norte',
-  frontSeat = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _zone: QuitoZone = 'quito_norte',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _frontSeat = false,
   routeId?: string,
 ): number {
-  const route = routeId
-    ? GOING_SHARED_ROUTES.find(r => r.id === routeId)
-    : GOING_SHARED_ROUTES.find(r => r.stopPrices[originStop] !== undefined);
+  // Determinar destino: si origen es Quito (o aeropuerto), destino es la
+  // ciudad del routeId; si origen es ciudad regional, destino es Quito.
+  const route = routeId ? GOING_SHARED_ROUTES.find(r => r.id === routeId) : undefined;
+  const destStop = inferDestination(originStop, route);
 
-  const base  = route?.stopPrices[originStop] ?? 10;
-  const isDestinationQuito = route?.direction === 'ida' || !route;
-  const surge = isDestinationQuito
-    ? (QUITO_ZONES.find(z => z.id === zone)?.surcharge ?? 0)
-    : 0;
-
-  return base + surge + (frontSeat ? 3 : 0);
+  // Mirror backend: precio fijo por par (origin, dest), sin surcharges.
+  return getFare(originStop, destStop) ?? 0;
 }
+
+/** Heurística simple: si origen es Quito/aeropuerto, dest = "extremo" del route. */
+function inferDestination(originStop: string, route: { stops: string[] } | undefined): string {
+  if (!route) return 'quito';
+  const stops = route.stops;
+  if (!stops?.length) return 'quito';
+  const first = stops[0];
+  const last  = stops[stops.length - 1];
+  // Si origin coincide con el primer stop (o ninguno), dest = último; sino dest = primero.
+  return originStop === first ? last : first;
+}
+
+/** Re-export para callers que necesitan la tabla cruda (lectura, no edición). */
+export { FARES, getFare };
