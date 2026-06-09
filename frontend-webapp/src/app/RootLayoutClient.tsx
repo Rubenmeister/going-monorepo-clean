@@ -44,8 +44,27 @@ const APP_PREFIXES = [
   '/services/anfitriones',
 ];
 
+/**
+ * Landing pages MARKETING — rutas exactas (sin segmentos hijos) que sí llevan
+ * Navbar/Footer global aunque su prefijo aparezca en APP_PREFIXES. Necesario
+ * para que el usuario llegue desde "Descubrir" en el Navbar y siga viendo el
+ * menú al aterrizar (sino la página se siente "desconectada" — bug reportado
+ * por Rubén 2026-06-09).
+ *
+ * Las subrutas (e.g. /envios/cotizar, /envios/mis-envios, /tours/quito-baños)
+ * se consideran app y siguen ocultando el navbar global, porque cada una tiene
+ * su propio header contextual.
+ */
+const MARKETING_LANDINGS = new Set([
+  '/envios',
+  '/tours',
+  '/experiences',
+  '/accommodation',
+]);
+
 function useIsAppRoute() {
   const pathname = usePathname();
+  if (MARKETING_LANDINGS.has(pathname)) return false;
   return APP_PREFIXES.some(
     prefix => pathname === prefix || pathname.startsWith(prefix + '/')
   );
