@@ -49,13 +49,59 @@ export const GOING_SERVICES_KB = {
   ],
 
   faq_es: [
+    // ── Reserva y operación básica ──────────────────────────────────────────
     { q: '¿Cómo reservo un viaje?', a: 'Descarga la app Going desde Google Play, crea tu cuenta, escribe origen y destino y elige Compartido o Privado. También puedes reservar desde app.goingec.com.' },
-    { q: '¿Puedo cancelar?', a: 'Sí. Las políticas de cancelación dependen del tipo de viaje y de cuánto falta para la salida. Te las muestra la app antes de confirmar.' },
-    { q: '¿Qué pasa si el conductor no llega?', a: 'Contáctanos por la app o por WhatsApp. Te asignamos otro vehículo o procesamos el reembolso si corresponde.' },
-    { q: '¿Aceptan mascotas?', a: 'Algunas conductoras y conductores aceptan mascotas pequeñas en transportadora. Indícalo al reservar y te asignamos un vehículo compatible.' },
-    { q: '¿Pagan en efectivo?', a: 'Sí. Going acepta efectivo (cobrado por la conductora o conductor al final del viaje), tarjeta, Datafast y DeUna. Eligís el método al confirmar el viaje en la app.' },
+    { q: '¿Cuánto antes debo reservar un viaje compartido?', a: 'Puedes reservar hasta con varios días de anticipación para asegurar tu cupo, lo cual te recomendamos especialmente en días feriados o fines de semana. Como mínimo, te sugerimos reservar al menos 2 horas antes de la salida programada para garantizar la correcta asignación de tu vehículo y de tu conductora o conductor.' },
+    { q: '¿Qué pasa si llego tarde al punto de encuentro?', a: 'Para que todos los pasajeros lleguen a tiempo, los vehículos compartidos tienen un tiempo máximo de espera de 5 minutos en el punto de encuentro. Si prevés un retraso, comunícate de inmediato con tu conductora o conductor desde la app. Si el viaje ya inició, el sistema lo registra como "no presentado" y deberás reservar un nuevo asiento.' },
+    { q: '¿Tienen viajes nocturnos o de madrugada?', a: 'Sí. Tenemos salidas programadas en horarios nocturnos y de madrugada en las rutas principales. Puedes verificar la disponibilidad en tiempo real al ingresar origen y destino en la app. Viajar de noche con Going es seguro: contamos con monitoreo satelital permanente.' },
+
+    // ── Cancelación y modificación ──────────────────────────────────────────
+    { q: '¿Tiene algún costo cancelar mi reserva?', a: 'Si cancelas con más de 2 horas de anticipación, no se aplica recargo y el valor queda como saldo a favor en tu Going Wallet. Las cancelaciones fuera de ese tiempo o los casos de no presentación pueden generar una tarifa de cancelación por respeto al tiempo de tu conductora o conductor y de los demás pasajeros.' },
+    { q: '¿Puedo cambiar la fecha o la hora de un viaje ya reservado?', a: 'Sí. Modifica los datos del trayecto desde "Mis Viajes" en la app. Mientras haya asientos disponibles en el nuevo horario y lo hagas dentro del margen permitido (mínimo 2 horas antes de la salida original), el cambio se procesa de inmediato y sin costo adicional.' },
+    { q: '¿Qué pasa si la conductora o conductor no llega?', a: 'Contáctanos por la app o por nuestros canales de soporte. Te asignamos otra unidad o procesamos el reembolso si corresponde.' },
+
+    // ── Pagos, tarifas y facturación ─────────────────────────────────────────
+    { q: '¿Pagan en efectivo?', a: 'Sí. Going acepta efectivo (lo cobra tu conductora o conductor al final del viaje), tarjeta, Datafast y DeUna. Eliges el método al confirmar el viaje en la app.' },
+    { q: '¿Las tarifas son fijas o pueden cambiar por el tráfico o el clima?', a: 'La tarifa que ves al confirmar tu reserva es fija y garantizada. No aplicamos tarifas dinámicas ni cargos sorpresa por congestión vehicular o clima — así puedes planificar tus gastos con tranquilidad.' },
+    { q: '¿Cómo solicito mi factura?', a: 'Una vez terminado el viaje, ve a "Mis Viajes" en la app, elige el trayecto y presiona "Solicitar Factura". Si ya tienes tus datos de facturación (RUC/Cédula) en tu perfil, la factura electrónica llega a tu correo en un máximo de 24 horas.' },
+    { q: '¿Hay descuentos por viajes recurrentes o para empresas (corporativos)?', a: 'Sí. Tenemos planes corporativos para empresas que necesitan trasladar a su personal o gestionar eventos (por ejemplo, ya operamos con Nutricia Pro y Ecuaquímica). Para viajeros frecuentes, revisa la sección "Promociones" en la app: activamos beneficios por frecuencia.' },
+    { q: '¿Aceptan estudiantes y adultos mayores?', a: 'Sí, con tarifas diferenciadas según la normativa vigente en Ecuador. Registra tu tipo de perfil en la app y lleva contigo tu carné estudiantil o cédula al abordar.' },
+
+    // ── Equipaje, mascotas y necesidades especiales ─────────────────────────
+    { q: '¿Puedo llevar equipaje grande, un instrumento musical o una silla de ruedas?', a: 'Sí. Cada pasajera o pasajero tiene derecho a un equipaje de mano y una maleta mediana en bodega. Si viajas con equipaje voluminoso, instrumentos musicales o silla de ruedas plegable, selecciona "Equipaje Especial" al reservar o deja una nota — así te asignamos una SUV o VAN con el espacio óptimo.' },
+    { q: '¿Puedo viajar con mi mascota?', a: 'Sí. Por comodidad e higiene de todos los viajeros, las mascotas pequeñas y medianas viajan dentro de su canil o transportadora rígida. Indícalo al reservar para que tu conductora o conductor y los demás pasajeros estén informados. Las mascotas de asistencia pueden viajar contigo presentando su certificación.' },
+
+    // ── Seguridad y SOS ──────────────────────────────────────────────────────
+    { q: '¿Es seguro viajar en Going? ¿Cómo verifican a las conductoras y conductores?', a: 'Tu seguridad es prioridad. Todas las conductoras y conductores pasan un proceso riguroso: verificación de antecedentes penales, historial de conducción, revisión técnico-mecánica del vehículo y pruebas psicométricas. Además, cada viaje tiene rastreo satelital en tiempo real desde nuestro Centro de Monitoreo Going.' },
+    { q: '¿Cómo funciona el botón SOS de la aplicación?', a: 'Durante todo el trayecto verás el botón SOS en la pantalla del viaje. Al presionarlo se notifica en tiempo real al Centro de Monitoreo Going y, si lo configuraste, se envía un mensaje de texto automático con tu ubicación exacta a tus contactos de confianza.' },
+    { q: '¿Qué hago si olvidé un objeto personal en el vehículo?', a: 'Ve a "Soporte" dentro de la app, selecciona el viaje en el que olvidaste tu pertenencia y presiona "Reportar objeto perdido". Puedes comunicarte temporalmente con tu conductora o conductor o con nuestro equipo para coordinar la devolución segura lo antes posible.' },
+
+    // ── Logística, rutas y envíos ────────────────────────────────────────────
+    { q: '¿Going está disponible en todas las ciudades del país?', a: 'Actualmente operamos con cobertura completa en los corredores y rutas que conectan Quito, Ambato, Latacunga, Salcedo, Otavalo, Atuntaqui, Ibarra, Santo Domingo, El Carmen y La Concordia, además de Aeropuerto Tababela, Cayambe y Tabacundo. Estamos trabajando en la expansión a más ciudades de la Sierra y la Costa.' },
+    { q: '¿Puedo realizar paradas intermedias durante un viaje?', a: 'En modalidad Compartido las paradas están preestablecidas en la ruta para respetar los tiempos de llegada de todos los pasajeros. En modalidad Privado/Exclusivo puedes coordinar paradas intermedias directamente con tu conductora o conductor.' },
+    { q: '¿Puedo enviar un paquete sin necesidad de viajar yo en el vehículo?', a: 'Sí, con Going Envíos. Ingresa los datos del remitente, el destinatario y una descripción del paquete. La entrega es puerta a puerta o al punto de encuentro acordado, aprovechando nuestras rutas habituales.' },
     { q: '¿Tienen servicio a Galápagos?', a: 'Going opera por carretera en Ecuador continental. Para Galápagos te recomendamos coordinar con la aerolínea y el operador local de las islas.' },
+
+    // ── Conductoras y conductores ───────────────────────────────────────────
+    { q: '¿Cómo me hago conductora o conductor de Going?', a: 'Ingresa a "Conduce con Going" desde el menú o el sitio web. Completa el formulario con tus datos básicos y adjunta la documentación requerida (licencia vigente, documentos del vehículo en regla y antecedentes). Una vez revisados, te invitamos a la Academia Going para certificar tu cuenta y empezar a generar ingresos.' },
+
+    // ── Experiencia y comunidad ─────────────────────────────────────────────
+    { q: '¿Cómo puedo calificar mi viaje o reportar una mala experiencia?', a: 'Al terminar cada trayecto la app te muestra una pantalla para calificar a tu conductora o conductor de 1 a 5 estrellas y dejar comentarios. Si tuviste un inconveniente o una experiencia extraordinaria, también puedes reportarlo desde los detalles del viaje en "Mis Viajes".' },
   ],
+
+  // ── Clientes corporativos activos (mencionables como referencia) ──────────
+  corporate_clients: [
+    'Nutricia Pro',
+    'Ecuaquímica',
+  ],
+
+  // ── Marcas/sub-servicios que la conductora o conductor puede mencionar ──
+  auxiliary_features: {
+    wallet: 'Going Wallet — saldo a favor digital donde se acumulan reembolsos y beneficios por viajes recurrentes',
+    envios: 'Going Envíos — encomiendas puerta a puerta aprovechando rutas existentes',
+    academia: 'Academia Going — capacitación obligatoria de conductoras y conductores antes de activar cuenta',
+    centro_monitoreo: 'Centro de Monitoreo Going — equipo 24/7 que vigila viajes en tiempo real y atiende SOS',
+  },
 
   // ── Rutas activas de GOING ────────────────────────────────────────────────
   routes: [
