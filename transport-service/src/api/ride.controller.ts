@@ -690,22 +690,37 @@ export class RideController {
   }
 
   /**
-   * Verificar token de recogida (conductor escanea QR del pasajero/paquete)
+   * Verificar identidad de recogida.
    * POST /api/rides/:rideId/verify-pickup
-   * Body: { token: string }
+   *
+   * Body: acepta cualquiera de las dos opciones:
+   *   - { token: string } → QR largo (verificación criptográfica)
+   *   - { code: string  } → PIN 6 dígitos (verificación manual — el común MVP)
    */
   @Post(':rideId/verify-pickup')
   async verifyPickup(
     @Param('rideId') rideId: string,
-    @Body('token') token: string,
+    @Body() body: { token?: string; code?: string },
   ): Promise<any> {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
     if (ride.pickupVerified) return { ok: true, alreadyVerified: true };
 
-    const result = this.tokenService.verifyPickupToken(token);
-    if (!result.valid || result.rideId !== rideId) {
-      throw new BadRequestException('Token de recogida inválido o expirado');
+    const { token, code } = body || {};
+    let verified = false;
+
+    if (token) {
+      const result = this.tokenService.verifyPickupToken(token);
+      verified = result.valid && result.rideId === rideId;
+    } else if (code) {
+      // Comparación constant-time del PIN para evitar timing attacks.
+      const a = Buffer.from(String(code));
+      const b = Buffer.from(String((ride as any).pickupCode ?? ''));
+      verified = a.length === b.length && a.length > 0 && require('crypto').timingSafeEqual(a, b);
+    }
+
+    if (!verified) {
+      throw new BadRequestException('Código o token de recogida inválido');
     }
 
     // Generar deliveryToken ahora que la recogida fue verificada
@@ -840,7 +855,7 @@ export class RideController {
     const baseUrl = process.env.APP_URL ?? 'https://going.com.ec';
     return {
       shareToken,
-      shareUrl: `${baseUrl}/tracking?t=${shareToken}`,
+      shareUrl: `${baseUrl}/tracking/live/${shareToken}`,
       message: 'Comparte este link para que sigan tu viaje en tiempo real 📍',
     };
   }

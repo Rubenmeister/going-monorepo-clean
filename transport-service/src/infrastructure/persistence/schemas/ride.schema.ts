@@ -58,7 +58,8 @@ export class RideModelSchema {
   @Prop() reminder5mSentAt: Date;   // aviso ~5 minutos antes
 
   // ── Identidad y tokens ────────────────────────────────────────────────────
-  @Prop() pickupToken: string;          // QR para verificar identidad al subir
+  @Prop() pickupToken: string;          // QR largo para verificar identidad al subir
+  @Prop() pickupCode: string;           // PIN 6 dígitos para verificación manual (alternativa al QR)
   @Prop() deliveryToken: string;        // token generado al llegar, confirma entrega
   @Prop({ default: false }) pickupVerified: boolean;
   @Prop({ default: false }) deliveryVerified: boolean;
@@ -70,6 +71,9 @@ export class RideModelSchema {
 
   // ── Link compartido ───────────────────────────────────────────────────────
   @Prop() shareToken: string;           // token base64 para tracking público
+
+  // ── Recordatorios ─────────────────────────────────────────────────────────
+  @Prop() reminderSentAt: Date;         // recordatorio 24h antes del scheduledAt (idempotencia)
 
   // ── Pago ─────────────────────────────────────────────────────────────────
   @Prop() paymentRef: string;

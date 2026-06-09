@@ -89,13 +89,14 @@ export type ActiveRideParams = {
   category: string;
   price: number;
   pickupToken?: string;   // QR de identidad — el conductor lo escanea al recoger
+  pickupCode?: string;    // PIN 6 dígitos — el conductor lo tipea para verificar
   shareUrl?: string;      // link público de seguimiento en tiempo real
 };
 
 export function ActiveRideScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<RouteProp<{ params: ActiveRideParams }, 'params'>>();
-  const { rideId, origin, destination, vehicleType, tripMode, category, price, pickupToken, shareUrl } = route.params;
+  const { rideId, origin, destination, vehicleType, tripMode, category, price, pickupToken, pickupCode, shareUrl } = route.params;
 
   // Theme adaptive — light/dark + brand tokens. Sin re-render cuando cambia
   // datos del viaje porque tokens/isDark son referencias estables.
@@ -386,7 +387,7 @@ export function ActiveRideScreen() {
   };
 
   const handleShareTracking = async () => {
-    const trackingUrl = shareUrl ?? `https://app.goingec.com/tracking?t=${rideId}`;
+    const trackingUrl = shareUrl ?? `https://app.goingec.com/tracking/live/${rideId}`;
     analyticsShareTracking(rideId);
     try {
       await Share.share({
@@ -741,30 +742,38 @@ export function ActiveRideScreen() {
       </View>
     </View>
 
-    {/* ── Modal QR de identidad (conductor llegó, necesita escanear) ── */}
-    {showPickupQR && pickupToken && (
+    {/* ── Modal código de identidad (conductor llegó, va a verificar) ── */}
+    {showPickupQR && (pickupCode || pickupToken) && (
       <View style={styles.qrOverlay}>
         <View style={styles.qrCard}>
           <View style={styles.qrHeader}>
-            <Ionicons name="qr-code-outline" size={28} color={tokens.brandNavy} />
-            <Text style={styles.qrTitle}>Muestra este código al conductor</Text>
+            <Ionicons name="shield-checkmark-outline" size={28} color={tokens.brandNavy} />
+            <Text style={styles.qrTitle}>Tu código de verificación</Text>
           </View>
-          <Text style={styles.qrSubtitle}>El conductor lo escaneará para confirmar que es tu viaje</Text>
-          {/* Representación visual del token como bloques coloreados */}
-          <View style={styles.qrBox}>
-            <View style={styles.qrGrid}>
-              {Array.from(pickupToken.slice(0, 16)).map((char, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.qrCell,
-                    { backgroundColor: char.charCodeAt(0) % 2 === 0 ? tokens.brandNavy : tokens.brandYellow },
-                  ]}
-                />
-              ))}
+          <Text style={styles.qrSubtitle}>Dile estos 6 dígitos a tu conductora o conductor para confirmar que es tu viaje</Text>
+
+          {/* PIN 6 dígitos — fácil de leer en voz alta */}
+          {pickupCode ? (
+            <View style={styles.qrBox}>
+              <Text style={styles.pickupCodeText}>{pickupCode}</Text>
             </View>
-            <Text style={styles.qrCode}>{pickupToken.slice(0, 8).toUpperCase()}</Text>
-          </View>
+          ) : pickupToken ? (
+            <View style={styles.qrBox}>
+              <View style={styles.qrGrid}>
+                {Array.from(pickupToken.slice(0, 16)).map((char, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.qrCell,
+                      { backgroundColor: char.charCodeAt(0) % 2 === 0 ? tokens.brandNavy : tokens.brandYellow },
+                    ]}
+                  />
+                ))}
+              </View>
+              <Text style={styles.qrCode}>{pickupToken.slice(0, 8).toUpperCase()}</Text>
+            </View>
+          ) : null}
+
           <TouchableOpacity style={styles.qrDismiss} onPress={() => setShowPickupQR(false)}>
             <Text style={styles.qrDismissText}>Cerrar</Text>
           </TouchableOpacity>
@@ -987,6 +996,10 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     },
     qrCell: { width: 30, height: 30 },
     qrCode: { marginTop: 10, fontSize: 18, fontWeight: '900', letterSpacing: 4, color: t.brandNavy },
+    pickupCodeText: {
+      fontSize: 56, fontWeight: '900', letterSpacing: 10,
+      color: t.brandNavy, textAlign: 'center', paddingVertical: 12,
+    },
     qrDismiss: {
       paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12,
       backgroundColor: t.glass,

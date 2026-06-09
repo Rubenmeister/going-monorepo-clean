@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Ride,
@@ -12,6 +12,10 @@ import {
 } from '../../domain/ports';
 import { TokenService } from '../../infrastructure/token.service';
 import { RideEventsGateway } from '../../infrastructure/gateways/ride-events.gateway';
+import { resolveCityWithBuffer } from '@going-platform/pricing';
+
+/** Buffer (km) sobre el radius de cada ciudad para la cobertura compartida. */
+const SHARED_COVERAGE_BUFFER_KM = 5;
 
 /**
  * Request Ride Use Case
@@ -60,6 +64,25 @@ export class RequestRideUseCase {
       dropoffLongitude,
     } = input;
 
+    // Restricción geográfica para viajes compartidos: pickup Y dropoff deben
+    // estar dentro de la cobertura (ciudad de la tabla + buffer de 5 km).
+    // Los viajes privados/SUV/SUVXL/envíos no aplican esta restricción.
+    const modalidad = input.modalidad ?? 'compartido';
+    if (modalidad === 'compartido') {
+      const pickupCity = resolveCityWithBuffer(
+        pickupLatitude, pickupLongitude, SHARED_COVERAGE_BUFFER_KM,
+      );
+      const dropoffCity = resolveCityWithBuffer(
+        dropoffLatitude, dropoffLongitude, SHARED_COVERAGE_BUFFER_KM,
+      );
+      if (!pickupCity || !dropoffCity) {
+        const out = !pickupCity ? 'el origen' : 'el destino';
+        throw new BadRequestException(
+          `${out} está fuera de la cobertura compartida (a más de ${SHARED_COVERAGE_BUFFER_KM} km de una localidad). Solicita un viaje privado o cambia el punto.`,
+        );
+      }
+    }
+
     // Create coordinates
     const pickupCoords = new Coordinates(pickupLatitude, pickupLongitude);
     const dropoffCoords = new Coordinates(dropoffLatitude, dropoffLongitude);
@@ -96,13 +119,18 @@ export class RequestRideUseCase {
       fare,
     });
 
-    // Generar tokens de identidad y link compartido
+    // Generar tokens de identidad y link compartido.
+    //   - pickupToken: QR largo (HMAC firmado) para verificación criptográfica.
+    //   - pickupCode:  PIN 6 dígitos para verificación manual (lo que el driver
+    //                  tipea cuando el QR no es práctico — el caso común MVP).
     const pickupToken = this.tokenService.generatePickupToken(ride.id, userId);
+    const pickupCode  = this.tokenService.generateDeliveryToken(ride.id);
     const shareToken  = this.tokenService.generateShareToken(ride.id);
 
     // Enriquecer el ride con tokens y campos extra
     Object.assign(ride, {
       pickupToken,
+      pickupCode,
       shareToken,
       serviceType:        input.serviceType ?? 'suv',
       modalidad:          input.modalidad ?? 'compartido',
@@ -151,7 +179,8 @@ export class RequestRideUseCase {
       lockedFare:      input.lockedFare,
       // Tokens para el pasajero/remitente
       pickupToken,
-      shareUrl: `${baseUrl}/tracking?t=${shareToken}`,
+      pickupCode,
+      shareUrl: `${baseUrl}/tracking/live/${shareToken}`,
     };
   }
 
