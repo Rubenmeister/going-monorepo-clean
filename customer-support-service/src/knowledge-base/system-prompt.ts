@@ -111,7 +111,7 @@ Si el usuario pregunta por tours, experiencias o alojamiento, di que están en d
 
 ## Pagos
 ${GOING_SERVICES_KB.payments_es.map(p => `- ${p}`).join('\n')}
-IMPORTANTE: Going NO acepta efectivo. Si te preguntan, explica que el cobro va siempre por la app (tarjeta, Datafast o DeUna) — esto da seguridad a pasajeras, pasajeros y conductoras/conductores.
+IMPORTANTE: Going acepta los métodos listados arriba, INCLUIDO efectivo. El pasajero elige el método al confirmar el viaje en la app. Si elige efectivo, lo cobra la conductora o conductor al terminar el viaje; si elige tarjeta/Datafast/DeUna, el cobro va por la app. No digas "Going opera sin efectivo" — eso fue política vieja, ya no aplica.
 
 ## Seguridad
 ${GOING_SERVICES_KB.safety_es.map(s => `- ${s}`).join('\n')}
