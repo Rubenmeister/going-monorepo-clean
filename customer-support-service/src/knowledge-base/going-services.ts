@@ -6,7 +6,33 @@
  * desarrollo (turismo, tours, alojamiento) NO deben anunciarse como activos.
  * Para precios: SIEMPRE delegar a la función get_quote / get_quote_phone.
  * NUNCA mostrar tarifas estáticas en respuestas al usuario.
+ *
+ * RUTAS Y PRECIOS: los pares válidos para Compartido se derivan en tiempo
+ * de import desde `libs/pricing/FARES.shared` — única fuente de verdad.
+ * Si la lista debe cambiar (agregar/quitar par, modificar precio):
+ *   1) Editá `libs/pricing/src/lib/fares.ts` (FARES.shared['origen-destino'])
+ *   2) Redeployá los servicios que la consumen: transport-service,
+ *      payment-service, customer-support-service, voice-call-service
+ *   3) Mobile: el archivo `mobile-user-app/src/catalog/fares.ts` es un
+ *      mirror manual byte-a-byte — actualizarlo en el mismo PR
+ *   4) Tests: `pnpm nx affected -t test` para validar
  */
+import { FARES, getFare } from '@going-platform/pricing';
+
+/** Pares únicos (sin duplicar bidirección) derivados de FARES.shared. */
+function _derivedSharedRoutePairs(): Array<{ a: string; b: string; price: number }> {
+  const pairs = new Map<string, { a: string; b: string; price: number }>();
+  for (const key of Object.keys(FARES.shared)) {
+    const [origin, destination] = key.split('-');
+    if (!origin || !destination) continue;
+    const sorted = [origin, destination].sort();
+    const k = `${sorted[0]}|${sorted[1]}`;
+    if (!pairs.has(k)) {
+      pairs.set(k, { a: sorted[0], b: sorted[1], price: FARES.shared[key] });
+    }
+  }
+  return [...pairs.values()].sort((x, y) => x.a.localeCompare(y.a));
+}
 export const GOING_SERVICES_KB = {
   summary_es: 'Going es la app de movilidad del Ecuador: viajes dentro de la ciudad, viajes compartidos y privados entre ciudades, y envío de paquetes puerta a puerta. Conductoras y conductores verificados, tracking en vivo y precio fijo antes de viajar.',
   summary_en: 'Going is Ecuador\'s mobility app: rides within the city, shared and private rides between cities, and door-to-door parcel delivery. Verified drivers, live tracking, and fixed prices before the trip.',
@@ -148,11 +174,31 @@ export const GOING_SERVICES_KB = {
   ],
 
   /**
-   * TABLA DE PRECIOS — Referencia completa para la IA de atención al cliente
-   * Compartido = precio por pasajero | Privado = vehículo completo
-   * Recargo +$5 cuando el PICKUP es: Quito Sur, Cumbayá/Tumbaco, Los Chillos, Aeropuerto Tababela
+   * RUTAS COMPARTIDAS VÁLIDAS — derivado en tiempo de import desde FARES.shared
+   * (libs/pricing). Lista única de pares "ciudad ↔ ciudad" en los que SÍ se
+   * ofrece Going Compartido. Cualquier par que no esté acá debe pedirse como
+   * Privado o avisarse como "fuera de cobertura compartida".
+   *
+   * Para CAMBIAR esta lista: editá `libs/pricing/src/lib/fares.ts` (ver
+   * docstring arriba).
    */
-  pricing: {
+  shared_routes_canonical: _derivedSharedRoutePairs(),
+
+  /**
+   * TABLA DE PRECIOS LEGACY — referencia operativa NO autoritativa.
+   *
+   * Esta tabla quedó desincronizada de FARES.shared (libs/pricing) y NO debe
+   * usarse para cotizar al cliente. La verdad operativa es:
+   *   - Compartido: `getFare(origin, destination)` de @going-platform/pricing
+   *   - Privado:    `getPrivateFare(sharedFare, vehicle)` de @going-platform/pricing
+   *   - Tools de IA: `get_quote()` (chat) y voice-tools (voz) ya leen libs/pricing
+   *
+   * Mantenida acá SOLO como guía interna para entender la estructura comercial
+   * (recargos por zona Quito Sur/Cumbayá, premium SUV, etc.). Si se necesita
+   * aplicar alguno de estos recargos en producción, modelarlo en libs/pricing
+   * con una función dedicada — NO usar estos números a mano.
+   */
+  pricing_legacy_DO_NOT_USE: {
     nota_compartido: 'Precio por pasajero. SUV (hasta 4 pax) y SUV XL (hasta 5 pax) tienen el mismo precio compartido.',
     nota_privado: 'Precio por vehículo completo. Factores: SUV ×1.0 · SUV XL ×1.4 · VAN ×2.0 · VAN XL ×3.0 · Minibús ×5.0 · Bus ×10.0',
     nota_recargo: '+$5 en todos los precios cuando el origen es: Quito Sur, Cumbayá/Tumbaco, Los Chillos o Aeropuerto Tababela.',
