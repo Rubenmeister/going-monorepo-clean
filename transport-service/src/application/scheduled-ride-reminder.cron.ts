@@ -1,8 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import axios from 'axios';
 import { IRideRepository } from '../domain/ports';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
@@ -32,7 +30,6 @@ export class ScheduledRideReminderCron {
     private readonly config: ConfigService,
     @Inject('IRideRepository')
     private readonly rideRepo: IRideRepository,
-    @InjectModel('Ride') private readonly rideModel: Model<any>,
     private readonly eventsGateway: RideEventsGateway,
   ) {}
 
@@ -44,21 +41,19 @@ export class ScheduledRideReminderCron {
   async run(): Promise<void> {
     if (!this.isEnabled()) return;
 
-    const now = new Date();
-    const windowStart = new Date(now.getTime() + 23 * 60 * 60 * 1000);
-    const windowEnd   = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+    // Reusa el helper del repo agregado por commit 86018d2d (los crons 1h/5m
+    // usan exactamente esta firma). Ventana 24h ≈ [now+23h, now+25h]
+    // expresada en minutos: (1380, 1500].
+    if (typeof this.rideRepo.findUpcomingNeedingReminder !== 'function') {
+      this.logger.warn('[reminder] rideRepo.findUpcomingNeedingReminder no disponible — skip');
+      return;
+    }
 
     let due: any[] = [];
     try {
-      due = await this.rideModel
-        .find({
-          status:      'scheduled',
-          scheduledAt: { $gte: windowStart, $lte: windowEnd },
-          reminderSentAt: { $exists: false },
-        })
-        .limit(200)
-        .lean()
-        .exec();
+      due = await this.rideRepo.findUpcomingNeedingReminder(
+        'reminderSentAt', 23 * 60, 25 * 60, 200,
+      );
     } catch (e) {
       this.logger.error(`[reminder] query falló: ${(e as Error).message}`);
       return;
