@@ -26,10 +26,10 @@ const track = (event: string, params?: Record<string, unknown>) => {
 
 // ─── Sesión ───────────────────────────────────────────────────────────────────
 
-export const analyticsLogin = (method: 'email' | 'biometric' | 'google') =>
+export const analyticsLogin = (method: 'email' | 'biometric' | 'google' | 'facebook') =>
   _analytics?.logLogin({ method }).catch(() => {});
 
-export const analyticsSignUp = (method: 'email' | 'google') =>
+export const analyticsSignUp = (method: 'email' | 'google' | 'facebook') =>
   _analytics?.logSignUp({ method }).catch(() => {});
 
 export const analyticsLogout = () => track('user_logout');

@@ -8,6 +8,27 @@ import { create } from 'zustand';
 import { authAPI } from '@services/api';
 import { authService, StoredUser } from '@services/authService';
 
+/**
+ * Normaliza el shape del usuario que llega del backend.
+ * Acepta variantes (camelCase, snake_case, id/userId, .user envoltorio o raw).
+ * Returns null si no hay forma de extraer un id válido.
+ */
+function normalizeUser(raw: any): StoredUser | null {
+  if (!raw) return null;
+  const u = raw.user ?? raw;
+  const id = u?.id ?? u?.userId ?? u?._id ?? u?.user_id;
+  if (!id) return null;
+  return {
+    id:        String(id),
+    firstName: u.firstName ?? u.first_name ?? '',
+    lastName:  u.lastName  ?? u.last_name  ?? '',
+    email:     u.email     ?? '',
+    phone:     u.phone     ?? '',
+    roles:     Array.isArray(u.roles) ? u.roles : ['user'],
+    avatar:    u.avatar,
+  };
+}
+
 interface AuthState {
   token:    string | null;
   user:     StoredUser | null;
@@ -47,8 +68,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const token = await authService.bootstrap();
       if (!token) {
-        // Ensure storage is clean if no valid session
-        await authService.clearAll();
+        // Sin sesión válida: NO borramos nada — bootstrap() ya distingue
+        // "no hay token" de "error transient". Solo marcamos sin sesión.
         set({ token: null, user: null, isLoading: false });
         return;
       }
@@ -57,15 +78,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         // Token exists but no user metadata — fetch it
         try {
           const { data } = await authAPI.me();
-          const resolved: StoredUser = {
-            id:        data.userId || data.id,
-            firstName: data.firstName || '',
-            lastName:  data.lastName  || '',
-            email:     data.email     || '',
-            phone:     data.phone     || '',
-            roles:     data.roles     || ['user'],
-            avatar:    data.avatar,
-          };
+          const resolved = normalizeUser(data);
+          if (!resolved) throw new Error('me() returned invalid user');
           await authService.saveUser(resolved);
           set({ token, user: resolved, isLoading: false });
         } catch {
@@ -76,7 +90,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ token, user, isLoading: false });
       }
     } catch {
-      await authService.clearAll();
+      // Error transient (SecureStore frio, network). NO destruir tokens —
+      // dejamos que el próximo arranque reintente. UI muestra Auth, pero
+      // tokens válidos quedan disponibles.
       set({ token: null, user: null, isLoading: false });
     }
   },
@@ -92,8 +108,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!accessToken) throw new Error('No se recibió token de autenticación');
 
       await authService.saveTokens({ accessToken, refreshToken, expiresIn: data.expiresIn });
-      await authService.saveUser(data.user);
-      set({ token: accessToken, user: data.user, isLoading: false });
+
+      // Normalizar el user que viene de la respuesta. Si el backend no lo
+      // entrega (o viene con campos faltantes), hidratar con /auth/me.
+      let user = normalizeUser(data.user) ?? normalizeUser(data);
+      if (!user) {
+        const me = await authAPI.me();
+        user = normalizeUser(me.data);
+      }
+      if (!user) throw new Error('No se pudo cargar el perfil del usuario');
+
+      await authService.saveUser(user);
+      set({ token: accessToken, user, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || e.message || 'Error al iniciar sesión',
@@ -111,8 +137,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!accessToken) throw new Error('No se recibió token de autenticación');
 
       await authService.saveTokens({ accessToken, refreshToken, expiresIn: data.expiresIn });
-      await authService.saveUser(data.user);
-      set({ token: accessToken, user: data.user, isLoading: false });
+
+      let user = normalizeUser(data.user) ?? normalizeUser(data);
+      if (!user) {
+        const me = await authAPI.me();
+        user = normalizeUser(me.data);
+      }
+      if (!user) throw new Error('No se pudo cargar el perfil del usuario');
+
+      await authService.saveUser(user);
+      set({ token: accessToken, user, isLoading: false });
     } catch (e: any) {
       set({
         error: e.response?.data?.message || 'Error al registrarse',
@@ -139,15 +173,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       // OAuth flows typically don't provide a refresh token upfront
       await authService.saveTokens({ accessToken: token, refreshToken: '' });
       const { data } = await authAPI.me();
-      const user: StoredUser = {
-        id:        data.userId || data.id,
-        firstName: data.firstName || '',
-        lastName:  data.lastName  || '',
-        email:     data.email     || '',
-        phone:     data.phone     || '',
-        roles:     data.roles     || ['user'],
-        avatar:    data.avatar,
-      };
+      const user = normalizeUser(data);
+      if (!user) throw new Error('No se pudo cargar el perfil del usuario');
       await authService.saveUser(user);
       set({ token, user, isLoading: false });
     } catch (e: any) {

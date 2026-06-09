@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Alert, ScrollView, KeyboardAvoidingView, Platform,
-  Image, ActivityIndicator,
+  Image, ActivityIndicator, Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -49,6 +49,10 @@ export function DriverRegisterScreen({ navigation }: any) {
   // Documentos
   const [docs, setDocs] = useState<Partial<Record<DocKey, string>>>({});
   const [loading, setLoading] = useState(false);
+
+  // LOPDP — consents EXPLÍCITOS y SEPARADOS (Ley Orgánica de Protección de Datos EC)
+  const [acceptedTerms,   setAcceptedTerms]   = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   // ── Seleccionar imagen de documento ────────────────────────────────────────
   const pickDoc = async (key: DocKey) => {
@@ -123,6 +127,17 @@ export function DriverRegisterScreen({ navigation }: any) {
   // ── Registro final ─────────────────────────────────────────────────────────
   const handleRegister = async () => {
     if (!validateStep3()) return;
+    if (!acceptedTerms) {
+      Alert.alert('Términos requeridos', 'Debes aceptar los Términos y Condiciones para continuar.');
+      return;
+    }
+    if (!acceptedPrivacy) {
+      Alert.alert(
+        'Privacidad requerida',
+        'Debes autorizar el tratamiento de tus datos personales según la LOPDP del Ecuador para continuar.',
+      );
+      return;
+    }
     setLoading(true);
     try {
       // 1. Crear cuenta
@@ -353,6 +368,51 @@ export function DriverRegisterScreen({ navigation }: any) {
                 </View>
               )}
 
+              {/* ── Checkboxes LOPDP (compliance regulatorio EC) ────── */}
+              <View style={styles.legalBlock}>
+                <TouchableOpacity
+                  style={styles.checkRow}
+                  onPress={() => setAcceptedTerms(v => !v)}
+                  activeOpacity={0.7}
+                  disabled={loading}
+                >
+                  <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                    {acceptedTerms && <Ionicons name="checkmark" size={13} color="#FF4C41" />}
+                  </View>
+                  <Text style={styles.checkLabel}>
+                    Acepto los{' '}
+                    <Text
+                      style={styles.checkLink}
+                      onPress={() => Linking.openURL('https://goingec.com/terminos')}
+                    >
+                      Términos y Condiciones
+                    </Text>
+                    {' '}de uso del servicio
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.checkRow, { marginTop: 12 }]}
+                  onPress={() => setAcceptedPrivacy(v => !v)}
+                  activeOpacity={0.7}
+                  disabled={loading}
+                >
+                  <View style={[styles.checkbox, acceptedPrivacy && styles.checkboxChecked]}>
+                    {acceptedPrivacy && <Ionicons name="checkmark" size={13} color="#FF4C41" />}
+                  </View>
+                  <Text style={styles.checkLabel}>
+                    Autorizo el tratamiento de mis datos según la{' '}
+                    <Text
+                      style={styles.checkLink}
+                      onPress={() => Linking.openURL('https://goingec.com/privacidad')}
+                    >
+                      Política de Privacidad
+                    </Text>
+                    {' '}(LOPDP — Ley Orgánica de Protección de Datos)
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
                 style={[styles.button, loading && styles.buttonDisabled]}
                 onPress={handleRegister}
@@ -468,6 +528,47 @@ const styles = StyleSheet.create({
   previewWrap: { position: 'relative' },
   previewImg: { width: 70, height: 70, borderRadius: 8, backgroundColor: '#eee' },
   previewRemove: { position: 'absolute', top: -6, right: -6 },
+
+  // ── Legal LOPDP ─────────────────────────────────────────
+  legalBlock: {
+    marginTop: 16,
+    marginBottom: 4,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  checkbox: {
+    width: 22, height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  checkboxChecked: {
+    backgroundColor: YELLOW,
+    borderColor: YELLOW,
+  },
+  checkLabel: {
+    flex: 1,
+    fontSize: 12,
+    color: '#4B5563',
+    lineHeight: 18,
+  },
+  checkLink: {
+    color: '#FF4C41',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
 
   button: {
     backgroundColor: YELLOW, padding: 16, borderRadius: 12,

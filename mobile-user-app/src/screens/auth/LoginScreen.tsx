@@ -48,6 +48,7 @@ import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
 import { analyticsLogin } from '../../utils/analytics';
 import { useTheme, type ThemeTokens } from '../../theme';
+import { signInWithProvider, type OAuthProvider } from '../../services/oauth';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -63,7 +64,7 @@ const STATS = [
 
 export function LoginScreen() {
   const navigation = useNavigation<Nav>();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, loginWithOAuthToken, isLoading, error, clearError } = useAuthStore();
   const { tokens, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
@@ -72,6 +73,7 @@ export function LoginScreen() {
   const [showPwd,  setShowPwd]  = useState(false);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricType,    setBiometricType]    = useState<'faceid' | 'fingerprint' | null>(null);
+  const [oauthBusy, setOauthBusy] = useState<OAuthProvider | null>(null);
 
   // Ref al input de password — permite que el "next" del email focusee aquí
   const passwordRef = useRef<TextInput>(null);
@@ -109,6 +111,36 @@ export function LoginScreen() {
     hapticMedium();
     await login(email.trim().toLowerCase(), password);
     analyticsLogin('email');
+  };
+
+  // ── OAuth: Google / Facebook ─────────────────────────────────
+  const handleOAuth = async (provider: OAuthProvider) => {
+    if (oauthBusy) return;
+    setOauthBusy(provider);
+    hapticMedium();
+    try {
+      const result = await signInWithProvider(provider);
+      if (!result.ok) {
+        if (result.reason === 'cancel') return; // usuario cerró el WebView, sin ruido
+        hapticError();
+        Alert.alert(
+          'No pudimos iniciar sesión',
+          result.message ?? 'Intenta de nuevo en un momento.'
+        );
+        return;
+      }
+      await loginWithOAuthToken(result.token);
+      analyticsLogin(provider);
+      hapticSuccess();
+    } catch (e: any) {
+      hapticError();
+      Alert.alert(
+        'No pudimos iniciar sesión',
+        e?.message ?? 'Intenta de nuevo en un momento.'
+      );
+    } finally {
+      setOauthBusy(null);
+    }
   };
 
   // Logo brand — en hero glass siempre legible (overlay propio del card)
@@ -256,6 +288,50 @@ export function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* ── Separador "o continúa con" ── */}
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>o continúa con</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* ── Social login: Google + Facebook ── */}
+          <View style={styles.socialRow}>
+            <TouchableOpacity
+              style={[styles.socialBtn, oauthBusy && { opacity: 0.7 }]}
+              onPress={() => handleOAuth('google')}
+              disabled={isLoading || !!oauthBusy}
+              activeOpacity={0.85}
+              accessibilityLabel="Continuar con Google"
+            >
+              {oauthBusy === 'google' ? (
+                <ActivityIndicator color={tokens.textPrimary} />
+              ) : (
+                <>
+                  <Ionicons name="logo-google" size={18} color="#DB4437" />
+                  <Text style={styles.socialBtnText}>Google</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.socialBtn, oauthBusy && { opacity: 0.7 }]}
+              onPress={() => handleOAuth('facebook')}
+              disabled={isLoading || !!oauthBusy}
+              activeOpacity={0.85}
+              accessibilityLabel="Continuar con Facebook"
+            >
+              {oauthBusy === 'facebook' ? (
+                <ActivityIndicator color={tokens.textPrimary} />
+              ) : (
+                <>
+                  <Ionicons name="logo-facebook" size={20} color="#1877F2" />
+                  <Text style={styles.socialBtnText}>Facebook</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
 
           {/* ── Crear cuenta ── */}
           <TouchableOpacity
@@ -476,6 +552,49 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       color: t.textInverse,
       fontSize: 16, fontWeight: '900',
       letterSpacing: 0.3,
+    },
+
+    // Divider "o continúa con"
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 24,
+      marginBottom: 14,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: t.glassBorder,
+    },
+    dividerText: {
+      fontSize: 11,
+      color: t.textTertiary,
+      fontWeight: '600',
+      letterSpacing: 0.4,
+      textTransform: 'uppercase',
+    },
+
+    // Social login row
+    socialRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    socialBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: t.glass,
+      borderWidth: 1, borderColor: t.glassBorder,
+      borderRadius: 14,
+      paddingVertical: 13,
+      minHeight: 46,
+    },
+    socialBtnText: {
+      color: t.textPrimary,
+      fontSize: 14, fontWeight: '700',
     },
 
     // Crear cuenta

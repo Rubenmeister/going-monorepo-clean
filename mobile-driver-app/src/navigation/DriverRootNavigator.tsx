@@ -13,9 +13,13 @@ import {
 export function DriverRootNavigator() {
   const { token, isLoading, loadToken } = useDriverStore();
   const navRef = useRef<NavigationContainerRef<any>>(null);
+  const bootstrapped = useRef(false);
 
-  // Restore persisted token from AsyncStorage on app launch
+  // Restore persisted token from AsyncStorage on app launch — solo una vez
+  // aunque StrictMode o un re-mount intenten dispararlo dos veces.
   useEffect(() => {
+    if (bootstrapped.current) return;
+    bootstrapped.current = true;
     loadToken();
   }, []);
 
