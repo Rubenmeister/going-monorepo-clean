@@ -3,6 +3,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
 import { authService } from '../services/authService';
 
+/**
+ * Normaliza el shape del driver que llega del backend.
+ * Acepta variantes (camelCase, snake_case, id/userId, .user envoltorio o raw).
+ * Returns null si no hay forma de extraer un id válido o si el rol no incluye 'driver'.
+ */
+function normalizeDriver(raw: any): Driver | null {
+  if (!raw) return null;
+  const u = raw.user ?? raw;
+  const id = u?.id ?? u?.userId ?? u?._id ?? u?.user_id;
+  if (!id) return null;
+  const roles: string[] = Array.isArray(u.roles) ? u.roles : [];
+  if (!roles.includes('driver')) return null;
+  return {
+    id:           String(id),
+    firstName:    u.firstName ?? u.first_name ?? '',
+    lastName:     u.lastName  ?? u.last_name  ?? '',
+    email:        u.email     ?? '',
+    vehiclePlate: u.vehiclePlate ?? u.vehicle_plate,
+    rating:       u.rating,
+    isOnline:     u.isOnline ?? u.is_online,
+  };
+}
+
 export interface PendingTrip {
   id: string;
   userId: string;
@@ -52,14 +75,38 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   error: null,
 
   loadToken: async () => {
-    // bootstrap maneja refresh proactivo si el access está cerca de exp.
-    const token = await authService.bootstrap();
-    const driver = await authService.getDriver();
-    if (token && driver) {
-      set({ token, driver: driver as Driver });
-    } else if (token) {
-      // Sin datos de usuario guardados: limpiar sesión completa.
-      await authService.clearAll();
+    set({ isLoading: true });
+    try {
+      // bootstrap maneja refresh proactivo si el access está cerca de exp.
+      const token = await authService.bootstrap();
+      if (!token) {
+        set({ token: null, driver: null, isLoading: false });
+        return;
+      }
+      const stored = await authService.getDriver();
+      if (stored) {
+        set({ token, driver: stored as Driver, isLoading: false });
+        return;
+      }
+      // Token vivo, sin driver guardado → re-hidratar desde /auth/me.
+      try {
+        const { data } = await api.get('/auth/me');
+        const driver = normalizeDriver(data);
+        if (!driver) {
+          // /auth/me respondió pero el shape no es un driver válido.
+          await authService.clearAll();
+          set({ token: null, driver: null, isLoading: false });
+          return;
+        }
+        await authService.saveDriver(driver);
+        set({ token, driver, isLoading: false });
+      } catch {
+        // Error transient (red): NO destruir tokens, solo dejar sin sesión UI
+        // hasta el próximo arranque.
+        set({ token: null, driver: null, isLoading: false });
+      }
+    } catch {
+      set({ token: null, driver: null, isLoading: false });
     }
   },
 
@@ -73,32 +120,36 @@ export const useDriverStore = create<DriverState>((set, get) => ({
       const refreshToken: string | undefined = data.refreshToken;
       const expiresIn: number | undefined = data.expiresIn;
       if (!accessToken) throw new Error('No se recibió token de autenticación');
-      const driverData = data.user ?? data;
-
-      // Solo permitir acceso a conductores con rol 'driver'
-      const roles: string[] = Array.isArray(driverData.roles) ? driverData.roles : [];
-      if (!roles.includes('driver')) {
-        set({ error: 'Esta cuenta no tiene acceso a la app de conductores.', isLoading: false });
-        return;
-      }
-
-      const driver: Driver = {
-        id: driverData.id ?? driverData.userId,
-        firstName: driverData.firstName ?? '',
-        lastName: driverData.lastName ?? '',
-        email: driverData.email,
-        vehiclePlate: driverData.vehiclePlate,
-        rating: driverData.rating,
-        isOnline: driverData.isOnline,
-      };
 
       await authService.saveTokens({
         accessToken,
         refreshToken: refreshToken ?? '',
         expiresIn,
       });
-      await authService.saveDriver(driver);
 
+      // Normalizar el driver (acepta data.user o data raw). Si no aparece o
+      // su shape está incompleto, re-pedirlo a /auth/me con el token nuevo.
+      let driver = normalizeDriver(data.user) ?? normalizeDriver(data);
+      if (!driver) {
+        try {
+          const me = await api.get('/auth/me');
+          driver = normalizeDriver(me.data);
+        } catch {
+          driver = null;
+        }
+      }
+      if (!driver) {
+        // Token guardado quedaría huérfano — limpiamos para que el próximo
+        // intento sea limpio y mostramos error útil.
+        await authService.clearAll();
+        set({
+          error: 'Esta cuenta no tiene acceso a la app de conductores.',
+          isLoading: false,
+        });
+        return;
+      }
+
+      await authService.saveDriver(driver);
       set({ token: accessToken, driver, isLoading: false });
     } catch (e: any) {
       set({
