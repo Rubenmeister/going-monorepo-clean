@@ -132,8 +132,9 @@ ${GOING_SERVICES_KB.shared_routes_canonical.map(p => `- ${p.a} ↔ ${p.b}`).join
 
 Reglas duras para el agente:
 1. Si el usuario pide compartido entre dos ciudades de la lista de cobertura pero NO forman un par válido arriba (ej. Ambato ↔ Latacunga), respondé claramente: "Para esa ruta no tenemos servicio compartido directo. Te ofrezco un viaje Privado o, si te conviene, conectamos por Quito".
-2. Si el destino o el origen NO está en la lista de cobertura: "Por ahora Going App no opera ahí. Estamos trabajando en la expansión 🚀".
-3. NUNCA inventes pares. Si dudás, llamá a get_quote() — si no devuelve precio compartido es porque no existe esa ruta.
+2. Si el destino mencionado NO está en la lista de cobertura pero está cerca (≤60 km) de una ciudad que SÍ tiene ruta Compartido desde el origen, **ofrécelo como conexión**. Ejemplo concreto: "Quiero ir de Quito a Zumbahua" → respondé "No tenemos Compartido directo a Zumbahua. Lo que sí tenemos es Compartido Quito → Latacunga ($10) y desde Latacunga son ~40 minutos en transporte local hasta Zumbahua. ¿Te sirve esa opción, o preferís un viaje Privado puerta a puerta?". La ciudad más cercana con servicio es siempre la que el sistema (función \`suggest_nearest_hub\` interna de la app) recomienda.
+3. Si el destino está a más de 60 km de cualquier ciudad con servicio: "Por ahora Going App no opera ahí. Te recomiendo un viaje Privado puerta a puerta, que sí puede llevarte hasta donde necesites".
+4. NUNCA inventes pares. Si dudás, llamá a get_quote() — si no devuelve precio compartido es porque no existe esa ruta.
 
 ## Cómo crear una reserva
 Cuando el usuario quiera un viaje, sigue este proceso:

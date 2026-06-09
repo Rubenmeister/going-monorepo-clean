@@ -47,7 +47,8 @@ import {
   type QuitoZone,
   type Category,
 } from '../../catalog';
-import { isInSharedCoverage } from '../../catalog/coverage';
+import { COVERAGE_CITIES } from '../../catalog/coverage';
+import { suggestSharedTripPlan } from '../../catalog/route-suggester';
 import { useTheme, type ThemeTokens } from '../../theme';
 import type { LocationResult } from '../shared/LocationPickerScreen';
 
@@ -179,14 +180,86 @@ export function SharedRideBookingScreen() {
       Alert.alert('Destino requerido', 'Por favor selecciona un destino antes de continuar.');
       return;
     }
-    // Restricción carpool: destino debe estar dentro de la cobertura compartida
-    // (ciudad de la tabla + buffer de 5 km). Solo validamos si tenemos coords.
-    if (destCoords && !isInSharedCoverage(destCoords.lat, destCoords.lng)) {
-      Alert.alert(
-        'Destino fuera de cobertura compartida',
-        'Going Compartido sólo opera en localidades cercanas a las rutas: Quito, Ambato, Latacunga, Salcedo, Ibarra, Otavalo, Atuntaqui, Riobamba, Santo Domingo, El Carmen, La Concordia, Cayambe, Tabacundo y Aeropuerto Tababela. Para llegar a otros lugares solicita un viaje privado.',
+
+    // Restricción carpool + sugerencia de hub cercano cuando no hay ruta directa.
+    // Necesitamos coords del origen para evaluar — mapeamos el originCity string
+    // al centroide canónico (COVERAGE_CITIES viene de libs/pricing).
+    if (destCoords) {
+      const originCentroid = COVERAGE_CITIES.find(
+        c => c.id === originCity.toLowerCase() || c.label.toLowerCase() === originCity.toLowerCase(),
       );
-      return;
+
+      if (originCentroid) {
+        const plan = suggestSharedTripPlan(
+          originCentroid.lat,
+          originCentroid.lng,
+          destCoords.lat,
+          destCoords.lng,
+        );
+
+        if (plan.kind === 'nearest') {
+          // Ruta directa no existe pero hay hub cercano al destino. Pregúntale.
+          Alert.alert(
+            'No hay viaje compartido directo a ese destino',
+            `Te podemos llevar hasta ${plan.hubLabel} por $${plan.price.toFixed(2)} (servicio Compartido). Desde ${plan.hubLabel} son ~${plan.estimatedLastLegMinutes} min en transporte local hasta tu destino (${plan.lastLegKm} km).\n\n¿Querés tomar la opción a ${plan.hubLabel}, o cambiar a viaje Privado puerta a puerta?`,
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Cambiar a Privado',
+                onPress: () => (navigation.navigate as any)('PrivateRideBooking', {
+                  originCity,
+                  presetDestination: destination,
+                  presetDestCoords: destCoords,
+                }),
+              },
+              {
+                text: `Sí, llevame hasta ${plan.hubLabel}`,
+                onPress: () => {
+                  // Continuamos el flujo pero el destino ahora es el hub.
+                  (navigation.navigate as any)('ConfirmRide', {
+                    type:          'compartido',
+                    origin:        originCity,
+                    destination:   plan.hubLabel,
+                    destCoords:    { lat: originCentroid.lat, lng: originCentroid.lng }, // placeholder, ConfirmRide pide coords
+                    departureTime: timeSlot,
+                    date:          dateOption,
+                    vehicle:       'SUV',
+                    tier,
+                    seats,
+                    pricePerSeat:  plan.price,
+                    totalPrice:    plan.price * seats,
+                    frontSeat,
+                    zone:          selectedZone,
+                    /** Nota para mostrar al usuario en ConfirmRide. */
+                    note: `Te llevamos a ${plan.hubLabel}. Desde ahí ~${plan.estimatedLastLegMinutes} min en transporte local hasta ${destination} (${plan.lastLegKm} km).`,
+                  });
+                },
+              },
+            ],
+          );
+          return;
+        }
+
+        if (plan.kind === 'out_of_coverage' || plan.kind === 'no_shared_from_origin') {
+          Alert.alert(
+            'Destino fuera de cobertura compartida',
+            `${plan.reason}\n\n¿Cambiamos a viaje Privado puerta a puerta?`,
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Cambiar a Privado',
+                onPress: () => (navigation.navigate as any)('PrivateRideBooking', {
+                  originCity,
+                  presetDestination: destination,
+                  presetDestCoords: destCoords,
+                }),
+              },
+            ],
+          );
+          return;
+        }
+        // plan.kind === 'direct' — flujo normal continúa abajo.
+      }
     }
     hapticMedium();
 
