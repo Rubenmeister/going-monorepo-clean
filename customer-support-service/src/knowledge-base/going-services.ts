@@ -36,8 +36,8 @@ export const GOING_SERVICES_KB = {
     'Tarjeta de crédito o débito en la app',
     'Datafast (pago seguro Ecuador)',
     'DeUna (pago instantáneo Ecuador)',
+    'Efectivo — lo cobra la conductora o conductor al terminar el viaje',
     'Precio fijo antes del viaje — sin sorpresas',
-    // Going opera sin efectivo: el cobro siempre va por la app.
   ],
 
   safety_es: [
@@ -53,7 +53,7 @@ export const GOING_SERVICES_KB = {
     { q: '¿Puedo cancelar?', a: 'Sí. Las políticas de cancelación dependen del tipo de viaje y de cuánto falta para la salida. Te las muestra la app antes de confirmar.' },
     { q: '¿Qué pasa si el conductor no llega?', a: 'Contáctanos por la app o por WhatsApp. Te asignamos otro vehículo o procesamos el reembolso si corresponde.' },
     { q: '¿Aceptan mascotas?', a: 'Algunas conductoras y conductores aceptan mascotas pequeñas en transportadora. Indícalo al reservar y te asignamos un vehículo compatible.' },
-    { q: '¿Pagan en efectivo?', a: 'No. Going opera sin efectivo: pagas con tarjeta, Datafast o DeUna dentro de la app. Esto da seguridad a pasajeras, pasajeros y conductoras/conductores.' },
+    { q: '¿Pagan en efectivo?', a: 'Sí. Going acepta efectivo (cobrado por la conductora o conductor al final del viaje), tarjeta, Datafast y DeUna. Eligís el método al confirmar el viaje en la app.' },
     { q: '¿Tienen servicio a Galápagos?', a: 'Going opera por carretera en Ecuador continental. Para Galápagos te recomendamos coordinar con la aerolínea y el operador local de las islas.' },
   ],
 
