@@ -273,7 +273,10 @@ export function ConfirmRideScreen() {
       });
 
       hapticSuccess();
-      const rideId = (response.data as { rideId?: string })?.rideId;
+      // Aceptamos ambos shapes del response — algunos endpoints devuelven
+      // `rideId` (RideResponseDto) y otros `id` (mapper interno del repo).
+      const rideData = response.data as { rideId?: string; id?: string };
+      const rideId = rideData?.rideId || rideData?.id;
 
       if (rideId) {
         navigation.replace('ActiveRide' as never, {
@@ -294,11 +297,15 @@ export function ConfirmRideScreen() {
           price:       totalAmount,
         } as never);
       } else {
-        // Fallback defensivo — backend no devolvió rideId
+        // Fallback defensivo — backend no devolvió ni rideId ni id.
+        // No bloquees al usuario en el mapa: ofrecé 2 salidas claras.
         Alert.alert(
           '¡Reserva confirmada!',
-          `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} en efectivo al conductor.`,
-          [{ text: 'Ver mis viajes', onPress: () => (navigation.navigate as any)('Historial') }],
+          `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} al terminar el viaje.`,
+          [
+            { text: 'Cerrar', style: 'cancel', onPress: () => navigation.goBack() },
+            { text: 'Ver mis viajes', onPress: () => (navigation.navigate as any)('Historial') },
+          ],
         );
       }
     } catch (err: any) {
