@@ -4,16 +4,16 @@ import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Destinos — Going App Ecuador',
-  description: 'Explora los mejores destinos de Ecuador con Going App. Baños, Cuenca, Otavalo, Guayaquil y más.',
+  description: 'Viaja con Going App entre Quito, el Aeropuerto de Quito y Riobamba, Santo Domingo e Ibarra. Viajes compartidos puerta a puerta.',
 };
 
+// Rutas activas hoy: Quito y Aeropuerto de Quito ↔ Riobamba, Santo Domingo e Ibarra.
+// Precios "Desde" = tarifa compartida por persona desde Quito (libs/pricing FARES).
+// Nota: imágenes son placeholders (Unsplash) pendientes de fotos reales de Ecuador.
 const DESTINOS = [
-  { name: 'Baños de Agua Santa', region: 'Sierra Centro', tag: '🌋 Aventura', hours: '3h', price: 'Desde $8', img: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=700&q=85', desc: 'La capital de la aventura ecuatoriana. Cascadas, volcán Tungurahua, taffy y adrenalina.' },
-  { name: 'Cuenca', region: 'Sierra Sur', tag: '🏛️ Patrimonio', hours: '8h', price: 'Desde $18', img: 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=700&q=85', desc: 'Ciudad Patrimonio de la Humanidad. Arquitectura colonial, mercados y gastronomía única.' },
-  { name: 'Otavalo', region: 'Sierra Norte', tag: '🧶 Cultura', hours: '2h', price: 'Desde $6', img: 'https://images.unsplash.com/photo-1581349437898-cebbe9831942?w=700&q=85', desc: 'El mercado artesanal más famoso de Sudamérica. Textiles, cultura kichwa y Laguna de San Pablo.' },
-  { name: 'Guayaquil', region: 'Costa', tag: '🌆 Ciudad', hours: '8h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85', desc: 'La ciudad puerto. El Malecón, Las Peñas, gastronomía costeña y energía urbana.' },
-  { name: 'Ambato', region: 'Sierra Centro', tag: '🌸 Ciudad', hours: '2.5h', price: 'Desde $7', img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=85', desc: 'La ciudad de las flores y las frutas. Portal de acceso a la ruta del Quilotoa y Baños.' },
-  { name: 'Ibarra', region: 'Sierra Norte', tag: '🚂 Histórico', hours: '2.5h', price: 'Desde $7', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85', desc: 'Ciudad blanca del Ecuador. Helados de paila, tren de la libertad y Laguna de Yahuarcocha.' },
+  { name: 'Ibarra', region: 'Sierra Norte', tag: '🚂 Histórico', hours: '2.5h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85', desc: 'Ciudad blanca del Ecuador. Helados de paila, tren de la libertad y Laguna de Yahuarcocha.' },
+  { name: 'Santo Domingo', region: 'Trópico', tag: '🌿 Naturaleza', hours: '3h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85', desc: 'La puerta de entrada a la Costa. Clima cálido, naturaleza exuberante y la cultura Tsáchila.' },
+  { name: 'Riobamba', region: 'Sierra Centro', tag: '🏔️ Andes', hours: '4h', price: 'Desde $17', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85', desc: 'La Sultana de los Andes. Puerta al volcán Chimborazo, el punto más cercano al sol del planeta.' },
 ];
 
 export default function DestinosPage() {
@@ -40,13 +40,13 @@ export default function DestinosPage() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {DESTINOS.map((d) => (
-            <Link key={d.name} href="https://app.goingec.com/search" className="group bg-white border-[1.5px] border-gray-100 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all">
+            <Link key={d.name} href={`https://app.goingec.com/ride?type=shared&from=Quito&to=${encodeURIComponent(d.name)}`} className="group bg-white border-[1.5px] border-gray-100 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all">
               <div className="relative h-52 overflow-hidden">
                 <Image src={d.img} alt={d.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#011627]/70 to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                   <span className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 text-[11px] font-bold text-white">{d.tag} · {d.hours}</span>
-                  <span className="bg-[#ff4c41] rounded-xl px-2.5 py-1 text-[12px] font-black text-white">{d.price}</span>
+                  {d.price && <span className="bg-[#ff4c41] rounded-xl px-2.5 py-1 text-[12px] font-black text-white">{d.price}</span>}
                 </div>
               </div>
               <div className="p-5">

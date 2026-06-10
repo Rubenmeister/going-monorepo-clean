@@ -37,7 +37,7 @@ const goingCards = [
   { emoji: '🚗', title: 'Tu auto genera ingresos', subtitle: 'mientras no lo usas', desc: 'El ecuatoriano promedio usa su auto solo 4% del tiempo. Con Going App, conviertes el 96% de tiempo inactivo en ingreso real.', badge: 'Transporte' },
   { emoji: '🏠', title: 'Tu casa genera ingresos', subtitle: 'como alojamiento', desc: 'Una habitación vacía o una segunda propiedad se convierte en fuente de ingresos recurrentes para huéspedes nacionales e internacionales.', badge: 'Alojamiento' },
   { emoji: '🗺️', title: 'Tu conocimiento genera ingresos', subtitle: 'como guía turístico', desc: 'Conoces tu ciudad, tu cultura, tus senderos. Comparte esa riqueza con viajeros que pagan por experiencias auténticas y locales.', badge: 'Experiencias' },
-  { emoji: '📦', title: 'Tu moto o camioneta', subtitle: 'genera ingresos con envíos', desc: 'La demanda de entregas en Ecuador crece 40% cada año. Tu vehículo puede trabajar por ti mientras tú decides cuándo y cómo.', badge: 'Envíos' },
+  { emoji: '📦', title: 'Tu moto o camioneta', subtitle: 'genera ingresos con envíos', desc: 'La demanda de entregas en Ecuador no para de crecer. Tu vehículo puede trabajar por vos mientras vos decidís cuándo y cómo.', badge: 'Envíos' },
 ];
 
 const comparison = [
@@ -46,12 +46,6 @@ const comparison = [
   { aspect: 'Flexibilidad', traditional: 'Horario fijo, jefe, contrato', collaborative: 'Tú decides cuándo y cuánto' },
   { aspect: 'Comunidad', traditional: 'Relación proveedor-cliente fría', collaborative: 'Conexiones humanas reales' },
   { aspect: 'Impacto', traditional: 'Consumo individual', collaborative: 'Uso eficiente y sostenible' },
-];
-
-const testimonials = [
-  { name: 'Carmen V.', city: 'Quito', role: 'Conductora y anfitriona', quote: 'Con Going App llevo a mis hijos al colegio y de regreso uso el tiempo para hacer viajes. Mi cuarto vacío lo alquilo los fines de semana. Genero más de $1,200 al mes sin salir de mi rutina.', emoji: '👩' },
-  { name: 'Roberto P.', city: 'Cuenca', role: 'Guía turístico', quote: 'Trabajé 20 años en turismo formal. Ahora soy mi propio jefe, elijo mis grupos y gano el doble que antes. Mis tours del centro histórico están llenos todos los fines de semana.', emoji: '👨' },
-  { name: 'Familia Tapia', city: 'Guayaquil', role: 'Anfitriones', quote: 'Teníamos un departamento vacío que nos costaba mantenimiento. Ahora genera $600 al mes. Ya pagamos la hipoteca con eso y el dinero extra lo ahorramos para los estudios de nuestros hijos.', emoji: '👨‍👩‍👧' },
 ];
 
 export default function EconomiaColaborativaPage() {
@@ -85,7 +79,7 @@ export default function EconomiaColaborativaPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Así de simple funciona</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">La economía colaborativa no es un concepto abstracto. Es una realidad que ya viven miles de ecuatorianos.</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">La economía colaborativa no es un concepto abstracto. Es una forma de aprovechar lo que ya tenés.</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-3 gap-8">
@@ -160,29 +154,20 @@ export default function EconomiaColaborativaPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Pre-lanzamiento */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-6 text-center">
           <FadeIn>
-            <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Impacto real en familias ecuatorianas</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Historias de personas que transformaron su vida económica con Going App</p>
-            </div>
+            <div className="text-4xl mb-4">🚀</div>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Sé de las primeras familias en sumarte</h2>
+            <p className="text-gray-500 text-lg leading-relaxed mb-8">
+              Going App está por arrancar en Ecuador. La economía colaborativa empieza con vos: tu auto, tu espacio,
+              tu conocimiento o tu vehículo de carga pueden generar ingresos desde el primer día.
+            </p>
+            <Link href="/auth/register" className="inline-block text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-lg hover:scale-105 transition-transform" style={{ backgroundColor: '#6366f1' }}>
+              Quiero sumarme →
+            </Link>
           </FadeIn>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <FadeIn key={t.name} delay={i * 100}>
-                <div className="bg-white rounded-2xl border border-gray-100 p-7 hover:shadow-md transition-shadow">
-                  <div className="text-4xl mb-4">{t.emoji}</div>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-5 italic">&ldquo;{t.quote}&rdquo;</p>
-                  <div>
-                    <div className="font-bold text-gray-900">{t.name}</div>
-                    <div className="text-xs text-gray-400">{t.role} · {t.city}</div>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -191,7 +176,7 @@ export default function EconomiaColaborativaPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Empieza a generar ingresos</h2>
-            <p className="text-indigo-100 text-lg mb-10">Únete a los miles de ecuatorianos que ya aprovechan la economía colaborativa con Going App</p>
+            <p className="text-indigo-100 text-lg mb-10">Sumate desde el arranque y aprovechá la economía colaborativa con Going App</p>
             <Link href="/auth/register" className="inline-block font-bold px-10 py-4 rounded-2xl text-lg shadow-xl hover:scale-105 transition-transform bg-white" style={{ color: '#6366f1' }}>
               Crear mi cuenta gratis
             </Link>

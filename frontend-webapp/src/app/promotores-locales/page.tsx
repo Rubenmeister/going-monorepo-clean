@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 const BENEFITS = [
   { icon: '🗺️', title: 'Diseña tus propios tours', desc: 'Crea experiencias únicas con tu itinerario, precio, idioma y cupo máximo.' },
-  { icon: '🌍', title: 'Viajeros internacionales', desc: 'Going App te conecta con turistas de 40+ países que buscan promotores locales auténticos.' },
+  { icon: '🌍', title: 'Viajeras y viajeros internacionales', desc: 'Going App te conecta con turistas nacionales e internacionales que buscan promotores locales auténticos.' },
   { icon: '💰', title: 'Fija tus tarifas', desc: 'Tú decides cuánto cobras. Sin comisiones ocultas — Going App cobra solo el 15% al cierre.' },
   { icon: '🧳', title: 'Gestión de grupos', desc: 'La app maneja reservas, pagos y comunicación con el grupo antes y durante el tour.' },
   { icon: '📚', title: 'Academia Going App gratuita', desc: 'Cursos de storytelling, manejo de grupos, seguridad exterior e inglés turístico.' },
@@ -25,11 +25,6 @@ const LEVELS = [
   { icon: '🌱', title: 'Promotor Local Comunitario', req: 'Sin licencia requerida', desc: 'Puedes operar tours en tu comunidad o barrio sin licencia. Ideal para empezar.' },
   { icon: '📋', title: 'Guía Nacional', req: 'Licencia MINTUR', desc: 'Opera tours en cualquier parte del Ecuador. Mayor visibilidad en la plataforma.' },
   { icon: '🌐', title: 'Guía Internacional', req: 'Licencia MINTUR + idioma certificado', desc: 'Atiende grupos internacionales. Las tarifas más altas de la plataforma.' },
-];
-
-const TESTIMONIALS = [
-  { name: 'Andrés V.', city: 'Quito', type: 'Guía cultural', earn: '$1,400/mes', quote: 'Paso de vender mis tours en Instagram a tener una agenda llena. Going App me da visibilidad con turistas que de otra forma no me encontrarían.' },
-  { name: 'Karina T.', city: 'Amazonia', type: 'Ecoturismo', earn: '$2,100/mes', quote: 'Mis tours de biodiversidad amazónica son los más reservados de mi zona. Turistas de Alemania, Francia y EE.UU.' },
 ];
 
 export default function GuiasPage() {
@@ -66,10 +61,10 @@ export default function GuiasPage() {
           </div>
           <div className="flex flex-wrap gap-10">
             {[
-              { value: '840+', label: 'Guías activos' },
-              { value: '$1,100', label: 'Ingreso promedio' },
-              { value: '40+', label: 'Países de viajeros' },
-              { value: '4.9 ★', label: 'Calificación media' },
+              { value: 'Vos diseñás', label: 'tus propios tours' },
+              { value: 'Vos fijás tarifas', label: 'vos ponés el precio' },
+              { value: 'Alcance internacional', label: 'viajeras y viajeros del mundo' },
+              { value: 'Empezá sin licencia', label: 'y crecé con nosotros' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl font-bold" style={{ color: '#67e8f9' }}>{s.value}</div>
@@ -133,28 +128,20 @@ export default function GuiasPage() {
         </div>
       </div>
 
-      {/* ── Testimonios ── */}
+      {/* ── Pre-lanzamiento ── */}
       <div className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Guías que ya trabajan con Going App</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white"
-                    style={{ backgroundColor: '#0891b2' }}>
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.type} · {t.city}</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-sm mb-4 italic leading-relaxed">"{t.quote}"</p>
-                <span className="text-sm font-bold" style={{ color: '#0891b2' }}>{t.earn}</span>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="text-4xl mb-4">🚀</div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Sé de las primeras guías en sumarte</h2>
+          <p className="text-gray-500 leading-relaxed mb-8">
+            Going App está por arrancar en Ecuador. Publicá tus tours hoy y recibí a viajeras y viajeros
+            internacionales desde la primera reserva.
+          </p>
+          <Link href="/auth/register?rol=guide"
+            className="inline-block px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg text-base"
+            style={{ backgroundColor: '#0891b2' }}>
+            Registrarme como guía →
+          </Link>
         </div>
       </div>
 

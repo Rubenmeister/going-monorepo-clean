@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -48,12 +49,14 @@ export function DriverLoginScreen() {
       >
         {/* ── Hero rojo ─────────────────────────────────────────── */}
         <View style={styles.hero}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoText}>GOING</Text>
-          </View>
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <View style={styles.driverBadge}>
             <Ionicons name="car" size={14} color={GOING_YELLOW} />
-            <Text style={styles.driverBadgeText}>CONDUCTORES</Text>
+            <Text style={styles.driverBadgeText}>CONDUCTORAS Y CONDUCTORES</Text>
           </View>
           <Text style={styles.tagline}>Nos movemos contigo</Text>
 
@@ -73,7 +76,7 @@ export function DriverLoginScreen() {
 
         {/* ── Formulario blanco ──────────────────────────────────── */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Acceso conductores</Text>
+          <Text style={styles.cardTitle}>Acceso de conductoras y conductores</Text>
           <Text style={styles.cardSub}>Ingresa tus credenciales para continuar</Text>
 
           <Text style={styles.label}>Correo</Text>
@@ -136,7 +139,7 @@ export function DriverLoginScreen() {
             onPress={() => navigation.navigate('Register')}
           >
             <Text style={styles.registerText}>
-              ¿Quieres ser conductor?{' '}
+              ¿Querés ser conductora o conductor?{' '}
               <Text style={styles.registerBold}>Regístrate aquí</Text>
             </Text>
           </TouchableOpacity>
@@ -156,18 +159,11 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     paddingHorizontal: 24,
   },
-  logoBox: {
-    backgroundColor: GOING_YELLOW,
-    paddingHorizontal: 22,
-    paddingVertical: 9,
-    borderRadius: 12,
+  logo: {
+    width: 84,
+    height: 84,
+    borderRadius: 18,
     marginBottom: 10,
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: GOING_RED,
-    letterSpacing: 5,
   },
   driverBadge: {
     flexDirection: 'row',

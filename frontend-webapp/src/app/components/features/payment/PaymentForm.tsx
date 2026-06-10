@@ -23,7 +23,10 @@ export function PaymentForm({
   amount = 0,
   onPaymentComplete,
 }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('datafast');
+  // Default efectivo: el pago digital (datafast/deuna) está deshabilitado
+  // ("Próximamente") hasta integrar la pasarela en el backend — antes el
+  // default 'datafast' cortaba el flujo (POST /payments/initiate no existe).
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [loading, setLoading]             = useState(false);
   const [error,   setError]               = useState<string | null>(null);
 
@@ -126,22 +129,27 @@ export function PaymentForm({
         <label className="block text-sm font-semibold text-gray-700 mb-3">Metodo de pago</label>
         <div className="space-y-2">
           {(Object.entries(PAYMENT_METHODS) as Array<[PaymentMethod, (typeof PAYMENT_METHODS)[PaymentMethod]]>)
-            .map(([method, cfg]) => (
+            .map(([method, cfg]) => {
+              // Pago digital (datafast/deuna) deshabilitado hasta integrar pasarela.
+              const disabled = method !== 'cash';
+              return (
               <label
                 key={method}
-                className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors ${
-                  paymentMethod === method ? 'border-[#0033A0] bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-colors ${
+                  disabled ? 'border-gray-200 opacity-60 cursor-not-allowed'
+                  : paymentMethod === method ? 'border-[#0033A0] bg-blue-50 cursor-pointer' : 'border-gray-200 hover:border-gray-300 cursor-pointer'
                 }`}
               >
-                <input type="radio" value={method} checked={paymentMethod === method}
-                  onChange={() => setPaymentMethod(method)} className="w-4 h-4 accent-[#0033A0]" />
+                <input type="radio" value={method} checked={paymentMethod === method} disabled={disabled}
+                  onChange={() => { if (!disabled) setPaymentMethod(method); }} className="w-4 h-4 accent-[#0033A0]" />
                 <span className="text-xl">{cfg.emoji}</span>
-                <div>
+                <div className="flex-1">
                   <p className="font-semibold text-sm text-gray-900">{cfg.label}</p>
-                  <p className="text-xs text-gray-500">{cfg.description}</p>
+                  <p className="text-xs text-gray-500">{disabled ? 'Próximamente' : cfg.description}</p>
                 </div>
               </label>
-            ))}
+              );
+            })}
         </div>
       </div>
 

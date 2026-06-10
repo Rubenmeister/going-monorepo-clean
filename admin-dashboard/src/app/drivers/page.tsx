@@ -467,7 +467,7 @@ export default function DriversPage() {
               </div>
               <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
                 {activeDrivers.length === 0 ? (
-                  <div className="p-6 text-center text-gray-400 text-sm">Sin conductores activos</div>
+                  <div className="p-6 text-center text-gray-400 text-sm">Sin conductoras ni conductores activos</div>
                 ) : (
                   activeDrivers.map((d) => (
                     <div key={d.driverId} className="p-4">

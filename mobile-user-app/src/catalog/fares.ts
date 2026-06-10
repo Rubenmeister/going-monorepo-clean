@@ -50,6 +50,12 @@ export const FARES = {
     'otavalo-aeropuerto':     18,
     'aeropuerto-otavalo':     18,
 
+    // Riobamba / Santo Domingo al aeropuerto (provisional)
+    'riobamba-aeropuerto':      25,
+    'aeropuerto-riobamba':      25,
+    'santo_domingo-aeropuerto': 23,
+    'aeropuerto-santo_domingo': 23,
+
     // Quito al Aeropuerto (compartido) — precio único
     'quito-aeropuerto':       10,
     'aeropuerto-quito':       10,

@@ -102,7 +102,7 @@ Comisión de plataforma: Going App cobra entre el 15% y el 20% del valor del via
     id: 'conducta',
     icon: '🤝',
     title: '7. Conducta y Uso Aceptable',
-    content: `Está expresamente prohibido para usuarios y conductores:
+    content: `Está expresamente prohibido para las personas usuarias y conductoras:
 
 • Acoso, discriminación o trato irrespetuoso basado en raza, género, religión, orientación sexual, discapacidad o cualquier otra condición.
 • Daño intencional al vehículo o a las pertenencias del otro.
@@ -126,7 +126,7 @@ Going App se reserva el derecho de suspender o eliminar permanentemente cuentas 
 
 El uso indebido o fraudulento de la función SOS (falsas alarmas reiteradas) podrá resultar en la suspensión de la cuenta.
 
-Going App recomienda a los usuarios:
+Going App recomienda a las personas usuarias:
 • Verificar la placa y modelo del vehículo antes de abordar.
 • Compartir el código de viaje con un familiar o amigo.
 • No compartir información personal con el conductor más allá de lo necesario para el viaje.`,
@@ -140,12 +140,12 @@ Going App recomienda a los usuarios:
 • Accidentes de tránsito (responsabilidad del conductor y su seguro SOAT).
 • Pérdida, daño o robo de bienes personales durante el viaje.
 • Retrasos causados por condiciones del tráfico, clima adverso o fuerza mayor.
-• Conducta de los conductores fuera del contexto del servicio contratado.
+• Conducta de las personas conductoras fuera del contexto del servicio contratado.
 • Interrupciones del servicio por mantenimiento, actualizaciones o causas técnicas.
 
 En los casos en que Going App sea declarado responsable por resolución judicial firme, la responsabilidad máxima estará limitada al valor pagado por el servicio específico que originó el daño.
 
-Going App mantiene un proceso de verificación de antecedentes para conductores, pero no garantiza la exactitud o vigencia permanente de dicha información.`,
+Going App mantiene un proceso de verificación de antecedentes para personas conductoras, pero no garantiza la exactitud o vigencia permanente de dicha información.`,
   },
   {
     id: 'propiedad-intelectual',

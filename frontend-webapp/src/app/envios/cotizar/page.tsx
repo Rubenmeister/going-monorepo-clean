@@ -343,7 +343,10 @@ export default function EnviosCotizarPage() {
   const [errors,         setErrors]         = useState<string[]>([]);
   // Esquema de pago — A/B/C/D (igual que mobile EnviosScreen).
   // 'A' por default (sender + card) es el más rápido y seguro para el sender.
-  const [paymentScheme,  setPaymentScheme]  = useState<'A' | 'B' | 'C' | 'D'>('A');
+  // Default efectivo al recoger ('B'): los métodos con tarjeta ('A' pago ahora,
+  // 'C' link al destinatario) están deshabilitados hasta integrar la pasarela
+  // (Datafast/DeUna) en payment-service. Antes el default 'A' cortaba el flujo.
+  const [paymentScheme,  setPaymentScheme]  = useState<'A' | 'B' | 'C' | 'D'>('B');
   const [quotedPrice,    setQuotedPrice]    = useState<number | null>(null);
   const [photoPreview,   setPhotoPreview]   = useState<string | null>(null);
 
@@ -364,7 +367,8 @@ export default function EnviosCotizarPage() {
       if (d.recipientAddr)  setRecipientAddr(d.recipientAddr);
       if (d.recipientLat != null) setRecipientLat(d.recipientLat);
       if (d.recipientLon != null) setRecipientLon(d.recipientLon);
-      if (d.paymentScheme)  setPaymentScheme(d.paymentScheme);
+      // No restaurar métodos con tarjeta deshabilitados (A/C) desde un borrador viejo.
+      if (d.paymentScheme && d.paymentScheme !== 'A' && d.paymentScheme !== 'C') setPaymentScheme(d.paymentScheme);
     } catch { /* ignore */ }
     finally { sessionStorage.removeItem(ENVIO_DRAFT_KEY); }
   }, []);
@@ -672,22 +676,26 @@ export default function EnviosCotizarPage() {
           title="CÓMO SE PAGA"
         >
           {([
-            { id: 'A' as const, label: 'Pago ahora con tarjeta',                Icon: IconCard,   sub: 'Datafast/DeUna · El más rápido' },
-            { id: 'B' as const, label: 'Pago en efectivo al recoger',           Icon: IconMoney,  sub: 'Le pagas al conductor cuando llegue' },
-            { id: 'C' as const, label: 'Que pague el destinatario (tarjeta)',   Icon: IconMobile, sub: 'Recibe link de pago por SMS' },
+            { id: 'A' as const, label: 'Pago ahora con tarjeta',                Icon: IconCard,   sub: 'Pago digital — disponible muy pronto', disabled: true },
+            { id: 'B' as const, label: 'Pago en efectivo al recoger',           Icon: IconMoney,  sub: 'Le pagas a la conductora o conductor cuando llegue' },
+            { id: 'C' as const, label: 'Que pague el destinatario (tarjeta)',   Icon: IconMobile, sub: 'Pago digital — disponible muy pronto', disabled: true },
             { id: 'D' as const, label: 'Contra entrega (efectivo del destinatario)', Icon: IconUsers, sub: 'Cobra al recibir' },
           ]).map((scheme) => {
             const active = paymentScheme === scheme.id;
+            const disabled = (scheme as { disabled?: boolean }).disabled === true;
             const Icon = scheme.Icon;
             return (
               <button
                 key={scheme.id}
                 type="button"
-                onClick={() => setPaymentScheme(scheme.id)}
+                disabled={disabled}
+                onClick={() => { if (!disabled) setPaymentScheme(scheme.id); }}
                 className="flex items-center gap-3 w-full rounded-xl px-3 py-3 border-2 transition-all text-left"
                 style={{
                   borderColor:     active ? RED : '#F3F4F6',
                   backgroundColor: active ? '#FFF0EF' : '#F9FAFB',
+                  opacity:         disabled ? 0.55 : 1,
+                  cursor:          disabled ? 'not-allowed' : 'pointer',
                 }}
               >
                 <div
@@ -705,6 +713,11 @@ export default function EnviosCotizarPage() {
                   </p>
                   <p className="text-xs text-gray-500">{scheme.sub}</p>
                 </div>
+                {disabled && (
+                  <span className="text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: '#F3F4F6', color: '#9CA3AF' }}>
+                    Pronto
+                  </span>
+                )}
               </button>
             );
           })}

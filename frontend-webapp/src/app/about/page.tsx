@@ -34,9 +34,9 @@ const VALUES = [
 
 const STATS = [
   { number: '4', label: 'Regiones del Ecuador' },
-  { number: '2,400+', label: 'Proveedores activos' },
-  { number: '15,000+', label: 'Viajeros atendidos' },
-  { number: '4.9 ★', label: 'Calificación promedio' },
+  { number: 'Perfiles', label: 'verificados' },
+  { number: 'Precio fijo', label: 'sin sorpresas' },
+  { number: 'Seguimiento', label: 'en vivo' },
 ];
 
 const TEAM_VALUES = [

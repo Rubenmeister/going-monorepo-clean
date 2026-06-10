@@ -189,6 +189,18 @@ export class RealtimeSession extends EventEmitter {
 
       let resolved = false;
 
+      // Timeout de conexión: si el WS abre pero nunca llega `session.created`
+      // (OpenAI colgado / red), no nos quedamos esperando minutos — fallamos a
+      // los 12s para que el caller pueda reintentar o avisar al usuario.
+      const connectTimer = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        this.logger.error('[realtime] connect timeout (12s) — no llegó session.created, cerrando WS');
+        try { this.ws?.close(); } catch { /* noop */ }
+        reject(new Error('Realtime connect timeout (12s)'));
+      }, 12000);
+      connectTimer.unref?.();
+
       this.ws.on('open', () => {
         this.logger.log(`[realtime] WS abierto → ${this.model}`);
       });

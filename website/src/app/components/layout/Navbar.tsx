@@ -8,10 +8,10 @@ const NAV_ITEMS = [
   {
     label: 'Viajes',
     dropdown: [
-      { href: 'https://app.goingec.com/transport?mode=shared', icon: '🚍', label: 'Compartido', sub: 'La forma más inteligente' },
-      { href: 'https://app.goingec.com/transport?mode=private', icon: '🚗', label: 'Privado en SUV', sub: 'Exclusivo, flexible' },
+      { href: 'https://app.goingec.com/ride?type=shared', icon: '🚍', label: 'Compartido', sub: 'La forma más inteligente' },
+      { href: 'https://app.goingec.com/ride?type=private', icon: '🚗', label: 'Privado en SUV', sub: 'Exclusivo, flexible' },
       { href: 'https://app.goingec.com/envios', icon: '📦', label: 'Envíos', sub: 'Paquetes entre ciudades' },
-      { href: 'https://app.goingec.com/corporate', icon: '🏢', label: 'Corporativo', sub: 'Soluciones para empresas' },
+      { href: 'https://empresas.goingec.com', icon: '🏢', label: 'Corporativo', sub: 'Soluciones para empresas' },
     ],
   },
   { label: 'Destinos', href: '/destinos' },
@@ -21,7 +21,6 @@ const NAV_ITEMS = [
     dropdown: [
       { href: '/noticiero', icon: '📰', label: 'Noticiero Going App', sub: 'Actualidad del país' },
       { href: '/revista', icon: '📖', label: 'Revista', sub: 'Cultura y turismo' },
-      { href: '/blog', icon: '✍️', label: 'Blog', sub: 'Tips y guías de viaje' },
     ],
   },
   { label: 'Comunidad', href: '/comunidad' },

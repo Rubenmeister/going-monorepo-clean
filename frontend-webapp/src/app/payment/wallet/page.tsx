@@ -70,23 +70,13 @@ export default function WalletPage() {
           <p className="text-white/50 text-xs">Going App Wallet · {name}</p>
         </div>
 
-        {/* Acciones rápidas — Recargar y Transferir funcionales.
-            Historial salta a los movimientos de abajo. */}
-        <div className="grid grid-cols-3 gap-3">
-          <Link href="/payment/recharge"
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
-            <span className="text-2xl">➕</span>
-            <span className="text-xs font-semibold text-gray-700">Recargar</span>
-          </Link>
-          <Link href="/payment/transfer"
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
-            <span className="text-2xl">📤</span>
-            <span className="text-xs font-semibold text-gray-700">Transferir</span>
-          </Link>
+        {/* Recargar y Transferir ocultos hasta integrar la pasarela de pago
+            (Datafast/DeUna). Por ahora el wallet es de solo consulta. */}
+        <div className="grid grid-cols-1 gap-3">
           <a href="#movimientos"
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
             <span className="text-2xl">🧾</span>
-            <span className="text-xs font-semibold text-gray-700">Historial</span>
+            <span className="text-xs font-semibold text-gray-700">Ver historial de movimientos</span>
           </a>
         </div>
 

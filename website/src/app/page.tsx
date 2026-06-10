@@ -5,24 +5,25 @@ import { BookingWidget } from './components/BookingWidget';
 /* ── Data ─────────────────────────────────────────────────────── */
 const SERVICES = [
   { icon: '🚍', title: 'Viaje Compartido', sub: 'La forma más inteligente de viajar. Divide el costo y llega seguro.', badge: '⭐ Lo más popular', featured: true },
-  { icon: '🚗', title: 'Privado en SUV', sub: 'Tu propio vehículo premium. Máxima comodidad, horario flexible.', badge: 'Desde $45', featured: false },
+  { icon: '🚗', title: 'Privado en SUV', sub: 'Tu propio vehículo premium. Máxima comodidad, horario flexible.', badge: 'Desde $40', featured: false },
   { icon: '📦', title: 'Envíos', sub: 'Envía paquetes entre ciudades con tracking en tiempo real.', badge: 'Tracking live', featured: false },
   { icon: '🏢', title: 'Corporativo', sub: 'Soluciones de movilidad para empresas con facturación centralizada.', badge: 'Para empresas', featured: false },
 ];
 
+// Rutas activas hoy: Quito y Aeropuerto de Quito ↔ Riobamba, Santo Domingo e Ibarra.
+// Precios "Desde" = tarifa compartida por persona desde Quito (libs/pricing FARES).
 const DESTINOS = [
-  { name: 'Baños de Agua Santa', region: '🌋 Aventura · 3h desde Quito', price: 'Desde $8', img: 'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=700&q=85', featured: true },
-  { name: 'Cuenca', region: '🏛️ Patrimonio · 8h', price: 'Desde $18', img: 'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=500&q=85', featured: false },
-  { name: 'Otavalo', region: '🧶 Cultura · 2h', price: 'Desde $6', img: 'https://images.unsplash.com/photo-1581349437898-cebbe9831942?w=500&q=85', featured: false },
-  { name: 'Guayaquil', region: '🌆 Ciudad · 8h', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=500&q=85', featured: false },
+  { name: 'Ibarra', region: '🚂 Sierra Norte · 2.5h desde Quito', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=700&q=85' },
+  { name: 'Santo Domingo', region: '🌿 Trópico · 3h desde Quito', price: 'Desde $15', img: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=700&q=85' },
+  { name: 'Riobamba', region: '🏔️ Sierra Centro · 4h desde Quito', price: 'Desde $17', img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=700&q=85' },
 ];
 
 const ARTICLES = [
   {
     cat: '📰 Noticiero', catHref: '/noticiero',
-    title: 'Going App lanza nueva ruta Quito–Ambato–Baños con frecuencias cada 30 minutos',
-    excerpt: 'Más de 200 asientos disponibles diariamente con conductores verificados y vehículos 2023 en adelante.',
-    date: '8 Abr 2026', read: '3 min',
+    title: 'Going App abre sus 3 primeras rutas: Quito y el aeropuerto hacia Riobamba, Santo Domingo e Ibarra',
+    excerpt: 'Conductoras y conductores verificados, precio fijo y seguimiento en vivo. Empezamos con 3 rutas y vamos llegando a todo el país.',
+    date: 'Jun 2026', read: '3 min',
     img: 'https://images.unsplash.com/photo-1526397751294-331021109fbd?w=700&q=80', featured: true,
   },
   {
@@ -37,13 +38,6 @@ const ARTICLES = [
     date: '2 Abr 2026', read: '7 min',
     img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', featured: false,
   },
-];
-
-const TESTIMONIALS = [
-  { stars: 5, text: 'El PIN de seguridad me dio mucha confianza. Supe exactamente a qué vehículo subir.', name: 'Ana Rodríguez', route: 'Quito → Baños', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80' },
-  { stars: 5, text: 'Como conductor, Going App me da estabilidad y un ingreso justo. La app es muy fácil de usar.', name: 'Carlos Mendoza', route: 'Conductor · 847 viajes', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&q=80' },
-  { stars: 5, text: 'Mejor que el bus y más barato que el taxi. Siempre viajo Going App de Latacunga a Quito.', name: 'María Toapanta', route: 'Latacunga → Quito', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&q=80' },
-  { stars: 5, text: 'El tracking en vivo me tranquiliza cuando viaja mi hija. Sé exactamente dónde está.', name: 'Rosa Guerrero', route: 'Ibarra → Quito', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80' },
 ];
 
 /* ── Main component ───────────────────────────────────────────── */
@@ -92,9 +86,9 @@ export default function Home() {
             </div>
             <div className="flex gap-7">
               {[
-                { icon: '⭐', val: '4.92', label: 'Rating promedio' },
-                { icon: '🛡️', val: 'PIN verificado', label: '100% seguro' },
-                { icon: '🚍', val: '50+ rutas', label: 'En Ecuador' },
+                { icon: '🛡️', val: 'PIN verificado', label: 'En cada viaje' },
+                { icon: '📍', val: 'Precio fijo', label: 'Sin sorpresas' },
+                { icon: '🚍', val: '3 rutas', label: 'Y llegando a todo el país' },
               ].map((b) => (
                 <div key={b.val} className="flex items-center gap-2.5">
                   <span className="text-xl">{b.icon}</span>
@@ -120,7 +114,7 @@ export default function Home() {
           </span>
           <p className="text-[15px] font-black text-white flex-1 text-center">
             20% OFF en tu primer viaje con código <strong>GOING20</strong>
-            <span className="font-semibold text-white/75"> · válido hasta el 30 de abril</span>
+            <span className="font-semibold text-white/75"> · promo de lanzamiento</span>
           </p>
           <Link href="/promociones" className="border border-white/40 rounded-lg px-4 py-2 text-[13px] font-black text-white hover:bg-white/15 transition-all flex-shrink-0">
             Ver todas →
@@ -163,12 +157,12 @@ export default function Home() {
           </div>
           <Link href="/destinos" className="text-[13px] font-black text-[#ff4c41] hover:underline">Ver todos →</Link>
         </div>
-        <div className="grid grid-cols-3 grid-rows-2 gap-4 h-[440px]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {DESTINOS.map((d, i) => (
             <Link
               key={d.name}
               href="/destinos"
-              className={`relative rounded-2xl overflow-hidden group cursor-pointer ${d.featured ? 'row-span-2 col-span-1' : ''}`}
+              className="relative rounded-2xl overflow-hidden group cursor-pointer h-[300px]"
             >
               <Image
                 src={d.img}
@@ -177,11 +171,13 @@ export default function Home() {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#011627]/85 via-[#011627]/10 to-transparent" />
-              <div className="absolute top-3 right-3 bg-[#ff4c41] rounded-xl px-2.5 py-1 text-[12px] font-black text-white">
-                {d.price}
-              </div>
+              {d.price && (
+                <div className="absolute top-3 right-3 bg-[#ff4c41] rounded-xl px-2.5 py-1 text-[12px] font-black text-white">
+                  {d.price}
+                </div>
+              )}
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <h3 className={`font-black text-white mb-1.5 ${d.featured ? 'text-2xl' : 'text-[17px]'}`}>{d.name}</h3>
+                <h3 className="font-black text-white mb-1.5 text-xl">{d.name}</h3>
                 <span className="inline-flex items-center gap-1 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1 text-[11px] font-bold text-white">
                   {d.region}
                 </span>
@@ -223,9 +219,9 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               {[
-                { val: '50k+', label: 'Usuarios activos' },
-                { val: '4.9★', label: 'Rating en stores' },
-                { val: '99%', label: 'Viajes seguros' },
+                { val: 'PIN', label: 'Seguridad verificada' },
+                { val: 'En vivo', label: 'Seguí tu viaje' },
+                { val: 'Sin efectivo', label: 'Pagá con tarjeta' },
               ].map((stat) => (
                 <div key={stat.val} className="bg-white/[0.05] rounded-2xl p-4 text-center">
                   <div className="text-2xl font-black text-white mb-1">{stat.val}</div>
@@ -296,14 +292,14 @@ export default function Home() {
               Somos más que<br />un servicio
             </h2>
             <p className="text-[16px] text-gray-500 leading-relaxed mb-8">
-              Una comunidad de viajeros, conductores y emprendedores ecuatorianos que construyen juntos una mejor movilidad.
+              Una comunidad de viajeras y viajeros, conductoras y conductores, y emprendedores ecuatorianos que construyen juntos una mejor movilidad.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-8">
               {[
-                { val: '50k+', label: 'Usuarios activos', sub: 'En todo Ecuador' },
-                { val: '1,200+', label: 'Conductores', sub: 'Verificados y calificados' },
-                { val: '50+', label: 'Rutas activas', sub: 'Sierra y Costa' },
-                { val: '4.92★', label: 'Rating promedio', sub: 'De 10,000+ reseñas' },
+                { val: '3 rutas', label: 'Para empezar', sub: 'Riobamba, Sto. Domingo e Ibarra' },
+                { val: 'Verificados', label: 'Conductoras y conductores', sub: 'Antecedentes y vehículo al día' },
+                { val: 'Precio fijo', label: 'Sin sorpresas', sub: 'Lo ves antes de confirmar' },
+                { val: 'En vivo', label: 'Seguimiento', sub: 'Vos y tu familia' },
               ].map((stat) => (
                 <div key={stat.label} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-5">
                   <div className="text-3xl font-black text-[#ff4c41] mb-1">{stat.val}</div>
@@ -317,26 +313,21 @@ export default function Home() {
                 Unirme como pasajero
               </Link>
               <Link href="/comunidad#conductores" className="px-6 py-3 rounded-xl bg-[#011627] text-white font-black text-[14px] hover:bg-[#0a2540] transition-all">
-                Quiero ser conductor
+                Quiero ser conductora o conductor
               </Link>
             </div>
           </div>
 
-          {/* Testimonials */}
-          <div className="grid grid-cols-2 gap-4">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-5 hover:shadow-lg hover:-translate-y-1 transition-all">
-                <div className="text-yellow-400 text-sm mb-3">{'★'.repeat(t.stars)}</div>
-                <p className="text-[14px] text-[#1a1a2e] leading-relaxed mb-4 italic">"{t.text}"</p>
-                <div className="flex items-center gap-2.5">
-                  <Image src={t.avatar} alt={t.name} width={36} height={36} className="rounded-full object-cover border-2 border-gray-100" />
-                  <div>
-                    <div className="text-[13px] font-black text-[#011627]">{t.name}</div>
-                    <div className="text-[11px] text-gray-400">{t.route}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Pre-lanzamiento (sin testimonios inventados — todavía no salimos al aire) */}
+          <div className="bg-[#011627] rounded-2xl p-8 flex flex-col justify-center">
+            <div className="text-[11px] font-black tracking-[2px] uppercase text-[#ff4c41] mb-3">Pre-lanzamiento 2026</div>
+            <h3 className="font-serif text-2xl font-black text-white mb-3 leading-tight">Sé de las primeras personas en viajar con Going App</h3>
+            <p className="text-white/60 text-[14px] leading-relaxed mb-6">
+              Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra, desde Quito y el aeropuerto — y vamos llegando a todo el país. Creá tu cuenta y te avisamos en cuanto tu ruta esté lista.
+            </p>
+            <Link href="https://app.goingec.com/register" className="self-start px-6 py-3 rounded-xl bg-[#ff4c41] text-white font-black text-[14px] hover:bg-[#e03d32] transition-all">
+              Crear cuenta gratis
+            </Link>
           </div>
         </div>
       </section>

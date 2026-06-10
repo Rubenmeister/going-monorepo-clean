@@ -52,7 +52,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 /* ── Earnings card ─────────────────────────────────────────── */
-function EarningsCard({ plan, hours, range, highlight }: { plan: string; hours: string; range: string; highlight?: boolean }) {
+function EarningsCard({ icon, title, desc, highlight }: { icon: string; title: string; desc: string; highlight?: boolean }) {
   return (
     <div
       className="rounded-3xl p-8 flex flex-col items-center text-center transition-transform duration-300 hover:-translate-y-1"
@@ -63,10 +63,9 @@ function EarningsCard({ plan, hours, range, highlight }: { plan: string; hours: 
         border: highlight ? 'none' : '1px solid #f0f0f0',
       }}
     >
-      <div className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: highlight ? 'rgba(255,255,255,0.8)' : '#ff4c41' }}>{plan}</div>
-      <div className="text-lg font-semibold mb-4" style={{ color: highlight ? 'rgba(255,255,255,0.85)' : '#666' }}>{hours}</div>
-      <div className="text-4xl font-extrabold mb-1">{range}</div>
-      <div className="text-sm mt-2" style={{ color: highlight ? 'rgba(255,255,255,0.75)' : '#888' }}>por mes estimado</div>
+      <div className="text-4xl mb-4">{icon}</div>
+      <div className="text-xl font-extrabold mb-2">{title}</div>
+      <div className="text-sm leading-relaxed" style={{ color: highlight ? 'rgba(255,255,255,0.85)' : '#666' }}>{desc}</div>
     </div>
   );
 }
@@ -116,20 +115,6 @@ function BenefitCard({ icon, title, desc }: { icon: string; title: string; desc:
   );
 }
 
-/* ── Testimonial ───────────────────────────────────────────── */
-function Testimonial({ quote, name, city }: { quote: string; name: string; city: string }) {
-  return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col gap-4">
-      <div className="text-4xl" style={{ color: '#ff4c41' }}>"</div>
-      <p className="text-gray-700 leading-relaxed text-sm flex-1">{quote}</p>
-      <div>
-        <div className="font-bold text-gray-900">{name}</div>
-        <div className="text-xs text-gray-400">{city}</div>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main page ─────────────────────────────────────────────── */
 export default function ConductoresPage() {
 
@@ -154,7 +139,7 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={200}>
               <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 leading-relaxed">
-                Únete a más de 12,000 conductoras y conductores Going App en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
+                Sumate a las primeras conductoras y conductores de Going App en Ecuador. Sin jefes, sin horarios fijos. Vos decidís cuándo y cuánto trabajar.
               </p>
             </FadeIn>
             <FadeIn delay={300}>
@@ -174,9 +159,9 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={400}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <StatCard value="+40%" label="ingresos promedio" />
-                <StatCard value="12,000+" label="conductoras/conductores activos" />
-                <StatCard value="24h" label="pago garantizado" />
+                <StatCard value="80%" label="de cada viaje es tuyo" />
+                <StatCard value="Horario libre" label="vos decidís cuándo" />
+                <StatCard value="Pagos claros" label="sin descuentos sorpresa" />
               </div>
             </FadeIn>
           </div>
@@ -225,7 +210,7 @@ export default function ConductoresPage() {
                     { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
                     { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
                     { icon: '🎓', text: 'Academia Going App gratuita para mejorar tu servicio.' },
-                    { icon: '🤝', text: 'Red de apoyo activa con más de 12,000 conductoras y conductores.' },
+                    { icon: '🤝', text: 'Una red de apoyo de conductoras y conductores que arranca con vos.' },
                   ].map((item) => (
                     <li key={item.text} className="flex items-start gap-3">
                       <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
@@ -278,24 +263,24 @@ export default function ConductoresPage() {
         </div>
       </section>
 
-      {/* ── EARNINGS CALCULATOR ──────────────────────────────── */}
+      {/* ── CÓMO GANÁS ───────────────────────────────────────── */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>¿Cuánto puedes ganar?</h2>
-              <p className="text-gray-500">Estimaciones basadas en conductoras y conductores activos en Ecuador</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>¿Cómo ganás con Going App?</h2>
+              <p className="text-gray-500">Ganás según tus viajes. Cuanto más manejás, más generás — y vos elegís el ritmo.</p>
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <FadeIn delay={0} direction="up"><EarningsCard plan="Part-time" hours="20 h / semana" range="$480–$650" /></FadeIn>
-            <FadeIn delay={100} direction="up"><EarningsCard plan="Full-time" hours="40 h / semana" range="$900–$1,200" highlight /></FadeIn>
-            <FadeIn delay={200} direction="up"><EarningsCard plan="Full-time + Empresa" hours="40 h / semana" range="$1,400–$1,800" /></FadeIn>
+            <FadeIn delay={0} direction="up"><EarningsCard icon="💰" title="80% de cada viaje" desc="Vos te quedás con la mayor parte de cada carrera. Sin descuentos sorpresa." /></FadeIn>
+            <FadeIn delay={100} direction="up"><EarningsCard icon="🕐" title="Vos elegís el ritmo" desc="Part-time o full-time, vos decidís. Cuanto más manejás, más generás." highlight /></FadeIn>
+            <FadeIn delay={200} direction="up"><EarningsCard icon="🏢" title="Sumá viajes de empresa" desc="Accedé a clientes corporativos y de turismo para llenar tu agenda." /></FadeIn>
           </div>
           <FadeIn delay={300}>
             <div className="text-center rounded-2xl py-4 px-6" style={{ background: '#fff7f7', border: '1px solid #ffd6d4' }}>
               <p className="text-sm font-semibold" style={{ color: '#c73b31' }}>
-                ✓ Tú recibes el 80% de cada viaje. Sin descuentos sorpresa.
+                ✓ Pagos claros. Sin comisiones de suscripción. La app es gratuita.
               </p>
             </div>
           </FadeIn>
@@ -404,20 +389,21 @@ export default function ConductoresPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ─────────────────────────────────────── */}
+      {/* ── PRE-LANZAMIENTO ──────────────────────────────────── */}
       <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Lo que dicen en la comunidad Going App</h2>
-              <p className="text-gray-500">Historias reales de personas reales.</p>
-            </div>
+            <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-6" style={{ background: 'rgba(255,76,65,0.1)', color: '#ff4c41' }}>
+              🚀 Estamos por arrancar
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Sé de las primeras conductoras y conductores</h2>
+            <p className="text-gray-500 leading-relaxed mb-8">
+              Going App está por salir al aire en Ecuador. Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra, desde Quito y el aeropuerto — y vamos llegando a todo el país. Registrate hoy y arrancá con nosotros desde el primer viaje.
+            </p>
+            <Link href="/conductores/registro" className="inline-block px-10 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.35)' }}>
+              Quiero sumarme →
+            </Link>
           </FadeIn>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FadeIn delay={0}><Testimonial quote="En 6 meses con Going App, pagué mis deudas y hasta ahorré para la educación de mis hijos." name="Carlos V." city="Quito" /></FadeIn>
-            <FadeIn delay={100}><Testimonial quote="Antes trabajaba 12 horas en una empresa. Ahora trabajo 8 horas para mí y gano lo mismo." name="Roberto M." city="Guayaquil" /></FadeIn>
-            <FadeIn delay={200}><Testimonial quote="Soy conductora y madre. Going App me permite organizarme sin depender de nadie." name="Ana P." city="Cuenca" /></FadeIn>
-          </div>
         </div>
       </section>
 

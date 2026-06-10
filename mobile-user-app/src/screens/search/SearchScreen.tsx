@@ -25,7 +25,7 @@ const REGIONS: { id: RegionId; label: string; cities: string[]; icon: string }[]
   { id: 'todas',          label: 'Todas',          cities: [],                                    icon: 'globe-outline' },
   { id: 'sierra_norte',   label: 'Sierra Norte',   cities: ['Quito', 'Ibarra', 'Otavalo'],       icon: 'trail-sign-outline' },
   { id: 'sierra_centro',  label: 'Sierra Centro',  cities: ['Ambato', 'Latacunga', 'Riobamba'],   icon: 'mountain-outline' },
-  { id: 'costa',          label: 'Costa',           cities: ['Santo Domingo', 'Esmeraldas'],       icon: 'sunny-outline' },
+  { id: 'costa',          label: 'Costa',           cities: ['Santo Domingo'],                     icon: 'sunny-outline' },
   { id: 'aeropuerto',     label: 'Aeropuerto',      cities: ['Aeropuerto Quito'],                  icon: 'airplane-outline' },
 ];
 

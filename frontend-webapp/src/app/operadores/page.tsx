@@ -71,10 +71,10 @@ export default function OperadoresPage() {
           </div>
           <div className="flex flex-wrap gap-10">
             {[
-              { value: '320+', label: 'Operadores activos' },
-              { value: '$2,400', label: 'Ingreso top/mes' },
-              { value: '18', label: 'Provincias cubiertas' },
-              { value: '4.8 ★', label: 'Calificación media' },
+              { value: 'Cobro adelantado', label: 'sin no-shows' },
+              { value: 'Vos fijás tarifas', label: 'sin comisiones ocultas' },
+              { value: 'Alcance nacional', label: 'e internacional' },
+              { value: 'Empezá gratis', label: 'crecé cuando quieras' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl font-bold" style={{ color: '#fbbf24' }}>{s.value}</div>
