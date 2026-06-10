@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect, ComponentType } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+// Logo: <img> directo. El optimizador de next/image devuelve 400 con los PNG del
+// logo (caía al fallback de texto rojo). El asset estático se sirve sin problema.
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -55,13 +56,13 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
       className="flex items-center cursor-pointer gap-1"
       onClick={onLogoClick}
     >
-      <Image
+      {/* next/image (optimizador) devuelve 400 con este PNG y cae al fallback de
+          texto rojo. <img> directo sirve el asset estático y es confiable. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/going-logo-h.png"
         alt="Going App Ecuador"
-        width={120}
-        height={40}
-        priority
-        className="object-contain"
+        className="h-9 w-auto object-contain"
         onError={(e) => {
           // Fallback: ocultar imagen y mostrar texto
           (e.target as HTMLImageElement).style.display = 'none';
