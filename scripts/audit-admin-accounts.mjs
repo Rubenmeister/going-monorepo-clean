@@ -97,7 +97,10 @@ async function main() {
     console.log(
       `  • ${d.email ?? '(sin email)'}\n` +
         `      roles=${JSON.stringify(d.roles)} status=${d.status ?? '—'} ` +
-        `oauth=${d.oauthProvider ?? 'no'} companyId=${d.companyId ?? '—'}\n` +
+        // No logueamos el valor del proveedor OAuth (clear-text logging de dato
+        // sensible). Para cazar admins ilegítimos basta saber si la cuenta está
+        // ligada a OAuth o es local — el exploit creaba cuentas local/contraseña.
+        `oauthLinked=${d.oauthProvider ? 'sí' : 'no'} companyId=${d.companyId ?? '—'}\n` +
         `      createdAt=${fmt(d.createdAt)} id=${d.id ?? d._id} [${d.collection}]`
     );
 
