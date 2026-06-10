@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { GoingLogo } from '../GoingLogo';
 
 const SOCIAL_LINKS = [
   { icon: '📸', label: 'Instagram', href: 'https://instagram.com/goingecuador' },
@@ -51,8 +50,8 @@ const FOOTER_COLS = [
 ];
 
 const LEGAL_LINKS = [
-  { label: 'Términos y condiciones', href: '/legal#terminos' },
-  { label: 'Política de privacidad', href: '/legal#privacidad' },
+  { label: 'Términos y condiciones', href: '/terminos' },
+  { label: 'Política de privacidad', href: '/privacidad' },
   { label: 'Cookies', href: '/legal#cookies' },
   { label: 'Contrato del conductor', href: '/legal#conductor' },
 ];
@@ -66,8 +65,8 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
-              <GoingLogo size={22} />
-              <span className="text-xl font-black">Going App</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/going-logo-white-h.png" alt="Going App" className="h-9 w-auto" />
             </div>
             <p className="text-sm text-white/40 leading-relaxed mb-5">
               Nos movemos contigo.<br />

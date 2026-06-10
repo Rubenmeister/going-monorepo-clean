@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GoingLogo } from '../GoingLogo';
 
 const NAV_ITEMS = [
   {
@@ -47,8 +46,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center gap-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <GoingLogo size={28} />
-          <span className="text-[22px] font-black text-[#011627] tracking-tight">Going App</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/going-logo-h.png" alt="Going App" className="h-9 w-auto" />
         </Link>
 
         {/* Desktop nav */}
