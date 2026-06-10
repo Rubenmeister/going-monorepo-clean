@@ -10,9 +10,9 @@ const SECTIONS = [
     id: 'terminos',
     title: 'Términos y Condiciones',
     icon: '📄',
-    content: `Thorn AI Technologies S.A.S. ("Going App") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
+    content: `Thorn AI Technologies S.A.S. ("Going App") es una plataforma tecnológica que conecta a personas usuarias con conductoras y conductores independientes. Al usar nuestros servicios aceptas estos términos.
 
-**Uso del servicio:** Going App es una plataforma de intermediación. Los conductores son proveedores independientes, no empleados de Going App. Going App no es responsable por el contenido publicado por usuarios.
+**Uso del servicio:** Going App es una plataforma de intermediación. Las conductoras y conductores son proveedores independientes, no personal de Going App. Going App no es responsable por el contenido publicado por las personas usuarias.
 
 **Cuentas:** Debes tener al menos 18 años para crear una cuenta. Eres responsable de mantener la confidencialidad de tu contraseña.
 
@@ -39,6 +39,22 @@ const SECTIONS = [
 **Retención:** Conservamos datos mientras tu cuenta esté activa. Datos de viajes por 5 años por obligación fiscal.`,
   },
   {
+    id: 'seguridad',
+    title: 'Seguridad',
+    icon: '🛡️',
+    content: `La seguridad de viajeras, viajeros, conductoras y conductores es prioridad de Going App.
+
+**PIN de seguridad:** Cada viaje genera un PIN que confirmás antes de subir, para asegurarte de abordar el vehículo correcto.
+
+**Verificación:** Conductoras y conductores pasan validación de documentos, antecedentes y vehículo antes de su primer viaje.
+
+**Seguimiento en vivo:** Podés compartir tu viaje en tiempo real con tus contactos de confianza desde la app.
+
+**Botón SOS:** Disponible durante el viaje activo; avisa a nuestro equipo y permite contactar al ECU 911.
+
+**Soporte:** Ante cualquier inconveniente, escribinos por WhatsApp o desde la app.`,
+  },
+  {
     id: 'cookies',
     title: 'Política de Cookies',
     icon: '🍪',
@@ -56,7 +72,7 @@ const SECTIONS = [
     id: 'conductor',
     title: 'Contrato del Conductor',
     icon: '📋',
-    content: `Los conductores de Going App son proveedores de servicios independientes, no empleados.
+    content: `Las conductoras y conductores de Going App son proveedores de servicios independientes, no personal en relación de dependencia.
 
 **Requisitos:** Licencia de conducir vigente tipo B mínimo, vehículo 2018 o posterior, seguro SOAT vigente, antecedentes penales limpios, aprobación de evaluación Going App.
 

@@ -158,7 +158,7 @@ function buildHtml(p: ReportParams): string {
   </table>
 
   <div class="footer">
-    <div>© 2026 <strong>Going App</strong> · goingapp.ec</div>
+    <div>© 2026 <strong>Going</strong> · goingec.com</div>
     <div>Este documento es un resumen informativo de actividad en plataforma.</div>
   </div>
 

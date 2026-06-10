@@ -19,12 +19,16 @@ const PUBLIC_PATHS = ['/login'];
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Pasar rutas públicas y assets de Next.js sin comprobación
+  // Pasar rutas públicas, assets de Next.js y archivos estáticos de /public
+  // (logos .png, íconos, etc.) sin comprobación. Sin el chequeo de extensión,
+  // un asset solicitado sin sesión se redirigía a /login y se servía HTML en
+  // lugar del archivo (rompía el logo del propio login).
   if (
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
-    pathname === '/favicon.ico'
+    pathname === '/favicon.ico' ||
+    /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();
   }
@@ -44,5 +48,6 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // Aplica el middleware a todas las rutas excepto assets estáticos
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // (incluye archivos de /public: .png/.svg/.ico/.css/.js/fuentes…).
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|avif|js|css|woff|woff2|ttf|map|json|txt)).*)'],
 };

@@ -40,7 +40,7 @@ import type { MainStackParamList } from '@navigation/MainNavigator';
 import { useAuthStore } from '@store/useAuthStore';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
 import {
-  QUITO_ZONES, ORIGIN_CITIES,
+  QUITO_ZONES, SERVED_ORIGIN_CITIES,
   type QuitoZone,
   type Category,
 } from '../../catalog';
@@ -162,9 +162,9 @@ export function PrivateRideBookingScreen() {
       icon: 'business-outline' as const, accent: tokens.success },
   ].filter(c => c.id !== 'empresa' || hasCompany);
 
-  const category    = CATEGORIES_UI.find(c => c.id === selectedCat) ?? CATEGORIES_UI[0];
-  const subtotal    = Math.round(vehicle.priceBase * category.multiplier);
-  const totalPrice  = subtotal + zone.surcharge;
+  // El precio NO se calcula acá. El monto lo cotiza/cobra el backend
+  // (libs/pricing) y se muestra en el paso de opciones (BookingOptions).
+  const category = CATEGORIES_UI.find(c => c.id === selectedCat) ?? CATEGORIES_UI[0];
 
   const dateLabel = useMemo(() => {
     if (dateOption === 'today') {
@@ -309,7 +309,7 @@ export function PrivateRideBookingScreen() {
               </TouchableOpacity>
               <TouchableOpacity onPress={() => { hapticLight(); setShowZones(p => !p); }}>
                 <Text style={[styles.routeChange, styles.routeChangeSmall]}>
-                  Zona {zone.surcharge > 0 ? `+$${zone.surcharge}` : ''}
+                  Cambiar zona
                 </Text>
               </TouchableOpacity>
             </View>
@@ -333,9 +333,9 @@ export function PrivateRideBookingScreen() {
                     {z.examples}
                   </Text>
                 </View>
-                <Text style={[styles.zoneSurchargeTxt, selectedZone === z.id && styles.zoneSurchargeActive]}>
-                  {z.surcharge === 0 ? 'Base' : `+$${z.surcharge}`}
-                </Text>
+                {selectedZone === z.id && (
+                  <Ionicons name="checkmark-circle" size={20} color={tokens.brandNavy} />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -399,7 +399,6 @@ export function PrivateRideBookingScreen() {
           <Text style={styles.secTitle}>Elige tu vehículo</Text>
           {VEHICLES.map(v => {
             const active = selectedVeh === v.id;
-            const price  = Math.round(v.priceBase * category.multiplier) + zone.surcharge;
             return (
               <TouchableOpacity
                 key={v.id}
@@ -425,12 +424,11 @@ export function PrivateRideBookingScreen() {
                   </View>
                   <Text style={styles.vehicleDesc}>{v.desc}</Text>
                 </View>
-                <View style={styles.vehiclePrice}>
-                  <Text style={[styles.vehiclePriceVal, active && styles.vehiclePriceValActive]}>
-                    ${price}
-                  </Text>
-                  <Text style={styles.vehiclePriceLbl}>total</Text>
-                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={active ? tokens.brandNavy : tokens.textTertiary}
+                />
               </TouchableOpacity>
             );
           })}
@@ -454,11 +452,7 @@ export function PrivateRideBookingScreen() {
                 >
                   <Ionicons name={cat.icon} size={20} color={active ? cat.accent : tokens.textTertiary} />
                   <Text style={[styles.catLabel, active && { color: cat.accent }]}>{cat.label}</Text>
-                  <Text style={styles.catDesc}>
-                    {cat.multiplier > 1 ? `+${Math.round((cat.multiplier - 1) * 100)}%`
-                      : cat.multiplier < 1 ? `-${Math.round((1 - cat.multiplier) * 100)}%`
-                      : 'Base'}
-                  </Text>
+                  <Text style={styles.catDesc} numberOfLines={2}>{cat.desc}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -470,38 +464,19 @@ export function PrivateRideBookingScreen() {
           )}
         </View>
 
-        {/* ── Resumen de precio ─────────────────────────────── */}
+        {/* ── Nota de precio ────────────────────────────────── */}
+        {/* El monto del vehículo completo lo cotiza/cobra el backend
+            (libs/pricing) según ruta, horario y categoría. El mobile no
+            inventa precios: el total aparece en el siguiente paso. */}
         <View style={[styles.section, { marginBottom: 24 }]}>
           <View style={styles.priceSummary}>
             <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>{vehicle.label} · {vehicle.capacity} pax (base)</Text>
-              <Text style={styles.priceVal}>${vehicle.priceBase}</Text>
+              <Text style={styles.priceLbl}>{vehicle.label} · {vehicle.capacity} pax · {category.label}</Text>
             </View>
-            {category.multiplier !== 1 && (
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLbl}>Categoría {category.label}</Text>
-                <Text style={[
-                  styles.priceVal,
-                  { color: category.multiplier > 1 ? tokens.error : tokens.success },
-                ]}>
-                  {category.multiplier > 1 ? '+' : ''}{Math.round((vehicle.priceBase * category.multiplier) - vehicle.priceBase)}
-                </Text>
-              </View>
-            )}
-            {zone.surcharge > 0 && (
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLbl}>Recargo {zone.label}</Text>
-                <Text style={styles.priceVal}>+${zone.surcharge}</Text>
-              </View>
-            )}
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>Servicio Going App</Text>
-              <Text style={[styles.priceVal, { color: tokens.success }]}>incluido</Text>
-            </View>
-            <View style={[styles.priceRow, styles.priceTotalRow]}>
-              <Text style={styles.priceTotalLbl}>Total vehículo completo</Text>
-              <Text style={styles.priceTotalVal}>${totalPrice}</Text>
-            </View>
+            <Text style={styles.priceNoteText}>
+              Going calcula el total del vehículo completo según tu ruta y
+              horario. Lo vas a ver al continuar, antes de reservar.
+            </Text>
           </View>
         </View>
 
@@ -511,8 +486,8 @@ export function PrivateRideBookingScreen() {
       {/* ── CTA sticky bottom ────────────────────────────────── */}
       <View style={styles.ctaBar}>
         <View style={styles.ctaTotal}>
-          <Text style={styles.ctaTotalLabel}>Total exclusivo</Text>
-          <Text style={styles.ctaTotalValue}>${totalPrice}</Text>
+          <Text style={styles.ctaTotalLabel}>Precio</Text>
+          <Text style={styles.ctaTotalHint}>Lo confirma Going al continuar</Text>
         </View>
         <TouchableOpacity
           style={[styles.ctaBtn, !destination && styles.ctaBtnDisabled]}
@@ -540,7 +515,7 @@ export function PrivateRideBookingScreen() {
             </TouchableOpacity>
           </View>
           <FlatList
-            data={ORIGIN_CITIES}
+            data={SERVED_ORIGIN_CITIES}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -755,6 +730,7 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     },
     priceLbl: { fontSize: 12, color: t.textSecondary },
     priceVal: { fontSize: 13, fontWeight: '800', color: t.textPrimary },
+    priceNoteText: { fontSize: 12, color: t.textSecondary, lineHeight: 17, marginTop: 4 },
     priceTotalRow: {
       paddingTop: 12, marginTop: 4,
       borderTopWidth: 1, borderTopColor: t.border, marginBottom: 0,
@@ -777,6 +753,10 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     ctaTotalValue: {
       fontSize: 22, fontWeight: '900',
       color: t.textPrimary, marginTop: 2, letterSpacing: -0.5,
+    },
+    ctaTotalHint: {
+      fontSize: 12, fontWeight: '700',
+      color: t.textSecondary, marginTop: 2,
     },
     ctaBtn: {
       flexDirection: 'row', alignItems: 'center', gap: 8,

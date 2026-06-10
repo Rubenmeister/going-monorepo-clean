@@ -443,7 +443,7 @@ export default function ToursPage() {
               </span>
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 leading-tight">
                 Lleva tus tours a<br />
-                <span style={{ color: '#f87171' }}>miles de viajeros</span>
+                <span style={{ color: '#f87171' }}>viajeras y viajeros de todo el mundo</span>
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
                 Publica tus tours en Going App y accede a viajeros nacionales e internacionales buscando aventura en Ecuador.

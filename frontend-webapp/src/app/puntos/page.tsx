@@ -46,7 +46,7 @@ export default function PuntosPage() {
       return;
     }
 
-    authFetch(`${API_URL}/users/${uid}/points`)
+    authFetch(`${API_URL}/auth/me/points`)
       .then(r => r.ok ? r.json() : null)
       .then(json => {
         if (json) {

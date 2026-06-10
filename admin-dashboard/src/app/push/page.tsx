@@ -22,10 +22,10 @@ interface SentNotification {
 }
 
 const SEGMENTS = [
-  { key:'all_users',       label:'Todos los usuarios',          icon:'👥', desc:'Toda la base de usuarios activos' },
-  { key:'all_drivers',     label:'Todos los conductores',       icon:'🚗', desc:'Conductores activos en plataforma' },
-  { key:'new_users',       label:'Usuarios nuevos (30 días)',   icon:'🆕', desc:'Registrados en el último mes' },
-  { key:'corporate',       label:'Usuarios corporativos',       icon:'🏢', desc:'Empleados de empresas activas' },
+  { key:'all_users',       label:'Todas las personas usuarias', icon:'👥', desc:'Toda la base de personas usuarias activas' },
+  { key:'all_drivers',     label:'Conductoras y conductores',   icon:'🚗', desc:'Conductoras y conductores activos en la plataforma' },
+  { key:'new_users',       label:'Personas usuarias nuevas (30 días)', icon:'🆕', desc:'Registradas en el último mes' },
+  { key:'corporate',       label:'Personas usuarias corporativas',     icon:'🏢', desc:'Personal de empresas activas' },
   { key:'inactive_users',  label:'Usuarios inactivos',          icon:'💤', desc:'Sin actividad en los últimos 60 días' },
   { key:'pending_drivers', label:'Conductores pendientes',      icon:'⏳', desc:'Conductores sin aprobar documentos' },
 ];

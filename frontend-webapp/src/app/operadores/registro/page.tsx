@@ -82,15 +82,16 @@ export default function OperadoresRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = getStoredToken();
-      const formData = new FormData();
-      Object.entries(profile).forEach(([k, v]) => formData.append(k, v));
-      formData.append('certifications', JSON.stringify([...certifications]));
-      REQUIRED_DOCS.forEach(d => { if (docs[d.key].file) formData.append(d.key, docs[d.key].file as File); });
-      const res = await fetch(`${API_BASE}/operators/onboarding`, {
+      // Backend de onboarding (/operators/onboarding) aún no existe → registramos
+      // la solicitud como lead vía soporte; el equipo hace el seguimiento.
+      const message =
+        `[Solicitud operadora/operador turístico]\n` +
+        Object.entries(profile).map(([k, v]) => `${k}: ${v}`).join(' · ') +
+        `\nCertificaciones: ${[...certifications].join(', ') || '—'}`;
+      const res = await fetch(`${API_BASE}/support/public/message`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: `lead-operador-${Date.now()}`, message }),
       });
       if (!res.ok) throw new Error('Error al enviar');
       setSubmitted(true);

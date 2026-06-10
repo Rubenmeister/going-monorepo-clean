@@ -180,24 +180,18 @@ export default function FestividadesPage() {
         </div>
       </section>
 
-      {/* Testimonial */}
+      {/* Pre-lanzamiento */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-6">
           <FadeIn>
             <div className="rounded-3xl border border-gray-100 p-10 md:p-14 text-center shadow-sm" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fff 100%)' }}>
-              <div className="text-6xl mb-6">👨‍👩‍👧‍👦</div>
-              <blockquote className="text-xl md:text-2xl text-gray-700 font-medium leading-relaxed mb-8 italic">
-                &ldquo;Para el Carnaval del año pasado, reservamos con Going App 12 días antes. Nos asignaron a Don Luis como conductor para todo el fin de semana en Guaranda. Él nos llevó a la Mama Negra, al desfile y hasta a una hacienda privada que nosotros nunca hubiéramos encontrado solos. Y el precio fue el mismo que reservamos desde el principio, sin sorpresas.&rdquo;
-              </blockquote>
-              <div>
-                <div className="font-bold text-gray-900 text-lg">Familia Vásquez-Herrera</div>
-                <div className="text-gray-400 text-sm mt-1">Quito · Carnaval 2025 en Guaranda</div>
-                <div className="flex justify-center gap-1 mt-3">
-                  {[1,2,3,4,5].map((star) => (
-                    <span key={star} className="text-amber-400 text-lg">★</span>
-                  ))}
-                </div>
-              </div>
+              <div className="text-6xl mb-6">🎉</div>
+              <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-4">Tu próxima festividad, sin sorpresas</h2>
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                Reservá con anticipación para Carnaval, Mama Negra, Inti Raymi y más. Conductoras y conductores
+                verificados, precio fijo desde el primer momento y seguimiento en vivo. Going App está por arrancar:
+                sé de las primeras personas en vivir las fiestas del Ecuador con nosotros.
+              </p>
             </div>
           </FadeIn>
         </div>

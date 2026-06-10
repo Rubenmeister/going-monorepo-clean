@@ -3,7 +3,7 @@
  *
  * Flujo:
  *  1. Conductor selecciona su CIUDAD DE ORIGEN (donde vive/sale)
- *  2. Sistema muestra la ruta correspondiente con precios por tramo
+ *  2. Sistema muestra la ruta correspondiente (paradas, NO precios)
  *  3. Conductor elige destino (Quito o Aeropuerto)
  *  4. Selecciona días y hora de salida (IDA)
  *  5. OBLIGATORIO: registra hora de REGRESO ese mismo día
@@ -27,13 +27,14 @@ const GREEN = '#059669';
 const RED   = '#FF4C41';
 
 // ── Ciudades de origen y sus rutas ────────────────────────────────────────────
+// NOTA: la conductora o el conductor selecciona PARADAS y horarios, NO fija
+// tarifa. El precio por tramo lo define la plataforma (backend, libs/pricing)
+// para no tener tarifas dispares entre conductores. Por eso acá NO hay precios.
 const ORIGIN_CITIES = [
   {
     id: 'riobamba', label: 'Riobamba', province: 'Chimborazo',
     routeId: 'sierra_centro', icon: '🏔️', color: NAVY,
     routeStops: ['Ambato', 'Latacunga', 'Quito', 'Aeropuerto'],
-    // Precio por asiento SUV desde Riobamba a cada destino
-    prices: { Ambato: 7, Latacunga: 12, Quito: 17, Aeropuerto: 32 },
     times: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '14:00'],
     returnTimes: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
   },
@@ -41,7 +42,6 @@ const ORIGIN_CITIES = [
     id: 'ambato', label: 'Ambato', province: 'Tungurahua',
     routeId: 'sierra_centro', icon: '🏔️', color: NAVY,
     routeStops: ['Latacunga', 'Quito', 'Aeropuerto'],
-    prices: { Latacunga: 5, Quito: 10, Aeropuerto: 25 },
     times: ['05:30', '06:30', '07:00', '08:00', '09:00', '10:00', '14:00', '15:00'],
     returnTimes: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
   },
@@ -49,7 +49,6 @@ const ORIGIN_CITIES = [
     id: 'el_carmen', label: 'El Carmen', province: 'Manabí',
     routeId: 'costa_quito', icon: '🌊', color: GREEN,
     routeStops: ['La Concordia', 'Santo Domingo', 'Quito', 'Aeropuerto'],
-    prices: { 'La Concordia': 3, 'Santo Domingo': 6, Quito: 14, Aeropuerto: 29 },
     times: ['04:00', '05:00', '06:00', '07:00'],
     returnTimes: ['13:00', '14:00', '15:00', '16:00', '17:00'],
   },
@@ -57,7 +56,6 @@ const ORIGIN_CITIES = [
     id: 'santo_domingo', label: 'Santo Domingo', province: 'Santo Domingo',
     routeId: 'costa_quito', icon: '🌊', color: GREEN,
     routeStops: ['Quito', 'Aeropuerto'],
-    prices: { Quito: 11, Aeropuerto: 26 },
     times: ['05:00', '06:00', '07:00', '08:00', '09:00', '14:00', '15:00', '16:00'],
     returnTimes: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
   },
@@ -65,7 +63,6 @@ const ORIGIN_CITIES = [
     id: 'ibarra', label: 'Ibarra', province: 'Imbabura',
     routeId: 'sierra_norte', icon: '🌿', color: '#7C3AED',
     routeStops: ['Otavalo', 'Quito', 'Aeropuerto'],
-    prices: { Otavalo: 3, Quito: 11, Aeropuerto: 26 },
     times: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '14:00'],
     returnTimes: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
   },
@@ -73,7 +70,6 @@ const ORIGIN_CITIES = [
     id: 'otavalo', label: 'Otavalo', province: 'Imbabura',
     routeId: 'sierra_norte', icon: '🌿', color: '#7C3AED',
     routeStops: ['Quito', 'Aeropuerto'],
-    prices: { Quito: 9, Aeropuerto: 24 },
     times: ['05:30', '06:00', '07:00', '08:00', '09:00', '10:00', '14:00', '15:00'],
     returnTimes: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
   },
@@ -92,7 +88,6 @@ const DAYS = [
 interface ScheduleSlot {
   originId:    string;
   destination: string;
-  price:       number;
   days:        number[];
   departTime:  string;
   returnTime:  string;
@@ -112,7 +107,6 @@ export function DriverScheduleScreen() {
   const [saving,       setSaving]       = useState(false);
 
   const origin = ORIGIN_CITIES.find(c => c.id === originId);
-  const price  = origin && destination ? (origin.prices as unknown as Record<string, number>)[destination] ?? 0 : 0;
 
   useEffect(() => { loadSlots(); }, []);
 
@@ -146,7 +140,7 @@ export function DriverScheduleScreen() {
     if (!originId || !destination || !selectedDays.length || !departTime || !returnTime) return;
     hapticMedium();
     const slot: ScheduleSlot = {
-      originId, destination, price,
+      originId, destination,
       days: [...selectedDays],
       departTime, returnTime,
     };
@@ -210,8 +204,6 @@ export function DriverScheduleScreen() {
     } finally { setSaving(false); }
   };
 
-  const weeklyEstimate = slots.reduce((t, s) => t + (s.price * 3 * s.days.length * 2), 0); // ida+vuelta
-
   return (
     <View style={s.container}>
       <View style={s.header}>
@@ -235,15 +227,6 @@ export function DriverScheduleScreen() {
           ))}
         </View>
       </View>
-
-      {weeklyEstimate > 0 && (
-        <View style={s.earningsBanner}>
-          <Ionicons name="trending-up" size={16} color={GREEN} />
-          <Text style={s.earningsText}>
-            Estimado semanal: <Text style={{fontWeight:'900',color:GREEN}}>${weeklyEstimate.toFixed(0)}</Text>
-          </Text>
-        </View>
-      )}
 
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
 
@@ -269,10 +252,10 @@ export function DriverScheduleScreen() {
           </View>
         )}
 
-        {/* ── PASO 2: Destino y precio ── */}
+        {/* ── PASO 2: Destino ── */}
         {step === 2 && origin && (
           <View>
-            <Text style={s.secTitle}>DESTINO Y PRECIO POR ASIENTO SUV</Text>
+            <Text style={s.secTitle}>¿HASTA DÓNDE LLEVAS PASAJEROS?</Text>
             <View style={s.routeInfo}>
               <Text style={s.routeInfoIcon}>{origin.icon}</Text>
               <Text style={s.routeInfoText}>Desde <Text style={{fontWeight:'900'}}>{origin.label}</Text> puedes llegar a:</Text>
@@ -289,13 +272,10 @@ export function DriverScheduleScreen() {
                     {stop === 'Aeropuerto' ? '✈️ Aeropuerto de Quito (Tababela)' : stop}
                   </Text>
                   <Text style={s.destSub}>
-                    {stop === 'Aeropuerto' ? 'Incluye recargo aeropuerto +$15' : `Parada en ruta`}
+                    {stop === 'Aeropuerto' ? 'Aeropuerto Internacional' : `Parada en ruta`}
                   </Text>
                 </View>
-                <View style={[s.priceBadge, {backgroundColor:`${origin.color}12`,borderColor:`${origin.color}30`}]}>
-                  <Text style={[s.priceVal,{color:origin.color}]}>${(origin.prices as unknown as Record<string, number>)[stop]}</Text>
-                  <Text style={s.priceLbl}>/asiento</Text>
-                </View>
+                <Text style={s.cityArrow}>›</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -334,7 +314,7 @@ export function DriverScheduleScreen() {
           <View>
             <View style={s.routeSummary}>
               <Text style={s.routeSummaryText}>
-                {origin.icon} {origin.label} → {destination} · ${price}/asiento
+                {origin.icon} {origin.label} → {destination}
               </Text>
               <Text style={s.routeSummaryDays}>
                 {selectedDays.map(id => DAYS.find(d=>d.id===id)?.label).join(' ')}
@@ -380,8 +360,7 @@ export function DriverScheduleScreen() {
                 <View style={s.summaryRow}><Text style={s.sumLbl}>Ruta</Text><Text style={s.sumVal}>{origin.label} → {destination}</Text></View>
                 <View style={s.summaryRow}><Text style={s.sumLbl}>Días</Text><Text style={s.sumVal}>{selectedDays.map(id=>DAYS.find(d=>d.id===id)?.label).join(' ')}</Text></View>
                 <View style={s.summaryRow}><Text style={s.sumLbl}>IDA</Text><Text style={s.sumVal}>{departTime} · desde {origin.label}</Text></View>
-                <View style={s.summaryRow}><Text style={s.sumLbl}>REGRESO</Text><Text style={s.sumVal}>{returnTime} · desde Quito</Text></View>
-                <View style={[s.summaryRow,{borderBottomWidth:0}]}><Text style={s.sumLbl}>Precio</Text><Text style={[s.sumVal,{color:GREEN,fontWeight:'900'}]}>${price}/asiento</Text></View>
+                <View style={[s.summaryRow,{borderBottomWidth:0}]}><Text style={s.sumLbl}>REGRESO</Text><Text style={s.sumVal}>{returnTime} · desde Quito</Text></View>
               </View>
             )}
             {returnTime && (
@@ -406,7 +385,6 @@ export function DriverScheduleScreen() {
                     <View style={{flex:1}}>
                       <Text style={s.slotRoute}>{orig?.label} → {slot.destination}</Text>
                       <Text style={s.slotDays}>{slot.days.map(d=>DAYS.find(x=>x.id===d)?.label).join(' ')} · IDA {slot.departTime} · REG {slot.returnTime}</Text>
-                      <Text style={s.slotPrice}>${slot.price}/asiento por tramo</Text>
                     </View>
                     <TouchableOpacity onPress={() => removeSlot(idx)} style={{padding:6}}>
                       <Ionicons name="trash-outline" size={16} color={RED} />
@@ -428,7 +406,6 @@ export function DriverScheduleScreen() {
         <View style={s.footer}>
           <View style={{flex:1}}>
             <Text style={s.footerSlots}>{slots.length} horario{slots.length>1?'s':''} registrado{slots.length>1?'s':''}</Text>
-            {weeklyEstimate > 0 && <Text style={s.footerEarn}>~${weeklyEstimate.toFixed(0)}/semana estimado</Text>}
           </View>
           <TouchableOpacity style={[s.saveBtn, saving&&{opacity:0.7}]} onPress={saveSchedule} disabled={saving}>
             {saving ? <ActivityIndicator color="#fff" size="small" /> : <><Text style={s.saveBtnText}>Guardar agenda</Text><Ionicons name="checkmark-circle" size={20} color={GOLD} /></>}
@@ -448,8 +425,6 @@ const s = StyleSheet.create({
   stepIndicator: { flexDirection: 'row', gap: 4 },
   stepDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
   stepDotActive: { backgroundColor: GOLD },
-  earningsBanner: { backgroundColor: '#ECFDF5', padding: 10, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 8, borderBottomWidth: 1, borderBottomColor: '#BBF7D0' },
-  earningsText: { fontSize: 12, color: '#065F46', fontWeight: '600' },
   scroll: { flex: 1, padding: 14 },
   secTitle: { fontSize: 9, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1.5, marginBottom: 10 },
   cityCard: { backgroundColor: '#fff', borderRadius: 14, padding: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 2, borderColor: '#E5E7EB', position: 'relative' },
@@ -465,9 +440,6 @@ const s = StyleSheet.create({
   destCheck: { position: 'absolute', top: 9, right: 9, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
   destName: { fontSize: 14, fontWeight: '800', color: '#111827' },
   destSub: { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
-  priceBadge: { borderRadius: 12, padding: 8, alignItems: 'center', borderWidth: 1 },
-  priceVal: { fontSize: 18, fontWeight: '900' },
-  priceLbl: { fontSize: 8, color: '#9CA3AF', fontWeight: '600' },
   daysRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   dayBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#E5E7EB' },
   dayBtnActive: { backgroundColor: NAVY, borderColor: NAVY },
@@ -499,12 +471,10 @@ const s = StyleSheet.create({
   slotIcon: { fontSize: 20, marginTop: 1 },
   slotRoute: { fontSize: 13, fontWeight: '800', color: '#111827' },
   slotDays: { fontSize: 10, color: '#6B7280', marginTop: 2 },
-  slotPrice: { fontSize: 11, fontWeight: '700', color: GREEN, marginTop: 2 },
   addMoreBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 12, backgroundColor: '#F9FAFB', borderRadius: 12, borderWidth: 1.5, borderColor: '#E5E7EB', borderStyle: 'dashed' },
   addMoreText: { fontSize: 12, fontWeight: '700', color: NAVY },
   footer: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', padding: 14, paddingBottom: 30, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   footerSlots: { fontSize: 13, fontWeight: '800', color: '#111827' },
-  footerEarn: { fontSize: 11, color: GREEN, fontWeight: '600', marginTop: 2 },
   saveBtn: { backgroundColor: NAVY, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 8 },
   saveBtnText: { fontSize: 13, fontWeight: '900', color: '#fff' },
 });

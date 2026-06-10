@@ -28,13 +28,8 @@ const GOING_GREEN = '#10B981';
 const MP_WEB_URL = 'https://www.mercadopago.com/activities';
 
 const WITHDRAWAL_METHODS = [
-  {
-    id: 'mp',
-    label: 'Mercado Pago',
-    description: 'Transferencia instantánea a tu cuenta MP',
-    badge: '💳',
-    color: '#00B1EA',
-  },
+  // Mercado Pago oculto: no opera como medio de retiro en Ecuador.
+  // Solo transferencia bancaria (POST /drivers/me/withdraw) hasta nueva integración.
   {
     id: 'bank',
     label: 'Transferencia Bancaria',
@@ -50,7 +45,7 @@ export function WithdrawScreen() {
   const { availableBalance, currency } = route.params;
 
   const [amount, setAmount] = useState(String(availableBalance));
-  const [method, setMethod] = useState<'mp' | 'bank'>('mp');
+  const [method, setMethod] = useState<'mp' | 'bank'>('bank');
   const [loading, setLoading] = useState(false);
 
   const displayCurrency = currency ?? 'USD';

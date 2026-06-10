@@ -174,7 +174,12 @@ export class AuthController {
     const startTime = Date.now();
     const ip = this.extractIp(req);
     try {
-      // 1. Crear el usuario
+      // 1. Crear el usuario.
+      //    SEGURIDAD: este endpoint es PÚBLICO (sin guard, a propósito: es el
+      //    alta de cuentas). El rol nunca se toma tal cual del body — el
+      //    RegisterUserUseCase descarta roles elevados (admin/operator/
+      //    corporate) vía sanitizeSelfServiceRoles y cae a 'user'. Los admins
+      //    se crean SOLO por POST /auth/bootstrap-admin (token constant-time).
       const registerResult = await this.registerUserUseCase.execute(dto);
       const userId = (registerResult as any)?.user?.id ?? (registerResult as any)?.id ?? 'unknown';
 
@@ -634,7 +639,12 @@ export class AuthController {
 
       const result = await this.loginUserUseCase.execute(dto);
 
-      // Validate corporate role
+      // Validate corporate role.
+      // SEGURIDAD: esto es LOGIN, no alta. LoginUserUseCase valida credenciales
+      // de una cuenta YA existente y NUNCA crea cuentas ni asigna/modifica
+      // roles. Por eso no es una vía de escalada: solo deja entrar a quien ya
+      // tiene 'corporate' o 'admin' con su password correcta. Cerrada la
+      // asignación de esos roles en /auth/register, esta puerta queda cubierta.
       const roles: string[] = result?.user?.roles ?? [];
       if (!roles.includes('corporate') && !roles.includes('admin')) {
         throw new UnauthorizedException('Access restricted to corporate accounts');

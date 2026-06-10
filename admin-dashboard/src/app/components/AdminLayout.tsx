@@ -143,9 +143,7 @@ export function AdminLayout({
         >
           {sidebarOpen && (
             <div className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tight" style={{ color: '#ff4c41' }}>
-                Going App
-              </span>
+              <img src="/going-logo-white-h.png" alt="Going App" className="h-7 w-auto object-contain" />
               <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">
                 Admin
               </span>

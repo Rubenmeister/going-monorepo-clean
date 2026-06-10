@@ -241,7 +241,7 @@ export default function FavoritosPage() {
     if (fav.city)        params.set("city",        fav.city);
     if (fav.category)    params.set("category",    fav.category);
     if (fav.notes)       params.set("notes",       fav.notes);
-    router.push(`/empresas/solicitar?${params.toString()}`);
+    router.push(`/empresas/panel/solicitar?${params.toString()}`);
   }
 
   return (

@@ -53,11 +53,12 @@ import { signInWithProvider, type OAuthProvider } from '../../services/oauth';
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 // Stats defensibles (todas verificables o son políticas reales):
-//   - 50+ ciudades — catálogo real en libs/pricing/cities.ts
+//   - +14 ciudades en ruta — cobertura real activa en src/catalog/coverage.ts
+//     (arrancamos con 3 corredores desde Quito + Aeropuerto)
 //   - 24/7 soporte — customer-support-service always-on (min-instances=1)
 //   - 100% verificados — política operativa: todos los conductores pasan KYC
 const STATS = [
-  { value: '50+',  label: 'Ciudades' },
+  { value: '+14',  label: 'Ciudades en ruta' },
   { value: '24/7', label: 'Soporte' },
   { value: '100%', label: 'Verificados' },
 ];
@@ -188,7 +189,7 @@ export function LoginScreen() {
         {/* ══ FORM CARD ════════════════════════════════════════════ */}
         <View style={styles.card}>
 
-          <Text style={styles.title}>Bienvenido nuevamente</Text>
+          <Text style={styles.title}>Hola de nuevo</Text>
           <Text style={styles.subtitle}>Ingresa a tu cuenta</Text>
 
           {/* ── Biometría (si disponible y habilitada) ── */}

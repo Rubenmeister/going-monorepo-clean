@@ -109,18 +109,20 @@ export default function DriverRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = getStoredToken();
-      const formData = new FormData();
-      Object.entries(vehicle).forEach(([k, v]) => formData.append(k, v));
-      REQUIRED_DOCS.forEach(d => {
-        if (docs[d.key].file) formData.append(d.key, docs[d.key].file as File);
-      });
-      const res = await fetch(`${API_BASE}/drivers/onboarding`, {
+      // El backend de onboarding (/drivers/onboarding) aún no existe.
+      // Registramos la solicitud como lead vía el endpoint público de soporte;
+      // el equipo hace el seguimiento y solicita los documentos. (Pre-lanzamiento.)
+      const docsList = REQUIRED_DOCS.filter(d => docs[d.key].file).map(d => d.label).join(', ');
+      const message =
+        `[Solicitud conductora/conductor]\n` +
+        `Vehículo: ${vehicle.type} ${vehicle.brand} ${vehicle.model} ${vehicle.year} · placa ${vehicle.plate} · ${vehicle.color}\n` +
+        `Documentos listos para enviar: ${docsList || 'pendientes'}.`;
+      const res = await fetch(`${API_BASE}/support/public/message`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: `lead-conductor-${vehicle.plate || 'sin-placa'}`, message }),
       });
-      if (!res.ok) throw new Error('Error al enviar documentos');
+      if (!res.ok) throw new Error('Error al enviar solicitud');
       setSubmitted(true);
     } catch {
       setGlobalError('Hubo un error al enviar tu solicitud. Intenta de nuevo o escríbenos a conductores@goingec.com');

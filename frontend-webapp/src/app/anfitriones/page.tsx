@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 
 const BENEFITS = [
-  { icon: '💰', title: 'Ingresos extras reales', desc: 'Hosts ecuatorianos ganan entre $400 y $2,000/mes dependiendo del tipo y ubicación del espacio.' },
+  { icon: '💰', title: 'Ingresos extras', desc: 'Convertí un espacio que no usás en una fuente de ingresos. Vos fijás el precio según tu espacio y tu zona.' },
   { icon: '📅', title: 'Tú controlas tu calendario', desc: 'Bloquea fechas cuando quieras. Sin compromisos fijos ni mínimos de disponibilidad.' },
   { icon: '🛡️', title: 'Pagos seguros', desc: 'Cobras antes de que llegue el huésped. DATAFAST o transferencia directa a tu cuenta.' },
   { icon: '⭐', title: 'Perfil verificado', desc: 'Nuestro equipo verifica tu espacio y documentos. Eso genera confianza y más reservas.' },
@@ -26,12 +26,6 @@ const STEPS = [
   { n: 2, icon: '🏠', title: 'Describe tu espacio', desc: 'Tipo, comodidades, precio y fotos. Nuestro equipo te ayuda si lo necesitas.' },
   { n: 3, icon: '📋', title: 'Verifica documentos', desc: 'Cédula y título de propiedad. Proceso 100% digital, 2–3 días hábiles.' },
   { n: 4, icon: '🎉', title: 'Empieza a recibir reservas', desc: 'Tu listing aparece en Going App y empiezas a ganar desde la primera noche.' },
-];
-
-const TESTIMONIALS = [
-  { name: 'Carmen R.', city: 'Cuenca', type: 'Casa colonial', earn: '$1,200/mes', quote: 'En 6 meses llenamos el calendario casi todos los fines de semana. Los turistas extranjeros adoran el centro histórico.', stars: 5 },
-  { name: 'Diego M.', city: 'Tena', type: 'Cabaña amazónica', earn: '$1,800/mes', quote: 'Tenía la cabaña desocupada. Ahora es mi principal fuente de ingresos. Los viajeros de aventura pagan muy bien.', stars: 5 },
-  { name: 'Sofía L.', city: 'Quito Norte', type: 'Apartamento', earn: '$680/mes', quote: 'Fácil de manejar desde la app. Los pagos siempre a tiempo y el soporte de Going App es excelente.', stars: 5 },
 ];
 
 export default function AnfitrionesPage() {
@@ -58,7 +52,7 @@ export default function AnfitrionesPage() {
             </h1>
             <p className="text-purple-200 text-lg max-w-xl mb-8 leading-relaxed">
               Convierte tu casa, cabaña o habitación en una fuente de ingresos constante.
-              Conectamos viajeros verificados con los mejores espacios del Ecuador.
+              Conectamos viajeras y viajeros verificados con los mejores espacios del Ecuador.
             </p>
             <div className="flex flex-wrap gap-4 mb-10 justify-center md:justify-start">
               <Link href="/auth/register?rol=host"
@@ -73,9 +67,9 @@ export default function AnfitrionesPage() {
             </div>
             <div className="flex flex-wrap gap-10 justify-center md:justify-start">
               {[
-                { value: '3,200+', label: 'Hosts activos' },
-                { value: '$920', label: 'Promedio mensual' },
-                { value: '4.8 ★', label: 'Calificación media' },
+                { value: 'Perfil verificado', label: 'genera confianza' },
+                { value: 'Vos ponés el precio', label: 'y tu calendario' },
+                { value: 'Pagos seguros', label: 'antes del check-in' },
                 { value: '48 h', label: 'Tiempo de activación' },
               ].map(s => (
                 <div key={s.label} className="text-center">
@@ -159,31 +153,20 @@ export default function AnfitrionesPage() {
         </div>
       </div>
 
-      {/* ── Testimonios ── */}
+      {/* ── Pre-lanzamiento ── */}
       <div className="py-16 px-6">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-10">Hosts que ya están ganando</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white"
-                    style={{ backgroundColor: '#7c3aed' }}>
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.type} · {t.city}</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed italic">"{t.quote}"</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-yellow-500">{'★'.repeat(t.stars)}</span>
-                  <span className="text-sm font-bold" style={{ color: '#7c3aed' }}>{t.earn}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="text-4xl mb-4">🚀</div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Sé de las primeras personas en hospedar</h2>
+          <p className="text-gray-500 leading-relaxed mb-8">
+            Going App está por arrancar en Ecuador. Publicá tu espacio hoy y recibí a viajeras y viajeros
+            verificados desde la primera reserva.
+          </p>
+          <Link href="/auth/register?rol=host"
+            className="inline-block px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg text-base"
+            style={{ backgroundColor: '#7c3aed' }}>
+            Publicar mi espacio →
+          </Link>
         </div>
       </div>
 
@@ -191,7 +174,7 @@ export default function AnfitrionesPage() {
       <div className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-white mb-4">¿Listo para publicar tu espacio?</h2>
-          <p className="text-purple-200 mb-8">Únete a más de 3,200 hosts que ya generan ingresos con Going App.</p>
+          <p className="text-purple-200 mb-8">Sumate desde el arranque y empezá a generar ingresos con Going App.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?rol=host"
               className="px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg text-base"
