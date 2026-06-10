@@ -159,9 +159,9 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={400}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCard value="+40%" label="ingresos promedio" />
                 <StatCard value="80%" label="de cada viaje es tuyo" />
                 <StatCard value="Horario libre" label="vos decidís cuándo" />
-                <StatCard value="Pagos claros" label="sin descuentos sorpresa" />
               </div>
             </FadeIn>
           </div>
