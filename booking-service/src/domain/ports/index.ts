@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any) {
+  handleRequest(err: any, user: any, info: any) {
     if (err) throw err;
-    if (!user) return null;
+    // Fail-closed: sin user válido → 401 (antes devolvía null y dejaba pasar). Auditoría #4/#15/#16.
+    if (!user) throw new UnauthorizedException(info?.message ?? 'Token inválido o ausente');
     return user;
   }
 }
