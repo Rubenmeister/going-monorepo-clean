@@ -49,7 +49,7 @@ directo:
 
 ```bash
 # Conexión a Atlas
-mongosh "mongodb+srv://rubenmeister_db_user:***REMOVED-CREDENTIAL***@going-cluster.vy28mpj.mongodb.net/going-ops"
+mongosh "mongodb+srv://<DB_USER>:<DB_PASSWORD>@going-cluster.vy28mpj.mongodb.net/going-ops"
 
 # Ver últimos runs de ops-agent
 db.opsRunReports.find({}).sort({createdAt:-1}).limit(5)
