@@ -2,6 +2,18 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Website",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+        "run",
+        "dev",
+        "--prefix",
+        "C:/Users/USER1/going-monorepo-clean/website"
+      ],
+      "port": 3000
+    },
+    {
       "name": "Frontend Webapp",
       "runtimeExecutable": "node",
       "runtimeArgs": [

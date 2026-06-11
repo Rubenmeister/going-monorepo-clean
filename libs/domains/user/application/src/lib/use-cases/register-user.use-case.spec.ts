@@ -122,4 +122,66 @@ describe('RegisterUserUseCase', () => {
     // --- Ejecución y Verificación (Act & Assert) ---
     await expect(useCase.execute(dto)).rejects.toThrow(InternalServerErrorException);
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SEGURIDAD — privilege escalation vía POST /auth/register
+  // Regresión del bug crítico: cualquiera podía mandar roles:['admin'] y
+  // obtener un admin activo. El use-case DEBE descartar roles elevados.
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('no permite escalar privilegios por el body de roles', () => {
+    beforeEach(() => {
+      // Camino feliz: email libre, hash ok, guardado ok.
+      mockUserRepository.findByEmail.mockResolvedValue(ok(null));
+      mockPasswordHasher.hash.mockResolvedValue('hashed_password');
+      mockUserRepository.save.mockResolvedValue(ok(undefined));
+    });
+
+    // El primer (y único) argumento con el que se llamó a save() es la entidad User.
+    const savedUser = (): User =>
+      mockUserRepository.save.mock.calls[0][0] as User;
+
+    it('roles:["admin"] NO produce un usuario admin (cae a "user")', async () => {
+      await useCase.execute({ ...dto, roles: ['admin'] });
+
+      const u = savedUser();
+      expect(u.hasRole('admin')).toBe(false);
+      expect(u.roles.map((r) => r.value)).toEqual(['user']);
+    });
+
+    it('roles:["user","admin"] descarta admin y conserva user', async () => {
+      await useCase.execute({ ...dto, roles: ['user', 'admin'] });
+
+      const u = savedUser();
+      expect(u.hasRole('admin')).toBe(false);
+      expect(u.roles.map((r) => r.value)).toEqual(['user']);
+    });
+
+    it('es case-insensitive: roles:["ADMIN"] tampoco escala', async () => {
+      await useCase.execute({ ...dto, roles: ['ADMIN' as 'admin'] });
+
+      expect(savedUser().hasRole('admin')).toBe(false);
+    });
+
+    it('descarta los demás roles elevados (corporate, operator)', async () => {
+      await useCase.execute({ ...dto, roles: ['corporate', 'operator'] });
+
+      const u = savedUser();
+      expect(u.hasRole('corporate')).toBe(false);
+      expect(u.hasRole('operator')).toBe(false);
+      expect(u.roles.map((r) => r.value)).toEqual(['user']);
+    });
+
+    it('conserva roles auto-asignables legítimos (driver)', async () => {
+      await useCase.execute({ ...dto, roles: ['driver'] });
+
+      expect(savedUser().roles.map((r) => r.value)).toEqual(['driver']);
+    });
+
+    it('sin roles en el body asigna "user" por defecto', async () => {
+      const { roles: _omit, ...noRoles } = dto;
+      await useCase.execute(noRoles);
+
+      expect(savedUser().roles.map((r) => r.value)).toEqual(['user']);
+    });
+  });
 });

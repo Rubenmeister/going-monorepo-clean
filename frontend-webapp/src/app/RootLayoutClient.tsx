@@ -42,6 +42,10 @@ const APP_PREFIXES = [
   '/services/operadores',
   '/services/promotores-locales',
   '/services/anfitriones',
+  // Portal corporativo: la landing /empresas trae su propio header y el panel
+  // su propio shell/sidebar → ocultamos el Navbar/Footer de marketing para no
+  // duplicar el header (bug "doble navbar" en empresas.goingec.com).
+  '/empresas',
 ];
 
 /**

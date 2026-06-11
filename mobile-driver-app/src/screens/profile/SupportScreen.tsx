@@ -41,7 +41,7 @@ const FAQ: FAQItem[] = [
   },
   {
     q: '¿Puedo rechazar un viaje?',
-    a: 'Sí, puedes dejar pasar solicitudes sin penalización. Sin embargo, una tasa alta de aceptación mejora tu posición en el ranking de conductores.',
+    a: 'Sí, puedes dejar pasar solicitudes sin penalización. Sin embargo, una tasa alta de aceptación mejora tu posición en el ranking de conductoras y conductores.',
   },
   {
     q: '¿Qué hago si un pasajero no aparece?',
@@ -49,7 +49,7 @@ const FAQ: FAQItem[] = [
   },
   {
     q: '¿Cómo mejoro mi calificación?',
-    a: 'Mantén tu vehículo limpio, sé puntual, conduce de forma segura y sé amable con tus pasajeros. Las calificaciones de 4+ estrellas te mantienen activo.',
+    a: 'Mantén tu vehículo limpio, sé puntual, conduce de forma segura y sé amable con las personas pasajeras. Las calificaciones de 4+ estrellas te mantienen activo.',
   },
 ];
 

@@ -86,7 +86,7 @@ export default function ComplianceListPage() {
           Driver Compliance
         </h1>
         <p style={{ color: '#666', marginBottom: 24, maxWidth: 720 }}>
-          Estado de cumplimiento regulatorio de los conductores. Drivers con
+          Estado de cumplimiento regulatorio de las conductoras y conductores. Drivers con
           status distinto a <strong>Verificado</strong> NO aparecen en el pool
           de matching (no reciben rides).
         </p>

@@ -1,17 +1,18 @@
 /**
  * Rutas oficiales de viajes compartidos Going App — IDA + VUELTA.
  *
- * stopPrices = precio por asiento desde cada parada hasta el final de la
- * ruta. Se combina con QUITO_ZONES surcharge cuando aplica.
+ * Solo define corredores y sus paradas (qué ciudades conecta cada ruta).
+ * El PRECIO no vive acá: lo cotiza/cobra el backend (libs/pricing) y el
+ * mobile lo muestra a partir de la respuesta del backend, nunca de una
+ * tabla local — así el precio mostrado nunca difiere del cobrado.
  */
 
 export interface GoingRoute {
-  id:         string;
-  label:      string;
-  icon:       string;
-  direction:  'ida' | 'vuelta';
-  stops:      string[];
-  stopPrices: Record<string, number>;
+  id:        string;
+  label:     string;
+  icon:      string;
+  direction: 'ida' | 'vuelta';
+  stops:     string[];
 }
 
 export const GOING_SHARED_ROUTES: GoingRoute[] = [
@@ -22,7 +23,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🏔️',
     direction: 'ida',
     stops:     ['Riobamba', 'Ambato', 'Latacunga', 'Quito'],
-    stopPrices:{ Riobamba: 17, Ambato: 10, Latacunga: 8 },
   },
   {
     id:        'costa_quito',
@@ -30,7 +30,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🌊',
     direction: 'ida',
     stops:     ['El Carmen', 'La Concordia', 'Santo Domingo', 'Quito'],
-    stopPrices:{ 'El Carmen': 14, 'La Concordia': 13, 'Santo Domingo': 11 },
   },
   {
     id:        'sierra_norte',
@@ -38,7 +37,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🌿',
     direction: 'ida',
     stops:     ['Ibarra', 'Otavalo', 'Quito'],
-    stopPrices:{ Ibarra: 11, Otavalo: 9 },
   },
   // ── VUELTA: Quito → ciudades (viajes de regreso del conductor) ────────────
   {
@@ -47,7 +45,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🏔️',
     direction: 'vuelta',
     stops:     ['Quito', 'Latacunga', 'Ambato', 'Riobamba'],
-    stopPrices:{ Quito: 10, Latacunga: 8, Ambato: 6 },
   },
   {
     id:        'quito_costa',
@@ -55,7 +52,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🌊',
     direction: 'vuelta',
     stops:     ['Quito', 'Santo Domingo', 'La Concordia', 'El Carmen'],
-    stopPrices:{ Quito: 11, 'Santo Domingo': 8, 'La Concordia': 6 },
   },
   {
     id:        'quito_sierra_norte',
@@ -63,7 +59,6 @@ export const GOING_SHARED_ROUTES: GoingRoute[] = [
     icon:      '🌿',
     direction: 'vuelta',
     stops:     ['Quito', 'Otavalo', 'Ibarra'],
-    stopPrices:{ Quito: 9, Otavalo: 6 },
   },
 ];
 

@@ -182,7 +182,7 @@ export function DriverHomeScreen() {
       if (status !== 'granted') {
         Alert.alert(
           'Permiso requerido',
-          'Necesitamos acceso a tu ubicación en segundo plano para que los pasajeros te encuentren.'
+          'Necesitamos acceso a tu ubicación en segundo plano para que las personas pasajeras te encuentren.'
         );
         return;
       }

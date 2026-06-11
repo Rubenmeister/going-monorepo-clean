@@ -101,14 +101,14 @@ const PAYMENT_METHODS: ReadonlyArray<{
     label:   'Tarjeta · Datafast',
     sub:     'Visa · Mastercard · Amex · Diners',
     icon:    'card-outline',
-    enabled: true,   // wired (Día 8 — 2026-05-23)
+    enabled: false,  // pasarela no integrada → "Próximamente" (efectivo es el default)
   },
   {
     id:      'deuna',
     label:   'QR · De Una',
     sub:     'Transferencia instantánea Banco Pichincha',
     icon:    'qr-code-outline',
-    enabled: true,   // wired (Día 8 — 2026-05-23)
+    enabled: false,  // pasarela no integrada → "Próximamente" (efectivo es el default)
   },
 ];
 
@@ -134,18 +134,30 @@ export function ConfirmRideScreen() {
   const [payMethod, setPayMethod] = useState<PaymentMethodId>(DEFAULT_PAYMENT);
   const [loading,   setLoading]   = useState(false);
 
-  // ── Cálculo precio ────────────────────────────────────────
-  // Compartido: pricePerSeat × seats (+ extra delantero ya viene en pricePerSeat
-  // si frontSeat=true desde el booking screen). Para mantener la flexibilidad,
-  // recalculamos el extra acá si el usuario cambia frontSeat en este screen.
-  const seatExtra  = (frontSeat && !(params.frontSeat ?? false)) ? 3 : 0;
-  const basePrice  = isCompartido
-    ? ((params.pricePerSeat ?? 10) * seats) + seatExtra
-    : (params.totalPrice ?? 30);
+  // ── Precio ────────────────────────────────────────────────
+  // FUENTE DEL PRECIO: el backend (libs/pricing). El mobile NO calcula tarifas
+  // localmente. Los flujos que pasan por /search (BookingOptions,
+  // ScheduledSeatReservation) traen pricePerSeat/totalPrice ya autoritativos
+  // del backend → los mostramos. El flujo legacy (SharedRideBooking) NO trae
+  // precio: en ese caso NO inventamos un número; el monto lo confirma el
+  // backend al crear el viaje (RideResponseDto.fare) y se muestra recién ahí.
+  const clientFare: number | null = isCompartido
+    ? (params.pricePerSeat != null ? params.pricePerSeat * seats : null)
+    : (params.totalPrice ?? null);
+
+  // Extra de asiento delantero solo si el usuario lo cambia ACÁ y ya teníamos
+  // una tarifa del backend para sumarle (sin tarifa base no mostramos número).
+  const seatExtra = (clientFare != null && frontSeat && !(params.frontSeat ?? false)) ? 3 : 0;
 
   // IVA: transporte de pasajeros está exento en Ecuador (Art. 56 LRTI).
-  // Aplica 0% — se envía como BASE0 a Datafast cuando se wire.
-  const totalAmount = basePrice;
+  // `null` = todavía no conocemos el monto (lo da el backend al reservar).
+  const totalAmount: number | null = clientFare != null ? clientFare + seatExtra : null;
+  // Precio que efectivamente devolvió el backend al crear el viaje. Se llena
+  // tras requestRide y es el monto autoritativo a cobrar.
+  const [confirmedFare, setConfirmedFare] = useState<number | null>(null);
+  // Lo que mostramos al usuario: si el backend ya confirmó, ese; si no, el
+  // estimado del backend que vino en params; si tampoco, null (= "se confirma").
+  const displayAmount: number | null = confirmedFare ?? totalAmount;
 
   const dateLabel = useMemo(() => {
     if (!params.date || params.date === 'today') return 'Hoy';
@@ -269,14 +281,23 @@ export function ConfirmRideScreen() {
           latitude:  destCoords.lat,
           longitude: destCoords.lng,
         },
-        price: { amount: totalAmount, currency: 'USD' },
+        // El backend calcula y cobra el fare (libs/pricing); este campo no
+        // lo fija. Mandamos el estimado del backend si lo tenemos, o 0.
+        price: { amount: totalAmount ?? 0, currency: 'USD' },
       });
 
       hapticSuccess();
       // Aceptamos ambos shapes del response — algunos endpoints devuelven
       // `rideId` (RideResponseDto) y otros `id` (mapper interno del repo).
-      const rideData = response.data as { rideId?: string; id?: string };
+      const rideData = response.data as {
+        rideId?: string; id?: string;
+        fare?: { estimatedTotal?: number };
+      };
       const rideId = rideData?.rideId || rideData?.id;
+      // Monto AUTORITATIVO del backend. Es el precio real a cobrar.
+      const backendFare = rideData?.fare?.estimatedTotal ?? null;
+      if (backendFare != null) setConfirmedFare(backendFare);
+      const finalAmount = backendFare ?? totalAmount;
 
       if (rideId) {
         navigation.replace('ActiveRide' as never, {
@@ -294,14 +315,17 @@ export function ConfirmRideScreen() {
           vehicleType: params.vehicle,
           tripMode:    params.type,
           category:    params.zone ?? '',
-          price:       totalAmount,
+          price:       finalAmount ?? undefined,
         } as never);
       } else {
         // Fallback defensivo — backend no devolvió ni rideId ni id.
         // No bloquees al usuario en el mapa: ofrecé 2 salidas claras.
+        const payLine = finalAmount != null
+          ? `Paga $${finalAmount.toFixed(2)} al terminar el viaje.`
+          : 'Going te confirma el monto a pagar al asignar tu conductora o conductor.';
         Alert.alert(
           '¡Reserva confirmada!',
-          `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\nPaga $${totalAmount.toFixed(2)} al terminar el viaje.`,
+          `Tu viaje de ${params.origin} a ${params.destination} está reservado.\n\n${payLine}`,
           [
             { text: 'Cerrar', style: 'cancel', onPress: () => navigation.goBack() },
             { text: 'Ver mis viajes', onPress: () => (navigation.navigate as any)('Historial') },
@@ -362,7 +386,7 @@ export function ConfirmRideScreen() {
         return;
       }
 
-      // 1. Reservar ride
+      // 1. Reservar ride. El backend devuelve el fare autoritativo (libs/pricing).
       const rideResp = await transportAPI.requestRide({
         userId: user.id,
         origin: {
@@ -375,17 +399,30 @@ export function ConfirmRideScreen() {
           latitude:  params.destCoords.lat,
           longitude: params.destCoords.lng,
         },
-        price: { amount: totalAmount, currency: 'USD' },
+        // El backend calcula y cobra el fare; este campo no lo fija.
+        price: { amount: totalAmount ?? 0, currency: 'USD' },
       });
-      const rideId = (rideResp.data as { rideId?: string })?.rideId;
+      const rideData = rideResp.data as {
+        rideId?: string;
+        fare?: { estimatedTotal?: number };
+      };
+      const rideId = rideData?.rideId;
       if (!rideId) {
         throw new Error('Reserva creada pero sin rideId — revisa más tarde.');
       }
+      // Monto a cobrar = el que computó el backend (autoritativo). Si no vino,
+      // caemos al estimado del backend que traíamos en params.
+      const backendFare = rideData?.fare?.estimatedTotal ?? null;
+      if (backendFare != null) setConfirmedFare(backendFare);
+      const chargeAmount = backendFare ?? totalAmount;
+      if (chargeAmount == null) {
+        throw new Error('No pudimos obtener el monto a cobrar. Probá con pago en efectivo.');
+      }
 
-      // 2. Crear intent digital
+      // 2. Crear intent digital por el monto autoritativo del backend.
       const intentResp = await paymentAPI.createEcuadorIntent({
         method,
-        amount: totalAmount,
+        amount: chargeAmount,
         metadata: { tripId: rideId, userId: user.id },
       });
       const { checkoutUrl, paymentLink } = intentResp.data;
@@ -428,7 +465,7 @@ export function ConfirmRideScreen() {
         vehicleType: params.vehicle,
         tripMode:    params.type,
         category:    params.zone ?? '',
-        price:       totalAmount,
+        price:       chargeAmount,
         paymentMethod: method,
       } as never);
     } catch (err: any) {
@@ -650,45 +687,57 @@ export function ConfirmRideScreen() {
         </View>
 
         {/* ── Desglose de precio ──────────────────────────────── */}
+        {/* El monto sale del backend (libs/pricing). Si todavía no lo
+            conocemos (flujo sin cotización previa), mostramos el aviso de
+            que Going lo confirma — nunca un número inventado localmente. */}
         <View style={styles.section}>
-          <Text style={styles.secTitle}>Desglose de precio</Text>
+          <Text style={styles.secTitle}>Precio</Text>
           <View style={styles.priceBox}>
-            {isCompartido ? (
+            {displayAmount != null ? (
               <>
+                {isCompartido && params.pricePerSeat != null ? (
+                  <>
+                    <View style={styles.priceRow}>
+                      <Text style={styles.priceLbl}>Asiento ({tierLabel})</Text>
+                      <Text style={styles.priceVal}>${params.pricePerSeat.toFixed(2)}</Text>
+                    </View>
+                    {seats > 1 && (
+                      <View style={styles.priceRow}>
+                        <Text style={styles.priceLbl}>× {seats} asientos</Text>
+                        <Text style={styles.priceVal}>${(params.pricePerSeat * seats).toFixed(2)}</Text>
+                      </View>
+                    )}
+                    {frontSeat && seats === 1 && (
+                      <View style={styles.priceRow}>
+                        <Text style={styles.priceLbl}>Asiento delantero</Text>
+                        <Text style={styles.priceVal}>+$3.00</Text>
+                      </View>
+                    )}
+                  </>
+                ) : !isCompartido && params.totalPrice != null ? (
+                  <View style={styles.priceRow}>
+                    <Text style={styles.priceLbl}>Vehículo {params.vehicle} ({tierLabel})</Text>
+                    <Text style={styles.priceVal}>${params.totalPrice.toFixed(2)}</Text>
+                  </View>
+                ) : null}
                 <View style={styles.priceRow}>
-                  <Text style={styles.priceLbl}>Asiento ({tierLabel})</Text>
-                  <Text style={styles.priceVal}>${(params.pricePerSeat ?? 10).toFixed(2)}</Text>
+                  <Text style={styles.priceLbl}>IVA</Text>
+                  <Text style={[styles.priceVal, { color: tokens.success }]}>exento</Text>
                 </View>
-                {seats > 1 && (
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLbl}>× {seats} asientos</Text>
-                    <Text style={styles.priceVal}>${((params.pricePerSeat ?? 10) * seats).toFixed(2)}</Text>
-                  </View>
-                )}
-                {frontSeat && seats === 1 && (
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLbl}>Asiento delantero</Text>
-                    <Text style={styles.priceVal}>+$3.00</Text>
-                  </View>
-                )}
+                <View style={[styles.priceRow, styles.priceTotalRow]}>
+                  <Text style={styles.priceTotalLbl}>Total</Text>
+                  <Text style={styles.priceTotalVal}>${displayAmount.toFixed(2)}</Text>
+                </View>
+                <Text style={styles.priceNote}>
+                  Transporte de pasajeros exento de IVA (Art. 56 LRTI).
+                </Text>
               </>
             ) : (
-              <View style={styles.priceRow}>
-                <Text style={styles.priceLbl}>Vehículo {params.vehicle} ({tierLabel})</Text>
-                <Text style={styles.priceVal}>${(params.totalPrice ?? 30).toFixed(2)}</Text>
-              </View>
+              <Text style={styles.priceNote}>
+                Going calcula el monto exacto al confirmar tu viaje, según ruta,
+                horario y tipo de servicio. Vas a ver el total antes de pagar.
+              </Text>
             )}
-            <View style={styles.priceRow}>
-              <Text style={styles.priceLbl}>IVA</Text>
-              <Text style={[styles.priceVal, { color: tokens.success }]}>exento</Text>
-            </View>
-            <View style={[styles.priceRow, styles.priceTotalRow]}>
-              <Text style={styles.priceTotalLbl}>Total</Text>
-              <Text style={styles.priceTotalVal}>${totalAmount.toFixed(2)}</Text>
-            </View>
-            <Text style={styles.priceNote}>
-              Transporte de pasajeros exento de IVA (Art. 56 LRTI).
-            </Text>
           </View>
         </View>
 
@@ -699,7 +748,11 @@ export function ConfirmRideScreen() {
       <View style={styles.ctaBar}>
         <View style={styles.ctaTotal}>
           <Text style={styles.ctaTotalLabel}>A pagar</Text>
-          <Text style={styles.ctaTotalValue}>${totalAmount.toFixed(2)}</Text>
+          {displayAmount != null ? (
+            <Text style={styles.ctaTotalValue}>${displayAmount.toFixed(2)}</Text>
+          ) : (
+            <Text style={styles.ctaTotalHint}>Lo confirma Going</Text>
+          )}
         </View>
         <TouchableOpacity
           style={[styles.ctaBtn, loading && { opacity: 0.7 }]}
@@ -920,6 +973,10 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     ctaTotalValue: {
       fontSize: 22, fontWeight: '900', color: t.textPrimary,
       marginTop: 2, letterSpacing: -0.5,
+    },
+    ctaTotalHint: {
+      fontSize: 13, fontWeight: '700', color: t.textSecondary,
+      marginTop: 2,
     },
     ctaBtn: {
       flexDirection: 'row', alignItems: 'center', gap: 8,

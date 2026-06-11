@@ -39,12 +39,12 @@ export default function QuienesSomosPage() {
               Creemos que viajar de forma segura, cómoda y asequible es un derecho, no un privilegio. Going App existe para hacer esa realidad posible en cada rincón del Ecuador.
             </p>
             <p className="text-[15px] text-gray-500 leading-relaxed">
-              Somos una plataforma tecnológica que conecta pasajeros con conductores verificados, usando inteligencia para hacer cada viaje mejor que el anterior.
+              Somos una plataforma tecnológica que conecta pasajeras y pasajeros con conductoras y conductores verificados, usando inteligencia para hacer cada viaje mejor que el anterior.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div id="sostenibilidad" className="grid grid-cols-2 gap-4 scroll-mt-24">
             {[
-              { icon: '🛡️', title: 'Seguridad primero', sub: 'PIN verificado, conductores evaluados en cada viaje.' },
+              { icon: '🛡️', title: 'Seguridad primero', sub: 'PIN verificado, conductoras y conductores evaluados en cada viaje.' },
               { icon: '🌱', title: 'Impacto local', sub: 'Generamos empleo de calidad en Ecuador.' },
               { icon: '♻️', title: 'Sostenibilidad', sub: 'Viajes compartidos = menos emisiones de CO₂.' },
               { icon: '💡', title: 'Innovación', sub: 'Tecnología 100% desarrollada en Ecuador.' },
@@ -58,15 +58,15 @@ export default function QuienesSomosPage() {
           </div>
         </div>
 
-        {/* Numbers */}
+        {/* Lo que nos mueve */}
         <div className="bg-[#011627] rounded-3xl p-10 mb-24">
-          <h2 className="font-serif text-3xl font-black text-white text-center mb-10">Going App en números</h2>
+          <h2 className="font-serif text-3xl font-black text-white text-center mb-10">Lo que nos mueve</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { val: '2026', label: 'Año de fundación', icon: '🚀' },
-              { val: '50k+', label: 'Usuarios activos', icon: '👥' },
-              { val: '50+', label: 'Rutas en Ecuador', icon: '🗺️' },
-              { val: '1,200+', label: 'Conductores', icon: '🚗' },
+              { val: 'PIN', label: 'Seguridad en cada viaje', icon: '🛡️' },
+              { val: '3 rutas', label: 'Y llegando a todo el país', icon: '🗺️' },
+              { val: 'Verificados', label: 'Conductoras y conductores', icon: '🚗' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl mb-2">{s.icon}</div>

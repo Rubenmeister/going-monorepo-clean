@@ -286,7 +286,6 @@ export default function HomeScreen() {
                   <Text style={styles.recentCardRoute} numberOfLines={2}>
                     {r.origin} → {r.destination}
                   </Text>
-                  <Text style={styles.recentCardPrice}>${r.price.toFixed(2)}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -476,12 +475,6 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       color: t.textPrimary,
       marginTop: 8,
       lineHeight: 18,
-    },
-    recentCardPrice: {
-      fontSize: 16, fontWeight: '900',
-      color: t.textPrimary,
-      marginTop: 8,
-      letterSpacing: -0.3,
     },
   });
 }

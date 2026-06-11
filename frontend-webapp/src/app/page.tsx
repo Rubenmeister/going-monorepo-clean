@@ -793,7 +793,7 @@ export default function HomePage() {
           <FadeIn className="text-center mb-8">
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
               <IconMap size={14} />
-              Empezamos en estas 15 ciudades
+              Empezamos con 3 rutas
             </span>
             <h2
               className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight"
@@ -803,17 +803,18 @@ export default function HomePage() {
               <span style={{ color: COLORS.brand.yellowDark }}>Aeropuerto Mariscal Sucre</span>
             </h2>
             <p className="text-sm text-gray-600 mt-3 max-w-2xl mx-auto leading-relaxed">
-              Sierra y Costa conectadas con frecuencias diarias. Sumamos ciudades
-              cada mes según la demanda de las viajeras y los viajeros.
+              Empezamos con 3 rutas desde Quito y el aeropuerto, con sus paradas en
+              el camino. Vamos llegando a todo el país, sumando rutas según la
+              demanda de las viajeras y los viajeros.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.1}>
             <div className="flex flex-wrap justify-center gap-2.5 mb-5">
               {[
-                'Quito', 'Guayaquil', 'Cuenca', 'Ambato', 'Riobamba',
-                'Ibarra', 'Otavalo', 'Latacunga', 'Salcedo', 'Cayambe',
-                'Tabacundo', 'Atuntaqui', 'Santo Domingo', 'La Concordia', 'El Carmen',
+                'Quito', 'Riobamba', 'Ambato', 'Latacunga', 'Salcedo',
+                'Ibarra', 'Otavalo', 'Atuntaqui', 'Cayambe', 'Tabacundo',
+                'Santo Domingo', 'La Concordia', 'El Carmen',
               ].map(city => (
                 <span
                   key={city}
@@ -919,30 +920,24 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Columna derecha: lista de rutas operativas.
-                Feedback 29-may: precios actualizados estaban mal —
-                quitados completamente. Lista expandida con todas las
-                ciudades del mapa oficial: Sierra norte/centro/sur,
-                Costa, y Amazonia. Los tiempos quedan como referencia
-                aproximada (carretera abierta, sin tráfico). */}
+            {/* Columna derecha: las 3 rutas operativas (corredores) con sus
+                paradas en el camino. Sin precios acá (se cotizan en el flujo
+                /ride desde libs/pricing). Tiempos = referencia aproximada
+                (carretera abierta, sin tráfico). Arrancamos con estos 3
+                corredores y vamos sumando rutas. */}
             <div className="lg:flex-1 space-y-2.5">
               {[
-                // Sierra norte (E35 azul en el mapa)
-                { color: '#3b82f6', route: 'Tulcán — Ibarra — Quito — Aeropuerto', time: '~5 h 30 min' },
-                { color: '#3b82f6', route: 'Ibarra — Cayambe — Quito — Aeropuerto', time: '~2 h 15 min' },
+                // Norte → Ibarra (vía Otavalo, Atuntaqui, Cayambe)
+                { color: '#3b82f6', route: 'Ibarra — Atuntaqui — Otavalo — Cayambe — Quito — Aeropuerto', time: '~2 h 15 min' },
                 { color: '#3b82f6', route: 'Otavalo — Cayambe — Quito — Aeropuerto', time: '~2 h' },
-                // Sierra centro/sur (E35 marrón en el mapa)
+                // Centro/Sur → Riobamba (vía Ambato, Latacunga, Salcedo)
                 { color: '#d97706', route: 'Riobamba — Ambato — Latacunga — Quito — Aeropuerto', time: '~4 h 15 min' },
                 { color: '#d97706', route: 'Ambato — Latacunga — Quito — Aeropuerto', time: '~2 h 30 min' },
                 { color: '#d97706', route: 'Latacunga — Quito — Aeropuerto', time: '~1 h 45 min' },
-                // Costa (E20 púrpura en el mapa)
+                // Occidente → Santo Domingo (+ extensión El Carmen, La Concordia)
                 { color: '#a855f7', route: 'El Carmen — Santo Domingo — Quito — Aeropuerto', time: '~4 h 30 min' },
                 { color: '#a855f7', route: 'La Concordia — Santo Domingo — Quito — Aeropuerto', time: '~3 h 45 min' },
                 { color: '#a855f7', route: 'Santo Domingo — Quito — Aeropuerto', time: '~2 h 45 min' },
-                // Amazonia (E45 / E30 verde y rojo en el mapa)
-                { color: '#16a34a', route: 'Tena — Baeza — Quito — Aeropuerto', time: '~3 h 30 min' },
-                { color: '#dc2626', route: 'Puyo — Baños — Ambato — Quito — Aeropuerto', time: '~5 h' },
-                { color: '#dc2626', route: 'Baños de Agua Santa — Ambato — Quito — Aeropuerto', time: '~3 h 15 min' },
               ].map((r) => (
                 <div key={r.route} className="flex items-center gap-4 rounded-xl px-5 py-3" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
@@ -1449,7 +1444,7 @@ export default function HomePage() {
               <FadeIn className="text-center mb-10">
                 <span className="text-sm font-bold uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Para viajeros</span>
                 <h2 className="text-gray-900 font-black mt-2 mb-4" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.5rem)' }}>¿Por qué viajar con Going App?</h2>
-                <p className="text-gray-500 text-xl max-w-2xl mx-auto">Seguridad, comodidad y precio claro en cada viaje. Descubre por qué miles de ecuatorianos ya usan Going App.</p>
+                <p className="text-gray-500 text-xl max-w-2xl mx-auto">Seguridad, comodidad y precio claro en cada viaje. Así es viajar con Going App por Ecuador.</p>
               </FadeIn>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">

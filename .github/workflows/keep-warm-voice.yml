@@ -1,0 +1,52 @@
+name: Keep-warm voz (pre-lanzamiento)
+
+# Por qué existe:
+# customer-support-service y voice-call-service (Cloud Run) escalan a cero. La
+# PRIMERA llamada de voz tras inactividad pagaba el cold start (arranque +
+# conexión a Mongo) y demoraba mucho en contestar. Esto los mantiene "tibios"
+# con un ping liviano periódico — opción barata para pre-lanzamiento.
+#
+# EN PRODUCCIÓN (cuando haya tráfico real): preferir `min-instances=1` en estos
+# servicios para latencia siempre baja, y se puede borrar/desactivar este
+# workflow. (El fix de timeout en connect() ya evita el cuelgue largo, pero el
+# keep-warm es lo que elimina el cold start.)
+#
+# Nota: GitHub puede atrasar los cron schedule varios minutos; no es un keep-warm
+# de precisión. Si se necesita exacto, usar Cloud Scheduler (free tier, 3 jobs).
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # cada ~10 min
+  workflow_dispatch:
+
+concurrency:
+  group: keep-warm-voice
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping /health de los servicios de voz (Cloud Run)
+        run: |
+          set -u
+          urls=(
+            "https://customer-support-service-780842550857.us-central1.run.app/health"
+            "https://voice-call-service-780842550857.us-central1.run.app/health"
+            "https://api-gateway-780842550857.us-central1.run.app/health"
+          )
+          fail=0
+          for url in "${urls[@]}"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo "000")
+            echo "$code  $url"
+            # 200/204 OK; otros (000/5xx) los reportamos pero no fallamos el job
+            # por uno solo (el objetivo es mantener tibio, no monitorear).
+            case "$code" in 2*) ;; *) fail=$((fail+1));; esac
+          done
+          if [ "$fail" -ge "${#urls[@]}" ]; then
+            echo "::warning::Ningún servicio respondió 2xx — revisar si están caídos."
+          fi

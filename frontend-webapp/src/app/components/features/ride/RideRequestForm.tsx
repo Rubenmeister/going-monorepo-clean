@@ -186,10 +186,12 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     const to   = searchParams.get('to');
     const date = searchParams.get('date');
     const time = searchParams.get('time');
+    const seats = searchParams.get('seats');
     if (from && !pickupLocation)  setPickupLocation({ address: from, lat: 0, lon: 0 });
     if (to   && !dropoffLocation) setDropoffLocation({ address: to,  lat: 0, lon: 0 });
     if (date) { setScheduledDate(date); setIsScheduled(true); }
     if (time) { setScheduledTime(time); setIsScheduled(true); }
+    if (seats) { const n = parseInt(seats, 10); if (n >= 1 && n <= 20) setPassengers(n); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

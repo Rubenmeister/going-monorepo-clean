@@ -40,10 +40,11 @@ type ScreenView  = 'form' | 'tracking' | 'delivered';
  *  D) recipient + cash  → contra entrega: el destinatario paga en efectivo al recibir
  */
 type PaymentScheme = 'A' | 'B' | 'C' | 'D';
-const PAYMENT_SCHEMES: { id: PaymentScheme; label: string; icon: string; sub: string }[] = [
-  { id: 'A', label: 'Pago ahora con tarjeta',           icon: '💳', sub: 'Datafast/DeUna · El más rápido' },
-  { id: 'B', label: 'Pago en efectivo al recoger',       icon: '💵', sub: 'Le pagas al conductor cuando llegue' },
-  { id: 'C', label: 'Que pague el destinatario (tarjeta)', icon: '📱', sub: 'Recibe link de pago por SMS' },
+const PAYMENT_SCHEMES: { id: PaymentScheme; label: string; icon: string; sub: string; disabled?: boolean }[] = [
+  // Tarjeta (A, C) deshabilitada hasta integrar la pasarela (Datafast/DeUna) en payment-service.
+  { id: 'A', label: 'Pago ahora con tarjeta',           icon: '💳', sub: 'Pago digital — disponible muy pronto', disabled: true },
+  { id: 'B', label: 'Pago en efectivo al recoger',       icon: '💵', sub: 'Le pagas a la conductora o conductor al llegar' },
+  { id: 'C', label: 'Que pague el destinatario (tarjeta)', icon: '📱', sub: 'Pago digital — disponible muy pronto', disabled: true },
   { id: 'D', label: 'Contra entrega (el destinatario paga efectivo)', icon: '🤝', sub: 'Cobra al recibir' },
 ];
 
@@ -75,7 +76,7 @@ export function EnviosScreen() {
   const [loading,        setLoading]       = useState(false);
   const [otpCode,        setOtpCode]       = useState('');
   const [trackingRef,    setTrackingRef]   = useState('');
-  const [paymentScheme,  setPaymentScheme] = useState<PaymentScheme>('A');
+  const [paymentScheme,  setPaymentScheme] = useState<PaymentScheme>('B'); // efectivo por defecto: tarjeta (A/C) deshabilitada hasta integrar pasarela
   const [quotedPrice,    setQuotedPrice]   = useState<number | null>(null);
 
   // Recibir ubicaciones del LocationPicker
@@ -297,11 +298,13 @@ export function EnviosScreen() {
             </View>
             {PAYMENT_SCHEMES.map((scheme) => {
               const active = paymentScheme === scheme.id;
+              const disabled = scheme.disabled === true;
               return (
                 <TouchableOpacity
                   key={scheme.id}
-                  style={[s.schemeRow, active && s.schemeRowActive]}
-                  onPress={() => { setPaymentScheme(scheme.id); hapticLight(); }}
+                  style={[s.schemeRow, active && s.schemeRowActive, disabled && { opacity: 0.55 }]}
+                  onPress={() => { if (disabled) return; setPaymentScheme(scheme.id); hapticLight(); }}
+                  disabled={disabled}
                   activeOpacity={0.7}
                 >
                   <View style={[s.schemeRadio, active && s.schemeRadioActive]}>
@@ -312,6 +315,11 @@ export function EnviosScreen() {
                     <Text style={[s.schemeLabel, active && { color: RED }]}>{scheme.label}</Text>
                     <Text style={s.schemeSub}>{scheme.sub}</Text>
                   </View>
+                  {disabled && (
+                    <View style={{ backgroundColor: '#F3F4F6', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: '#9CA3AF', letterSpacing: 0.5 }}>PRONTO</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               );
             })}

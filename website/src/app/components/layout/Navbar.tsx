@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GoingLogo } from '../GoingLogo';
 
 const NAV_ITEMS = [
   {
     label: 'Viajes',
     dropdown: [
-      { href: 'https://app.goingec.com/transport?mode=shared', icon: '🚍', label: 'Compartido', sub: 'La forma más inteligente' },
-      { href: 'https://app.goingec.com/transport?mode=private', icon: '🚗', label: 'Privado en SUV', sub: 'Exclusivo, flexible' },
+      { href: 'https://app.goingec.com/ride?type=shared', icon: '🚍', label: 'Compartido', sub: 'La forma más inteligente' },
+      { href: 'https://app.goingec.com/ride?type=private', icon: '🚗', label: 'Privado en SUV', sub: 'Exclusivo, flexible' },
       { href: 'https://app.goingec.com/envios', icon: '📦', label: 'Envíos', sub: 'Paquetes entre ciudades' },
-      { href: 'https://app.goingec.com/corporate', icon: '🏢', label: 'Corporativo', sub: 'Soluciones para empresas' },
+      { href: 'https://empresas.goingec.com', icon: '🏢', label: 'Corporativo', sub: 'Soluciones para empresas' },
     ],
   },
   { label: 'Destinos', href: '/destinos' },
@@ -21,7 +20,6 @@ const NAV_ITEMS = [
     dropdown: [
       { href: '/noticiero', icon: '📰', label: 'Noticiero Going App', sub: 'Actualidad del país' },
       { href: '/revista', icon: '📖', label: 'Revista', sub: 'Cultura y turismo' },
-      { href: '/blog', icon: '✍️', label: 'Blog', sub: 'Tips y guías de viaje' },
     ],
   },
   { label: 'Comunidad', href: '/comunidad' },
@@ -48,8 +46,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center gap-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <GoingLogo size={28} />
-          <span className="text-[22px] font-black text-[#011627] tracking-tight">Going App</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/going-logo-h.png" alt="Going App" className="h-9 w-auto" />
         </Link>
 
         {/* Desktop nav */}

@@ -2,7 +2,7 @@
  * OnboardingScreen — Going App Ecuador
  *
  * 3 PRODUCTOS BÁSICOS:
- *   1. Compartido — SUV interurbano, hasta 7 pasajeros
+ *   1. Compartido — SUV interurbano, hasta 4 pasajeros
  *   2. Privado    — SUV / SUV Premium, hasta 4 pasajeros
  *   3. Envíos     — paquete en SUV mismo día
  *
@@ -53,12 +53,12 @@ const SLIDES: Slide[] = [
     icon: 'people',
     eyebrow: 'Producto · 01',
     headline: 'Comparte.\nDivide. Ahorra.',
-    subtitle: 'Hasta 7 pasajeros en SUV. Paga solo tu asiento. Conecta las ciudades del Ecuador con vecinos de viaje.',
+    subtitle: 'Hasta 4 pasajeros en SUV. Paga solo tu asiento. Conecta las ciudades del Ecuador con vecinos de viaje.',
     tiers: [
       { name: 'Confort', subline: 'SUV estándar' },
       { name: 'Premium',    subline: 'SUV de gama alta' },
     ],
-    stat: { value: '50+', label: 'ciudades conectadas' },
+    stat: { value: '+14', label: 'ciudades en ruta' },
   },
   {
     id: 'privado',
@@ -66,12 +66,12 @@ const SLIDES: Slide[] = [
     icon: 'car-sport',
     eyebrow: 'Producto · 02',
     headline: 'Tu SUV.\nTu espacio.',
-    subtitle: 'Hasta 4 pasajeros. Conductor verificado, precio fijo desde el inicio, sin sorpresas.',
+    subtitle: 'Hasta 4 pasajeros. Conductora o conductor verificado, precio fijo desde el inicio, sin sorpresas.',
     tiers: [
       { name: 'Confort', subline: 'SUV estándar' },
       { name: 'Premium',    subline: 'Gama alta + amenities' },
     ],
-    stat: { value: '6 min', label: 'tiempo promedio de llegada' },
+    stat: { value: 'Precio fijo', label: 'sin sorpresas' },
   },
   {
     id: 'envios',

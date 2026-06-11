@@ -126,7 +126,7 @@ export default function UsersManagementPage() {
               Gestión de Usuarios
             </h1>
             <p className="text-gray-600">
-              Administra todos los usuarios registrados en la plataforma
+              Administra todas las personas usuarias registradas en la plataforma
             </p>
           </div>
           <Button variant="primary" size="lg">
@@ -167,7 +167,7 @@ export default function UsersManagementPage() {
         data={users}
         rowKey="id"
         loading={loading}
-        emptyMessage="No hay usuarios registrados"
+        emptyMessage="No hay personas usuarias registradas"
         actions={(user) => (
           <Button
             variant="primary"

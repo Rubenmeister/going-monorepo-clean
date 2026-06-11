@@ -7,6 +7,7 @@
  * libs/contracts compartido).
  */
 import { CityId } from './types';
+import { COVERAGE_CITIES } from './coverage';
 
 export interface OriginCity {
   id:       CityId;
@@ -54,3 +55,25 @@ export const ORIGIN_CITIES: OriginCity[] = [
   { id: 'zamora',       label: 'Zamora',       province: 'Zamora Chinchipe' },
   { id: 'guaranda',     label: 'Guaranda',     province: 'Bolívar'          },
 ];
+
+/**
+ * Ciudades realmente SERVIDAS hoy (cobertura compartida activa).
+ *
+ * Going arranca con 3 corredores desde Quito + Aeropuerto. La lista canónica
+ * de cobertura vive en `coverage.ts` (mirror de libs/pricing). Acá filtramos
+ * ORIGIN_CITIES contra esa cobertura para que los pickers de origen/destino
+ * SOLO ofrezcan ciudades a las que de verdad llevamos. Cuando se abra un
+ * corredor nuevo, basta con agregarlo en coverage.ts y aparece acá.
+ *
+ * Nota: el aeropuerto figura como `aeropuerto_quito` en ORIGIN_CITIES y como
+ * `aeropuerto` en COVERAGE_CITIES — lo tratamos como cubierto vía alias.
+ */
+const COVERED_CITY_IDS: ReadonlySet<string> = new Set(
+  COVERAGE_CITIES.flatMap(c =>
+    c.id === 'aeropuerto' ? ['aeropuerto', 'aeropuerto_quito'] : [c.id],
+  ),
+);
+
+export const SERVED_ORIGIN_CITIES: OriginCity[] = ORIGIN_CITIES.filter(c =>
+  COVERED_CITY_IDS.has(c.id),
+);

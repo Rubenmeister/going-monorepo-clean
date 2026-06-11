@@ -23,7 +23,7 @@ const QUICK_ITEMS = [
   {
     title: 'Conductores',
     description:
-      'Seguimiento GPS en tiempo real de todos los conductores activos',
+      'Seguimiento GPS en tiempo real de todas las conductoras y conductores activos',
     icon: '🚗',
     href: '/drivers',
     color: '#ff4c41',
@@ -140,7 +140,7 @@ export default function DashboardPage() {
       )}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          Bienvenido, {auth.user.firstName}
+          Hola, {auth.user.firstName}
         </h1>
         <p className="text-gray-500">
           Panel de control interno - Going Platform
