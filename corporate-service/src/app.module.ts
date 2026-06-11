@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 import { CorporateController } from './api/corporate.controller';
 import { HealthController } from './api/health.controller';
 import { CorporateService } from './api/corporate.service';
@@ -47,8 +50,18 @@ import { DashcamClipRequestRepository } from './infrastructure/persistence/dashc
       { name: QuoteSchema.name, schema: QuoteSchemaDefinition },
       { name: DashcamClipRequestSchema.name, schema: DashcamClipRequestSchemaDefinition },
     ]),
+    // Auth real (auditoría #2): verifica firma+exp del JWT y puebla req.user.
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
+    }),
   ],
   controllers: [CorporateController, HealthController],
-  providers: [CorporateService, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository, TeamInvitationRepository, QuoteRepository, DashcamClipRequestRepository],
+  providers: [CorporateService, JwtStrategy, CompanySettingsRepository, ApprovalWorkflowRepository, SpendingLimitRepository, CorporateInvoiceRepository, TeamInvitationRepository, QuoteRepository, DashcamClipRequestRepository],
 })
 export class AppModule {}
