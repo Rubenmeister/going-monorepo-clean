@@ -31,6 +31,8 @@ import { PricingService } from 'pricing';
         process.env.MONGO_URL ||
         process.env.MONGODB_URI,
       {
+        // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+        dbName: process.env.MONGO_DB_NAME || 'going-parcels',
         // Timeouts generosos. bufferCommands DEFAULT (true): las queries
         // esperan a que el connect termine. Sin eso + con timeouts altos
         // el startup probe de Cloud Run (4 min) expira antes de que

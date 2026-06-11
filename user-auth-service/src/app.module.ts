@@ -22,6 +22,8 @@ import { UserModelSchema, UserSchema } from './infrastructure/user.schema';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.USER_DB_URL || process.env.MONGO_URL || process.env.DATABASE_URL, {
+      // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+      dbName: process.env.MONGO_DB_NAME || 'going-user-auth',
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,

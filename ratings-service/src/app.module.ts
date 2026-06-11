@@ -22,8 +22,12 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
     MongooseModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         uri:
+          configService.get<string>('MONGO_URL') ||
           configService.get<string>('MONGODB_URI') ||
           'mongodb://localhost:27017/going_ratings',
+        // Base nombrada — pisa el path de la URI (el secret going-mongodb-uri
+        // apunta a going-production); sin esto los ratings iban a parar ahí.
+        dbName: process.env.MONGO_DB_NAME || 'going-ratings',
       }),
       inject: [ConfigService],
     }),
