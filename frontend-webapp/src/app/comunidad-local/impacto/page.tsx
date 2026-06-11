@@ -28,10 +28,10 @@ function FadeIn({ children, delay = 0, direction = 'up' }: { children: React.Rea
 }
 
 const stats = [
-  { value: '180,000', label: 'viajes compartidos/mes', icon: '🚗', desc: 'Cada viaje compartido reemplaza hasta 3 autos individuales' },
-  { value: '12,000', label: 'toneladas CO₂ evitadas', icon: '🌿', desc: 'Equivalente a plantar 550,000 árboles cada año' },
-  { value: '4.2M', label: 'horas ahorradas en tráfico', icon: '⏱️', desc: 'Tiempo devuelto a las familias ecuatorianas' },
-  { value: '$300M', label: 'movilizados localmente', icon: '💚', desc: 'Dinero que se queda en la economía ecuatoriana' },
+  { value: 'Viajes compartidos', label: 'menos autos en la vía', icon: '🚗', desc: 'Cada viaje compartido puede reemplazar varios autos individuales' },
+  { value: 'Menos emisiones', label: 'movilidad más limpia', icon: '🌿', desc: 'Compartir el trayecto reduce el CO₂ por persona' },
+  { value: 'Tiempo de vuelta', label: 'menos horas en tráfico', icon: '⏱️', desc: 'Rutas optimizadas que devuelven tiempo a las familias' },
+  { value: 'Economía local', label: 'el valor se queda acá', icon: '💚', desc: 'Lo que se mueve en Going App impulsa a Ecuador' },
 ];
 
 const trafficCards = [
@@ -42,18 +42,10 @@ const trafficCards = [
 ];
 
 const economicCards = [
-  { emoji: '🚘', title: 'Conductores prósperos', desc: 'Más de 28,000 conductores generan ingresos estables gracias a la plataforma Going App.' },
-  { emoji: '🏨', title: 'Hoteles y alojamientos', desc: 'El 34% de huéspedes en alojamientos Going App llegaron vía transporte Going App, creando un ecosistema integrado.' },
-  { emoji: '🗺️', title: 'Tours que florecen', desc: 'Guías y operadoras turísticas duplicaron sus ventas conectándose con turistas a través de Going App.' },
-  { emoji: '🔄', title: 'Economía circular', desc: 'Cada dólar gastado en Going App genera $2.8 de actividad económica adicional en la ciudad.' },
-];
-
-const cities = [
-  { name: 'Quito', viajes: '78,000/mes', co2: '5,200 ton', conductores: '12,400', rating: '4.8' },
-  { name: 'Guayaquil', viajes: '62,000/mes', co2: '4,100 ton', conductores: '9,800', rating: '4.7' },
-  { name: 'Cuenca', viajes: '22,000/mes', co2: '1,450 ton', conductores: '3,600', rating: '4.9' },
-  { name: 'Manta', viajes: '11,000/mes', co2: '720 ton', conductores: '1,900', rating: '4.8' },
-  { name: 'Ambato', viajes: '7,000/mes', co2: '530 ton', conductores: '1,300', rating: '4.7' },
+  { emoji: '🚘', title: 'Conductoras y conductores', desc: 'Vos generás ingresos con tu auto y tu tiempo, con pagos claros y horario libre.' },
+  { emoji: '🏨', title: 'Hoteles y alojamientos', desc: 'Anfitrionas y anfitriones conectan su espacio con viajeras y viajeros verificados.' },
+  { emoji: '🗺️', title: 'Tours y experiencias', desc: 'Guías y operadoras turísticas llegan a viajeras y viajeros que buscan lo auténtico de Ecuador.' },
+  { emoji: '🔄', title: 'Economía circular', desc: 'Lo que se mueve en Going App impulsa a otras personas y negocios de la misma ciudad.' },
 ];
 
 const sostenibilidadCards = [
@@ -81,10 +73,10 @@ export default function ImpactoPage() {
               Going App transforma la<br />movilidad y cuida el planeta
             </h1>
             <p className="text-xl text-emerald-100 max-w-2xl mx-auto mb-10">
-              Menos autos individuales, más viajes compartidos, operación sostenible y carbono neutral al 2030
+              Menos autos individuales, más viajes compartidos y el compromiso de una operación carbono neutral al 2030
             </p>
             <Link href="/auth/register" className="inline-block text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-lg hover:scale-105 transition-transform" style={{ backgroundColor: '#ff4c41' }}>
-              Ver mi impacto
+              Sumarme al cambio
             </Link>
           </FadeIn>
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 pb-12">
@@ -106,8 +98,8 @@ export default function ImpactoPage() {
         <div className="max-w-7xl mx-auto px-6">
           <FadeIn>
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Números que hablan por sí solos</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Datos reales de la operación Going App en Ecuador durante el último año</p>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Nuestro impacto crecerá con cada viaje</h2>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Going App está por arrancar en Ecuador. Este es el impacto que vamos a construir juntos, viaje a viaje.</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -158,7 +150,7 @@ export default function ImpactoPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Impacto económico local</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">Conductores ganan, hoteles llenan, tours florecen — una economía circular que crece sola</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">Conductoras y conductores, anfitrionas y anfitriones, guías y operadoras — una economía circular que crece con cada viaje</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

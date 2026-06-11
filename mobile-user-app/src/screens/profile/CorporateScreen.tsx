@@ -30,11 +30,11 @@ const GOING_BLUE   = '#FF4C41';
 const GOING_YELLOW = '#FFD253';
 
 const BENEFITS = [
-  { icon: 'diamond-outline',           text: 'Vehículos y conductores de categoría premium' },
+  { icon: 'diamond-outline',           text: 'Vehículos y conductoras y conductores de categoría premium' },
   { icon: 'receipt-outline',           text: 'Facturación automática con comprobante SRI' },
   { icon: 'people-outline',            text: 'Panel de administración para tu empresa' },
   { icon: 'pricetag-outline',          text: 'Tarifas corporativas negociadas' },
-  { icon: 'shield-checkmark-outline',  text: 'Conductores verificados y con seguro adicional' },
+  { icon: 'shield-checkmark-outline',  text: 'Conductoras y conductores verificados y con seguro adicional' },
   { icon: 'stats-chart-outline',       text: 'Reportes de gastos mensuales' },
 ];
 

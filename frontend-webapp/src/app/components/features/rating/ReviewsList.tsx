@@ -30,76 +30,17 @@ export function ReviewsList() {
 
   const fetchReviews = async () => {
     try {
-      // El endpoint /reviews/public no está ruteado en api-gateway todavía
-      // (reviews vive en customer-support pero no se expuso públicamente).
-      // Cuando se exponga, esto seguirá funcionando — mientras tanto, el
-      // catch nos da fallback testimonios.
+      // El endpoint /reviews/public aún no está expuesto en el api-gateway.
+      // Pre-lanzamiento NO mostramos reseñas de ejemplo: si no hay
+      // valoraciones reales la sección se oculta sola (ver `return null` más
+      // abajo) y aparecerá automáticamente cuando el backend las exponga.
       const res = await fetch(`${API_BASE}/reviews/public?limit=6`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list = Array.isArray(data) ? data : data?.reviews ?? [];
-      // Si el backend responde 200 pero array vacío, también caemos al
-      // fallback para no mostrar "0 reseñas" — más amigable para launch.
-      if (list.length === 0) throw new Error('empty');
       setReviews(list);
     } catch {
-      // Fallback con datos de ejemplo
-      setReviews([
-        {
-          id: '1',
-          passengerName: 'María G.',
-          rating: 5,
-          comment: 'Excelente servicio, el conductor fue muy amable y puntual. La SUV estaba impecable.',
-          route: 'Quito → Aeropuerto',
-          vehicleType: 'SUV',
-          createdAt: '2026-03-10T14:30:00Z',
-        },
-        {
-          id: '2',
-          passengerName: 'Carlos P.',
-          rating: 5,
-          comment: 'Viaje compartido muy cómodo. Llegué a tiempo y el precio es justo.',
-          route: 'Ambato → Quito',
-          vehicleType: 'SUV',
-          createdAt: '2026-03-09T08:15:00Z',
-        },
-        {
-          id: '3',
-          passengerName: 'Ana S.',
-          rating: 4,
-          comment: 'Muy buen servicio, la ruta desde Ibarra fue tranquila y segura.',
-          route: 'Ibarra → Quito',
-          vehicleType: 'SUV',
-          createdAt: '2026-03-08T17:45:00Z',
-        },
-        {
-          id: '4',
-          passengerName: 'Roberto M.',
-          rating: 5,
-          comment: 'La app es muy fácil de usar y el conductor llegó a tiempo.',
-          route: 'Santo Domingo → Quito',
-          vehicleType: 'SUV',
-          createdAt: '2026-03-07T09:20:00Z',
-        },
-        {
-          id: '5',
-          passengerName: 'Laura T.',
-          rating: 5,
-          comment: 'Viajé con mi familia en la VAN, amplio espacio y muy cómodo.',
-          route: 'Quito → Ambato',
-          vehicleType: 'VAN',
-          createdAt: '2026-03-06T11:00:00Z',
-        },
-        {
-          id: '6',
-          passengerName: 'Diego R.',
-          rating: 4,
-          comment: 'Buen servicio puerta a puerta, el conductor conocía bien las rutas.',
-          route: 'Latacunga → Aeropuerto',
-          vehicleType: 'SUV',
-          createdAt: '2026-03-05T06:30:00Z',
-        },
-      ]);
+      setReviews([]);
     } finally {
       setLoading(false);
     }
@@ -133,6 +74,10 @@ export function ReviewsList() {
       </section>
     );
   }
+
+  // Sin reseñas reales todavía → no renderizamos la sección (pre-lanzamiento,
+  // sin valoraciones inventadas). Aparecerá sola cuando haya reseñas reales.
+  if (reviews.length === 0) return null;
 
   // Calcular promedio
   const avgRating = reviews.length > 0

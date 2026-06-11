@@ -83,15 +83,16 @@ export default function AnfitrionesRegistroPage() {
     setSubmitting(true);
     setGlobalError('');
     try {
-      const token = getStoredToken();
-      const formData = new FormData();
-      Object.entries(property).forEach(([k, v]) => formData.append(k, v));
-      formData.append('amenities', JSON.stringify([...amenities]));
-      REQUIRED_DOCS.forEach(d => { if (docs[d.key].file) formData.append(d.key, docs[d.key].file as File); });
-      const res = await fetch(`${API_BASE}/hosts/onboarding`, {
+      // Backend de onboarding (/hosts/onboarding) aún no existe → registramos
+      // la solicitud como lead vía soporte; el equipo hace el seguimiento.
+      const message =
+        `[Solicitud anfitriona/anfitrión]\n` +
+        Object.entries(property).map(([k, v]) => `${k}: ${v}`).join(' · ') +
+        `\nAmenities: ${[...amenities].join(', ') || '—'}`;
+      const res = await fetch(`${API_BASE}/support/public/message`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: `lead-anfitrion-${Date.now()}`, message }),
       });
       if (!res.ok) throw new Error('Error al enviar');
       setSubmitted(true);

@@ -18,6 +18,7 @@ import type { DriverMainStackParamList } from '@navigation/DriverMainNavigator';
 import { exportEarningsPDF } from '../../utils/earningsReport';
 import { analyticsEarningsReportExported } from '../../utils/analytics';
 import { API_BASE_URL } from '../../utils/constants';
+import { useDriverStore } from '@store/useDriverStore';
 
 type Nav = NativeStackNavigationProp<DriverMainStackParamList>;
 
@@ -29,6 +30,7 @@ interface DaySummary {
 
 export function EarningsScreen() {
   const navigation = useNavigation<Nav>();
+  const { driver } = useDriverStore();
   const [summary, setSummary] = useState({
     today: 0,
     week: 0,
@@ -110,7 +112,7 @@ export function EarningsScreen() {
         period,
         totalEarnings: summary.total,
         totalTrips:    summary.trips,
-        avgRating:     4.9,
+        avgRating:     driver?.rating ?? 5.0,
         days,
       });
       hapticSuccess();

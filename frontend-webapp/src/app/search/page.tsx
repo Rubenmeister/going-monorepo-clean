@@ -95,7 +95,28 @@ function SearchInner() {
     setLoading(false);
   }, [getLocalResults]);
 
-  useEffect(() => { runSearch(initialQ); }, []); // eslint-disable-line
+  // Cinturón de seguridad: enlaces antiguos de la landing mandaban los viajes
+  // (compartido/privado) a /search con ?mode=shared|private. El flujo real de
+  // reserva es /ride (lee ?type=...). Redirigimos para no mostrar resultados de
+  // catálogo (hoteles/tours) ante una intención de viaje. La búsqueda de texto
+  // libre (?q=...) sigue funcionando normal.
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'shared' || mode === 'private') {
+      const p = new URLSearchParams({ type: mode === 'private' ? 'private' : 'shared' });
+      const from = searchParams.get('from');
+      const to   = searchParams.get('to');
+      const seats = searchParams.get('seats');
+      const date = searchParams.get('date');
+      if (from)  p.set('from', from);
+      if (to)    p.set('to', to);
+      if (seats) p.set('seats', seats);
+      if (date)  p.set('date', date);
+      router.replace(`/ride?${p.toString()}`);
+      return;
+    }
+    runSearch(initialQ);
+  }, []); // eslint-disable-line
 
   const handleInput = (val: string) => {
     setInput(val);

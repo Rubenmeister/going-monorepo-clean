@@ -26,7 +26,10 @@ const roboto = Roboto({
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.goingec.com'),
-  title: 'Going App Ecuador: Nos movemos contigo',
+  title: {
+    default: 'Going App Ecuador: Nos movemos contigo',
+    template: '%s · Going App Ecuador',
+  },
   description: 'Transporte compartido y privado entre ciudades del Ecuador. Reserva tu viaje en segundos.',
   applicationName: 'Going App Ecuador',
   appleWebApp: {

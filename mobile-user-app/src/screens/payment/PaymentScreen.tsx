@@ -30,7 +30,8 @@ interface PaymentScreenProps {
 export default function PaymentScreen({ route }: PaymentScreenProps) {
   const { amount, bookingId, rideId, description } = route.params;
   const [loading, setLoading]           = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<'datafast' | 'deuna' | 'cash'>('datafast');
+  // Default efectivo: pago digital (datafast/deuna) deshabilitado hasta integrar pasarela.
+  const [selectedMethod, setSelectedMethod] = useState<'datafast' | 'deuna' | 'cash'>('cash');
 
   const displayAmount = `$${amount.toFixed(2)}`;
 

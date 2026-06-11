@@ -118,7 +118,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Clientes de la App</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{total} usuarios registrados en total</p>
+          <p className="text-gray-500 text-sm mt-0.5">{total} personas usuarias registradas en total</p>
         </div>
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
           {(['list','segments'] as const).map(m => (

@@ -40,8 +40,7 @@ import { hapticLight, hapticMedium } from '../../utils/haptics';
 import {
   GOING_SHARED_ROUTES,
   QUITO_ZONES,
-  ORIGIN_CITIES,
-  calcSharedSeatPrice,
+  SERVED_ORIGIN_CITIES,
   loadRecentRoutes,
   saveRecentRoute,
   type QuitoZone,
@@ -88,7 +87,7 @@ export function SharedRideBookingScreen() {
   const [selectedRoute, setSelectedRoute] = useState(
     route.params?.routeId
       ? GOING_SHARED_ROUTES.find(r => r.id === route.params?.routeId)
-      : GOING_SHARED_ROUTES.find(r => r.stopPrices[route.params?.originStop ?? 'Quito'] !== undefined)
+      : GOING_SHARED_ROUTES.find(r => r.stops.includes(route.params?.originStop ?? 'Quito'))
         ?? GOING_SHARED_ROUTES[0]
   );
   const [destination,   setDestination]   = useState(
@@ -124,7 +123,7 @@ export function SharedRideBookingScreen() {
 
   // Cuando cambia el origin, re-evaluar selectedRoute
   useEffect(() => {
-    const nextRoute = GOING_SHARED_ROUTES.find(r => r.stopPrices[originCity] !== undefined);
+    const nextRoute = GOING_SHARED_ROUTES.find(r => r.stops.includes(originCity));
     if (nextRoute && nextRoute.id !== selectedRoute?.id) {
       setSelectedRoute(nextRoute);
       setDestination(nextRoute.stops[nextRoute.stops.length - 1]);
@@ -137,12 +136,11 @@ export function SharedRideBookingScreen() {
   }, [seats]);
 
   // ── Computed ──────────────────────────────────────────────
-  const basePricePerSeat = calcSharedSeatPrice(originCity, selectedZone, frontSeat, selectedRoute?.id);
-  // Multiplicador por tier (Premium 1.5x)
-  const tierMultiplier = tier === 'premium' ? 1.5 : 1.0;
-  const pricePerSeat   = basePricePerSeat * tierMultiplier;
-  const totalPrice     = pricePerSeat * seats;
-  const zoneInfo       = QUITO_ZONES.find(z => z.id === selectedZone)!;
+  // El precio NO se calcula acá. El monto que paga la viajera o el viajero
+  // lo cotiza/cobra el backend (libs/pricing) y se muestra en ConfirmRide a
+  // partir de la respuesta del servidor — nunca de una tabla local, para que
+  // el precio mostrado nunca difiera del cobrado.
+  const zoneInfo = QUITO_ZONES.find(z => z.id === selectedZone)!;
 
   const dateLabel = useMemo(() => {
     if (dateOption === 'today') {
@@ -199,9 +197,11 @@ export function SharedRideBookingScreen() {
 
         if (plan.kind === 'nearest') {
           // Ruta directa no existe pero hay hub cercano al destino. Pregúntale.
+          // No mostramos precio acá: el monto lo confirma el backend en el
+          // paso de pago (ConfirmRide), nunca una estimación local.
           Alert.alert(
             'No hay viaje compartido directo a ese destino',
-            `Te podemos llevar hasta ${plan.hubLabel} por $${plan.price.toFixed(2)} (servicio Compartido). Desde ${plan.hubLabel} son ~${plan.estimatedLastLegMinutes} min en transporte local hasta tu destino (${plan.lastLegKm} km).\n\n¿Querés tomar la opción a ${plan.hubLabel}, o cambiar a viaje Privado puerta a puerta?`,
+            `Te podemos llevar hasta ${plan.hubLabel} (servicio Compartido). Desde ${plan.hubLabel} son ~${plan.estimatedLastLegMinutes} min en transporte local hasta tu destino (${plan.lastLegKm} km).\n\n¿Querés tomar la opción a ${plan.hubLabel}, o cambiar a viaje Privado puerta a puerta?`,
             [
               { text: 'Cancelar', style: 'cancel' },
               {
@@ -216,6 +216,7 @@ export function SharedRideBookingScreen() {
                 text: `Sí, llevame hasta ${plan.hubLabel}`,
                 onPress: () => {
                   // Continuamos el flujo pero el destino ahora es el hub.
+                  // Sin pricePerSeat/totalPrice: ConfirmRide cotiza con el backend.
                   (navigation.navigate as any)('ConfirmRide', {
                     type:          'compartido',
                     origin:        originCity,
@@ -226,8 +227,6 @@ export function SharedRideBookingScreen() {
                     vehicle:       'SUV',
                     tier,
                     seats,
-                    pricePerSeat:  plan.price,
-                    totalPrice:    plan.price * seats,
                     frontSeat,
                     zone:          selectedZone,
                     /** Nota para mostrar al usuario en ConfirmRide. */
@@ -263,16 +262,19 @@ export function SharedRideBookingScreen() {
     }
     hapticMedium();
 
-    // Persist recent route para que aparezca en home
+    // Persist recent route para que aparezca en home. price=0: el monto real
+    // lo da el backend; el home ya no muestra precio en las tarjetas recientes.
     await saveRecentRoute({
       origin:      originCity,
       destination,
       originCity:  'quito',  // TODO: mapear originStop string → CityId si lo necesitamos
       vehicleType: 'suv',
       tripMode:    'compartido',
-      price:       totalPrice,
+      price:       0,
     }).catch(() => {});
 
+    // Sin pricePerSeat/totalPrice: ConfirmRide cotiza el monto con el backend
+    // (libs/pricing). El mobile no inventa precios localmente.
     (navigation.navigate as any)('ConfirmRide', {
       type:          'compartido',
       origin:        originCity,
@@ -283,12 +285,10 @@ export function SharedRideBookingScreen() {
       vehicle:       'SUV',
       tier,
       seats,
-      pricePerSeat,
-      totalPrice,
       frontSeat,
       zone:          selectedZone,
     });
-  }, [destination, originCity, destCoords, timeSlot, dateOption, tier, seats, pricePerSeat, totalPrice, frontSeat, selectedZone, navigation]);
+  }, [destination, originCity, destCoords, timeSlot, dateOption, tier, seats, frontSeat, selectedZone, navigation]);
 
   // ── Render ────────────────────────────────────────────────
   return (
@@ -374,11 +374,6 @@ export function SharedRideBookingScreen() {
                 {zoneInfo.examples}
               </Text>
             </View>
-            <View style={styles.zoneSurcharge}>
-              <Text style={styles.zoneSurchargeText}>
-                {zoneInfo.surcharge === 0 ? 'Base' : `+$${zoneInfo.surcharge}`}
-              </Text>
-            </View>
             <Ionicons
               name={showZonePicker ? 'chevron-up' : 'chevron-down'}
               size={18}
@@ -401,9 +396,6 @@ export function SharedRideBookingScreen() {
                       {z.examples}
                     </Text>
                   </View>
-                  <Text style={[styles.zoneOptSurcharge, selectedZone === z.id && styles.zoneOptSurchargeActive]}>
-                    {z.surcharge === 0 ? 'Base' : `+$${z.surcharge}`}
-                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -489,7 +481,7 @@ export function SharedRideBookingScreen() {
                 </Text>
               </View>
               <Text style={[styles.tierDesc, tier === 'premium' && styles.tierDescActive]}>
-                SUV gama alta · 1.5x
+                SUV gama alta
               </Text>
             </TouchableOpacity>
           </View>
@@ -538,31 +530,20 @@ export function SharedRideBookingScreen() {
               <Text style={styles.upsellTitle}>Asiento delantero</Text>
               <Text style={styles.upsellSub}>Mayor espacio · mejor vista del paisaje</Text>
             </View>
-            <Text style={styles.upsellPrice}>+$3</Text>
+            <Ionicons
+              name={frontSeat ? 'checkmark-circle' : 'add-circle-outline'}
+              size={22}
+              color={frontSeat ? tokens.brandYellowDark : tokens.textTertiary}
+            />
           </TouchableOpacity>
         )}
 
-        {/* ── Resumen de precio ─────────────────────────────── */}
+        {/* ── Nota de precio ─────────────────────────────────── */}
         <View style={styles.priceSummary}>
-          <View style={styles.priceLine}>
-            <Text style={styles.priceLineLabel}>Precio por asiento</Text>
-            <Text style={styles.priceLineValue}>${pricePerSeat.toFixed(2)}</Text>
-          </View>
-          {seats > 1 && (
-            <View style={styles.priceLine}>
-              <Text style={styles.priceLineLabel}>× {seats} asientos</Text>
-              <Text style={styles.priceLineValue}>${(pricePerSeat * seats).toFixed(2)}</Text>
-            </View>
-          )}
-          {tier === 'premium' && (
-            <Text style={styles.priceNote}>Incluye recargo Premium (1.5x)</Text>
-          )}
-          {zoneInfo.surcharge > 0 && (
-            <Text style={styles.priceNote}>Incluye recargo de zona +${zoneInfo.surcharge}</Text>
-          )}
-          {frontSeat && (
-            <Text style={styles.priceNote}>Incluye asiento delantero +$3</Text>
-          )}
+          <Text style={styles.priceNote}>
+            El monto final lo confirma Going en el siguiente paso, antes de
+            reservar. Así el precio que ves es exactamente el que pagás.
+          </Text>
         </View>
 
         <View style={{ height: 100 }} />
@@ -571,8 +552,8 @@ export function SharedRideBookingScreen() {
       {/* ── CTA principal (sticky bottom) ───────────────────── */}
       <View style={styles.ctaBar}>
         <View style={styles.ctaTotal}>
-          <Text style={styles.ctaTotalLabel}>Total a pagar</Text>
-          <Text style={styles.ctaTotalValue}>${totalPrice.toFixed(2)}</Text>
+          <Text style={styles.ctaTotalLabel}>Precio</Text>
+          <Text style={styles.ctaTotalHint}>Lo confirma Going al continuar</Text>
         </View>
         <TouchableOpacity
           style={[styles.ctaBtn, !destination && styles.ctaBtnDisabled]}
@@ -580,7 +561,7 @@ export function SharedRideBookingScreen() {
           disabled={!destination}
           activeOpacity={0.88}
         >
-          <Text style={styles.ctaBtnText}>Reservar</Text>
+          <Text style={styles.ctaBtnText}>Continuar</Text>
           <Ionicons name="arrow-forward" size={18} color={tokens.textOnYellow} />
         </TouchableOpacity>
       </View>
@@ -600,7 +581,7 @@ export function SharedRideBookingScreen() {
             </TouchableOpacity>
           </View>
           <FlatList
-            data={ORIGIN_CITIES}
+            data={SERVED_ORIGIN_CITIES}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -724,11 +705,6 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     zoneSummaryExamples: {
       fontSize: 11, color: t.textTertiary, marginTop: 2,
     },
-    zoneSurcharge: {
-      backgroundColor: t.glass,
-      borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4,
-    },
-    zoneSurchargeText: { fontSize: 11, fontWeight: '800', color: t.brandNavy },
 
     zonePicker: {
       backgroundColor: t.bgLayer,
@@ -746,8 +722,6 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     zoneOptNameActive: { color: t.textOnNavy },
     zoneOptExamples: { fontSize: 10, color: t.textTertiary, marginTop: 2 },
     zoneOptExamplesActive: { color: 'rgba(255,255,255,0.7)' },
-    zoneOptSurcharge: { fontSize: 12, fontWeight: '800', color: t.brandNavy },
-    zoneOptSurchargeActive: { color: t.brandYellow },
 
     // Date row
     dateRow: { flexDirection: 'row', gap: 8 },
@@ -851,9 +825,8 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     upsellIconActive: { backgroundColor: t.brandYellow },
     upsellTitle: { fontSize: 13, fontWeight: '800', color: t.textPrimary },
     upsellSub: { fontSize: 11, color: t.textTertiary, marginTop: 2 },
-    upsellPrice: { fontSize: 15, fontWeight: '900', color: t.brandYellowDark },
 
-    // Price summary
+    // Price note (el monto real lo da el backend en ConfirmRide)
     priceSummary: {
       marginHorizontal: 20, marginTop: 24,
       padding: 14,
@@ -861,15 +834,9 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       borderRadius: 12,
       borderWidth: 1, borderColor: t.glassBorder,
     },
-    priceLine: {
-      flexDirection: 'row', justifyContent: 'space-between',
-      alignItems: 'center', paddingVertical: 4,
-    },
-    priceLineLabel: { fontSize: 13, color: t.textSecondary },
-    priceLineValue: { fontSize: 13, fontWeight: '800', color: t.textPrimary },
     priceNote: {
-      fontSize: 11, color: t.textTertiary,
-      marginTop: 4, fontStyle: 'italic',
+      fontSize: 12, color: t.textSecondary,
+      lineHeight: 17,
     },
 
     // CTA bar sticky
@@ -884,9 +851,9 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
       fontSize: 10, fontWeight: '700', color: t.textTertiary,
       textTransform: 'uppercase', letterSpacing: 0.5,
     },
-    ctaTotalValue: {
-      fontSize: 22, fontWeight: '900',
-      color: t.textPrimary, marginTop: 2, letterSpacing: -0.5,
+    ctaTotalHint: {
+      fontSize: 12, fontWeight: '700',
+      color: t.textSecondary, marginTop: 2,
     },
     ctaBtn: {
       flexDirection: 'row', alignItems: 'center', gap: 8,

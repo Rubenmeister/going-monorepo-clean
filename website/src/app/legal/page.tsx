@@ -1,42 +1,36 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Legal — Going App',
-  description: 'Términos y condiciones, política de privacidad y documentos legales de Going App (Ecuador).',
+  description:
+    'Seguridad, cookies y contrato del conductor de Going App (Ecuador). Los Términos y Condiciones y la Política de Privacidad tienen su página dedicada con la versión completa y vigente.',
 };
+
+// Términos y Privacidad NO se duplican acá: viven en su página propia
+// (/terminos, /privacidad), que es la versión completa y vigente (LOPDP).
+// Desde acá sólo enlazamos, para que no existan dos versiones del mismo documento.
+const FULL_DOCS = [
+  { id: 'terminos', title: 'Términos y Condiciones', icon: '📄', href: '/terminos', desc: 'Condiciones de uso de la plataforma Going App.' },
+  { id: 'privacidad', title: 'Política de Privacidad', icon: '🔒', href: '/privacidad', desc: 'Tratamiento de tus datos personales conforme a la LOPDP.' },
+];
 
 const SECTIONS = [
   {
-    id: 'terminos',
-    title: 'Términos y Condiciones',
-    icon: '📄',
-    content: `Thorn AI Technologies S.A.S. ("Going App") es una plataforma tecnológica que conecta pasajeros con conductores independientes. Al usar nuestros servicios aceptas estos términos.
+    id: 'seguridad',
+    title: 'Seguridad',
+    icon: '🛡️',
+    content: `La seguridad de viajeras, viajeros, conductoras y conductores es prioridad de Going App.
 
-**Uso del servicio:** Going App es una plataforma de intermediación. Los conductores son proveedores independientes, no empleados de Going App. Going App no es responsable por el contenido publicado por usuarios.
+**PIN de seguridad:** Cada viaje genera un PIN que confirmás antes de subir, para asegurarte de abordar el vehículo correcto.
 
-**Cuentas:** Debes tener al menos 18 años para crear una cuenta. Eres responsable de mantener la confidencialidad de tu contraseña.
+**Verificación:** Conductoras y conductores pasan validación de documentos, antecedentes y vehículo antes de su primer viaje.
 
-**Pagos:** Los precios se muestran antes de confirmar el viaje. Going App aplica una comisión de servicio. Los reembolsos están sujetos a nuestra política de cancelación.
+**Seguimiento en vivo:** Podés compartir tu viaje en tiempo real con tus contactos de confianza desde la app.
 
-**Cancelaciones:** Puedes cancelar hasta 15 minutos antes sin cargo. Cancelaciones tardías pueden tener penalidad. El conductor también puede cancelar con justificación.
+**Botón SOS:** Disponible durante el viaje activo; avisa a nuestro equipo y permite contactar al ECU 911.
 
-**Conducta:** Está prohibido el acoso, discriminación, daño a vehículos o cualquier conducta que afecte la seguridad. Going App puede suspender cuentas por incumplimiento.`,
-  },
-  {
-    id: 'privacidad',
-    title: 'Política de Privacidad',
-    icon: '🔒',
-    content: `Going App recopila y procesa datos personales de acuerdo con la Ley Orgánica de Protección de Datos Personales del Ecuador (LOPDP).
-
-**Datos que recopilamos:** Nombre, correo, teléfono, ubicación GPS durante viajes, historial de viajes, método de pago (sin números completos de tarjeta), valoraciones y comentarios.
-
-**Uso de datos:** Para procesar reservas y pagos, mejorar el servicio, comunicarnos contigo, cumplir obligaciones legales y garantizar la seguridad.
-
-**Compartir datos:** Solo compartimos datos con conductores necesarios para completar tu viaje, procesadores de pago certificados y cuando lo requiera la ley.
-
-**Tus derechos:** Tienes derecho a acceder, corregir, eliminar y portar tus datos. Escríbenos a privacidad@goingec.com.
-
-**Retención:** Conservamos datos mientras tu cuenta esté activa. Datos de viajes por 5 años por obligación fiscal.`,
+**Soporte:** Ante cualquier inconveniente, escribinos por WhatsApp o desde la app.`,
   },
   {
     id: 'cookies',
@@ -56,7 +50,7 @@ const SECTIONS = [
     id: 'conductor',
     title: 'Contrato del Conductor',
     icon: '📋',
-    content: `Los conductores de Going App son proveedores de servicios independientes, no empleados.
+    content: `Las conductoras y conductores de Going App son proveedores de servicios independientes, no personal en relación de dependencia.
 
 **Requisitos:** Licencia de conducir vigente tipo B mínimo, vehículo 2018 o posterior, seguro SOAT vigente, antecedentes penales limpios, aprobación de evaluación Going App.
 
@@ -80,7 +74,12 @@ export default function LegalPage() {
 
       <div className="max-w-4xl mx-auto px-6 py-14">
         {/* Quick nav */}
-        <div className="flex flex-wrap gap-3 mb-12">
+        <div className="flex flex-wrap gap-3 mb-10">
+          {FULL_DOCS.map(d => (
+            <Link key={d.id} href={d.href} className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-[13px] font-black text-gray-600 hover:border-[#ff4c41] hover:text-[#ff4c41] transition-all">
+              <span>{d.icon}</span> {d.title} <span className="text-gray-400">↗</span>
+            </Link>
+          ))}
           {SECTIONS.map(s => (
             <a key={s.id} href={`#${s.id}`} className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-[13px] font-black text-gray-600 hover:border-[#ff4c41] hover:text-[#ff4c41] transition-all">
               <span>{s.icon}</span> {s.title}
@@ -88,9 +87,23 @@ export default function LegalPage() {
           ))}
         </div>
 
+        {/* Documentos completos — viven en su propia página (sin duplicar) */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-12">
+          {FULL_DOCS.map(d => (
+            <Link key={d.id} href={d.href} className="group bg-white border-[1.5px] border-gray-100 rounded-2xl p-6 hover:border-[#ff4c41]/40 transition-all">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">{d.icon}</span>
+                <h2 className="font-serif text-lg font-black text-[#011627]">{d.title}</h2>
+              </div>
+              <p className="text-[13px] text-gray-500 mb-3">{d.desc}</p>
+              <span className="text-[13px] font-black text-[#ff4c41] group-hover:underline">Ver versión completa →</span>
+            </Link>
+          ))}
+        </div>
+
         <div className="space-y-12">
           {SECTIONS.map(s => (
-            <section key={s.id} id={s.id} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-8">
+            <section key={s.id} id={s.id} className="bg-white border-[1.5px] border-gray-100 rounded-2xl p-8 scroll-mt-24">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-3xl">{s.icon}</span>
                 <h2 className="font-serif text-2xl font-black text-[#011627]">{s.title}</h2>

@@ -205,6 +205,18 @@ export class RealtimeSession extends EventEmitter {
 
       let resolved = false;
 
+      // Timeout de conexión: si el WS abre pero nunca llega `session.created`,
+      // fallamos a los 12s en vez de esperar minutos (evita el cuelgue en
+      // llamadas telefónicas Twilio donde el caller espera audio).
+      const connectTimer = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        this.logger.error('[realtime] connect timeout (12s) — no llegó session.created, cerrando WS');
+        try { this.ws?.close(); } catch { /* noop */ }
+        reject(new Error('Realtime connect timeout (12s)'));
+      }, 12000);
+      connectTimer.unref?.();
+
       this.ws.on('open', () => {
         this.logger.log(`[realtime] WS abierto → ${this.model}`);
       });

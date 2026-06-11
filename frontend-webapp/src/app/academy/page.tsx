@@ -38,8 +38,6 @@ interface Course {
   formats: FormatKey[];
   level: string;
   levelColor: string;
-  students?: number;
-  rating?: number;
   required?: boolean;
 }
 
@@ -117,23 +115,23 @@ const SCHOOLS: Record<string, School> = {
       { id: 'c1', Icon: IconUser,   title: 'La Primera Impresión',          subtitle: 'Módulo 1 — Ruta del Volante',
         desc: 'El arte de recibir. Checklist del vehículo, saludo Going App, uso del lanyard y manejo de equipaje.',
         duration: '15 min', lessons: 3, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 5234, rating: 4.9 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'c2', Icon: IconShield, title: 'Seguridad Vial Ecuador',         subtitle: 'Manejo defensivo por región',
         desc: 'Técnicas de manejo en Costa, Sierra y Amazonía. Curvas de montaña, lluvia tropical y emergencias viales.',
         duration: '25 min', lessons: 5, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 4812, rating: 4.8 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'c3', Icon: IconTool,   title: 'Mecánica Preventiva Básica',     subtitle: 'Cuida tu vehículo, cuida tu ingreso',
         desc: 'Revisión diaria, cambio de llantas en ruta, niveles de fluidos y cuándo ir al taller antes de que sea urgente.',
         duration: '20 min', lessons: 4, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 3290, rating: 4.7 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'c4', Icon: IconChat,   title: 'Inglés Turístico Básico',        subtitle: 'Atiende turistas internacionales',
         desc: 'Frases esenciales para recibir, guiar y despedirse de turistas que no hablan español. Formato podcast.',
         duration: '30 min', lessons: 6, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 2100, rating: 4.8 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
       { id: 'c5', Icon: IconShield, title: 'Primeros Auxilios en Ruta',      subtitle: 'Responde antes de que llegue la ayuda',
         desc: 'Protocolo ante accidentes, mareo, malestar de pasajero. Incluye RCP básico y uso de botiquín.',
         duration: '35 min', lessons: 7, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Avanzado',
-        levelColor: 'bg-red-100 text-red-700', students: 1820, rating: 5.0 },
+        levelColor: 'bg-red-100 text-red-700' },
     ],
   },
   anfitriones: {
@@ -149,19 +147,19 @@ const SCHOOLS: Record<string, School> = {
       { id: 'a1', Icon: IconCamera,  title: 'Fotografía con el Celular',           subtitle: 'Fotos que venden el vibe',
         desc: 'Luz natural, ángulos, composición y edición gratis. Convierte tu teléfono en una cámara profesional.',
         duration: '20 min', lessons: 4, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 3421, rating: 4.9 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'a2', Icon: IconCheck,   title: 'Limpieza Estándar Going App',             subtitle: 'El protocolo que construye confianza',
         desc: 'Secuencia de limpieza, productos seguros, desinfección post-huésped y lista de verificación.',
         duration: '15 min', lessons: 3, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 2800, rating: 4.7 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'a3', Icon: IconPalette, title: 'Diseño con Bajo Presupuesto',         subtitle: 'Haz más con menos',
         desc: 'Ideas de decoración local, plantas, iluminación y detalles que hacen que los huéspedes recomienden tu lugar.',
         duration: '25 min', lessons: 5, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 1930, rating: 4.8 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
       { id: 'a4', Icon: IconStar,    title: 'Manejo de Reseñas',                   subtitle: 'Responde bien, crece más',
         desc: 'Cómo responder comentarios negativos, agradecer los positivos y convertir críticas en mejoras reales.',
         duration: '15 min', lessons: 3, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 2150, rating: 4.9 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
     ],
   },
   guias: {
@@ -177,15 +175,15 @@ const SCHOOLS: Record<string, School> = {
       { id: 'g1', Icon: IconBook,  title: 'El Arte del Storytelling', subtitle: 'Cuenta tu historia, vende tu experiencia',
         desc: 'Técnicas para estructurar la historia de tu comunidad, artesanía o taller. Cómo crear momentos memorables.',
         duration: '20 min', lessons: 4, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 1823, rating: 4.7 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'g2', Icon: IconUsers, title: 'Manejo de Grupos',         subtitle: 'De 2 a 20 personas',
         desc: 'Técnicas para mantener la atención, gestionar tiempos, manejar personas difíciles y garantizar seguridad.',
         duration: '25 min', lessons: 5, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 1350, rating: 4.8 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
       { id: 'g3', Icon: IconLeaf,  title: 'Seguridad en Exteriores',  subtitle: 'Turismo de naturaleza seguro',
         desc: 'Evaluación de riesgos, protocolo ante lesiones, comunicación en zonas sin señal y normas del Ministerio de Turismo.',
         duration: '30 min', lessons: 6, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Avanzado',
-        levelColor: 'bg-red-100 text-red-700', students: 980, rating: 5.0 },
+        levelColor: 'bg-red-100 text-red-700' },
     ],
   },
   operadores: {
@@ -201,15 +199,15 @@ const SCHOOLS: Record<string, School> = {
       { id: 'o1', Icon: IconClipboard, title: 'Logística de Grupos Grandes',      subtitle: 'De 20 a 200 personas',
         desc: 'Coordinación de transporte, alojamiento y actividades. Cómo manejar imprevistos en tours de varios días.',
         duration: '35 min', lessons: 7, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Avanzado',
-        levelColor: 'bg-red-100 text-red-700', students: 640, rating: 4.9 },
+        levelColor: 'bg-red-100 text-red-700' },
       { id: 'o2', Icon: IconBook,      title: 'Normativas del Ministerio de Turismo', subtitle: 'Opera dentro del marco legal',
         desc: 'Requisitos de licencia, permisos de operación, seguros obligatorios y actualizaciones regulatorias.',
         duration: '20 min', lessons: 4, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 750, rating: 4.8 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
       { id: 'o3', Icon: IconMobile,    title: 'Integración con la App Going App',      subtitle: 'Automatiza tu gestión',
         desc: 'Sincronización de reservas, manejo de disponibilidad, sistema de pagos y métricas de rendimiento.',
         duration: '25 min', lessons: 5, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Intermedio',
-        levelColor: 'bg-yellow-100 text-yellow-700', students: 520, rating: 4.7 },
+        levelColor: 'bg-yellow-100 text-yellow-700' },
     ],
   },
   viajeros: {
@@ -225,15 +223,15 @@ const SCHOOLS: Record<string, School> = {
       { id: 'v1', Icon: IconMap,     title: 'Viaja Inteligente con Going App', subtitle: 'Guía completa del pasajero',
         desc: 'Cómo reservar, rastrear tu viaje, comunicarte con el conductor y usar todas las funciones de la app.',
         duration: '15 min', lessons: 3, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 8934, rating: 4.9 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'v2', Icon: IconPackage, title: 'Guía de Envíos',              subtitle: 'Empaques, tarifas y seguimiento',
         desc: 'Cómo preparar tu paquete, elegir el tipo de envío correcto, rastrear en tiempo real y resolver incidencias.',
         duration: '12 min', lessons: 2, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 5200, rating: 4.8 },
+        levelColor: 'bg-green-100 text-green-700' },
       { id: 'v3', Icon: IconCard,    title: 'Pagos y Facturación',          subtitle: 'DATAFAST, efectivo y recibos',
         desc: 'Métodos de pago aceptados, cómo descargar facturas, disputas y gestión financiera de tus servicios.',
         duration: '10 min', lessons: 2, formats: ['reading', 'slides', 'podcast', 'quiz'], level: 'Principiante',
-        levelColor: 'bg-green-100 text-green-700', students: 6102, rating: 4.9 },
+        levelColor: 'bg-green-100 text-green-700' },
     ],
   },
 };
@@ -255,28 +253,11 @@ const LEVELS: LevelDef[] = [
   { id: 'oro',    label: 'Aliado Oro',    desc: 'Todas las rutas completadas',            req: '4.8★ y 50+ viajes/reservas',      color: '#D97706', Icon: IconMedal },
 ];
 
-interface Testimony {
-  name: string;
-  role: string;
-  text: string;
-  Icon: IconComponent;
-}
-
-const TESTIMONIES: Testimony[] = [
-  { name: 'Carlos M.', role: 'Conductor — Aliado Oro',     text: 'Después de terminar la Ruta del Volante y conseguir el badge de Primeros Auxilios, mis ingresos subieron un 40% en 3 meses.', Icon: IconCar },
-  { name: 'María L.',  role: 'Anfitriona — Aliado Plata',  text: 'Aprendí a tomar fotos con el celular y a manejar reseñas. Ahora tengo 98% de ocupación y 4.9 estrellas.',                       Icon: IconHotel },
-  { name: 'Pedro R.',  role: 'Guía Local — Aliado Oro',    text: 'El módulo de Storytelling cambió mis tours. Ahora mis fechas se llenan con semanas de anticipación.',                            Icon: IconCompass },
-];
-
 export default function AcademyPage() {
   const [activeSchool, setActiveSchool] = useState<string>('conductores');
   const [activeTab, setActiveTab] = useState<'cursos' | 'niveles' | 'tronco'>('cursos');
 
   const school = SCHOOLS[activeSchool];
-
-  const totalStudents = Object.values(SCHOOLS)
-    .flatMap(s => s.courses)
-    .reduce((acc, c) => acc + (c.students ?? 0), 0);
 
   const totalCourses = TRONCO_COMUN.length + Object.values(SCHOOLS).flatMap(s => s.courses).length;
 
@@ -317,7 +298,7 @@ export default function AcademyPage() {
             <div className="flex flex-wrap gap-8 justify-center md:justify-start">
               {[
                 { value: `${totalCourses}`,                            label: 'Cursos disponibles' },
-                { value: `${Math.round(totalStudents / 1000)}K+`,      label: 'Estudiantes activos' },
+                { value: '5 escuelas',                                 label: 'Para cada rol' },
                 { value: 'Gratis',                                     label: 'Siempre gratuito' },
                 { value: '3–35 min',                                   label: 'Por lección' },
               ].map(stat => (
@@ -434,9 +415,6 @@ export default function AcademyPage() {
                     <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mb-3">
                       <span className="inline-flex items-center gap-1"><IconBook size={12} />{course.lessons} lecciones</span>
                       <span className="inline-flex items-center gap-1"><IconClock size={12} />{course.duration}</span>
-                      {course.rating != null && (
-                        <span className="inline-flex items-center gap-1"><IconStar size={12} />{course.rating} ({(course.students ?? 0).toLocaleString()})</span>
-                      )}
                     </div>
 
                     {/* Formats */}
@@ -632,28 +610,24 @@ export default function AcademyPage() {
           </div>
         )}
 
-        {/* ── Testimonios ── */}
-        <div className="mt-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 text-center inline-flex items-center justify-center gap-2 w-full">
-            <IconChat size={20} className="text-gray-500" />
-            Resultados reales
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIES.map(story => (
-              <div key={story.name} className="bg-gray-50 rounded-xl p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                    <story.Icon size={20} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">{story.name}</p>
-                    <p className="text-xs" style={{ color: COLORS.brand.red }}>{story.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 text-sm italic leading-relaxed">&ldquo;{story.text}&rdquo;</p>
-              </div>
-            ))}
+        {/* ── Pre-lanzamiento ── */}
+        <div className="mt-12 bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <div className="flex justify-center mb-4" style={{ color: COLORS.brand.red }}>
+            <IconGraduation size={28} />
           </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">
+            La Academia abre con nosotros
+          </h2>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-2xl mx-auto mb-6">
+            Going App está por arrancar en Ecuador. Todos los cursos son gratuitos y los vas a poder completar
+            desde el primer día. Sé de las primeras personas en capacitarte y ganar tus insignias.
+          </p>
+          <Link href="/auth/register"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: COLORS.brand.red, color: COLORS.brand.white }}>
+            Crear mi cuenta gratis
+            <IconArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </div>

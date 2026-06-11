@@ -44,7 +44,7 @@ const COMMUNITY_PILLARS = [
   {
     icon: '💡',
     title: 'Conocimiento compartido',
-    desc: 'Conductores que conocen cada ruta. Anfitriones que saben qué hacer en cada ciudad. Guías que aman lo que muestran.',
+    desc: 'Conductoras y conductores que conocen cada ruta. Anfitrionas y anfitriones que saben qué hacer en cada ciudad. Guías que aman lo que muestran.',
     color: '#16a34a',
   },
   {
@@ -57,61 +57,31 @@ const COMMUNITY_PILLARS = [
 
 const COMMUNITY_ROLES = [
   {
-    role: 'Pasajeros',
+    role: 'Pasajeras y pasajeros',
     emoji: '🧳',
-    count: '900,000+',
-    desc: 'Personas que descubrieron que moverse por Ecuador puede ser seguro, cómodo y asequible. Sin llamadas, sin esperar, sin incertidumbre.',
+    desc: 'Personas que descubren que moverse por Ecuador puede ser seguro, cómodo y asequible. Sin llamadas, sin esperar, sin incertidumbre.',
     highlights: ['Viajes compartidos seguros', 'Califica tu experiencia', 'Puntos Going App por cada viaje', 'Referidos con beneficios'],
     cta: 'Unirme como pasajero',
     href: '/auth/register',
     color: '#ff4c41',
   },
   {
-    role: 'Conductores',
+    role: 'Conductoras y conductores',
     emoji: '🚗',
-    count: '5,000+',
-    desc: 'Profesionales del volante que decidieron trabajar con tecnología. Ganan más, trabajan mejor y pertenecen a una red de apoyo real.',
-    highlights: ['Ganancias superiores al mercado', 'Flexibilidad total de horario', 'Capacitación y certificación', 'Comunidad de conductores activa'],
-    cta: 'Unirme como conductor',
+    desc: 'Profesionales del volante que eligen trabajar con tecnología. Horario flexible, pagos claros y una red de apoyo real.',
+    highlights: ['80% de cada viaje es tuyo', 'Flexibilidad total de horario', 'Capacitación y certificación', 'Comunidad que arranca con vos'],
+    cta: 'Unirme como conductora/conductor',
     href: '/conductores',
     color: '#16a34a',
   },
   {
     role: 'Proveedores',
     emoji: '🏨',
-    count: '1,200+',
     desc: 'Hoteles, hostales, operadoras de tours, agencias de envíos. Aliados que expanden su negocio con la red Going App.',
     highlights: ['Visibilidad nacional instantánea', 'Panel de gestión profesional', 'Pagos automáticos y seguros', 'Soporte dedicado B2B'],
     cta: 'Ser aliado Going App',
     href: '/empresas',
     color: '#6366f1',
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    name: 'Patricia L.',
-    city: 'Cuenca',
-    role: 'Pasajera frecuente',
-    emoji: '👩',
-    text: 'Antes pasaba horas coordinando por WhatsApp para ir a Guayaquil. Con Going App reservo en 2 minutos y sé exactamente cuándo llega el conductor.',
-    stars: 5,
-  },
-  {
-    name: 'Rodrigo M.',
-    city: 'Quito',
-    role: 'Conductor verificado',
-    emoji: '👨',
-    text: 'La comunidad de conductores me ayudó a conocer las mejores rutas y a maximizar mis ingresos. No es solo una app, es una red.',
-    stars: 5,
-  },
-  {
-    name: 'Hostería El Lago',
-    city: 'Baños',
-    role: 'Aliado Going App',
-    emoji: '🏨',
-    text: 'Desde que nos unimos a Going App, nuestra ocupación subió un 40%. Los huéspedes llegan verificados y el proceso de reserva es impecable.',
-    stars: 5,
   },
 ];
 
@@ -273,37 +243,20 @@ export default function ComunidadPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Pre-lanzamiento */}
       <section className="py-20 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
-            <div className="text-center mb-14">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#ff4c41] mb-4">Lo que dicen</span>
-              <h2 className="text-4xl font-black text-gray-900">Voces de la comunidad</h2>
-            </div>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#ff4c41] mb-4">Estamos por arrancar</span>
+            <h2 className="text-4xl font-black text-gray-900 mb-4">Sé parte de la comunidad desde el día uno</h2>
+            <p className="text-gray-500 text-lg leading-relaxed mb-8">
+              Going App está por salir al aire en Ecuador. Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra,
+              desde Quito y el aeropuerto — y vamos llegando a todo el país. Sumate y crezcamos juntos.
+            </p>
+            <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg bg-white border border-gray-200 hover:shadow-md transition-all">
+              Unirme a la comunidad →
+            </Link>
           </FadeIn>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <FadeIn key={t.name} delay={i * 100}>
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition-all">
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(t.stars)].map((_, si) => (
-                      <span key={si} style={{ color: '#f59e0b' }}>★</span>
-                    ))}
-                  </div>
-                  <p className="text-gray-700 text-sm leading-relaxed mb-5 italic">"{t.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl">{t.emoji}</div>
-                    <div>
-                      <div className="font-bold text-gray-900 text-sm">{t.name}</div>
-                      <div className="text-xs text-gray-400">{t.role} · {t.city}</div>
-                    </div>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
         </div>
       </section>
 

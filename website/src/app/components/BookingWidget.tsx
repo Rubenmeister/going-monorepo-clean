@@ -20,13 +20,6 @@ export function BookingWidget() {
   const [passengers, setPass]     = useState('1');
 
   function buildUrl(): string {
-    if (mode === 'privado') {
-      const p = new URLSearchParams({ mode: 'private' });
-      if (origin)      p.set('from', origin);
-      if (destination) p.set('to', destination);
-      if (date)        p.set('date', date);
-      return `${APP_BASE}/transport?${p}`;
-    }
     if (mode === 'envio') {
       const p = new URLSearchParams();
       if (origin)      p.set('from', origin);
@@ -34,13 +27,16 @@ export function BookingWidget() {
       if (date)        p.set('date', date);
       return `${APP_BASE}/envios?${p}`;
     }
-    // compartido
-    const p = new URLSearchParams({ mode: 'shared' });
+    // Compartido y privado van al MISMO flujo de reserva (/ride), que lee
+    // ?type=shared|private para preseleccionar el modo y ?from/to/date/seats
+    // para prellenar el formulario. Antes apuntaban a /transport (404) y
+    // /search (buscador de catálogo que ignora estos params).
+    const p = new URLSearchParams({ type: mode === 'privado' ? 'private' : 'shared' });
     if (origin)      p.set('from', origin);
     if (destination) p.set('to', destination);
     if (date)        p.set('date', date);
     if (passengers)  p.set('seats', passengers);
-    return `${APP_BASE}/search?${p}`;
+    return `${APP_BASE}/ride?${p}`;
   }
 
   function handleSearch(e: React.FormEvent) {

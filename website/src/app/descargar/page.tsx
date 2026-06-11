@@ -28,8 +28,8 @@ const FEATURES = [
   { icon: '🛡️', title: 'PIN de seguridad verificado', sub: 'Confirma que subes al vehículo correcto.' },
   { icon: '📍', title: 'Tracking en tiempo real', sub: 'Tú y tus familiares saben dónde estás.' },
   { icon: '💳', title: 'Pago seguro en la app', sub: 'Tarjeta, transferencia o efectivo.' },
-  { icon: '⭐', title: 'Conductores calificados', sub: 'Solo conductores verificados y con rating.' },
-  { icon: '🚍', title: '50+ rutas en Ecuador', sub: 'Sierra y Costa, frecuencias cada 30 min.' },
+  { icon: '⭐', title: 'Conductoras y conductores verificados', sub: 'Antecedentes y vehículo al día.' },
+  { icon: '🚍', title: 'Rutas que van creciendo', sub: 'Arrancamos con 3 y vamos llegando a todo el país.' },
   { icon: '🎧', title: 'Soporte 24/7', sub: 'Atención en cualquier momento del viaje.' },
 ];
 
@@ -74,8 +74,8 @@ export default function DescargarPage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-16">
           {[
-            { val: '50k+', label: 'Descargas' },
-            { val: '4.9★', label: 'Rating promedio' },
+            { val: 'PIN', label: 'Seguridad verificada' },
+            { val: 'En vivo', label: 'Seguí tu viaje' },
             { val: 'Gratis', label: 'Sin costo' },
           ].map((s) => (
             <div key={s.val} className="bg-white/[0.05] rounded-2xl p-4 text-center">
