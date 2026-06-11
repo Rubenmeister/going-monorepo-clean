@@ -19,6 +19,8 @@ import { ActiveDriversController } from '../api/active-drivers.controller';
     MongooseModule.forRoot(
       process.env.MONGO_URL || 'mongodb://localhost:27017/tracking-db',
       {
+        // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+        dbName: process.env.MONGO_DB_NAME || 'going-tracking',
         lazyConnection: true,
         connectionFactory: (conn) => {
           conn.on('error', (e) => console.warn('MongoDB:', e.message));

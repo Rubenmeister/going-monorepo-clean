@@ -116,6 +116,8 @@ import { MulterModule } from '@nestjs/platform-express';
         process.env.MONGODB_URI ||
         'mongodb://localhost:27017/transport-db',
       {
+        // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+        dbName: process.env.MONGO_DB_NAME || 'going-transport',
         // bufferCommands DEFAULT (true) permite que la module init
         // retorne inmediatamente — las queries se encolan hasta que
         // Mongoose abra la conexión. Sin esto + serverSelectionTimeoutMS
