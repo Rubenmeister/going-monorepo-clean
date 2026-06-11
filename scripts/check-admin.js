@@ -2,8 +2,8 @@
  * check-admin.js — verifica y repara la cuenta admin en Mongo.
  *
  * Uso (PowerShell):
- *   $env:USER_DB_URL="mongodb+srv://rubenmeister_db_user:***REMOVED-CREDENTIAL***@going-cluster.vy28mpj.mongodb.net/?appName=GOING-CLUSTER"
- *   node scripts/check-admin.js admin@goingec.com ***REMOVED-CREDENTIAL***!
+ *   $env:USER_DB_URL="mongodb+srv://<DB_USER>:<DB_PASSWORD>@going-cluster.vy28mpj.mongodb.net/?appName=GOING-CLUSTER"
+ *   node scripts/check-admin.js <admin-email> <admin-password>
  *
  * Qué hace:
  *   1. Conecta a la DB 'going-user-auth', colección 'usermodelschemas'.

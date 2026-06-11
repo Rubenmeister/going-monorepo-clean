@@ -19,8 +19,12 @@
 const API = 'https://api-gateway-780842550857.us-central1.run.app';
 // Override con env vars para testing local:
 //   TEST_ADMIN_EMAIL=admin@goingec.com TEST_ADMIN_PASSWORD=xxx node scripts/test-trip.mjs
-const ADMIN_EMAIL    = process.env.TEST_ADMIN_EMAIL    || 'admin@goingec.com';
-const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || '***REMOVED-CREDENTIAL***\!';
+const ADMIN_EMAIL    = process.env.TEST_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('Falta TEST_ADMIN_EMAIL / TEST_ADMIN_PASSWORD (exportalos antes de correr).');
+  process.exit(1);
+}
 
 const ADMIN_URL  = 'http://localhost:3001';   // admin-dashboard en local
 const WEBAPP_URL = 'http://localhost:3000';   // frontend-webapp en local
