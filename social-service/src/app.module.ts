@@ -10,7 +10,11 @@ import { GamificationRepository } from './infrastructure/persistence/gamificatio
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/social', {
+    // MONGO_URL primero: es el env estándar de los servicios en Cloud Run
+    // (este servicio no tenía NINGÚN env de Mongo mapeado — se agrega con la migración).
+    MongooseModule.forRoot(process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/social', {
+      // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+      dbName: process.env.MONGO_DB_NAME || 'going-social',
       lazyConnection: true,
       connectionFactory: (conn) => {
         conn.on('error', (e) => console.warn('MongoDB social:', e.message));
