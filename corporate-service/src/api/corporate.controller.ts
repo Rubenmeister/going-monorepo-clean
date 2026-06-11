@@ -1,12 +1,14 @@
 import {
   Controller, Get, Post, Put, Patch, Body, Param, Query,
   Req, Logger, BadRequestException, NotFoundException,
-  UnauthorizedException, ForbiddenException,
+  UnauthorizedException, ForbiddenException, UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { CorporateService } from './corporate.service';
+import { JwtAuthGuard } from '../infrastructure/auth/jwt-auth.guard';
 
 @Controller('corporate')
+@UseGuards(JwtAuthGuard)
 export class CorporateController {
   private readonly logger = new Logger(CorporateController.name);
 
@@ -405,48 +407,35 @@ export class CorporateController {
   // ── helpers ────────────────────────────────────────────────────────────
 
   private extractToken(req: Request): string {
+    // El token YA fue verificado por JwtAuthGuard (firma + expiración). Se
+    // extrae el raw SOLO para forwardearlo a los servicios downstream
+    // (booking, etc.) que validan su propia firma.
     const auth = (req.headers as any)['authorization'] ?? '';
     return auth.startsWith('Bearer ') ? auth.slice(7) : auth;
   }
 
   private extractCompanyId(req: Request): string {
-    // El companyId SOLO sale del claim del JWT (el api-gateway ya verificó la
-    // firma). NO confiamos en el header `x-company-id` del cliente — sería
-    // suplantable. Y si el token no trae companyId, 401 en vez de caer a un
-    // pool 'default' compartido (fuga cross-tenant).
-    const token = this.extractToken(req);
-    if (token) {
-      try {
-        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        if (payload.companyId) return payload.companyId;
-      } catch { /* ignore */ }
+    // req.user lo pobló JwtAuthGuard tras verificar la FIRMA del JWT
+    // (auditoría #2 — antes se decodificaba el payload base64 SIN verificar
+    // firma, permitiendo forjar companyId con alg:none). Si el token no trae
+    // companyId, 401 en vez de caer a un pool compartido (fuga cross-tenant).
+    const companyId = (req as any).user?.companyId;
+    if (!companyId) {
+      throw new UnauthorizedException('companyId no presente en el token');
     }
-    throw new UnauthorizedException('companyId no presente en el token');
+    return companyId;
   }
 
-  /** Exige rol admin (operaciones de gestión de empresas). */
+  /** Exige rol admin — roles del JWT verificado (req.user), no del body. */
   private requireAdmin(req: Request): void {
-    const token = this.extractToken(req);
-    let roles: string[] = [];
-    if (token) {
-      try {
-        const p = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        roles = Array.isArray(p.roles) ? p.roles : (p.role ? [p.role] : []);
-      } catch { /* ignore */ }
-    }
+    const roles: string[] = (req as any).user?.roles ?? [];
     if (!roles.includes('admin')) {
       throw new ForbiddenException('Se requiere rol admin');
     }
   }
 
   private extractUserId(req: Request): string {
-    const token = this.extractToken(req);
-    if (token) {
-      try {
-        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        return payload.sub ?? payload.id ?? 'unknown';
-      } catch { /* ignore */ }
-    }
-    return 'unknown';
+    const u = (req as any).user;
+    return u?.userId ?? u?.id ?? 'unknown';
   }
 }
