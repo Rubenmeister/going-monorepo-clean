@@ -47,7 +47,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/going-logo-h.png" alt="Going App" className="h-9 w-auto" />
+          <img src="/going-logo-h.png" alt="Going App" className="h-11 w-auto" />
         </Link>
 
         {/* Desktop nav */}
