@@ -17,7 +17,11 @@ import { JwtStrategy } from './infrastructure/auth/jwt.strategy';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/billing', {
+    // MONGO_URL primero: es el env que Cloud Run tiene mapeado al secret —
+    // con solo MONGODB_URI este servicio caía al fallback localhost en prod.
+    MongooseModule.forRoot(process.env.MONGO_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/billing', {
+      // Base nombrada — sin esto Mongo cae en la default `test` (migración 11-jun-2026)
+      dbName: process.env.MONGO_DB_NAME || 'going-billing',
       lazyConnection: true,
       connectionFactory: (conn) => {
         conn.on('error', (e) => console.warn('MongoDB:', e.message));
