@@ -1,7 +1,10 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Logger, UseGuards } from '@nestjs/common';
 import { InvoiceRepository } from '../infrastructure/persistence/invoice.repository';
+import { InternalServiceGuard } from '../infrastructure/auth/internal-service.guard';
 
+// S2S only (auditoría #14): marca facturas PAID. payment-service manda el token.
 @Controller('internal')
+@UseGuards(InternalServiceGuard)
 export class InternalController {
   private readonly logger = new Logger(InternalController.name);
 

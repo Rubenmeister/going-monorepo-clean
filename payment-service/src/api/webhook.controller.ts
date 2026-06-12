@@ -233,7 +233,10 @@ export class WebhookController {
       const billingUrl = process.env.BILLING_SERVICE_URL || 'http://localhost:3008';
       fetch(`${billingUrl}/internal/payment-completed`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-token': process.env.INTERNAL_SERVICE_TOKEN || '',
+        },
         body: JSON.stringify({
           tripId,
           amount: payment.amount || 0,
@@ -350,7 +353,10 @@ export class WebhookController {
       const billingUrl = process.env.BILLING_SERVICE_URL || 'http://localhost:3008';
       fetch(`${billingUrl}/internal/payment-completed`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-token': process.env.INTERNAL_SERVICE_TOKEN || '',
+        },
         body: JSON.stringify({
           tripId: orderId,
           amount: payment.amount || 0,
