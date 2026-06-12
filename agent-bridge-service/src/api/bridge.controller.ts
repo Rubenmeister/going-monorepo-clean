@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import { lookupAgent, AGENT_REGISTRY } from '../infrastructure/agent-registry';
 import { CloudRunJobsClient } from '../infrastructure/cloud-run-jobs.client';
 import { HttpServiceClient } from '../infrastructure/http-service.client';
+import { InternalServiceGuard } from '../infrastructure/internal-service.guard';
 
 interface CommandBody {
   decisionId: string;
@@ -9,7 +10,10 @@ interface CommandBody {
   payload?:   Record<string, unknown>;
 }
 
+// S2S only (auditoría #3): dispara jobs Rumi/Inti y acciones internas.
+// El orchestrator (AgentBridgeClient) manda X-Internal-Token.
 @Controller()
+@UseGuards(InternalServiceGuard)
 export class BridgeController {
   constructor(
     private readonly jobs: CloudRunJobsClient,

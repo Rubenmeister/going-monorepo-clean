@@ -44,7 +44,12 @@ export class AgentBridgeClient {
     try {
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // S2S: el bridge valida X-Internal-Token (InternalServiceGuard).
+          // Sin esto, al cerrar el guard el dispatch de agentes daría 401.
+          'x-internal-token': process.env.INTERNAL_SERVICE_TOKEN || '',
+        },
         body: JSON.stringify({
           decisionId: args.decisionId,
           action:     args.action,
