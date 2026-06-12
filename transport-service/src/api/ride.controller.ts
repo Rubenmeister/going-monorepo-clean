@@ -512,7 +512,11 @@ export class RideController {
       const paymentUrl = process.env.PAYMENT_SERVICE_URL || 'http://localhost:3007';
       const res = await fetch(`${paymentUrl}/payments/complete-ride`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          // S2S: payment valida X-Internal-Token (InternalServiceGuard, auditoría #1).
+          'x-internal-token': process.env.INTERNAL_SERVICE_TOKEN || '',
+        },
         body: JSON.stringify({
           tripId:         rideId,
           passengerId:    ride.userId,
