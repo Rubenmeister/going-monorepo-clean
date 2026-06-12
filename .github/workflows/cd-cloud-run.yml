@@ -230,6 +230,8 @@ jobs:
                 --min-instances 0 \
                 --max-instances 5 \
                 --timeout 300 \
+                --vpc-connector going-connector \
+                --vpc-egress all-traffic \
                 --update-env-vars "NODE_ENV=staging,MONGO_DB_NAME=going-staging" \
                 --set-secrets "${{ steps.secrets.outputs.flags }}" \
                 --quiet
