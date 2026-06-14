@@ -1284,7 +1284,7 @@ export default function HomePage() {
               {/* Foto */}
               <div className="relative md:w-1/2 overflow-hidden" style={{ minHeight: 380 }}>
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                  style={{ backgroundImage: "url('/images/envìo.png')" }} />
+                  style={{ backgroundImage: "url('/images/envio.png')" }} />
                 <span className="absolute top-5 left-5 text-xs font-black uppercase tracking-widest text-white px-3 py-1.5 rounded-full z-10" style={{ backgroundColor: COLORS.brand.blue }}>Mismo día</span>
               </div>
               {/* Texto */}
