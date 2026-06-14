@@ -958,7 +958,7 @@ export default function HomePage() {
                 route: 'Santo Domingo — Quito — Aeropuerto',
                 detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro norte de Quito y aeropuerto.',
                 time: '~2 h 45 min',
-                img: '/images/costa.png',
+                img: '/images/aeropuerto-quito.jpg',
               },
               {
                 color: '#d97706',
