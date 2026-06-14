@@ -62,7 +62,7 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
       <img
         src="/going-logo-h.png"
         alt="Going App Ecuador"
-        className="h-9 w-auto object-contain"
+        className="h-12 md:h-14 w-auto object-contain"
         onError={(e) => {
           // Fallback: ocultar imagen y mostrar texto
           (e.target as HTMLImageElement).style.display = 'none';

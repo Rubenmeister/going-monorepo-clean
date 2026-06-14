@@ -879,7 +879,7 @@ export default function HomePage() {
           {/* Mapa visible completo */}
           <FadeIn dir="up" className="mb-12">
             <img
-              src="/images/Mapa RUTAS A QUITO.png"
+              src="/images/mapa rutas Quito.png"
               alt="Rutas a Quito y el Aeropuerto Mariscal Sucre"
               className="w-full rounded-2xl shadow-2xl"
               style={{ border: '1px solid rgba(255,255,255,0.08)' }}
@@ -958,30 +958,44 @@ export default function HomePage() {
                 route: 'Santo Domingo — Quito — Aeropuerto',
                 detail: 'Acceso desde la Costa. Vía Calacalí o vía Alóag al centro norte de Quito y aeropuerto.',
                 time: '~2 h 45 min',
+                img: '/images/costa.png',
               },
               {
                 color: '#d97706',
                 route: 'Ambato — Latacunga — Quito — Aeropuerto',
                 detail: 'Ruta interandina. Conexión directa con la capital y el aeropuerto Mariscal Sucre.',
                 time: '~2 h 30 min',
+                img: '/images/ambato y tungurahua de fondo.jpg',
               },
               {
                 color: '#3b82f6',
                 route: 'Ibarra — Quito — Aeropuerto',
                 detail: 'Ruta norte de la Sierra. Directa a Quito norte y al aeropuerto Mariscal Sucre.',
                 time: '~2 h 15 min',
+                img: '/images/cuicocha.jpg',
               },
             ].map((r) => (
-              <div key={r.route} className="rounded-2xl p-5 border border-white/10 hover:border-white/20 transition-all" style={{ background: '#1e293b' }}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
-                  <span className="text-white font-black text-sm">{r.route}</span>
+              <div key={r.route} className="rounded-2xl border border-white/10 hover:border-white/20 transition-all overflow-hidden" style={{ background: '#1e293b' }}>
+                {/* Foto representativa de la ciudad/ruta. Render condicional:
+                    solo se dibuja si hay foto (evita íconos de imagen rota). */}
+                {r.img && (
+                  <img
+                    src={r.img}
+                    alt={r.route}
+                    className="w-full h-24 object-cover"
+                  />
+                )}
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: r.color }} />
+                    <span className="text-white font-black text-sm">{r.route}</span>
+                  </div>
+                  <p className="text-gray-400 text-xs leading-relaxed mb-4">{r.detail}</p>
+                  <span className="inline-flex items-center gap-1.5 text-gray-400 text-xs">
+                    <IconClock size={12} />
+                    {r.time}
+                  </span>
                 </div>
-                <p className="text-gray-400 text-xs leading-relaxed mb-4">{r.detail}</p>
-                <span className="inline-flex items-center gap-1.5 text-gray-400 text-xs">
-                  <IconClock size={12} />
-                  {r.time}
-                </span>
               </div>
             ))}
           </div>
