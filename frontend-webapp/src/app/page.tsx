@@ -6,7 +6,7 @@ import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
 import { COLORS } from './components/design-tokens';
 import {
-  IconClock, IconSuv, IconVan, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
+  IconClock, IconSuv, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
   IconStar, IconBell, IconChat, IconShield, IconMap, IconCalendar, IconUser,
   IconPackage, IconLightning, IconSignal, IconMoney, IconCamera, IconArrowRight,
   IconSearch, IconUsers, IconCheckCircle, IconGraduation, IconRoute, IconPhone,
@@ -1124,7 +1124,7 @@ export default function HomePage() {
           <FadeIn className="text-center mb-10">
             <span className="text-sm font-black uppercase tracking-widest" style={{ color: COLORS.brand.red }}>Nuestra flota</span>
             <h2 className="text-gray-900 font-black text-4xl mt-2" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>
-              De 1 a 30 personas — sin cambiar de app
+              De 1 a 45 personas — sin cambiar de app
             </h2>
             <p className="text-gray-500 text-lg mt-3 max-w-2xl mx-auto">
               El único catálogo en Ecuador que conecta un viaje rápido en SUV con un tour
@@ -1133,58 +1133,34 @@ export default function HomePage() {
           </FadeIn>
 
           <FadeIn dir="up" delay={0.1}>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-
-              {/* SUV — 4 pax */}
-              <div className="bg-white rounded-2xl p-5 text-center border border-gray-200 hover:border-transparent hover:shadow-lg transition-all">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                  <IconSuv size={28} />
-                </div>
-                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>SUV</h3>
-                <p className="text-xs text-gray-500 mb-2">Hasta 4 pax</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Familia · pareja</p>
-              </div>
-
-              {/* SUV XL — 5 pax */}
-              <div className="bg-white rounded-2xl p-5 text-center border border-gray-200 hover:border-transparent hover:shadow-lg transition-all">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-                  <IconSuv size={28} />
-                </div>
-                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>SUV XL</h3>
-                <p className="text-xs text-gray-500 mb-2">Hasta 5 pax</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Familia + equipaje</p>
-              </div>
-
-              {/* VAN — 7 pax */}
-              <div className="rounded-2xl p-5 text-center transition-all hover:shadow-xl" style={{ backgroundColor: COLORS.brand.yellowBg, border: `2px solid ${COLORS.brand.yellow}` }}>
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
-                  <IconVan size={28} />
-                </div>
-                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>VAN</h3>
-                <p className="text-xs text-gray-700 mb-2 font-bold">Hasta 7 pax</p>
-                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellowDark }}>Grupo de amigos</p>
-              </div>
-
-              {/* Minibús — 20 pax */}
-              <div className="rounded-2xl p-5 text-center transition-all hover:shadow-xl" style={{ backgroundColor: COLORS.brand.yellowBg, border: `2px solid ${COLORS.brand.yellow}` }}>
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.yellow, color: COLORS.brand.black }}>
-                  <IconVan size={28} />
-                </div>
-                <h3 className="font-black text-gray-900 text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Minibús</h3>
-                <p className="text-xs text-gray-700 mb-2 font-bold">Hasta 20 pax</p>
-                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellowDark }}>Tour · evento</p>
-              </div>
-
-              {/* Bus — 30 pax */}
-              <div className="rounded-2xl p-5 text-center text-white transition-all hover:shadow-xl col-span-2 md:col-span-1" style={{ backgroundColor: COLORS.brand.black }}>
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center" style={{ backgroundColor: COLORS.brand.red, color: '#fff' }}>
-                  <IconVan size={28} />
-                </div>
-                <h3 className="font-black text-white text-base mb-0.5" style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>Bus</h3>
-                <p className="text-xs text-white/80 mb-2 font-bold">30+ pax</p>
-                <p className="text-[10px] uppercase tracking-wider font-black" style={{ color: COLORS.brand.yellow }}>Corporativo · promoción</p>
-              </div>
-
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[
+                { name: 'SUV',     pax: 'Hasta 4 pax',  cat: 'Familia · pareja',        img: '/images/suv-quito.png',           tier: 'white'  },
+                { name: 'SUV XL',  pax: 'Hasta 5 pax',  cat: 'Familia + equipaje',      img: '/images/SUV de lujo.png',         tier: 'white'  },
+                { name: 'VAN',     pax: 'Hasta 7 pax',  cat: 'Grupo de amigos',         img: '/images/sprinter-aeropuerto.png', tier: 'yellow' },
+                { name: 'VAN XL',  pax: 'Hasta 12 pax', cat: 'Empresas · amigos',       img: '/images/van-xl.png',              tier: 'yellow' },
+                { name: 'Minibús', pax: 'Hasta 20 pax', cat: 'Tour · evento',           img: '/images/Minibus.png',             tier: 'yellow' },
+                { name: 'Bus',     pax: '30+ pax',      cat: 'Corporativo · promoción', img: '/images/BUS.png',                 tier: 'black'  },
+              ].map((v) => {
+                const cardStyle =
+                  v.tier === 'yellow' ? { backgroundColor: COLORS.brand.yellowBg, border: `2px solid ${COLORS.brand.yellow}` }
+                  : v.tier === 'black' ? { backgroundColor: COLORS.brand.black }
+                  : {};
+                const cardCls  = v.tier === 'white' ? 'bg-white border border-gray-200 hover:border-transparent hover:shadow-lg' : 'hover:shadow-xl';
+                const titleCls = v.tier === 'black' ? 'text-white' : 'text-gray-900';
+                const paxCls   = v.tier === 'white' ? 'text-gray-500' : v.tier === 'black' ? 'text-white/80 font-bold' : 'text-gray-700 font-bold';
+                const catStyle = v.tier === 'yellow' ? { color: COLORS.brand.yellowDark } : v.tier === 'black' ? { color: COLORS.brand.yellow } : { color: COLORS.gray[400] };
+                return (
+                  <div key={v.name} className={`rounded-2xl text-center overflow-hidden transition-all ${cardCls}`} style={cardStyle}>
+                    <img src={v.img} alt={v.name} className="w-full h-24 object-cover bg-gray-50" />
+                    <div className="p-5 pt-4">
+                      <h3 className={`font-black text-base mb-0.5 ${titleCls}`} style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}>{v.name}</h3>
+                      <p className={`text-xs mb-2 ${paxCls}`}>{v.pax}</p>
+                      <p className="text-[10px] uppercase tracking-wider font-black" style={catStyle}>{v.cat}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </FadeIn>
 
