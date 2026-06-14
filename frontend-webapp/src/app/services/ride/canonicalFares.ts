@@ -1,3 +1,5 @@
+// COPIA SINCRONIZADA de libs/pricing/src/lib/fares.ts (fuente unica).
+// NO editar a mano: editar la canonica y re-sincronizar.
 /**
  * GOING — Tabla de tarifas
  * Actualizada: Marzo 2026
