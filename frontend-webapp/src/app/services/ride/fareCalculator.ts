@@ -41,6 +41,7 @@
 
 import type { Location, VehicleType } from '@/types';
 import { VEHICLE_TYPES } from '@/types';
+import { FARES } from './canonicalFares';
 
 // ════════════════════════════════════════════════════════════════
 // TIPOS PÚBLICOS
@@ -385,190 +386,15 @@ const FULL_PRICE_ROUTES: Record<string, FullPriceEntry> = {
 };
 
 // ── Tabla de precios COMPARTIDO — SUV, un sentido, USD ────────
-const CITY_PAIR_PRICES: Record<string, number> = {
-
-  // ── Rutas hacia Quito Centro Norte ───────────────────────────
-  'cayambe|quito centro norte':              8,
-  'guayllabamba|quito centro norte':         6,
-  'ibarra|quito centro norte':               15,
-  'atuntaqui|quito centro norte':            14,
-  'otavalo|quito centro norte':              12,
-  'peguche|quito centro norte':              15,
-  'cotacachi|quito centro norte':            15,
-  'tabacundo|quito centro norte':            7,
-  'el quinche|quito centro norte':           7,
-  'pifo|quito centro norte':                 6,
-  'quito centro norte|tulcan':               24,
-  'latacunga|quito centro norte':            10,
-  'tambillo|quito centro norte':             8,
-  'aloasi|quito centro norte':               10,
-  'machachi|quito centro norte':             9,
-  'ambato|quito centro norte':               15,
-  'banos|quito centro norte':                17,
-  'quito centro norte|riobamba':             17,
-  'quito centro norte|guaranda':             24,
-  'quito centro norte|santo domingo':        15,
-  'esmeraldas|quito centro norte':           29,
-  'quito centro norte|alausi':               29,
-  'quito centro norte|puyo':                 34,
-  'lago agrio|quito centro norte':           39,
-  'quito centro norte|tena':                 29,
-  'quito centro norte|cuenca':               44,
-  'manta|quito centro norte':                49,
-  'portoviejo|quito centro norte':           49,
-  'quito centro norte|guayaquil':            49,
-  'quito centro norte|salinas':              59,
-  'montanita|quito centro norte':            54,
-  'macas|quito centro norte':                54,
-  'machala|quito centro norte':              64,
-  'quito centro norte|zaruma':               64,
-  'loja|quito centro norte':                 69,
-
-  // ── Ruta Norte: Ibarra / Atuntaqui / Otavalo / Peguche ────────
-  'atuntaqui|cumbaya  tumbaco valle':        19,
-  'atuntaqui|los chillos  sangolqui':        20,
-  'atuntaqui|quito sur':                     14,
-  'aeropuerto quito tababela|peguche':       14,
-
-  // ── Ruta Ambato: ciudades intermedias ──────────────────────────
-  'latacunga|salcedo':                       3,
-  'ambato|salcedo':                          5,
-  'ambato|pillaro':                          5,
-  'ambato|cevallos':                         4,
-  'ambato|tisaleo':                          4,
-  'ambato|mocha':                            4,
-  'banos|mocha':                             4,
-  'banos|cevallos':                          5,
-  'banos|tisaleo':                           5,
-  'banos|pillaro':                           6,
-  'latacunga|pillaro':                       8,
-  'latacunga|cevallos':                      9,
-  'quito centro norte|salcedo':              12,
-  'quito centro norte|pillaro':              11,
-  'quito centro norte|cevallos':             12,
-  'quito centro norte|tisaleo':              12,
-  'quito centro norte|mocha':               13,
-
-  // ── Ruta Santo Domingo: ciudades intermedias ──────────────────
-  'el carmen|la concordia':                  7,
-  'la concordia|santo domingo':              8,
-  'la concordia|quito centro norte':         20,
-  'aeropuerto quito tababela|la concordia':  35,
-
-  // ── El Carmen → Quito / Aeropuerto (Ruta 2) ───────────────────
-  'el carmen|quito centro norte':            20,
-  'el carmen|santo domingo':                 8,
-  'el carmen|quito sur':                     18,
-
-  // ── Rutas hacia Quito Sur ────────────────────────────────────
-  'quito sur|latacunga':                     10,
-  'ambato|quito sur':                        13,
-  'machachi|quito sur':                      7,
-  'tambillo|quito sur':                      6,
-  'aloasi|quito sur':                        8,
-  'quito sur|riobamba':                      18,
-  'banos|quito sur':                         15,
-  'quito sur|cuenca':                        42,
-  'quito sur|guayaquil':                     47,
-
-  // ── Rutas hacia Valles (Cumbayá / Tumbaco) ──────────────────
-  'cumbaya  tumbaco valle|latacunga':        15,
-  'ambato|cumbaya  tumbaco valle':           17,
-  'banos|cumbaya  tumbaco valle':            14,
-  'cumbaya  tumbaco valle|pifo':             5,
-  'cumbaya  tumbaco valle|riobamba':         22,
-  'cumbaya  tumbaco valle|guayaquil':        53,
-  'cumbaya  tumbaco valle|cuenca':           47,
-  'cumbaya  tumbaco valle|tena':             27,
-
-  // Rutas hacia Los Chillos / Sangolqui
-  'latacunga|los chillos  sangolqui':        14,
-  'ambato|los chillos  sangolqui':           16,
-  'banos|los chillos  sangolqui':            13,
-  'los chillos  sangolqui|riobamba':         21,
-  'cuenca|los chillos  sangolqui':           46,
-
-  // Aeropuerto Quito (Tababela)
-  'aeropuerto quito tababela|latacunga':     15,
-  'aeropuerto quito tababela|ambato':        18,
-  'aeropuerto quito tababela|banos':         18,
-  'aeropuerto quito tababela|riobamba':      25,
-  'aeropuerto quito tababela|guayllabamba':  5,
-  'aeropuerto quito tababela|cayambe':       9,
-  'aeropuerto quito tababela|ibarra':        20,
-  'aeropuerto quito tababela|atuntaqui':     14,
-  'aeropuerto quito tababela|otavalo':       18,
-  'aeropuerto quito tababela|pifo':          5,
-  'aeropuerto quito tababela|el quinche':    6,
-  'aeropuerto quito tababela|cuenca':        47,
-  'aeropuerto quito tababela|guayaquil':     52,
-  'aeropuerto quito tababela|santo domingo': 23,
-  'aeropuerto quito tababela|el carmen':     35,
-  'aeropuerto quito tababela|quito sur':     12,
-  'aeropuerto quito tababela|cumbaya  tumbaco valle': 8,
-  'aeropuerto quito tababela|los chillos  sangolqui': 15,
-
-  // Desde / hacia Guayaquil
-  'guayaquil|naranjal':      10,
-  'guayaquil|salinas':       14,
-  'guayaquil|montanita':     17,
-  'guayaquil|machala':       19,
-  'alausi|guayaquil':        24,
-  'cuenca|guayaquil':        24,
-  'guayaquil|riobamba':      29,
-  'guayaquil|manta':         29,
-  'guayaquil|portoviejo':    29,
-  'guayaquil|santo domingo': 29,
-  'guayaquil|zaruma':        29,
-  'ambato|guayaquil':        34,
-  'banos|guayaquil':         34,
-  'guayaquil|latacunga':     39,
-  'guayaquil|loja':          39,
-  'esmeraldas|guayaquil':    54,
-  'guayaquil|ibarra':        54,
-
-  // Desde / hacia Cuenca
-  'azogues|cuenca':          5,
-  'alausi|cuenca':           17,
-  'cuenca|machala':          19,
-  'cuenca|loja':             24,
-  'cuenca|riobamba':         24,
-  'ambato|cuenca':           29,
-  'cuenca|zaruma':           29,
-  'cuenca|latacunga':        34,
-  'cuenca|macas':            34,
-
-  // Sierra interna
-  'ibarra|otavalo':          5,
-  'ambato|banos':            5,
-  'latacunga|ambato':        5,
-  'cotacachi|ibarra':        7,
-  'ambato|riobamba':         7,
-  'latacunga|riobamba':      11,
-  'alausi|riobamba':         11,
-  'ibarra|tulcan':           14,
-  'ambato|puyo':             14,
-  'cayambe|ibarra':          14,
-  'ambato|tena':             17,
-  'ibarra|latacunga':        19,
-
-  // Costa interna
-  'manta|portoviejo':        4,
-  'montanita|salinas':       9,
-  'esmeraldas|manta':        44,
-  'manta|salinas':           49,
-
-  // Sur del pais
-  'loja|zaruma':             17,
-  'machala|zaruma':          19,
-  'loja|machala':            29,
-
-  // Amazonia
-  'puyo|tena':               11,
-  'lago agrio|tena':         34,
-  'macas|puyo':              34,
-  'macas|tena':              44,
-};
+// Mapea una direccion del frontend a la clave de ciudad CANONICA (libs/pricing).
+// Zonas de Quito (centro norte / sur / cumbaya-valles / los chillos) colapsan a
+// "quito"; la diferencia de zona la cobra el recargo de origen +$5, no la base.
+function toCanonicalCity(address: string): string {
+  const c = normalizeCity(address);
+  if (c.startsWith('quito') || c.startsWith('cumbaya') || c.startsWith('los chillos')) return 'quito';
+  if (c.startsWith('aeropuerto')) return 'aeropuerto';
+  return c.split(' ').join('_');
+}
 
 // Formula de respaldo
 function distanceBasedSharedPrice(km: number): number {
@@ -586,7 +412,9 @@ function sharedSuvBase(
     const fullKey  = pairKey(pickup.address, dropoff.address);
     const fullEntry = FULL_PRICE_ROUTES[fullKey];
     if (fullEntry !== undefined) return { price: fullEntry.compartido, fixed: true, fullEntry };
-    const p = CITY_PAIR_PRICES[fullKey];
+    const ca = toCanonicalCity(pickup.address);
+    const cb = toCanonicalCity(dropoff.address);
+    const p = FARES.shared[ca + '-' + cb] ?? FARES.shared[cb + '-' + ca];
     if (p !== undefined) return { price: p, fixed: true };
   }
   return {
