@@ -60,9 +60,9 @@ function Logo({ onLogoClick }: { onLogoClick: () => void }) {
           texto rojo. <img> directo sirve el asset estático y es confiable. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/going-logo-h.png"
+        src="/going-logo-h-tight.png"
         alt="Going App Ecuador"
-        className="h-12 md:h-14 w-auto object-contain"
+        className="h-10 md:h-11 w-auto object-contain"
         onError={(e) => {
           // Fallback: ocultar imagen y mostrar texto
           (e.target as HTMLImageElement).style.display = 'none';

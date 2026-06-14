@@ -119,7 +119,7 @@ export default function QuienesSomosPage() {
               🇪🇨 La primera SuperApp de turismo colaborativo de Latinoamérica
             </div>
             <h1 className="font-black text-white mb-6 leading-tight" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)' }}>
-              Somos Going App
+              Somos <span style={{ color: '#ff4c41' }}>Going App</span>
             </h1>
             <p className="text-white/80 text-xl leading-relaxed">
               Transformamos la experiencia de viaje en Ecuador conectando viajeros, conductoras y conductores, anfitriones y proveedores locales en una sola plataforma integral, sostenible e inclusiva.
