@@ -218,7 +218,7 @@ export default function QuienesSomosPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <span className="inline-block text-sm md:text-base font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#ff4c41' }}>Todo lo que puedes reservar en Going App</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en <span style={{ color: '#ff4c41' }}>Going App</span></h2>
               <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
             </div>
           </FadeIn>
