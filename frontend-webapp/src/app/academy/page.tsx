@@ -268,6 +268,15 @@ export default function AcademyPage() {
       <div className="relative text-white py-16 px-6 overflow-hidden"
         style={{ background: `linear-gradient(135deg, ${COLORS.brand.black} 0%, #1e293b 60%, ${COLORS.brand.red}30 100%)` }}>
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5 bg-white -translate-y-1/2 translate-x-1/3" />
+        {/* Logo Going App — centrado arriba del hero */}
+        <div className="max-w-6xl mx-auto relative z-10 flex justify-center mb-10">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/going-logo-h-trans.png"
+            alt="Going App"
+            className="h-14 md:h-16 w-auto object-contain"
+          />
+        </div>
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-10">
           {/* Texto */}
           <div className="flex-1 text-center md:text-left">
