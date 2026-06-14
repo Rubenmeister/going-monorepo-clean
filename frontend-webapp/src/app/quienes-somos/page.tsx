@@ -74,10 +74,10 @@ const DIFFERENTIATORS = [
   },
 ];
 
-function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; title: string; desc: string; price?: string; highlight?: boolean }) {
+function ServiceCard({ icon, img, title, desc, price, highlight }: { icon: string; img?: string; title: string; desc: string; price?: string; highlight?: boolean }) {
   return (
     <div
-      className="rounded-3xl p-7 transition-all duration-300 hover:-translate-y-1"
+      className="rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{
         background: highlight ? '#ff4c41' : '#fff',
         color: highlight ? '#fff' : '#1a1a1a',
@@ -85,10 +85,15 @@ function ServiceCard({ icon, title, desc, price, highlight }: { icon: string; ti
         border: highlight ? 'none' : '1px solid #f0f0f0',
       }}
     >
-      <div className="text-3xl mb-4">{icon}</div>
-      <div className="font-extrabold text-lg mb-2">{title}</div>
-      <div className="text-sm leading-relaxed mb-3" style={{ color: highlight ? 'rgba(255,255,255,0.85)' : '#666' }}>{desc}</div>
-      {price && <div className="text-sm font-bold" style={{ color: highlight ? 'rgba(255,255,255,0.9)' : '#ff4c41' }}>{price}</div>}
+      {/* Foto del servicio — recortada (object-cover) y con esquinas redondeadas
+          gracias al rounded-3xl + overflow-hidden de la tarjeta. */}
+      {img && <img src={img} alt={title} className="w-full h-40 object-cover" />}
+      <div className="p-7">
+        {!img && <div className="text-3xl mb-4">{icon}</div>}
+        <div className="font-extrabold text-lg mb-2">{title}</div>
+        <div className="text-sm leading-relaxed mb-3" style={{ color: highlight ? 'rgba(255,255,255,0.85)' : '#666' }}>{desc}</div>
+        {price && <div className="text-sm font-bold" style={{ color: highlight ? 'rgba(255,255,255,0.9)' : '#ff4c41' }}>{price}</div>}
+      </div>
     </div>
   );
 }
@@ -212,8 +217,8 @@ export default function QuienesSomosPage() {
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">Todo lo que puedes reservar en Going App</h2>
+              <span className="inline-block text-sm md:text-base font-bold uppercase tracking-widest mb-4" style={{ color: '#ff4c41' }}>Lo que ofrecemos</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#ff4c41' }}>Todo lo que puedes reservar en Going App</h2>
               <p className="text-gray-500">Un solo lugar. Múltiples soluciones de movilidad.</p>
             </div>
           </FadeIn>
