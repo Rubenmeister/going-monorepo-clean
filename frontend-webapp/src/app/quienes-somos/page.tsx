@@ -223,13 +223,13 @@ export default function QuienesSomosPage() {
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-            <FadeIn delay={0}><ServiceCard icon="🚗" title="Viajes Compartidos" desc="La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo." price="Desde $3 por trayecto" highlight /></FadeIn>
-            <FadeIn delay={80}><ServiceCard icon="🚙" title="Transporte Privado" desc="El vehículo es tuyo. Por trayecto o por días. Ideal para grupos y familias." price="Precio fijo desde el inicio" /></FadeIn>
-            <FadeIn delay={160}><ServiceCard icon="📦" title="Envíos Express" desc="Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido." price="Recolección en 30 minutos" /></FadeIn>
+            <FadeIn delay={0}><ServiceCard icon="🚗" img="/images/serv-compartidos.jpg" title="Viajes Compartidos" desc="La forma más económica de viajar entre ciudades. Comparte el vehículo y el costo." price="Desde $3 por trayecto" highlight /></FadeIn>
+            <FadeIn delay={80}><ServiceCard icon="🚙" img="/images/serv-privado.jpg" title="Transporte Privado" desc="El vehículo es tuyo. Por trayecto o por días. Ideal para grupos y familias." price="Precio fijo desde el inicio" /></FadeIn>
+            <FadeIn delay={160}><ServiceCard icon="📦" img="/images/serv-envios.jpg" title="Envíos Express" desc="Envía paquetes a cualquier ciudad. Tracking en tiempo real incluido." price="Recolección en 30 minutos" /></FadeIn>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <FadeIn delay={240}><ServiceCard icon="🏨" title="Alojamiento" desc="Hospedaje verificado en toda la ruta. Desde casas locales a hoteles." /></FadeIn>
-            <FadeIn delay={300}><ServiceCard icon="🗺️" title="Tours" desc="Guías locales expertos. Descubre Ecuador con quien la conoce de verdad." /></FadeIn>
+            <FadeIn delay={240}><ServiceCard icon="🏨" img="/images/serv-alojamiento.jpg" title="Alojamiento" desc="Hospedaje verificado en toda la ruta. Desde casas locales a hoteles." /></FadeIn>
+            <FadeIn delay={300}><ServiceCard icon="🗺️" img="/images/serv-tours.jpg" title="Tours" desc="Guías locales expertos. Descubre Ecuador con quien la conoce de verdad." /></FadeIn>
           </div>
         </div>
       </section>
