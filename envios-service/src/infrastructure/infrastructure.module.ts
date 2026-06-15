@@ -6,6 +6,7 @@ import {
   ParcelModelSchema,
   ParcelSchema,
 } from './persistence/schemas/parcel.schema';
+import { ParcelDelayAlertCron } from './services/parcel-delay-alert.cron';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import {
       provide: IParcelRepository,
       useClass: MongooseParcelRepository,
     },
+    ParcelDelayAlertCron,
   ],
   exports: [IParcelRepository],
 })

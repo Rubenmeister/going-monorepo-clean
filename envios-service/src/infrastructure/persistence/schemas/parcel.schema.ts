@@ -116,6 +116,10 @@ export class ParcelModelSchema {
   // Foto del paquete (data URL base64) adjuntada por el remitente.
   @Prop()
   packagePhotoUrl?: string;
+
+  // Aviso proactivo de retraso ya enviado (idempotencia del ParcelDelayAlertCron).
+  @Prop()
+  delayAlertSentAt?: Date;
 }
 
 export const ParcelSchema = SchemaFactory.createForClass(ParcelModelSchema);

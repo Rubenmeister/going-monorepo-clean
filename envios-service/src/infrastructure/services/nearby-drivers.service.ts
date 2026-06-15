@@ -38,10 +38,16 @@ export interface FindRankedDriversOptions {
 export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NearbyDriversService.name);
   private redis!: Redis;
+  /** Token Mapbox para ETA con tráfico (opcional — sin él se usa el estimado estático). */
+  private mapboxToken?: string;
 
   constructor(private readonly config: ConfigService) {}
 
   onModuleInit() {
+    this.mapboxToken =
+      this.config.get<string>('MAPBOX_TOKEN') ||
+      this.config.get<string>('MAPBOX_ACCESS_TOKEN') ||
+      undefined;
     const url = this.config.get<string>('REDIS_URL') || 'redis://localhost:6379';
     this.redis = new Redis(url, {
       lazyConnect: true,
@@ -102,10 +108,11 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
         radiusKm,
         'km',
         'WITHDIST',
+        'WITHCOORD',
         'ASC',
         'COUNT',
         maxResults * 3
-      )) as Array<[string, string]>;
+      )) as Array<[string, string, [string, string]]>;
 
       if (!results || results.length === 0) return [];
 
@@ -114,8 +121,13 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
         vehicleFilter.length === 0 || vehicleFilter.includes('any');
 
       const ranked: RankedDriver[] = [];
-      for (const [driverId, distStr] of results) {
+      const coordsByDriver = new Map<string, [number, number]>();
+      for (const [driverId, distStr, coord] of results) {
         if (ranked.length >= maxResults) break;
+        coordsByDriver.set(driverId, [
+          parseFloat(coord?.[0] ?? 'NaN'),
+          parseFloat(coord?.[1] ?? 'NaN'),
+        ]);
 
         const availability = await this.redis.hgetall(
           `${DRIVER_AVAILABILITY_PREFIX}${driverId}`
@@ -162,10 +174,73 @@ export class NearbyDriversService implements OnModuleInit, OnModuleDestroy {
         return d !== 0 ? d : a.distanceKm - b.distanceKm;
       });
 
+      // ETA con tráfico real (Mapbox driving-traffic): mejora etaMinutes en
+      // sitio. Si no hay token o Mapbox falla, queda el estimado estático.
+      await this.applyTrafficEta(ranked, coordsByDriver, longitude, latitude);
+
       return ranked;
     } catch (e) {
       this.logger.warn(`Redis GEO query failed: ${(e as Error).message}`);
       return [];
+    }
+  }
+
+  /**
+   * Reemplaza etaMinutes por la duración real CON TRÁFICO de Mapbox Matrix
+   * (perfil driving-traffic) en UNA sola llamada para todos los candidatos.
+   * El perfil driving-traffic admite máx 10 coordenadas → usamos hasta 9
+   * conductores + el punto de recogida. Robusto: sin token o ante cualquier
+   * fallo (timeout, HTTP, shape), deja el etaMinutes estático — nunca rompe
+   * el ranking ni bloquea el dispatch (timeout 2.5s).
+   */
+  private async applyTrafficEta(
+    drivers: RankedDriver[],
+    coordsByDriver: Map<string, [number, number]>,
+    pickupLng: number,
+    pickupLat: number,
+  ): Promise<void> {
+    if (!this.mapboxToken || drivers.length === 0) return;
+
+    const subset = drivers.slice(0, 9).filter((d) => {
+      const c = coordsByDriver.get(d.driverId);
+      return c && Number.isFinite(c[0]) && Number.isFinite(c[1]);
+    });
+    if (subset.length === 0) return;
+
+    const coords = subset
+      .map((d) => {
+        const c = coordsByDriver.get(d.driverId)!;
+        return `${c[0]},${c[1]}`;
+      })
+      .concat(`${pickupLng},${pickupLat}`)
+      .join(';');
+    const destIdx = subset.length; // la recogida es la última coordenada
+    const sources = subset.map((_, i) => i).join(';');
+    const url =
+      `https://api.mapbox.com/directions-matrix/v1/mapbox/driving-traffic/${coords}` +
+      `?sources=${sources}&destinations=${destIdx}&annotations=duration` +
+      `&access_token=${this.mapboxToken}`;
+
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2500);
+      const res = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) {
+        this.logger.warn(`Mapbox Matrix HTTP ${res.status} — uso ETA estático`);
+        return;
+      }
+      const data: any = await res.json();
+      const durations: Array<Array<number | null>> | undefined = data?.durations;
+      if (!Array.isArray(durations)) return;
+      subset.forEach((d, i) => {
+        const secs = durations[i]?.[0];
+        if (typeof secs === 'number' && secs > 0) {
+          d.etaMinutes = Math.max(1, Math.round(secs / 60));
+        }
+      });
+    } catch (e) {
+      this.logger.warn(`Mapbox traffic ETA falló — ETA estático: ${(e as Error).message}`);
     }
   }
 }
