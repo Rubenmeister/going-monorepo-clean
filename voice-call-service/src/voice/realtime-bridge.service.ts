@@ -154,7 +154,7 @@ export class RealtimeBridgeService {
       // silenceDurationMs alto (1100): espera a que la persona TERMINE de hablar
       // antes de responder — evita que la asistente suene apresurada o corte a
       // mitad de la pregunta. prefixPaddingMs da colchón al inicio del habla.
-      turnDetection:      { type: 'server_vad', threshold: 0.5, prefixPaddingMs: 400, silenceDurationMs: 1100 },
+      turnDetection:      { type: 'server_vad', threshold: 0.5, prefixPaddingMs: 400, silenceDurationMs: 1000 },
       modalities:         ['audio', 'text'],
       inputTranscriptionLanguage: language,
       temperature:        0.7,

@@ -49,7 +49,7 @@ export function buildAnswerTwiml(input: AnswerTwimlInput): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Lupe" language="es-MX">Aló, Going App. Un momento por favor.</Say>
+  <Say voice="Polly.Lupe" language="es-MX">Bienvenido a Going App. ¿En qué te puedo servir?</Say>
   <Connect>
     <Stream url="${url}">
       <Parameter name="callId" value="${cid}"/>
