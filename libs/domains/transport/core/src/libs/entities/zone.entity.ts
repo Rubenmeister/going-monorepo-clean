@@ -14,9 +14,12 @@ import { UUID } from '@going-monorepo-clean/shared-domain';
  *                    +15%). Se suma al tarifario normal.
  *   - restricted   : Sólo permite a conductores con credenciales
  *                    específicas (ej. driver con VTC autorizado).
+ *   - danger       : Zona roja / peligrosa. NO bloquea el servicio, pero el
+ *                    sistema ALERTA al conductor (y opcionalmente al pasajero)
+ *                    para prevenir. El texto del riesgo va en `notes`.
  */
 
-export type ZoneKind = 'service_area' | 'no_service' | 'priority' | 'restricted';
+export type ZoneKind = 'service_area' | 'no_service' | 'priority' | 'restricted' | 'danger';
 
 /**
  * Coordenada como [lng, lat] siguiendo convención GeoJSON.

@@ -80,6 +80,16 @@ export class SearchQueryDto {
 
 // ── Response shape ────────────────────────────────────────────────────────────
 
+/**
+ * Estado de cobertura de la ruta buscada — para que las apps muestren un banner
+ * claro y uniforme en lugar de parsear los `notices`:
+ *   - available       : hay al menos una opción (on-demand o programada).
+ *   - route_not_yet   : la zona está cubierta pero esta ruta aún NO se opera;
+ *                       al habilitarla se publican días y horas de salida/regreso.
+ *   - out_of_coverage : alguna ubicación está fuera de la zona de cobertura.
+ */
+export type CoverageStatus = 'available' | 'route_not_yet' | 'out_of_coverage';
+
 export interface SearchRouteInfo {
   routeClass: RouteClass;
   isIntercity: boolean;
@@ -91,6 +101,7 @@ export interface SearchRouteInfo {
   distanceKm: number;
   estimatedDurationMinutes: number;
   inCoverage: boolean;
+  coverageStatus: CoverageStatus;
 }
 
 export interface OnDemandOption {

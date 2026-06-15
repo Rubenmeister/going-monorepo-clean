@@ -15,6 +15,7 @@ import type {
   SearchRouteInfo,
   ScheduledOption,
   AlternativeSchedule,
+  CoverageStatus,
 } from '../../api/dtos/search-query.dto';
 import { ScheduledTripService } from '../scheduled-trip.service';
 
@@ -57,7 +58,7 @@ export class UnifiedSearchUseCase {
       ? new Date(input.scheduledDateTime)
       : new Date();
 
-    const route: SearchRouteInfo = {
+    const route: Omit<SearchRouteInfo, 'coverageStatus'> = {
       routeClass: cls.routeClass,
       isIntercity: cls.isIntercity,
       isAirportCorridor: cls.isAirportCorridor,
@@ -137,7 +138,8 @@ export class UnifiedSearchUseCase {
         const sharedPerSeat = getFare(cls.originCity!, cls.destinationCity!);
         if (sharedPerSeat == null) {
           notices.push(
-            `Aún no tenemos tarifa configurada para ${cls.originLabel} → ${cls.destinationLabel}.`,
+            `Aún no operamos la ruta ${cls.originLabel} → ${cls.destinationLabel}. ` +
+              `Cuando la habilitemos publicaremos los días y horas de salida y regreso.`,
           );
         } else {
           const privateBase = getPrivateFare(sharedPerSeat, vehicleType);
@@ -180,7 +182,8 @@ export class UnifiedSearchUseCase {
             alternativeSchedules.length === 0
           ) {
             notices.push(
-              'Aún no hay viajes compartidos programados en esta ruta para esa fecha.',
+              `Aún no hay viajes compartidos programados en ${cls.originLabel} → ${cls.destinationLabel}. ` +
+                `Cuando se abran verás aquí los días y horas de salida y regreso.`,
             );
           }
         }
@@ -188,9 +191,19 @@ export class UnifiedSearchUseCase {
       }
     }
 
+    // Estado de cobertura: 'route_not_yet' cuando la zona está cubierta pero la
+    // ruta no devolvió ninguna opción (ni inmediata ni programada) → la app
+    // muestra "ruta todavía no disponible + días/horas al habilitarse".
+    const coverageStatus: CoverageStatus =
+      cls.routeClass === 'out_of_coverage'
+        ? 'out_of_coverage'
+        : onDemandOptions.length === 0 && (scheduledOptions?.length ?? 0) === 0
+          ? 'route_not_yet'
+          : 'available';
+
     return {
       searchId: uuidv4(),
-      route,
+      route: { ...route, coverageStatus },
       temporalPreference,
       onDemandOptions,
       scheduledOptions,

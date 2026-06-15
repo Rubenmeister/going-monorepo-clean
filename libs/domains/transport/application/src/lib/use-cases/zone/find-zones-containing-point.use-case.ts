@@ -22,6 +22,9 @@ export interface ZoneMatchResult {
   totalSurchargePct: number;
   /** Zonas de tipo restricted que el caller debe validar con driver. */
   restrictedZones: Zone[];
+  /** Zonas de tipo danger (rojas/peligrosas) que contienen el punto. El caller
+   *  (app del conductor) muestra una alerta; NO bloquea el servicio. */
+  dangerZones: Zone[];
 }
 
 /**
@@ -79,6 +82,7 @@ export class FindZonesContainingPointUseCase {
     const noService = byKind('no_service');
     const priority = byKind('priority');
     const restricted = byKind('restricted');
+    const danger = byKind('danger');
 
     const totalSurchargePct = priority.reduce(
       (acc, z) => acc + (z.surchargePct ?? 0),
@@ -91,6 +95,7 @@ export class FindZonesContainingPointUseCase {
       blockedByNoService: noService.length > 0,
       totalSurchargePct,
       restrictedZones: restricted,
+      dangerZones: danger,
     };
   }
 }

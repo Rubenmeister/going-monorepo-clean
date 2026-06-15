@@ -40,6 +40,7 @@ import { RecogidaPaqueteScreen }     from '@screens/envios/RecogidaPaqueteScreen
 import type { RecogidaPaqueteParams } from '@screens/envios/RecogidaPaqueteScreen';
 import { EntregaPaqueteScreen }      from '@screens/envios/EntregaPaqueteScreen';
 import type { EntregaPaqueteParams }  from '@screens/envios/EntregaPaqueteScreen';
+import { DriverSosScreen }           from '@screens/safety/DriverSosScreen';
 
 // Drawer
 import { DriverDrawer } from './DriverDrawer';
@@ -83,6 +84,7 @@ export type DriverMainStackParamList = {
   Assistant:   undefined;
   TripHistory: undefined;
   Academia:    undefined;
+  DriverSos:   undefined;
 };
 
 const Stack   = createNativeStackNavigator<DriverMainStackParamList>();
@@ -259,6 +261,13 @@ function DriverStack({ navigation }: any) {
         name="EntregaPaquete"
         component={EntregaPaqueteScreen}
         options={{ headerShown: false }}
+      />
+
+      {/* ── Emergencia / SOS del conductor ── */}
+      <Stack.Screen
+        name="DriverSos"
+        component={DriverSosScreen}
+        options={{ headerShown: false, presentation: 'fullScreenModal' }}
       />
     </Stack.Navigator>
   );

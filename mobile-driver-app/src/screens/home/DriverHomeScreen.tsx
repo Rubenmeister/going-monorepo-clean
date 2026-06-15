@@ -47,6 +47,7 @@ export function DriverHomeScreen() {
     useDriverStore();
   const cameraRef = useRef<MapboxGL.Camera>(null);
   const [location, setLocation] = useState<[number, number] | null>(null);
+  const [dangerZone, setDangerZone] = useState<{ name: string; notes?: string } | null>(null);
   const [docAlerts, setDocAlerts] = useState<{ label: string; daysLeft: number; urgent: boolean }[]>([]);
   const onlineStartRef = useRef<number | null>(null);
 
@@ -125,6 +126,45 @@ export function DriverHomeScreen() {
     const id = setInterval(pollPendingTrips, 5000);
     return () => clearInterval(id);
   }, [isOnline, pollPendingTrips]);
+
+  // Refrescar ubicación cada 45s mientras está en línea, para que el aviso de
+  // zona roja siga al conductor a medida que se mueve.
+  useEffect(() => {
+    if (!isOnline) return;
+    const id = setInterval(async () => {
+      try {
+        const loc = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        setLocation([loc.coords.longitude, loc.coords.latitude]);
+      } catch { /* sin GPS momentáneo — ignorar */ }
+    }, 45000);
+    return () => clearInterval(id);
+  }, [isOnline]);
+
+  // Consultar zonas peligrosas (rojas) en la ubicación actual y alertar al
+  // conductor. NO bloquea el servicio; sólo previene (protege conductor y pasajero).
+  useEffect(() => {
+    if (!location) return;
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('driver_token');
+        const [lng, lat] = location;
+        const { data } = await axios.get(`${API_BASE_URL}/zones/match`, {
+          params: { lat, lng },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data?.inDangerZone && data.dangerZones?.length) {
+          const z = data.dangerZones[0];
+          setDangerZone({ name: z.name, notes: z.notes });
+        } else {
+          setDangerZone(null);
+        }
+      } catch {
+        // endpoint no disponible / sin conexión — no mostrar alerta falsa
+      }
+    })();
+  }, [location]);
 
   // Navigate to RideRequest when a pending trip arrives
   useEffect(() => {
@@ -273,6 +313,35 @@ export function DriverHomeScreen() {
           ios_backgroundColor="#D1D5DB"
         />
       </View>
+
+      {/* Aviso de zona roja / peligrosa — overlay sobre el mapa */}
+      {dangerZone && (
+        <View style={styles.dangerBanner}>
+          <Ionicons name="warning" size={20} color="#fff" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.dangerBannerTitle}>
+              Zona de riesgo: {dangerZone.name}
+            </Text>
+            {!!dangerZone.notes && (
+              <Text style={styles.dangerBannerNote}>{dangerZone.notes}</Text>
+            )}
+            <Text style={styles.dangerBannerNote}>
+              Mantené las puertas con seguro y mantente alerta.
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Botón flotante de Emergencia / SOS — acceso rápido siempre visible */}
+      <TouchableOpacity
+        style={styles.sosFab}
+        onPress={() => navigation.navigate('DriverSos')}
+        accessibilityLabel="Emergencia SOS"
+        activeOpacity={0.85}
+      >
+        <Ionicons name="warning" size={20} color="#fff" />
+        <Text style={styles.sosFabText}>SOS</Text>
+      </TouchableOpacity>
 
       {/* Bottom panel */}
       <View style={styles.panel}>
@@ -447,6 +516,43 @@ const styles = StyleSheet.create({
   statusLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   statusDot: { width: 10, height: 10, borderRadius: 5 },
   statusText: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  dangerBanner: {
+    position: 'absolute',
+    top: 104,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#DC2626',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  dangerBannerTitle: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  dangerBannerNote: { color: '#FEE2E2', fontSize: 12, fontWeight: '600', marginTop: 2 },
+  sosFab: {
+    position: 'absolute',
+    top: 170,
+    right: 16,
+    backgroundColor: '#DC2626',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+  },
+  sosFabText: { color: '#fff', fontSize: 10, fontWeight: '900', marginTop: -2, letterSpacing: 0.5 },
   panel: {
     position: 'absolute',
     bottom: 0,

@@ -90,6 +90,10 @@ export class ZoneController {
       inServiceArea: res.inServiceArea,
       blockedByNoService: res.blockedByNoService,
       totalSurchargePct: res.totalSurchargePct,
+      // Zonas rojas/peligrosas: la app del conductor las usa para alertar.
+      // NO bloquean el servicio; sólo informan (name + notes = texto del riesgo).
+      inDangerZone: res.dangerZones.length > 0,
+      dangerZones: res.dangerZones.map((z) => ({ id: z.id, name: z.name, notes: z.notes })),
       zones: res.zones.map((z) => z.toGeoJSON()),
     };
   }
