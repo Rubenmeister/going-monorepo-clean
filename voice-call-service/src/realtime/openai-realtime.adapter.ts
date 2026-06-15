@@ -149,6 +149,20 @@ export type RealtimeEventMap = {
 };
 
 const REALTIME_URL = 'wss://api.openai.com/v1/realtime';
+
+/**
+ * Mapea el formato de audio estilo beta ('pcm16' | 'g711_ulaw' | 'g711_alaw')
+ * al objeto de formato de la API GA. El bridge de Twilio usa g711_ulaw nativo
+ * (μ-law 8kHz) en ambos sentidos → audio/pcmu. PCM16 = 24kHz.
+ */
+function toGaAudioFormat(fmt?: string): { type: string; rate?: number } {
+  switch (fmt) {
+    case 'g711_ulaw': return { type: 'audio/pcmu' };
+    case 'g711_alaw': return { type: 'audio/pcma' };
+    case 'pcm16':
+    default:          return { type: 'audio/pcm', rate: 24000 };
+  }
+}
 const DEFAULT_MODEL = 'gpt-realtime-mini';
 
 /**
@@ -298,12 +312,12 @@ export class RealtimeSession extends EventEmitter {
       instructions:      this.config.instructions,
       audio: {
         input: {
-          format:         { type: 'audio/pcm', rate: 24000 },
+          format:         toGaAudioFormat(this.config.inputAudioFormat),
           turn_detection: turnDetection,
           transcription,
         },
         output: {
-          format: { type: 'audio/pcm', rate: 24000 },
+          format: toGaAudioFormat(this.config.outputAudioFormat),
           voice:  this.config.voice,
         },
       },
