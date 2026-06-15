@@ -288,7 +288,7 @@ export class TwilioMediaStreamGateway
    */
   sendAudioToStream(streamSid: string, mulawPayloadB64: string): boolean {
     const ws = this.streamsBySid.get(streamSid);
-    if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+    if (!ws || ws.readyState !== 1 /* WebSocket.OPEN — literal: el static no es accesible vía el import del bundler */) return false;
     try {
       ws.send(JSON.stringify({
         event:     'media',
@@ -308,7 +308,7 @@ export class TwilioMediaStreamGateway
    */
   clearStream(streamSid: string): void {
     const ws = this.streamsBySid.get(streamSid);
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    if (!ws || ws.readyState !== 1 /* WebSocket.OPEN */) return;
     try {
       ws.send(JSON.stringify({ event: 'clear', streamSid }));
     } catch { /* ignore */ }

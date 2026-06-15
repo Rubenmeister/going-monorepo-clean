@@ -460,7 +460,7 @@ export class RealtimeSession extends EventEmitter {
   }
 
   private sendRaw(payload: object): void {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+    if (!this.ws || this.ws.readyState !== 1 /* WebSocket.OPEN */) {
       throw new Error('WebSocket not open');
     }
     this.ws.send(JSON.stringify(payload));
