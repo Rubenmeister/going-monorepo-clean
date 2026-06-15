@@ -17,7 +17,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter } from 'events';
-import WebSocket from 'ws';
+// `ws` es CommonJS (`export = WebSocket`). Importarlo como default
+// (`import WebSocket from 'ws'`) revienta en runtime con "ws_1.default is not a
+// constructor" porque el tsconfig tiene allowSyntheticDefaultImports SIN
+// esModuleInterop → el emit accede a `.default` (inexistente). `import = require`
+// es interop-agnóstico y preserva la clase + namespace (RawData, OPEN).
+import WebSocket = require('ws');
 
 /**
  * OpenAI Realtime API — voces disponibles para Realtime (gpt-realtime-mini).
