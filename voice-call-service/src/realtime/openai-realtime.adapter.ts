@@ -201,10 +201,11 @@ export class RealtimeSession extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       const url = `${REALTIME_URL}?model=${encodeURIComponent(this.model)}`;
+      // GA Realtime API: NO se envía el header `OpenAI-Beta` (la Beta fue
+      // retirada el 12-may-2026; incluirlo da error beta_api_shape_disabled).
       this.ws = new WebSocket(url, {
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
-          'OpenAI-Beta': 'realtime=v1',
         },
       });
 
@@ -282,26 +283,31 @@ export class RealtimeSession extends EventEmitter {
             silence_duration_ms: this.config.turnDetection?.silenceDurationMs   ?? 500,
           };
 
-    const sessionPayload: any = {
-      modalities:          this.config.modalities         ?? ['audio', 'text'],
-      voice:               this.config.voice,
-      instructions:        this.config.instructions,
-      input_audio_format:  this.config.inputAudioFormat   ?? 'pcm16',
-      output_audio_format: this.config.outputAudioFormat  ?? 'pcm16',
-      turn_detection:      turnDetection,
-      temperature:         this.config.temperature        ?? 0.7,
-    };
+    const transcription = this.config.inputTranscriptionLanguage
+      ? { model: 'whisper-1', language: this.config.inputTranscriptionLanguage }
+      : { model: 'whisper-1' };
 
-    if (this.config.inputTranscriptionLanguage) {
-      sessionPayload.input_audio_transcription = {
-        model:    'whisper-1',
-        language: this.config.inputTranscriptionLanguage,
-      };
-    } else {
-      // Pedimos transcript siempre — lo necesitamos para guardar
-      // Conversation.messages e indexar lo que dijo el usuario.
-      sessionPayload.input_audio_transcription = { model: 'whisper-1' };
-    }
+    // GA Realtime API: `session.type` es requerido y la config de audio se anida
+    // bajo audio.input / audio.output (antes eran campos planos: modalities,
+    // voice, input_audio_format, output_audio_format). PCM 16-bit 24kHz — el
+    // bridge convierte μ-law 8kHz de Twilio ↔ PCM.
+    const sessionPayload: any = {
+      type:              'realtime',
+      model:             this.model,
+      output_modalities: ['audio'],
+      instructions:      this.config.instructions,
+      audio: {
+        input: {
+          format:         { type: 'audio/pcm', rate: 24000 },
+          turn_detection: turnDetection,
+          transcription,
+        },
+        output: {
+          format: { type: 'audio/pcm', rate: 24000 },
+          voice:  this.config.voice,
+        },
+      },
+    };
 
     if (this.config.tools && this.config.tools.length > 0) {
       sessionPayload.tools       = this.config.tools;
@@ -486,6 +492,7 @@ export class RealtimeSession extends EventEmitter {
         }
         break;
 
+      case 'response.output_audio.delta':
       case 'response.audio.delta':
         if (event.delta) {
           // delta viene en base64 — decodificamos a Buffer antes de emitir.
@@ -494,10 +501,13 @@ export class RealtimeSession extends EventEmitter {
         }
         break;
 
+      case 'response.output_audio.done':
       case 'response.audio.done':
         this.emit('audio.done');
         break;
 
+      case 'response.output_text.delta':
+      case 'response.output_audio_transcript.delta':
       case 'response.text.delta':
       case 'response.audio_transcript.delta':
         if (event.delta) {
@@ -506,6 +516,8 @@ export class RealtimeSession extends EventEmitter {
         }
         break;
 
+      case 'response.output_text.done':
+      case 'response.output_audio_transcript.done':
       case 'response.text.done':
       case 'response.audio_transcript.done':
         if (event.text || event.transcript) {
