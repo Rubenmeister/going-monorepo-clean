@@ -154,7 +154,10 @@ export class RealtimeBridgeService {
       // silenceDurationMs alto (1100): espera a que la persona TERMINE de hablar
       // antes de responder — evita que la asistente suene apresurada o corte a
       // mitad de la pregunta. prefixPaddingMs da colchón al inicio del habla.
-      turnDetection:      { type: 'server_vad', threshold: 0.5, prefixPaddingMs: 400, silenceDurationMs: 1000 },
+      // threshold 0.6 (más alto que el default 0.5): menos sensible al ruido de
+      // la línea telefónica → evita el barge-in que cortaba a la asistente a
+      // mitad de frase. silence 1000ms: espera a que la persona termine.
+      turnDetection:      { type: 'server_vad', threshold: 0.6, prefixPaddingMs: 400, silenceDurationMs: 1000 },
       modalities:         ['audio', 'text'],
       inputTranscriptionLanguage: language,
       temperature:        0.7,
@@ -580,10 +583,14 @@ export class RealtimeBridgeService {
         '- YOUR JOB IS TO ANSWER, NOT TO TRANSFER. You can resolve almost any Going App',
         '  question yourself: services, how it works, routes, coverage, payment, shared vs',
         '  private, parcels, vehicle types, how to book. Answer on the call with what you know.',
-        '- Keep replies short (1-3 sentences max). The caller is on the phone.',
+        '- Keep replies brief but COMPLETE: 1-3 sentences, but FINISH the thought — do not',
+        '  cut off mid-sentence. The caller is on the phone.',
         '- For prices: ALWAYS use the get_quote_phone tool. NEVER invent a price.',
         '  Read the spoken_price + spoken_surcharges + spoken_unit fields (already in words).',
         '  If origin, destination or modality is missing, ASK for it — do not transfer.',
+        '  When quoting, ALWAYS state the modality: SHARED price is PER SEAT; PRIVATE (full',
+        '  car) is the TOTAL trip price. If they did not say which, ask or give both. The',
+        '  price comes ONLY from get_quote_phone — never invent it.',
         '- Transfer to a human (request_handoff_phone) ONLY as a LAST RESORT and ONLY if:',
         '  (a) a real emergency (accident, robbery, injury) → priority RED;',
         '  (b) the caller explicitly insists on a human; or (c) a payment or formal complaint',
@@ -652,10 +659,14 @@ export class RealtimeBridgeService {
       '  consulta sobre Going App por tu cuenta: qué servicios hay, cómo funciona, rutas,',
       '  cobertura, formas de pago, diferencia compartido vs privado, envíos, tipos de',
       '  vehículo, cómo reservar, equipaje. Responde en la llamada con lo que sabes.',
-      '- Responde corto (1-3 frases máx). El cliente está al teléfono.',
+      '- Responde breve pero COMPLETA: 1-3 frases, pero TERMINA la idea — no cortes la',
+      '  frase a la mitad. El cliente está al teléfono.',
       '- Para precios: SIEMPRE usa la tool get_quote_phone. NUNCA inventes un precio.',
       '  Lee el campo spoken_price + spoken_surcharges + spoken_unit (ya están en palabras).',
       '  Si falta origen, destino o modalidad, PREGÚNTALO — no derivas por eso.',
+      '  Al cotizar di SIEMPRE la modalidad: en COMPARTIDO el precio es POR ASIENTO; en',
+      '  PRIVADO (carro completo) es el TOTAL del viaje. Si no aclararon cuál, pregunta o',
+      '  da ambos precios. El precio sale SOLO de get_quote_phone — nunca lo inventes.',
       '- DERIVA a un humano (request_handoff_phone) SOLO como ÚLTIMO RECURSO y SOLO si:',
       '  (a) hay una emergencia real (accidente, robo, herido) → priority RED;',
       '  (b) el cliente pide EXPRESAMENTE hablar con una persona y lo mantiene; o',
