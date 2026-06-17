@@ -117,7 +117,7 @@ Resultado esperado: apta para todo público / clasificación baja.
   almacenan datos de tarjeta en la app).
 - **Cifrado en tránsito:** Sí (HTTPS).
 - **¿El usuario puede pedir borrado?** Sí → `https://www.goingec.com/eliminar-cuenta`.
-- **Política de privacidad:** `https://www.goingec.com/legal/privacy`.
+- **Política de privacidad:** `https://www.goingec.com/privacidad` (✅ 200 verificado; NO usar `/legal/privacy`, que solo existe en app.goingec.com).
 
 > Nota dashcam/LOPDP: declarar audio+video con finalidad de seguridad, acceso
 > restringido y retención limitada (bucket privado, borrado a 90 días). Antes de
