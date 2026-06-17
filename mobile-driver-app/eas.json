@@ -21,7 +21,6 @@
       }
     },
     "production": {
-      "autoIncrement": true,
       "credentialsSource": "remote",
       "prebuildCommand": "npx expo prebuild --clean",
       "env": {

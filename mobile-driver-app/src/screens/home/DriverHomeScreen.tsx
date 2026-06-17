@@ -10,6 +10,7 @@ import {
 import MapboxGL from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
+import { Camera } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -226,6 +227,19 @@ export function DriverHomeScreen() {
         );
         return;
       }
+
+      // Dashcam de seguridad: cámara + micrófono obligatorios para ir en línea.
+      // Ante una alerta (SOS o RideCheck) se graba un clip corto por seguridad.
+      const cam = await Camera.requestCameraPermissionsAsync();
+      const mic = await Camera.requestMicrophonePermissionsAsync();
+      if (cam.status !== 'granted' || mic.status !== 'granted') {
+        Alert.alert(
+          'Cámara y micrófono requeridos',
+          'Por tu seguridad y la de las personas pasajeras, los viajes se graban ante una alerta. Activá el permiso de cámara y micrófono para ponerte en línea.'
+        );
+        return;
+      }
+
       // Start background location tracking
       try {
         await Location.startLocationUpdatesAsync(BG_LOCATION_TASK, {

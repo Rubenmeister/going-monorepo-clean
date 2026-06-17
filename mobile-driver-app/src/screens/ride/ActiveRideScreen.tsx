@@ -14,6 +14,8 @@ import { hapticMedium } from '../../utils/haptics';
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
 import type { CallSession } from '../../utils/agoraCall';
 import { InCallOverlay } from '../../components/InCallOverlay';
+import { DashcamRecorder } from '../../components/DashcamRecorder';
+import { triggerDashcam } from '../../utils/dashcam';
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -315,6 +317,7 @@ export function ActiveRideScreen() {
 
   return (
     <Fragment>
+    <DashcamRecorder />
     <View style={styles.container}>
       <MapboxGL.MapView ref={mapRef} style={styles.map}>
         <MapboxGL.Camera
@@ -395,6 +398,14 @@ export function ActiveRideScreen() {
           )}
         </View>
 
+        {/* Aviso de grabación (consentimiento Fase 1 dashcam) */}
+        <View style={styles.recordingNotice}>
+          <Ionicons name="shield-checkmark-outline" size={13} color="#6B7280" />
+          <Text style={styles.recordingNoticeText}>
+            Viaje protegido: ante una alerta (SOS o RideCheck) se graba un clip por seguridad.
+          </Text>
+        </View>
+
         {/* Seguridad: compartir viaje + SOS (siempre accesibles durante el viaje) */}
         <View style={styles.safetyRow}>
           <TouchableOpacity style={styles.shareBtn} onPress={handleShareTrip}>
@@ -403,7 +414,10 @@ export function ActiveRideScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.sosBtn}
-            onPress={() => (navigation as any).navigate('DriverSos')}
+            onPress={() => {
+              triggerDashcam({ rideId, trigger: 'sos', lat: driverLoc?.latitude, lng: driverLoc?.longitude });
+              (navigation as any).navigate('DriverSos');
+            }}
           >
             <Ionicons name="warning" size={18} color="#fff" />
             <Text style={styles.sosBtnText}>SOS</Text>
@@ -511,7 +525,11 @@ export function ActiveRideScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[pinStyles.btnPrimary, { backgroundColor: '#DC2626' }]}
-              onPress={() => { setRideCheckVisible(false); (navigation as any).navigate('DriverSos'); }}
+              onPress={() => {
+                triggerDashcam({ rideId, trigger: 'ridecheck', lat: driverLoc?.latitude, lng: driverLoc?.longitude });
+                setRideCheckVisible(false);
+                (navigation as any).navigate('DriverSos');
+              }}
             >
               <Text style={[pinStyles.btnPrimaryText, { color: '#fff' }]}>Necesito ayuda</Text>
             </TouchableOpacity>
@@ -634,6 +652,14 @@ const styles = StyleSheet.create({
   },
   nextBtnDone: { backgroundColor: '#D1FAE5' },
   nextBtnText: { color: '#FF4C41', fontSize: 15, fontWeight: '900' },
+  recordingNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  recordingNoticeText: { flex: 1, fontSize: 11, color: '#6B7280', lineHeight: 15 },
   safetyRow: {
     flexDirection: 'row',
     gap: 10,

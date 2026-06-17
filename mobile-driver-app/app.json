@@ -22,7 +22,8 @@
         "NSLocationWhenInUseUsageDescription": "Going App necesita tu ubicación para mostrar tu posición a las personas pasajeras y asignarte viajes cercanos.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Going App rastrea tu ubicación en segundo plano mientras estás en línea para asignar viajes y actualizar la posición a las personas pasajeras durante el servicio.",
         "NSLocationAlwaysUsageDescription": "Going App rastrea tu ubicación mientras conduces para asignar viajes cercanos y compartir tu posición con las personas pasajeras.",
-        "NSCameraUsageDescription": "Going App usa la cámara para que puedas subir tu foto de perfil, documentos del vehículo y fotos de incidencias durante el servicio.",
+        "NSCameraUsageDescription": "Going App usa la cámara para tu foto de perfil y documentos, y para grabar un clip de seguridad cuando se activa una alerta (SOS o RideCheck) durante el viaje.",
+        "NSMicrophoneUsageDescription": "Going App graba el audio del clip de seguridad cuando se activa una alerta durante el viaje, para tu protección y la de las personas pasajeras.",
         "NSPhotoLibraryUsageDescription": "Going App accede a tu galería para que puedas seleccionar fotos de perfil y documentos del vehículo."
       }
     },
@@ -32,7 +33,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.conductor",
-      "versionCode": 63,
+      "versionCode": 64,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -43,6 +44,7 @@
         "VIBRATE",
         "POST_NOTIFICATIONS",
         "CAMERA",
+        "RECORD_AUDIO",
         "READ_MEDIA_IMAGES",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
@@ -71,6 +73,14 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Going App necesita tu ubicación en segundo plano para mostrar tu posición a los pasajeros."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Going App graba un clip de video por tu seguridad y la de las personas pasajeras cuando se activa una alerta (SOS o RideCheck) durante el viaje.",
+          "microphonePermission": "Going App graba el audio del clip de seguridad cuando se activa una alerta durante el viaje.",
+          "recordAudioAndroid": true
         }
       ],
       "expo-system-ui",
