@@ -33,7 +33,8 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "../google-service-account.json",
-        "track": "alpha"
+        "track": "alpha",
+        "releaseStatus": "draft"
       }
     }
   }
