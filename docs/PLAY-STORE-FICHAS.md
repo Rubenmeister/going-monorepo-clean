@@ -22,6 +22,18 @@
 
 ---
 
+## Cuentas de prueba para "Acceso a la app" (Conductor)
+
+Creadas 17-jun vía `POST /auth/register` (roles:['driver']) — verificadas en prod:
+- `rubenmeister+gtest@gmail.com`
+- `rubenmeister+gtest2@gmail.com`
+- `rubenmeister+gtest3@gmail.com`
+
+Son alias "+": cuentas distintas en el backend de Going, NO son cuentas de
+Google → no exponen la cuenta personal. La contraseña la fijó Rubén al crearlas
+(no está acá por seguridad). Para "Acceso a la app" usar UNA (email + esa clave).
+No requieren aprobación de documentos para iniciar sesión y ver la app.
+
 ## 1) Ficha de tienda (Store listing)
 
 ### Going - Pasajero  (`com.going.userapp`)
