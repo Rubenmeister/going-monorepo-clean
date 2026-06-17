@@ -55,6 +55,9 @@ export function EntregaPaqueteScreen() {
   // Para C: paymentStatus actualizado polleando el backend hasta que sea 'paid'.
   const [livePaymentStatus, setLivePaymentStatus] = useState<string | undefined>(p.paymentStatus);
   const [pollingPayment, setPollingPayment] = useState(false);
+  const [pollTimedOut, setPollTimedOut] = useState(false);
+  const [pollNonce, setPollNonce] = useState(0);
+  const pollAttemptsRef = useRef(0);
 
   const isRecipientCard = p.paymentMethod === 'card' && p.payerRole === 'recipient'; // C
   const isRecipientCash = p.paymentMethod === 'cash' && p.payerRole === 'recipient'; // D
@@ -67,11 +70,22 @@ export function EntregaPaqueteScreen() {
     isRecipientCard ? recipientPaid :
     true;
 
-  // Polling de estado de pago para escenario C
+  // Polling de estado de pago para escenario C — con TOPE (no infinito).
+  // 60 intentos × 5s = 5 min; al expirar, se corta y se ofrece reintentar.
   React.useEffect(() => {
     if (!isRecipientCard || recipientPaid) return;
+    const MAX_PAYMENT_POLLS = 60;
+    pollAttemptsRef.current = 0;
+    setPollTimedOut(false);
     setPollingPayment(true);
     const interval = setInterval(async () => {
+      pollAttemptsRef.current += 1;
+      if (pollAttemptsRef.current > MAX_PAYMENT_POLLS) {
+        setPollingPayment(false);
+        setPollTimedOut(true);
+        clearInterval(interval);
+        return;
+      }
       try {
         const token = await AsyncStorage.getItem('driver_token');
         const { data } = await axios.get(
@@ -91,7 +105,10 @@ export function EntregaPaqueteScreen() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [isRecipientCard, recipientPaid, p.envioId]);
+  }, [isRecipientCard, recipientPaid, p.envioId, pollNonce]);
+
+  /** Reintentar el polling de pago tras un timeout. */
+  const retryPaymentPolling = () => setPollNonce((n) => n + 1);
 
   const handleConfirmCashDelivery = async () => {
     const ok = await new Promise<boolean>((resolve) => {
@@ -352,9 +369,17 @@ export function EntregaPaqueteScreen() {
                   >
                     {recipientPaid
                       ? `Pago confirmado · $${p.totalAmount.toFixed(2)}`
-                      : `Esperando pago del destinatario...`}
+                      : pollTimedOut
+                        ? `Aún no se confirma el pago del destinatario.`
+                        : `Esperando pago del destinatario...`}
                   </Text>
                 </View>
+                {pollTimedOut && !recipientPaid && (
+                  <TouchableOpacity style={s.retryBtn} onPress={retryPaymentPolling}>
+                    <Ionicons name="refresh" size={16} color={RED} />
+                    <Text style={s.retryBtnText}>Volver a verificar el pago</Text>
+                  </TouchableOpacity>
+                )}
               </>
             )}
           </View>
@@ -588,4 +613,16 @@ const s = StyleSheet.create({
     padding: 14,
   },
   payStatusText: { flex: 1, fontSize: 13, fontWeight: '700' },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: RED,
+  },
+  retryBtnText: { color: RED, fontSize: 13, fontWeight: '700' },
 });

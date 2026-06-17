@@ -60,13 +60,9 @@ export function DriverHomeScreen() {
     avgRating: 5.0,
   });
 
-  // Zonas calientes (demo — en producción vendría de la API)
-  const HOT_ZONES: { name: string; intensity: 'alta' | 'media'; coord: [number, number] }[] = [
-    { name: 'El Quicentro', intensity: 'alta',  coord: [-78.4833, -0.1862] },
-    { name: 'La Mariscal',  intensity: 'alta',  coord: [-78.4900, -0.2100] },
-    { name: 'Aeropuerto',   intensity: 'media', coord: [-78.3583, -0.1290] },
-    { name: 'Cumbayá',      intensity: 'media', coord: [-78.4369, -0.2000] },
-  ];
+  // NOTA: las "zonas calientes" (heatmap de demanda) se quitaron — no había
+  // fuente real, eran 4 puntos hardcodeados de Quito que inducían a error.
+  // Reincorporar cuando exista un endpoint real de demanda/heatmap.
 
   useEffect(() => { analyticsScreen('DriverHomeScreen'); }, []);
 
@@ -109,8 +105,8 @@ export function DriverHomeScreen() {
         }
         setDocAlerts(alerts);
       } catch {
-        // Demo: SOAT próximo a vencer
-        setDocAlerts([{ label: 'SOAT', daysLeft: 5, urgent: true }]);
+        // API no disponible / sin conexión — no mostrar alertas falsas
+        setDocAlerts([]);
       }
     })();
   }, []);
@@ -292,18 +288,6 @@ export function DriverHomeScreen() {
             </View>
           </MapboxGL.PointAnnotation>
         )}
-        {/* Marcadores de zonas calientes en el mapa */}
-        {isOnline && HOT_ZONES.map((zone) => (
-          <MapboxGL.PointAnnotation
-            key={`zone-${zone.name}`}
-            id={`zone-${zone.name}`}
-            coordinate={zone.coord}
-          >
-            <View style={[styles.zoneMarker, zone.intensity === 'alta' && styles.zoneMarkerHot]}>
-              <Text style={styles.zoneMarkerEmoji}>🔥</Text>
-            </View>
-          </MapboxGL.PointAnnotation>
-        ))}
       </MapboxGL.MapView>
 
       {/* Online/Offline toggle */}

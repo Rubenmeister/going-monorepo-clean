@@ -74,6 +74,10 @@ export function ActiveRideScreen() {
   const stepRef = useRef(0);
   useEffect(() => { stepRef.current = step; }, [step]);
 
+  // Distancia real recorrida con pasajero a bordo (para ganancias, en metros)
+  const tripDistanceRef = useRef(0);
+  const lastDistPointRef = useRef<{ latitude: number; longitude: number } | null>(null);
+
   // PIN verificación de pasajero al subir
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [pinInput, setPinInput]               = useState('');
@@ -176,6 +180,14 @@ export function ActiveRideScreen() {
           lastMoveRef.current = { latitude, longitude, t: Date.now() };
         }
 
+        // Distancia real del viaje: acumular solo con pasajero a bordo (step 1).
+        const ldp = lastDistPointRef.current;
+        if (ldp && stepRef.current === 1) {
+          const d = metersBetween(ldp, { latitude, longitude });
+          if (d >= 5 && d < 2000) tripDistanceRef.current += d; // filtra jitter y saltos GPS
+        }
+        lastDistPointRef.current = { latitude, longitude };
+
         // Emitir posición al pasajero vía WebSocket
         socketRef.current?.emit('driver:location', {
           rideId,
@@ -234,10 +246,11 @@ export function ActiveRideScreen() {
   };
 
   const completeRide = (cashConfirmed = false) => {
-    // distanceKm: usa la distancia real calculada desde la ruta GPS si está disponible,
-    // o el valor del parámetro si lo proveyó el backend al aceptar el viaje.
+    // distanceKm: distancia REAL acumulada por GPS mientras el pasajero estuvo a
+    // bordo. Si no se pudo medir (track muy corto / sin GPS), cae al estimado.
     // durationSeconds: tiempo real desde que se inició el viaje (step 1).
-    const distKm  = (fare && fare > 0) ? fare / 2.5 : 5; // estimado provisional
+    const measuredKm = tripDistanceRef.current / 1000;
+    const distKm  = measuredKm > 0.2 ? measuredKm : ((fare && fare > 0) ? fare / 2.5 : 5);
     const durSecs = Math.max(1, Math.round((Date.now() - (rideStartTimestamp.current ?? Date.now())) / 1000));
     socketRef.current?.emit('driver:completed', {
       rideId,
