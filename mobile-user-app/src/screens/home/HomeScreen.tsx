@@ -176,11 +176,17 @@ export default function HomeScreen() {
   const handleRecentTap = useCallback((r: RecentRoute) => {
     hapticLight();
     analyticsFeaturedRouteSelected(`${r.origin} → ${r.destination}`);
-    if (r.tripMode === 'compartido') {
-      navigation.navigate('SharedRideBooking', { originStop: r.origin });
-    } else {
-      navigation.navigate('PrivateRideBooking', {});
-    }
+    // Enrutar al wizard unificado (igual que las tarjetas de producto): pickup →
+    // destino → BookingOptions, que cotiza con el backend (/search). Así el
+    // precio mostrado SIEMPRE sale del backend. Antes las "recientes" iban a las
+    // pantallas legacy que confirmaban sin precio previo.
+    setTripMode(r.tripMode === 'compartido' ? 'compartido' : 'privado');
+    navigation.navigate('LocationPicker', {
+      title: '¿Dónde te recogemos?',
+      mode: 'origin',
+      returnScreen: 'Home',
+      paramKey: 'pickup',
+    } as any);
   }, [navigation]);
 
   return (
