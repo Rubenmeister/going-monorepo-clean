@@ -326,6 +326,11 @@ export class VoiceService {
     // Si el usuario eligió una voz específica, gana sobre la default-por-género.
     const personaName = voiceOverride ?? DEFAULT_VOICE[gender];
 
+    // Experimento de latencia: si SUPPORT_TTS_PREFER_NEURAL2=true, saltamos
+    // Chirp3-HD (modelo pesado) y usamos Neural2 directo (más liviano). Sirve
+    // para distinguir si los 13-25s son el modelo o el egress de la VPC.
+    const preferNeural2 = process.env.SUPPORT_TTS_PREFER_NEURAL2 === 'true';
+
     try {
       // Transporte REST (no gRPC): con vpc-egress=all-traffic el gRPC a las
       // APIs de Google se degradaba a ~90s/llamada (los REST de OpenAI/Deepgram/
@@ -336,6 +341,7 @@ export class VoiceService {
       // Intentar Chirp 3 HD primero (calidad superior, voz consistente cross-lang)
       const chirpVoiceName = `${langCfg.ttsLangCode}-Chirp3-HD-${personaName}`;
       try {
+        if (preferNeural2) throw new Error('prefer-neural2'); // experimento → Neural2
         const t0 = Date.now();
         const [response] = await ttsClient.synthesizeSpeech({
           input: { text },
