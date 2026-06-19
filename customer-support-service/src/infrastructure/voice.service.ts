@@ -327,7 +327,10 @@ export class VoiceService {
     const personaName = voiceOverride ?? DEFAULT_VOICE[gender];
 
     try {
-      if (!this.ttsClient) this.ttsClient = new TextToSpeechClient();
+      // Transporte REST (no gRPC): con vpc-egress=all-traffic el gRPC a las
+      // APIs de Google se degradaba a ~90s/llamada (los REST de OpenAI/Deepgram/
+      // Mapbox iban rápido por el mismo egress). REST + timeout lo baja a ~2-3s.
+      if (!this.ttsClient) this.ttsClient = new TextToSpeechClient({ fallback: 'rest' });
       const ttsClient = this.ttsClient;
 
       // Intentar Chirp 3 HD primero (calidad superior, voz consistente cross-lang)
@@ -345,7 +348,7 @@ export class VoiceService {
             speakingRate: 1.0,
             pitch: 0,
           },
-        });
+        }, { timeout: 15000 });
         const dt = Date.now() - t0;
         if (response.audioContent) {
           const audioBytes = (response.audioContent as Uint8Array).length;
@@ -372,7 +375,7 @@ export class VoiceService {
           speakingRate: 1.0,
           pitch: 0,
         },
-      });
+      }, { timeout: 15000 });
       const dt = Date.now() - t0;
       if (!response.audioContent) return null;
       const audioBytes = (response.audioContent as Uint8Array).length;
