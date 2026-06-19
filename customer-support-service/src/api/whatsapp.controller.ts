@@ -265,25 +265,20 @@ export class WhatsAppController {
       const reply = await this.agentService.respond(from, messageText, sttLang ? { lang: sttLang } : undefined);
 
       if (wasAudio) {
-        // Respond with audio (TTS). Para el TTS preferimos el idioma de STT
-        // (más confiable que regex sobre el transcript del usuario).
-        // Fallback: si por alguna razón no tenemos sttLang, detectamos del reply text.
+        // Respuesta-primero: el TEXTO sale YA (apenas responde el LLM, ~13s) y la
+        // voz (Chirp3, la que ya gusta) llega después como complemento. Así se lee
+        // la respuesta sin esperar los ~20s del TTS — se siente inmediato, sin
+        // degradar la calidad de la voz.
+        if (reply) await this.whatsappService.sendText(from, reply);
+
+        // Para el TTS preferimos el idioma de STT (más confiable que regex sobre
+        // el transcript). voicePreference: si el usuario eligió voz, gana.
         const lang   = sttLang ?? detectLanguage(reply || '');
         const gender = conv.agentGender;
-        // voicePreference: si el usuario eligió una voz específica, gana sobre default-por-género.
         const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender, conv.voicePreference) : null;
-        const sent   = audio ? await this.whatsappService.sendAudio(from, audio) : false;
-        // Latencia total del flow voz = receive → reply audio enviado.
-        // Combina [audio download + STT + LLM + TTS + sendAudio]. Cada
-        // sub-step ya loggea su propio timing — esto es el techo perceived.
+        if (audio) await this.whatsappService.sendAudio(from, audio);
         const dtTotal = voiceFlowStart ? Date.now() - voiceFlowStart : 0;
-        if (sent) {
-          this.logger.log(`[voice-flow] reply sent to ${from} in ${dtTotal}ms (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
-        } else {
-          this.logger.warn(`[voice-flow] audio failed after ${dtTotal}ms — fallback a texto para ${from}`);
-          // Fallback to text if TTS/upload fails
-          await this.whatsappService.sendText(from, reply);
-        }
+        this.logger.log(`[voice-flow] text+voz para ${from} en ${dtTotal}ms (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
       } else {
         await this.whatsappService.sendText(from, reply);
       }
