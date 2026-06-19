@@ -364,7 +364,7 @@ export class VoiceService {
             method: 'POST',
             headers: { Authorization: `Token ${dgKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ text }),
-            signal: AbortSignal.timeout(8000),
+            signal: AbortSignal.timeout(Number(process.env.DEEPGRAM_TTS_TIMEOUT_MS) || 20000),
           },
         );
         if (res.ok) {
