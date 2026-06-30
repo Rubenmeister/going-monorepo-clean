@@ -60,6 +60,13 @@ const ORIGIN_CITIES = [
     returnTimes: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
   },
   {
+    id: 'tulcan', label: 'Tulcán', province: 'Carchi',
+    routeId: 'sierra_norte', icon: '🏔️', color: '#7C3AED',
+    routeStops: ['Ibarra', 'Otavalo', 'Quito', 'Aeropuerto'],
+    times: ['03:00', '04:00', '05:00', '06:00', '07:00', '13:00'],
+    returnTimes: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+  },
+  {
     id: 'ibarra', label: 'Ibarra', province: 'Imbabura',
     routeId: 'sierra_norte', icon: '🌿', color: '#7C3AED',
     routeStops: ['Otavalo', 'Quito', 'Aeropuerto'],

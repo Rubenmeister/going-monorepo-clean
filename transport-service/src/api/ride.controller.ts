@@ -278,6 +278,74 @@ export class RideController {
   }
 
   /**
+   * Dashcam — subida de un clip de evidencia (audio+video) disparado por un
+   * evento de seguridad (SOS o RideCheck) durante un viaje activo.
+   * POST /api/rides/:rideId/dashcam   (multipart: campo "clip")
+   * Body opcional: { trigger?: 'sos'|'ridecheck'|'manual', lat?, lng? }
+   *
+   * El clip va a un bucket PRIVADO (sin URL pública). El acceso es por signed
+   * URL generado por soporte/legal ante un incidente. Cumple LOPDP: finalidad
+   * acotada (seguridad), acceso restringido, retención por lifecycle del bucket.
+   *
+   * Best-effort: NUNCA revienta al conductor si la subida falla.
+   */
+  @Post(':rideId/dashcam')
+  @UseInterceptors(FileInterceptor('clip', {
+    limits: { fileSize: 60 * 1024 * 1024 }, // 60 MB — clip corto (~30 s)
+    fileFilter: (_req, file, cb) => {
+      const ok = file.mimetype.startsWith('video/') || file.mimetype.startsWith('audio/');
+      cb(ok ? null : new BadRequestException('Solo se aceptan clips de video o audio'), ok);
+    },
+  }))
+  @HttpCode(HttpStatus.CREATED)
+  async uploadDashcamClip(
+    @CurrentUser() user: AuthUser,
+    @Param('rideId') rideId: string,
+    @UploadedFile() clip: Express.Multer.File | undefined,
+    @Body() body: { trigger?: 'sos' | 'ridecheck' | 'manual'; lat?: number; lng?: number } = {},
+  ): Promise<{ rideId: string; stored: boolean; ref?: string }> {
+    if (!clip?.buffer) {
+      throw new BadRequestException('Se requiere el campo "clip" con el archivo');
+    }
+    const trigger = ['sos', 'ridecheck', 'manual'].includes(body.trigger as string)
+      ? body.trigger!
+      : 'manual';
+    const bucketName = process.env.GCS_BUCKET_DASHCAM ?? 'going-dashcam-evidence';
+    const ext = clip.mimetype.startsWith('audio/') ? 'm4a' : 'mp4';
+    const gcsPath = `rides/${rideId}/${trigger}_${Date.now()}.${ext}`;
+
+    try {
+      const storage = new Storage();
+      const file = storage.bucket(bucketName).file(gcsPath);
+      await file.save(clip.buffer, {
+        resumable: false,
+        public: false, // PRIVADO — nunca público
+        metadata: {
+          contentType: clip.mimetype,
+          metadata: {
+            rideId,
+            driverId: user?.id ?? 'unknown',
+            trigger,
+            lat: body.lat != null ? String(body.lat) : '',
+            lng: body.lng != null ? String(body.lng) : '',
+            capturedAt: new Date().toISOString(),
+          },
+        },
+      });
+    } catch (err: any) {
+      this.logger.error(`[DASHCAM] upload fallo ride ${rideId}: ${err?.message}`);
+      return { rideId, stored: false }; // best-effort: no bloquear al conductor
+    }
+
+    // Log para ops/auditoría (referencia, sin exponer el clip)
+    this.logger.warn(
+      `[DASHCAM] clip almacenado ride=${rideId} driver=${user?.id ?? 'unknown'} trigger=${trigger} ref=gs://${bucketName}/${gcsPath}`,
+    );
+
+    return { rideId, stored: true, ref: `gs://${bucketName}/${gcsPath}` };
+  }
+
+  /**
    * Accept a ride (driver endpoint)
    * PUT /api/rides/:rideId/accept
    */

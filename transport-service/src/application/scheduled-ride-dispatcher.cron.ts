@@ -14,9 +14,11 @@ import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gatewa
  *   - Si el pasajero reserva un viaje para más tarde / el día siguiente, el
  *     sistema NO debe buscar conductor de inmediato. El viaje queda anotado
  *     como "reservado para tal fecha, tal hora, con tal precio".
- *   - El sistema "abre" el canal entre conductor y pasajero UNA HORA ANTES
- *     (configurable) de la hora reservada: ahí recién busca conductor y, al
- *     asignarlo, aparecen los datos del conductor para el pasajero.
+ *   - El sistema "abre" el canal entre conductor y pasajero 1 HORA Y MEDIA
+ *     ANTES (configurable) de la hora reservada: ahí recién busca conductor y,
+ *     al asignarlo, aparecen los datos del conductor para el pasajero. Toda la
+ *     estructura de comunicación (mensajería, telefonía, tokens) nace en ese
+ *     momento — requisito de producto.
  *   - El canal dura hasta UNA HORA DESPUÉS de terminado el viaje, luego cierra.
  *
  * Cómo encaja con lo que ya existía:
@@ -28,7 +30,7 @@ import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gatewa
  *
  * Toggle/config (env):
  *   SCHEDULED_DISPATCH_ENABLED        default 'true' (opt-out por servicio)
- *   MATCH_LEAD_TIME_MINUTES           default 60  → abrir canal/buscar conductor N min antes
+ *   MATCH_LEAD_TIME_MINUTES           default 90  → abrir canal/buscar conductor N min antes (1h30)
  *   CHANNEL_CLOSE_AFTER_MINUTES       default 60  → cerrar canal N min después de completedAt
  *
  * Idempotencia multi-pod:
@@ -54,11 +56,13 @@ export class ScheduledRideDispatcherCron {
   }
 
   private leadTimeMinutes(): number {
+    // 90 min (1h30) por requisito de producto: toda la comunicación del viaje
+    // (mensajería, telefonía, tokens) nace hora y media antes de la salida.
     const v = parseInt(
-      this.config.get<string>('MATCH_LEAD_TIME_MINUTES') ?? '60',
+      this.config.get<string>('MATCH_LEAD_TIME_MINUTES') ?? '90',
       10,
     );
-    return Number.isFinite(v) && v >= 1 ? v : 60;
+    return Number.isFinite(v) && v >= 1 ? v : 90;
   }
 
   private channelCloseAfterMinutes(): number {
@@ -72,7 +76,7 @@ export class ScheduledRideDispatcherCron {
   /**
    * Cada minuto: despacha reservas cuya ventana (scheduledAt - lead) ya llegó.
    * EVERY_MINUTE da una latencia máxima de ~1 min respecto a la hora exacta de
-   * apertura, suficiente para una ventana de 60 min.
+   * apertura, suficiente para una ventana de 90 min.
    */
   @Cron(CronExpression.EVERY_MINUTE, { name: 'scheduled-ride-dispatcher' })
   async dispatchDueReservations(): Promise<void> {

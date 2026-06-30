@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator, Share } from 'react-native';
 import axios from 'axios';
 
 const API_BASE =
@@ -14,6 +14,8 @@ import { hapticMedium } from '../../utils/haptics';
 import { resolveCallSession, startPSTNCall } from '../../utils/agoraCall';
 import type { CallSession } from '../../utils/agoraCall';
 import { InCallOverlay } from '../../components/InCallOverlay';
+import { DashcamRecorder } from '../../components/DashcamRecorder';
+import { triggerDashcam } from '../../utils/dashcam';
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -36,6 +38,20 @@ const PAYMENT_ICONS: Record<string, string> = {
   wallet: 'wallet-outline',
 };
 
+/** Distancia aproximada en metros (equirectangular, suficiente para <1 km). */
+function metersBetween(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): number {
+  const dLat = (b.latitude - a.latitude) * 111320;
+  const dLng = (b.longitude - a.longitude) * 111320 * Math.cos((a.latitude * Math.PI) / 180);
+  return Math.sqrt(dLat * dLat + dLng * dLng);
+}
+
+// RideCheck: si el viaje (pasajero a bordo) lleva detenido más de esto, preguntamos "¿todo bien?".
+const RIDECHECK_STOP_MS = 4 * 60 * 1000;
+const RIDECHECK_MOVE_M = 35;
+
 export function ActiveRideScreen() {
   const navigation = useNavigation();
   const { params } = useRoute<Route>();
@@ -51,6 +67,16 @@ export function ActiveRideScreen() {
   const [callLoading, setCallLoading] = useState(false);
   const [cashConfirmed, setCashConfirmed] = useState(false);
   const rideStartTimestamp = useRef<number | null>(null);
+
+  // RideCheck (chequeo de seguridad por parada prolongada con pasajero a bordo)
+  const [rideCheckVisible, setRideCheckVisible] = useState(false);
+  const lastMoveRef = useRef<{ latitude: number; longitude: number; t: number } | null>(null);
+  const stepRef = useRef(0);
+  useEffect(() => { stepRef.current = step; }, [step]);
+
+  // Distancia real recorrida con pasajero a bordo (para ganancias, en metros)
+  const tripDistanceRef = useRef(0);
+  const lastDistPointRef = useRef<{ latitude: number; longitude: number } | null>(null);
 
   // PIN verificación de pasajero al subir
   const [pinModalVisible, setPinModalVisible] = useState(false);
@@ -148,6 +174,20 @@ export function ActiveRideScreen() {
         const { latitude, longitude, heading, speed } = loc.coords;
         setDriverLoc({ latitude, longitude });
 
+        // RideCheck: registrar último movimiento significativo (para detectar paradas prolongadas).
+        const prev = lastMoveRef.current;
+        if (!prev || metersBetween(prev, { latitude, longitude }) > RIDECHECK_MOVE_M) {
+          lastMoveRef.current = { latitude, longitude, t: Date.now() };
+        }
+
+        // Distancia real del viaje: acumular solo con pasajero a bordo (step 1).
+        const ldp = lastDistPointRef.current;
+        if (ldp && stepRef.current === 1) {
+          const d = metersBetween(ldp, { latitude, longitude });
+          if (d >= 5 && d < 2000) tripDistanceRef.current += d; // filtra jitter y saltos GPS
+        }
+        lastDistPointRef.current = { latitude, longitude };
+
         // Emitir posición al pasajero vía WebSocket
         socketRef.current?.emit('driver:location', {
           rideId,
@@ -168,11 +208,49 @@ export function ActiveRideScreen() {
     };
   }, []);
 
+  // ─── RideCheck: parada prolongada con pasajero a bordo → "¿todo bien?" ─────
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (stepRef.current !== 1) return;        // solo con pasajero a bordo
+      if (rideCheckVisible) return;             // ya estamos preguntando
+      const lm = lastMoveRef.current;
+      if (lm && Date.now() - lm.t > RIDECHECK_STOP_MS) {
+        hapticMedium();
+        setRideCheckVisible(true);
+      }
+    }, 30000);
+    return () => clearInterval(id);
+  }, [rideCheckVisible]);
+
+  // ─── Compartir viaje con un contacto de confianza (seguridad) ─────────────
+  const handleShareTrip = async () => {
+    hapticMedium();
+    const here = driverLoc
+      ? `https://maps.google.com/?q=${driverLoc.latitude},${driverLoc.longitude}`
+      : '';
+    const msg = [
+      '🚗 Estoy haciendo un viaje con Going App. Te comparto mis datos por seguridad.',
+      '',
+      passengerName ? `Pasajera/o: ${passengerName}` : null,
+      destination ? `Destino: ${destination}` : null,
+      rideId ? `Viaje: ${rideId.slice(0, 8).toUpperCase()}` : null,
+      here ? `Mi ubicación ahora: ${here}` : null,
+      '',
+      'Si no tienes noticias mías en un rato, llámame.',
+    ].filter(Boolean).join('\n');
+    try {
+      await Share.share({ message: msg, title: 'Mi viaje — Going App' });
+    } catch {
+      // compartir cancelado
+    }
+  };
+
   const completeRide = (cashConfirmed = false) => {
-    // distanceKm: usa la distancia real calculada desde la ruta GPS si está disponible,
-    // o el valor del parámetro si lo proveyó el backend al aceptar el viaje.
+    // distanceKm: distancia REAL acumulada por GPS mientras el pasajero estuvo a
+    // bordo. Si no se pudo medir (track muy corto / sin GPS), cae al estimado.
     // durationSeconds: tiempo real desde que se inició el viaje (step 1).
-    const distKm  = (fare && fare > 0) ? fare / 2.5 : 5; // estimado provisional
+    const measuredKm = tripDistanceRef.current / 1000;
+    const distKm  = measuredKm > 0.2 ? measuredKm : ((fare && fare > 0) ? fare / 2.5 : 5);
     const durSecs = Math.max(1, Math.round((Date.now() - (rideStartTimestamp.current ?? Date.now())) / 1000));
     socketRef.current?.emit('driver:completed', {
       rideId,
@@ -252,6 +330,7 @@ export function ActiveRideScreen() {
 
   return (
     <Fragment>
+    <DashcamRecorder />
     <View style={styles.container}>
       <MapboxGL.MapView ref={mapRef} style={styles.map}>
         <MapboxGL.Camera
@@ -332,6 +411,32 @@ export function ActiveRideScreen() {
           )}
         </View>
 
+        {/* Aviso de grabación (consentimiento Fase 1 dashcam) */}
+        <View style={styles.recordingNotice}>
+          <Ionicons name="shield-checkmark-outline" size={13} color="#6B7280" />
+          <Text style={styles.recordingNoticeText}>
+            Viaje protegido: ante una alerta (SOS o RideCheck) se graba un clip por seguridad.
+          </Text>
+        </View>
+
+        {/* Seguridad: compartir viaje + SOS (siempre accesibles durante el viaje) */}
+        <View style={styles.safetyRow}>
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShareTrip}>
+            <Ionicons name="share-social-outline" size={18} color="#374151" />
+            <Text style={styles.shareBtnText}>Compartir viaje</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sosBtn}
+            onPress={() => {
+              triggerDashcam({ rideId, trigger: 'sos', lat: driverLoc?.latitude, lng: driverLoc?.longitude });
+              (navigation as any).navigate('DriverSos');
+            }}
+          >
+            <Ionicons name="warning" size={18} color="#fff" />
+            <Text style={styles.sosBtnText}>SOS</Text>
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity
           style={[
             styles.nextBtn,
@@ -402,6 +507,44 @@ export function ActiveRideScreen() {
               {pinVerifying
                 ? <ActivityIndicator color="#FF4C41" />
                 : <Text style={pinStyles.btnPrimaryText}>Verificar y arrancar</Text>}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+
+    {/* RideCheck — chequeo de seguridad por parada prolongada */}
+    <Modal
+      visible={rideCheckVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setRideCheckVisible(false)}
+    >
+      <View style={pinStyles.overlay}>
+        <View style={pinStyles.card}>
+          <Text style={pinStyles.title}>¿Todo bien? 🛡️</Text>
+          <Text style={pinStyles.subtitle}>
+            Notamos que el viaje lleva un rato detenido. ¿Está todo en orden?
+          </Text>
+          <View style={pinStyles.btnRow}>
+            <TouchableOpacity
+              style={pinStyles.btnSecondary}
+              onPress={() => {
+                lastMoveRef.current = driverLoc ? { ...driverLoc, t: Date.now() } : null;
+                setRideCheckVisible(false);
+              }}
+            >
+              <Text style={pinStyles.btnSecondaryText}>Sí, todo bien</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[pinStyles.btnPrimary, { backgroundColor: '#DC2626' }]}
+              onPress={() => {
+                triggerDashcam({ rideId, trigger: 'ridecheck', lat: driverLoc?.latitude, lng: driverLoc?.longitude });
+                setRideCheckVisible(false);
+                (navigation as any).navigate('DriverSos');
+              }}
+            >
+              <Text style={[pinStyles.btnPrimaryText, { color: '#fff' }]}>Necesito ayuda</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -522,6 +665,41 @@ const styles = StyleSheet.create({
   },
   nextBtnDone: { backgroundColor: '#D1FAE5' },
   nextBtnText: { color: '#FF4C41', fontSize: 15, fontWeight: '900' },
+  recordingNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  recordingNoticeText: { flex: 1, fontSize: 11, color: '#6B7280', lineHeight: 15 },
+  safetyRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  shareBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  shareBtnText: { color: '#374151', fontSize: 14, fontWeight: '700' },
+  sosBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+  },
+  sosBtnText: { color: '#fff', fontSize: 14, fontWeight: '900' },
   paymentBadge: {
     flexDirection: 'row',
     alignItems: 'center',

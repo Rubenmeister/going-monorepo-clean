@@ -40,11 +40,16 @@ type ScreenView  = 'form' | 'tracking' | 'delivered';
  *  D) recipient + cash  → contra entrega: el destinatario paga en efectivo al recibir
  */
 type PaymentScheme = 'A' | 'B' | 'C' | 'D';
+// Ola 3: la tarjeta (esquemas A, C) se ENCIENDE por configuración cuando hay
+// credenciales de producción de la pasarela (Datafast/DeUna), sin editar código.
+// Por defecto OFF → solo efectivo (B, D), lo seguro para el lanzamiento.
+const CARD_ENABLED =
+  process.env.EXPO_PUBLIC_ENABLE_DATAFAST === 'true' ||
+  process.env.EXPO_PUBLIC_ENABLE_DEUNA === 'true';
 const PAYMENT_SCHEMES: { id: PaymentScheme; label: string; icon: string; sub: string; disabled?: boolean }[] = [
-  // Tarjeta (A, C) deshabilitada hasta integrar la pasarela (Datafast/DeUna) en payment-service.
-  { id: 'A', label: 'Pago ahora con tarjeta',           icon: '💳', sub: 'Pago digital — disponible muy pronto', disabled: true },
+  { id: 'A', label: 'Pago ahora con tarjeta',           icon: '💳', sub: CARD_ENABLED ? 'Visa · Mastercard · Amex' : 'Pago digital — disponible muy pronto', disabled: !CARD_ENABLED },
   { id: 'B', label: 'Pago en efectivo al recoger',       icon: '💵', sub: 'Le pagas a la conductora o conductor al llegar' },
-  { id: 'C', label: 'Que pague el destinatario (tarjeta)', icon: '📱', sub: 'Pago digital — disponible muy pronto', disabled: true },
+  { id: 'C', label: 'Que pague el destinatario (tarjeta)', icon: '📱', sub: CARD_ENABLED ? 'Le llega un link de pago por SMS' : 'Pago digital — disponible muy pronto', disabled: !CARD_ENABLED },
   { id: 'D', label: 'Contra entrega (el destinatario paga efectivo)', icon: '🤝', sub: 'Cobra al recibir' },
 ];
 

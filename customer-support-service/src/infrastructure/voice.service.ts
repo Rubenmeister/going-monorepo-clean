@@ -72,6 +72,25 @@ const DEFAULT_VOICE: Record<AgentGender, VoiceName> = {
 };
 
 /**
+ * Voz de Deepgram Aura-2 (TTS de baja latencia, mismo proveedor que el STT) por
+ * idioma + género. Solo es/en (Aura no tiene fr/de → null → cae a Google Chirp3).
+ * Acentos NEUTROS de LatAm (es-MX/es-CO), NUNCA rioplatense (es-AR). Env-overridable.
+ */
+function pickAuraVoice(lang: SupportedLang, gender: AgentGender): string | null {
+  if (lang === 'es') {
+    return gender === 'male'
+      ? (process.env.DEEPGRAM_TTS_VOICE_ES_MALE   ?? 'aura-2-javier-es')   // es-MX, masc, neutro
+      : (process.env.DEEPGRAM_TTS_VOICE_ES_FEMALE ?? 'aura-2-celeste-es'); // es-CO, fem, neutro
+  }
+  if (lang === 'en') {
+    return gender === 'male'
+      ? (process.env.DEEPGRAM_TTS_VOICE_EN_MALE   ?? 'aura-2-apollo-en')
+      : (process.env.DEEPGRAM_TTS_VOICE_EN_FEMALE ?? 'aura-2-asteria-en');
+  }
+  return null; // fr/de/qu → Google Chirp3/Neural2
+}
+
+/**
  * Mapea BCP-47 STT response → SupportedLang del agent. La API devuelve cosas
  * como 'es-419' o 'en-us' inconsistente, normalizamos por prefijo.
  */
@@ -326,13 +345,73 @@ export class VoiceService {
     // Si el usuario eligió una voz específica, gana sobre la default-por-género.
     const personaName = voiceOverride ?? DEFAULT_VOICE[gender];
 
+    // Experimento de latencia: si SUPPORT_TTS_PREFER_NEURAL2=true, saltamos
+    // Chirp3-HD (modelo pesado) y usamos Neural2 directo (más liviano). Sirve
+    // para distinguir si los 13-25s son el modelo o el egress de la VPC.
+    const preferNeural2 = process.env.SUPPORT_TTS_PREFER_NEURAL2 === 'true';
+
+    // ── PRIMARIO: Deepgram Aura-2 (es/en) — TTS de baja latencia (~200-500ms),
+    // mismo proveedor que el STT. fr/de/qu → null → cae a OpenAI tts-1.
+    // Kill-switch: SUPPORT_TTS_DISABLE_AURA=true.
+    const auraVoice = pickAuraVoice(langKey, gender);
+    const dgKey = process.env.DEEPGRAM_API_KEY;
+    if (auraVoice && dgKey && process.env.SUPPORT_TTS_DISABLE_AURA !== 'true') {
+      try {
+        const t0 = Date.now();
+        const res = await fetch(
+          `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(auraVoice)}&encoding=opus&container=ogg`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Token ${dgKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+            signal: AbortSignal.timeout(Number(process.env.DEEPGRAM_TTS_TIMEOUT_MS) || 20000),
+          },
+        );
+        if (res.ok) {
+          const buf = Buffer.from(await res.arrayBuffer());
+          this.logger.log(`[tts-aura] ${auraVoice} ok (${text.length} chars → ${buf.length}B audio, ${Date.now() - t0}ms)`);
+          return buf;
+        }
+        this.logger.warn(`[tts-aura] ${auraVoice} HTTP ${res.status} — fallback a OpenAI/Google`);
+      } catch (auraErr) {
+        this.logger.warn(`[tts-aura] error (${(auraErr as Error).message.slice(0, 80)}) — fallback a OpenAI/Google`);
+      }
+    }
+
+    // FALLBACK 1: OpenAI tts-1 (REST, ~1-2s, multilingüe — cubre fr/de y si Aura falla).
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (openaiKey) {
+      try {
+        const t0 = Date.now();
+        const oaVoice = gender === 'male' ? 'onyx' : 'nova';
+        const resp = await fetch('https://api.openai.com/v1/audio/speech', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'tts-1', voice: oaVoice, input: text, response_format: 'opus' }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (resp.ok) {
+          const buf = Buffer.from(await resp.arrayBuffer());
+          this.logger.log(`[tts-openai] ${oaVoice} ok (${text.length} chars → ${buf.length}B, ${Date.now() - t0}ms)`);
+          return buf;
+        }
+        this.logger.warn(`[tts-openai] HTTP ${resp.status} — fallback a Google`);
+      } catch (oaErr) {
+        this.logger.warn(`[tts-openai] error (${(oaErr as Error).message.slice(0, 80)}) — fallback a Google`);
+      }
+    }
+
     try {
-      if (!this.ttsClient) this.ttsClient = new TextToSpeechClient();
+      // Transporte REST (no gRPC): con vpc-egress=all-traffic el gRPC a las
+      // APIs de Google se degradaba a ~90s/llamada (los REST de OpenAI/Deepgram/
+      // Mapbox iban rápido por el mismo egress). REST + timeout lo baja a ~2-3s.
+      if (!this.ttsClient) this.ttsClient = new TextToSpeechClient({ fallback: 'rest' });
       const ttsClient = this.ttsClient;
 
       // Intentar Chirp 3 HD primero (calidad superior, voz consistente cross-lang)
       const chirpVoiceName = `${langCfg.ttsLangCode}-Chirp3-HD-${personaName}`;
       try {
+        if (preferNeural2) throw new Error('prefer-neural2'); // experimento → Neural2
         const t0 = Date.now();
         const [response] = await ttsClient.synthesizeSpeech({
           input: { text },
@@ -345,7 +424,7 @@ export class VoiceService {
             speakingRate: 1.0,
             pitch: 0,
           },
-        });
+        }, { timeout: 15000 });
         const dt = Date.now() - t0;
         if (response.audioContent) {
           const audioBytes = (response.audioContent as Uint8Array).length;
@@ -372,7 +451,7 @@ export class VoiceService {
           speakingRate: 1.0,
           pitch: 0,
         },
-      });
+      }, { timeout: 15000 });
       const dt = Date.now() - t0;
       if (!response.audioContent) return null;
       const audioBytes = (response.audioContent as Uint8Array).length;

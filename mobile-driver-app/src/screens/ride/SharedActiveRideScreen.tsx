@@ -17,6 +17,7 @@ import {
   ScrollView,
   Alert,
   Platform,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -216,6 +217,25 @@ export function SharedActiveRideScreen() {
     return `Entregar a ${currentStop.passengerName}`;
   };
 
+  // ─── Compartir viaje compartido con un contacto de confianza (seguridad) ──
+  const handleShareTrip = async () => {
+    hapticHeavy();
+    const msg = [
+      '🚗 Estoy haciendo un viaje compartido con Going App. Te comparto mis datos por seguridad.',
+      '',
+      day ? `Fecha: ${day} ${time}` : null,
+      `Pasajeras/os: ${passengers.length}`,
+      rideId ? `Viaje: ${rideId.slice(0, 8).toUpperCase()}` : null,
+      '',
+      'Si no tienes noticias mías en un rato, llámame.',
+    ].filter(Boolean).join('\n');
+    try {
+      await Share.share({ message: msg, title: 'Mi viaje — Going App' });
+    } catch {
+      // compartir cancelado
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* ── Mapa placeholder ── */}
@@ -331,6 +351,21 @@ export function SharedActiveRideScreen() {
             })}
           </View>
         </ScrollView>
+
+        {/* Seguridad: compartir viaje + SOS */}
+        <View style={styles.safetyRow}>
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShareTrip}>
+            <Ionicons name="share-social-outline" size={18} color="#374151" />
+            <Text style={styles.shareBtnText}>Compartir viaje</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.sosBtn}
+            onPress={() => (navigation as any).navigate('DriverSos')}
+          >
+            <Ionicons name="warning" size={18} color="#fff" />
+            <Text style={styles.sosBtnText}>SOS</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Action button ── */}
         {!rideComplete ? (
@@ -516,6 +551,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   actionBtnText: { color: NAVY, fontSize: 14, fontWeight: '900' },
+
+  // Seguridad
+  safetyRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  shareBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    paddingVertical: 12,
+  },
+  shareBtnText: { color: '#374151', fontSize: 13, fontWeight: '700' },
+  sosBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: RED,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+  },
+  sosBtnText: { color: '#fff', fontSize: 13, fontWeight: '900' },
 
   completedBanner: {
     flexDirection: 'row',

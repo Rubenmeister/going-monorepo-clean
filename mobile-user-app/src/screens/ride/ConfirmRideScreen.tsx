@@ -41,6 +41,7 @@ import type { MainStackParamList } from '@navigation/MainNavigator';
 import { useAuthStore } from '@store/useAuthStore';
 import { transportAPI, paymentAPI } from '../../services/api';
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from '../../utils/haptics';
+import { isProfileComplete } from '../../utils/profile';
 import { useTheme, type ThemeTokens } from '../../theme';
 import type { Category } from '../../catalog';
 
@@ -82,6 +83,14 @@ type Nav = NativeStackNavigationProp<MainStackParamList>;
 // Wire Datafast + DeUna (task #46 completed 2026-05-23): backend payment-
 // service expone POST /payments/ec/intent. Si el gateway no tiene env
 // vars configuradas, devuelve 503 y mobile cae automático a Efectivo.
+//
+// Ola 3: en vez de hardcodear enabled:false, las pasarelas se ENCIENDEN por
+// configuración (EXPO_PUBLIC_ENABLE_DATAFAST / _DEUNA = 'true' en el build),
+// para activarlas cuando lleguen las credenciales de producción SIN editar
+// código. Por defecto OFF → solo Efectivo, que es lo seguro para el lanzamiento.
+const DATAFAST_ENABLED = process.env.EXPO_PUBLIC_ENABLE_DATAFAST === 'true';
+const DEUNA_ENABLED    = process.env.EXPO_PUBLIC_ENABLE_DEUNA === 'true';
+
 const PAYMENT_METHODS: ReadonlyArray<{
   id:      PaymentMethodId;
   label:   string;
@@ -101,14 +110,14 @@ const PAYMENT_METHODS: ReadonlyArray<{
     label:   'Tarjeta · Datafast',
     sub:     'Visa · Mastercard · Amex · Diners',
     icon:    'card-outline',
-    enabled: false,  // pasarela no integrada → "Próximamente" (efectivo es el default)
+    enabled: DATAFAST_ENABLED,  // OFF hasta tener credenciales prod → "Próximamente"
   },
   {
     id:      'deuna',
     label:   'QR · De Una',
     sub:     'Transferencia instantánea Banco Pichincha',
     icon:    'qr-code-outline',
-    enabled: false,  // pasarela no integrada → "Próximamente" (efectivo es el default)
+    enabled: DEUNA_ENABLED,  // OFF hasta tener credenciales prod → "Próximamente"
   },
 ];
 
@@ -498,6 +507,20 @@ export function ConfirmRideScreen() {
 
   const handleConfirm = useCallback(() => {
     hapticMedium();
+    // Gate del registro rápido: antes de la primera reserva necesitamos nombre
+    // real + teléfono para coordinar con la conductora o conductor.
+    if (!isProfileComplete(user)) {
+      hapticError();
+      Alert.alert(
+        'Completa tu perfil',
+        'Necesitamos tu nombre y teléfono para coordinar el viaje con la conductora o conductor.',
+        [
+          { text: 'Ahora no', style: 'cancel' },
+          { text: 'Completar', onPress: () => navigation.navigate('EditProfile' as never) },
+        ],
+      );
+      return;
+    }
     if (payMethod === 'cash') {
       handleCashBooking();
     } else if (payMethod === 'datafast' || payMethod === 'deuna') {
@@ -506,7 +529,7 @@ export function ConfirmRideScreen() {
       hapticError();
       Alert.alert('Método desconocido', `Método ${payMethod} no soportado.`);
     }
-  }, [payMethod, handleCashBooking, handleDigitalPayment]);
+  }, [payMethod, handleCashBooking, handleDigitalPayment, user, navigation]);
 
   const handleSelectPayment = useCallback((id: PaymentMethodId) => {
     const method = PAYMENT_METHODS.find(m => m.id === id);

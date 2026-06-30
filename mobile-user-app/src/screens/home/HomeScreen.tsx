@@ -41,8 +41,17 @@ import {
 } from '../../catalog';
 import { analyticsScreen, analyticsFeaturedRouteSelected } from '../../utils/analytics';
 import { hapticLight } from '../../utils/haptics';
+import { isProfileComplete } from '../../utils/profile';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;
+
+/**
+ * Feature flag: Viajes Privados. Por requisito de producto, el lanzamiento se
+ * enfoca SOLO en viajes compartidos; Privados se habilita "cuando el mercado lo
+ * pida", sin tocar código, con EXPO_PUBLIC_ENABLE_PRIVATE_TRIPS=true.
+ * Por defecto OFF → el home muestra Compartido + Envíos.
+ */
+const PRIVATE_TRIPS_ENABLED = process.env.EXPO_PUBLIC_ENABLE_PRIVATE_TRIPS === 'true';
 
 /** Saludo según hora local del device. */
 function timeOfDayGreeting(): string {
@@ -176,11 +185,17 @@ export default function HomeScreen() {
   const handleRecentTap = useCallback((r: RecentRoute) => {
     hapticLight();
     analyticsFeaturedRouteSelected(`${r.origin} → ${r.destination}`);
-    if (r.tripMode === 'compartido') {
-      navigation.navigate('SharedRideBooking', { originStop: r.origin });
-    } else {
-      navigation.navigate('PrivateRideBooking', {});
-    }
+    // Enrutar al wizard unificado (igual que las tarjetas de producto): pickup →
+    // destino → BookingOptions, que cotiza con el backend (/search). Así el
+    // precio mostrado SIEMPRE sale del backend. Antes las "recientes" iban a las
+    // pantallas legacy que confirmaban sin precio previo.
+    setTripMode(r.tripMode === 'compartido' ? 'compartido' : 'privado');
+    navigation.navigate('LocationPicker', {
+      title: '¿Dónde te recogemos?',
+      mode: 'origin',
+      returnScreen: 'Home',
+      paramKey: 'pickup',
+    } as any);
   }, [navigation]);
 
   return (
@@ -226,9 +241,26 @@ export default function HomeScreen() {
           <Text style={styles.greetingSub}>¿A dónde vamos hoy?</Text>
         </View>
 
-        {/* ── 3 PRODUCT CARDS ──────────────────────────────────── */}
+        {/* ── Banner: completa tu perfil (registro rápido) ───────── */}
+        {!isProfileComplete(user) && (
+          <TouchableOpacity
+            style={styles.profileBanner}
+            onPress={() => { hapticLight(); navigation.navigate('EditProfile' as never); }}
+            activeOpacity={0.85}
+            accessibilityLabel="Completa tu perfil"
+          >
+            <Ionicons name="person-circle-outline" size={24} color={tokens.brandNavy} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.profileBannerTitle}>Completa tu perfil</Text>
+              <Text style={styles.profileBannerSub}>Agrega tu nombre y teléfono para reservar más rápido</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={tokens.textTertiary} />
+          </TouchableOpacity>
+        )}
+
+        {/* ── PRODUCT CARDS (Privado gateado por feature flag) ───── */}
         <View style={styles.cardsBlock}>
-          {PRODUCTS.map((p) => (
+          {PRODUCTS.filter((p) => p.id !== 'privado' || PRIVATE_TRIPS_ENABLED).map((p) => (
             <TouchableOpacity
               key={p.id}
               style={[styles.productCard, p.popular && styles.productCardPopular]}
@@ -391,6 +423,19 @@ function makeStyles(t: ThemeTokens, isDark: boolean) {
     },
 
     // ── Product cards ──────────────────────────────────────
+    profileBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: t.bgLayer,
+      borderWidth: 1, borderColor: t.brandYellow,
+      borderRadius: 14,
+      padding: 14,
+      marginBottom: 16,
+    },
+    profileBannerTitle: { fontSize: 14, fontWeight: '800', color: t.textPrimary },
+    profileBannerSub: { fontSize: 12, color: t.textSecondary, marginTop: 2 },
+
     cardsBlock: { gap: 12 },
     productCard: {
       flexDirection: 'row',

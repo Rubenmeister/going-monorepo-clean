@@ -34,6 +34,8 @@ export interface StoredUser {
   phone:      string;
   roles:      string[];
   avatar?:    string;
+  /** true cuando la persona completó nombre real + teléfono (registro rápido). */
+  profileComplete?: boolean;
 }
 
 export interface AuthTokens {

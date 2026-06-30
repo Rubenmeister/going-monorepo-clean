@@ -43,9 +43,10 @@ export const CORRIDORS: Corridor[] = [
   {
     id: 'sierra_norte',
     label: 'Sierra Norte → Quito',
-    stops: ['Ibarra', 'Otavalo', 'Quito'],
-    stopCityIds: ['ibarra', 'otavalo', 'quito'],
-    estimatedDurationH: 2.0,
+    // Arranca en Tulcán (frontera Carchi) — ruta de lanzamiento Going.
+    stops: ['Tulcán', 'Ibarra', 'Otavalo', 'Quito'],
+    stopCityIds: ['tulcan', 'ibarra', 'otavalo', 'quito'],
+    estimatedDurationH: 4.5,
   },
 ];
 

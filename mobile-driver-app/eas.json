@@ -21,7 +21,6 @@
       }
     },
     "production": {
-      "autoIncrement": true,
       "credentialsSource": "remote",
       "prebuildCommand": "npx expo prebuild --clean",
       "env": {
@@ -34,7 +33,8 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "../google-service-account.json",
-        "track": "internal"
+        "track": "alpha",
+        "releaseStatus": "draft"
       }
     }
   }

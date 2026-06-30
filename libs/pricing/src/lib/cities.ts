@@ -55,6 +55,7 @@ export const CITIES: CityCentroid[] = [
   { id: 'otavalo',       label: 'Otavalo',            lat:  0.2342, lng: -78.2611, radiusKm: 6,  region: 'Imbabura' },
   { id: 'atuntaqui',     label: 'Atuntaqui',          lat:  0.3333, lng: -78.2167, radiusKm: 4,  region: 'Imbabura', smallTownNearHub: true },
   { id: 'ibarra',        label: 'Ibarra',             lat:  0.3517, lng: -78.1222, radiusKm: 10, region: 'Imbabura' },
+  { id: 'tulcan',        label: 'Tulcán',             lat:  0.8117, lng: -77.7178, radiusKm: 10, region: 'Carchi' },
 
   // ── Corredor Costa (vía Santo Domingo) ──────────────────────────────────────
   { id: 'santo_domingo', label: 'Santo Domingo',      lat: -0.2533, lng: -79.1717, radiusKm: 12, region: 'Sto. Domingo' },
