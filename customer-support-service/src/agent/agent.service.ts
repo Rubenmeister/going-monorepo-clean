@@ -103,7 +103,11 @@ export class AgentService {
           const resp = await this.anthropic.messages.create({
             model: CLAUDE_MODEL,
             max_tokens: 400,
-            system: systemPrompt,
+            // Prompt caching: el system prompt (~6k tokens, estable por
+            // idioma/audiencia) se cachea (ephemeral, TTL ~5min). Las lecturas
+            // de caché cuestan ~10% del input → Claude ~10× más barato en
+            // mensajes seguidos con el mismo prompt.
+            system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
             messages: msgs.map((m) => ({ role: m.role, content: m.content })),
           });
           const text = resp.content
@@ -111,10 +115,15 @@ export class AgentService {
             .map((b) => b.text)
             .join('')
             .trim();
-          const u = resp.usage;
-          const cost = (u?.input_tokens || 0) * TEXT_PRICING.claude.in + (u?.output_tokens || 0) * TEXT_PRICING.claude.out;
+          const u: any = resp.usage;
+          const inP = TEXT_PRICING.claude.in;
+          const freshIn = u?.input_tokens || 0;
+          const cacheW = u?.cache_creation_input_tokens || 0; // escritura: 1.25× input
+          const cacheR = u?.cache_read_input_tokens || 0;     // lectura: 0.10× input
+          const cost =
+            freshIn * inP + cacheW * inP * 1.25 + cacheR * inP * 0.1 + (u?.output_tokens || 0) * TEXT_PRICING.claude.out;
           this.budget.record(cost);
-          this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${u?.input_tokens} out=${u?.output_tokens} ~$${cost.toFixed(4)})`);
+          this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${freshIn} cacheW=${cacheW} cacheR=${cacheR} out=${u?.output_tokens} ~$${cost.toFixed(4)})`);
           if (text) return text;
         } else {
           const t0 = Date.now();
