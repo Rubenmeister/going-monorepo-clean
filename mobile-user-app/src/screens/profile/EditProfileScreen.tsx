@@ -15,16 +15,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '@store/useAuthStore';
 import { authAPI } from '@services/api';
+import { PLACEHOLDER_LASTNAME } from '../../utils/profile';
 
 const GOING_BLUE = '#FF4C41';
 const GOING_YELLOW = '#FFD253';
 
 export function EditProfileScreen() {
   const navigation = useNavigation();
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
-  const [lastName, setLastName] = useState(user?.lastName ?? '');
+  // No mostramos el apellido centinela del alta mínima como si fuera dato real.
+  const [lastName, setLastName] = useState(
+    user?.lastName && user.lastName !== PLACEHOLDER_LASTNAME ? user.lastName : '',
+  );
   const [phone, setPhone] = useState((user as any)?.phone ?? '');
   const [loading, setLoading] = useState(false);
 
@@ -33,9 +37,16 @@ export function EditProfileScreen() {
       Alert.alert('Campos requeridos', 'Nombre y apellido son obligatorios.');
       return;
     }
+    if (!phone.trim()) {
+      Alert.alert('Teléfono requerido', 'Tu teléfono es necesario para coordinar el viaje con la conductora o conductor.');
+      return;
+    }
     setLoading(true);
     try {
-      await authAPI.updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim() });
+      const fn = firstName.trim(), ln = lastName.trim(), ph = phone.trim();
+      await authAPI.updateProfile({ firstName: fn, lastName: ln, phone: ph });
+      // Reflejar en el store local + marcar perfil completo (registro rápido).
+      if (user) await setUser({ ...user, firstName: fn, lastName: ln, phone: ph, profileComplete: true });
       Alert.alert('Guardado', 'Tu perfil ha sido actualizado.', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);

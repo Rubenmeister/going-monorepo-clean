@@ -36,6 +36,7 @@ export const FARES = {
     'aeropuerto-quito':                 10,
     'aeropuerto-riobamba':              25,
     'aeropuerto-santo_domingo':         23,
+    'aeropuerto-tulcan':                29,
 
     'alausi-cuenca':                    17,
     'alausi-guayaquil':                 24,
@@ -201,6 +202,7 @@ export const FARES = {
     'otavalo-aeropuerto':               18,
     'otavalo-ibarra':                   5,
     'otavalo-quito':                    12,
+    'otavalo-tulcan':                   19,
 
     'peguche-aeropuerto':               14,
     'peguche-quito':                    15,
@@ -303,7 +305,9 @@ export const FARES = {
     'tisaleo-banos':                    5,
     'tisaleo-quito':                    12,
 
+    'tulcan-aeropuerto':                29,
     'tulcan-ibarra':                    14,
+    'tulcan-otavalo':                   19,
     'tulcan-quito':                     24,
 
     'zaruma-cuenca':                    29,

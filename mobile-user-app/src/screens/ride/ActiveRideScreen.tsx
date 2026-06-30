@@ -242,17 +242,46 @@ export function ActiveRideScreen() {
         setShowPickupQR(false);
       });
 
-      // Conductor a 10 minutos — notificación local
+      // Conductor a 10 minutos — notificación local (evento legacy)
       socket.on('ride:driver_10min', (data: { message: string }) => {
         hapticWarning();
         Notifications.scheduleNotificationAsync({
           content: {
-            title: '🚗 GOING — Tu conductor está cerca',
-            body: data.message ?? 'Tu conductor llega en ~10 minutos. ¡Prepárate!',
+            title: '🚗 GOING — Tu conductora o conductor está cerca',
+            body: data.message ?? 'Llega en ~10 minutos. ¡Prepárate!',
             sound: true,
           },
           trigger: null, // inmediata
         }).catch(() => {/* permisos no concedidos — silencioso */});
+      });
+
+      // Hitos de proximidad unificados (backend emite 10min / 3min / arrived).
+      // El de 10min ya lo cubre ride:driver_10min arriba, así que aquí solo
+      // reaccionamos a 3min y "ya llegó" para no duplicar la alerta de 10min.
+      socket.on('ride:driver_proximity', (data: { threshold?: '10min' | '3min' | 'arrived'; message?: string }) => {
+        if (data?.threshold === '3min') {
+          hapticWarning();
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: '⏱️ GOING — Faltan ~3 minutos',
+              body: data.message ?? 'Tu conductora o conductor llega en ~3 minutos. Sal al punto de encuentro.',
+              sound: true,
+            },
+            trigger: null,
+          }).catch(() => {/* permisos no concedidos — silencioso */});
+        } else if (data?.threshold === 'arrived') {
+          hapticHeavy();
+          setStatus('arrived');
+          if (pickupToken) setShowPickupQR(true);
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: '✅ GOING — Tu conductora o conductor ya llegó',
+              body: data.message ?? 'Búscale en el punto de encuentro.',
+              sound: true,
+            },
+            trigger: null,
+          }).catch(() => {/* permisos no concedidos — silencioso */});
+        }
       });
 
       // Viaje iniciado

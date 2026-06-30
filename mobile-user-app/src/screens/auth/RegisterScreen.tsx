@@ -1,8 +1,11 @@
 /**
  * RegisterScreen — Going App Ecuador
  *
- * Flujo: form con 5 fields (nombre/apellido/email/teléfono/password) +
- * 2 checkboxes LOPDP obligatorios (T&C + Privacidad).
+ * REGISTRO RÁPIDO: solo credenciales (correo + contraseña) + 2 checkboxes
+ * LOPDP obligatorios. El nombre, apellido y teléfono se piden DESPUÉS, conforme
+ * la persona usa la app (banner en Home + gate antes de la primera reserva).
+ * El alta manda un nombre derivado del correo y un apellido centinela para no
+ * tocar el backend de auth; el perfil queda "incompleto" hasta completarlo.
  *
  * Theme: ADAPTATIVO light + dark (useTheme). Hero navy brand (NO rojo —
  * el rojo del logo se reserva para identidad y SOS). CTA primario en
@@ -33,16 +36,17 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@store/useAuthStore';
 import type { AuthStackParamList } from '@navigation/AuthNavigator';
 import { useTheme, type ThemeTokens } from '../../theme';
+import { deriveNameFromEmail, PLACEHOLDER_LASTNAME } from '../../utils/profile';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 
 type FormState = {
-  firstName: string;
-  lastName: string;
   email: string;
-  phone: string;
   password: string;
 };
+
+/** Mínimo de password alineado con el backend (RegisterUserDto: MinLength 12). */
+const MIN_PASSWORD = 12;
 
 type FieldDef = {
   label: string;
@@ -53,12 +57,11 @@ type FieldDef = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
 };
 
+// REGISTRO RÁPIDO: solo credenciales. Nombre, apellido y teléfono se completan
+// después, conforme la persona usa la app (ver utils/profile + EditProfile).
 const FIELDS: FieldDef[] = [
-  { label: 'Nombre',     key: 'firstName', placeholder: 'Juan',               icon: 'person-outline' },
-  { label: 'Apellido',   key: 'lastName',  placeholder: 'Pérez',              icon: 'person-outline' },
-  { label: 'Correo',     key: 'email',     placeholder: 'correo@ejemplo.com', icon: 'mail-outline',        keyboard: 'email-address' },
-  { label: 'Teléfono',   key: 'phone',     placeholder: '+593 99 999 9999',   icon: 'call-outline',        keyboard: 'phone-pad' },
-  { label: 'Contraseña', key: 'password',  placeholder: 'Mínimo 8 caracteres', icon: 'lock-closed-outline', secure: true },
+  { label: 'Correo',     key: 'email',     placeholder: 'correo@ejemplo.com',   icon: 'mail-outline',        keyboard: 'email-address' },
+  { label: 'Contraseña', key: 'password',  placeholder: 'Mínimo 12 caracteres', icon: 'lock-closed-outline', secure: true },
 ];
 
 export function RegisterScreen() {
@@ -67,16 +70,14 @@ export function RegisterScreen() {
   const { tokens, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(tokens, isDark), [tokens, isDark]);
 
-  const [form, setForm] = useState<FormState>({
-    firstName: '', lastName: '', email: '', phone: '', password: '',
-  });
+  const [form, setForm] = useState<FormState>({ email: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [acceptedTerms,   setAcceptedTerms]   = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   // Refs para que el "next" del teclado salte al siguiente input
   const refs = useRef<Record<keyof FormState, TextInput | null>>({
-    firstName: null, lastName: null, email: null, phone: null, password: null,
+    email: null, password: null,
   });
 
   const update = (field: keyof FormState) => (value: string) =>
@@ -102,23 +103,15 @@ export function RegisterScreen() {
     return { score, label: 'Fuerte', color: tokens.success };
   }, [form.password, tokens]);
 
-  // ── Validación de phone (formato EC) ─────────────────────────
-  // Permite '+593' o '0' seguido de 9-10 dígitos. No bloquea submit, solo
-  // muestra warning si parece incorrecto.
-  const phoneValid = useMemo(() => {
-    const p = form.phone.trim();
-    if (!p) return true; // empty handled por el required
-    return /^(\+593|0)\s?\d[\d\s]{7,12}$/.test(p);
-  }, [form.phone]);
-
   const handleRegister = async () => {
-    const { firstName, lastName, email, password, phone } = form;
-    if (!firstName || !lastName || !email || !password || !phone) {
-      Alert.alert('Campos requeridos', 'Por favor completa todos los campos.');
+    const email = form.email.trim();
+    const { password } = form;
+    if (!email || !password) {
+      Alert.alert('Campos requeridos', 'Ingresa tu correo y una contraseña.');
       return;
     }
-    if (password.length < 8) {
-      Alert.alert('Contraseña muy corta', 'La contraseña debe tener al menos 8 caracteres.');
+    if (password.length < MIN_PASSWORD) {
+      Alert.alert('Contraseña muy corta', `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`);
       return;
     }
     if (!acceptedTerms) {
@@ -132,7 +125,16 @@ export function RegisterScreen() {
       );
       return;
     }
-    await register(form);
+    // Alta mínima: derivamos un nombre del correo y mandamos un apellido
+    // centinela para satisfacer el backend (que exige nombres no vacíos). El
+    // nombre real + teléfono se piden después (perfil incompleto).
+    await register({
+      firstName: deriveNameFromEmail(email),
+      lastName:  PLACEHOLDER_LASTNAME,
+      email,
+      password,
+      phone:     '',
+    });
   };
 
   return (
@@ -154,14 +156,13 @@ export function RegisterScreen() {
             resizeMode="contain"
           />
           <Text style={styles.heroTitle}>Crea tu cuenta</Text>
-          <Text style={styles.heroSub}>Únete a la plataforma de movilidad de Ecuador</Text>
+          <Text style={styles.heroSub}>Solo tu correo y una contraseña. El resto lo completas después.</Text>
         </View>
 
         {/* ── Formulario ─────────────────────────────────────────── */}
         <View style={styles.card}>
           {FIELDS.map((f, idx) => {
             const isLast = idx === FIELDS.length - 1;
-            const showPhoneWarning = f.key === 'phone' && form.phone && !phoneValid;
             return (
               <View key={f.key} style={styles.fieldBlock}>
                 <Text style={styles.label}>{f.label}</Text>
@@ -223,11 +224,6 @@ export function RegisterScreen() {
                       {passwordStrength.label}
                     </Text>
                   </View>
-                )}
-                {showPhoneWarning && (
-                  <Text style={styles.fieldWarning}>
-                    Formato esperado: +593 99 999 9999 o 0991234567
-                  </Text>
                 )}
               </View>
             );
