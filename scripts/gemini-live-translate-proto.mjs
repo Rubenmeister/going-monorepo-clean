@@ -1,46 +1,68 @@
 /**
  * Prototipo Gemini LIVE TRANSLATE — voz↔voz en tiempo real (Live API, WebSocket).
  *
- * Conecta al Live API de Gemini, envía un turno y mide el tiempo hasta el primer
- * audio (TTFB) + guarda el audio resultante. Diseñado para evaluar la latencia
- * real del carril de tiempo real (vs el generateContent de 3–11s).
+ * Es un INTÉRPRETE: recibe AUDIO en un idioma y devuelve AUDIO en otro.
+ * Este script le envía una muestra de voz en español (scripts/out/gemini-voz-es.wav,
+ * resampleada a 16 kHz) y guarda la traducción hablada en inglés, midiendo el
+ * tiempo hasta el primer audio (TTFB).
  *
- * ⚠️ ESTADO (30-jun-2026): BLOQUEADO para correr porque:
- *   - La key AI Studio GEMINI_API_KEY está SIN crédito (429 "prepayment depleted").
- *   - El modelo live (gemini-3.5-live-translate-preview / native-audio) NO está
- *     en Vertex us-central1/global (404). El Live API hoy es solo AI Studio.
- *   → Para correrlo: cargar crédito en AI Studio (ai.studio) y reintentar; o
- *     esperar a que el modelo llegue a Vertex (facturado a GCP).
- *
- * Requisitos: Node con WebSocket global (Node 22+) o el paquete `ws`.
  * Uso:
- *   GEMINI_API_KEY=... node scripts/gemini-live-translate-proto.mjs
- *   (o se lee de gcloud: gcloud secrets versions access latest --secret=GEMINI_API_KEY)
+ *   node scripts/gemini-live-translate-proto.mjs [archivo-wav-entrada]
+ *   (la key se lee de gcloud: secret GEMINI_API_KEY)
  */
 import { execSync } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), 'out');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const OUT_DIR = join(HERE, 'out');
 const MODEL = process.env.LIVE_MODEL || 'models/gemini-3.5-live-translate-preview';
 const TARGET = 'English';
-const SOURCE_TEXT = 'Hola, soy tu asistente de Going. Tu conductora llega en tres minutos, por favor sal al punto de encuentro.';
+const INPUT_WAV = process.argv[2] || join(OUT_DIR, 'gemini-voz-es.wav');
 
 function apiKey() {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY.trim();
   return execSync('gcloud secrets versions access latest --secret=GEMINI_API_KEY --project=going-5d1ae', { encoding: 'utf8' }).trim();
 }
 
-async function getWebSocket() {
-  if (typeof globalThis.WebSocket !== 'undefined') return globalThis.WebSocket;
-  try { return (await import('ws')).default; } catch {
-    console.error('No hay WebSocket global (Node<22) ni paquete `ws`. Instala: pnpm add -w ws');
-    process.exit(1);
+/** Lee un WAV PCM16 mono → { pcm: Int16Array, rate }. Busca el chunk 'data'. */
+function readWav(path) {
+  const buf = readFileSync(path);
+  const rate = buf.readUInt32LE(24);
+  let off = 12;
+  while (off + 8 <= buf.length) {
+    const id = buf.toString('ascii', off, off + 4);
+    const size = buf.readUInt32LE(off + 4);
+    if (id === 'data') {
+      const pcm = new Int16Array(size / 2);
+      for (let i = 0; i < pcm.length; i++) pcm[i] = buf.readInt16LE(off + 8 + i * 2);
+      return { pcm, rate };
+    }
+    off += 8 + size;
   }
+  throw new Error('WAV sin chunk data');
 }
 
-function pcmToWav(pcm, sampleRate = 24000) {
+/** Resample lineal Int16 a otra frecuencia. */
+function resample(pcm, srIn, srOut) {
+  if (srIn === srOut) return pcm;
+  const ratio = srIn / srOut;
+  const out = new Int16Array(Math.floor(pcm.length / ratio));
+  for (let i = 0; i < out.length; i++) {
+    const x = i * ratio;
+    const i0 = Math.floor(x), frac = x - i0;
+    const a = pcm[i0] || 0, b = pcm[i0 + 1] || a;
+    out[i] = (a + (b - a) * frac) | 0;
+  }
+  return out;
+}
+
+function int16ToB64(int16) {
+  return Buffer.from(int16.buffer, int16.byteOffset, int16.byteLength).toString('base64');
+}
+
+function pcmToWav(pcm, sampleRate) {
   const h = Buffer.alloc(44);
   h.write('RIFF', 0); h.writeUInt32LE(36 + pcm.length, 4); h.write('WAVE', 8);
   h.write('fmt ', 12); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22);
@@ -51,63 +73,70 @@ function pcmToWav(pcm, sampleRate = 24000) {
 
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
-  const WS = await getWebSocket();
-  const key = apiKey();
-  const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${key}`;
-  const ws = new WS(url);
+  if (!existsSync(INPUT_WAV)) { console.error(`No existe el WAV de entrada: ${INPUT_WAV}\nGenera primero con: node scripts/gemini-voice-proto.mjs`); process.exit(1); }
 
+  const { pcm, rate } = readWav(INPUT_WAV);
+  const pcm16k = resample(pcm, rate, 16000);
+  console.log(`Entrada: ${INPUT_WAV} (${rate}Hz, ${(pcm.length / rate).toFixed(1)}s) → 16kHz`);
+
+  const ws = new WebSocket(`wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${apiKey()}`);
   const t0 = Date.now();
-  let firstAudioMs = null;
+  let sentAt = 0, firstAudioMs = null, outRate = 24000, saved = false;
   const chunks = [];
 
-  ws.onopen = () => {
-    console.log('WS abierto. Enviando setup...');
-    ws.send(JSON.stringify({
-      setup: {
-        model: MODEL,
-        generationConfig: { responseModalities: ['AUDIO'] },
-        systemInstruction: { parts: [{ text: `You are a real-time interpreter. Translate everything the user says into ${TARGET}, spoken naturally.` }] },
-      },
-    }));
+  const saveAndClose = () => {
+    if (saved) return;
+    saved = true;
+    const out = Buffer.concat(chunks);
+    if (out.length) {
+      const file = join(OUT_DIR, 'gemini-live-translate-en.wav');
+      writeFileSync(file, pcmToWav(out, outRate));
+      console.log(`✅ audio traducido ${out.length} bytes @${outRate}Hz → ${file} (TTFB ${firstAudioMs}ms)`);
+    } else console.log('Sin audio recibido.');
+    try { ws.close(); } catch { /* noop */ }
   };
+
+  ws.onopen = () => ws.send(JSON.stringify({
+    setup: {
+      model: MODEL,
+      generationConfig: { responseModalities: ['AUDIO'] },
+      systemInstruction: { parts: [{ text: `You are a real-time interpreter. The user speaks Spanish. Interpret everything into spoken ${TARGET}.` }] },
+    },
+  }));
 
   ws.onmessage = async (ev) => {
     let raw = ev.data;
     if (raw instanceof Blob) raw = Buffer.from(await raw.arrayBuffer());
-    const txt = Buffer.isBuffer(raw) ? raw.toString('utf8') : String(raw);
-    let msg; try { msg = JSON.parse(txt); } catch { return; }
+    let msg; try { msg = JSON.parse(Buffer.isBuffer(raw) ? raw.toString('utf8') : String(raw)); } catch { return; }
 
     if (msg.setupComplete) {
-      console.log(`setupComplete en ${Date.now() - t0}ms. Enviando turno de texto...`);
-      ws.send(JSON.stringify({
-        clientContent: { turns: [{ role: 'user', parts: [{ text: SOURCE_TEXT }] }], turnComplete: true },
-      }));
+      console.log(`setupComplete ${Date.now() - t0}ms → enviando audio ES...`);
+      ws.send(JSON.stringify({ realtimeInput: { audio: { data: int16ToB64(pcm16k), mimeType: 'audio/pcm;rate=16000' } } }));
+      ws.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } }));
+      sentAt = Date.now();
       return;
     }
-    const parts = msg.serverContent?.modelTurn?.parts || [];
-    for (const p of parts) {
-      const data = p.inlineData?.data;
-      if (data) {
-        if (firstAudioMs === null) { firstAudioMs = Date.now() - t0; console.log(`⏱️  primer audio (TTFB): ${firstAudioMs}ms`); }
-        chunks.push(Buffer.from(data, 'base64'));
+    for (const p of (msg.serverContent?.modelTurn?.parts || [])) {
+      if (p.inlineData?.data) {
+        if (firstAudioMs === null) { firstAudioMs = Date.now() - sentAt; console.log(`⏱️  TTFB primer audio traducido: ${firstAudioMs}ms`); }
+        const m = /rate=(\d+)/.exec(p.inlineData.mimeType || ''); if (m) outRate = +m[1];
+        chunks.push(Buffer.from(p.inlineData.data, 'base64'));
       }
     }
-    if (msg.serverContent?.turnComplete) {
-      const pcm = Buffer.concat(chunks);
-      if (pcm.length) {
-        const file = join(OUT_DIR, 'gemini-live-translate-en.wav');
-        writeFileSync(file, pcmToWav(pcm));
-        console.log(`✅ audio ${pcm.length} bytes → ${file} (TTFB ${firstAudioMs}ms)`);
-      } else {
-        console.log('Turno completo sin audio.');
-      }
-      ws.close();
+    const it = msg.serverContent?.inputTranscription?.text;
+    const ot = msg.serverContent?.outputTranscription?.text;
+    if (it) console.log('  (escuchó):', it);
+    if (ot) console.log('  (tradujo):', ot);
+    if (msg.serverContent?.generationComplete || msg.serverContent?.turnComplete) {
+      // pequeño respiro por si quedan chunks de audio en vuelo
+      setTimeout(saveAndClose, 600);
     }
-    if (msg.error) { console.error('Error del servidor:', JSON.stringify(msg.error).slice(0, 200)); ws.close(); }
+    if (msg.error) { console.error('Error servidor:', JSON.stringify(msg.error).slice(0, 200)); ws.close(); }
   };
-
   ws.onerror = (e) => console.error('WS error:', e?.message || e);
-  ws.onclose = (e) => console.log(`WS cerrado (code ${e?.code ?? '?'}).`);
+  ws.onclose = (e) => { console.log(`WS cerrado (code ${e?.code ?? '?'}).`); if (!saved) saveAndClose(); };
+  // Respaldo: si nada cierra en 25s, guarda lo recibido.
+  setTimeout(saveAndClose, 25_000);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
