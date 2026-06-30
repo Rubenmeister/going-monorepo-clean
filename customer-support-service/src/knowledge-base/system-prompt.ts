@@ -6,7 +6,8 @@ import { SUPPORT_EXAMPLES } from './examples';
 
 const COMING_SOON = GOING_SERVICES_KB.coming_soon_cities;
 import { ECUADOR_CANTONS_KB } from './ecuador-cantons';
-import type { AgentGender } from '../agent/conversation.service';
+import { getDriverSystemPrompt } from './driver-support';
+import type { AgentGender, Audience } from '../agent/conversation.service';
 
 /**
  * Idiomas soportados por el voice agent (Item 6 — Fase 8).
@@ -81,7 +82,23 @@ function getCantonContext(cantonName: string): string {
 `;
 }
 
-export function getSystemPrompt(lang: SupportedLang, canton: string | null, gender: AgentGender = 'male'): string {
+export function getSystemPrompt(
+  lang: SupportedLang,
+  canton: string | null,
+  gender: AgentGender = 'male',
+  audience: Audience = 'passenger',
+): string {
+  // Público conductor: prompt dedicado (modelo del conductor, ganancias, rutas).
+  // Para es/en se devuelve tal cual; para fr/de/qu se añade nota de idioma.
+  if (audience === 'driver') {
+    const driverBase = getDriverSystemPrompt(lang, gender);
+    if (lang === 'es') return driverBase;
+    if (lang === 'en') {
+      return driverBase + '\n\n## LANGUAGE\nThe user writes in English. Reply in natural English. Keep Ecuadorian city names and phone numbers as-is.';
+    }
+    return driverBase + '\n\n## IDIOMA\nResponde en el idioma del usuario. Mantén nombres de ciudades y números en su forma original.';
+  }
+
   const cantonCtx = canton ? getCantonContext(canton) : '';
 
   // Spanish agents: Carlos (male) / Sofia (female)

@@ -28,11 +28,14 @@ export class ChatController {
     @Body() body: { userId: string; message: string },
   ) {
     const { userId, message } = body;
-    // Ownership check: solo podés mandar mensajes en TU conversación.
+    // Ownership check: solo puedes mandar mensajes en TU conversación.
     if (userId !== caller.id && !caller.roles.includes('admin')) {
-      throw new ForbiddenException('No tenés permiso para hablar por otro usuario');
+      throw new ForbiddenException('No tienes permiso para hablar por otra persona usuaria');
     }
-    const reply = await this.agentService.respond(userId, message);
+    // Audiencia por rol del JWT: si quien escribe es conductora o conductor,
+    // el asistente usa el prompt de soporte a conductores.
+    const audience = caller.roles?.includes('driver') ? ('driver' as const) : undefined;
+    const reply = await this.agentService.respond(userId, message, audience ? { audience } : undefined);
     const conv = await this.conversationService.getOrCreate(userId);
     return {
       reply,
@@ -48,7 +51,7 @@ export class ChatController {
     @Param('userId') userId: string,
   ) {
     if (userId !== caller.id && !caller.roles.includes('admin')) {
-      throw new ForbiddenException('No tenés acceso a esta conversación');
+      throw new ForbiddenException('No tienes acceso a esta conversación');
     }
     const conv = await this.conversationService.getOrCreate(userId);
     return { messages: conv.messages, state: conv.state };
