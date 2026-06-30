@@ -29,6 +29,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../theme/colors';
 
 // Número Twilio del voice-call-service (Uyari). Vive como TWILIO_VOICE_NUMBER
@@ -40,6 +41,7 @@ const WHATSAPP_PHONE          = '+593984037949';
 const WHATSAPP_DISPLAY        = '+593 98 403 7949';
 
 export function DriverAssistantScreen() {
+  const navigation = useNavigation<any>();
   const [calling, setCalling] = useState(false);
 
   const handleCallAssistant = useCallback(async () => {
@@ -50,13 +52,13 @@ export function DriverAssistantScreen() {
       if (!supported) {
         Alert.alert(
           'No se puede llamar',
-          'Tu dispositivo no soporta llamadas telefónicas. Usá WhatsApp.',
+          'Tu dispositivo no soporta llamadas telefónicas. Usa WhatsApp.',
         );
         return;
       }
       await Linking.openURL(url);
     } catch (err) {
-      Alert.alert('Error', 'No pudimos abrir el marcador. Intentá de nuevo.');
+      Alert.alert('Error', 'No pudimos abrir el marcador. Intenta de nuevo.');
     } finally {
       setTimeout(() => setCalling(false), 1500);
     }
@@ -65,7 +67,7 @@ export function DriverAssistantScreen() {
   const handleOpenWhatsapp = useCallback(() => {
     const url = `https://wa.me/${WHATSAPP_PHONE.replace(/\D/g, '')}?text=Hola%2C%20soy%20conductor%20Going%20y%20necesito%20soporte`;
     Linking.openURL(url).catch(() =>
-      Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegurate de tenerlo instalado.'),
+      Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de tenerlo instalado.'),
     );
   }, []);
 
@@ -79,8 +81,8 @@ export function DriverAssistantScreen() {
         </View>
         <Text style={styles.heroTitle}>Asistente Going App</Text>
         <Text style={styles.heroSubtitle}>
-          ¿Tenés una duda durante un viaje? ¿Necesitás ayuda con un cobro o
-          una emergencia? Llamá al Asistente Going App. Estamos 24/7.
+          ¿Tienes una duda durante un viaje? ¿Necesitas ayuda con un cobro o
+          una emergencia? Llama al Asistente Going App. Estamos 24/7.
         </Text>
       </View>
 
@@ -110,6 +112,23 @@ export function DriverAssistantScreen() {
         con Going App es siempre gratuita.
       </Text>
 
+      {/* Chat de texto con el asistente (Ola 4 — soporte a conductores) */}
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => navigation.navigate('DriverSupportChat')}
+        activeOpacity={0.85}
+        accessibilityLabel="Abrir soporte por chat"
+      >
+        <View style={styles.chatIcon}>
+          <Ionicons name="chatbubbles" size={20} color={COLORS.NAVY} />
+        </View>
+        <View style={styles.callTextWrap}>
+          <Text style={styles.chatButtonTitle}>Chatear con el asistente</Text>
+          <Text style={styles.chatButtonSub}>Soporte por texto, al instante</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textTertiary} />
+      </TouchableOpacity>
+
       {/* Qué puedo preguntarle */}
       <Text style={styles.sectionLabel}>¿Qué le puedo preguntar?</Text>
       <View style={styles.examplesCard}>
@@ -128,7 +147,7 @@ export function DriverAssistantScreen() {
       </View>
 
       {/* Alternativa WhatsApp */}
-      <Text style={styles.sectionLabel}>¿Preferís escribir?</Text>
+      <Text style={styles.sectionLabel}>¿Prefieres escribir?</Text>
       <TouchableOpacity
         style={styles.altCard}
         onPress={handleOpenWhatsapp}
@@ -251,8 +270,40 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     textAlign: 'center',
     lineHeight: 16,
-    marginBottom: 22,
+    marginBottom: 16,
     paddingHorizontal: 12,
+  },
+
+  // Chat button (texto)
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: COLORS.bgLayer,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  chatIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: `${COLORS.NAVY}14`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatButtonTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 2,
+  },
+  chatButtonSub: {
+    fontSize: 12,
+    color: COLORS.textTertiary,
+    fontWeight: '600',
   },
 
   // Section labels

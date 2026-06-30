@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { AgentGender } from '../agent/conversation.service';
+import { BudgetService, VOICE_USD_PER_MINUTE } from './budget.service';
 // Top-level static imports — antes hacíamos `await import(...)` por
 // recognize() call lo que en cold container agregaba 100+ seg en cargar
 // el módulo. Importarlos al top los cachea desde process start.
@@ -136,6 +137,19 @@ export class VoiceService {
   private storage: Storage | null = null;
   private deepgram: DeepgramClient | null = null;
 
+  // @Optional: el presupuesto es opcional para no romper instanciaciones
+  // manuales (new VoiceService()). Vía DI siempre llega.
+  constructor(@Optional() private readonly budget?: BudgetService) {}
+
+  /**
+   * Registra en el presupuesto el costo estimado de un tramo de voz, en
+   * minutos. Aproximado (guardrail), no facturación exacta.
+   */
+  private recordVoiceCost(seconds: number): void {
+    if (!this.budget || !(seconds > 0)) return;
+    this.budget.record((seconds / 60) * VOICE_USD_PER_MINUTE);
+  }
+
   /**
    * Convierte un buffer OGG_OPUS a texto via Google Cloud Speech-to-Text v1.
    * Devuelve además el idioma detectado para que el caller use el mismo en TTS.
@@ -147,6 +161,8 @@ export class VoiceService {
    *  - Fallback a 'es' si no podemos determinarlo
    */
   async transcribe(audioBuffer: Buffer): Promise<{ transcript: string; lang: SupportedLang }> {
+    // Presupuesto: estimación de duración del audio OPUS (~4 KB/s) → minutos.
+    this.recordVoiceCost(audioBuffer.length / 4000);
     // Log primeros 32 bytes (header) en hex para diagnóstico. OGG empieza
     // con "OggS" (0x4F 0x67 0x67 0x53). Si vemos otro magic number significa
     // que WhatsApp cambió el formato o estamos recibiendo algo distinto.
@@ -340,6 +356,8 @@ export class VoiceService {
     gender: AgentGender,
     voiceOverride?: VoiceName,
   ): Promise<Buffer | null> {
+    // Presupuesto: ~15 caracteres por segundo de voz sintetizada → minutos.
+    this.recordVoiceCost(text.length / 15);
     const langKey = normalizeLang(lang);
     const langCfg = LANG[langKey];
     // Si el usuario eligió una voz específica, gana sobre la default-por-género.

@@ -88,6 +88,31 @@ export interface StartLocalModeInput {
   restBufferMinutes?: number;
 }
 
+// ── Soporte con IA (chat de texto) ────────────────────────────────────
+//
+// Usa el endpoint AUTENTICADO /support/message: como el JWT del conductor
+// lleva el rol 'driver', el customer-support-service responde con el prompt
+// de soporte a CONDUCTORES (audience='driver'). El userId debe ser el id del
+// propio conductor (el backend valida que solo hables por tu conversación).
+
+export interface SupportMessageResponse {
+  reply: string | null;
+  state: string;
+  priority: string;
+}
+
+export interface SupportHistoryResponse {
+  messages: { role: 'user' | 'assistant'; content: string }[];
+  state: string;
+}
+
+export const supportAPI = {
+  send: (userId: string, message: string) =>
+    api.post<SupportMessageResponse>('/support/message', { userId, message }),
+  history: (userId: string) =>
+    api.get<SupportHistoryResponse>(`/support/${encodeURIComponent(userId)}/history`),
+};
+
 export const driverHybridAPI = {
   /** Estado actual del modo híbrido del conductor (poll cada ~30s). */
   getMyState: () => api.get<DriverHybridStateResponse>('/driver-hybrid/me'),
