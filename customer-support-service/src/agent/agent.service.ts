@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import { ConversationService } from './conversation.service';
+import { ConversationService, type Audience } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
+import { detectDriverIntent } from '../knowledge-base/driver-support';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
 import {
@@ -65,7 +66,7 @@ export class AgentService {
   async respond(
     userId: string,
     userMessage: string,
-    opts?: { lang?: SupportedLang },
+    opts?: { lang?: SupportedLang; audience?: Audience },
   ): Promise<string | null> {
     // ⚠️ AWAIT obligatorio.
     //
@@ -119,8 +120,17 @@ export class AgentService {
       this.logger.log(`Bot silenciado para ${userId} (state=${conv.state}) — mensaje guardado`);
       return null;
     }
+    // Audiencia: rol explícito (JWT del app autenticado) > audiencia ya fijada
+    // en la conversación > heurística de intención (canales anónimos). Una vez
+    // detectado 'driver', queda fijo para el resto de la conversación.
+    let audience: Audience = opts?.audience ?? conv.audience ?? 'passenger';
+    if (audience !== 'driver' && detectDriverIntent(userMessage)) {
+      audience = 'driver';
+    }
+    conv.audience = audience;
+
     const canton = detectCanton(userMessage);
-    const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender);
+    const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender, audience);
 
     // Augmentation: detectar parroquias/cantones/provincias mencionados en
     // el mensaje y agregar su info geográfica al system prompt. Esto hace

@@ -15,6 +15,9 @@ export interface Message {
 
 export type AgentGender = 'male' | 'female';
 
+/** Público al que sirve la conversación: comprador (default) o conductor. */
+export type Audience = 'passenger' | 'driver';
+
 export interface Conversation {
   id: string;
   channel: 'whatsapp' | 'telegram' | 'web';
@@ -23,6 +26,8 @@ export interface Conversation {
   priority: Priority;
   messages: Message[];
   agentGender: AgentGender;
+  /** passenger por defecto; driver cuando habla una conductora o conductor. */
+  audience?: Audience;
   /**
    * Voz preferida del usuario (override por encima del default-por-género).
    * Si no está set, voice.service.synthesize usa la default del agentGender.
