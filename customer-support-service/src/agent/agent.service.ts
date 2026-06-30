@@ -6,6 +6,11 @@ import { ConversationService, type Audience } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { detectDriverIntent } from '../knowledge-base/driver-support';
 import { BudgetService, TEXT_PRICING } from '../infrastructure/budget.service';
+import { VertexTranslateService } from '../infrastructure/vertex-translate.service';
+
+// Idiomas "cola larga": el agente responde en ES y Gemini-Vertex traduce.
+// es/en tienen prompts dedicados (no se traducen).
+const PIVOT_LANGS: SupportedLang[] = ['fr', 'de', 'qu'];
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
 import {
@@ -52,6 +57,7 @@ export class AgentService {
     private bookingService: BookingService,
     private locationService: LocationService,
     private budget: BudgetService,
+    private vertexTranslate: VertexTranslateService,
   ) {
     const apiKey = this.config.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
@@ -206,8 +212,13 @@ export class AgentService {
     }
     conv.audience = audience;
 
+    // Pivote de traducción: si el idioma es fr/de/qu y Vertex está activo, el
+    // agente responde en ESPAÑOL y luego traducimos con Gemini (mejor calidad).
+    const usePivot = PIVOT_LANGS.includes(lang) && this.vertexTranslate.enabled;
+    const promptLang: SupportedLang = usePivot ? 'es' : lang;
+
     const canton = detectCanton(userMessage);
-    const baseSystemPrompt = getSystemPrompt(lang, canton, conv.agentGender, audience);
+    const baseSystemPrompt = getSystemPrompt(promptLang, canton, conv.agentGender, audience);
 
     // Augmentation: detectar parroquias/cantones/provincias mencionados en
     // el mensaje y agregar su info geográfica al system prompt. Esto hace
@@ -344,7 +355,12 @@ export class AgentService {
       return finalMessage;
     }
 
-    // Normal response
+    // Normal response — para fr/de/qu traducimos desde ES con Gemini-Vertex.
+    if (usePivot) {
+      const translated = await this.vertexTranslate.translate(assistantMessage, lang);
+      if (translated) assistantMessage = translated;
+      else this.logger.warn(`[pivot] traducción a ${lang} no disponible — devuelvo español`);
+    }
     this.conversationService.addMessage(userId, 'assistant', assistantMessage);
     return assistantMessage;
   }
