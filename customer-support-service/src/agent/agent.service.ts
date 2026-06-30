@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { ConversationService, type Audience } from './conversation.service';
 import { getSystemPrompt, detectLanguage, detectCanton, SupportedLang } from '../knowledge-base/system-prompt';
 import { detectDriverIntent } from '../knowledge-base/driver-support';
+import { BudgetService, TEXT_PRICING } from '../infrastructure/budget.service';
 import { LocationService } from '../knowledge-base/location.service';
 import { BookingService } from '../booking/booking.service';
 import {
@@ -35,23 +37,98 @@ const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servici
 // (8x más barato que Claude). Gemini Flash 2.5 vía VertexAI legacy SDK
 // tomaba 60-120s (broken) — por eso esta migración.
 const OPENAI_MODEL = 'gpt-4.1-nano';
+// Claude primario (decisión Rubén 30-jun). Going está construido con Claude.
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
   private openai: OpenAI;
+  private anthropic: Anthropic | null = null;
 
   constructor(
     private config: ConfigService,
     private conversationService: ConversationService,
     private bookingService: BookingService,
     private locationService: LocationService,
+    private budget: BudgetService,
   ) {
     const apiKey = this.config.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
-      this.logger.warn('OPENAI_API_KEY no configurada — agente no podrá responder');
+      this.logger.warn('OPENAI_API_KEY no configurada — fallback OpenAI no disponible');
     }
     this.openai = new OpenAI({ apiKey: apiKey || '' });
+
+    const anthropicKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    if (anthropicKey) {
+      this.anthropic = new Anthropic({ apiKey: anthropicKey });
+      this.logger.log('Anthropic (Claude) habilitado como modelo primario ✓');
+    } else {
+      this.logger.warn('ANTHROPIC_API_KEY no configurada — solo OpenAI disponible (sin primario Claude)');
+    }
+  }
+
+  /**
+   * Genera la respuesta del LLM con Claude primario + OpenAI fallback y guarda
+   * de presupuesto. Según el estado del tope mensual:
+   *   ok   → intenta Claude, si falla cae a OpenAI nano
+   *   soft → directo a OpenAI nano (más barato), se salta Claude
+   * (el caso 'hard' se maneja antes en respond(): deriva a humano).
+   * Registra el gasto estimado por tokens en BudgetService.
+   */
+  private async generate(
+    systemPrompt: string,
+    history: { role: 'user' | 'assistant'; content: string }[],
+    userMessage: string,
+  ): Promise<string> {
+    const status = this.budget.status();
+    const order: ('claude' | 'openai')[] =
+      status === 'ok' && this.anthropic ? ['claude', 'openai'] : ['openai'];
+    if (status === 'soft') {
+      this.logger.warn(`[budget] tope $${this.budget.budget()} alcanzado (gasto ~$${this.budget.spent().toFixed(2)}) — degradando a OpenAI nano`);
+    }
+
+    const msgs = [...history, { role: 'user' as const, content: userMessage }];
+
+    for (const provider of order) {
+      try {
+        if (provider === 'claude' && this.anthropic) {
+          const t0 = Date.now();
+          const resp = await this.anthropic.messages.create({
+            model: CLAUDE_MODEL,
+            max_tokens: 400,
+            system: systemPrompt,
+            messages: msgs.map((m) => ({ role: m.role, content: m.content })),
+          });
+          const text = resp.content
+            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+            .map((b) => b.text)
+            .join('')
+            .trim();
+          const u = resp.usage;
+          const cost = (u?.input_tokens || 0) * TEXT_PRICING.claude.in + (u?.output_tokens || 0) * TEXT_PRICING.claude.out;
+          this.budget.record(cost);
+          this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${u?.input_tokens} out=${u?.output_tokens} ~$${cost.toFixed(4)})`);
+          if (text) return text;
+        } else {
+          const t0 = Date.now();
+          const resp = await this.openai.chat.completions.create({
+            model: OPENAI_MODEL,
+            max_completion_tokens: 250,
+            messages: [{ role: 'system', content: systemPrompt }, ...msgs],
+          });
+          const text = (resp.choices[0]?.message?.content || '').trim();
+          const u = resp.usage;
+          const cost = (u?.prompt_tokens || 0) * TEXT_PRICING.openai.in + (u?.completion_tokens || 0) * TEXT_PRICING.openai.out;
+          this.budget.record(cost);
+          this.logger.log(`[openai] ${text.length} chars en ${Date.now() - t0}ms (in=${u?.prompt_tokens} out=${u?.completion_tokens} ~$${cost.toFixed(4)})`);
+          if (text) return text;
+        }
+      } catch (err) {
+        this.logger.error(`[llm:${provider}] error: ${(err as Error).message} — probando siguiente proveedor`);
+      }
+    }
+    throw new Error('todos los proveedores LLM fallaron');
   }
 
   /**
@@ -175,33 +252,27 @@ export class AgentService {
         : 'Disculpa, no recibí tu mensaje. Por favor intenta de nuevo.';
     }
 
-    // Build OpenAI messages: system prompt + history + current user message.
-    // OpenAI usa "messages: [{role: system|user|assistant, content}]" sin
-    // chat.startChat separado.
-    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
-      ...allMessages.slice(0, -1).map((m) => ({
-        role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-        content: m.content.trim(),
-      })),
-      { role: 'user', content: userMessage },
-    ];
+    // Guarda de presupuesto: si el gasto del mes superó 1.5× el tope, no
+    // gastamos más en IA — derivamos a una persona del equipo por WhatsApp.
+    if (this.budget.status() === 'hard') {
+      this.logger.warn(`[budget] tope duro superado (~$${this.budget.spent().toFixed(2)} / $${this.budget.budget()}) — derivando a humano`);
+      await this.conversationService.requestHandoff(userId, 'Tope de gasto de IA alcanzado', 'NORMAL');
+      return lang === 'en'
+        ? "We're experiencing very high demand right now. I'm connecting you with our team via WhatsApp so we can help you properly 🙏"
+        : 'Estamos con muy alta demanda en este momento. Te conecto con nuestro equipo por WhatsApp para ayudarte mejor 🙏';
+    }
+
+    // Historial (user/assistant) sin el último mensaje del usuario, que va aparte.
+    const history = allMessages.slice(0, -1).map((m) => ({
+      role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: m.content.trim(),
+    }));
 
     let assistantMessage = '';
-
     try {
-      const t0 = Date.now();
-      const response = await this.openai.chat.completions.create({
-        model: OPENAI_MODEL,
-        max_completion_tokens: 250,
-        messages,
-      });
-      const dt = Date.now() - t0;
-      assistantMessage = response.choices[0]?.message?.content || '';
-      const usage = response.usage;
-      this.logger.log(`[openai] respuesta ${assistantMessage.length} chars en ${dt}ms (in=${usage?.prompt_tokens}tok, out=${usage?.completion_tokens}tok)`);
+      assistantMessage = await this.generate(systemPrompt, history, userMessage);
     } catch (error) {
-      this.logger.error('OpenAI API error', error);
+      this.logger.error('LLM error (todos los proveedores fallaron)', error as any);
       return lang === 'en'
         ? "Sorry, I'm having trouble right now. Please try again in a moment."
         : 'Disculpa, estoy teniendo problemas en este momento. Por favor intenta de nuevo en un momento.';

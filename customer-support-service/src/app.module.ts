@@ -11,6 +11,7 @@ import { MetricsController } from './api/metrics.controller';
 import { CommandController } from './api/command.controller';
 import { AgentService } from './agent/agent.service';
 import { ConversationService } from './agent/conversation.service';
+import { BudgetService } from './infrastructure/budget.service';
 import { VoiceGatewayService } from './agent/voice-gateway.service';
 import { BookingService } from './booking/booking.service';
 import { VoiceService } from './infrastructure/voice.service';
@@ -61,6 +62,7 @@ import { MongoConversationRepository } from './infrastructure/persistence/mongo-
   providers: [
     AgentService,
     ConversationService,
+    BudgetService,
     BookingService,
     VoiceService,
     TelegramService,

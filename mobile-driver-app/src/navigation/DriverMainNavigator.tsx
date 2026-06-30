@@ -32,6 +32,7 @@ import { DriverRatingsScreen }    from '@screens/profile/DriverRatingsScreen';
 import { SupportScreen }          from '@screens/profile/SupportScreen';
 import { DriverLegalScreen }     from '@screens/profile/DriverLegalScreen';
 import { DriverAssistantScreen } from '@screens/profile/DriverAssistantScreen';
+import { DriverSupportChatScreen } from '@screens/profile/DriverSupportChatScreen';
 import { AcademiaScreen }            from '@screens/academia/AcademiaScreen';
 import { DriverScheduleScreen }      from '@screens/schedule/DriverScheduleScreen';
 import { OportunisticoScreen }       from '@screens/ride/OportunisticoScreen';
@@ -82,6 +83,7 @@ export type DriverMainStackParamList = {
   Support:     undefined;
   Legal:       undefined;
   Assistant:   undefined;
+  DriverSupportChat: undefined;
   TripHistory: undefined;
   Academia:    undefined;
   DriverSos:   undefined;
@@ -232,6 +234,11 @@ function DriverStack({ navigation }: any) {
         name="Assistant"
         component={DriverAssistantScreen}
         options={{ title: 'Asistente Going App' }}
+      />
+      <Stack.Screen
+        name="DriverSupportChat"
+        component={DriverSupportChatScreen}
+        options={{ title: 'Soporte por chat' }}
       />
       <Stack.Screen
         name="Academia"
