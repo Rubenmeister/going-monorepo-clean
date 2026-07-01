@@ -135,6 +135,34 @@ export function upsample8kTo16k(pcm8k: Buffer): Buffer {
   return out;
 }
 
+/**
+ * Downsample PCM16 48kHz → 24kHz (promedio 2:1). WhatsApp/Opus entrega 48kHz;
+ * OpenAI Realtime espera 24kHz.
+ */
+export function downsample48kTo24k(pcm48k: Buffer): Buffer {
+  const n = Math.floor(pcm48k.length / 2 / 2);
+  const out = Buffer.alloc(n * 2);
+  for (let i = 0; i < n; i++) {
+    const a = pcm48k.readInt16LE(i * 4);
+    const b = pcm48k.readInt16LE(i * 4 + 2);
+    out.writeInt16LE(Math.round((a + b) / 2), i * 2);
+  }
+  return out;
+}
+
+/** Upsample PCM16 24kHz → 48kHz (interpolación lineal 1:2). */
+export function upsample24kTo48k(pcm24k: Buffer): Buffer {
+  const n = pcm24k.length / 2;
+  const out = Buffer.alloc(n * 2 * 2);
+  for (let i = 0; i < n; i++) {
+    const cur = pcm24k.readInt16LE(i * 2);
+    const next = i + 1 < n ? pcm24k.readInt16LE((i + 1) * 2) : cur;
+    out.writeInt16LE(cur, (i * 2) * 2);
+    out.writeInt16LE(Math.round((cur + next) / 2), (i * 2 + 1) * 2);
+  }
+  return out;
+}
+
 // ─── Conversión completa (Twilio ↔ OpenAI) ─────────────────────
 
 /**
