@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { VoiceCallService } from '../voice/voice-call.service';
 import { VoiceCommandService } from '../voice/voice-command.service';
-import { buildAnswerTwiml, buildBlockedTwiml, buildHandoffTwiml } from '../twilio/twiml-builder';
+import { buildAnswerTwiml, buildBlockedTwiml, buildHandoffTwiml, buildInterpreterTwiml } from '../twilio/twiml-builder';
 import { validateTwilioSignature } from '../twilio/twilio-signature';
 import { HandoffNotifierService } from '../voice/handoff-notifier.service';
 
@@ -40,6 +40,7 @@ export class TwilioController {
   private readonly twilioAuthToken: string;
   private readonly publicWsUrl: string;
   private readonly publicWebhookUrl: string;
+  private readonly publicInterpreterWebhookUrl: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -57,6 +58,8 @@ export class TwilioController {
     // interna del container. Por defecto asumimos la del Cloud Run direct.
     this.publicWebhookUrl = this.config.get<string>('TWILIO_WEBHOOK_PUBLIC_URL') ??
       'https://voice-call-service-780842550857.us-central1.run.app/twilio/voice-webhook';
+    this.publicInterpreterWebhookUrl = this.config.get<string>('TWILIO_INTERPRETER_WEBHOOK_PUBLIC_URL') ??
+      'https://voice-call-service-780842550857.us-central1.run.app/twilio/interpreter-webhook';
 
     if (!this.twilioAuthToken) {
       this.logger.warn(
@@ -146,6 +149,56 @@ export class TwilioController {
       mediaStreamUrl: this.publicWsUrl,
       runId:          call.runId,
       from,
+    });
+  }
+
+  /**
+   * POST /twilio/interpreter-webhook — MODO INTÉRPRETE (Gemini Live Translate).
+   *
+   * Apunta un número Twilio dedicado a esta ruta. Quien llama habla en
+   * `sourceLang` y escucha la traducción en `targetLang` (default es→en).
+   * NO afecta la línea Uyari normal (/voice-webhook). Los idiomas se pueden
+   * pasar como parámetros del webhook (sourceLang/targetLang) desde la consola.
+   */
+  @Post('interpreter-webhook')
+  @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'text/xml')
+  async interpreterWebhook(@Body() body: any, @Req() req: Request): Promise<string> {
+    const signature = req.headers['x-twilio-signature'] as string | undefined;
+    if (this.twilioAuthToken) {
+      const valid = validateTwilioSignature({
+        url:       this.publicInterpreterWebhookUrl,
+        params:    (body ?? {}) as Record<string, string>,
+        signature,
+        authToken: this.twilioAuthToken,
+      });
+      if (!valid) {
+        this.logger.warn(`[twilio] interpreter webhook firma inválida — rechazando`);
+        return buildBlockedTwiml('Solicitud no autorizada.');
+      }
+    } else if (!signature) {
+      return buildBlockedTwiml('No autorizado.');
+    }
+
+    const callId = body?.CallSid as string;
+    const from   = body?.From   as string;
+    const to     = body?.To     as string;
+    if (!callId || !from || !to) {
+      return buildBlockedTwiml('Solicitud inválida.');
+    }
+    // Idiomas configurables por parámetro del webhook; default es→en.
+    const sourceLang = (body?.sourceLang || body?.SourceLang || 'es') as string;
+    const targetLang = (body?.targetLang || body?.TargetLang || 'en') as string;
+    this.logger.log(`[twilio] interpreter call CallSid=${callId} from=${from} ${sourceLang}→${targetLang}`);
+
+    await this.voice.onCallInitiated({ callId, from, to }).catch(() => {/* best-effort */});
+
+    return buildInterpreterTwiml({
+      callId,
+      mediaStreamUrl: this.publicWsUrl,
+      from,
+      sourceLang,
+      targetLang,
     });
   }
 

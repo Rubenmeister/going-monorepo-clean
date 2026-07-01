@@ -15,6 +15,9 @@ import { HandoffNotifierService } from './voice/handoff-notifier.service';
 import { VoicePreferenceClient } from './voice/voice-preference.client';
 // OpenAI Realtime
 import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
+// Gemini Live Translate (intérprete voz↔voz)
+import { GeminiLiveAdapter } from './realtime/gemini-live.adapter';
+import { InterpreterBridgeService } from './voice/interpreter-bridge.service';
 // Telegram (mínimo para handoff alerts)
 import { TelegramService } from './infrastructure/telegram.service';
 // Twilio media stream WS gateway
@@ -64,6 +67,9 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // call indexada por streamSid.
     OpenAIRealtimeAdapter,
     RealtimeBridgeService,
+    // Gemini Live Translate — adapter + bridge del MODO INTÉRPRETE.
+    GeminiLiveAdapter,
+    InterpreterBridgeService,
     // Voice preference lookup (Sem 3B) — consulta GET /auth/internal/voice-
     // preference?phone= al user-auth-service para resolver lang+voz por
     // caller. Cache en memoria 30min. Fallback a defaults si HTTP falla.
