@@ -118,6 +118,23 @@ export function downsample24kTo8k(pcm24k: Buffer): Buffer {
   return out;
 }
 
+/**
+ * Upsample PCM16 de 8kHz a 16kHz con interpolación lineal 1:2.
+ * Gemini Live API espera audio de ENTRADA en PCM16 16kHz mono. Por cada sample
+ * input escribe 2 output (el original + 1 interpolado con el siguiente).
+ */
+export function upsample8kTo16k(pcm8k: Buffer): Buffer {
+  const samplesIn = pcm8k.length / 2;
+  const out = Buffer.alloc(samplesIn * 2 * 2);
+  for (let i = 0; i < samplesIn; i++) {
+    const cur = pcm8k.readInt16LE(i * 2);
+    const next = i + 1 < samplesIn ? pcm8k.readInt16LE((i + 1) * 2) : cur;
+    out.writeInt16LE(cur, (i * 2) * 2);
+    out.writeInt16LE(Math.round((cur + next) / 2), (i * 2 + 1) * 2);
+  }
+  return out;
+}
+
 // ─── Conversión completa (Twilio ↔ OpenAI) ─────────────────────
 
 /**
@@ -136,4 +153,23 @@ export function openAiPcmToTwilioFrame(pcm24k: Buffer): string {
   const pcm8k = downsample24kTo8k(pcm24k);
   const mulaw = pcm16ToMulaw(pcm8k);
   return mulaw.toString('base64');
+}
+
+// ─── Conversión completa (Twilio ↔ Gemini Live) ────────────────
+// Gemini Live: ENTRADA PCM16 16kHz, SALIDA PCM16 24kHz.
+
+/**
+ * Twilio frame (base64 μ-law 8kHz) → PCM16 16kHz buffer para Gemini Live (input).
+ */
+export function twilioFrameToGemini(base64Payload: string): Buffer {
+  const pcm8k = mulawToPcm16(Buffer.from(base64Payload, 'base64'));
+  return upsample8kTo16k(pcm8k);
+}
+
+/**
+ * PCM16 24kHz de Gemini Live → base64 μ-law 8kHz para Twilio frame (output).
+ * (La salida de Gemini es 24kHz, igual que OpenAI → reutiliza el mismo camino.)
+ */
+export function geminiPcmToTwilioFrame(pcm24k: Buffer): string {
+  return openAiPcmToTwilioFrame(pcm24k);
 }

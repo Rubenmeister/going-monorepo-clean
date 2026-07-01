@@ -11,6 +11,7 @@ import type { Socket } from 'net';
 import WebSocket, { WebSocketServer } from 'ws';
 import { VoiceCallService } from '../voice/voice-call.service';
 import { RealtimeBridgeService } from '../voice/realtime-bridge.service';
+import { InterpreterBridgeService } from '../voice/interpreter-bridge.service';
 
 /**
  * TwilioMediaStreamGateway — WebSocket endpoint que Twilio conecta tras el
@@ -56,6 +57,7 @@ export class TwilioMediaStreamGateway
     private readonly config: ConfigService,
     private readonly voice: VoiceCallService,
     private readonly bridge: RealtimeBridgeService,
+    private readonly interpreter: InterpreterBridgeService,
   ) {
     // Modo loopback para tests de wiring sin OpenAI. Si está activo,
     // cada chunk de audio del usuario se devuelve tal cual (eco) — verifica
@@ -120,6 +122,7 @@ export class TwilioMediaStreamGateway
     let callSid:    string | null = null;
     let runId:      string | null = null;
     let from:       string | null = null;
+    let isInterpreter = false;
     let mediaCount = 0;
     const startTime = Date.now();
 
@@ -148,6 +151,9 @@ export class TwilioMediaStreamGateway
           // Los usamos para correlación con nuestra VoiceCallEntity + handoff.
           runId = msg.start?.customParameters?.runId ?? null;
           from  = msg.start?.customParameters?.from  ?? null;
+          isInterpreter = msg.start?.customParameters?.mode === 'interpreter';
+          const srcLang = msg.start?.customParameters?.sourceLang ?? 'es';
+          const tgtLang = msg.start?.customParameters?.targetLang ?? 'en';
           if (streamSid) this.streamsBySid.set(streamSid, ws);
 
           this.logger.log(
@@ -160,6 +166,28 @@ export class TwilioMediaStreamGateway
             await this.voice.onCallAnswered(callSid).catch((err) =>
               this.logger.warn(`[twilio-stream] onCallAnswered fallo: ${(err as Error).message}`),
             );
+          }
+
+          // ── MODO INTÉRPRETE (Gemini Live Translate) ──
+          // Aditivo: solo si el TwiML mandó mode='interpreter'. No toca el
+          // flujo Uyari normal. Quien llama habla srcLang, escucha tgtLang.
+          if (isInterpreter && streamSid && callSid) {
+            const ok = await this.interpreter.startInterpreterSession({
+              streamSid,
+              callId: callSid,
+              from: from ?? undefined,
+              sourceLang: srcLang,
+              targetLang: tgtLang,
+              sendAudioBack: (b64) => this.sendAudioToStream(streamSid!, b64),
+            }).catch(() => false);
+            if (!ok) {
+              this.logger.error(`[twilio-stream] intérprete no disponible callSid=${callSid?.slice(0, 12)} — cerrando`);
+              await this.voice.onCallEnded(callSid, { outcome: 'failed_technical' }).catch(() => {/* best-effort */});
+              if (streamSid) this.streamsBySid.delete(streamSid);
+              try { ws.close(1011, 'interpreter-unavailable'); } catch { /* ignore */ }
+              return;
+            }
+            break;
           }
 
           // ── MODO REAL (task #51): arrancar bridge OpenAI Realtime ──
@@ -220,6 +248,12 @@ export class TwilioMediaStreamGateway
             return;
           }
 
+          // ── MODO INTÉRPRETE: forward al bridge Gemini Live ──
+          if (isInterpreter && streamSid) {
+            this.interpreter.forwardCallerAudio(streamSid, payloadB64);
+            return;
+          }
+
           // ── MODO REAL: forward al bridge OpenAI Realtime ──
           // El bridge tiene la session abierta (creada en 'start') con
           // inputAudioFormat='g711_ulaw' — pasamos bytes raw sin convertir.
@@ -249,7 +283,9 @@ export class TwilioMediaStreamGateway
           // Cerrar la sesión Realtime + persistir transcript + outcome.
           // El bridge maneja la idempotencia — si el status-callback de
           // Twilio también dispara el endCallSession, el segundo es no-op.
-          if (streamSid && !this.loopbackEnabled) {
+          if (streamSid && isInterpreter) {
+            await this.interpreter.endSession(streamSid, 'twilio-stop').catch(() => {/* best-effort */});
+          } else if (streamSid && !this.loopbackEnabled) {
             await this.bridge.endCallSession(streamSid, { reason: 'twilio-stop' }).catch(() => {/* best-effort */});
           }
           if (streamSid) this.streamsBySid.delete(streamSid);
@@ -268,7 +304,9 @@ export class TwilioMediaStreamGateway
       // Defensa contra cierres "sucios" sin 'stop' event — el bridge cierra
       // su session OpenAI + persiste lo que haya. Idempotente con el 'stop'
       // handler arriba (cualquiera de los 2 que llegue primero gana).
-      if (streamSid && !this.loopbackEnabled) {
+      if (streamSid && isInterpreter) {
+        this.interpreter.endSession(streamSid, `ws-close-${code}`).catch(() => {/* best-effort */});
+      } else if (streamSid && !this.loopbackEnabled) {
         this.bridge.endCallSession(streamSid, { reason: `ws-close-${code}` }).catch(() => {/* best-effort */});
       }
       if (streamSid) this.streamsBySid.delete(streamSid);

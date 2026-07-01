@@ -60,6 +60,40 @@ export function buildAnswerTwiml(input: AnswerTwimlInput): string {
 </Response>`;
 }
 
+interface InterpreterTwimlInput {
+  callId:         string;
+  mediaStreamUrl: string;
+  from:           string;
+  /** Idioma del hablante (código, p.ej. 'es'). */
+  sourceLang:     string;
+  /** Idioma de la traducción de salida (p.ej. 'en'). */
+  targetLang:     string;
+}
+
+/**
+ * TwiML para el MODO INTÉRPRETE (Gemini Live Translate). Igual que el answer
+ * normal pero pasa mode='interpreter' + langs como <Parameter>, para que el
+ * gateway rutee al InterpreterBridge en vez del bridge OpenAI. NO afecta la
+ * línea Uyari normal (que no manda mode).
+ */
+export function buildInterpreterTwiml(input: InterpreterTwimlInput): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Lupe" language="es-MX">Modo intérprete de Going App. Habla después del tono y escucharás la traducción.</Say>
+  <Connect>
+    <Stream url="${esc(input.mediaStreamUrl)}">
+      <Parameter name="mode" value="interpreter"/>
+      <Parameter name="callId" value="${esc(input.callId)}"/>
+      <Parameter name="from" value="${esc(input.from)}"/>
+      <Parameter name="sourceLang" value="${esc(input.sourceLang)}"/>
+      <Parameter name="targetLang" value="${esc(input.targetLang)}"/>
+    </Stream>
+  </Connect>
+</Response>`;
+}
+
 interface HandoffTwimlInput {
   /** E.164 del operador (HANDOFF_OPERATOR_PHONE). Si vacío, modo callback. */
   operatorPhone: string;
