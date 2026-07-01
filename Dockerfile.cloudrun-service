@@ -83,6 +83,11 @@ RUN node -e "const fs=require('fs'); const f='dist/${SERVICE_NAME}/package.json'
 # Native modules (bcrypt, grpc, etc.) are compiled here with the build tools above.
 RUN cd dist/${SERVICE_NAME} && npm install --omit=dev --no-fund --no-audit --legacy-peer-deps
 
+# opusscript (voice-call-service) empaqueta un .wasm que el bundle main.js busca
+# junto a sí mismo (dist/). Copiarlo al raíz de dist para que se encuentre en
+# runtime. Benigno para servicios sin opusscript (find no encuentra nada → true).
+RUN find dist/${SERVICE_NAME}/node_modules/opusscript -name '*.wasm' -exec cp {} dist/${SERVICE_NAME}/ \; 2>/dev/null || true
+
 # ── Stage 2: Production image ────────────────────────────────────────────────
 # Use node:20-slim (glibc) to match builder so native modules work
 FROM node:20-slim AS final
