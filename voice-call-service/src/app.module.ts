@@ -22,6 +22,7 @@ import { InterpreterBridgeService } from './voice/interpreter-bridge.service';
 import { WhatsAppCallingController } from './whatsapp/whatsapp-calling.controller';
 import { WhatsAppCallingService } from './whatsapp/whatsapp-calling.service';
 import { WhatsAppGraphClient } from './whatsapp/whatsapp-graph.client';
+import { WhatsAppWebrtcBridge } from './whatsapp/whatsapp-webrtc.bridge';
 // Telegram (mínimo para handoff alerts)
 import { TelegramService } from './infrastructure/telegram.service';
 // Twilio media stream WS gateway
@@ -78,6 +79,7 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // WhatsApp Calling (Fase 1 — plano de control; media plane = Fase 2 werift)
     WhatsAppCallingService,
     WhatsAppGraphClient,
+    WhatsAppWebrtcBridge,
     // Voice preference lookup (Sem 3B) — consulta GET /auth/internal/voice-
     // preference?phone= al user-auth-service para resolver lang+voz por
     // caller. Cache en memoria 30min. Fallback a defaults si HTTP falla.

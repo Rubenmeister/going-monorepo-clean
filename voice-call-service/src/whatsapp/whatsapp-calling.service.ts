@@ -1,5 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WhatsAppGraphClient } from './whatsapp-graph.client';
+import { WhatsAppWebrtcBridge } from './whatsapp-webrtc.bridge';
+
+/** Prompt del agente multilingüe para llamadas de WhatsApp (Uyari). */
+const WA_AGENT_INSTRUCTIONS = [
+  'Eres Uyari, el asistente de voz de Going App Ecuador (movilidad: viajes en ciudad,',
+  'compartidos/privados entre ciudades, y envíos puerta a puerta).',
+  'IDIOMA: detecta el idioma de quien llama y responde SIEMPRE en ESE idioma',
+  '(español, inglés, francés, alemán o kichwa). Si habla español, usa acento',
+  'ecuatoriano neutro (nunca rioplatense).',
+  'Sé cálido, breve (1-3 frases) y resolutivo. Para precios NUNCA inventes; si no',
+  'tienes el dato, dilo con honestidad. No menciones URLs (es una llamada de voz).',
+].join(' ');
 
 /**
  * WhatsAppCallingService — orquesta las llamadas de voz de WhatsApp (Calling API).
@@ -23,7 +35,10 @@ export class WhatsAppCallingService {
   /** Llamadas activas por call_id (Fase 2 guardará aquí el peer + sesión). */
   private readonly active = new Map<string, { from?: string; startedAt: number }>();
 
-  constructor(private readonly graph: WhatsAppGraphClient) {}
+  constructor(
+    private readonly graph: WhatsAppGraphClient,
+    private readonly bridge: WhatsAppWebrtcBridge,
+  ) {}
 
   /** Procesa el `value` del webhook de WhatsApp (con calls[]). */
   async handleEvent(value: any): Promise<void> {
@@ -51,13 +66,27 @@ export class WhatsAppCallingService {
       this.logger.warn('[wa-call] Graph no configurado — no puedo aceptar la llamada');
       return;
     }
+    if (!sdpOffer) {
+      this.logger.warn(`[wa-call] connect sin SDP offer — callId=${String(callId).slice(0, 12)}`);
+      return;
+    }
 
-    // ── FASE 2 (media plane) — pendiente ──
-    // const peer = createWeriftPeer();
-    // const answer = await peer.setRemoteOffer(sdpOffer) & createAnswer();
-    // await this.graph.accept(callId, answer);
-    // bridge peer.audioTrack (Opus) ↔ motor (Uyari/Gemini) vía codec.
-    this.logger.warn(`[wa-call] plano de media (werift) pendiente (Fase 2) — callId=${String(callId).slice(0, 12)} no aceptado aún`);
+    // ── FASE 2 (media plane): peer werift ↔ Uyari → SDP answer → accept ──
+    const answer = await this.bridge.connect(callId, sdpOffer, WA_AGENT_INSTRUCTIONS);
+    if (!answer) {
+      this.logger.error(`[wa-call] no se pudo armar el peer — terminando callId=${String(callId).slice(0, 12)}`);
+      await this.graph.terminate(callId).catch(() => {/* best-effort */});
+      this.active.delete(callId);
+      return;
+    }
+    const res = await this.graph.accept(callId, answer);
+    if (!res.ok) {
+      this.logger.error(`[wa-call] graph.accept falló callId=${String(callId).slice(0, 12)}`);
+      await this.bridge.close(callId);
+      this.active.delete(callId);
+    } else {
+      this.logger.log(`[wa-call] llamada ACEPTADA callId=${String(callId).slice(0, 12)} — media activo`);
+    }
   }
 
   private onTerminate(callId: string): void {
@@ -66,6 +95,6 @@ export class WhatsAppCallingService {
       this.active.delete(callId);
       this.logger.log(`[wa-call] TERMINATE callId=${String(callId).slice(0, 12)} dur=${Math.round((Date.now() - ctx.startedAt) / 1000)}s`);
     }
-    // Fase 2: cerrar el peer werift + la sesión del motor.
+    this.bridge.close(callId).catch(() => {/* best-effort */});
   }
 }
