@@ -130,7 +130,10 @@ export class WhatsAppWebrtcBridge {
     let outBuf = Buffer.alloc(0);
     let seq = 0;
     let ts = 0;
-    const ssrc = (Math.floor(Date.now() / 1000) >>> 0) || 1; // estable por llamada
+    // PT y SSRC de salida: se fijan tras negociar (leídos del SDP answer). El
+    // teléfono descarta RTP con PT distinto al negociado, por eso NO se fija fijo.
+    let outPt = this.OPUS_PT;
+    let outSsrc = (Math.floor(Date.now() / 1000) >>> 0) || 1;
     const FRAME24 = 480 * 2; // 480 samples 16-bit @24k = 20ms
     let deltas = 0;
     realtime.on('audio.delta', (chunk: Buffer) => {
@@ -143,7 +146,7 @@ export class WhatsAppWebrtcBridge {
         try {
           const frame48 = upsample24kTo48k(frame24);             // 960 samples @48k
           const opus = encoder.encode(frame48, FRAME) as Buffer; // Opus frame
-          const header = new RtpHeader({ payloadType: this.OPUS_PT, sequenceNumber: seq++ & 0xffff, timestamp: ts >>> 0, ssrc, marker: false });
+          const header = new RtpHeader({ payloadType: outPt, sequenceNumber: seq++ & 0xffff, timestamp: ts >>> 0, ssrc: outSsrc, marker: false });
           ts += FRAME;
           outTrack.writeRtp(new RtpPacket(header, opus));
         } catch (e) {
@@ -167,7 +170,12 @@ export class WhatsAppWebrtcBridge {
         if (st === 'closed' || st === 'failed' || st === 'disconnected') this.close(callId);
       });
       const finalSdp = pc.localDescription?.sdp ?? answer.sdp;
-      this.logger.log(`[wa-webrtc] answer listo callId=${callId.slice(0, 12)} (${finalSdp.length}B)`);
+      // Fijar PT y SSRC de salida desde el SDP negociado (el teléfono espera esos).
+      const ptM = /a=rtpmap:(\d+)\s+opus/i.exec(finalSdp);
+      if (ptM) outPt = parseInt(ptM[1], 10);
+      const ssM = /a=ssrc:(\d+)/.exec(finalSdp);
+      if (ssM) outSsrc = parseInt(ssM[1], 10) >>> 0;
+      this.logger.log(`[wa-webrtc] answer listo callId=${callId.slice(0, 12)} (${finalSdp.length}B) outPt=${outPt} outSsrc=${outSsrc}`);
       return finalSdp;
     } catch (e) {
       this.logger.error(`[wa-webrtc] connect falló callId=${callId.slice(0, 12)}: ${(e as Error).message}`);
