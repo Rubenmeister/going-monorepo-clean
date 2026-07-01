@@ -104,6 +104,17 @@ export class WhatsAppWebrtcBridge {
       temperature: 0.7,
     });
 
+    // Uyari saluda SOLO cuando el media (DTLS/SRTP) ya está conectado — si lo
+    // hace antes, el audio se pierde (el canal aún no transmite). Causa raíz
+    // del "no se escucha nada": el saludo salía durante 'connecting'.
+    let greeted = false;
+    pc.connectionStateChange.subscribe((s) => {
+      if (s === 'connected' && !greeted) {
+        greeted = true;
+        try { realtime.createResponse(); this.logger.log(`[wa-webrtc] saludo (media listo) callId=${callId.slice(0, 12)}`); } catch { /* noop */ }
+      }
+    });
+
     // Codec Opus (48kHz mono).
     const decoder = new OpusScript(48000, 1, OPUS_APP_VOIP);
     const encoder = new OpusScript(48000, 1, OPUS_APP_VOIP);
@@ -163,8 +174,6 @@ export class WhatsAppWebrtcBridge {
       await this.waitIceComplete(pc);
       await realtime.connect();
       this.sessions.set(callId, { pc, realtime });
-      // Uyari saluda primero (prueba el camino de salida + respuesta inmediata).
-      setTimeout(() => { try { realtime.createResponse(); this.logger.log(`[wa-webrtc] saludo disparado callId=${callId.slice(0, 12)}`); } catch { /* noop */ } }, 500);
       // Cerrar al terminar el peer.
       pc.connectionStateChange.subscribe((st) => {
         if (st === 'closed' || st === 'failed' || st === 'disconnected') this.close(callId);
