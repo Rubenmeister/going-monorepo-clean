@@ -160,6 +160,8 @@ export class WhatsAppWebrtcBridge {
       await this.waitIceComplete(pc);
       await realtime.connect();
       this.sessions.set(callId, { pc, realtime });
+      // Uyari saluda primero (prueba el camino de salida + respuesta inmediata).
+      setTimeout(() => { try { realtime.createResponse(); this.logger.log(`[wa-webrtc] saludo disparado callId=${callId.slice(0, 12)}`); } catch { /* noop */ } }, 500);
       // Cerrar al terminar el peer.
       pc.connectionStateChange.subscribe((st) => {
         if (st === 'closed' || st === 'failed' || st === 'disconnected') this.close(callId);
