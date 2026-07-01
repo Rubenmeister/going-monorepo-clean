@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   RTCPeerConnection,
   RTCRtpCodecParameters,
@@ -36,7 +37,35 @@ export class WhatsAppWebrtcBridge {
   private readonly OPUS_PT = 111;
   private readonly sessions = new Map<string, { pc: RTCPeerConnection; realtime: RealtimeSession }>();
 
-  constructor(private readonly openai: OpenAIRealtimeAdapter) {}
+  constructor(
+    private readonly openai: OpenAIRealtimeAdapter,
+    private readonly config: ConfigService,
+  ) {}
+
+  /**
+   * ICE servers (STUN + TURN) desde Twilio Network Traversal Service. TURN es
+   * imprescindible en Cloud Run: no hay UDP entrante para SRTP, así que el
+   * media se relaya vía TURN (Cloud Run solo hace UDP saliente hacia el relay).
+   */
+  private async getIceServers(): Promise<{ urls: string; username?: string; credential?: string }[]> {
+    const sid = this.config.get<string>('TWILIO_ACCOUNT_SID') || '';
+    const token = this.config.get<string>('TWILIO_AUTH_TOKEN') || '';
+    const fallback = [{ urls: 'stun:stun.l.google.com:19302' }];
+    if (!sid || !token) return fallback;
+    try {
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Tokens.json`, {
+        method: 'POST',
+        headers: { Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}` },
+      });
+      const data: any = await res.json();
+      const servers = (data?.ice_servers ?? []).map((s: any) => ({ urls: s.url || s.urls, username: s.username, credential: s.credential }));
+      this.logger.log(`[wa-webrtc] TURN Twilio NTS: ${servers.length} ice servers`);
+      return servers.length ? servers : fallback;
+    } catch (e) {
+      this.logger.warn(`[wa-webrtc] NTS falló, uso STUN: ${(e as Error).message}`);
+      return fallback;
+    }
+  }
 
   /**
    * Establece el peer contra el SDP offer de Meta y devuelve el SDP answer
@@ -48,11 +77,17 @@ export class WhatsAppWebrtcBridge {
       return null;
     }
 
+    const iceServers = await this.getIceServers();
     const pc = new RTCPeerConnection({
       codecs: {
         audio: [new RTCRtpCodecParameters({ mimeType: 'audio/opus', clockRate: 48000, channels: 2, payloadType: this.OPUS_PT })],
       },
+      iceServers,
     });
+
+    // Diagnóstico de conectividad (clave para el media en Cloud Run).
+    pc.iceConnectionStateChange.subscribe((s) => this.logger.log(`[wa-webrtc] iceConnectionState=${s} callId=${callId.slice(0, 12)}`));
+    pc.connectionStateChange.subscribe((s) => this.logger.log(`[wa-webrtc] connectionState=${s} callId=${callId.slice(0, 12)}`));
 
     // Track de salida (Uyari → WhatsApp).
     const outTrack = new MediaStreamTrack({ kind: 'audio' });
@@ -75,8 +110,12 @@ export class WhatsAppWebrtcBridge {
     const FRAME = 960; // 20ms @48k
 
     // ── Entrante: WhatsApp Opus → Uyari ──
+    let rtpIn = 0;
     pc.onTrack.subscribe((track) => {
+      this.logger.log(`[wa-webrtc] track entrante recibido callId=${callId.slice(0, 12)} kind=${track.kind}`);
       track.onReceiveRtp.subscribe((rtp: RtpPacket) => {
+        if (rtpIn === 0) this.logger.log(`[wa-webrtc] primer RTP entrante callId=${callId.slice(0, 12)}`);
+        if (++rtpIn % 250 === 0) this.logger.log(`[wa-webrtc] RTP entrante x${rtpIn}`);
         try {
           const pcm48 = decoder.decode(rtp.payload) as Buffer;      // PCM16 48k mono
           const pcm24 = downsample48kTo24k(pcm48);
@@ -93,7 +132,10 @@ export class WhatsAppWebrtcBridge {
     let ts = 0;
     const ssrc = (Math.floor(Date.now() / 1000) >>> 0) || 1; // estable por llamada
     const FRAME24 = 480 * 2; // 480 samples 16-bit @24k = 20ms
+    let deltas = 0;
     realtime.on('audio.delta', (chunk: Buffer) => {
+      if (deltas === 0) this.logger.log(`[wa-webrtc] primer audio.delta de Uyari callId=${callId.slice(0, 12)}`);
+      deltas++;
       outBuf = Buffer.concat([outBuf, chunk]);
       while (outBuf.length >= FRAME24) {
         const frame24 = outBuf.subarray(0, FRAME24);
