@@ -18,6 +18,10 @@ import { OpenAIRealtimeAdapter } from './realtime/openai-realtime.adapter';
 // Gemini Live Translate (intérprete voz↔voz)
 import { GeminiLiveAdapter } from './realtime/gemini-live.adapter';
 import { InterpreterBridgeService } from './voice/interpreter-bridge.service';
+// WhatsApp Calling (Fase 1 — plano de control)
+import { WhatsAppCallingController } from './whatsapp/whatsapp-calling.controller';
+import { WhatsAppCallingService } from './whatsapp/whatsapp-calling.service';
+import { WhatsAppGraphClient } from './whatsapp/whatsapp-graph.client';
 // Telegram (mínimo para handoff alerts)
 import { TelegramService } from './infrastructure/telegram.service';
 // Twilio media stream WS gateway
@@ -53,6 +57,7 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     VoiceCallsController,
     VoiceCommandController,
     HealthController,
+    WhatsAppCallingController,
   ],
   providers: [
     VoiceCallService,
@@ -70,6 +75,9 @@ import { VoiceCallSchema } from './infrastructure/schemas/voice-call.schema';
     // Gemini Live Translate — adapter + bridge del MODO INTÉRPRETE.
     GeminiLiveAdapter,
     InterpreterBridgeService,
+    // WhatsApp Calling (Fase 1 — plano de control; media plane = Fase 2 werift)
+    WhatsAppCallingService,
+    WhatsAppGraphClient,
     // Voice preference lookup (Sem 3B) — consulta GET /auth/internal/voice-
     // preference?phone= al user-auth-service para resolver lang+voz por
     // caller. Cache en memoria 30min. Fallback a defaults si HTTP falla.

@@ -182,6 +182,17 @@ export class WhatsAppController {
       const change = entry?.changes?.[0];
       const value  = change?.value;
 
+      // ── Eventos de LLAMADA de WhatsApp (Calling API) ──
+      // El webhook del WABA es único (mensajes + llamadas). El motor de voz +
+      // WebRTC vive en voice-call-service, así que reenviamos ahí los eventos
+      // 'calls' (connect/terminate con SDP) y no los procesamos aquí.
+      if (change?.field === 'calls' || value?.calls?.length) {
+        this.forwardCallingEvent(value).catch((e) =>
+          this.logger.warn(`[webhook] forward calling event falló: ${(e as Error).message}`),
+        );
+        return;
+      }
+
       if (!value?.messages?.length) return; // status updates, not messages
 
       const msg  = value.messages[0];
@@ -289,6 +300,22 @@ export class WhatsAppController {
   }
 
   // ─── Operator sends a message to user ────────────────────────
+  /**
+   * Reenvía un evento de llamada de WhatsApp (value con calls[]) a
+   * voice-call-service, que tiene el motor de voz + WebRTC. Best-effort:
+   * el webhook ya respondió 200 a Meta; el manejo real es async.
+   */
+  private async forwardCallingEvent(value: any): Promise<void> {
+    const base = (process.env.VOICE_CALL_SERVICE_URL ||
+      'https://voice-call-service-780842550857.us-central1.run.app').replace(/\/$/, '');
+    const token = process.env.INTERNAL_SERVICE_TOKEN || '';
+    await fetch(`${base}/whatsapp/calling`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-internal-token': token },
+      body: JSON.stringify(value ?? {}),
+    });
+  }
+
   @Post('operator-message')
   async operatorMessage(@Body() body: { userId: string; message: string; operatorId: string }) {
     const { userId, message, operatorId } = body;
