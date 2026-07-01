@@ -558,8 +558,23 @@ export class RealtimeBridgeService {
    * TODO: agregar lookups dinámicos por hora/canton si vemos en logs que
    * el AI se confunde con preguntas no-quote (horarios, ubicaciones, etc).
    */
+  /**
+   * Regla universal de idioma — se añade a CUALQUIER prompt base. El modelo
+   * Realtime es multilingüe nativo, así que con esto Uyari responde en el
+   * idioma del cliente aunque la sesión haya arrancado con un default distinto
+   * (ej. turista que llama y habla en francés/alemán). Máxima prioridad: gana
+   * sobre la regla de "habla en español" del prompt base (que solo aplica
+   * cuando el cliente realmente habla español).
+   */
+  private readonly MULTILINGUAL_RULE =
+    '\n\n## IDIOMA DEL CLIENTE — REGLA DE MÁXIMA PRIORIDAD\n' +
+    '- Detecta el idioma en que te habla la persona y responde SIEMPRE en ESE mismo idioma. Soporta español, inglés, francés, alemán y kichwa.\n' +
+    '- Si la persona cambia de idioma a mitad de la llamada, cámbiate tú también.\n' +
+    '- NUNCA le pidas que hable español ni la corrijas por su idioma. Atiéndela en el suyo.\n' +
+    '- Las reglas de acento/entonación en español de arriba aplican SOLO cuando la persona habla español. En otros idiomas, habla con acento natural y neutro de ese idioma.';
+
   private buildSystemPrompt(callId: string, language: string = 'es'): string {
-    const basePrompt = this.buildBaseSystemPrompt(callId, language);
+    const basePrompt = this.buildBaseSystemPrompt(callId, language) + this.MULTILINGUAL_RULE;
     if (this.promptOverride) {
       const overrideHeader = language === 'en'
         ? '\n\nADDITIONAL CONTEXT (set by ops):'
