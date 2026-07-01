@@ -58,9 +58,12 @@ export class WhatsAppWebrtcBridge {
         headers: { Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}` },
       });
       const data: any = await res.json();
-      const servers = (data?.ice_servers ?? []).map((s: any) => ({ urls: s.url || s.urls, username: s.username, credential: s.credential }));
-      this.logger.log(`[wa-webrtc] TURN Twilio NTS: ${servers.length} ice servers`);
-      return servers.length ? servers : fallback;
+      const all = (data?.ice_servers ?? []).map((s: any) => ({ urls: (s.url || s.urls) as string, username: s.username, credential: s.credential }));
+      // A3: quedarse SOLO con TURN por UDP (los relays TCP/TLS son lentos y
+      // agravan el retraso del DTLS). STUN no sirve con iceTransportPolicy=relay.
+      const servers = all.filter((s: { urls: string }) => /^turn:/i.test(s.urls) && /transport=udp/i.test(s.urls));
+      this.logger.log(`[wa-webrtc] TURN Twilio NTS: ${all.length} totales → ${servers.length} UDP`);
+      return servers.length ? servers : all.length ? all : fallback;
     } catch (e) {
       this.logger.warn(`[wa-webrtc] NTS falló, uso STUN: ${(e as Error).message}`);
       return fallback;
@@ -83,6 +86,11 @@ export class WhatsAppWebrtcBridge {
         audio: [new RTCRtpCodecParameters({ mimeType: 'audio/opus', clockRate: 48000, channels: 2, payloadType: this.OPUS_PT })],
       },
       iceServers,
+      // A2: solo relay (TURN) — Cloud Run no tiene UDP entrante, así que host/
+      // srflx no sirven y solo demoran el par ICE→DTLS. A1: iniciamos el DTLS
+      // nosotros (client) de inmediato, sin esperar a Meta.
+      iceTransportPolicy: 'relay',
+      dtlsRole: 'client',
     });
 
     // Diagnóstico de conectividad (clave para el media en Cloud Run).
