@@ -6,8 +6,11 @@ import {
   RtpPacket,
   RtpHeader,
 } from 'werift';
-import OpusScript from 'opusscript';
+import OpusScript = require('opusscript'); // CJS interop: `import from` daba undefined en runtime
 import { OpenAIRealtimeAdapter, RealtimeSession } from '../realtime/openai-realtime.adapter';
+
+// opusscript Application: VOIP=2048 (evita depender de OpusScript.Application).
+const OPUS_APP_VOIP = 2048;
 import { downsample48kTo24k, upsample24kTo48k } from '../twilio/audio-codec';
 
 /**
@@ -67,8 +70,8 @@ export class WhatsAppWebrtcBridge {
     });
 
     // Codec Opus (48kHz mono).
-    const decoder = new OpusScript(48000, 1, OpusScript.Application.VOIP);
-    const encoder = new OpusScript(48000, 1, OpusScript.Application.VOIP);
+    const decoder = new OpusScript(48000, 1, OPUS_APP_VOIP);
+    const encoder = new OpusScript(48000, 1, OPUS_APP_VOIP);
     const FRAME = 960; // 20ms @48k
 
     // ── Entrante: WhatsApp Opus → Uyari ──
