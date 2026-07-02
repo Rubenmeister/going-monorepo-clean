@@ -138,7 +138,11 @@ export class WhatsAppWebrtcBridge {
         try {
           const pcm48 = decoder.decode(rtp.payload) as Buffer;      // PCM16 48k mono
           const pcm24 = downsample48kTo24k(pcm48);
-          realtime.sendAudio(pcm24);
+          // TEST AISLAMIENTO: no enviar entrante a OpenAI para que el saludo
+          // NO se cancele por barge-in. Confirma que la SALIDA (DTLS rápido +
+          // RTP a Meta) ya funciona. Reactivar tras confirmar.
+          if (process.env.WA_FEED_INPUT === 'true') realtime.sendAudio(pcm24);
+          void pcm24;
         } catch (e) {
           this.logger.debug(`[wa-webrtc] decode entrante falló: ${(e as Error).message}`);
         }
