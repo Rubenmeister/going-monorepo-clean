@@ -14,6 +14,7 @@ import {
   IconCar, IconCompass, IconUsers, IconGraduation,
   IconHome, IconBookmark, IconUser, IconStar, IconCard,
   IconLogout, IconSearch as IconSearchSvg, IconChevronDown,
+  IconBook, IconChat, IconBell,
 } from '../icons';
 
 type IconComponent = ComponentType<{ size?: number; className?: string }>;
@@ -129,19 +130,29 @@ const DISCOVER_ITEMS: DiscoverItem[] = [
   { Icon: IconHotel,      label: 'Alojamiento',  desc: 'Hoteles, cabañas, glamping',            href: '/accommodation',  color: COLORS.gray[400], comingSoon: true },
 ];
 
+// Comunicación: revista, blog y noticias — accesibles desde la primera página.
+const COMMUNICATION_ITEMS: DiscoverItem[] = [
+  { Icon: IconBook, label: 'Revista',  desc: 'Historias y viajes por Ecuador', href: '/revista', color: COLORS.brand.red, comingSoon: true },
+  { Icon: IconChat, label: 'Blog',     desc: 'Consejos, rutas y novedades',    href: '/blog',    color: COLORS.brand.red },
+  { Icon: IconBell, label: 'Noticias', desc: 'Lo último de Going App',         href: '/news',    color: COLORS.brand.red },
+];
+
 /**
  * Navigation links component
  */
 function NavLinks({ t }: { t: (key: string) => string }) {
   const [providerOpen,  setProviderOpen]  = useState(false);
   const [discoverOpen,  setDiscoverOpen]  = useState(false);
+  const [comunicacionOpen, setComunicacionOpen] = useState(false);
   const providerRef = useRef<HTMLDivElement>(null);
   const discoverRef = useRef<HTMLDivElement>(null);
+  const comunicacionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (providerRef.current && !providerRef.current.contains(e.target as Node)) setProviderOpen(false);
       if (discoverRef.current && !discoverRef.current.contains(e.target as Node)) setDiscoverOpen(false);
+      if (comunicacionRef.current && !comunicacionRef.current.contains(e.target as Node)) setComunicacionOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -203,6 +214,43 @@ function NavLinks({ t }: { t: (key: string) => string }) {
           Gratis
         </span>
       </Link>
+
+      {/* Comunicación dropdown */}
+      <div className="relative" ref={comunicacionRef}>
+        <button
+          onClick={() => { setComunicacionOpen(v => !v); setDiscoverOpen(false); setProviderOpen(false); }}
+          className="flex items-center gap-1 text-gray-700 hover:text-[#FF4C41] transition-colors font-medium text-sm"
+        >
+          Comunicación
+          <IconChevronDown size={14} className={`transition-transform ${comunicacionOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {comunicacionOpen && (
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
+            {COMMUNICATION_ITEMS.map(item => (
+              <Link key={item.href} href={item.href} onClick={() => setComunicacionOpen(false)}
+                className={`flex items-center gap-3 px-4 py-2.5 transition-colors ${item.comingSoon ? 'hover:bg-gray-50' : 'hover:bg-red-50'}`}>
+                <span
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: item.comingSoon ? COLORS.gray[100] : COLORS.brand.redBg, color: item.color }}
+                >
+                  <item.Icon size={18} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className={`font-semibold text-sm ${item.comingSoon ? 'text-gray-500' : 'text-gray-900'}`}>{item.label}</p>
+                    {item.comingSoon && (
+                      <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style={{ backgroundColor: COLORS.brand.yellowBg, color: COLORS.brand.yellowDark }}>
+                        Próximamente
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 truncate">{item.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Únete dropdown */}
       <div className="relative" ref={providerRef}>

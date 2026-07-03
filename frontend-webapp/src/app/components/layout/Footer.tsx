@@ -168,18 +168,17 @@ export function Footer() {
           <div className="flex-shrink-0">
             <p className="text-white font-bold text-sm mb-3 uppercase tracking-wider">Descarga la App</p>
             <div className="flex gap-3">
-              <a
-                href="https://apps.apple.com/app/going-ecuador/id6743619765"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl px-4 py-2.5 transition-all"
+              {/* iOS aún NO publicado — mostrar como próximamente, no como link. */}
+              <span
+                className="flex items-center gap-2 bg-gray-800/50 rounded-xl px-4 py-2.5 opacity-60 cursor-not-allowed"
+                title="App Store (iOS) — próximamente"
               >
                 <span className="text-xl">🍎</span>
                 <div>
                   <div className="text-xs text-gray-400">App Store</div>
-                  <div className="text-white text-sm font-bold">iPhone</div>
+                  <div className="text-white text-sm font-bold">Próximamente</div>
                 </div>
-              </a>
+              </span>
               <a
                 href="https://play.google.com/store/apps/details?id=com.goingappecuador"
                 target="_blank"
