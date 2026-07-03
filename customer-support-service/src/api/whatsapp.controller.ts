@@ -2,9 +2,9 @@ import { Controller, Post, Get, Body, Query, Res, Logger, HttpCode } from '@nest
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
 import { ConfigService } from '@nestjs/config';
-import { detectLanguage } from '../knowledge-base/system-prompt';
 import { VoiceService } from '../infrastructure/voice.service';
 import { WhatsAppService } from '../infrastructure/whatsapp.service';
+import { detectLanguage } from '../knowledge-base/system-prompt';
 
 // ============================================================
 // Going – WhatsApp Controller (Meta Cloud API)
@@ -225,16 +225,8 @@ export class WhatsAppController {
         const audioMediaId = msg.audio?.id || msg.voice?.id || msg.id;
         this.logger.log(`[audio] mediaId=${audioMediaId} mime=${msg.audio?.mime_type || msg.voice?.mime_type || 'unknown'}`);
 
-        // ACK INMEDIATO — antes del download+stt+gemini+tts que puede tomar
-        // 30-90 seg total. Sin esto el usuario queda en silencio y siente que
-        // el bot no recibió su nota. Fire-and-forget: si la red está lenta el
-        // ack puede llegar después que la respuesta real, no hay problema.
-        this.whatsappService.sendText(
-          from,
-          '🎙️ Recibí tu nota de voz, dame un momento mientras te respondo...',
-        ).catch((err) =>
-          this.logger.warn(`[audio] ack send failed: ${(err as Error).message}`),
-        );
+        // Sin acuse de recibo (decisión Rubén 2-jul): respuesta DIRECTA en texto,
+        // sin anunciar "recibí tu nota". Más rápido y directo.
 
         // downloadMedia hace 2 round-trips a Meta: 1) GET /media/:id → URL,
         // 2) GET de la URL signed. Total típico 500ms-3s según red.
@@ -275,23 +267,16 @@ export class WhatsAppController {
       // hace su propia detección con detectLanguage().
       const reply = await this.agentService.respond(from, messageText, sttLang ? { lang: sttLang } : undefined);
 
-      if (wasAudio) {
-        // Respuesta-primero: el TEXTO sale YA (apenas responde el LLM, ~13s) y la
-        // voz (Chirp3, la que ya gusta) llega después como complemento. Así se lee
-        // la respuesta sin esperar los ~20s del TTS — se siente inmediato, sin
-        // degradar la calidad de la voz.
-        if (reply) await this.whatsappService.sendText(from, reply);
-
-        // Para el TTS preferimos el idioma de STT (más confiable que regex sobre
-        // el transcript). voicePreference: si el usuario eligió voz, gana.
-        const lang   = sttLang ?? detectLanguage(reply || '');
-        const gender = conv.agentGender;
-        const audio  = reply ? await this.voiceService.synthesize(reply, lang, gender, conv.voicePreference) : null;
+      // El TEXTO sale PRIMERO y directo (sin acuse previo). Si la consulta vino
+      // por VOZ, después mandamos también la respuesta en voz (decisión Rubén
+      // 2-jul: solo se quitó el acuse "recibí tu nota", NO la voz).
+      if (reply) await this.whatsappService.sendText(from, reply);
+      if (wasAudio && reply) {
+        const lang   = sttLang ?? detectLanguage(reply);
+        const audio  = await this.voiceService.synthesize(reply, lang, conv.agentGender, conv.voicePreference);
         if (audio) await this.whatsappService.sendAudio(from, audio);
         const dtTotal = voiceFlowStart ? Date.now() - voiceFlowStart : 0;
-        this.logger.log(`[voice-flow] text+voz para ${from} en ${dtTotal}ms (${lang}-${gender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
-      } else {
-        await this.whatsappService.sendText(from, reply);
+        this.logger.log(`[voice-flow] texto+voz para ${from} en ${dtTotal}ms (${lang}-${conv.agentGender}${conv.voicePreference ? '-' + conv.voicePreference : ''})`);
       }
 
     } catch (error) {

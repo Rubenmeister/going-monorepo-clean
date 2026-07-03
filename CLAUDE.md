@@ -59,5 +59,8 @@ Definida en `libs/cerebro-contracts/src/service-identity.ts`. Capas centrales:
 
 ## Lenguaje
 
-Rubén habla español (Latam, "vos"). Inclusivo siempre: "conductora o
-conductor", "anfitrionas y anfitriones", "viajeras y viajeros".
+Rubén habla español. **Acento NEUTRO de Ecuador — NUNCA rioplatense/voseo**:
+usar "tú" (no "vos"), imperativos estándar ("carga/envía/revisa", no "cargá/
+enviá/revisá"), "tienes/puedes" (no "tenés/podés"); tras preposición "ti" (no
+"tú"). Inclusivo siempre: "conductora o conductor", "anfitrionas y anfitriones",
+"viajeras y viajeros".

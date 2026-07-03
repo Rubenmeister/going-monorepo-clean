@@ -32,7 +32,7 @@
         "backgroundColor": "#ff4c41"
       },
       "package": "com.going.userapp",
-      "versionCode": 76,
+      "versionCode": 77,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",

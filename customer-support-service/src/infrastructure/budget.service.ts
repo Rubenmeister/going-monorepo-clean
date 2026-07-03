@@ -71,8 +71,8 @@ export class BudgetService {
 export const TEXT_PRICING = {
   // Claude Haiku 4.5
   claude: { in: 1.0e-6, out: 5.0e-6 },
-  // OpenAI gpt-4.1-nano (≈8× más barato)
-  openai: { in: 0.10e-6, out: 0.40e-6 },
+  // OpenAI gpt-4.1-mini (subido desde nano 3-jul por calidad): $0.40/M in, $1.60/M out
+  openai: { in: 0.40e-6, out: 1.60e-6 },
 };
 
 /** Costo aproximado por minuto de voz (STT+TTS+realtime) — guardrail. */

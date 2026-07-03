@@ -3249,6 +3249,9 @@ importers:
       '@going-platform/cerebro-contracts':
         specifier: workspace:*
         version: link:../libs/cerebro-contracts
+      '@going-platform/going-kb':
+        specifier: workspace:*
+        version: link:../libs/going-kb
       '@going-platform/pricing':
         specifier: workspace:*
         version: link:../libs/pricing

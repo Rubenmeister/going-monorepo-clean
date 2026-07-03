@@ -7,9 +7,12 @@ import {
 import {
   VOICE_TOOLS_PHONE,
   executeGetQuotePhone,
+  executeGetRentalPhone,
+  executeGetShippingPhone,
   executeHandoffPhone,
   executeSendFollowupSms,
 } from '../realtime/voice-tools-phone';
+import { consultarConocimiento } from '@going-platform/going-kb';
 import { VoiceCallService } from './voice-call.service';
 import { CerebroPublisherService } from './cerebro-publisher.service';
 import { HandoffNotifierService } from './handoff-notifier.service';
@@ -251,6 +254,18 @@ export class RealtimeBridgeService {
             result = baseResult;
             break;
           }
+
+          case 'consultar_conocimiento':
+            result = consultarConocimiento(args?.tema, args?.ciudad);
+            break;
+
+          case 'get_rental_quote':
+            result = executeGetRentalPhone(args);
+            break;
+
+          case 'get_shipping_quote':
+            result = executeGetShippingPhone(args);
+            break;
 
           default:
             result = { ok: false, error: 'unknown_tool', name };

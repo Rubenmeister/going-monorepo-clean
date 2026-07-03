@@ -2,9 +2,9 @@ import { Body, Controller, Get, HttpCode, Logger, Post, Query, Res } from '@nest
 import { ConfigService } from '@nestjs/config';
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
-import { detectLanguage } from '../knowledge-base/system-prompt';
 import { TelegramService } from '../infrastructure/telegram.service';
 import { VoiceService } from '../infrastructure/voice.service';
+import { detectLanguage } from '../knowledge-base/system-prompt';
 
 /**
  * Going – Telegram Bot Controller.
@@ -184,18 +184,13 @@ export class TelegramController {
       // null = bot silenciado (handoff en curso). Mensaje ya quedó guardado.
       if (!reply) return;
 
+      // El TEXTO sale primero y directo; si la consulta vino por VOZ, después
+      // mandamos también la respuesta en voz (decisión Rubén 2-jul).
+      await this.telegramService.sendMessage(chatId, reply);
       if (wasVoice) {
-        // Item 6: preferimos lang de STT (más confiable que regex sobre transcript)
         const lang = sttLang ?? detectLanguage(reply);
         const audio = await this.voiceService.synthesize(reply, lang, conv.agentGender, conv.voicePreference);
-        if (audio) {
-          const sent = await this.telegramService.sendVoice(chatId, audio);
-          if (sent) return;
-        }
-        // Fallback a texto si TTS o sendVoice fallan
-        await this.telegramService.sendMessage(chatId, reply);
-      } else {
-        await this.telegramService.sendMessage(chatId, reply);
+        if (audio) await this.telegramService.sendVoice(chatId, audio);
       }
 
     } catch (err) {

@@ -1,25 +1,23 @@
 # Política de cancelación
 
-> ⚠️ **Plantilla — completar con operaciones Going antes del lanzamiento.**
-> Las cifras y ventanas de tiempo abajo son TENTATIVAS y deben validarse con
-> el equipo legal y de soporte.
+> **Ventana confirmada por Rubén (jul-2026):** sin costo hasta 1 hora y media
+> antes del viaje, una vez asignado el conductor. Pendiente aún: el MONTO de la
+> tarifa de cancelación y la revisión legal final.
 
 ## Cuándo puede cancelar el cliente
 
 ### Sin costo (cancelación temprana)
 
-- **Viaje inmediato (on-demand):** dentro de los primeros **2 minutos** desde
-  que se solicita el viaje y antes de que el conductor confirme que va en
-  camino al pickup.
-- **Viaje programado:** hasta **30 minutos antes** de la hora pactada.
+- **Sin costo hasta 1 hora y media (90 minutos) antes** de la hora del viaje,
+  una vez que ya se asignó conductora o conductor. El valor queda como **saldo a
+  favor en el Going Wallet**.
+- Antes de que se asigne conductora o conductor, la cancelación es siempre sin
+  costo.
 
-### Con cargo parcial (cancelación tardía)
+### Con cargo (cancelación tardía)
 
-- **Viaje inmediato:** después de los 2 minutos o cuando el conductor ya está
-  en camino al pickup → se cobra una tarifa de cancelación mínima
-  (PENDIENTE: definir monto).
-- **Viaje programado:** menos de 30 minutos antes → se cobra una tarifa
-  proporcional (PENDIENTE: definir % o monto fijo).
+- **Menos de 1 hora y media antes** del viaje, con conductora o conductor ya
+  asignado → se cobra una tarifa de cancelación (PENDIENTE: definir monto).
 
 ### Sin reembolso
 

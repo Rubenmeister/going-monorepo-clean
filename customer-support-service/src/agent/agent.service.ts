@@ -16,6 +16,9 @@ import { BookingService } from '../booking/booking.service';
 import {
   findRoute,
   listActiveCities,
+  consultarConocimiento,
+  getRentalQuote,
+  getShippingQuote,
   type Modality,
   type VehicleId,
 } from '@going-platform/going-kb';
@@ -41,9 +44,118 @@ const BOOKING_TAG_RE = /\[CREAR_VIAJE:origen=([^,\]]+),destino=([^,\]]+),servici
 // quedó sin créditos). OpenAI nano: 2-4s típico, $0.10/M input tokens
 // (8x más barato que Claude). Gemini Flash 2.5 vía VertexAI legacy SDK
 // tomaba 60-120s (broken) — por eso esta migración.
-const OPENAI_MODEL = 'gpt-4.1-nano';
+// gpt-4.1-mini (subido desde nano 3-jul): sigue mucho mejor las instrucciones
+// (menos alucinación de cifras, menos voseo). Sigue barato para soporte y dentro
+// del tope mensual. Revertir a 'gpt-4.1-nano' si el costo se vuelve un problema.
+const OPENAI_MODEL = 'gpt-4.1-mini';
 // Claude primario (decisión Rubén 30-jun). Going está construido con Claude.
 const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
+
+// Herramienta get_quote para OpenAI function-calling. El system prompt YA
+// instruye "llama a get_quote" (PASO 6 / REGLA CRÍTICA), pero antes no existía
+// la tool → el agente prometía cotizar sin poder. Esto la conecta de verdad;
+// el precio sale de toolGetQuote() → @going-platform/going-kb (única fuente).
+// NOTA: Claude usa otro formato (tool_use); pendiente de cablear cuando haya
+// crédito Anthropic. Hoy OpenAI sirve todo, así que la tool va en esa rama.
+const GET_QUOTE_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'get_quote',
+    description:
+      'Calcula el precio EXACTO de un viaje Going entre dos ciudades/cantones de Ecuador. ' +
+      'LLÁMALA DE INMEDIATO en cuanto el usuario pida un precio/tarifa/cuánto cuesta una ruta, ' +
+      'con lo que ya tengas (origen, destino, modalidad). NO pidas fecha ni número de pasajeros ' +
+      'para cotizar: no afectan el precio (privado = vehículo completo; compartido = por asiento). ' +
+      'Si mencionan el aeropuerto de Quito, pasa origen "aeropuerto quito". Para empresas usa ' +
+      'tipo_cliente "corporate". NUNCA inventes precios: el número SIEMPRE viene de esta herramienta.',
+    parameters: {
+      type: 'object',
+      properties: {
+        origen:       { type: 'string', description: 'Ciudad o cantón de origen, ej. "santo domingo", "quito"' },
+        destino:      { type: 'string', description: 'Ciudad o cantón de destino' },
+        modalidad:    { type: 'string', enum: ['compartido', 'privado'], description: 'compartido (por asiento) o privado (vehículo completo)' },
+        vehiculo:     { type: 'string', description: 'opcional: suv(4)|suv_xl(5)|van(7)|van_xl(12)|minibus(20)|bus(30)|bus_40(40). Si piden un bus de 40 usa bus_40. Default suv.' },
+        fecha_hora:   { type: 'string', description: 'opcional: fecha/hora ISO 8601; default ahora' },
+        tipo_cliente: { type: 'string', enum: ['retail', 'corporate'], description: 'opcional; default retail' },
+      },
+      required: ['origen', 'destino', 'modalidad'],
+    },
+  },
+};
+
+// Herramienta de renta de vehículo por tiempo (chofer incluido).
+const RENTAL_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'get_rental_quote',
+    description:
+      'Cotiza la RENTA de un vehículo por tiempo (con chofer). Dos modos: ' +
+      '"local" = dentro de la misma ciudad, por horas (unidad: hora, medio_dia o dia); ' +
+      '"por_dias" = a otra ciudad, indica origen, destino y días. ' +
+      'Úsala cuando pidan alquilar/rentar un vehículo por horas o días, un tour, o "todo el día". NUNCA inventes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        vehiculo: { type: 'string', enum: ['suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'], description: 'suv/suv_xl/van=pequeño, van_xl/minibus=mediano, bus/bus_40=grande.' },
+        modo: { type: 'string', enum: ['local', 'por_dias'], description: 'local (por horas en la ciudad) o por_dias (a otra ciudad).' },
+        unidad: { type: 'string', enum: ['hora', 'medio_dia', 'dia'], description: 'Solo modo local. Default dia.' },
+        origen: { type: 'string', description: 'Solo por_dias. Ciudad de origen (default Quito).' },
+        destino: { type: 'string', description: 'Solo por_dias. Ciudad de destino.' },
+        dias: { type: 'number', description: 'Solo por_dias. Número de días (default 1).' },
+      },
+      required: ['vehiculo', 'modo'],
+    },
+  },
+};
+
+// Herramienta de envío de paquetes (interurbano, plano por tamaño).
+const SHIPPING_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'get_shipping_quote',
+    description:
+      'Cotiza el ENVÍO de un paquete (crowdshipping interurbano, puerta a puerta). ' +
+      'El precio es PLANO por tamaño e igual para cualquier ruta. Úsala cuando pregunten cuánto cuesta enviar/mandar un paquete o encomienda. ' +
+      'Pasa el tamaño (pequeno/mediano/grande) o el peso en kg. NUNCA inventes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        tamano: { type: 'string', enum: ['pequeno', 'mediano', 'grande'], description: 'pequeno (0-5kg), mediano (6-15kg), grande (16-30kg).' },
+        peso_kg: { type: 'number', description: 'Peso del paquete en kg (si no sabes el tamaño, lo infiere).' },
+      },
+      required: [],
+    },
+  },
+};
+
+// Herramienta de conocimiento: turismo/historia/geografía, faq, políticas,
+// legal y guías (inscripción/apps). Lee el Centro de Información Going.
+const CONSULTAR_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'consultar_conocimiento',
+    description:
+      'Consulta el Centro de Información de Going para responder con datos reales sobre: ' +
+      'turismo, historia y geografía de una CIUDAD (tema "turismo" + ciudad); preguntas frecuentes ("faq"); ' +
+      'políticas de cancelación, reembolsos, mascotas, corporativo ("politicas"); términos y privacidad ("legal"); ' +
+      'y cómo inscribirse o descargar la app ("guias"). Úsala SIEMPRE que pregunten por estos temas, en vez de inventar.',
+    parameters: {
+      type: 'object',
+      properties: {
+        tema: {
+          type: 'string',
+          enum: ['turismo', 'faq', 'politicas', 'legal', 'guias'],
+          description: 'Tema a consultar.',
+        },
+        ciudad: {
+          type: 'string',
+          description: 'Solo para tema "turismo": nombre de la ciudad (ej. "Quito", "Baños", "Cuenca", "Otavalo").',
+        },
+      },
+      required: ['tema'],
+    },
+  },
+};
 
 @Injectable()
 export class AgentService {
@@ -126,17 +238,7 @@ export class AgentService {
           this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${freshIn} cacheW=${cacheW} cacheR=${cacheR} out=${u?.output_tokens} ~$${cost.toFixed(4)})`);
           if (text) return text;
         } else {
-          const t0 = Date.now();
-          const resp = await this.openai.chat.completions.create({
-            model: OPENAI_MODEL,
-            max_completion_tokens: 250,
-            messages: [{ role: 'system', content: systemPrompt }, ...msgs],
-          });
-          const text = (resp.choices[0]?.message?.content || '').trim();
-          const u = resp.usage;
-          const cost = (u?.prompt_tokens || 0) * TEXT_PRICING.openai.in + (u?.completion_tokens || 0) * TEXT_PRICING.openai.out;
-          this.budget.record(cost);
-          this.logger.log(`[openai] ${text.length} chars en ${Date.now() - t0}ms (in=${u?.prompt_tokens} out=${u?.completion_tokens} ~$${cost.toFixed(4)})`);
+          const text = await this.generateOpenAI(systemPrompt, msgs);
           if (text) return text;
         }
       } catch (err) {
@@ -144,6 +246,54 @@ export class AgentService {
       }
     }
     throw new Error('todos los proveedores LLM fallaron');
+  }
+
+  /**
+   * OpenAI con function-calling (get_quote). Bucle: si el modelo pide la tool,
+   * la ejecutamos, le devolvemos el resultado y volvemos a llamar para que
+   * componga la respuesta con el precio real. Máx 3 vueltas (guard anti-loop).
+   */
+  private async generateOpenAI(
+    systemPrompt: string,
+    msgs: { role: 'user' | 'assistant'; content: string }[],
+  ): Promise<string> {
+    const messages: any[] = [{ role: 'system', content: systemPrompt }, ...msgs];
+    for (let round = 0; round < 3; round++) {
+      const t0 = Date.now();
+      const resp = await this.openai.chat.completions.create({
+        model: OPENAI_MODEL,
+        max_completion_tokens: 300,
+        messages,
+        tools: [GET_QUOTE_TOOL_OPENAI, RENTAL_TOOL_OPENAI, SHIPPING_TOOL_OPENAI, CONSULTAR_TOOL_OPENAI],
+        tool_choice: 'auto',
+      });
+      const u = resp.usage;
+      const cost = (u?.prompt_tokens || 0) * TEXT_PRICING.openai.in + (u?.completion_tokens || 0) * TEXT_PRICING.openai.out;
+      this.budget.record(cost);
+      const choice = resp.choices[0]?.message;
+      if (!choice) return '';
+
+      const toolCalls = choice.tool_calls ?? [];
+      if (toolCalls.length > 0) {
+        // El modelo pidió herramientas: adjuntamos su turno + los resultados.
+        messages.push(choice);
+        for (const tc of toolCalls) {
+          if (tc.type !== 'function') continue;
+          let args: any = {};
+          try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* args vacío */ }
+          const result = this.executeTool(tc.function.name, args);
+          this.logger.log(`[openai:tool] ${tc.function.name}(${tc.function.arguments}) → ${JSON.stringify(result).slice(0, 160)}`);
+          messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+        }
+        continue; // siguiente vuelta: el modelo redacta con el resultado
+      }
+
+      const text = (choice.content || '').trim();
+      this.logger.log(`[openai] ${text.length} chars en ${Date.now() - t0}ms (in=${u?.prompt_tokens} out=${u?.completion_tokens} ~$${cost.toFixed(4)}) round=${round}`);
+      return text;
+    }
+    this.logger.warn('[openai] máx vueltas de tool alcanzado sin respuesta final');
+    return '';
   }
 
   /**
@@ -389,6 +539,12 @@ export class AgentService {
       switch (name) {
         case 'get_quote':
           return this.toolGetQuote(args);
+        case 'consultar_conocimiento':
+          return consultarConocimiento(args?.tema, args?.ciudad);
+        case 'get_rental_quote':
+          return this.toolGetRental(args);
+        case 'get_shipping_quote':
+          return getShippingQuote(args?.tamano, typeof args?.peso_kg === 'number' ? args.peso_kg : undefined);
         default:
           this.logger.warn(`[tools] tool desconocido: ${name}`);
           return { error: `Tool ${name} no implementado` };
@@ -424,14 +580,33 @@ export class AgentService {
    *   zona_origen     — opcional: solo aplica para Quito
    *                     ('centro_norte'|'sur'|'cumbaya_tumbaco'|...)
    */
+  /** Adaptador de get_rental_quote → going-kb.getRentalQuote (normaliza args). */
+  private toolGetRental(args: any): any {
+    const vehicle = normalizeVehicle(args?.vehiculo);
+    const mode = args?.modo === 'por_dias' ? 'por_dias' : 'local';
+    if (mode === 'local') {
+      const unit = ['hora', 'medio_dia', 'dia'].includes(args?.unidad) ? args.unidad : 'dia';
+      return getRentalQuote({ vehicle, mode: 'local', unit });
+    }
+    let originCanton = normalizeCanton(args?.origen) || 'quito';
+    let zone: string | undefined;
+    if (originCanton.includes('aeropuerto')) { originCanton = 'quito'; zone = 'aeropuerto'; }
+    const destino = normalizeCanton(args?.destino);
+    const days = Math.max(1, parseInt(String(args?.dias), 10) || 1);
+    return getRentalQuote({ vehicle, mode: 'por_dias', days, origin: { canton: originCanton, zone }, destination: { canton: destino } });
+  }
+
   private toolGetQuote(args: any): any {
-    const origenCanton  = normalizeCanton(args.origen);
+    let origenCanton  = normalizeCanton(args.origen);
     const destinoCanton = normalizeCanton(args.destino);
     const modalidad = (args.modalidad === 'privado' ? 'private' : 'shared') as Modality;
     const vehiculo  = normalizeVehicle(args.vehiculo);
-    const zonaOrigen = args.zona_origen
+    let zonaOrigen = args.zona_origen
       ? String(args.zona_origen).toLowerCase().replace(/\s+/g, '_')
       : undefined;
+    // Si el origen menciona aeropuerto, es la zona 'aeropuerto' de Quito
+    // (la matriz guarda esas rutas como { canton: quito, zone: aeropuerto }).
+    if (origenCanton.includes('aeropuerto')) { origenCanton = 'quito'; zonaOrigen = 'aeropuerto'; }
     const tipoCliente = args.tipo_cliente === 'corporate'
       ? 'corporate' as const
       : 'retail' as const;
@@ -516,7 +691,7 @@ function normalizeCanton(input: any): string {
 
 function normalizeVehicle(input: any): VehicleId {
   const v = String(input || 'suv').toLowerCase().replace(/\s+/g, '_');
-  const valid: VehicleId[] = ['auto', 'suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus'];
+  const valid: VehicleId[] = ['auto', 'suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'];
   return (valid.includes(v as VehicleId) ? v : 'suv') as VehicleId;
 }
 
