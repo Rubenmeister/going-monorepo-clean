@@ -1,0 +1,33 @@
+# Renta de vehículo por tiempo — dos modos (Rubén, jul-2026):
+#
+#  1) LOCAL (dentro de la misma ciudad): se cobra POR HORAS.
+#     - Día completo = 10 horas · Medio día = 5 horas.
+#     - Sin descuento. Precio = tarifa_hora × horas.
+#
+#  2) POR DÍAS (a otra ciudad): manda la DISTANCIA.
+#     - Precio = 2 × transfer(privado, ese vehículo) × número de días.
+#     - Descuento del 25% SOLO si son más de 1 día.
+#     - NO hay medio día en este modo.
+#
+# tarifa_hora por tamaño: pequeño (suv/suv_xl/van)=10, mediano (van_xl/minibus)=15,
+# grande (bus/bus_40)=20.
+
+version: "1.0"
+vigente_desde: "2026-07-03"
+revisor: "Rubén (jul-2026)"
+
+por_hora:
+  suv:     10
+  suv_xl:  10
+  van:     10
+  van_xl:  15
+  minibus: 15
+  bus:     20
+  bus_40:  20
+
+dia_horas: 10
+medio_dia_horas: 5
+
+por_dias:
+  transfers_ida_vuelta: 2       # el día se ancla en ida+vuelta
+  descuento_multidia: 0.25      # 25% OFF, solo si días > 1

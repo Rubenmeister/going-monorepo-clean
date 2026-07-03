@@ -32,7 +32,7 @@ zones:
 
       - id: sur
         label: "Quito Sur (Chillogallo, Quitumbe)"
-        origin_surcharge_usd: 5
+        origin_surcharge_usd: 0   # neutralizado 2026-07-02: precios explícitos
         descripcion: "Sur de Quito, recargo por distancia al CN"
 
       - id: centro_historico
@@ -42,17 +42,17 @@ zones:
 
       - id: cumbaya_tumbaco
         label: "Cumbayá / Tumbaco"
-        origin_surcharge_usd: 5
+        origin_surcharge_usd: 0   # neutralizado 2026-07-02: precios explícitos
         descripcion: "Valle, recargo por distancia"
 
       - id: los_chillos
         label: "Los Chillos / Valle de los Chillos"
-        origin_surcharge_usd: 5
+        origin_surcharge_usd: 0   # neutralizado 2026-07-02: precios explícitos
         descripcion: "Valle, recargo por distancia"
 
       - id: aeropuerto
         label: "Aeropuerto Mariscal Sucre (Tababela)"
-        origin_surcharge_usd: 5
+        origin_surcharge_usd: 0   # neutralizado 2026-07-02: precios explícitos
         descripcion: "Recargo por distancia al hub y por entrada/salida del aeropuerto"
 
       - id: mitad_del_mundo

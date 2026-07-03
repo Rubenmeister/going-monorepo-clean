@@ -134,9 +134,21 @@ export function initKnowledgeBase(opts: {
     no_transportamos: [],
   };
 
-  // ── 3) Rutas (consolidar 3 corredores) ──
+  const rental = readYaml<KnowledgeBaseSnapshot['rental']>('pricing/rental.yaml') ?? {
+    por_hora: {},
+    dia_horas: 10,
+    medio_dia_horas: 5,
+    por_dias: { transfers_ida_vuelta: 2, descuento_multidia: 0.25 },
+  };
+
+  const shipping = readYaml<KnowledgeBaseSnapshot['shipping']>('pricing/shipping.yaml') ?? { por_tamano: [] };
+
+  // ── 3) Rutas (consolidar corredores) ──
   const rutas: RouteEntry[] = [];
-  const corredores = ['sierra-norte', 'sierra-centro', 'costa-noroeste', 'amazonia'];
+  // ÚNICA fuente de rutas: la matriz explícita del founder (jul-2026). Se
+  // eliminaron los corredores viejos para no dejar rastro que confunda: si una
+  // ruta no está en la matriz, findRoute devuelve null (honesto), no un precio viejo.
+  const corredores = ['matriz-going-v1'];
   for (const corredor of corredores) {
     const corredorData = readYaml<{
       corredor?: string;
@@ -209,6 +221,8 @@ export function initKnowledgeBase(opts: {
     clientTypes: clientTypesRaw?.client_types ?? [],
     rutas,
     envios,
+    rental,
+    shipping,
     lugares,
     about,
     products,

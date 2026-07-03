@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 // Fuente ÚNICA de tarifas: libs/pricing (FARES). La misma que usa el buscador
 // del sitio y el cobro → la voz, la web y el pago dan el MISMO número.
 // (Antes esta tool cotizaba desde going-kb, una 2ª tabla que derivaba.)
-import { getFare, getPrivateFare, applyDynamicPricing, FARES } from '@going-platform/pricing';
+import { findRoute, listActiveCities, getRentalQuote, getShippingQuote, type Modality, type VehicleId } from '@going-platform/going-kb';
 import { RealtimeTool } from './openai-realtime.adapter';
 
 /**
@@ -51,6 +51,16 @@ export const VOICE_TOOLS_PHONE: RealtimeTool[] = [
           type: 'string',
           enum: ['compartido', 'privado'],
           description: 'Compartido (por asiento, hasta 7 pax) o privado (vehículo completo).',
+        },
+        vehiculo: {
+          type: 'string',
+          enum: ['suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'],
+          description: 'Tipo de vehículo (solo privado/empresas). suv=4pax, suv_xl=5, van=7, van_xl=12, minibus=20, bus=30, bus_40=40. Default suv.',
+        },
+        tipo_cliente: {
+          type: 'string',
+          enum: ['retail', 'corporate'],
+          description: 'retail = pasajero normal (default). corporate = Going Empresas (privado con contrato, +25%). Úsalo solo si la persona dice que llama por/para una empresa.',
         },
         fecha_hora: {
           type: 'string',
@@ -120,7 +130,91 @@ export const VOICE_TOOLS_PHONE: RealtimeTool[] = [
       required: ['topic'],
     },
   },
+  {
+    type: 'function',
+    name: 'consultar_conocimiento',
+    description:
+      'Consulta el Centro de Información de Going para responder con datos reales sobre: ' +
+      'turismo, historia y geografía de una CIUDAD (tema "turismo" + ciudad); preguntas frecuentes ("faq"); ' +
+      'políticas de cancelación/reembolsos/mascotas ("politicas"); términos y privacidad ("legal"); ' +
+      'y cómo inscribirse o descargar la app ("guias"). Úsala cuando pregunten por estos temas. ' +
+      'Como es una llamada, resume en 1-3 frases lo esencial (no leas todo).',
+    parameters: {
+      type: 'object',
+      properties: {
+        tema: {
+          type: 'string',
+          enum: ['turismo', 'faq', 'politicas', 'legal', 'guias'],
+          description: 'Tema a consultar.',
+        },
+        ciudad: {
+          type: 'string',
+          description: 'Solo para "turismo": ciudad (ej. "Quito", "Baños", "Cuenca").',
+        },
+      },
+      required: ['tema'],
+    },
+  },
+  {
+    type: 'function',
+    name: 'get_rental_quote',
+    description:
+      'Cotiza la RENTA de un vehículo por tiempo (con chofer). Modo "local" = dentro de la ciudad, por horas ' +
+      '(unidad hora/medio_dia/dia); modo "por_dias" = a otra ciudad (indica origen, destino y días). ' +
+      'Úsala si piden alquilar/rentar por horas o días, un tour, o "todo el día". Di el total. NO inventes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        vehiculo: { type: 'string', enum: ['suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'], description: 'suv/suv_xl/van=pequeño, van_xl/minibus=mediano, bus/bus_40=grande.' },
+        modo: { type: 'string', enum: ['local', 'por_dias'], description: 'local (por horas) o por_dias (a otra ciudad).' },
+        unidad: { type: 'string', enum: ['hora', 'medio_dia', 'dia'], description: 'Solo modo local. Default dia.' },
+        origen: { type: 'string', description: 'Solo por_dias. Default Quito.' },
+        destino: { type: 'string', description: 'Solo por_dias.' },
+        dias: { type: 'number', description: 'Solo por_dias. Default 1.' },
+      },
+      required: ['vehiculo', 'modo'],
+    },
+  },
+  {
+    type: 'function',
+    name: 'get_shipping_quote',
+    description:
+      'Cotiza el ENVÍO de un paquete (crowdshipping interurbano, puerta a puerta). Precio PLANO por tamaño, ' +
+      'igual para cualquier ruta. Úsala si preguntan cuánto cuesta enviar/mandar un paquete o encomienda. ' +
+      'Pasa el tamaño (pequeno/mediano/grande) o el peso en kg. NO inventes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        tamano: { type: 'string', enum: ['pequeno', 'mediano', 'grande'], description: 'pequeno (0-5kg), mediano (6-15kg), grande (16-30kg).' },
+        peso_kg: { type: 'number', description: 'Peso en kg (si no sabe el tamaño).' },
+      },
+      required: [],
+    },
+  },
 ];
+
+/** Handler de get_shipping_quote (voz) → going-kb.getShippingQuote. */
+export function executeGetShippingPhone(args: any) {
+  return getShippingQuote(args?.tamano, typeof args?.peso_kg === 'number' ? args.peso_kg : undefined);
+}
+
+/** Handler de get_rental_quote (voz) → going-kb.getRentalQuote. */
+export function executeGetRentalPhone(args: any) {
+  const norm = (s: any) => String(s || '').toLowerCase().trim().replace(/\s+/g, '_');
+  const validVeh: VehicleId[] = ['suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'];
+  const vehicle = (validVeh.includes(norm(args?.vehiculo) as VehicleId) ? norm(args?.vehiculo) : 'suv') as VehicleId;
+  const mode = args?.modo === 'por_dias' ? 'por_dias' : 'local';
+  if (mode === 'local') {
+    const unit = ['hora', 'medio_dia', 'dia'].includes(args?.unidad) ? args.unidad : 'dia';
+    return getRentalQuote({ vehicle, mode: 'local', unit });
+  }
+  let originCanton = norm(args?.origen) || 'quito';
+  let zone: string | undefined;
+  if (originCanton.includes('aeropuerto')) { originCanton = 'quito'; zone = 'aeropuerto'; }
+  const destino = norm(args?.destino);
+  const days = Math.max(1, parseInt(String(args?.dias), 10) || 1);
+  return getRentalQuote({ vehicle, mode: 'por_dias', days, origin: { canton: originCanton, zone }, destination: { canton: destino } });
+}
 
 // ─── Resultados tipados de los tools ─────────────────────────
 
@@ -221,19 +315,22 @@ function numberToSpanish(n: number): string {
  * pre-formateado para dictado verbal.
  */
 export function executeGetQuotePhone(args: any): QuotePhoneResult | QuotePhoneError {
-  const origen  = String(args?.origen  || '').toLowerCase().replace(/\s+/g, '_');
-  const destino = String(args?.destino || '').toLowerCase().replace(/\s+/g, '_');
-  const modalidad = (args?.modalidad === 'privado' ? 'privado' : 'compartido') as
-    | 'compartido'
-    | 'privado';
-  // Por defecto SUV (lo más común en una llamada). Si especifican vehículo, lo respetamos.
-  const vehicle = (['suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus'].includes(
-    String(args?.vehiculo || '').toLowerCase().replace(/\s+/g, '_'),
-  )
-    ? String(args?.vehiculo || '').toLowerCase().replace(/\s+/g, '_')
-    : 'suv') as keyof typeof FARES.vehicles;
+  const norm = (s: any) => String(s || '').toLowerCase().trim().replace(/\s+/g, '_');
 
-  if (!origen || !destino) {
+  // Origen: si mencionan aeropuerto, es la zona 'aeropuerto' de Quito.
+  let originCanton = norm(args?.origen);
+  let originZone: string | undefined = args?.zona_origen ? norm(args.zona_origen) : undefined;
+  if (originCanton.includes('aeropuerto')) { originCanton = 'quito'; originZone = 'aeropuerto'; }
+  const destino = norm(args?.destino);
+
+  const modality: Modality = args?.modalidad === 'privado' ? 'private' : 'shared';
+  const validVeh: VehicleId[] = ['auto', 'suv', 'suv_xl', 'van', 'van_xl', 'minibus', 'bus', 'bus_40'];
+  const vehicle: VehicleId = (validVeh.includes(norm(args?.vehiculo) as VehicleId)
+    ? (norm(args?.vehiculo) as VehicleId)
+    : 'suv');
+  const clientType = args?.tipo_cliente === 'corporate' ? 'corporate' : 'retail';
+
+  if (!originCanton || !destino) {
     return {
       ok: false,
       error: 'missing_route',
@@ -252,55 +349,50 @@ export function executeGetQuotePhone(args: any): QuotePhoneResult | QuotePhoneEr
     };
   }
 
-  // Tarifa COMPARTIDA por persona desde FARES (fuente canónica única; getFare
-  // normaliza nombres y cubre ambas direcciones). Mismo número que el sitio.
-  const sharedPerSeat = getFare(origen, destino);
-  if (sharedPerSeat == null) {
+  // Catálogo canónico (@going-platform/going-kb → knowledge-base/pricing). MISMA
+  // fuente que el chat web → una sola verdad de precios. findRoute respeta los
+  // precios privados EXPLÍCITOS por vehículo + recargos + tipo de cliente.
+  // Probamos ambas direcciones (rutas bidireccionales).
+  let fare = findRoute({
+    origin: { canton: originCanton, zone: originZone },
+    destination: { canton: destino },
+    modality, vehicle, when: dateTime, clientType,
+  });
+  if (!fare) {
+    fare = findRoute({
+      origin: { canton: destino },
+      destination: { canton: originCanton, zone: originZone },
+      modality, vehicle, when: dateTime, clientType,
+    });
+  }
+
+  if (!fare) {
+    const suger = listActiveCities().slice(0, 6).map((c) => c.name).join(', ');
     return {
       ok: false,
       error: 'route_not_listed',
-      message: `Ruta ${origen} ↔ ${destino} no está en el catálogo.`,
+      message: `Ruta ${originCanton} ↔ ${destino} (${modality} ${vehicle}) no está en el catálogo.`,
       spoken_suggestion:
-        `Esa ruta entre ${origen.replace(/_/g, ' ')} y ${destino.replace(/_/g, ' ')} ` +
-        'no la tengo a mano. ¿Quieres que te envíe opciones por mensaje al mismo número?',
+        `Esa ruta entre ${originCanton.replace(/_/g, ' ')} y ${destino.replace(/_/g, ' ')} ` +
+        `no la tengo a mano. Cubrimos, por ejemplo: ${suger}. ¿Quieres que te la confirme por mensaje?`,
     };
   }
 
-  // Base según modalidad: compartido = por asiento; privado = vehículo completo
-  // (compartido × multiplicador del vehículo, vía getPrivateFare).
-  const basePrice =
-    modalidad === 'compartido'
-      ? sharedPerSeat
-      : getPrivateFare(sharedPerSeat, vehicle);
-
-  // Recargos dinámicos (horario/día/feriado) — misma lógica que el buscador web.
-  // originSurcharge=0: el +$5 por zona de Quito se aplica al RESERVAR, no en la
-  // cotización telefónica. clientSegment 'public' (retail).
-  const dyn = applyDynamicPricing({
-    basePrice,
-    mode: modalidad,
-    dateTime,
-    clientSegment: 'public',
-    originSurcharge: 0,
-  });
-  const finalPrice = dyn.adjustedPrice;
-
-  const spokenSurcharges =
-    dyn.timeSurchargeRate > 0
-      ? `más ${numberToSpanish(Math.round(dyn.timeSurchargeRate * 100))} por ciento por horario de mayor demanda`
-      : '';
-  const spokenUnit = modalidad === 'compartido' ? 'por asiento' : 'por el viaje completo';
+  const finalPrice = fare.finalPrice;
+  const surchargeLabels = fare.breakdown.filter((b) => b.type !== 'base').map((b) => b.label);
+  const spokenSurcharges = surchargeLabels.length ? `incluye ${surchargeLabels.join(' y ')}` : '';
+  const spokenUnit = modality === 'shared' ? 'por asiento' : 'por el viaje completo';
 
   toolsLogger.log(
-    `[tool:get_quote_phone] ${origen}↔${destino} ${modalidad} ${vehicle} → ` +
-      `$${finalPrice} (${priceToSpanish(finalPrice)}) [FARES]`,
+    `[tool:get_quote_phone] ${originCanton}↔${destino} ${modality} ${vehicle} [${clientType}] → ` +
+      `$${finalPrice} (${priceToSpanish(finalPrice)}) [going-kb]`,
   );
 
   return {
     ok: true,
-    origen,
+    origen: originCanton,
     destino,
-    modalidad,
+    modalidad: modality === 'shared' ? 'compartido' : 'privado',
     final_price: finalPrice,
     spoken_price: priceToSpanish(finalPrice),
     spoken_surcharges: spokenSurcharges,

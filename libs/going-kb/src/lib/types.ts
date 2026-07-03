@@ -21,7 +21,8 @@ export type VehicleId =
   | 'van'
   | 'van_xl'
   | 'minibus'
-  | 'bus';
+  | 'bus'
+  | 'bus_40';
 
 export type ClientTypeId =
   | 'retail'
@@ -332,6 +333,8 @@ export interface KnowledgeBaseSnapshot {
   clientTypes: ClientTypeInfo[];
   rutas: RouteEntry[];           // consolidado de los 3 corredores
   envios: EnviosKB;
+  rental: RentalKB;              // renta por tiempo (horas / días)
+  shipping: ShippingKB;          // envío de paquetes (plano por tamaño)
 
   // Lugares
   lugares: LugarInfo[];
@@ -347,6 +350,22 @@ export interface KnowledgeBaseSnapshot {
 
   // Warnings al parsear (archivos faltantes, parse errors, etc.)
   warnings: string[];
+}
+
+// ─── Renta por tiempo ──────────────────────────────────────────────
+export interface RentalKB {
+  por_hora: Partial<Record<VehicleId, number>>;
+  dia_horas: number;
+  medio_dia_horas: number;
+  por_dias: {
+    transfers_ida_vuelta: number;
+    descuento_multidia: number;
+  };
+}
+
+// ─── Envío de paquetes (interurbano, plano por tamaño) ─────────────
+export interface ShippingKB {
+  por_tamano: Array<{ id: string; label: string; rango_kg: string; precio: number }>;
 }
 
 // ─── Resultado de cotización ───────────────────────────────────────

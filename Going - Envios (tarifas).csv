@@ -1,0 +1,4 @@
+﻿Tipo,Tramo / Tamaño,Rango de peso,Precio (USD)
+Urbano (dentro de la ciudad),Pequeño,0-5 kg,8
+Urbano (dentro de la ciudad),Mediano,6-15 kg,12
+Urbano (dentro de la ciudad),Grande,16-30 kg,15

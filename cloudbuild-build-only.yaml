@@ -1,0 +1,47 @@
+# Build-only (NO deploy) para microservicios Going. Evita el paso de deploy que
+# re-aplica secrets base (gotcha de auth). Buildea+pushea la imagen; el deploy se
+# hace aparte con `gcloud run deploy --image` (image-only, preserva env/secrets).
+#   gcloud builds submit --config=cloudbuild-build-only.yaml \
+#     --substitutions='_SERVICE_NAME=customer-support-service,_IMAGE_TAG=tts-openai' \
+#     --project=going-5d1ae .
+substitutions:
+  _SERVICE_NAME: customer-support-service
+  _IMAGE_TAG: latest
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'docker pull gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest || exit 0'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '--build-arg'
+      - 'SERVICE_NAME=${_SERVICE_NAME}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '-f'
+      - 'Dockerfile.cloudrun-service'
+      - '.'
+    timeout: '1800s'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest']
+
+images:
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${_IMAGE_TAG}'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'

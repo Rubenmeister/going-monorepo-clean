@@ -47,6 +47,10 @@ export {
   getAboutText,
   getKbWarnings,
   countRutasPendientesRevision,
+  consultarConocimiento,
+  getRentalQuote,
+  type RentalQuoteOpts,
+  getShippingQuote,
 } from './lib/queries';
 
 // Tipos públicos
@@ -67,6 +71,8 @@ export type {
   EnviosKB,
   CoverageCity,
   CoverageKB,
+  RentalKB,
+  ShippingKB,
   FleetEntry,
   FleetKB,
   ProductDoc,

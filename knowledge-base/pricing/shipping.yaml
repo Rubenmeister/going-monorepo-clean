@@ -1,0 +1,24 @@
+# Envío de paquetes Going — INTERURBANO, para CUALQUIER ruta.
+#
+# Precio PLANO por tamaño: NO cambia por distancia. El paquete viaja puerta a
+# puerta (ir a traer / ir a dejar), sin trasbordo, en la misma unidad que ya
+# hace la ruta con pasajeros. Por eso el precio es el mismo sea la ruta corta
+# o larga. (Rubén, jul-2026.)
+
+version: "1.0"
+vigente_desde: "2026-07-03"
+revisor: "Rubén (jul-2026)"
+
+por_tamano:
+  - id: pequeno
+    label: "Pequeño"
+    rango_kg: "0–5 kg"
+    precio: 8
+  - id: mediano
+    label: "Mediano"
+    rango_kg: "6–15 kg"
+    precio: 12
+  - id: grande
+    label: "Grande"
+    rango_kg: "16–30 kg"
+    precio: 15

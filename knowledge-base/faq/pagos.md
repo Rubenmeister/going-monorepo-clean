@@ -9,19 +9,18 @@ Going acepta:
 2. **Datafast** — pasarela ecuatoriana, integrada en la app.
 3. **DeUna** — pago instantáneo con la app DeUna del Banco Pichincha y otras
    entidades.
+4. **Efectivo** — lo cobra la conductora o conductor al terminar el viaje.
+
+Eliges el método de pago al confirmar el viaje en la app.
 
 ## ¿Going acepta efectivo?
 
-**No.** Going opera completamente **sin efectivo**.
+**Sí.** Going acepta efectivo: lo cobra tu conductora o conductor al finalizar el
+viaje. También puedes pagar con tarjeta, Datafast o DeUna. Elige el método que
+prefieras al confirmar el viaje.
 
-Razones:
-- Seguridad del conductor (no lleva dinero a la mano).
-- Seguridad del pasajero (no tienes que tener cash justo).
-- Trazabilidad (todos los viajes facturados).
-- Comprobante automático en email.
-
-Si no tienes ninguna forma de pago electrónica, puedes pedirle a alguien de
-confianza que reserve por ti y pague desde su cuenta.
+Igual, todos los viajes quedan registrados y con comprobante automático por
+correo, pagues como pagues.
 
 ## ¿Cuándo me cobran?
 
