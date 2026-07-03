@@ -1157,7 +1157,7 @@ export default function HomePage() {
                 { name: 'SUV',     pax: 'Hasta 4 pax',  cat: 'Familia · pareja',        img: '/images/suv-quito.png',           tier: 'white'  },
                 { name: 'SUV XL',  pax: 'Hasta 5 pax',  cat: 'Familia + equipaje',      img: '/images/SUV de lujo.png',         tier: 'white'  },
                 { name: 'VAN',     pax: 'Hasta 7 pax',  cat: 'Grupo de amigos',         img: '/images/sprinter-aeropuerto.png', tier: 'yellow' },
-                { name: 'VAN XL',  pax: 'Hasta 12 pax', cat: 'Empresas · amigos',       img: '/images/van-xl.png',              tier: 'yellow' },
+                { name: 'VAN XL',  pax: 'Hasta 12 pax', cat: 'Empresas · amigos',       img: '/images/VAN-XL.png',              tier: 'yellow' },
                 { name: 'Minibús', pax: 'Hasta 20 pax', cat: 'Tour · evento',           img: '/images/Minibus.png',             tier: 'yellow' },
                 { name: 'Bus',     pax: '30+ pax',      cat: 'Corporativo · promoción', img: '/images/BUS.png',                 tier: 'black'  },
               ].map((v) => {
