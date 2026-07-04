@@ -146,7 +146,10 @@ def emit_ts(routes):
     pv_lines.append("  },")
     ts = TS_HEADER.replace("__SHARED__", "\n".join(sh_lines)).replace("__PRIVATE__", "\n".join(pv_lines))
     WEBAPP_TS.write_text(ts, encoding="utf-8")
-    LIBS_TS.write_text(ts, encoding="utf-8")
+    # NOTA: NO regeneramos libs/pricing/fares.ts. Lo consumen transport-service,
+    # payment-service y el mirror móvil con su estructura vieja (getPrivateFare,
+    # multiplier, minibus_fixed, private_airport). Migrar esos servicios a esta
+    # fuente única es tarea aparte; hasta entonces libs/pricing queda intacto.
 
 
 def matriz_endpoint(city_id):
@@ -183,7 +186,6 @@ def main():
     print(f"OK: {len(routes)} rutas | compartido={ws} | privado-solo={len(routes)-ws}")
     print(f"  -> {JSON_OUT.relative_to(ROOT)}")
     print(f"  -> {WEBAPP_TS.relative_to(ROOT)}")
-    print(f"  -> {LIBS_TS.relative_to(ROOT)}")
     print(f"  -> {MATRIZ.relative_to(ROOT)}")
 
 
