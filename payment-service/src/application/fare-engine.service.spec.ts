@@ -9,9 +9,17 @@ import * as pricing from './pricing.service';
 jest.mock('./pricing.service', () => ({
   PricingService: class {},
   applyDynamicPricing: jest.fn(),
+  classifyRoute: jest.fn(),
+  getExcelFare: jest.fn(),
+  getExcelPrivatePrices: jest.fn(),
+  getClientSurchargeRate: jest.fn(),
 }));
 
 const mockedApply = pricing.applyDynamicPricing as jest.Mock;
+const mockedClassify = pricing.classifyRoute as jest.Mock;
+const mockedExcelFare = pricing.getExcelFare as jest.Mock;
+const mockedExcelPriv = pricing.getExcelPrivatePrices as jest.Mock;
+const mockedClientSurcharge = pricing.getClientSurchargeRate as jest.Mock;
 
 describe('FareEngine', () => {
   let engine: FareEngine;
@@ -30,6 +38,16 @@ describe('FareEngine', () => {
       discountRate: 0,
       originSurcharge: 0,
     }));
+    // Por defecto la ruta NO está cubierta por el Excel → taxímetro (comportamiento
+    // previo). Los tests de intercity sobrescriben estos mocks.
+    mockedClassify.mockReset();
+    mockedClassify.mockReturnValue({ originCity: null, destinationCity: null, routeClass: 'out_of_coverage' });
+    mockedExcelFare.mockReset();
+    mockedExcelFare.mockReturnValue(null);
+    mockedExcelPriv.mockReset();
+    mockedExcelPriv.mockReturnValue(null);
+    mockedClientSurcharge.mockReset();
+    mockedClientSurcharge.mockReturnValue(0);
   });
 
   const route = (over: Partial<{ distanceKm: number; durationMinutes: number }> = {}) =>
@@ -39,6 +57,67 @@ describe('FareEngine', () => {
       provider: 'mock',
       fallback: false,
     });
+
+  describe('intercity (precio FIJO del Excel, sin surge)', () => {
+    beforeEach(() => {
+      // Ruta cubierta por el Excel (Latacunga → Quito).
+      mockedClassify.mockReturnValue({
+        originCity: 'latacunga',
+        destinationCity: 'quito',
+        routeClass: 'intercity',
+      });
+    });
+
+    it('compartido usa el precio fijo del Excel — sin taxímetro ni surge', async () => {
+      route({ distanceKm: 90, durationMinutes: 120 }); // la distancia NO debe influir
+      mockedExcelFare.mockReturnValue(13); // Latacunga→Quito compartido $13
+      const q = await engine.quote({
+        origin: { lat: -0.93, lng: -78.6 },
+        destination: { lat: -0.18, lng: -78.47 },
+        category: 'transport',
+        mode: 'compartido',
+        clientSegment: 'public',
+      });
+      expect(q.subtotal).toBe(13);
+      expect(q.total).toBe(13);
+      expect(q.distanceCost).toBe(0);        // no pasó por el taxímetro
+      expect(q.timeSurchargeRate).toBe(0);   // sin surge hora/día
+      expect(mockedApply).not.toHaveBeenCalled();
+    });
+
+    it('privado usa el precio privado explícito (SUV por defecto)', async () => {
+      route();
+      mockedExcelPriv.mockReturnValue({
+        suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250,
+      });
+      const q = await engine.quote({
+        origin: { lat: -0.93, lng: -78.6 },
+        destination: { lat: -0.18, lng: -78.47 },
+        category: 'transport',
+        mode: 'privado',
+        clientSegment: 'public',
+      });
+      expect(q.subtotal).toBe(50);
+      expect(q.total).toBe(50);
+    });
+
+    it('corporativo aplica +25% sobre el precio fijo (sin surge de hora)', async () => {
+      route();
+      mockedExcelFare.mockReturnValue(13);
+      mockedClientSurcharge.mockReturnValue(0.25);
+      const q = await engine.quote({
+        origin: { lat: -0.93, lng: -78.6 },
+        destination: { lat: -0.18, lng: -78.47 },
+        category: 'transport',
+        mode: 'compartido',
+        clientSegment: 'corporate',
+      });
+      expect(q.subtotal).toBe(13);
+      expect(q.total).toBe(16.25);           // 13 × 1.25
+      expect(q.clientSurchargeRate).toBe(0.25);
+      expect(q.timeSurchargeRate).toBe(0);
+    });
+  });
 
   describe('transporte', () => {
     it('calcula subtotal = base + km + minutos', async () => {

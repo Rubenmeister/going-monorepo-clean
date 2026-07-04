@@ -23,6 +23,10 @@ export * from './lib/pricing.service';
 // con valores distintos a libs/pricing.GOING_SHARED_ROUTES → causa de
 // inconsistencias entre cotización (bot) y cobro (payment-service).
 export * from './lib/fares';
+// Precios FIJOS del Excel (compartido + privado explícito) — fuente única para
+// intercity. Generado por scripts/import-fares.py. Nombres propios (EXCEL_FARES,
+// getExcelFare, getExcelPrivatePrices) para no chocar con fares.ts (API vieja).
+export * from './lib/excel-fares';
 // Catálogo canónico de ciudades + resolución espacial (buscador unificado).
 // city.id ≡ claves normalizadas de FARES → clasificación y tarifa alineadas.
 export * from './lib/cities';

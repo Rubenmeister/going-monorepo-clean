@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 XLSX = ROOT / "knowledge-base/pricing/source/Going_Matriz_Precios_Limpia.xlsx"
 JSON_OUT = ROOT / "knowledge-base/pricing/going-fares.json"
 WEBAPP_TS = ROOT / "frontend-webapp/src/app/services/ride/canonicalFares.ts"
-LIBS_TS = ROOT / "libs/pricing/src/lib/fares.ts"
+LIBS_EXCEL = ROOT / "libs/pricing/src/lib/excel-fares.ts"  # módulo NUEVO (no toca fares.ts viejo)
 MATRIZ = ROOT / "knowledge-base/pricing/rutas/matriz-going-v1.yaml"
 
 VEH = ["suv", "suv_xl", "van", "van_xl", "minibus", "bus", "bus_40"]
@@ -152,6 +152,71 @@ def emit_ts(routes):
     # fuente única es tarea aparte; hasta entonces libs/pricing queda intacto.
 
 
+LIBS_EXCEL_HEADER = """// ⚠️ ARCHIVO GENERADO por scripts/import-fares.py desde el Excel. NO editar a mano.
+// Precios FIJOS de mercado (compartido + privado explícito) del founder, para el
+// BACKEND. Módulo ADITIVO: NO reemplaza fares.ts (que conserva la API vieja).
+// Se usa para intercity: precio fijo del Excel, SIN surge.
+
+export interface PrivatePrices {
+  suv: number; suv_xl: number; van: number; van_xl: number;
+  minibus: number; bus: number; bus_40: number;
+}
+
+export const EXCEL_FARES = {
+__SHARED__
+__PRIVATE__
+} as {
+  shared: Record<string, number>;
+  private: Record<string, PrivatePrices>;
+};
+
+function normEx(city: string): string {
+  // Acepta tanto nombres visibles ("Santo Domingo") como IDs de ciudad
+  // ("santo_domingo" de classifyRoute): el guion bajo cuenta como separador.
+  const s = city.split(',')[0].trim().toLowerCase()
+    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[^a-z0-9\\s_]/g, '').trim();
+  if (s.startsWith('aeropuerto')) return 'aeropuerto';
+  if (/^(quito|cumbaya|tumbaco|los chillos|sangolqui|valle)/.test(s)) return 'quito';
+  return s.replace(/[\\s_]+/g, '_');
+}
+
+function pairEx(a: string, b: string): string { return `${normEx(a)}-${normEx(b)}`; }
+
+/** Precio compartido/persona del Excel (o null si esa ruta NO tiene compartido). */
+export function getExcelFare(origin: string, destination: string): number | null {
+  return EXCEL_FARES.shared[pairEx(origin, destination)] ?? EXCEL_FARES.shared[pairEx(destination, origin)] ?? null;
+}
+
+/** Precios privados explícitos por vehículo del Excel (o null si la ruta no está). */
+export function getExcelPrivatePrices(origin: string, destination: string): PrivatePrices | null {
+  return EXCEL_FARES.private[pairEx(origin, destination)] ?? EXCEL_FARES.private[pairEx(destination, origin)] ?? null;
+}
+"""
+
+
+def _shared_private_blocks(routes):
+    sh = ["  shared: {"]
+    for r in routes:
+        if r["shared"] is not None:
+            sh.append(f"    '{r['origin']}-{r['destination']}': {r['shared']},")
+    sh.append("  },")
+    pv = ["  private: {"]
+    for r in routes:
+        p = r["private"]
+        if p:
+            vals = ", ".join(f"{v}: {p.get(v, 0)}" for v in VEH)
+            pv.append(f"    '{r['origin']}-{r['destination']}': {{ {vals} }},")
+    pv.append("  },")
+    return "\n".join(sh), "\n".join(pv)
+
+
+def emit_libs_excel(routes):
+    sh, pv = _shared_private_blocks(routes)
+    ts = LIBS_EXCEL_HEADER.replace("__SHARED__", sh).replace("__PRIVATE__", pv)
+    LIBS_EXCEL.write_text(ts, encoding="utf-8")
+
+
 def matriz_endpoint(city_id):
     if city_id == "aeropuerto":
         return "{ canton: quito, zone: aeropuerto }"
@@ -182,10 +247,12 @@ def main():
     routes = read_routes()
     ws = write_json(routes)
     emit_ts(routes)
+    emit_libs_excel(routes)
     emit_matriz(routes)
     print(f"OK: {len(routes)} rutas | compartido={ws} | privado-solo={len(routes)-ws}")
     print(f"  -> {JSON_OUT.relative_to(ROOT)}")
     print(f"  -> {WEBAPP_TS.relative_to(ROOT)}")
+    print(f"  -> {LIBS_EXCEL.relative_to(ROOT)}")
     print(f"  -> {MATRIZ.relative_to(ROOT)}")
 
 
