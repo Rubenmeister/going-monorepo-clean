@@ -22,6 +22,7 @@ XLSX = ROOT / "knowledge-base/pricing/source/Going_Matriz_Precios_Limpia.xlsx"
 JSON_OUT = ROOT / "knowledge-base/pricing/going-fares.json"
 WEBAPP_TS = ROOT / "frontend-webapp/src/app/services/ride/canonicalFares.ts"
 LIBS_EXCEL = ROOT / "libs/pricing/src/lib/excel-fares.ts"  # módulo NUEVO (no toca fares.ts viejo)
+MOBILE_EXCEL = ROOT / "mobile-user-app/src/catalog/excel-fares.ts"  # mirror standalone del móvil
 MATRIZ = ROOT / "knowledge-base/pricing/rutas/matriz-going-v1.yaml"
 
 VEH = ["suv", "suv_xl", "van", "van_xl", "minibus", "bus", "bus_40"]
@@ -215,6 +216,7 @@ def emit_libs_excel(routes):
     sh, pv = _shared_private_blocks(routes)
     ts = LIBS_EXCEL_HEADER.replace("__SHARED__", sh).replace("__PRIVATE__", pv)
     LIBS_EXCEL.write_text(ts, encoding="utf-8")
+    MOBILE_EXCEL.write_text(ts, encoding="utf-8")  # mismo contenido, standalone, para el móvil
 
 
 def matriz_endpoint(city_id):
@@ -253,6 +255,7 @@ def main():
     print(f"  -> {JSON_OUT.relative_to(ROOT)}")
     print(f"  -> {WEBAPP_TS.relative_to(ROOT)}")
     print(f"  -> {LIBS_EXCEL.relative_to(ROOT)}")
+    print(f"  -> {MOBILE_EXCEL.relative_to(ROOT)}")
     print(f"  -> {MATRIZ.relative_to(ROOT)}")
 
 
