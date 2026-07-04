@@ -1,0 +1,1992 @@
+{
+  "_comment": "FUENTE ÚNICA de tarifas GOING. Generado desde el Excel por scripts/import-fares.py. NO editar a mano.",
+  "source": "Going_Matriz_Precios_Limpia.xlsx",
+  "routeCount": 124,
+  "sharedCount": 50,
+  "routes": [
+    {
+      "origin": "aeropuerto",
+      "destination": "ambato",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Ambato",
+      "shared": 15,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "atuntaqui",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Atuntaqui",
+      "shared": 15,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "banos",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Banos",
+      "shared": 20,
+      "private": {
+        "suv": 80,
+        "suv_xl": 90,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "cayambe",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Cayambe",
+      "shared": null,
+      "private": {
+        "suv": 40,
+        "suv_xl": 50,
+        "van": 60,
+        "van_xl": 80,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "cuenca",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Cuenca",
+      "shared": null,
+      "private": {
+        "suv": 250,
+        "suv_xl": 300,
+        "van": 350,
+        "van_xl": 400,
+        "minibus": 450,
+        "bus": 500,
+        "bus_40": 550
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "el_carmen",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "El Carmen",
+      "shared": 35,
+      "private": {
+        "suv": 80,
+        "suv_xl": 90,
+        "van": 100,
+        "van_xl": 120,
+        "minibus": 140,
+        "bus": 200,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "el_quinche",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "El Quinche",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 40,
+        "van_xl": 60,
+        "minibus": 100,
+        "bus": 140,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "guayaquil",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Guayaquil",
+      "shared": null,
+      "private": {
+        "suv": 350,
+        "suv_xl": 400,
+        "van": 450,
+        "van_xl": 500,
+        "minibus": 550,
+        "bus": 600,
+        "bus_40": 650
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "guayllabamba",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Guayllabamba",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "ibarra",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Ibarra",
+      "shared": 20,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "la_concordia",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "La Concordia",
+      "shared": 35,
+      "private": {
+        "suv": 90,
+        "suv_xl": 100,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "latacunga",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Latacunga",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 100,
+        "van_xl": 120,
+        "minibus": 140,
+        "bus": 200,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "otavalo",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Otavalo",
+      "shared": 20,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "peguche",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Peguche",
+      "shared": 20,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "pifo",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Pifo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 120
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "quito",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Quito",
+      "shared": 20,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 120,
+        "bus": 180,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "riobamba",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Riobamba",
+      "shared": 35,
+      "private": {
+        "suv": 100,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "aeropuerto",
+      "destination": "santo_domingo",
+      "originName": "Aeropuerto Quito",
+      "destinationName": "Santo Domingo",
+      "shared": 25,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 130,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "alausi",
+      "destination": "cuenca",
+      "originName": "Alausi",
+      "destinationName": "Cuenca",
+      "shared": null,
+      "private": {
+        "suv": 68,
+        "suv_xl": 85,
+        "van": 120,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "alausi",
+      "destination": "guayaquil",
+      "originName": "Alausi",
+      "destinationName": "Guayaquil",
+      "shared": null,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 170,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "alausi",
+      "destination": "quito",
+      "originName": "Alausi",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 200,
+        "suv_xl": 230,
+        "van": 250,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "alausi",
+      "destination": "riobamba",
+      "originName": "Alausi",
+      "destinationName": "Riobamba",
+      "shared": null,
+      "private": {
+        "suv": 50,
+        "suv_xl": 60,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 120,
+        "bus": 180,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "aloasi",
+      "destination": "quito",
+      "originName": "Aloasi",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 40,
+        "suv_xl": 50,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 120,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "banos",
+      "originName": "Ambato",
+      "destinationName": "Banos",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "cevallos",
+      "originName": "Ambato",
+      "destinationName": "Cevallos",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 20,
+        "van": 25,
+        "van_xl": 30,
+        "minibus": 40,
+        "bus": 80,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "cuenca",
+      "originName": "Ambato",
+      "destinationName": "Cuenca",
+      "shared": null,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 220,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "guayaquil",
+      "originName": "Ambato",
+      "destinationName": "Guayaquil",
+      "shared": null,
+      "private": {
+        "suv": 200,
+        "suv_xl": 220,
+        "van": 240,
+        "van_xl": 280,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "latacunga",
+      "originName": "Ambato",
+      "destinationName": "Latacunga",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 83,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "mocha",
+      "originName": "Ambato",
+      "destinationName": "Mocha",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 83,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "pillaro",
+      "originName": "Ambato",
+      "destinationName": "Pillaro",
+      "shared": null,
+      "private": {
+        "suv": 10,
+        "suv_xl": 12,
+        "van": 15,
+        "van_xl": 20,
+        "minibus": 50,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "puyo",
+      "originName": "Ambato",
+      "destinationName": "Puyo",
+      "shared": 10,
+      "private": {
+        "suv": 50,
+        "suv_xl": 70,
+        "van": 90,
+        "van_xl": 100,
+        "minibus": 150,
+        "bus": 180,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "quito",
+      "originName": "Ambato",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 105,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "riobamba",
+      "originName": "Ambato",
+      "destinationName": "Riobamba",
+      "shared": 10,
+      "private": {
+        "suv": 50,
+        "suv_xl": 60,
+        "van": 70,
+        "van_xl": 80,
+        "minibus": 100,
+        "bus": 120,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "salcedo",
+      "originName": "Ambato",
+      "destinationName": "Salcedo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "tena",
+      "originName": "Ambato",
+      "destinationName": "Tena",
+      "shared": null,
+      "private": {
+        "suv": 60,
+        "suv_xl": 80,
+        "van": 100,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "ambato",
+      "destination": "tisaleo",
+      "originName": "Ambato",
+      "destinationName": "Tisaleo",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 20,
+        "van": 30,
+        "van_xl": 40,
+        "minibus": 80,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "atuntaqui",
+      "destination": "quito",
+      "originName": "Atuntaqui",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 90,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "azogues",
+      "destination": "cuenca",
+      "originName": "Azogues",
+      "destinationName": "Cuenca",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 120
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "cevallos",
+      "originName": "Banos",
+      "destinationName": "Cevallos",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 120
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "guayaquil",
+      "originName": "Banos",
+      "destinationName": "Guayaquil",
+      "shared": 35,
+      "private": {
+        "suv": 130,
+        "suv_xl": 150,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "mocha",
+      "originName": "Banos",
+      "destinationName": "Mocha",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 20,
+        "van": 30,
+        "van_xl": 40,
+        "minibus": 70,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "pillaro",
+      "originName": "Banos",
+      "destinationName": "Pillaro",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 20,
+        "van": 30,
+        "van_xl": 40,
+        "minibus": 80,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "quito",
+      "originName": "Banos",
+      "destinationName": "Quito",
+      "shared": 20,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 120,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "banos",
+      "destination": "tisaleo",
+      "originName": "Banos",
+      "destinationName": "Tisaleo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 120
+      }
+    },
+    {
+      "origin": "cayambe",
+      "destination": "ibarra",
+      "originName": "Cayambe",
+      "destinationName": "Ibarra",
+      "shared": null,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 100,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "cayambe",
+      "destination": "quito",
+      "originName": "Cayambe",
+      "destinationName": "Quito",
+      "shared": 10,
+      "private": {
+        "suv": 30,
+        "suv_xl": 40,
+        "van": 60,
+        "van_xl": 80,
+        "minibus": 120,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "cevallos",
+      "destination": "latacunga",
+      "originName": "Cevallos",
+      "destinationName": "Latacunga",
+      "shared": null,
+      "private": {
+        "suv": 30,
+        "suv_xl": 40,
+        "van": 50,
+        "van_xl": 60,
+        "minibus": 100,
+        "bus": 120,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "cevallos",
+      "destination": "quito",
+      "originName": "Cevallos",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 80,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "cotacachi",
+      "destination": "ibarra",
+      "originName": "Cotacachi",
+      "destinationName": "Ibarra",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 40,
+        "van_xl": 50,
+        "minibus": 70,
+        "bus": 100,
+        "bus_40": 120
+      }
+    },
+    {
+      "origin": "cotacachi",
+      "destination": "quito",
+      "originName": "Cotacachi",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 100,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "guayaquil",
+      "originName": "Cuenca",
+      "destinationName": "Guayaquil",
+      "shared": 15,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 170,
+        "minibus": 200,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "latacunga",
+      "originName": "Cuenca",
+      "destinationName": "Latacunga",
+      "shared": null,
+      "private": {
+        "suv": 300,
+        "suv_xl": 320,
+        "van": 320,
+        "van_xl": 350,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "loja",
+      "originName": "Cuenca",
+      "destinationName": "Loja",
+      "shared": 15,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "macas",
+      "originName": "Cuenca",
+      "destinationName": "Macas",
+      "shared": 15,
+      "private": {
+        "suv": 120,
+        "suv_xl": 130,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "machala",
+      "originName": "Cuenca",
+      "destinationName": "Machala",
+      "shared": 15,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 200,
+        "bus": 220,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "quito",
+      "originName": "Cuenca",
+      "destinationName": "Quito",
+      "shared": 25,
+      "private": {
+        "suv": 220,
+        "suv_xl": 220,
+        "van": 250,
+        "van_xl": 280,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "riobamba",
+      "originName": "Cuenca",
+      "destinationName": "Riobamba",
+      "shared": 20,
+      "private": {
+        "suv": 100,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 200,
+        "minibus": 220,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "cuenca",
+      "destination": "zaruma",
+      "originName": "Cuenca",
+      "destinationName": "Zaruma",
+      "shared": null,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "el_carmen",
+      "destination": "la_concordia",
+      "originName": "El Carmen",
+      "destinationName": "La Concordia",
+      "shared": null,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 80,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "el_carmen",
+      "destination": "quito",
+      "originName": "El Carmen",
+      "destinationName": "Quito",
+      "shared": 20,
+      "private": {
+        "suv": 80,
+        "suv_xl": 100,
+        "van": 140,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "el_carmen",
+      "destination": "santo_domingo",
+      "originName": "El Carmen",
+      "destinationName": "Santo Domingo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 40,
+        "van_xl": 80,
+        "minibus": 120,
+        "bus": 160,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "el_quinche",
+      "destination": "quito",
+      "originName": "El Quinche",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 40,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 90,
+        "bus_40": 100
+      }
+    },
+    {
+      "origin": "esmeraldas",
+      "destination": "guayaquil",
+      "originName": "Esmeraldas",
+      "destinationName": "Guayaquil",
+      "shared": null,
+      "private": {
+        "suv": 200,
+        "suv_xl": 250,
+        "van": 280,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "esmeraldas",
+      "destination": "manta",
+      "originName": "Esmeraldas",
+      "destinationName": "Manta",
+      "shared": null,
+      "private": {
+        "suv": 150,
+        "suv_xl": 200,
+        "van": 250,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "esmeraldas",
+      "destination": "quito",
+      "originName": "Esmeraldas",
+      "destinationName": "Quito",
+      "shared": 35,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "guaranda",
+      "destination": "quito",
+      "originName": "Guaranda",
+      "destinationName": "Quito",
+      "shared": 20,
+      "private": {
+        "suv": 90,
+        "suv_xl": 100,
+        "van": 120,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "ibarra",
+      "originName": "Guayaquil",
+      "destinationName": "Ibarra",
+      "shared": null,
+      "private": {
+        "suv": 200,
+        "suv_xl": 250,
+        "van": 280,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "latacunga",
+      "originName": "Guayaquil",
+      "destinationName": "Latacunga",
+      "shared": null,
+      "private": {
+        "suv": 250,
+        "suv_xl": 250,
+        "van": 280,
+        "van_xl": 280,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "loja",
+      "originName": "Guayaquil",
+      "destinationName": "Loja",
+      "shared": null,
+      "private": {
+        "suv": 180,
+        "suv_xl": 200,
+        "van": 220,
+        "van_xl": 250,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "machala",
+      "originName": "Guayaquil",
+      "destinationName": "Machala",
+      "shared": 15,
+      "private": {
+        "suv": 120,
+        "suv_xl": 130,
+        "van": 140,
+        "van_xl": 160,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "manta",
+      "originName": "Guayaquil",
+      "destinationName": "Manta",
+      "shared": 25,
+      "private": {
+        "suv": 120,
+        "suv_xl": 130,
+        "van": 140,
+        "van_xl": 160,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "montanita",
+      "originName": "Guayaquil",
+      "destinationName": "Montanita",
+      "shared": null,
+      "private": {
+        "suv": 70,
+        "suv_xl": 80,
+        "van": 100,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "naranjal",
+      "originName": "Guayaquil",
+      "destinationName": "Naranjal",
+      "shared": null,
+      "private": {
+        "suv": 40,
+        "suv_xl": 50,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 120,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "portoviejo",
+      "originName": "Guayaquil",
+      "destinationName": "Portoviejo",
+      "shared": null,
+      "private": {
+        "suv": 120,
+        "suv_xl": 130,
+        "van": 140,
+        "van_xl": 160,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "quito",
+      "originName": "Guayaquil",
+      "destinationName": "Quito",
+      "shared": 45,
+      "private": {
+        "suv": 230,
+        "suv_xl": 250,
+        "van": 280,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "riobamba",
+      "originName": "Guayaquil",
+      "destinationName": "Riobamba",
+      "shared": 25,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "salinas",
+      "originName": "Guayaquil",
+      "destinationName": "Salinas",
+      "shared": null,
+      "private": {
+        "suv": 80,
+        "suv_xl": 90,
+        "van": 120,
+        "van_xl": 140,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "santo_domingo",
+      "originName": "Guayaquil",
+      "destinationName": "Santo Domingo",
+      "shared": 35,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "guayaquil",
+      "destination": "zaruma",
+      "originName": "Guayaquil",
+      "destinationName": "Zaruma",
+      "shared": null,
+      "private": {
+        "suv": 110,
+        "suv_xl": 130,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "guayllabamba",
+      "destination": "quito",
+      "originName": "Guayllabamba",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 24,
+        "suv_xl": 30,
+        "van": 42,
+        "van_xl": 60,
+        "minibus": 100,
+        "bus": 140,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ibarra",
+      "destination": "latacunga",
+      "originName": "Ibarra",
+      "destinationName": "Latacunga",
+      "shared": null,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "ibarra",
+      "destination": "otavalo",
+      "originName": "Ibarra",
+      "destinationName": "Otavalo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 25,
+        "van": 35,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 110,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "ibarra",
+      "destination": "quito",
+      "originName": "Ibarra",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 105,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "ibarra",
+      "destination": "tulcan",
+      "originName": "Ibarra",
+      "destinationName": "Tulcan",
+      "shared": 25,
+      "private": {
+        "suv": 56,
+        "suv_xl": 70,
+        "van": 98,
+        "van_xl": 140,
+        "minibus": 230,
+        "bus": 280,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "la_concordia",
+      "destination": "quito",
+      "originName": "La Concordia",
+      "destinationName": "Quito",
+      "shared": 25,
+      "private": {
+        "suv": 80,
+        "suv_xl": 100,
+        "van": 140,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "la_concordia",
+      "destination": "santo_domingo",
+      "originName": "La Concordia",
+      "destinationName": "Santo Domingo",
+      "shared": 5,
+      "private": {
+        "suv": 30,
+        "suv_xl": 40,
+        "van": 60,
+        "van_xl": 80,
+        "minibus": 120,
+        "bus": 150,
+        "bus_40": 180
+      }
+    },
+    {
+      "origin": "lago_agrio",
+      "destination": "quito",
+      "originName": "Lago Agrio",
+      "destinationName": "Quito",
+      "shared": 45,
+      "private": {
+        "suv": 160,
+        "suv_xl": 180,
+        "van": 250,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "lago_agrio",
+      "destination": "tena",
+      "originName": "Lago Agrio",
+      "destinationName": "Tena",
+      "shared": null,
+      "private": {
+        "suv": 130,
+        "suv_xl": 150,
+        "van": 180,
+        "van_xl": 250,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "latacunga",
+      "destination": "pillaro",
+      "originName": "Latacunga",
+      "destinationName": "Pillaro",
+      "shared": null,
+      "private": {
+        "suv": 15,
+        "suv_xl": 20,
+        "van": 30,
+        "van_xl": 50,
+        "minibus": 80,
+        "bus": 100,
+        "bus_40": 150
+      }
+    },
+    {
+      "origin": "latacunga",
+      "destination": "quito",
+      "originName": "Latacunga",
+      "destinationName": "Quito",
+      "shared": 13,
+      "private": {
+        "suv": 50,
+        "suv_xl": 60,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "latacunga",
+      "destination": "riobamba",
+      "originName": "Latacunga",
+      "destinationName": "Riobamba",
+      "shared": null,
+      "private": {
+        "suv": 90,
+        "suv_xl": 100,
+        "van": 120,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "latacunga",
+      "destination": "salcedo",
+      "originName": "Latacunga",
+      "destinationName": "Salcedo",
+      "shared": null,
+      "private": {
+        "suv": 10,
+        "suv_xl": 15,
+        "van": 20,
+        "van_xl": 25,
+        "minibus": 50,
+        "bus": 70,
+        "bus_40": 100
+      }
+    },
+    {
+      "origin": "loja",
+      "destination": "machala",
+      "originName": "Loja",
+      "destinationName": "Machala",
+      "shared": null,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "loja",
+      "destination": "quito",
+      "originName": "Loja",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 350,
+        "suv_xl": 400,
+        "van": 450,
+        "van_xl": 500,
+        "minibus": 500,
+        "bus": 600,
+        "bus_40": 600
+      }
+    },
+    {
+      "origin": "loja",
+      "destination": "zaruma",
+      "originName": "Loja",
+      "destinationName": "Zaruma",
+      "shared": null,
+      "private": {
+        "suv": 70,
+        "suv_xl": 90,
+        "van": 110,
+        "van_xl": 150,
+        "minibus": 200,
+        "bus": 250,
+        "bus_40": 300
+      }
+    },
+    {
+      "origin": "macas",
+      "destination": "puyo",
+      "originName": "Macas",
+      "destinationName": "Puyo",
+      "shared": null,
+      "private": {
+        "suv": 110,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 180,
+        "minibus": 200,
+        "bus": 220,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "macas",
+      "destination": "quito",
+      "originName": "Macas",
+      "destinationName": "Quito",
+      "shared": 35,
+      "private": {
+        "suv": 250,
+        "suv_xl": 270,
+        "van": 300,
+        "van_xl": 340,
+        "minibus": 380,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "macas",
+      "destination": "tena",
+      "originName": "Macas",
+      "destinationName": "Tena",
+      "shared": null,
+      "private": {
+        "suv": 100,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "machachi",
+      "destination": "quito",
+      "originName": "Machachi",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 30,
+        "suv_xl": 35,
+        "van": 40,
+        "van_xl": 80,
+        "minibus": 100,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "machala",
+      "destination": "quito",
+      "originName": "Machala",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 250,
+        "suv_xl": 280,
+        "van": 300,
+        "van_xl": 350,
+        "minibus": 400,
+        "bus": 500,
+        "bus_40": 600
+      }
+    },
+    {
+      "origin": "machala",
+      "destination": "zaruma",
+      "originName": "Machala",
+      "destinationName": "Zaruma",
+      "shared": null,
+      "private": {
+        "suv": 80,
+        "suv_xl": 95,
+        "van": 90,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "manta",
+      "destination": "portoviejo",
+      "originName": "Manta",
+      "destinationName": "Portoviejo",
+      "shared": null,
+      "private": {
+        "suv": 20,
+        "suv_xl": 30,
+        "van": 60,
+        "van_xl": 80,
+        "minibus": 100,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "manta",
+      "destination": "quito",
+      "originName": "Manta",
+      "destinationName": "Quito",
+      "shared": 45,
+      "private": {
+        "suv": 200,
+        "suv_xl": 220,
+        "van": 240,
+        "van_xl": 280,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "manta",
+      "destination": "salinas",
+      "originName": "Manta",
+      "destinationName": "Salinas",
+      "shared": null,
+      "private": {
+        "suv": 80,
+        "suv_xl": 95,
+        "van": 90,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "mocha",
+      "destination": "quito",
+      "originName": "Mocha",
+      "destinationName": "Quito",
+      "shared": 25,
+      "private": {
+        "suv": 80,
+        "suv_xl": 95,
+        "van": 90,
+        "van_xl": 120,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "montanita",
+      "destination": "quito",
+      "originName": "Montanita",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 250,
+        "suv_xl": 270,
+        "van": 300,
+        "van_xl": 350,
+        "minibus": 400,
+        "bus": 450,
+        "bus_40": 500
+      }
+    },
+    {
+      "origin": "montanita",
+      "destination": "salinas",
+      "originName": "Montanita",
+      "destinationName": "Salinas",
+      "shared": null,
+      "private": {
+        "suv": 35,
+        "suv_xl": 45,
+        "van": 60,
+        "van_xl": 70,
+        "minibus": 100,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "otavalo",
+      "destination": "quito",
+      "originName": "Otavalo",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 105,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "peguche",
+      "destination": "quito",
+      "originName": "Peguche",
+      "destinationName": "Quito",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 105,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "pifo",
+      "destination": "quito",
+      "originName": "Pifo",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 24,
+        "suv_xl": 30,
+        "van": 40,
+        "van_xl": 60,
+        "minibus": 100,
+        "bus": 140,
+        "bus_40": 180
+      }
+    },
+    {
+      "origin": "pillaro",
+      "destination": "quito",
+      "originName": "Pillaro",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 60,
+        "suv_xl": 75,
+        "van": 105,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "portoviejo",
+      "destination": "quito",
+      "originName": "Portoviejo",
+      "destinationName": "Quito",
+      "shared": null,
+      "private": {
+        "suv": 200,
+        "suv_xl": 220,
+        "van": 240,
+        "van_xl": 280,
+        "minibus": 300,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "puyo",
+      "destination": "quito",
+      "originName": "Puyo",
+      "destinationName": "Quito",
+      "shared": 25,
+      "private": {
+        "suv": 130,
+        "suv_xl": 150,
+        "van": 180,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "puyo",
+      "destination": "tena",
+      "originName": "Puyo",
+      "destinationName": "Tena",
+      "shared": null,
+      "private": {
+        "suv": 40,
+        "suv_xl": 50,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 120,
+        "bus": 150,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "riobamba",
+      "originName": "Quito",
+      "destinationName": "Riobamba",
+      "shared": 20,
+      "private": {
+        "suv": 90,
+        "suv_xl": 110,
+        "van": 130,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "salcedo",
+      "originName": "Quito",
+      "destinationName": "Salcedo",
+      "shared": 12,
+      "private": {
+        "suv": 50,
+        "suv_xl": 60,
+        "van": 70,
+        "van_xl": 100,
+        "minibus": 150,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "salinas",
+      "originName": "Quito",
+      "destinationName": "Salinas",
+      "shared": null,
+      "private": {
+        "suv": 240,
+        "suv_xl": 280,
+        "van": 280,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "santo_domingo",
+      "originName": "Quito",
+      "destinationName": "Santo Domingo",
+      "shared": 15,
+      "private": {
+        "suv": 60,
+        "suv_xl": 70,
+        "van": 100,
+        "van_xl": 150,
+        "minibus": 250,
+        "bus": 350,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "tabacundo",
+      "originName": "Quito",
+      "destinationName": "Tabacundo",
+      "shared": null,
+      "private": {
+        "suv": 25,
+        "suv_xl": 25,
+        "van": 50,
+        "van_xl": 70,
+        "minibus": 120,
+        "bus": 160,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "tambillo",
+      "originName": "Quito",
+      "destinationName": "Tambillo",
+      "shared": null,
+      "private": {
+        "suv": 30,
+        "suv_xl": 40,
+        "van": 56,
+        "van_xl": 80,
+        "minibus": 140,
+        "bus": 160,
+        "bus_40": 200
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "tena",
+      "originName": "Quito",
+      "destinationName": "Tena",
+      "shared": null,
+      "private": {
+        "suv": 120,
+        "suv_xl": 140,
+        "van": 180,
+        "van_xl": 220,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 400
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "tisaleo",
+      "originName": "Quito",
+      "destinationName": "Tisaleo",
+      "shared": null,
+      "private": {
+        "suv": 50,
+        "suv_xl": 60,
+        "van": 80,
+        "van_xl": 120,
+        "minibus": 160,
+        "bus": 200,
+        "bus_40": 250
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "tulcan",
+      "originName": "Quito",
+      "destinationName": "Tulcan",
+      "shared": null,
+      "private": {
+        "suv": 90,
+        "suv_xl": 120,
+        "van": 150,
+        "van_xl": 200,
+        "minibus": 250,
+        "bus": 300,
+        "bus_40": 350
+      }
+    },
+    {
+      "origin": "quito",
+      "destination": "zaruma",
+      "originName": "Quito",
+      "destinationName": "Zaruma",
+      "shared": null,
+      "private": {
+        "suv": 240,
+        "suv_xl": 280,
+        "van": 280,
+        "van_xl": 300,
+        "minibus": 350,
+        "bus": 400,
+        "bus_40": 450
+      }
+    }
+  ]
+}

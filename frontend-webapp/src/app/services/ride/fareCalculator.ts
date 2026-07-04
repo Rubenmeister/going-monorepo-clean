@@ -41,7 +41,7 @@
 
 import type { Location, VehicleType } from '@/types';
 import { VEHICLE_TYPES } from '@/types';
-import { FARES } from './canonicalFares';
+import { getFare, getPrivatePrices, type PrivatePrices } from './canonicalFares';
 
 // ════════════════════════════════════════════════════════════════
 // TIPOS PÚBLICOS
@@ -349,78 +349,16 @@ function getClientSurcharge(segment: ClientSegment): ClientSurchargeResult {
 // NORMALIZACIÓN Y TABLAS DE PRECIOS
 // ════════════════════════════════════════════════════════════════
 
-function normalizeCity(address: string): string {
-  return address
-    .split(',')[0]
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z\s]/g, '')
-    .trim();
-}
+// (normalizeCity/pairKey eliminados \u2014 el precio ya no se computa aqu\u00ed, se lee
+//  expl\u00edcito desde canonicalFares que ya normaliza las direcciones.)
 
-function pairKey(a: string, b: string): string {
-  const na = normalizeCity(a);
-  const nb = normalizeCity(b);
-  return na <= nb ? `${na}|${nb}` : `${nb}|${na}`;
-}
-
-// ── Recargo de origen (+$5, fijo) ─────────────────────────────
-const SURCHARGE_ORIGIN_CITIES = new Set([
-  'quito sur',
-  'cumbaya  tumbaco valle',
-  'los chillos  sangolqui',
-  'aeropuerto quito tababela',
-]);
-
-function getOriginSurcharge(pickup: Location): number {
-  if (!pickup.address) return 0;
-  return SURCHARGE_ORIGIN_CITIES.has(normalizeCity(pickup.address)) ? 5 : 0;
-}
-
-// ── Rutas con precio COMPLETO predefinido ─────────────────────
-interface FullPriceEntry { compartido: number; privado: number; premium: number; }
-const FULL_PRICE_ROUTES: Record<string, FullPriceEntry> = {
-  'aeropuerto quito tababela|quito centro norte': { compartido: 10, privado: 25, premium: 30 },
-};
-
-// ── Tabla de precios COMPARTIDO — SUV, un sentido, USD ────────
-// Mapea una direccion del frontend a la clave de ciudad CANONICA (libs/pricing).
-// Zonas de Quito (centro norte / sur / cumbaya-valles / los chillos) colapsan a
-// "quito"; la diferencia de zona la cobra el recargo de origen +$5, no la base.
-function toCanonicalCity(address: string): string {
-  const c = normalizeCity(address);
-  if (c.startsWith('quito') || c.startsWith('cumbaya') || c.startsWith('los chillos')) return 'quito';
-  if (c.startsWith('aeropuerto')) return 'aeropuerto';
-  return c.split(' ').join('_');
-}
-
-// Formula de respaldo
-function distanceBasedSharedPrice(km: number): number {
-  if (km <= 15) return 4;
-  if (km <= 40) return Math.round(3 + km * 0.20);
-  return Math.max(7, Math.round(4.5 + km * 0.082));
-}
-
-// Lookup base
-function sharedSuvBase(
-  pickup:  Location,
-  dropoff: Location,
-): { price: number; fixed: boolean; fullEntry?: FullPriceEntry } {
-  if (pickup.address && dropoff.address) {
-    const fullKey  = pairKey(pickup.address, dropoff.address);
-    const fullEntry = FULL_PRICE_ROUTES[fullKey];
-    if (fullEntry !== undefined) return { price: fullEntry.compartido, fixed: true, fullEntry };
-    const ca = toCanonicalCity(pickup.address);
-    const cb = toCanonicalCity(dropoff.address);
-    const p = FARES.shared[ca + '-' + cb] ?? FARES.shared[cb + '-' + ca];
-    if (p !== undefined) return { price: p, fixed: true };
-  }
-  return {
-    price: distanceBasedSharedPrice(calculateDistance(pickup, dropoff)),
-    fixed: false,
+/** VehicleType del UI → clave de precio privado del Excel. */
+function privateVehKey(v: VehicleType): keyof PrivatePrices {
+  const map: Record<string, keyof PrivatePrices> = {
+    suv: 'suv', suv_xl: 'suv_xl', van: 'van', van_xl: 'van_xl',
+    minibus: 'minibus', bus: 'bus', bus_40: 'bus_40',
   };
+  return map[v] ?? 'suv';
 }
 
 // ================================================================
@@ -489,46 +427,36 @@ export function getFareBreakdown(
     };
   }
 
-  const { price: base, fixed, fullEntry } = sharedSuvBase(pickup, dropoff);
-  const originSurcharge = getOriginSurcharge(pickup);
+  const oAddr = pickup.address ?? '';
+  const dAddr = dropoff.address ?? '';
 
-  const vehicle       = VEHICLE_TYPES[vehicleType] ?? VEHICLE_TYPES.suv;
-  const isLargeVeh    = !['suv', 'suv_xl', 'other'].includes(vehicleType);
-  const vehicleFactor = isLargeVeh ? vehicle.multiplierConfort : 1;
-
+  // Precio FIJO de mercado (Excel): compartido o privado EXPLÍCITO por ruta.
   let basePrice: number;
-  if (fullEntry) {
-    basePrice = mode === 'compartido'
-      ? fullEntry.compartido
-      : (tier === 'premium' ? fullEntry.premium : fullEntry.privado);
-  } else if (mode === 'compartido') {
-    basePrice = base;
+  if (mode === 'compartido') {
+    const s = getFare(oAddr, dAddr);
+    basePrice = s ?? NaN;                              // NaN = ruta sin compartido
   } else {
-    const privadoConfort = Math.round(base * 4 * vehicleFactor / 10) * 10;
-    basePrice = tier === 'premium' ? privadoConfort + 10 : privadoConfort;
+    const pv = getPrivatePrices(oAddr, dAddr);
+    basePrice = pv ? (pv[privateVehKey(vehicleType)] ?? NaN) : NaN;
   }
+  const fixed = Number.isFinite(basePrice);
 
-  // Interurbano: PRECIO FIJO. El surge dinamico (hora/dia) NO aplica aqui;
-  // solo el recargo por segmento de cliente (agencia/empresa).
-  const surchargeRate = 0;
-  const surchargeLabel: string | null = null;
+  // Único recargo que se mantiene sobre el precio fijo: segmento de cliente
+  // (agencia/empresa +25%). Sin recargo de origen (+$5) ni surge por hora/día.
   const { rate: clientSurchargeRate, label: clientSurchargeLabel } = getClientSurcharge(segment);
-
-  // Formula: base x (1 + recargo_cliente) + origen
-  const adjustedPrice = Math.round(basePrice * (1 + surchargeRate + clientSurchargeRate));
-  const totalFare     = adjustedPrice + originSurcharge;
+  const totalFare = fixed ? Math.round(basePrice * (1 + clientSurchargeRate)) : NaN;
 
   return {
-    sharedBase:          base,
+    sharedBase:          fixed ? basePrice : 0,
     totalFare,
     distanceKm:          roadDistance?.distanceKm ?? Math.round(dist * 10) / 10,
     durationMin:         roadDistance?.durationMin ?? Math.round((dist / AVERAGE_SPEED_KMH) * 60),
     isPriceFixed:        fixed,
     mode,
     tier,
-    originSurcharge,
-    surchargeRate,
-    surchargeLabel,
+    originSurcharge:     0,
+    surchargeRate:       0,
+    surchargeLabel:      null,
     clientSurchargeRate,
     clientSurchargeLabel,
     discountRate:        0,  // solo por puntos de lealtad, gestionado por loyalty-service
