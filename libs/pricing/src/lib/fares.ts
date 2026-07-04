@@ -1,229 +1,400 @@
-// ⚠️ ARCHIVO GENERADO por scripts/import-fares.py desde el Excel
-// (knowledge-base/pricing/source/Going_Matriz_Precios_Limpia.xlsx).
-// FUENTE ÚNICA: no editar a mano. Para cambiar un precio: editar el Excel y
-// re-correr `python scripts/import-fares.py`.
-//
-// Precios FIJOS de mercado (compartido y privado explícito por vehículo).
-// Sin fórmulas, sin recargo de origen, sin surcharge sobre estos valores.
-
-export interface PrivatePrices {
-  suv: number; suv_xl: number; van: number; van_xl: number;
-  minibus: number; bus: number; bus_40: number;
-}
+/**
+ * GOING — Tabla de tarifas
+ * Actualizada: Marzo 2026
+ *
+ * NOTA (2026-05-22): estos valores son PROVISIONALES — sirven para pruebas y
+ * para que el buscador cotice de forma consistente, pero NO son los precios
+ * definitivos. Pendiente reemplazarlos por la tabla final del negocio. Esta es
+ * la fuente única; al actualizarla, todo el sistema (buscador, cobro, cotización
+ * del bot) queda alineado automáticamente.
+ */
 
 export const FARES = {
+
+  // ── COMPARTIDO (precio por persona) — LISTA ÚNICA Y COMPLETA ───────────────
+  // Fuente única del sistema. Fusión de la tabla del backend + las rutas que
+  // tenía el frontend. Un precio por par de ciudad (bidireccional). Las zonas
+  // de Quito (Sur / Valles / Chillos) NO van acá: las cubre el recargo fijo de
+  // origen (+$5) al recoger en esas zonas. Pares: 124.
   shared: {
-    'aeropuerto-ambato': 15,
-    'aeropuerto-atuntaqui': 15,
-    'aeropuerto-banos': 20,
-    'aeropuerto-el_carmen': 35,
-    'aeropuerto-ibarra': 20,
-    'aeropuerto-la_concordia': 35,
-    'aeropuerto-latacunga': 15,
-    'aeropuerto-otavalo': 20,
-    'aeropuerto-peguche': 20,
-    'aeropuerto-quito': 20,
-    'aeropuerto-riobamba': 35,
-    'aeropuerto-santo_domingo': 25,
-    'aloasi-quito': 15,
-    'ambato-puyo': 10,
-    'ambato-quito': 15,
-    'ambato-riobamba': 10,
-    'atuntaqui-quito': 15,
-    'banos-guayaquil': 35,
-    'banos-quito': 20,
-    'cayambe-quito': 10,
-    'cotacachi-quito': 15,
-    'cuenca-guayaquil': 15,
-    'cuenca-loja': 15,
-    'cuenca-macas': 15,
-    'cuenca-machala': 15,
-    'cuenca-quito': 25,
-    'cuenca-riobamba': 20,
-    'el_carmen-quito': 20,
-    'esmeraldas-quito': 35,
-    'guaranda-quito': 20,
-    'guayaquil-machala': 15,
-    'guayaquil-manta': 25,
-    'guayaquil-quito': 45,
-    'guayaquil-riobamba': 25,
-    'guayaquil-santo_domingo': 35,
-    'ibarra-quito': 15,
-    'ibarra-tulcan': 25,
-    'la_concordia-quito': 25,
-    'la_concordia-santo_domingo': 5,
-    'lago_agrio-quito': 45,
-    'latacunga-quito': 13,
-    'macas-quito': 35,
-    'manta-quito': 45,
-    'mocha-quito': 25,
-    'otavalo-quito': 15,
-    'peguche-quito': 15,
-    'puyo-quito': 25,
-    'quito-riobamba': 20,
-    'quito-salcedo': 12,
-    'quito-santo_domingo': 15,
+
+    'aeropuerto-ambato':                18,
+    'aeropuerto-atuntaqui':             14,
+    'aeropuerto-banos':                 18,
+    'aeropuerto-cayambe':               9,
+    'aeropuerto-cuenca':                47,
+    'aeropuerto-el_carmen':             35,
+    'aeropuerto-el_quinche':            6,
+    'aeropuerto-guayaquil':             52,
+    'aeropuerto-guayllabamba':          5,
+    'aeropuerto-ibarra':                20,
+    'aeropuerto-la_concordia':          35,
+    'aeropuerto-latacunga':             15,
+    'aeropuerto-otavalo':               18,
+    'aeropuerto-peguche':               14,
+    'aeropuerto-pifo':                  5,
+    'aeropuerto-quito':                 10,
+    'aeropuerto-riobamba':              25,
+    'aeropuerto-santo_domingo':         23,
+    'aeropuerto-tulcan':                29,
+
+    'alausi-cuenca':                    17,
+    'alausi-guayaquil':                 24,
+    'alausi-quito':                     29,
+    'alausi-riobamba':                  11,
+
+    'aloasi-quito':                     10,
+
+    'ambato-aeropuerto':                18,
+    'ambato-banos':                     5,
+    'ambato-cevallos':                  4,
+    'ambato-cuenca':                    29,
+    'ambato-guayaquil':                 34,
+    'ambato-latacunga':                 5,
+    'ambato-mocha':                     4,
+    'ambato-pillaro':                   5,
+    'ambato-puyo':                      14,
+    'ambato-quito':                     15,
+    'ambato-riobamba':                  7,
+    'ambato-salcedo':                   5,
+    'ambato-tena':                      17,
+    'ambato-tisaleo':                   4,
+
+    'atuntaqui-aeropuerto':             14,
+    'atuntaqui-quito':                  14,
+
+    'azogues-cuenca':                   5,
+
+    'banos-aeropuerto':                 18,
+    'banos-ambato':                     5,
+    'banos-cevallos':                   5,
+    'banos-guayaquil':                  34,
+    'banos-mocha':                      4,
+    'banos-pillaro':                    6,
+    'banos-quito':                      17,
+    'banos-tisaleo':                    5,
+
+    'cayambe-aeropuerto':               9,
+    'cayambe-ibarra':                   14,
+    'cayambe-quito':                    8,
+
+    'cevallos-ambato':                  4,
+    'cevallos-banos':                   5,
+    'cevallos-latacunga':               9,
+    'cevallos-quito':                   12,
+
+    'cotacachi-ibarra':                 7,
+    'cotacachi-quito':                  15,
+
+    'cuenca-aeropuerto':                47,
+    'cuenca-alausi':                    17,
+    'cuenca-ambato':                    29,
+    'cuenca-azogues':                   5,
+    'cuenca-guayaquil':                 24,
+    'cuenca-latacunga':                 34,
+    'cuenca-loja':                      24,
+    'cuenca-macas':                     34,
+    'cuenca-machala':                   19,
+    'cuenca-quito':                     44,
+    'cuenca-riobamba':                  24,
+    'cuenca-zaruma':                    29,
+
+    'el_carmen-aeropuerto':             35,
+    'el_carmen-la_concordia':           7,
+    'el_carmen-quito':                  20,
+    'el_carmen-santo_domingo':          8,
+
+    'el_quinche-aeropuerto':            6,
+    'el_quinche-quito':                 7,
+
+    'esmeraldas-guayaquil':             54,
+    'esmeraldas-manta':                 44,
+    'esmeraldas-quito':                 29,
+
+    'guaranda-quito':                   24,
+
+    'guayaquil-aeropuerto':             52,
+    'guayaquil-alausi':                 24,
+    'guayaquil-ambato':                 34,
+    'guayaquil-banos':                  34,
+    'guayaquil-cuenca':                 24,
+    'guayaquil-esmeraldas':             54,
+    'guayaquil-ibarra':                 54,
+    'guayaquil-latacunga':              39,
+    'guayaquil-loja':                   39,
+    'guayaquil-machala':                19,
+    'guayaquil-manta':                  29,
+    'guayaquil-montanita':              17,
+    'guayaquil-naranjal':               10,
+    'guayaquil-portoviejo':             29,
+    'guayaquil-quito':                  49,
+    'guayaquil-riobamba':               29,
+    'guayaquil-salinas':                14,
+    'guayaquil-santo_domingo':          29,
+    'guayaquil-zaruma':                 29,
+
+    'guayllabamba-aeropuerto':          5,
+    'guayllabamba-quito':               6,
+
+    'ibarra-aeropuerto':                20,
+    'ibarra-cayambe':                   14,
+    'ibarra-cotacachi':                 7,
+    'ibarra-guayaquil':                 54,
+    'ibarra-latacunga':                 19,
+    'ibarra-otavalo':                   5,
+    'ibarra-quito':                     15,
+    'ibarra-tulcan':                    14,
+
+    'la_concordia-aeropuerto':          35,
+    'la_concordia-el_carmen':           7,
+    'la_concordia-quito':               20,
+    'la_concordia-santo_domingo':       8,
+
+    'lago_agrio-quito':                 39,
+    'lago_agrio-tena':                  34,
+
+    'latacunga-aeropuerto':             15,
+    'latacunga-ambato':                 5,
+    'latacunga-cevallos':               9,
+    'latacunga-cuenca':                 34,
+    'latacunga-guayaquil':              39,
+    'latacunga-ibarra':                 19,
+    'latacunga-pillaro':                8,
+    'latacunga-quito':                  10,
+    'latacunga-riobamba':               11,
+    'latacunga-salcedo':                3,
+
+    'loja-cuenca':                      24,
+    'loja-guayaquil':                   39,
+    'loja-machala':                     29,
+    'loja-quito':                       69,
+    'loja-zaruma':                      17,
+
+    'macas-cuenca':                     34,
+    'macas-puyo':                       34,
+    'macas-quito':                      54,
+    'macas-tena':                       44,
+
+    'machachi-quito':                   9,
+
+    'machala-cuenca':                   19,
+    'machala-guayaquil':                19,
+    'machala-loja':                     29,
+    'machala-quito':                    64,
+    'machala-zaruma':                   19,
+
+    'manta-esmeraldas':                 44,
+    'manta-guayaquil':                  29,
+    'manta-portoviejo':                 4,
+    'manta-quito':                      49,
+    'manta-salinas':                    49,
+
+    'mocha-ambato':                     4,
+    'mocha-banos':                      4,
+    'mocha-quito':                      13,
+
+    'montanita-guayaquil':              17,
+    'montanita-quito':                  54,
+    'montanita-salinas':                9,
+
+    'naranjal-guayaquil':               10,
+
+    'otavalo-aeropuerto':               18,
+    'otavalo-ibarra':                   5,
+    'otavalo-quito':                    12,
+    'otavalo-tulcan':                   19,
+
+    'peguche-aeropuerto':               14,
+    'peguche-quito':                    15,
+
+    'pifo-aeropuerto':                  5,
+    'pifo-quito':                       6,
+
+    'pillaro-ambato':                   5,
+    'pillaro-banos':                    6,
+    'pillaro-latacunga':                8,
+    'pillaro-quito':                    11,
+
+    'portoviejo-guayaquil':             29,
+    'portoviejo-manta':                 4,
+    'portoviejo-quito':                 49,
+
+    'puyo-ambato':                      14,
+    'puyo-macas':                       34,
+    'puyo-quito':                       34,
+    'puyo-tena':                        11,
+
+    'quito-aeropuerto':                 10,
+    'quito-alausi':                     29,
+    'quito-aloasi':                     10,
+    'quito-ambato':                     15,
+    'quito-atuntaqui':                  14,
+    'quito-banos':                      17,
+    'quito-cayambe':                    8,
+    'quito-cevallos':                   12,
+    'quito-cotacachi':                  15,
+    'quito-cuenca':                     44,
+    'quito-el_carmen':                  20,
+    'quito-el_quinche':                 7,
+    'quito-esmeraldas':                 29,
+    'quito-guaranda':                   24,
+    'quito-guayaquil':                  49,
+    'quito-guayllabamba':               6,
+    'quito-ibarra':                     15,
+    'quito-la_concordia':               20,
+    'quito-lago_agrio':                 39,
+    'quito-latacunga':                  10,
+    'quito-loja':                       69,
+    'quito-macas':                      54,
+    'quito-machachi':                   9,
+    'quito-machala':                    64,
+    'quito-manta':                      49,
+    'quito-mocha':                      13,
+    'quito-montanita':                  54,
+    'quito-otavalo':                    12,
+    'quito-peguche':                    15,
+    'quito-pifo':                       6,
+    'quito-pillaro':                    11,
+    'quito-portoviejo':                 49,
+    'quito-puyo':                       34,
+    'quito-riobamba':                   17,
+    'quito-salcedo':                    12,
+    'quito-salinas':                    59,
+    'quito-santo_domingo':              15,
+    'quito-tabacundo':                  7,
+    'quito-tambillo':                   8,
+    'quito-tena':                       29,
+    'quito-tisaleo':                    12,
+    'quito-tulcan':                     24,
+    'quito-zaruma':                     64,
+
+    'riobamba-aeropuerto':              25,
+    'riobamba-alausi':                  11,
+    'riobamba-ambato':                  7,
+    'riobamba-cuenca':                  24,
+    'riobamba-guayaquil':               29,
+    'riobamba-latacunga':               11,
+    'riobamba-quito':                   17,
+
+    'salcedo-ambato':                   5,
+    'salcedo-latacunga':                3,
+    'salcedo-quito':                    12,
+
+    'salinas-guayaquil':                14,
+    'salinas-manta':                    49,
+    'salinas-montanita':                9,
+    'salinas-quito':                    59,
+
+    'santo_domingo-aeropuerto':         23,
+    'santo_domingo-el_carmen':          8,
+    'santo_domingo-guayaquil':          29,
+    'santo_domingo-la_concordia':       8,
+    'santo_domingo-quito':              15,
+
+    'tabacundo-quito':                  7,
+
+    'tambillo-quito':                   8,
+
+    'tena-ambato':                      17,
+    'tena-lago_agrio':                  34,
+    'tena-macas':                       44,
+    'tena-puyo':                        11,
+    'tena-quito':                       29,
+
+    'tisaleo-ambato':                   4,
+    'tisaleo-banos':                    5,
+    'tisaleo-quito':                    12,
+
+    'tulcan-aeropuerto':                29,
+    'tulcan-ibarra':                    14,
+    'tulcan-otavalo':                   19,
+    'tulcan-quito':                     24,
+
+    'zaruma-cuenca':                    29,
+    'zaruma-guayaquil':                 29,
+    'zaruma-loja':                      17,
+    'zaruma-machala':                   19,
+    'zaruma-quito':                     64,
+  } as Record<string, number>,
+
+  // ── PRIVADO AEROPUERTO (precio por persona, vehículo dedicado) ───────────
+  private_airport: {
+    'norte':         20,   // Quito Norte y Centro Norte
+    'centro_norte':  20,
+    'sur':           25,   // Quito Sur
+    'valles':        20,   // Valles (Chillos, Tumbaco general)
+    'cumbaya':       20,
+    'tumbaco':       15,
   },
-  private: {
-    'aeropuerto-ambato': { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-atuntaqui': { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-banos': { suv: 80, suv_xl: 90, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 350 },
-    'aeropuerto-cayambe': { suv: 40, suv_xl: 50, van: 60, van_xl: 80, minibus: 150, bus: 200, bus_40: 250 },
-    'aeropuerto-cuenca': { suv: 250, suv_xl: 300, van: 350, van_xl: 400, minibus: 450, bus: 500, bus_40: 550 },
-    'aeropuerto-el_carmen': { suv: 80, suv_xl: 90, van: 100, van_xl: 120, minibus: 140, bus: 200, bus_40: 300 },
-    'aeropuerto-el_quinche': { suv: 20, suv_xl: 30, van: 40, van_xl: 60, minibus: 100, bus: 140, bus_40: 200 },
-    'aeropuerto-guayaquil': { suv: 350, suv_xl: 400, van: 450, van_xl: 500, minibus: 550, bus: 600, bus_40: 650 },
-    'aeropuerto-guayllabamba': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 },
-    'aeropuerto-ibarra': { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-la_concordia': { suv: 90, suv_xl: 100, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-latacunga': { suv: 60, suv_xl: 70, van: 100, van_xl: 120, minibus: 140, bus: 200, bus_40: 300 },
-    'aeropuerto-otavalo': { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-peguche': { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 },
-    'aeropuerto-pifo': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 },
-    'aeropuerto-quito': { suv: 20, suv_xl: 30, van: 70, van_xl: 100, minibus: 120, bus: 180, bus_40: 200 },
-    'aeropuerto-riobamba': { suv: 100, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 },
-    'aeropuerto-santo_domingo': { suv: 60, suv_xl: 70, van: 130, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'alausi-cuenca': { suv: 68, suv_xl: 85, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'alausi-guayaquil': { suv: 90, suv_xl: 120, van: 170, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'alausi-quito': { suv: 200, suv_xl: 230, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'alausi-riobamba': { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 120, bus: 180, bus_40: 250 },
-    'aloasi-quito': { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 },
-    'ambato-banos': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 },
-    'ambato-cevallos': { suv: 15, suv_xl: 20, van: 25, van_xl: 30, minibus: 40, bus: 80, bus_40: 150 },
-    'ambato-cuenca': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 220, bus: 250, bus_40: 300 },
-    'ambato-guayaquil': { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 350, bus: 400, bus_40: 450 },
-    'ambato-latacunga': { suv: 15, suv_xl: 25, van: 35, van_xl: 50, minibus: 83, bus: 100, bus_40: 150 },
-    'ambato-mocha': { suv: 15, suv_xl: 25, van: 35, van_xl: 50, minibus: 83, bus: 100, bus_40: 150 },
-    'ambato-pillaro': { suv: 10, suv_xl: 12, van: 15, van_xl: 20, minibus: 50, bus: 100, bus_40: 150 },
-    'ambato-puyo': { suv: 50, suv_xl: 70, van: 90, van_xl: 100, minibus: 150, bus: 180, bus_40: 200 },
-    'ambato-quito': { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 300, bus_40: 350 },
-    'ambato-riobamba': { suv: 50, suv_xl: 60, van: 70, van_xl: 80, minibus: 100, bus: 120, bus_40: 150 },
-    'ambato-salcedo': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 },
-    'ambato-tena': { suv: 60, suv_xl: 80, van: 100, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'ambato-tisaleo': { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 80, bus: 150, bus_40: 200 },
-    'atuntaqui-quito': { suv: 60, suv_xl: 70, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'azogues-cuenca': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 },
-    'banos-cevallos': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 },
-    'banos-guayaquil': { suv: 130, suv_xl: 150, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'banos-mocha': { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 70, bus: 100, bus_40: 150 },
-    'banos-pillaro': { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 80, bus: 150, bus_40: 200 },
-    'banos-quito': { suv: 70, suv_xl: 80, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'banos-tisaleo': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 },
-    'cayambe-ibarra': { suv: 60, suv_xl: 70, van: 100, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'cayambe-quito': { suv: 30, suv_xl: 40, van: 60, van_xl: 80, minibus: 120, bus: 150, bus_40: 200 },
-    'cevallos-latacunga': { suv: 30, suv_xl: 40, van: 50, van_xl: 60, minibus: 100, bus: 120, bus_40: 150 },
-    'cevallos-quito': { suv: 60, suv_xl: 70, van: 80, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'cotacachi-ibarra': { suv: 20, suv_xl: 30, van: 40, van_xl: 50, minibus: 70, bus: 100, bus_40: 120 },
-    'cotacachi-quito': { suv: 60, suv_xl: 75, van: 100, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'cuenca-guayaquil': { suv: 90, suv_xl: 120, van: 150, van_xl: 170, minibus: 200, bus: 300, bus_40: 350 },
-    'cuenca-latacunga': { suv: 300, suv_xl: 320, van: 320, van_xl: 350, minibus: 350, bus: 400, bus_40: 400 },
-    'cuenca-loja': { suv: 90, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 },
-    'cuenca-macas': { suv: 120, suv_xl: 130, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 },
-    'cuenca-machala': { suv: 90, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 220, bus_40: 250 },
-    'cuenca-quito': { suv: 220, suv_xl: 220, van: 250, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 },
-    'cuenca-riobamba': { suv: 100, suv_xl: 120, van: 150, van_xl: 200, minibus: 220, bus: 250, bus_40: 300 },
-    'cuenca-zaruma': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 },
-    'el_carmen-la_concordia': { suv: 60, suv_xl: 70, van: 80, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'el_carmen-quito': { suv: 80, suv_xl: 100, van: 140, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'el_carmen-santo_domingo': { suv: 20, suv_xl: 30, van: 40, van_xl: 80, minibus: 120, bus: 160, bus_40: 200 },
-    'el_quinche-quito': { suv: 20, suv_xl: 30, van: 40, van_xl: 50, minibus: 80, bus: 90, bus_40: 100 },
-    'esmeraldas-guayaquil': { suv: 200, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'esmeraldas-manta': { suv: 150, suv_xl: 200, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'esmeraldas-quito': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 },
-    'guaranda-quito': { suv: 90, suv_xl: 100, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-ibarra': { suv: 200, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'guayaquil-latacunga': { suv: 250, suv_xl: 250, van: 280, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 },
-    'guayaquil-loja': { suv: 180, suv_xl: 200, van: 220, van_xl: 250, minibus: 300, bus: 350, bus_40: 400 },
-    'guayaquil-machala': { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-manta': { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-montanita': { suv: 70, suv_xl: 80, van: 100, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-naranjal': { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 },
-    'guayaquil-portoviejo': { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-quito': { suv: 230, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'guayaquil-riobamba': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 },
-    'guayaquil-salinas': { suv: 80, suv_xl: 90, van: 120, van_xl: 140, minibus: 200, bus: 250, bus_40: 300 },
-    'guayaquil-santo_domingo': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'guayaquil-zaruma': { suv: 110, suv_xl: 130, van: 150, van_xl: 180, minibus: 250, bus: 300, bus_40: 350 },
-    'guayllabamba-quito': { suv: 24, suv_xl: 30, van: 42, van_xl: 60, minibus: 100, bus: 140, bus_40: 150 },
-    'ibarra-latacunga': { suv: 90, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'ibarra-otavalo': { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 110, bus_40: 150 },
-    'ibarra-quito': { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 },
-    'ibarra-tulcan': { suv: 56, suv_xl: 70, van: 98, van_xl: 140, minibus: 230, bus: 280, bus_40: 350 },
-    'la_concordia-quito': { suv: 80, suv_xl: 100, van: 140, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'la_concordia-santo_domingo': { suv: 30, suv_xl: 40, van: 60, van_xl: 80, minibus: 120, bus: 150, bus_40: 180 },
-    'lago_agrio-quito': { suv: 160, suv_xl: 180, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'lago_agrio-tena': { suv: 130, suv_xl: 150, van: 180, van_xl: 250, minibus: 300, bus: 350, bus_40: 400 },
-    'latacunga-pillaro': { suv: 15, suv_xl: 20, van: 30, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 },
-    'latacunga-quito': { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250 },
-    'latacunga-riobamba': { suv: 90, suv_xl: 100, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'latacunga-salcedo': { suv: 10, suv_xl: 15, van: 20, van_xl: 25, minibus: 50, bus: 70, bus_40: 100 },
-    'loja-machala': { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'loja-quito': { suv: 350, suv_xl: 400, van: 450, van_xl: 500, minibus: 500, bus: 600, bus_40: 600 },
-    'loja-zaruma': { suv: 70, suv_xl: 90, van: 110, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 },
-    'macas-puyo': { suv: 110, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 220, bus_40: 250 },
-    'macas-quito': { suv: 250, suv_xl: 270, van: 300, van_xl: 340, minibus: 380, bus: 400, bus_40: 450 },
-    'macas-tena': { suv: 100, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 },
-    'machachi-quito': { suv: 30, suv_xl: 35, van: 40, van_xl: 80, minibus: 100, bus: 150, bus_40: 200 },
-    'machala-quito': { suv: 250, suv_xl: 280, van: 300, van_xl: 350, minibus: 400, bus: 500, bus_40: 600 },
-    'machala-zaruma': { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'manta-portoviejo': { suv: 20, suv_xl: 30, van: 60, van_xl: 80, minibus: 100, bus: 150, bus_40: 200 },
-    'manta-quito': { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 },
-    'manta-salinas': { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'mocha-quito': { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 },
-    'montanita-quito': { suv: 250, suv_xl: 270, van: 300, van_xl: 350, minibus: 400, bus: 450, bus_40: 500 },
-    'montanita-salinas': { suv: 35, suv_xl: 45, van: 60, van_xl: 70, minibus: 100, bus: 150, bus_40: 200 },
-    'otavalo-quito': { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 },
-    'peguche-quito': { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 },
-    'pifo-quito': { suv: 24, suv_xl: 30, van: 40, van_xl: 60, minibus: 100, bus: 140, bus_40: 180 },
-    'pillaro-quito': { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 },
-    'portoviejo-quito': { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 },
-    'puyo-quito': { suv: 130, suv_xl: 150, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 },
-    'puyo-tena': { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 },
-    'quito-riobamba': { suv: 90, suv_xl: 110, van: 130, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'quito-salcedo': { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250 },
-    'quito-salinas': { suv: 240, suv_xl: 280, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-    'quito-santo_domingo': { suv: 60, suv_xl: 70, van: 100, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 },
-    'quito-tabacundo': { suv: 25, suv_xl: 25, van: 50, van_xl: 70, minibus: 120, bus: 160, bus_40: 200 },
-    'quito-tambillo': { suv: 30, suv_xl: 40, van: 56, van_xl: 80, minibus: 140, bus: 160, bus_40: 200 },
-    'quito-tena': { suv: 120, suv_xl: 140, van: 180, van_xl: 220, minibus: 250, bus: 300, bus_40: 400 },
-    'quito-tisaleo': { suv: 50, suv_xl: 60, van: 80, van_xl: 120, minibus: 160, bus: 200, bus_40: 250 },
-    'quito-tulcan': { suv: 90, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 },
-    'quito-zaruma': { suv: 240, suv_xl: 280, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 },
-  },
+
+  // ── TIPOS DE VEHÍCULO ─────────────────────────────────────────────────────
   vehicles: {
-    suv:     { label: 'SUV',     capacity: 4 },
-    suv_xl:  { label: 'SUV XL',  capacity: 5 },
-    van:     { label: 'VAN',     capacity: 7 },
-    van_xl:  { label: 'VAN XL',  capacity: 12 },
-    minibus: { label: 'Minibús', capacity: 20 },
-    bus:     { label: 'Bus',     capacity: 30 },
-    bus_40:  { label: 'Bus 40',  capacity: 40 },
+    suv:      { label: 'SUV',      capacity: 4,  multiplier: 4,    fixed_minibus: false },
+    suv_xl:   { label: 'SUV XL',   capacity: 5,  multiplier: 5,    fixed_minibus: false },
+    van:      { label: 'VAN',      capacity: 7,  multiplier: 7,    fixed_minibus: false },
+    van_xl:   { label: 'VAN XL',   capacity: 12, multiplier: 10,   fixed_minibus: false },
+    minibus:  { label: 'Minibús',  capacity: 20, multiplier: null, fixed_minibus: true  },
+    bus:      { label: 'Bus',      capacity: 30, multiplier: null, fixed_minibus: true  },
   },
-} as {
-  shared: Record<string, number>;
-  private: Record<string, PrivatePrices>;
-  vehicles: Record<string, { label: string; capacity: number }>;
+
+  // Precio fijo Minibús y Bus para ruta base (Quito↔Santo Domingo $15/persona)
+  // Se escala proporcionalmente para otras rutas usando el precio compartido
+  minibus_fixed: 250,
+  bus_fixed:     350,
+
+  // Extensión por desvío (El Carmen / La Concordia desde Santo Domingo)
+  extension_per_person: 5,
 };
 
-function normalize(city: string): string {
-  const s = city.split(',')[0].trim().toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, '').trim();
-  if (s.startsWith('aeropuerto')) return 'aeropuerto';
-  // Zonas de Quito colapsan a 'quito' (misma tarifa; la diferencia de zona
-  // ya no cobra recargo — precios fijos de mercado).
-  if (/^(quito|cumbaya|tumbaco|los chillos|sangolqui|valle)/.test(s)) return 'quito';
-  return s.replace(/\s+/g, '_');
+/**
+ * Calcula el precio privado para un vehículo dado la tarifa compartida base
+ */
+export function getPrivateFare(
+  sharedFarePerPerson: number,
+  vehicleType: keyof typeof FARES.vehicles,
+): number {
+  const BASE_SHARED = 15; // tarifa de referencia (Quito↔Santo Domingo)
+  const vehicle = FARES.vehicles[vehicleType];
+
+  if (vehicleType === 'minibus') {
+    return Math.round(FARES.minibus_fixed * (sharedFarePerPerson / BASE_SHARED));
+  }
+  if (vehicleType === 'bus') {
+    return Math.round(FARES.bus_fixed * (sharedFarePerPerson / BASE_SHARED));
+  }
+  return sharedFarePerPerson * (vehicle.multiplier ?? vehicle.capacity);
 }
 
-function pair(a: string, b: string): string { return `${normalize(a)}-${normalize(b)}`; }
+/**
+ * Retorna la tabla completa de precios para una ruta dada
+ */
+export function getFareTable(origin: string, destination: string): string {
+  const shared = getFare(origin, destination);
+  if (!shared) return '';
 
-/** Precio compartido/persona (o null si esa ruta NO tiene compartido). */
+  const lines = [
+    `🚗 *SUV* (hasta 4 pax) — Compartido $${shared}/persona | Privado $${getPrivateFare(shared, 'suv')}`,
+    `🚙 *SUV XL* (hasta 5 pax) — Compartido $${shared}/persona | Privado $${getPrivateFare(shared, 'suv_xl')}`,
+    `🚐 *VAN* (hasta 7 pax) — Privado $${getPrivateFare(shared, 'van')}`,
+    `🚐 *VAN XL* (hasta 12 pax) — Privado $${getPrivateFare(shared, 'van_xl')}`,
+    `🚌 *Minibús* (hasta 20 pax) — Privado $${getPrivateFare(shared, 'minibus')}`,
+    `🚌 *Bus* (30+ pax) — Privado $${getPrivateFare(shared, 'bus')}`,
+  ];
+  return lines.join('\n');
+}
+
 export function getFare(origin: string, destination: string): number | null {
-  return FARES.shared[pair(origin, destination)] ?? FARES.shared[pair(destination, origin)] ?? null;
+  const key = `${normalize(origin)}-${normalize(destination)}`;
+  return (FARES.shared as any)[key] ?? null;
 }
 
-/** Precios privados por vehículo (o null si la ruta no está en la matriz). */
-export function getPrivatePrices(origin: string, destination: string): PrivatePrices | null {
-  return FARES.private[pair(origin, destination)] ?? FARES.private[pair(destination, origin)] ?? null;
+function normalize(city: string): string {
+  return city.toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ñ/g, 'n')
+    .replace(/aeropuerto.*quito|tababela/gi, 'aeropuerto')
+    .replace(/santo_domingo.*/i, 'santo_domingo')
+    .replace(/el_carmen/i, 'el_carmen')
+    .replace(/la_concordia/i, 'la_concordia');
 }
