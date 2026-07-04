@@ -83,8 +83,9 @@ export default function LoginPage() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
         {/* Logo */}
         <Link href="/" className="block text-center">
-          <p className="text-2xl font-bold text-blue-600">Going App</p>
-          <p className="text-xs text-slate-600 mt-1">Para Empresas</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/going-logo-h.png" alt="Going App" className="h-9 mx-auto" />
+          <p className="text-xs text-slate-600 mt-2">Para Empresas</p>
         </Link>
 
         {/* Heading */}

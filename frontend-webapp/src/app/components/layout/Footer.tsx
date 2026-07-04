@@ -3,6 +3,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+
+// Foto representativa por página de servicio — se muestra sobre el negro del footer.
+const SERVICE_PHOTOS: Record<string, string> = {
+  '/services/transport':          '/images/MUJERES LLEGANDO AL AERO DE QUITO.jpg',
+  '/services/envios':             '/images/Puerta a puerta entre ciudades.png',
+  '/services/tours':              '/images/ANDES COTOPAXI QUILOTOA TURISTAS232.JPG',
+  '/services/accommodation':      '/images/Alojamientos.png',
+  '/services/experiences':        '/images/BALLET JACCHIGUA.jpg',
+  '/services/anfitriones':        '/images/Going homes.png',
+  '/services/conductores':        '/images/Conductor Gong.jpg',
+  '/services/operadores':         '/images/CRUCEROS MANTA.jpg',
+  '/services/promotores-locales': '/images/Salinas.png',
+};
 
 function FooterSection({ title, links, icon }: { title: string; icon?: string; links: Array<{ name: string; href: string; badge?: string }> }) {
   return (
@@ -31,6 +45,8 @@ function FooterSection({ title, links, icon }: { title: string; icon?: string; l
 export function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const pathname = usePathname();
+  const servicePhoto = SERVICE_PHOTOS[pathname ?? ''];
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +152,15 @@ export function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Foto representativa del servicio, fundida sobre el negro del footer */}
+      {servicePhoto && (
+        <div className="relative h-40 sm:h-56 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={servicePhoto} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover object-center" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #030712 12%, rgba(3,7,18,0.45) 65%, rgba(3,7,18,0.15))' }} />
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-14">
         {/* Brand + social */}

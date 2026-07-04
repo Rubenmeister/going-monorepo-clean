@@ -892,15 +892,11 @@ export default function HomePage() {
                 Rutas a Quito<br />y su Aeropuerto
               </h2>
               <p className="text-gray-300 text-base leading-relaxed mb-6">
-                Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo. Salidas <span className="font-bold" style={{ color: COLORS.brand.red }}>cada hora</span>, ida y vuelta.
+                Viajes compartidos en <span className="text-white font-bold">SUV</span>, máximo <span className="text-white font-bold">3 pasajeros</span> por vehículo, ida y vuelta.
               </p>
 
               {/* Badges informativos */}
               <div className="flex flex-wrap gap-3 mb-8">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <IconClock size={14} />
-                  Salidas cada hora
-                </span>
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <IconSuv size={14} />
                   SUV · 3 pasajeros
