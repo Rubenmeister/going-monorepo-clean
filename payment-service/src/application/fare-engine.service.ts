@@ -8,6 +8,10 @@ import {
   ClientSegment,
   RideMode,
   applyDynamicPricing,
+  getClientSurchargeRate,
+  classifyRoute,
+  getExcelFare,
+  getExcelPrivatePrices,
 } from './pricing.service';
 
 /**
@@ -149,43 +153,81 @@ export class FareEngine {
     let weightCost = 0;
     let subtotal = 0;
 
+    const serviceDateTime = input.serviceDateTime ?? new Date();
+    const mode: RideMode = input.mode ?? 'privado';
+
+    // ¿Transporte INTERCITY cubierto por el Excel? → precio FIJO de mercado
+    // (compartido o privado por vehículo), SIN taxímetro ni surge.
+    let intercityFixedBase: number | null = null;
+    let intercityRoute = '';
+
     if (input.category === 'envio') {
       // Envíos: precio FIJO por tier de peso. Distancia/duración no
       // afectan el precio (es servicio same-day puerta a puerta).
       const weightKg = input.weightKg ?? 0;
       const fixedPrice = envioFixedPriceByWeight(weightKg);
-      // Mapeamos el desglose al modelo existente: weightCost lleva el
-      // total fijo del tier para que el response siga siendo legible.
       weightCost = fixedPrice;
       subtotal = fixedPrice;
     } else {
-      // Transport (privado/compartido): base + km + min.
-      const rates = FARE_RATES.transport;
-      baseFare = rates.baseFare;
-      distanceCost = round(route.distanceKm * rates.perKm);
-      durationCost = round(route.durationMinutes * rates.perMinute);
-      subtotal = round(baseFare + distanceCost + durationCost);
+      const cls = classifyRoute(
+        input.origin.lat, input.origin.lng,
+        input.destination.lat, input.destination.lng,
+      );
+      if (
+        cls.originCity && cls.destinationCity &&
+        (cls.routeClass === 'intercity' || cls.routeClass === 'airport_corridor')
+      ) {
+        if (mode === 'compartido') {
+          intercityFixedBase = getExcelFare(cls.originCity, cls.destinationCity);
+        } else {
+          // El DTO aún no trae vehículo → privado por defecto en SUV.
+          const pv = getExcelPrivatePrices(cls.originCity, cls.destinationCity);
+          intercityFixedBase = pv ? pv.suv : null;
+        }
+        if (intercityFixedBase != null) {
+          intercityRoute = `${cls.originCity}->${cls.destinationCity}`;
+        }
+      }
+
+      if (intercityFixedBase != null) {
+        subtotal = intercityFixedBase; // precio fijo del Excel — sin base/km/min
+      } else {
+        // Urbano / fuera de cobertura: taxímetro (base + km + min).
+        const rates = FARE_RATES.transport;
+        baseFare = rates.baseFare;
+        distanceCost = round(route.distanceKm * rates.perKm);
+        durationCost = round(route.durationMinutes * rates.perMinute);
+        subtotal = round(baseFare + distanceCost + durationCost);
+      }
     }
 
-    // 3. Recargos dinámicos (hora/día/feriado) + tipo de cliente (+25% A).
-    const serviceDateTime = input.serviceDateTime ?? new Date();
-    const mode: RideMode = input.mode ?? 'privado';
-
-    // Reutilizamos la función exportada del módulo pricing (surcharges
-    // dinámicos por hora/día/feriado + recargo por segmento Tipo A).
-    const applied = applyDynamicPricing({
-      basePrice: subtotal,
-      mode,
-      dateTime: serviceDateTime,
-      clientSegment: input.clientSegment,
-      originSurcharge: 0,
-    });
-
+    // 3. Recargos.
+    let timeSurchargeRate = 0;
+    let clientSurchargeRate = 0;
+    let priceBeforePoints = 0;
     // surgeMultiplier opcional (1.0 por default — otras capas pueden ajustar).
     const surgeMultiplier = 1.0;
-    const surcharges = round(applied.adjustedPrice - subtotal);
 
-    const priceBeforePoints = round(applied.adjustedPrice * surgeMultiplier);
+    if (intercityFixedBase != null) {
+      // INTERCITY: precio FIJO del Excel, SIN surge hora/día/feriado.
+      // Único recargo que aplica: segmento de cliente (+25% agencia/corporativo).
+      clientSurchargeRate = getClientSurchargeRate(input.clientSegment);
+      priceBeforePoints = round(subtotal * (1 + clientSurchargeRate));
+    } else {
+      // Envío / urbano: recargos dinámicos (hora/día/feriado) + tipo de cliente.
+      const applied = applyDynamicPricing({
+        basePrice: subtotal,
+        mode,
+        dateTime: serviceDateTime,
+        clientSegment: input.clientSegment,
+        originSurcharge: 0,
+      });
+      timeSurchargeRate = applied.timeSurchargeRate;
+      clientSurchargeRate = applied.clientSurchargeRate;
+      priceBeforePoints = round(applied.adjustedPrice * surgeMultiplier);
+    }
+
+    const surcharges = round(priceBeforePoints - subtotal);
 
     // 4. Descuento por puntos (sólo Tipo B = public).
     const pointsMaxDiscount = round(priceBeforePoints * POINTS_MAX_DISCOUNT_FRACTION);
@@ -236,8 +278,8 @@ export class FareEngine {
       weightCost: weightCost || undefined,
       subtotal,
 
-      timeSurchargeRate: applied.timeSurchargeRate,
-      clientSurchargeRate: applied.clientSurchargeRate,
+      timeSurchargeRate,
+      clientSurchargeRate,
       surgeMultiplier,
       surcharges,
 
@@ -257,6 +299,13 @@ export class FareEngine {
           input.category === 'envio'
             ? 'total = fixedTier(weightKg) * (1 + timeSurcharge + clientSurcharge) * surge - pointsDiscount'
             : 'total = (base + km*rate + min*rate) * (1 + timeSurcharge + clientSurcharge) * surge - pointsDiscount',
+        pricingMode:
+          intercityFixedBase != null
+            ? 'excel_fixed_intercity'
+            : input.category === 'envio'
+              ? 'envio_fixed'
+              : 'meter_urban',
+        intercityRoute: intercityRoute || 'n/a',
         perKm: input.category === 'envio' ? 0 : FARE_RATES.transport.perKm,
         perMinute: input.category === 'envio' ? 0 : FARE_RATES.transport.perMinute,
         envioTier:
