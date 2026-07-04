@@ -1,817 +1,550 @@
-# Matriz de tarifas Going — generada desde Going_Matriz_Precios_Limpia.xlsx (lista corregida del founder)
-# Compartido = precio POR PERSONA. Privado = vehículo completo. Empresas = privado × 1.25.
-# Vehículos privados: suv(4) suv_xl(5) van(7) van_xl(12) minibus(20) bus(30) bus_40(40).
-# Precios EXPLÍCITOS en USD (sin recargos dinámicos). revisar:true = pendiente de validación final.
-
-version: "2.0"
-vigente_desde: "2026-07-03"
-ultima_revision: "2026-07-03"
-revisor: "Rubén (matriz limpia jul-2026)"
-corredor: matriz_going_v1
-
+# ⚠️ GENERADO por scripts/import-fares.py desde el Excel. NO editar a mano.
+# Fuente única de tarifas del asistente (going-kb).
+corredor: matriz-going-v1
 rutas:
   - id: quito_aeropuerto_to_ambato
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: ambato }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_atuntaqui
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: atuntaqui }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_banos
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: banos }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 80.00, suv_xl: 90.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 80, suv_xl: 90, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 350 }
   - id: quito_aeropuerto_to_cayambe
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: cayambe }
-    private:   { suv: 40.00, suv_xl: 50.00, van: 60.00, van_xl: 80.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
-  # Aeropuerto → Cuenca: SOLO privado (transfer). NO hay compartido desde el
-  # aeropuerto a Cuenca; el compartido va Quito ciudad ↔ Cuenca. (Rubén 3-jul)
+    private:   { suv: 40, suv_xl: 50, van: 60, van_xl: 80, minibus: 150, bus: 200, bus_40: 250 }
   - id: quito_aeropuerto_to_cuenca
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: cuenca }
-    private:   { suv: 250.00, suv_xl: 300.00, van: 350.00, van_xl: 400.00, minibus: 450.00, bus: 500.00, bus_40: 550.00 }
-    last_updated: "2026-07-03"
-    revisar: true
-  # Quito ciudad → Cuenca: compartido $25 (tarifa real). Privado copiado del
-  # transfer del aeropuerto (misma distancia aprox) — revisar.
-  - id: quito_to_cuenca
-    origin:      { canton: quito }
-    destination: { canton: cuenca }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 250.00, suv_xl: 300.00, van: 350.00, van_xl: 400.00, minibus: 450.00, bus: 500.00, bus_40: 550.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 250, suv_xl: 300, van: 350, van_xl: 400, minibus: 450, bus: 500, bus_40: 550 }
   - id: quito_aeropuerto_to_el_carmen
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: el_carmen }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 80.00, suv_xl: 90.00, van: 100.00, van_xl: 120.00, minibus: 140.00, bus: 200.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 80, suv_xl: 90, van: 100, van_xl: 120, minibus: 140, bus: 200, bus_40: 300 }
   - id: quito_aeropuerto_to_el_quinche
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: el_quinche }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 40.00, van_xl: 60.00, minibus: 100.00, bus: 140.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 30, van: 40, van_xl: 60, minibus: 100, bus: 140, bus_40: 200 }
   - id: quito_aeropuerto_to_guayaquil
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: guayaquil }
-    private:   { suv: 350.00, suv_xl: 400.00, van: 450.00, van_xl: 500.00, minibus: 550.00, bus: 600.00, bus_40: 650.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 350, suv_xl: 400, van: 450, van_xl: 500, minibus: 550, bus: 600, bus_40: 650 }
   - id: quito_aeropuerto_to_guayllabamba
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: guayllabamba }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 }
   - id: quito_aeropuerto_to_ibarra
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: ibarra }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_la_concordia
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: la_concordia }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 90.00, suv_xl: 100.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 90, suv_xl: 100, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_latacunga
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: latacunga }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 100.00, van_xl: 120.00, minibus: 140.00, bus: 200.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 70, van: 100, van_xl: 120, minibus: 140, bus: 200, bus_40: 300 }
   - id: quito_aeropuerto_to_otavalo
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: otavalo }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_peguche
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: peguche }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 140, minibus: 200, bus: 300, bus_40: 400 }
   - id: quito_aeropuerto_to_pifo
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: pifo }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 120.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 }
   - id: quito_aeropuerto_to_quito
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: quito }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 70.00, van_xl: 100.00, minibus: 120.00, bus: 180.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 20, suv_xl: 30, van: 70, van_xl: 100, minibus: 120, bus: 180, bus_40: 200 }
   - id: quito_aeropuerto_to_riobamba
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: riobamba }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 100.00, suv_xl: 120.00, van: 150.00, van_xl: 180.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 100, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 }
   - id: quito_aeropuerto_to_santo_domingo
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: santo_domingo }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 130.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 60, suv_xl: 70, van: 130, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: alausi_to_cuenca
     origin:      { canton: alausi }
     destination: { canton: cuenca }
-    private:   { suv: 68.00, suv_xl: 85.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 68, suv_xl: 85, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: alausi_to_guayaquil
     origin:      { canton: alausi }
     destination: { canton: guayaquil }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 170.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 90, suv_xl: 120, van: 170, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: alausi_to_quito
     origin:      { canton: alausi }
     destination: { canton: quito }
-    private:   { suv: 200.00, suv_xl: 230.00, van: 250.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 200, suv_xl: 230, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: alausi_to_riobamba
     origin:      { canton: alausi }
     destination: { canton: riobamba }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 70.00, van_xl: 100.00, minibus: 120.00, bus: 180.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 120, bus: 180, bus_40: 250 }
   - id: aloasi_to_quito
     origin:      { canton: aloasi }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 40.00, suv_xl: 50.00, van: 70.00, van_xl: 100.00, minibus: 120.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 }
   - id: ambato_to_banos
     origin:      { canton: ambato }
     destination: { canton: banos }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 }
   - id: ambato_to_cevallos
     origin:      { canton: ambato }
     destination: { canton: cevallos }
-    private:   { suv: 15.00, suv_xl: 20.00, van: 25.00, van_xl: 30.00, minibus: 40.00, bus: 80.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 20, van: 25, van_xl: 30, minibus: 40, bus: 80, bus_40: 150 }
   - id: ambato_to_cuenca
     origin:      { canton: ambato }
     destination: { canton: cuenca }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 220.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 220, bus: 250, bus_40: 300 }
   - id: ambato_to_guayaquil
     origin:      { canton: ambato }
     destination: { canton: guayaquil }
-    private:   { suv: 200.00, suv_xl: 220.00, van: 240.00, van_xl: 280.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 350, bus: 400, bus_40: 450 }
   - id: ambato_to_latacunga
     origin:      { canton: ambato }
     destination: { canton: latacunga }
-    private:   { suv: 15.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 83.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 25, van: 35, van_xl: 50, minibus: 83, bus: 100, bus_40: 150 }
   - id: ambato_to_mocha
     origin:      { canton: ambato }
     destination: { canton: mocha }
-    private:   { suv: 15.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 83.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 25, van: 35, van_xl: 50, minibus: 83, bus: 100, bus_40: 150 }
   - id: ambato_to_pillaro
     origin:      { canton: ambato }
     destination: { canton: pillaro }
-    private:   { suv: 10.00, suv_xl: 12.00, van: 15.00, van_xl: 20.00, minibus: 50.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 10, suv_xl: 12, van: 15, van_xl: 20, minibus: 50, bus: 100, bus_40: 150 }
   - id: ambato_to_puyo
     origin:      { canton: ambato }
     destination: { canton: puyo }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
-    private:   { suv: 50.00, suv_xl: 70.00, van: 90.00, van_xl: 100.00, minibus: 150.00, bus: 180.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 10, suv_xl: 10 }
+    private:   { suv: 50, suv_xl: 70, van: 90, van_xl: 100, minibus: 150, bus: 180, bus_40: 200 }
   - id: ambato_to_quito
     origin:      { canton: ambato }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 105.00, van_xl: 150.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 300, bus_40: 350 }
   - id: ambato_to_riobamba
     origin:      { canton: ambato }
     destination: { canton: riobamba }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 70.00, van_xl: 80.00, minibus: 100.00, bus: 120.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 10, suv_xl: 10 }
+    private:   { suv: 50, suv_xl: 60, van: 70, van_xl: 80, minibus: 100, bus: 120, bus_40: 150 }
   - id: ambato_to_salcedo
     origin:      { canton: ambato }
     destination: { canton: salcedo }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 }
   - id: ambato_to_tena
     origin:      { canton: ambato }
     destination: { canton: tena }
-    private:   { suv: 60.00, suv_xl: 80.00, van: 100.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 60, suv_xl: 80, van: 100, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: ambato_to_tisaleo
     origin:      { canton: ambato }
     destination: { canton: tisaleo }
-    private:   { suv: 15.00, suv_xl: 20.00, van: 30.00, van_xl: 40.00, minibus: 80.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 80, bus: 150, bus_40: 200 }
   - id: atuntaqui_to_quito
     origin:      { canton: atuntaqui }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 90.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 70, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: azogues_to_cuenca
     origin:      { canton: azogues }
     destination: { canton: cuenca }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 120.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 }
   - id: banos_to_cevallos
     origin:      { canton: banos }
     destination: { canton: cevallos }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 120.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 }
   - id: banos_to_guayaquil
     origin:      { canton: banos }
     destination: { canton: guayaquil }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 130.00, suv_xl: 150.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 130, suv_xl: 150, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: banos_to_mocha
     origin:      { canton: banos }
     destination: { canton: mocha }
-    private:   { suv: 15.00, suv_xl: 20.00, van: 30.00, van_xl: 40.00, minibus: 70.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 70, bus: 100, bus_40: 150 }
   - id: banos_to_pillaro
     origin:      { canton: banos }
     destination: { canton: pillaro }
-    private:   { suv: 15.00, suv_xl: 20.00, van: 30.00, van_xl: 40.00, minibus: 80.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 20, van: 30, van_xl: 40, minibus: 80, bus: 150, bus_40: 200 }
   - id: banos_to_quito
     origin:      { canton: banos }
     destination: { canton: quito }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 70, suv_xl: 80, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: banos_to_tisaleo
     origin:      { canton: banos }
     destination: { canton: tisaleo }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 120.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 100, bus_40: 120 }
   - id: cayambe_to_ibarra
     origin:      { canton: cayambe }
     destination: { canton: ibarra }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 100.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 60, suv_xl: 70, van: 100, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: cayambe_to_quito
     origin:      { canton: cayambe }
     destination: { canton: quito }
-    shared:    { suv: 10.00, suv_xl: 10.00 }
-    private:   { suv: 30.00, suv_xl: 40.00, van: 60.00, van_xl: 80.00, minibus: 120.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 10, suv_xl: 10 }
+    private:   { suv: 30, suv_xl: 40, van: 60, van_xl: 80, minibus: 120, bus: 150, bus_40: 200 }
   - id: cevallos_to_latacunga
     origin:      { canton: cevallos }
     destination: { canton: latacunga }
-    private:   { suv: 30.00, suv_xl: 40.00, van: 50.00, van_xl: 60.00, minibus: 100.00, bus: 120.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 30, suv_xl: 40, van: 50, van_xl: 60, minibus: 100, bus: 120, bus_40: 150 }
   - id: cevallos_to_quito
     origin:      { canton: cevallos }
     destination: { canton: quito }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 80.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 60, suv_xl: 70, van: 80, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: cotacachi_to_ibarra
     origin:      { canton: cotacachi }
     destination: { canton: ibarra }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 40.00, van_xl: 50.00, minibus: 70.00, bus: 100.00, bus_40: 120.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 30, van: 40, van_xl: 50, minibus: 70, bus: 100, bus_40: 120 }
   - id: cotacachi_to_quito
     origin:      { canton: cotacachi }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 100.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 75, van: 100, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: cuenca_to_guayaquil
     origin:      { canton: cuenca }
     destination: { canton: guayaquil }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 150.00, van_xl: 170.00, minibus: 200.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 90, suv_xl: 120, van: 150, van_xl: 170, minibus: 200, bus: 300, bus_40: 350 }
   - id: cuenca_to_latacunga
     origin:      { canton: cuenca }
     destination: { canton: latacunga }
-    private:   { suv: 300.00, suv_xl: 320.00, van: 320.00, van_xl: 350.00, minibus: 350.00, bus: 400.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 300, suv_xl: 320, van: 320, van_xl: 350, minibus: 350, bus: 400, bus_40: 400 }
   - id: cuenca_to_loja
     origin:      { canton: cuenca }
     destination: { canton: loja }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 150.00, van_xl: 180.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 90, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 }
   - id: cuenca_to_macas
     origin:      { canton: cuenca }
     destination: { canton: macas }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 120.00, suv_xl: 130.00, van: 150.00, van_xl: 180.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 120, suv_xl: 130, van: 150, van_xl: 180, minibus: 200, bus: 250, bus_40: 300 }
   - id: cuenca_to_machala
     origin:      { canton: cuenca }
     destination: { canton: machala }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 150.00, van_xl: 180.00, minibus: 200.00, bus: 220.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 90, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 220, bus_40: 250 }
   - id: cuenca_to_quito
     origin:      { canton: cuenca }
     destination: { canton: quito }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 220.00, suv_xl: 220.00, van: 250.00, van_xl: 280.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 220, suv_xl: 220, van: 250, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 }
   - id: cuenca_to_riobamba
     origin:      { canton: cuenca }
     destination: { canton: riobamba }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 100.00, suv_xl: 120.00, van: 150.00, van_xl: 200.00, minibus: 220.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 100, suv_xl: 120, van: 150, van_xl: 200, minibus: 220, bus: 250, bus_40: 300 }
   - id: cuenca_to_zaruma
     origin:      { canton: cuenca }
     destination: { canton: zaruma }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 }
   - id: el_carmen_to_la_concordia
     origin:      { canton: el_carmen }
     destination: { canton: la_concordia }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 80.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 60, suv_xl: 70, van: 80, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: el_carmen_to_quito
     origin:      { canton: el_carmen }
     destination: { canton: quito }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 80.00, suv_xl: 100.00, van: 140.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 80, suv_xl: 100, van: 140, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: el_carmen_to_santo_domingo
     origin:      { canton: el_carmen }
     destination: { canton: santo_domingo }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 40.00, van_xl: 80.00, minibus: 120.00, bus: 160.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 30, van: 40, van_xl: 80, minibus: 120, bus: 160, bus_40: 200 }
   - id: el_quinche_to_quito
     origin:      { canton: el_quinche }
     destination: { canton: quito }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 40.00, van_xl: 50.00, minibus: 80.00, bus: 90.00, bus_40: 100.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 30, van: 40, van_xl: 50, minibus: 80, bus: 90, bus_40: 100 }
   - id: esmeraldas_to_guayaquil
     origin:      { canton: esmeraldas }
     destination: { canton: guayaquil }
-    private:   { suv: 200.00, suv_xl: 250.00, van: 280.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 200, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: esmeraldas_to_manta
     origin:      { canton: esmeraldas }
     destination: { canton: manta }
-    private:   { suv: 150.00, suv_xl: 200.00, van: 250.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 150, suv_xl: 200, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: esmeraldas_to_quito
     origin:      { canton: esmeraldas }
     destination: { canton: quito }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 }
   - id: guaranda_to_quito
     origin:      { canton: guaranda }
     destination: { canton: quito }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 90.00, suv_xl: 100.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 90, suv_xl: 100, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_ibarra
     origin:      { canton: guayaquil }
     destination: { canton: ibarra }
-    private:   { suv: 200.00, suv_xl: 250.00, van: 280.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 200, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: guayaquil_to_latacunga
     origin:      { canton: guayaquil }
     destination: { canton: latacunga }
-    private:   { suv: 250.00, suv_xl: 250.00, van: 280.00, van_xl: 280.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 250, suv_xl: 250, van: 280, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 }
   - id: guayaquil_to_loja
     origin:      { canton: guayaquil }
     destination: { canton: loja }
-    private:   { suv: 180.00, suv_xl: 200.00, van: 220.00, van_xl: 250.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 180, suv_xl: 200, van: 220, van_xl: 250, minibus: 300, bus: 350, bus_40: 400 }
   - id: guayaquil_to_machala
     origin:      { canton: guayaquil }
     destination: { canton: machala }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 120.00, suv_xl: 130.00, van: 140.00, van_xl: 160.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_manta
     origin:      { canton: guayaquil }
     destination: { canton: manta }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 120.00, suv_xl: 130.00, van: 140.00, van_xl: 160.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_montanita
     origin:      { canton: guayaquil }
     destination: { canton: montanita }
-    private:   { suv: 70.00, suv_xl: 80.00, van: 100.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 70, suv_xl: 80, van: 100, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_naranjal
     origin:      { canton: guayaquil }
     destination: { canton: naranjal }
-    private:   { suv: 40.00, suv_xl: 50.00, van: 70.00, van_xl: 100.00, minibus: 120.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 }
   - id: guayaquil_to_portoviejo
     origin:      { canton: guayaquil }
     destination: { canton: portoviejo }
-    private:   { suv: 120.00, suv_xl: 130.00, van: 140.00, van_xl: 160.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 120, suv_xl: 130, van: 140, van_xl: 160, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_quito
     origin:      { canton: guayaquil }
     destination: { canton: quito }
-    shared:    { suv: 45.00, suv_xl: 45.00 }
-    private:   { suv: 230.00, suv_xl: 250.00, van: 280.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 45, suv_xl: 45 }
+    private:   { suv: 230, suv_xl: 250, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: guayaquil_to_riobamba
     origin:      { canton: guayaquil }
     destination: { canton: riobamba }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 }
   - id: guayaquil_to_salinas
     origin:      { canton: guayaquil }
     destination: { canton: salinas }
-    private:   { suv: 80.00, suv_xl: 90.00, van: 120.00, van_xl: 140.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 80, suv_xl: 90, van: 120, van_xl: 140, minibus: 200, bus: 250, bus_40: 300 }
   - id: guayaquil_to_santo_domingo
     origin:      { canton: guayaquil }
     destination: { canton: santo_domingo }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: guayaquil_to_zaruma
     origin:      { canton: guayaquil }
     destination: { canton: zaruma }
-    private:   { suv: 110.00, suv_xl: 130.00, van: 150.00, van_xl: 180.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 110, suv_xl: 130, van: 150, van_xl: 180, minibus: 250, bus: 300, bus_40: 350 }
   - id: guayllabamba_to_quito
     origin:      { canton: guayllabamba }
     destination: { canton: quito }
-    private:   { suv: 24.00, suv_xl: 30.00, van: 42.00, van_xl: 60.00, minibus: 100.00, bus: 140.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 24, suv_xl: 30, van: 42, van_xl: 60, minibus: 100, bus: 140, bus_40: 150 }
   - id: ibarra_to_latacunga
     origin:      { canton: ibarra }
     destination: { canton: latacunga }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 150.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 90, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: ibarra_to_otavalo
     origin:      { canton: ibarra }
     destination: { canton: otavalo }
-    private:   { suv: 20.00, suv_xl: 25.00, van: 35.00, van_xl: 50.00, minibus: 80.00, bus: 110.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 25, van: 35, van_xl: 50, minibus: 80, bus: 110, bus_40: 150 }
   - id: ibarra_to_quito
     origin:      { canton: ibarra }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 105.00, van_xl: 150.00, minibus: 250.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 }
   - id: ibarra_to_tulcan
     origin:      { canton: ibarra }
     destination: { canton: tulcan }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 56.00, suv_xl: 70.00, van: 98.00, van_xl: 140.00, minibus: 230.00, bus: 280.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 56, suv_xl: 70, van: 98, van_xl: 140, minibus: 230, bus: 280, bus_40: 350 }
   - id: la_concordia_to_quito
     origin:      { canton: la_concordia }
     destination: { canton: quito }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 80.00, suv_xl: 100.00, van: 140.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 80, suv_xl: 100, van: 140, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: la_concordia_to_santo_domingo
     origin:      { canton: la_concordia }
     destination: { canton: santo_domingo }
-    shared:    { suv: 5.00, suv_xl: 5.00 }
-    private:   { suv: 30.00, suv_xl: 40.00, van: 60.00, van_xl: 80.00, minibus: 120.00, bus: 150.00, bus_40: 180.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 5, suv_xl: 5 }
+    private:   { suv: 30, suv_xl: 40, van: 60, van_xl: 80, minibus: 120, bus: 150, bus_40: 180 }
   - id: lago_agrio_to_quito
     origin:      { canton: lago_agrio }
     destination: { canton: quito }
-    shared:    { suv: 45.00, suv_xl: 45.00 }
-    private:   { suv: 160.00, suv_xl: 180.00, van: 250.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 45, suv_xl: 45 }
+    private:   { suv: 160, suv_xl: 180, van: 250, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: lago_agrio_to_tena
     origin:      { canton: lago_agrio }
     destination: { canton: tena }
-    private:   { suv: 130.00, suv_xl: 150.00, van: 180.00, van_xl: 250.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 130, suv_xl: 150, van: 180, van_xl: 250, minibus: 300, bus: 350, bus_40: 400 }
   - id: latacunga_to_pillaro
     origin:      { canton: latacunga }
     destination: { canton: pillaro }
-    private:   { suv: 15.00, suv_xl: 20.00, van: 30.00, van_xl: 50.00, minibus: 80.00, bus: 100.00, bus_40: 150.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 15, suv_xl: 20, van: 30, van_xl: 50, minibus: 80, bus: 100, bus_40: 150 }
   - id: latacunga_to_quito
     origin:      { canton: latacunga }
     destination: { canton: quito }
-    shared:    { suv: 13.00, suv_xl: 13.00 }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 70.00, van_xl: 100.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 13, suv_xl: 13 }
+    private:   { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250 }
   - id: latacunga_to_riobamba
     origin:      { canton: latacunga }
     destination: { canton: riobamba }
-    private:   { suv: 90.00, suv_xl: 100.00, van: 120.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 90, suv_xl: 100, van: 120, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: latacunga_to_salcedo
     origin:      { canton: latacunga }
     destination: { canton: salcedo }
-    private:   { suv: 10.00, suv_xl: 15.00, van: 20.00, van_xl: 25.00, minibus: 50.00, bus: 70.00, bus_40: 100.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 10, suv_xl: 15, van: 20, van_xl: 25, minibus: 50, bus: 70, bus_40: 100 }
   - id: loja_to_machala
     origin:      { canton: loja }
     destination: { canton: machala }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: loja_to_quito
     origin:      { canton: loja }
     destination: { canton: quito }
-    private:   { suv: 350.00, suv_xl: 400.00, van: 450.00, van_xl: 500.00, minibus: 500.00, bus: 600.00, bus_40: 600.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 350, suv_xl: 400, van: 450, van_xl: 500, minibus: 500, bus: 600, bus_40: 600 }
   - id: loja_to_zaruma
     origin:      { canton: loja }
     destination: { canton: zaruma }
-    private:   { suv: 70.00, suv_xl: 90.00, van: 110.00, van_xl: 150.00, minibus: 200.00, bus: 250.00, bus_40: 300.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 70, suv_xl: 90, van: 110, van_xl: 150, minibus: 200, bus: 250, bus_40: 300 }
   - id: macas_to_puyo
     origin:      { canton: macas }
     destination: { canton: puyo }
-    private:   { suv: 110.00, suv_xl: 120.00, van: 150.00, van_xl: 180.00, minibus: 200.00, bus: 220.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 110, suv_xl: 120, van: 150, van_xl: 180, minibus: 200, bus: 220, bus_40: 250 }
   - id: macas_to_quito
     origin:      { canton: macas }
     destination: { canton: quito }
-    shared:    { suv: 35.00, suv_xl: 35.00 }
-    private:   { suv: 250.00, suv_xl: 270.00, van: 300.00, van_xl: 340.00, minibus: 380.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 35, suv_xl: 35 }
+    private:   { suv: 250, suv_xl: 270, van: 300, van_xl: 340, minibus: 380, bus: 400, bus_40: 450 }
   - id: macas_to_tena
     origin:      { canton: macas }
     destination: { canton: tena }
-    private:   { suv: 100.00, suv_xl: 120.00, van: 150.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 100, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 }
   - id: machachi_to_quito
     origin:      { canton: machachi }
     destination: { canton: quito }
-    private:   { suv: 30.00, suv_xl: 35.00, van: 40.00, van_xl: 80.00, minibus: 100.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 30, suv_xl: 35, van: 40, van_xl: 80, minibus: 100, bus: 150, bus_40: 200 }
   - id: machala_to_quito
     origin:      { canton: machala }
     destination: { canton: quito }
-    private:   { suv: 250.00, suv_xl: 280.00, van: 300.00, van_xl: 350.00, minibus: 400.00, bus: 500.00, bus_40: 600.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 250, suv_xl: 280, van: 300, van_xl: 350, minibus: 400, bus: 500, bus_40: 600 }
   - id: machala_to_zaruma
     origin:      { canton: machala }
     destination: { canton: zaruma }
-    private:   { suv: 80.00, suv_xl: 95.00, van: 90.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: manta_to_portoviejo
     origin:      { canton: manta }
     destination: { canton: portoviejo }
-    private:   { suv: 20.00, suv_xl: 30.00, van: 60.00, van_xl: 80.00, minibus: 100.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 20, suv_xl: 30, van: 60, van_xl: 80, minibus: 100, bus: 150, bus_40: 200 }
   - id: manta_to_quito
     origin:      { canton: manta }
     destination: { canton: quito }
-    shared:    { suv: 45.00, suv_xl: 45.00 }
-    private:   { suv: 200.00, suv_xl: 220.00, van: 240.00, van_xl: 280.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 45, suv_xl: 45 }
+    private:   { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 }
   - id: manta_to_salinas
     origin:      { canton: manta }
     destination: { canton: salinas }
-    private:   { suv: 80.00, suv_xl: 95.00, van: 90.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: mocha_to_quito
     origin:      { canton: mocha }
     destination: { canton: quito }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 80.00, suv_xl: 95.00, van: 90.00, van_xl: 120.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 80, suv_xl: 95, van: 90, van_xl: 120, minibus: 150, bus: 200, bus_40: 250 }
   - id: montanita_to_quito
     origin:      { canton: montanita }
     destination: { canton: quito }
-    private:   { suv: 250.00, suv_xl: 270.00, van: 300.00, van_xl: 350.00, minibus: 400.00, bus: 450.00, bus_40: 500.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 250, suv_xl: 270, van: 300, van_xl: 350, minibus: 400, bus: 450, bus_40: 500 }
   - id: montanita_to_salinas
     origin:      { canton: montanita }
     destination: { canton: salinas }
-    private:   { suv: 35.00, suv_xl: 45.00, van: 60.00, van_xl: 70.00, minibus: 100.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 35, suv_xl: 45, van: 60, van_xl: 70, minibus: 100, bus: 150, bus_40: 200 }
   - id: otavalo_to_quito
     origin:      { canton: otavalo }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 105.00, van_xl: 150.00, minibus: 250.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 }
   - id: peguche_to_quito
     origin:      { canton: peguche }
     destination: { canton: quito }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 105.00, van_xl: 150.00, minibus: 250.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 }
   - id: pifo_to_quito
     origin:      { canton: pifo }
     destination: { canton: quito }
-    private:   { suv: 24.00, suv_xl: 30.00, van: 40.00, van_xl: 60.00, minibus: 100.00, bus: 140.00, bus_40: 180.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 24, suv_xl: 30, van: 40, van_xl: 60, minibus: 100, bus: 140, bus_40: 180 }
   - id: pillaro_to_quito
     origin:      { canton: pillaro }
     destination: { canton: quito }
-    private:   { suv: 60.00, suv_xl: 75.00, van: 105.00, van_xl: 150.00, minibus: 250.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 60, suv_xl: 75, van: 105, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 }
   - id: portoviejo_to_quito
     origin:      { canton: portoviejo }
     destination: { canton: quito }
-    private:   { suv: 200.00, suv_xl: 220.00, van: 240.00, van_xl: 280.00, minibus: 300.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 200, suv_xl: 220, van: 240, van_xl: 280, minibus: 300, bus: 350, bus_40: 400 }
   - id: puyo_to_quito
     origin:      { canton: puyo }
     destination: { canton: quito }
-    shared:    { suv: 25.00, suv_xl: 25.00 }
-    private:   { suv: 130.00, suv_xl: 150.00, van: 180.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 25, suv_xl: 25 }
+    private:   { suv: 130, suv_xl: 150, van: 180, van_xl: 200, minibus: 250, bus: 300, bus_40: 400 }
   - id: puyo_to_tena
     origin:      { canton: puyo }
     destination: { canton: tena }
-    private:   { suv: 40.00, suv_xl: 50.00, van: 70.00, van_xl: 100.00, minibus: 120.00, bus: 150.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 40, suv_xl: 50, van: 70, van_xl: 100, minibus: 120, bus: 150, bus_40: 200 }
   - id: quito_to_riobamba
     origin:      { canton: quito }
     destination: { canton: riobamba }
-    shared:    { suv: 20.00, suv_xl: 20.00 }
-    private:   { suv: 90.00, suv_xl: 110.00, van: 130.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 20, suv_xl: 20 }
+    private:   { suv: 90, suv_xl: 110, van: 130, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: quito_to_salcedo
     origin:      { canton: quito }
     destination: { canton: salcedo }
-    shared:    { suv: 12.00, suv_xl: 12.00 }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 70.00, van_xl: 100.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 12, suv_xl: 12 }
+    private:   { suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250 }
   - id: quito_to_salinas
     origin:      { canton: quito }
     destination: { canton: salinas }
-    private:   { suv: 240.00, suv_xl: 280.00, van: 280.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 240, suv_xl: 280, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
   - id: quito_to_santo_domingo
     origin:      { canton: quito }
     destination: { canton: santo_domingo }
-    shared:    { suv: 15.00, suv_xl: 15.00 }
-    private:   { suv: 60.00, suv_xl: 70.00, van: 100.00, van_xl: 150.00, minibus: 250.00, bus: 350.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    shared:    { suv: 15, suv_xl: 15 }
+    private:   { suv: 60, suv_xl: 70, van: 100, van_xl: 150, minibus: 250, bus: 350, bus_40: 400 }
   - id: quito_to_tabacundo
     origin:      { canton: quito }
     destination: { canton: tabacundo }
-    private:   { suv: 25.00, suv_xl: 25.00, van: 50.00, van_xl: 70.00, minibus: 120.00, bus: 160.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 25, suv_xl: 25, van: 50, van_xl: 70, minibus: 120, bus: 160, bus_40: 200 }
   - id: quito_to_tambillo
     origin:      { canton: quito }
     destination: { canton: tambillo }
-    private:   { suv: 30.00, suv_xl: 40.00, van: 56.00, van_xl: 80.00, minibus: 140.00, bus: 160.00, bus_40: 200.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 30, suv_xl: 40, van: 56, van_xl: 80, minibus: 140, bus: 160, bus_40: 200 }
   - id: quito_to_tena
     origin:      { canton: quito }
     destination: { canton: tena }
-    private:   { suv: 120.00, suv_xl: 140.00, van: 180.00, van_xl: 220.00, minibus: 250.00, bus: 300.00, bus_40: 400.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 120, suv_xl: 140, van: 180, van_xl: 220, minibus: 250, bus: 300, bus_40: 400 }
   - id: quito_to_tisaleo
     origin:      { canton: quito }
     destination: { canton: tisaleo }
-    private:   { suv: 50.00, suv_xl: 60.00, van: 80.00, van_xl: 120.00, minibus: 160.00, bus: 200.00, bus_40: 250.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 50, suv_xl: 60, van: 80, van_xl: 120, minibus: 160, bus: 200, bus_40: 250 }
   - id: quito_to_tulcan
     origin:      { canton: quito }
     destination: { canton: tulcan }
-    private:   { suv: 90.00, suv_xl: 120.00, van: 150.00, van_xl: 200.00, minibus: 250.00, bus: 300.00, bus_40: 350.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 90, suv_xl: 120, van: 150, van_xl: 200, minibus: 250, bus: 300, bus_40: 350 }
   - id: quito_to_zaruma
     origin:      { canton: quito }
     destination: { canton: zaruma }
-    private:   { suv: 240.00, suv_xl: 280.00, van: 280.00, van_xl: 300.00, minibus: 350.00, bus: 400.00, bus_40: 450.00 }
-    last_updated: "2026-07-03"
-    revisar: true
+    private:   { suv: 240, suv_xl: 280, van: 280, van_xl: 300, minibus: 350, bus: 400, bus_40: 450 }
