@@ -486,6 +486,7 @@ function RidePageInner() {
         {/* Paso 4: Pago */}
         {step === 'payment' && (
           <PaymentForm
+            rideId={activeRide?.tripId}
             amount={paymentAmount}
             onPaymentComplete={(method?: string) => handlePaymentComplete(method ?? 'card')}
           />
