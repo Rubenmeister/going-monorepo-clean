@@ -1288,7 +1288,9 @@ export class AuthController {
           )
           .exec();
 
-        const frontendUrl = process.env.FRONTEND_URL || 'https://goingec.com';
+        // Las páginas de auth (login, reset-password, callback) viven en el
+        // WEBAPP (app.goingec.com), NO en el sitio de marketing (goingec.com).
+        const frontendUrl = process.env.FRONTEND_URL || 'https://app.goingec.com';
         const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
 
         await this.sendResetEmail(normalizedEmail, resetLink);

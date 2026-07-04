@@ -37,10 +37,20 @@ rutas:
     private:   { suv: 40.00, suv_xl: 50.00, van: 60.00, van_xl: 80.00, minibus: 150.00, bus: 200.00, bus_40: 250.00 }
     last_updated: "2026-07-03"
     revisar: true
+  # Aeropuerto → Cuenca: SOLO privado (transfer). NO hay compartido desde el
+  # aeropuerto a Cuenca; el compartido va Quito ciudad ↔ Cuenca. (Rubén 3-jul)
   - id: quito_aeropuerto_to_cuenca
     origin:      { canton: quito, zone: aeropuerto }
     destination: { canton: cuenca }
-    shared:    { suv: 50.00, suv_xl: 50.00 }
+    private:   { suv: 250.00, suv_xl: 300.00, van: 350.00, van_xl: 400.00, minibus: 450.00, bus: 500.00, bus_40: 550.00 }
+    last_updated: "2026-07-03"
+    revisar: true
+  # Quito ciudad → Cuenca: compartido $25 (tarifa real). Privado copiado del
+  # transfer del aeropuerto (misma distancia aprox) — revisar.
+  - id: quito_to_cuenca
+    origin:      { canton: quito }
+    destination: { canton: cuenca }
+    shared:    { suv: 25.00, suv_xl: 25.00 }
     private:   { suv: 250.00, suv_xl: 300.00, van: 350.00, van_xl: 400.00, minibus: 450.00, bus: 500.00, bus_40: 550.00 }
     last_updated: "2026-07-03"
     revisar: true

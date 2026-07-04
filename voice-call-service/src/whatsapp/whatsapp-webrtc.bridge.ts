@@ -89,10 +89,9 @@ export class WhatsAppWebrtcBridge {
       },
       iceServers,
       // A2: solo relay (TURN) — Cloud Run no tiene UDP entrante, así que host/
-      // srflx no sirven y solo demoran el par ICE→DTLS. A1: iniciamos el DTLS
-      // nosotros (client) de inmediato, sin esperar a Meta.
+      // srflx no sirven y solo demoran el par ICE→DTLS. El rol DTLS lo negocia
+      // werift desde el SDP; 'dtlsRole' no es opción del config (rompía el build).
       iceTransportPolicy: 'relay',
-      dtlsRole: 'client',
     });
 
     // Diagnóstico de conectividad (clave para el media en Cloud Run).

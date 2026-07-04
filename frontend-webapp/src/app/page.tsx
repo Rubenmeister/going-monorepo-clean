@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, type ReactElement, type MouseEvent } from 
 import Link from 'next/link';
 import { useIsAuthenticated } from '@/lib/providers/auth-client';
 import { ReviewsList } from './components/features/rating';
+import { WebAppInstallBadge } from './components/WebAppInstallBadge';
 import { COLORS } from './components/design-tokens';
 import {
   IconClock, IconSuv, IconRoundTrip, IconPin, IconCard, IconCar, IconMobile,
@@ -14,10 +15,10 @@ import {
   IconQrCode, IconDownload,
 } from './components/icons';
 
-// Links de descarga oficiales — actualizar cuando estén publicados.
-// Android live: usa el package name @rubenmeister/going-mobile (Play Console).
-// iOS pendiente: requiere Apple Developer account ($99/año), aún no submitted.
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.thornai.goingmobile';
+// Links de descarga oficiales.
+// Android LIVE: package com.goingappecuador (Play Console). Mismo ID en footer y contacto.
+// iOS: NO publicado aún (requiere Apple Developer $99/año) → App Store se muestra como "Próximamente".
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.goingappecuador';
 const APP_STORE_URL  = '#';
 const APP_STORE_AVAILABLE = false;
 
@@ -1083,6 +1084,9 @@ export default function HomePage() {
                       </span>
                     </span>
                   )}
+
+                  {/* App Web (PWA) — instálala directo desde el navegador */}
+                  <WebAppInstallBadge />
                 </div>
 
                 {/* QR card */}
@@ -1100,6 +1104,21 @@ export default function HomePage() {
                     className="mx-auto rounded-lg"
                   />
                 </div>
+              </div>
+
+              {/* Alternativa: usar la app WEB sin descargar */}
+              <div className="mt-7 pt-6 border-t border-white/10">
+                <a
+                  href="/search"
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white transition-colors"
+                >
+                  <span aria-hidden>🌐</span>
+                  ¿Prefieres no descargar? Úsala en tu navegador
+                  <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+                </a>
+                <p className="text-white/50 text-xs mt-1.5">
+                  Tu cuenta funciona igual en app y web — reserva sin instalar nada.
+                </p>
               </div>
             </FadeIn>
 
@@ -1138,7 +1157,7 @@ export default function HomePage() {
                 { name: 'SUV',     pax: 'Hasta 4 pax',  cat: 'Familia · pareja',        img: '/images/suv-quito.png',           tier: 'white'  },
                 { name: 'SUV XL',  pax: 'Hasta 5 pax',  cat: 'Familia + equipaje',      img: '/images/SUV de lujo.png',         tier: 'white'  },
                 { name: 'VAN',     pax: 'Hasta 7 pax',  cat: 'Grupo de amigos',         img: '/images/sprinter-aeropuerto.png', tier: 'yellow' },
-                { name: 'VAN XL',  pax: 'Hasta 12 pax', cat: 'Empresas · amigos',       img: '/images/van-xl.png',              tier: 'yellow' },
+                { name: 'VAN XL',  pax: 'Hasta 12 pax', cat: 'Empresas · amigos',       img: '/images/VAN-XL.png',              tier: 'yellow' },
                 { name: 'Minibús', pax: 'Hasta 20 pax', cat: 'Tour · evento',           img: '/images/Minibus.png',             tier: 'yellow' },
                 { name: 'Bus',     pax: '30+ pax',      cat: 'Corporativo · promoción', img: '/images/BUS.png',                 tier: 'black'  },
               ].map((v) => {

@@ -186,12 +186,62 @@ function resolveUrl(input: string): string {
 }
 
 /**
+ * Lee el refresh token actual (store → key legacy `refreshToken`).
+ */
+export function getStoredRefreshToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const s = useAuthStore.getState() as { refreshToken?: string | null };
+  return s.refreshToken || localStorage.getItem(REFRESH_KEY);
+}
+
+// Dedup: si varias requests reciben 401 a la vez, un solo refresh en vuelo.
+let refreshInFlight: Promise<string | null> | null = null;
+
+/**
+ * Intenta renovar el accessToken usando el refreshToken (proxy /api/auth/refresh).
+ * Devuelve el nuevo token si lo logra, o null. Actualiza store + keys legacy.
+ * El accessToken del backend expira ~15 min; sin este refresh, el usuario tenía
+ * que volver a loguearse cada vez. El refreshToken dura ~7 días.
+ */
+export async function tryRefreshSession(): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async (): Promise<string | null> => {
+    const refreshToken = getStoredRefreshToken();
+    if (!refreshToken) return null;
+    try {
+      const res = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return null;
+      const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      const newToken = (data.accessToken || data.token) as string | undefined;
+      if (!newToken) return null;
+      setStoredAuth(
+        newToken,
+        (data.refreshToken as string) ?? refreshToken,
+        (data.user as Record<string, unknown>) ?? null,
+      );
+      return newToken;
+    } catch {
+      return null;
+    }
+  })();
+  try {
+    return await refreshInFlight;
+  } finally {
+    refreshInFlight = null;
+  }
+}
+
+/**
  * Wrapper de fetch que:
  *  - Añade Authorization: Bearer <token> automáticamente si hay sesión.
- *  - Detecta 401: limpia la sesión local y redirige a /auth/login.
- *
- * No intenta refresh: el caller que necesite reintentos puede llamar antes
- * a `useAuthStore.getState().refreshIfNeeded()`.
+ *  - Detecta 401: intenta REFRESCAR el token con el refreshToken y reintenta la
+ *    request; solo si el refresh falla, limpia la sesión y redirige a /auth/login.
+ *    (Así el usuario no tiene que re-loguearse cada 15 min por expiración.)
  */
 export async function authFetch(
   input: string,
@@ -203,11 +253,18 @@ export async function authFetch(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const res = await fetch(resolveUrl(input), { ...init, headers });
+  let res = await fetch(resolveUrl(input), { ...init, headers });
 
   if (res.status === 401 && typeof window !== 'undefined') {
-    // Sesión expirada o inválida — limpiar estado y redirigir.
-    // Preservamos la ruta actual para volver tras el re-login.
+    // Antes de rendirse, intentar renovar el token con el refreshToken.
+    const newToken = await tryRefreshSession();
+    if (newToken) {
+      const retryHeaders = new Headers(init.headers || {});
+      retryHeaders.set('Authorization', `Bearer ${newToken}`);
+      res = await fetch(resolveUrl(input), { ...init, headers: retryHeaders });
+      if (res.status !== 401) return res;
+    }
+    // Refresh falló o el reintento sigue 401 → sesión realmente inválida.
     await clearStoredAuth();
     const from = window.location.pathname + window.location.search;
     window.location.href = `/auth/login?from=${encodeURIComponent(from)}`;
