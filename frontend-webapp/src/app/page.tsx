@@ -792,10 +792,6 @@ export default function HomePage() {
       <section className="bg-gradient-to-b from-gray-50 to-white py-14 border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-6">
           <FadeIn className="text-center mb-8">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3" style={{ backgroundColor: COLORS.brand.redBg, color: COLORS.brand.red }}>
-              <IconMap size={14} />
-              Empezamos con 3 rutas
-            </span>
             <h2
               className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight"
               style={{ fontFamily: 'var(--font-nunito-sans), sans-serif' }}
@@ -804,9 +800,9 @@ export default function HomePage() {
               <span style={{ color: COLORS.brand.yellowDark }}>Aeropuerto Mariscal Sucre</span>
             </h2>
             <p className="text-sm text-gray-600 mt-3 max-w-2xl mx-auto leading-relaxed">
-              Empezamos con 3 rutas desde Quito y el aeropuerto, con sus paradas en
-              el camino. Vamos llegando a todo el país, sumando rutas según la
-              demanda de las viajeras y los viajeros.
+              Salimos desde Quito y el aeropuerto, con sus paradas en el camino.
+              Vamos llegando a todo el país, sumando rutas según la demanda de las
+              viajeras y los viajeros.
             </p>
           </FadeIn>
 
@@ -814,7 +810,7 @@ export default function HomePage() {
             <div className="flex flex-wrap justify-center gap-2.5 mb-5">
               {[
                 'Quito', 'Riobamba', 'Ambato', 'Latacunga', 'Salcedo',
-                'Ibarra', 'Otavalo', 'Atuntaqui', 'Cayambe', 'Tabacundo',
+                'Ibarra', 'El Ángel', 'Tulcán', 'Otavalo', 'Atuntaqui', 'Cayambe', 'Tabacundo',
                 'Santo Domingo', 'La Concordia', 'El Carmen',
               ].map(city => (
                 <span
