@@ -101,6 +101,23 @@ describe('FareEngine', () => {
       expect(q.total).toBe(50);
     });
 
+    it('privado respeta el vehículo pedido (VAN → precio de VAN, no SUV)', async () => {
+      route();
+      mockedExcelPriv.mockReturnValue({
+        suv: 50, suv_xl: 60, van: 70, van_xl: 100, minibus: 150, bus: 200, bus_40: 250,
+      });
+      const q = await engine.quote({
+        origin: { lat: -0.93, lng: -78.6 },
+        destination: { lat: -0.18, lng: -78.47 },
+        category: 'transport',
+        mode: 'privado',
+        vehicleType: 'van',
+        clientSegment: 'public',
+      });
+      expect(q.subtotal).toBe(70);
+      expect(q.total).toBe(70);
+    });
+
     it('corporativo aplica +25% sobre el precio fijo (sin surge de hora)', async () => {
       route();
       mockedExcelFare.mockReturnValue(13);

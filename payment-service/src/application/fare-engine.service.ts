@@ -12,6 +12,7 @@ import {
   classifyRoute,
   getExcelFare,
   getExcelPrivatePrices,
+  type PrivatePrices,
 } from './pricing.service';
 
 /**
@@ -38,6 +39,11 @@ export interface FareQuoteInput {
   category: ServiceCategory;
   /** 'privado' | 'compartido' — afecta recargo dinámico. */
   mode?: RideMode;
+  /**
+   * Vehículo para el precio PRIVADO intercity (suv | suv_xl | van | van_xl |
+   * minibus | bus | bus_40). Si falta, se asume 'suv'. En compartido se ignora.
+   */
+  vehicleType?: keyof PrivatePrices;
   /** Derivado del JWT: corporate/agency → A, resto → B. */
   clientSegment: ClientSegment;
   /** Fecha/hora del servicio (para surge). Default: ahora. */
@@ -180,9 +186,10 @@ export class FareEngine {
         if (mode === 'compartido') {
           intercityFixedBase = getExcelFare(cls.originCity, cls.destinationCity);
         } else {
-          // El DTO aún no trae vehículo → privado por defecto en SUV.
+          // Privado: precio del vehículo pedido (default SUV si no se especifica).
+          const veh = (input.vehicleType ?? 'suv') as keyof PrivatePrices;
           const pv = getExcelPrivatePrices(cls.originCity, cls.destinationCity);
-          intercityFixedBase = pv ? pv.suv : null;
+          intercityFixedBase = pv ? (pv[veh] ?? pv.suv) : null;
         }
         if (intercityFixedBase != null) {
           intercityRoute = `${cls.originCity}->${cls.destinationCity}`;
