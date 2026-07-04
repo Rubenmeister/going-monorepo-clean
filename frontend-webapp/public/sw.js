@@ -8,7 +8,7 @@
  *  - Todo lo demás → Network First con fallback a caché
  */
 
-const CACHE_NAME = "going-v1";
+const CACHE_NAME = "going-v2";
 
 const PRECACHE_ASSETS = [
   "/",

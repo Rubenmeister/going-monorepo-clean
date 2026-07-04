@@ -33,7 +33,7 @@ export function PaymentForm({
   const summary = paymentService.calculatePaymentSummary(amount);
 
   const handlePay = async () => {
-    if (rideId === '') { setError('ID de viaje no disponible'); return; }
+    if (!rideId) { setError('ID de viaje no disponible'); return; }
     setError(null);
     setLoading(true);
 
@@ -43,8 +43,8 @@ export function PaymentForm({
         return;
       }
 
-      // Modo demo: rideId local o vacio
-      if (rideId === '' || rideId.startsWith('trip-')) {
+      // Modo demo: rideId local (fallback trip-<ts> cuando el backend no devuelve id)
+      if (rideId.startsWith('trip-')) {
         onPaymentComplete?.(paymentMethod === 'datafast' ? 'card' : paymentMethod);
         return;
       }

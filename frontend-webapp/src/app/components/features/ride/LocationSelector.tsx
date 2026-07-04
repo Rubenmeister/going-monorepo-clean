@@ -27,7 +27,7 @@ const DEFAULT_LOCATIONS: Location[] = [
   { address: 'Quito Sur',                   lat: -0.3500, lon: -78.5400, city: 'Quito' },
   { address: 'Cumbayá / Tumbaco (Valle)',   lat: -0.2010, lon: -78.4030, city: 'Quito' },
   { address: 'Los Chillos / Sangolquí',     lat: -0.3296, lon: -78.4490, city: 'Quito' },
-  { address: 'Aeropuerto Quito (Tababela)', lat: -0.1292, lon: -78.3575, city: 'Quito' },
+  { address: 'Aeropuerto de Quito', lat: -0.1292, lon: -78.3575, city: 'Tababela' },
 
   // ── Ciudades intermedias en rutas hacia Quito ───────────────
   { address: 'Guayllabamba',   lat: -0.0494, lon: -78.3692, city: 'Guayllabamba' },
@@ -230,11 +230,26 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
       let locations: Suggestion[] = [];
       try { locations = await searchBoxSuggest(query, sessionToken.current, prox); } catch { locations = []; }
       if (locations.length === 0) locations = await searchMapbox(query);
-      if (locations.length === 0) {
+      // Lugares curados (aeropuerto, ciudades clave) con nombre limpio van
+      // ARRIBA de los POIs de Mapbox — que para el aeropuerto devuelven
+      // etiquetas feas tipo "Salida Nacional, Quito Pichincha 1709".
+      const q = query.trim().toLowerCase();
+      const curated: Suggestion[] = DEFAULT_LOCATIONS
+        .filter((l) => l.address.toLowerCase().includes(q) || (l.city?.toLowerCase().includes(q) ?? false))
+        .map((l) => ({
+          ...l,
+          title: l.address,
+          subtitle: l.city && l.city.toLowerCase() !== l.address.toLowerCase() ? `${l.city}, Ecuador` : 'Ecuador',
+        }));
+      const combined = [
+        ...curated,
+        ...locations.filter((m) => !curated.some((c) => c.address.toLowerCase() === m.address.toLowerCase())),
+      ];
+      if (combined.length === 0) {
         setSuggestions([]);
         setError('No se encontraron ubicaciones');
       } else {
-        setSuggestions(locations);
+        setSuggestions(combined);
         setError(null);
       }
     } catch {
