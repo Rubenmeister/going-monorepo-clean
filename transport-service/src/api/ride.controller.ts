@@ -170,7 +170,11 @@ export class RideController {
     // para que no se les muestre el mismo viaje en cada poll. Para admins/users
     // no aplica filtro — ven todos los pendientes.
     const excludeDriverId = user.role === 'driver' ? user.id : undefined;
-    const rides = await this.rideRepo.findByStatus('pending', max, excludeDriverId);
+    // FIX: los viajes que esperan conductor están en status 'requested' (default
+    // del schema), NO 'pending' — nunca hay un ride en 'pending', así que este
+    // endpoint devolvía SIEMPRE vacío (ni el worker ni la app-conductor veían los
+    // viajes inmediatos por polling). El flujo real es requested → accepted.
+    const rides = await this.rideRepo.findByStatus('requested', max, excludeDriverId);
     return rides.map((r: any) => ({
       id:     r.rideId ?? r.id,
       userId: r.userId,
