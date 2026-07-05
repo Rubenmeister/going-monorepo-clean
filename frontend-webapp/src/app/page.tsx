@@ -1085,7 +1085,7 @@ export default function HomePage() {
                 <div className="bg-white rounded-2xl p-4 text-center">
                   <div className="flex items-center justify-center gap-1.5 mb-2 text-gray-700">
                     <IconQrCode size={14} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Escaneá</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Escanea</span>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

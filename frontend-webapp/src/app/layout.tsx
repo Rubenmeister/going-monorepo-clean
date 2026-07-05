@@ -1,6 +1,7 @@
 import { Nunito_Sans, Roboto } from 'next/font/google';
 import { RootLayoutClient } from './RootLayoutClient';
 import { PWARegister } from '@/components/PWARegister';
+import { FloatingInstallPrompt } from './components/FloatingInstallPrompt';
 import './global.css';
 // Side-effect import: registra listeners window.onerror + unhandledrejection
 // que envían errores JS al cerebro-service. 10% sampling por sesión.
@@ -81,6 +82,7 @@ export default function RootLayout({
       <body className="bg-gray-50" style={{ fontFamily: 'var(--font-roboto), system-ui, sans-serif' }}>
         <PWARegister />
         <RootLayoutClient>{children}</RootLayoutClient>
+        <FloatingInstallPrompt />
       </body>
     </html>
   );
