@@ -19,7 +19,7 @@
  * conductores ni asignar el rol 'driver' (AdminController solo lista/cambia
  * estado). Mismo patrón que scripts/seed-synthetic-drivers.mjs.
  *
- * Colecciones que toca (db `going-platform`):
+ * Colecciones que toca (db `going-transport` — la que usa transport-service):
  *   - driver_schedules : agenda { driverId, slots[{routeId,time,days,returnTrip}], vehicleType }
  *   - driver_ratings   : 1 doc por conductor para que el pasajero vea una calificación
  *
@@ -36,8 +36,9 @@
  *   node scripts/seed-virtual-schedules.mjs --clean    # la borra
  *   node scripts/seed-virtual-schedules.mjs --dry-run  # preview sin escribir
  *
- * ENV REQUERIDA (se cargan desde .env / .env.local si existen):
- *   MONGODB_URL — connection string de Atlas (db going-platform).
+ * ENV (se cargan desde .env / .env.local si existen):
+ *   MONGODB_URL   — connection string de Atlas (requerida).
+ *   MONGO_DB_NAME — opcional; default 'going-transport' (la db de transport-service).
  *
  * ⚠️ Los conductores son virtuales (no hay app conductor real conectada). En
  *    COMPARTIDO no importa: la reserva del asiento da la certeza sola. Para
@@ -115,11 +116,17 @@ function buildFleet() {
   return drivers;
 }
 
+// IMPORTANTE: transport-service lee driver_schedules / scheduled_trips /
+// driver_ratings de la DB `going-transport` (app.module.ts: dbName =
+// MONGO_DB_NAME || 'going-transport'). Hay que sembrar en LA MISMA DB o las
+// salidas no aparecen en /search. Override con MONGO_DB_NAME si el servicio usa otra.
+const DB_NAME = process.env.MONGO_DB_NAME || 'going-transport';
+
 async function connectMongo() {
   const url = process.env.MONGODB_URL;
   if (!url) throw new Error('MONGODB_URL no está seteada en .env o environment');
-  await mongoose.connect(url, { dbName: 'going-platform' });
-  console.log('✓ Mongo conectado (going-platform)');
+  await mongoose.connect(url, { dbName: DB_NAME });
+  console.log(`✓ Mongo conectado (db: ${DB_NAME})`);
 }
 
 async function seed(drivers, dryRun) {
