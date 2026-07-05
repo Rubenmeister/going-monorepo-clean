@@ -14,7 +14,7 @@ import {
   getFareBreakdown,
   getRoadDistance,
 } from '@/services/ride/fareCalculator';
-import { fetchSharedSlots, type TimeSlot } from '@/services/ride/sharedSlots';
+import { searchScheduledTrips, type TimeSlot, type CoverageStatus } from '@/services/ride/sharedSlots';
 import { getStoredToken } from '@/lib/providers/auth-client';
 
 // ── Inline SVG icons — sin emojis ─────────────────────────────────────────
@@ -144,11 +144,12 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const [isScheduled, setIsScheduled]     = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  // Schedule UI gating: en modo privado los inputs de fecha/hora están
-  // ocultos por default (viaje inmediato), y se expanden cuando el usuario
-  // hace tap a "Programar para más tarde". En compartido siempre visibles
-  // porque las salidas compartidas son inherentemente programadas.
-  const [showSchedule, setShowSchedule]   = useState(false);
+  // Cobertura de la ruta intercity (modelo PROGRAMADO): el backend `/search`
+  // devuelve coverageStatus ('available'|'route_not_yet'|'out_of_coverage')
+  // + notices legibles. Se muestran como banner para que el pasajero sepa si
+  // la ruta ya opera o "está próximamente" antes de intentar reservar.
+  const [coverageStatus, setCoverageStatus]   = useState<CoverageStatus | null>(null);
+  const [coverageNotices, setCoverageNotices] = useState<string[]>([]);
   const [localFare, setLocalFare]         = useState<number | null>(null);
   const [fareFixed, setFareFixed]         = useState(false);
   const [roadDistKm,  setRoadDistKm]      = useState<number | null>(null);
@@ -248,29 +249,43 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     return () => { cancelled = true; };
   }, [pickupLocation, dropoffLocation, vehicleType, tier, mode]);
 
-  // Carga horarios cuando: modo compartido + ruta válida + fecha seleccionada
+  // Consulta `/search` para rutas intercity (privado y compartido):
+  //  - COBERTURA (coverageStatus + notices): en privado apenas hay ruta válida;
+  //    en compartido cuando ya hay fecha (misma llamada que trae los horarios).
+  //  - HORARIOS compartidos: solo en 'compartido' con fecha elegida.
+  // 'ciudad' es ride-hailing inmediato → no consulta cobertura programada.
   useEffect(() => {
-    if (mode !== 'compartido' || !hasValidRoute || !scheduledDate) {
+    const isIntercity = mode === 'privado' || mode === 'compartido';
+    const shouldFetch =
+      isIntercity && hasValidRoute && (mode === 'privado' || !!scheduledDate);
+    if (!shouldFetch) {
       setSlots([]);
       setNoTimeMatch(false);
+      setCoverageStatus(null);
+      setCoverageNotices([]);
       return;
     }
     let cancelled = false;
     setLoadingSlots(true);
-    fetchSharedSlots(
+    searchScheduledTrips(
       pickupLocation!,
       dropoffLocation!,
-      scheduledDate,
-      localFare ?? 15,
-    ).then(data => {
+      mode === 'compartido' ? scheduledDate : undefined,
+    ).then(({ slots: data, coverageStatus: cov, notices }) => {
       if (cancelled) return;
-      setSlots(data);
-      // Detecta si la hora elegida no tiene disponibilidad → abre acordeón automáticamente
-      if (scheduledTime) {
-        const match = data.find(s => s.time === scheduledTime || s.time.startsWith(scheduledTime));
-        const hasMatch = !!match && match.seatsLeft > 0;
-        setNoTimeMatch(!hasMatch);
-        if (!hasMatch) setShowSlots(true);
+      setCoverageStatus(cov);
+      setCoverageNotices(notices);
+      if (mode === 'compartido') {
+        setSlots(data);
+        // Detecta si la hora elegida no tiene disponibilidad → abre acordeón automáticamente
+        if (scheduledTime) {
+          const match = data.find(s => s.time === scheduledTime || s.time.startsWith(scheduledTime));
+          const hasMatch = !!match && match.seatsLeft > 0;
+          setNoTimeMatch(!hasMatch);
+          if (!hasMatch) setShowSlots(true);
+        }
+      } else {
+        setSlots([]);
       }
     }).finally(() => { if (!cancelled) setLoadingSlots(false); });
     return () => { cancelled = true; };
@@ -381,7 +396,10 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
    * hay viajes a las HH:MM" — confuso y rompía reserve.
    */
   const carpoolBlocked = mode === 'compartido' && scheduledDate && noTimeMatch && !selectedSlot;
-  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk && !carpoolBlocked;
+  // El backend marcó la ruta fuera de cobertura → no permitir reservar.
+  // 'route_not_yet' informa pero no bloquea (puede haber tarifa local válida).
+  const coverageBlocked = coverageStatus === 'out_of_coverage';
+  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk && !carpoolBlocked && !coverageBlocked;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -544,27 +562,26 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           )}
 
           {/* ── Fecha y hora ─────────────────────────────────────────── */}
-          {/* En modo privado se oculta por default (viaje inmediato es el caso
-              dominante) y aparece bajo demanda con "Programar para más tarde".
-              En compartido siempre visible porque las salidas compartidas son
-              programadas por naturaleza. */}
-          {(mode === 'compartido' || showSchedule) ? (
+          {/* Intercity (privado y compartido) es PROGRAMADO: el picker está
+              SIEMPRE visible. En privado, dejarlo vacío = salir lo antes
+              posible (el conductor se asigna después); en compartido se elige
+              la salida del calendario. 'ciudad' es inmediato → sin picker. */}
+          {(mode === 'privado' || mode === 'compartido') ? (
             <div>
               <p className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
                 <IcoCalendar />
                 Fecha y hora
-                {mode === 'privado' && (
+                {mode === 'privado' && (scheduledDate || scheduledTime) && (
                   <button
                     type="button"
                     onClick={() => {
-                      setShowSchedule(false);
                       setScheduledDate('');
                       setScheduledTime('');
                       setIsScheduled(false);
                     }}
                     className="normal-case font-normal text-gray-400 hover:text-gray-600 underline ml-auto"
                   >
-                    Cancelar — ir ahora
+                    Limpiar — salir lo antes posible
                   </button>
                 )}
               </p>
@@ -578,27 +595,54 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
                   setIsScheduled(!!d && !!t);
                 }}
               />
+              {mode === 'privado' && !scheduledDate && !scheduledTime && (
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Elige cuándo salir, o déjalo vacío para viajar lo antes posible.
+                </p>
+              )}
             </div>
-          ) : mode === 'ciudad' ? (
+          ) : (
             // 'En la ciudad' es siempre inmediato: no se ofrece programar.
             <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100 text-[#0033A0] text-sm font-medium">
               <IcoCity />
               Buscaremos al conductor más cercano ahora mismo
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowSchedule(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium"
-            >
-              <IcoCalendar />
-              Programar para más tarde
-              <span className="text-xs text-gray-400">(opcional)</span>
-            </button>
           )}
 
         </div>
       </div>
+
+      {/* ── COBERTURA DE RUTA (modelo programado) ─────────────────────── */}
+      {/* Si el backend clasifica la ruta como "próximamente" o fuera de
+          cobertura, mostramos su mensaje (días/horas de salida al habilitarse)
+          en vez de dejar que el pasajero intente reservar una ruta inexistente. */}
+      {hasValidRoute && coverageStatus && coverageStatus !== 'available' && (
+        <div className={`rounded-2xl px-5 py-4 border text-sm flex items-start gap-2.5 ${
+          coverageStatus === 'out_of_coverage'
+            ? 'bg-red-50 border-red-200 text-red-700'
+            : 'bg-amber-50 border-amber-200 text-amber-800'
+        }`}>
+          <span className="flex-shrink-0 mt-0.5"><IcoWarn /></span>
+          <div className="space-y-1">
+            <p className="font-bold">
+              {coverageStatus === 'out_of_coverage'
+                ? 'Ruta fuera de cobertura'
+                : 'Ruta próximamente'}
+            </p>
+            {coverageNotices.length > 0 ? (
+              coverageNotices.map((n, i) => (
+                <p key={i} className="leading-snug">{n}</p>
+              ))
+            ) : (
+              <p className="leading-snug">
+                {coverageStatus === 'out_of_coverage'
+                  ? 'Una de las ubicaciones está fuera de nuestra zona de cobertura actual.'
+                  : 'Aún no operamos esta ruta. Cuando la habilitemos publicaremos los días y horas de salida y regreso.'}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── ACORDEÓN HORARIOS COMPARTIDO ──────────────────────────────── */}
       {showSlotsSection && (
@@ -791,7 +835,9 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           ? 'Ingresa origen y destino'
           : !hasValidRoute
             ? 'Selecciona desde la lista'
-            : !localFare
+            : coverageBlocked
+              ? 'Ruta fuera de cobertura'
+              : !localFare
               ? 'Calculando tarifa…'
               : isScheduled
                 ? <><IcoCalendar /> Reservar · {scheduledDate} {scheduledTime} · ${localFare.toFixed(0)}</>
