@@ -21,6 +21,7 @@ packages:
   - 'tracking-service'
   - 'billing-service'
   - 'analytics-service'
+  - 'pricing-service'
   - 'customer-support-service'
   - 'emergency-service'
   - 'ratings-service'
