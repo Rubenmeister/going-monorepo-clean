@@ -361,9 +361,10 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
       passengers,
       isScheduled ? `${scheduledDate}T${scheduledTime}` : undefined,
       mode,
-      // Precio garantizado: solo en reservas mandamos el total ya calculado
-      // para que el backend lo preserve aunque la hora real cambie las tarifas.
-      isScheduled && localFare != null ? localFare : undefined,
+      // Precio garantizado del Excel: lo mandamos SIEMPRE (inmediato y reserva)
+      // para que la pantalla "Buscando conductor" y el cobro muestren el MISMO
+      // precio que vio el pasajero al cotizar — no el estimado por distancia.
+      localFare != null ? localFare : undefined,
     );
   };
 

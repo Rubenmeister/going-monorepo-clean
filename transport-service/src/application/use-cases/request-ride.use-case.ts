@@ -101,14 +101,21 @@ export class RequestRideUseCase {
     const estimatedDuration = Math.ceil((estimatedDistance / 40) * 60); // avg 40 km/h → minutes
     const surge = this.calculateSurge();
 
-    const fare = Fare.calculate(
-      estimatedDistance,
-      estimatedDuration,
-      surge,
-      2.5, // base fare
-      0.5, // per km
-      0.1 // per minute
-    );
+    // Precio garantizado del Excel (lockedFare que manda el webapp con lo que el
+    // pasajero cotizó) → tarifa FIJA. Si no viene, taxímetro por distancia
+    // (urbano/inmediato sin cotización previa). Así la pantalla de búsqueda y el
+    // cobro muestran el MISMO precio que se vio al reservar.
+    const fare =
+      input.lockedFare != null && input.lockedFare > 0
+        ? Fare.fixed(input.lockedFare)
+        : Fare.calculate(
+            estimatedDistance,
+            estimatedDuration,
+            surge,
+            2.5, // base fare
+            0.5, // per km
+            0.1 // per minute
+          );
 
     // Create ride
     const ride = new Ride({
