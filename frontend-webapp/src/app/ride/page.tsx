@@ -351,11 +351,15 @@ function RidePageInner() {
   useEffect(() => {
     if (activeRide && step === 'request') {
       setPaymentAmount(activeRide.estimatedFare);
-      // Tanto inmediato como reservado van al panel de seguimiento. El panel
-      // NO busca conductor en vivo si el estado es 'reserved' (muestra el
-      // aviso de reserva y avisará ~1h/5min antes), y continúa el ciclo
-      // completo: conductor en camino → compartir → SOS → fin de viaje → pago.
-      setStep('tracking');
+      // Modelo PROGRAMADO (Rubén 4-jul): al reservar vamos directo a
+      // confirmación → pago. NO hay "búsqueda de conductor en vivo" antes del
+      // pago — intercity no tiene matching inmediato.
+      //   · Privado: el conductor se asigna después (te confirmamos).
+      //   · Compartido: ya reservaste el ASIENTO en una salida existente
+      //     (el conductor/salida va primero; el 1º/2º/3º viajero se suman).
+      // El seguimiento en vivo (conductor en camino → SOS → fin) se muestra
+      // cuando ya hay conductor asignado, el día de la salida.
+      setStep('confirmation');
     }
   }, [activeRide, step]);
 
@@ -369,7 +373,10 @@ function RidePageInner() {
   const handleCancelRide         = () => { clearRide(); setStep('request'); setServiceMode(null); };
   const handleConfirmationContinue = () => setStep('payment');
   const handlePaymentComplete    = (method: string) => { setPaymentMethod(method); setStep('accounting'); };
-  const handleAccountingDone     = () => setStep('rating');
+  // Modelo programado: tras pagar la reserva NO se califica al conductor (aún no
+  // hay viaje). Cerramos con el recibo/confirmación. La calificación vive en el
+  // flujo del día de la salida, cuando el conductor ya existe.
+  const handleAccountingDone     = () => { clearRide(); setStep('request'); };
   const handleRatingComplete     = () => { clearRide(); setStep('request'); };
 
   // Tras no_driver: descarta el ride fallido pero conserva pickup/dropoff
