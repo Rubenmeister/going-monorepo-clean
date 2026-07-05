@@ -18,6 +18,7 @@ import type {
   CoverageStatus,
 } from '../../api/dtos/search-query.dto';
 import { ScheduledTripService } from '../scheduled-trip.service';
+import { PricingClient } from '../../infrastructure/pricing-client';
 
 type VehicleType = 'suv' | 'suv_xl' | 'van' | 'van_xl' | 'minibus' | 'bus';
 
@@ -40,6 +41,7 @@ export class UnifiedSearchUseCase {
 
   constructor(
     private readonly pricing: PricingService,
+    private readonly pricingClient: PricingClient,
     @Optional() private readonly scheduledTrips?: ScheduledTripService,
   ) {}
 
@@ -110,8 +112,12 @@ export class UnifiedSearchUseCase {
       }
 
       case 'airport_corridor': {
-        // Tarifa fija de aeropuerto (compartido por persona) desde FARES.
-        const airportFare = getFare(cls.originCity!, cls.destinationCity!);
+        // Tarifa fija de aeropuerto (compartido por persona). F2: del motor de
+        // tarifas (editable en vivo) con fallback a FARES local.
+        const airportFare = await this.pricingClient.sharedFare(
+          cls.originCity, cls.destinationCity,
+          () => getFare(cls.originCity!, cls.destinationCity!),
+        );
         if (airportFare != null) {
           onDemandOptions.push({
             serviceType: 'airport_transfer',
@@ -152,8 +158,12 @@ export class UnifiedSearchUseCase {
       }
 
       case 'intercity': {
-        // Viaje privado interurbano inmediato: base FARES + dinámico.
-        const sharedPerSeat = getFare(cls.originCity!, cls.destinationCity!);
+        // Viaje privado interurbano inmediato: base + dinámico. F2: base del
+        // motor de tarifas (editable en vivo) con fallback a FARES local.
+        const sharedPerSeat = await this.pricingClient.sharedFare(
+          cls.originCity, cls.destinationCity,
+          () => getFare(cls.originCity!, cls.destinationCity!),
+        );
         if (sharedPerSeat == null) {
           notices.push(
             `Aún no operamos la ruta ${cls.originLabel} → ${cls.destinationLabel}. ` +
