@@ -1,0 +1,44 @@
+{
+  "name": "pricing-service",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "pricing-service/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/pricing-service",
+        "main": "pricing-service/src/main.ts",
+        "tsConfig": "pricing-service/tsconfig.app.json",
+        "webpackConfig": "pricing-service/webpack.config.js"
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "pricing-service:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "pricing-service:build:development"
+        },
+        "production": {
+          "buildTarget": "pricing-service:build:production"
+        }
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}
