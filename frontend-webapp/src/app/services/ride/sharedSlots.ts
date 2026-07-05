@@ -42,6 +42,29 @@ export interface SearchLocation {
 }
 
 /**
+ * Estado de cobertura de la ruta (espejo de `CoverageStatus` del backend,
+ * transport-service/src/api/dtos/search-query.dto.ts):
+ *  - 'available'       → hay opción inmediata y/o salidas programadas.
+ *  - 'route_not_yet'   → la zona está cubierta pero la ruta aún no opera
+ *                        (mostrar "ruta próximamente + días/horas").
+ *  - 'out_of_coverage' → una ubicación está fuera de la zona de servicio.
+ */
+export type CoverageStatus = 'available' | 'route_not_yet' | 'out_of_coverage';
+
+/**
+ * Resultado completo de `/search` que necesita el webapp para alinear el
+ * flujo PROGRAMADO: los slots compartidos + el estado de cobertura + los
+ * avisos legibles que arma el backend (unified-search `notices`).
+ */
+export interface ScheduledSearchResult {
+  slots: TimeSlot[];
+  /** null si no se pudo consultar el backend (sin coords, 401, error). */
+  coverageStatus: CoverageStatus | null;
+  /** Mensajes de cobertura/disponibilidad ya redactados por el backend. */
+  notices: string[];
+}
+
+/**
  * Helper: marca etiquetas legibles para UX (Recomendado / Último asiento).
  * Ordena por seatsLeft + criterio de hora.
  */
@@ -62,18 +85,23 @@ function decorateLabels(slots: TimeSlot[]): TimeSlot[] {
 }
 
 /**
- * Consulta horarios de carpool para una ruta + fecha.
- * Si pickup/destination no tienen coords reales (lat/lon = 0) devolvemos
- * [] sin llamar al backend — la UI muestra "selecciona origen y destino".
+ * Consulta `/search` (UnifiedSearchUseCase) para una ruta intercity.
+ * Devuelve los slots compartidos + el estado de cobertura + los avisos.
+ *
+ * - `date` es opcional: en PRIVADO programado basta con la ruta para saber la
+ *   cobertura (el backend usa "ahora" si no mandamos `scheduledDateTime`); en
+ *   COMPARTIDO se pasa el día elegido para listar las salidas de esa fecha.
+ * - Sin coords reales (lat/lon = 0) NO llamamos al backend → resultado vacío
+ *   con `coverageStatus: null` (la UI muestra "selecciona origen y destino").
  */
-export async function fetchSharedSlots(
+export async function searchScheduledTrips(
   pickup: SearchLocation,
   destination: SearchLocation,
-  date: string,
-  _basePriceUnused: number,
-): Promise<TimeSlot[]> {
+  date?: string,
+): Promise<ScheduledSearchResult> {
+  const empty: ScheduledSearchResult = { slots: [], coverageStatus: null, notices: [] };
   if (!pickup?.lat || !pickup?.lon || !destination?.lat || !destination?.lon) {
-    return [];
+    return empty;
   }
 
   try {
@@ -81,8 +109,9 @@ export async function fetchSharedSlots(
                 process.env.NEXT_PUBLIC_API_URL ||
                 'https://api.goingec.com';
     // El backend espera ISO 8601 con hora; usamos medianoche del día pedido.
-    // El UnifiedSearchUseCase cascadea horarios del día + ±1 día.
-    const scheduledDateTime = `${date}T00:00:00.000Z`;
+    // El UnifiedSearchUseCase cascadea horarios del día + ±1 día. Si no hay
+    // fecha (privado consultando cobertura), omitimos scheduledDateTime.
+    const scheduledDateTime = date ? `${date}T00:00:00.000Z` : undefined;
     // /search está protegido por JwtAuthGuard — leemos token de localStorage
     // si existe. Si el usuario NO está logueado, el backend devuelve 401 y
     // mostramos lista vacía con CTA a login (el carpool browsing público
@@ -101,18 +130,21 @@ export async function fetchSharedSlots(
         pickup: { lat: pickup.lat, lng: pickup.lon, address: pickup.address },
         destination: { lat: destination.lat, lng: destination.lon, address: destination.address },
         temporalPreference: 'scheduled',
-        scheduledDateTime,
+        // Solo incluimos la fecha si el caller la pasó (compartido). Omitirla
+        // deja que el backend clasifique la cobertura con "ahora" (privado).
+        ...(scheduledDateTime ? { scheduledDateTime } : {}),
       }),
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) {
       // 401: el endpoint requiere JWT — el caller debe loguearse.
-      // Otros: error del backend. En ambos casos devolvemos [].
+      // Otros: error del backend. En ambos casos devolvemos vacío.
       // eslint-disable-next-line no-console
       console.warn(`[sharedSlots] /search ${res.status}`);
-      return [];
+      return empty;
     }
     const data = await res.json() as {
+      route?: { coverageStatus?: CoverageStatus };
       scheduledOptions?: Array<{
         scheduledTripId: string;
         routeLabel?: string;
@@ -123,6 +155,7 @@ export async function fetchSharedSlots(
         pricePerSeat: number;
       }>;
       alternativeSchedules?: Array<any>;
+      notices?: string[];
     };
     const combined = [
       ...(data.scheduledOptions ?? []),
@@ -145,10 +178,29 @@ export async function fetchSharedSlots(
         departureTime: s.departureTime,
       };
     });
-    return decorateLabels(slots);
+    return {
+      slots: decorateLabels(slots),
+      coverageStatus: data.route?.coverageStatus ?? null,
+      notices: data.notices ?? [],
+    };
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('[sharedSlots] fetch fallo:', (e as Error).message);
-    return [];
+    return empty;
   }
+}
+
+/**
+ * Wrapper legacy: devuelve SOLO los slots compartidos (sin cobertura).
+ * Lo usa RideTrackingPanel para el fallback "no_driver". Los callers que
+ * necesiten `coverageStatus`/`notices` deben usar `searchScheduledTrips`.
+ */
+export async function fetchSharedSlots(
+  pickup: SearchLocation,
+  destination: SearchLocation,
+  date: string,
+  _basePriceUnused?: number,
+): Promise<TimeSlot[]> {
+  const { slots } = await searchScheduledTrips(pickup, destination, date);
+  return slots;
 }
