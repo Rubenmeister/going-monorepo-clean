@@ -12,6 +12,7 @@ import {
   getFare,
   getCity,
   getCarpoolSeating,
+  CORRIDORS_BY_ID,
 } from 'pricing';
 import {
   ScheduledTripModel,
@@ -408,15 +409,10 @@ export class ScheduledTripService {
   }
 
   private corridorById(corridorId: string) {
-    // corridorBetween necesita ciudades; reusamos el catálogo vía un par conocido.
-    // Buscamos cualquier corredor cuyo id coincida usando dos de sus stops.
-    const probes: Record<string, [string, string]> = {
-      sierra_centro: ['riobamba', 'quito'],
-      costa_quito: ['santo_domingo', 'quito'],
-      sierra_norte: ['ibarra', 'quito'],
-    };
-    const pair = probes[corridorId];
-    return pair ? corridorBetween(pair[0], pair[1]) : null;
+    // Catálogo autoritativo en libs/pricing (corridors.ts). Antes esto tenía un
+    // mapa hardcodeado de 3 corredores que se quedaba corto al agregar rutas
+    // (p.ej. los corredores de aeropuerto). Ahora resuelve cualquier corredor.
+    return CORRIDORS_BY_ID[corridorId] ?? null;
   }
 
   private tripDirection(trip: {
