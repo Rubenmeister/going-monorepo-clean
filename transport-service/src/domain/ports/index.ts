@@ -266,6 +266,22 @@ export class Fare {
     });
   }
 
+  /**
+   * Tarifa FIJA — precio garantizado (del Excel) que el pasajero ya cotizó.
+   * Sin componentes de distancia/tiempo: el total es el valor pactado. Se usa
+   * cuando el cliente manda lockedFare, para que el viaje cobre ese precio y no
+   * el estimado por distancia.
+   */
+  static fixed(total: number): Fare {
+    return new Fare({
+      baseFare: 0,
+      perKmFare: 0,
+      perMinuteFare: 0,
+      surgeMultiplier: 1,
+      estimatedTotal: total,
+    });
+  }
+
   calculateFinal(
     actualDistanceKm: number,
     actualDurationMinutes: number
