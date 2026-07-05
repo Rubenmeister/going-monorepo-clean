@@ -127,9 +127,27 @@ export class UnifiedSearchUseCase {
             `Aún no tenemos tarifa de aeropuerto configurada para ${cls.originLabel} ⇄ ${cls.destinationLabel}.`,
           );
         }
-        notices.push(
-          'El viaje privado al aeropuerto se cotiza por zona de Quito (próximamente en el buscador).',
-        );
+
+        // Cupos de viaje compartido programado ciudad↔aeropuerto (corredores
+        // *_air, operación 24h). Igual que el intercity: el aeropuerto ya no es
+        // solo on-demand — el pasajero puede reservar un asiento en una salida.
+        if (this.scheduledTrips) {
+          const res = await this.scheduledTrips.findOptions(
+            cls.originCity!,
+            cls.destinationCity!,
+            dateTime,
+          );
+          scheduledOptions = res.scheduledOptions;
+          alternativeSchedules = res.alternativeSchedules;
+          if (
+            scheduledOptions.length === 0 &&
+            alternativeSchedules.length > 0
+          ) {
+            notices.push(
+              'No hay salidas compartidas al aeropuerto a esa hora; te mostramos horarios cercanos disponibles.',
+            );
+          }
+        }
         break;
       }
 
