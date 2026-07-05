@@ -507,10 +507,10 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
           {/* Solo para privado/ciudad: en COMPARTIDO el precio es único por
               asiento (no hay tiers), y mostrar Confort/Premium aquí enseñaba
               precios de viaje PRIVADO — confuso. */}
-          {/* Con precios FIJOS del Excel, el privado intercity tiene UN precio por
-              vehículo (sin premium). El tier Confort/Premium solo aplica en modo
-              Ciudad (taxímetro, +30%). En privado se ocultaba porque no cambiaba nada. */}
-          {mode === 'ciudad' && (
+          {/* Por ahora SOLO Confort (Rubén 4-jul). El selector Confort/Premium
+              queda desactivado; el código se conserva para reactivarlo cuando el
+              negocio defina precios Premium. */}
+          {false && (
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Categoría</p>
             <div className="grid grid-cols-2 gap-2">
@@ -735,7 +735,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
               <div>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="text-sm font-bold text-gray-700">
-                    {vehicleConfig.label}{mode === 'ciudad' ? ` · ${tier === 'premium' ? 'Premium' : 'Confort'}` : ''}
+                    {vehicleConfig.label}
                   </p>
                   <span className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${fareFixed ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'}`}>
                     <IcoCheck /> {fareFixed ? 'Tarifa fija' : 'Estimado'}
