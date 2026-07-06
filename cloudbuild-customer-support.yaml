@@ -52,7 +52,7 @@ steps:
       - '--vpc-connector=going-connector'
       - '--vpc-egress=all-traffic'
       - '--set-env-vars'
-      - 'NODE_ENV=production,GCP_PROJECT=$PROJECT_ID,SUPPORT_VERTEX_TRANSLATE=true'
+      - 'NODE_ENV=production,GCP_PROJECT=$PROJECT_ID,SUPPORT_VERTEX_TRANSLATE=true,TRANSPORT_SERVICE_URL=https://transport-service-lw44cnhdeq-uc.a.run.app'
 
 images:
   - 'gcr.io/$PROJECT_ID/customer-support-service:$BUILD_ID'
