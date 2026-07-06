@@ -6,7 +6,7 @@ cancelaciones, valoraciones y cuenta.
 ## Registro y cuenta
 
 - Hay que presentar **todos** los requisitos del registro; si faltan datos, la
-  cuenta no se sube a la app.
+  cuenta no se sube.
 - Inicio de sesión con correo, usuario y contraseña (también Google o Facebook).
 - Soporte multilenguaje: **español, inglés, francés y alemán**.
 
@@ -16,22 +16,22 @@ cancelaciones, valoraciones y cuenta.
   información del destino, transfer (punto a punto), alojamientos y actividades.
 - **Ver la tarifa antes de confirmar**; al confirmar, la conductora o conductor
   recibe la notificación con las condiciones preestablecidas.
-- Funciones: seguimiento GPS en tiempo real, historial de viajes, sugerencia de
-  direcciones (Google Maps), cancelar viaje, **llamada SOS** y ubicación en vivo.
+- Funciones: seguimiento GPS en tiempo real, historial de viajes, direcciones
+  (Google Maps), cancelar viaje, **llamada SOS** y ubicación en vivo.
 
 ## Pagos
 
 - Métodos: **efectivo, tarjeta de crédito o débito, transferencias y pagos en
   línea**.
-- El inicio del viaje se valida con un **OTP/código** generado dinámicamente.
+- El inicio del viaje se valida con un **OTP/código** dinámico.
 - **Descuentos y ofertas**: aplican a los servicios elegibles. Se pueden usar
-  todos los descuentos y promociones de la app, más beneficios de afiliados
-  (hoteles, atractivos turísticos, bares, etc.). Going avisa de cualquier cambio.
+  todas las promociones de la app, más beneficios de afiliados (hoteles,
+  atractivos turísticos, bares, etc.). Going avisa de cualquier cambio.
 
 ## Cancelaciones
 
-- Se puede intentar aceptar o cancelar una solicitud aceptada, sujeto a las
-  políticas de cancelación de la app.
+- Se puede aceptar o cancelar una solicitud aceptada, sujeto a las políticas de
+  cancelación de la app.
 - **5 minutos de espera** para presentarse en el punto de recogida. Pasado ese
   tiempo se penaliza como cancelación y se paga la **tarifa completa**.
 
@@ -56,7 +56,6 @@ cancelaciones, valoraciones y cuenta.
 ## Reclamos y soporte
 
 Desde la app: menú → **Tus viajes** → selecciona el viaje → **Ayuda** → elige el
-motivo (tarifa, conductor, ruta, etc.), agrega detalles (fecha, hora,
-descripción) y fotos si aplica, envía y da seguimiento en la misma sección.
-También hay **línea telefónica 24/7** de soporte. Consejos: sé detallada o
-detallado, con trato respetuoso, y guarda evidencia (capturas, fotos).
+motivo (tarifa, conductor, ruta, etc.), agrega detalles (fecha, hora) y fotos si
+aplica, envía y da seguimiento en la misma sección. También hay **línea
+telefónica 24/7** de soporte. Guarda evidencia (capturas, fotos).

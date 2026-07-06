@@ -1,5 +1,9 @@
 # FAQ — General
 
+> **Versión canónica consolidada:** `faq/preguntas-frecuentes.md`. Este archivo
+> se mantiene por compatibilidad; ante cualquier diferencia gana el consolidado.
+
+
 ## ¿Qué es Going?
 
 Going es la app de movilidad del Ecuador. Te ayuda a:
@@ -43,7 +47,7 @@ cuenta.
 Sí. Al pedir el viaje, elige "Programar" en lugar de "Ahora mismo". Selecciona
 fecha y hora.
 
-Recomendamos programar con al menos 30 minutos de anticipación.
+Recomendamos programar con anticipación.
 
 ## ¿Going opera 24/7?
 
@@ -67,8 +71,8 @@ Sí. Cada viaje tiene:
 
 ## ¿Tienen servicio a Galápagos?
 
-No. Going opera por carretera en el Ecuador continental. Para Galápagos te
-recomendamos coordinar con la aerolínea y el operador local de las islas.
+No. Going opera por carretera en el Ecuador continental. Para Galápagos
+llegaremos posteriormente y lo anunciaremos.
 
 ## ¿Hablan otros idiomas?
 

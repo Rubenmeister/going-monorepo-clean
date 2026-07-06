@@ -1,5 +1,9 @@
 # FAQ — Pagos
 
+> **Versión canónica consolidada:** `faq/preguntas-frecuentes.md`. Este archivo
+> se mantiene por compatibilidad; ante cualquier diferencia gana el consolidado.
+
+
 ## ¿Cómo pago mi viaje?
 
 Going acepta:
@@ -74,7 +78,7 @@ Sí. Si necesitas factura con datos fiscales (RUC, razón social, etc.):
 ## ¿Aplican impuestos?
 
 Sí. Todas las tarifas mostradas en la app **incluyen IVA** según legislación
-ecuatoriana vigente (12 %).
+ecuatoriana vigente (15% sobre gastos administrativos).
 
 ## ¿Going tiene promociones?
 

@@ -1,8 +1,13 @@
 # Política de cancelación
 
-> **Ventana confirmada por Rubén (jul-2026):** sin costo hasta 1 hora y media
-> antes del viaje, una vez asignado el conductor. Pendiente aún: el MONTO de la
-> tarifa de cancelación y la revisión legal final.
+> **Versión canónica consolidada:** `policies/politicas-asistente.md`.
+>
+> **Ventana confirmada por Rubén (jul-2026):** en **viaje programado**, sin costo
+> hasta 1 hora y media (90 minutos) antes del viaje, una vez asignado el
+> conductor. En **viaje inmediato (on-demand)**, el doc curado fija sin costo
+> dentro de los primeros 2 minutos desde la solicitud y antes de que el conductor
+> confirme que va en camino. Pendiente aún: el MONTO de la tarifa de cancelación
+> y la revisión legal final.
 
 ## Cuándo puede cancelar el cliente
 

@@ -1,5 +1,9 @@
 # FAQ — Seguridad
 
+> **Versión canónica consolidada:** `faq/preguntas-frecuentes.md`. Este archivo
+> se mantiene por compatibilidad; ante cualquier diferencia gana el consolidado.
+
+
 ## ¿Los conductores están verificados?
 
 Sí. Antes de aceptar un conductor en Going, validamos:

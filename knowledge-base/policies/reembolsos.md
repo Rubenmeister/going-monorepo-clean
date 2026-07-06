@@ -1,7 +1,7 @@
 # Política de reembolsos
 
-> ⚠️ **Plantilla — completar con operaciones y contabilidad Going.**
-> Los plazos y porcentajes abajo son TENTATIVOS.
+> **Versión canónica consolidada:** `policies/politicas-asistente.md`. Ante
+> cualquier diferencia gana el consolidado.
 
 ## Cuándo aplica reembolso
 
@@ -9,8 +9,7 @@
 
 - Going cancela el viaje (sin conductor disponible, sistema caído).
 - El conductor cancela y no se logra reasignar a tiempo.
-- El conductor llega más de **20 minutos** tarde al pickup (PENDIENTE: confirmar
-  ventana de tolerancia).
+- El conductor llega más de **20 minutos** tarde al pickup.
 - Falla técnica de pago confirmada (cobro doble, error de pasarela).
 - Viaje no completado por causa imputable a Going.
 
@@ -37,13 +36,12 @@
    - Logs del viaje (ruta GPS, timestamps)
    - Comunicación cliente ↔ conductor
    - Comprobante de cobro
-4. Decisión en hasta **48 horas hábiles** (PENDIENTE: confirmar SLA).
+4. Decisión en hasta **48 horas hábiles**.
 5. Si procede → el reembolso vuelve al método de pago original en hasta **5-10
    días hábiles** según el banco / pasarela.
 
 ## Excepciones
 
-PENDIENTE: documentar:
-- Reembolsos corporativos (cargo a la cuenta de la empresa, no al empleado)
-- Reembolsos por suscripciones o planes prepagos cuando se lancen
-- Casos de fuerza mayor (desastre natural, paro nacional)
+- Reembolsos corporativos (cargo a la cuenta de la empresa, no al empleado).
+- Reembolsos por suscripciones o planes prepagos cuando se lancen.
+- Casos de fuerza mayor (desastre natural, paro nacional).
