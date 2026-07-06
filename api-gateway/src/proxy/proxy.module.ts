@@ -274,6 +274,10 @@ export class ProxyModule implements NestModule {
       consumer
         .apply(makeForwardMiddleware(svc.pricing, 'price'))
         .forRoutes({ path: 'price', method: RequestMethod.POST });
+      // /snapshot — tablas + reglas para cotización client-side (webapp/móvil).
+      consumer
+        .apply(makeForwardMiddleware(svc.pricing, 'snapshot'))
+        .forRoutes({ path: 'snapshot', method: RequestMethod.GET });
     }
 
     // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)

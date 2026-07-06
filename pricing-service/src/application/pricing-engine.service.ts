@@ -282,6 +282,29 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
     return this.applyPromoProvider(core, input, dt);
   }
 
+  /**
+   * Snapshot público de las tablas + reglas activas — para que webapp/móvil
+   * coticen del lado del cliente con LOS DATOS DEL MOTOR (no una copia vieja),
+   * cerrando la última divergencia de precios en pantallas. Se baja al cargar.
+   */
+  async snapshot() {
+    await this.ensureFresh();
+    const l = this.lists;
+    const tbl = (svc: string, key: 'shared' | 'privateFares' | 'rates') =>
+      l[svc] ? { version: l[svc].version, [key === 'privateFares' ? 'private' : key]: (l[svc] as any)[key] ?? {} } : null;
+    return {
+      updatedAt: this.loadedAt,
+      compartido: tbl('compartido', 'shared'),
+      privado: tbl('privado', 'privateFares'),
+      empresas: tbl('empresas', 'privateFares'),
+      urbano: tbl('urbano', 'rates'),
+      // Reglas de recargo (día/hora/feriado) para replicar el surge en el cliente.
+      surchargeRules: this.rules
+        .filter((r: any) => r.effect?.type === 'surcharge_rate')
+        .map((r: any) => ({ name: r.name, group: r.group, scope: r.scope, condition: r.condition, effect: r.effect, active: r.active })),
+    };
+  }
+
   /** Cálculo base por servicio (paridad). El promo/precio-por-conductor se
    *  aplica después en applyPromoProvider(). */
   private async priceCore(input: PriceInput, dt: Date): Promise<PriceResult> {

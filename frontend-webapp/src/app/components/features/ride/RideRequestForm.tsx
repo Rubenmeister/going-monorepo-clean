@@ -15,6 +15,7 @@ import {
   getRoadDistance,
 } from '@/services/ride/fareCalculator';
 import { searchScheduledTrips, type TimeSlot, type CoverageStatus } from '@/services/ride/sharedSlots';
+import { loadMotorSnapshot } from '@/services/ride/canonicalFares';
 import { getStoredToken } from '@/lib/providers/auth-client';
 
 // ── Inline SVG icons — sin emojis ─────────────────────────────────────────
@@ -196,6 +197,17 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Snapshot del MOTOR DE TARIFAS: al montar, baja las tablas autoritativas de
+  // Atlas y sobrescribe la tabla local → la cotización del cliente muestra los
+  // MISMOS precios que cobra el backend (cierra la última divergencia). Si falla,
+  // sigue con el bundle local. Al cargar, recotiza (motorLoaded es dep del effect).
+  const [motorLoaded, setMotorLoaded] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    loadMotorSnapshot().then((ok) => { if (ok && alive) setMotorLoaded(true); });
+    return () => { alive = false; };
+  }, []);
+
   // ── Tarifa: calcula síncronamente, luego refina con distancia real de carretera ──
   useEffect(() => {
     const validRoute =
@@ -247,7 +259,7 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
 
     run();
     return () => { cancelled = true; };
-  }, [pickupLocation, dropoffLocation, vehicleType, tier, mode]);
+  }, [pickupLocation, dropoffLocation, vehicleType, tier, mode, motorLoaded]);
 
   // Consulta `/search` para rutas intercity (privado y compartido):
   //  - COBERTURA (coverageStatus + notices): en privado apenas hay ruta válida;

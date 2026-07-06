@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Logger, Post } from '@nestjs/common';
 import {
   PricingEngineService,
   type PriceInput,
@@ -23,6 +23,12 @@ export class PriceController {
     } catch (e) {
       return { error: (e as Error).message, serviceType: body?.serviceType ?? null };
     }
+  }
+
+  /** Snapshot público de tablas + reglas para cotización client-side (webapp/móvil). */
+  @Get('snapshot')
+  async snapshot() {
+    return this.engine.snapshot();
   }
 
   @Post('admin/refresh')
