@@ -87,6 +87,7 @@ export class FareListService {
     target.active = true;
     await target.save();
     await this.engine.refresh();
+    this.engine.publishInvalidate();
     this.logger.log(`Lista ACTIVA [${service}]: "${target.name}" v${target.version} (retiradas las otras de ${service})`);
     return { id, service, active: true, version: target.version, name: target.name };
   }
@@ -110,7 +111,10 @@ export class FareListService {
     doc.markModified('shared');
     doc.markModified('privateFares');
     await doc.save();
-    if (doc.active) await this.engine.refresh(); // efecto inmediato si es la activa
+    if (doc.active) {
+      await this.engine.refresh(); // efecto inmediato si es la activa
+      this.engine.publishInvalidate();
+    }
     this.logger.log(`Lista "${doc.name}" v${doc.version}: +${Object.keys(input.shared ?? {}).length} / -${(input.remove ?? []).length} rutas`);
     return { id, pairs: Object.keys(shared).length, active: doc.active };
   }
