@@ -172,6 +172,31 @@ const ACTIVE_RIDE_TOOL_OPENAI = {
   },
 };
 
+// Herramienta de RESERVA a nombre del cliente. Se ejecuta SOLO con aceptación
+// explícita y por escrito (confirmado=true) y con sesión iniciada (authToken).
+const CREATE_BOOKING_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'create_booking',
+    description:
+      'RESERVA un viaje a nombre de la persona cliente autenticada. ⚠️ ÚSALA SOLO cuando el cliente haya ACEPTADO EXPLÍCITAMENTE Y POR ESCRITO la compra. Flujo obligatorio: 1) resume origen, destino, vehículo, modalidad y PRECIO (de get_quote) y pregunta "¿Confirmas esta reserva?"; 2) SOLO cuando el cliente responda que sí/acepto/confirmo por escrito, llama esta herramienta con confirmado=true. Requiere sesión iniciada; si no hay, la herramienta lo indica y debes pedir que abra la app. NUNCA reserves sin confirmación escrita, ni inventes origen/destino/precio.',
+    parameters: {
+      type: 'object',
+      properties: {
+        origen: { type: 'string', description: 'Ciudad o dirección de origen' },
+        destino: { type: 'string', description: 'Ciudad o dirección de destino' },
+        modalidad: { type: 'string', enum: ['compartido', 'privado'], description: 'compartido (por asiento) o privado (vehículo completo)' },
+        vehiculo: { type: 'string', description: 'opcional: suv|suv_xl|van|van_xl|minibus|bus. Default suv.' },
+        pasajeros: { type: 'number', description: 'opcional: número de pasajeros. Default 1.' },
+        fecha_hora: { type: 'string', description: 'opcional: ISO 8601 si es viaje programado a futuro' },
+        precio: { type: 'number', description: 'precio cotizado con get_quote; se fija como lockedFare para respetar lo acordado' },
+        confirmado: { type: 'boolean', description: 'true SOLO si el cliente ya aceptó explícitamente por escrito la compra. Sin esto NO se reserva.' },
+      },
+      required: ['origen', 'destino', 'modalidad', 'confirmado'],
+    },
+  },
+};
+
 // Herramientas en formato Anthropic (name + description + input_schema).
 // Se derivan de las defs OpenAI para no duplicar los esquemas → una sola fuente.
 const ANTHROPIC_TOOLS: Anthropic.Tool[] = [
@@ -180,6 +205,7 @@ const ANTHROPIC_TOOLS: Anthropic.Tool[] = [
   SHIPPING_TOOL_OPENAI,
   CONSULTAR_TOOL_OPENAI,
   ACTIVE_RIDE_TOOL_OPENAI,
+  CREATE_BOOKING_TOOL_OPENAI,
 ].map((t) => ({
   name: t.function.name,
   description: t.function.description,
@@ -332,7 +358,7 @@ export class AgentService {
         model: OPENAI_MODEL,
         max_completion_tokens: 300,
         messages,
-        tools: [GET_QUOTE_TOOL_OPENAI, RENTAL_TOOL_OPENAI, SHIPPING_TOOL_OPENAI, CONSULTAR_TOOL_OPENAI, ACTIVE_RIDE_TOOL_OPENAI],
+        tools: [GET_QUOTE_TOOL_OPENAI, RENTAL_TOOL_OPENAI, SHIPPING_TOOL_OPENAI, CONSULTAR_TOOL_OPENAI, ACTIVE_RIDE_TOOL_OPENAI, CREATE_BOOKING_TOOL_OPENAI],
         tool_choice: 'auto',
       });
       const u = resp.usage;
@@ -619,6 +645,8 @@ export class AgentService {
           return getShippingQuote(args?.tamano, typeof args?.peso_kg === 'number' ? args.peso_kg : undefined);
         case 'get_my_active_ride':
           return await this.toolGetActiveRide(ctx?.authToken);
+        case 'create_booking':
+          return await this.toolCreateBooking(args, ctx?.authToken);
         default:
           this.logger.warn(`[tools] tool desconocido: ${name}`);
           return { error: `Tool ${name} no implementado` };
@@ -656,6 +684,82 @@ export class AgentService {
     } catch (e) {
       return { hasActive: false, error: (e as Error).message };
     }
+  }
+
+  /**
+   * create_booking: RESERVA a nombre del cliente autenticado. Dos gates duros:
+   *   1) sin authToken → no hay sesión, no se reserva a nombre de nadie.
+   *   2) confirmado !== true → el cliente NO aceptó por escrito → no se reserva
+   *      (se devuelve instrucción para que el asistente pida la aceptación).
+   * Con ambos OK: geocodifica, y crea el viaje REENVIANDO el token del cliente
+   * (queda en su cuenta real) con el precio cotizado (lockedFare).
+   */
+  private async toolCreateBooking(args: any, authToken?: string): Promise<any> {
+    if (!authToken) {
+      return {
+        ok: false,
+        requiere_sesion: true,
+        mensaje:
+          'Para reservar a nombre del cliente hace falta la sesión iniciada. Pide que abra la app de Going (donde ya está con su cuenta) y confirme la reserva ahí; en este canal sin sesión no puedo crear la reserva a su nombre.',
+      };
+    }
+    if (args?.confirmado !== true) {
+      return {
+        ok: false,
+        requiere_confirmacion: true,
+        mensaje:
+          'NO reserves aún. Primero RESUME la compra (origen, destino, vehículo, modalidad y precio) y pide al cliente que la ACEPTE explícitamente por escrito. Solo cuando responda que sí/acepto/confirmo, vuelve a llamar create_booking con confirmado=true.',
+      };
+    }
+    const origen = String(args?.origen || '').trim();
+    const destino = String(args?.destino || '').trim();
+    if (!origen || !destino) {
+      return { ok: false, mensaje: 'Faltan origen o destino para reservar.' };
+    }
+    const [o, d] = await Promise.all([
+      this.bookingService.geocodeAddress(origen),
+      this.bookingService.geocodeAddress(destino),
+    ]);
+    if (!o || !d) {
+      return {
+        ok: false,
+        mensaje:
+          'No pude ubicar una de las direcciones. Pide al cliente que sea más específico (ej. "Quito, Pichincha").',
+      };
+    }
+    const mode: 'shared' | 'private' = args?.modalidad === 'compartido' ? 'shared' : 'private';
+    const serviceType =
+      typeof args?.vehiculo === 'string' && args.vehiculo.trim() ? args.vehiculo.trim() : 'suv';
+    const passengers =
+      Number.isFinite(Number(args?.pasajeros)) && Number(args.pasajeros) > 0
+        ? Math.floor(Number(args.pasajeros))
+        : 1;
+    let scheduledAt: Date | undefined;
+    if (args?.fecha_hora) {
+      const dt = new Date(args.fecha_hora);
+      if (!isNaN(dt.getTime())) scheduledAt = dt;
+    }
+    const lockedFare = Number.isFinite(Number(args?.precio)) ? Number(args.precio) : undefined;
+
+    const result = await this.bookingService.createRideAsClient(authToken, o, d, {
+      serviceType,
+      mode,
+      passengers,
+      scheduledAt,
+      lockedFare,
+    });
+    if (!result.success) {
+      return { ok: false, mensaje: 'No se pudo crear la reserva en este momento.', error: result.error };
+    }
+    return {
+      ok: true,
+      reservado: true,
+      rideId: result.rideId,
+      precio: result.estimatedTotal ?? lockedFare,
+      programado: !!scheduledAt,
+      mensaje:
+        'Reserva creada a nombre del cliente en su cuenta. Confírmale el número de reserva y el precio.',
+    };
   }
 
   /**

@@ -176,6 +176,66 @@ export class BookingService implements OnModuleInit {
   }
 
   /**
+   * Crea un viaje A NOMBRE DEL CLIENTE autenticado, REENVIANDO su JWT (no
+   * mintea uno sintético como createRide) → el viaje queda en la cuenta REAL
+   * del cliente (transport lo asigna por @CurrentUser). Incluye lockedFare para
+   * respetar el precio cotizado. Lo usa la tool create_booking del asistente,
+   * SOLO tras la aceptación explícita y por escrito del cliente.
+   */
+  async createRideAsClient(
+    authToken: string,
+    origin: Coords,
+    destination: Coords,
+    opts: {
+      serviceType?: string;
+      mode?: 'shared' | 'private';
+      passengers?: number;
+      scheduledAt?: Date;
+      lockedFare?: number;
+    } = {},
+  ): Promise<BookingResult> {
+    const transportUrl = process.env.TRANSPORT_SERVICE_URL || 'http://localhost:3002';
+    try {
+      const body: any = {
+        pickupLatitude: origin.latitude,
+        pickupLongitude: origin.longitude,
+        dropoffLatitude: destination.latitude,
+        dropoffLongitude: destination.longitude,
+        serviceType: opts.serviceType ?? 'confort',
+      };
+      if (opts.mode) body.mode = opts.mode;
+      if (opts.passengers) body.passengers = opts.passengers;
+      if (opts.scheduledAt) body.scheduledAt = opts.scheduledAt.toISOString();
+      if (opts.lockedFare != null) body.lockedFare = opts.lockedFare;
+
+      const res = await fetch(`${transportUrl}/rides/request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        this.logger.error(`createRideAsClient transport ${res.status}: ${errText}`);
+        return { success: false, error: errText };
+      }
+      const ride = (await res.json()) as any;
+      return {
+        success: true,
+        rideId: ride.rideId,
+        estimatedTotal: ride.fare?.estimatedTotal ?? ride.lockedFare ?? opts.lockedFare,
+        scheduledAt: opts.scheduledAt,
+      };
+    } catch (err) {
+      this.logger.error('createRideAsClient error', err as any);
+      return { success: false, error: String(err) };
+    }
+  }
+
+  /**
    * Envía un mensaje de WhatsApp outbound (recordatorios de viaje programado).
    *
    * Migrado de Twilio a Meta Cloud API (mismo canal que el inbound) — Meta
