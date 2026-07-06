@@ -52,6 +52,7 @@ const NAV_SECTIONS = [
   {
     title: 'Finanzas',
     items: [
+      { label: 'Tarifas',       href: '/tarifas',   icon: '🧮' },
       { label: 'Ingresos',      href: '/ingresos',  icon: '💰' },
       { label: 'Pagos',         href: '/payments',  icon: '💳' },
       { label: 'Liquidaciones', href: '/payouts',   icon: '💸' },
