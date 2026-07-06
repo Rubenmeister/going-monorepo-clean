@@ -1,6 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import Redis from 'ioredis';
 import {
   PricingService,
   getPrivateFare,
@@ -71,10 +72,14 @@ const round = (n: number) => Math.round(n * 100) / 100;
  * tarifa se cambia en un solo lugar, sin deploy. Las reglas (día/hora/feriado)
  * siguen viniendo del código de libs/pricing en F1 (migran a Atlas en F4).
  */
+const INVALIDATE_CHANNEL = 'pricing:invalidate';
+
 @Injectable()
-export class PricingEngineService implements OnModuleInit {
+export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PricingEngineService.name);
   private readonly pricing = new PricingService();
+  private redisPub?: Redis;
+  private redisSub?: Redis;
   // Una lista activa POR servicio (compartido/privado/empresas/urbano).
   private lists: Record<string, RateFareListDocument> = {};
   // Reglas activas (recargos día/hora/feriado/promo) — F4, editables en Atlas.
@@ -97,6 +102,49 @@ export class PricingEngineService implements OnModuleInit {
   async onModuleInit() {
     await this.seedIfEmpty();
     await this.refresh();
+    this.setupInvalidation();
+  }
+
+  onModuleDestroy() {
+    this.redisSub?.disconnect();
+    this.redisPub?.disconnect();
+  }
+
+  /**
+   * F3: invalidación de caché INSTANTÁNEA entre instancias vía Redis pub/sub.
+   * Al editar una lista/regla se publica en el canal; TODAS las instancias
+   * refrescan al instante (sin esperar el TTL de 60s). Si no hay Redis, el TTL
+   * sigue de fallback (degradación gentil).
+   */
+  private setupInvalidation() {
+    const url = process.env.REDIS_URL;
+    if (!url) {
+      this.logger.warn('REDIS_URL no configurada — invalidación por TTL (60s) solamente');
+      return;
+    }
+    try {
+      this.redisPub = new Redis(url, { maxRetriesPerRequest: 2, lazyConnect: false });
+      this.redisSub = new Redis(url, { maxRetriesPerRequest: 2, lazyConnect: false });
+      this.redisPub.on('error', (e) => this.logger.debug(`redis pub: ${e.message}`));
+      this.redisSub.on('error', (e) => this.logger.debug(`redis sub: ${e.message}`));
+      this.redisSub.subscribe(INVALIDATE_CHANNEL, (err) => {
+        if (err) this.logger.warn(`subscribe falló: ${err.message}`);
+        else this.logger.log('Suscrito a invalidación de caché (Redis pub/sub)');
+      });
+      this.redisSub.on('message', (channel) => {
+        if (channel === INVALIDATE_CHANNEL) {
+          this.logger.log('Invalidación recibida → refrescando listas/reglas');
+          this.refresh().catch(() => {});
+        }
+      });
+    } catch (e) {
+      this.logger.warn(`setupInvalidation falló: ${(e as Error).message}`);
+    }
+  }
+
+  /** Publica una invalidación para que TODAS las instancias refresquen ya. */
+  publishInvalidate() {
+    this.redisPub?.publish(INVALIDATE_CHANNEL, String(Date.now())).catch?.(() => {});
   }
 
   /** Bootstrap: si no hay ninguna lista, siembra el snapshot inicial (paridad). */

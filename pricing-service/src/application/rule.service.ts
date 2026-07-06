@@ -68,6 +68,7 @@ export class RuleService {
       { upsert: true, new: true },
     );
     await this.engine.refresh();
+    this.engine.publishInvalidate();
     this.logger.log(`Regla upsert: "${body.name}" (${body.active === false ? 'inactiva' : 'activa'})`);
     return { id: String(doc._id), name: doc.name, active: doc.active };
   }
@@ -76,6 +77,7 @@ export class RuleService {
     const doc = await this.model.findByIdAndUpdate(id, { $set: { active } }, { new: true });
     if (!doc) throw new NotFoundException(`Regla ${id} no existe`);
     await this.engine.refresh();
+    this.engine.publishInvalidate();
     return { id, active: doc.active };
   }
 
@@ -83,6 +85,7 @@ export class RuleService {
     const r = await this.model.deleteOne({ _id: id });
     if (!r.deletedCount) throw new NotFoundException(`Regla ${id} no existe`);
     await this.engine.refresh();
+    this.engine.publishInvalidate();
     return { id, deleted: true };
   }
 }
