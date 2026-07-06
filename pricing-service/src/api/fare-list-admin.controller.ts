@@ -22,8 +22,10 @@ export class FareListAdminController {
   @HttpCode(201)
   create(@Body() body: {
     name: string;
+    service?: string; // compartido | privado | empresas | urbano
     shared?: Record<string, number>;
     privateFares?: Record<string, Record<string, number>>;
+    rates?: Record<string, Record<string, number>>;
     source?: string;
     activate?: boolean;
   }) {

@@ -66,9 +66,15 @@ const round = (n: number) => Math.round(n * 100) / 100;
 export class PricingEngineService implements OnModuleInit {
   private readonly logger = new Logger(PricingEngineService.name);
   private readonly pricing = new PricingService();
-  private activeList: RateFareListDocument | null = null;
+  // Una lista activa POR servicio (compartido/privado/empresas/urbano).
+  private lists: Record<string, RateFareListDocument> = {};
   private loadedAt = 0;
   private readonly TTL_MS = 60_000;
+
+  /** Lista activa de un servicio; cae a 'compartido' si no hay una propia. */
+  private listFor(service: string): RateFareListDocument | null {
+    return this.lists[service] ?? this.lists['compartido'] ?? null;
+  }
 
   constructor(
     @InjectModel(RateFareList.name)
@@ -98,29 +104,32 @@ export class PricingEngineService implements OnModuleInit {
     }
   }
 
-  /** Recarga la lista activa desde Atlas. Llamable por el panel (invalidación). */
+  /** Recarga TODAS las listas activas (una por servicio) desde Atlas. */
   async refresh(): Promise<void> {
     try {
-      const doc = await this.listModel
-        .findOne({ active: true })
+      const docs = await this.listModel
+        .find({ active: true })
         .sort({ version: -1 })
-        .lean<RateFareListDocument>();
-      if (doc) {
-        this.activeList = doc;
-        this.loadedAt = Date.now();
-        this.logger.log(
-          `Lista activa: "${doc.name}" v${doc.version} — ${Object.keys(doc.shared ?? {}).length} pares`,
-        );
-      } else {
-        this.logger.warn('No hay rate_fare_list activa en Atlas (¿corriste el import?)');
+        .lean<RateFareListDocument[]>();
+      const map: Record<string, RateFareListDocument> = {};
+      for (const d of docs) {
+        const svc = (d as any).service || 'compartido';
+        if (!map[svc]) map[svc] = d; // la de mayor versión gana (sort desc)
       }
+      this.lists = map;
+      this.loadedAt = Date.now();
+      const summary = Object.entries(map)
+        .map(([s, d]) => `${s} v${d.version}`)
+        .join(', ');
+      if (docs.length) this.logger.log(`Listas activas: ${summary}`);
+      else this.logger.warn('No hay rate_fare_list activa en Atlas');
     } catch (e) {
       this.logger.warn(`refresh() falló: ${(e as Error).message}`);
     }
   }
 
   private async ensureFresh() {
-    if (!this.activeList || Date.now() - this.loadedAt > this.TTL_MS) {
+    if (!Object.keys(this.lists).length || Date.now() - this.loadedAt > this.TTL_MS) {
       await this.refresh();
     }
   }
@@ -129,11 +138,19 @@ export class PricingEngineService implements OnModuleInit {
     return `${o}-${d}`.toLowerCase();
   }
 
-  /** Tarifa por asiento compartido desde la lista activa (en cualquier sentido). */
+  /** Tarifa por asiento de la lista COMPARTIDO activa (en cualquier sentido). */
   private sharedFare(o?: string, d?: string): number | null {
     if (!o || !d) return null;
-    const s = this.activeList?.shared ?? {};
+    const s = this.listFor('compartido')?.shared ?? {};
     return s[this.fareKey(o, d)] ?? s[this.fareKey(d, o)] ?? null;
+  }
+
+  /** Precio privado explícito (por vehículo) de una lista de servicio, o null. */
+  private privateFare(list: RateFareListDocument | null, o?: string, d?: string, veh = 'suv'): number | null {
+    if (!list || !o || !d) return null;
+    const pf = (list as any).privateFares ?? {};
+    const row = pf[this.fareKey(o, d)] ?? pf[this.fareKey(d, o)];
+    return row?.[veh] ?? row?.suv ?? null;
   }
 
   private feeSplit(total: number, pct = PLATFORM_FEE_SHARED) {
@@ -145,7 +162,7 @@ export class PricingEngineService implements OnModuleInit {
     await this.ensureFresh();
     const dt = input.dateTime ? new Date(input.dateTime) : new Date();
     const segment = (input.segment ?? 'public') as ClientSegment;
-    const listVersion = this.activeList?.version ?? null;
+    const listVersion = this.listFor('compartido')?.version ?? null;
     const currency = 'USD';
 
     switch (input.serviceType) {
@@ -166,34 +183,64 @@ export class PricingEngineService implements OnModuleInit {
         };
       }
 
-      // ── Privado interurbano inmediato (paridad: calcIntercityFare) ────────────
+      // ── Privado interurbano inmediato ────────────────────────────────────────
+      // Elige la lista por segmento: corporativo/agencia → 'empresas', si no → 'privado'.
+      // Si la lista tiene precio explícito por vehículo → lo usa (la lista YA encodea el
+      // segmento, así que solo aplica surge de tiempo). Si NO → fallback EXACTO a la
+      // fórmula de libs/pricing (calcIntercityFare) para conservar paridad.
       case 'intercity_private': {
+        const veh = (input.vehicleType ?? 'suv') as any;
+        const isCorp = segment === 'corporate' || segment === 'agency';
+        const svcList = this.listFor(isCorp ? 'empresas' : 'privado');
+        const explicit = this.privateFare(svcList, input.origin, input.destination, veh);
+        const originSurcharge = input.originSurcharge ?? 0;
+
+        if (explicit != null) {
+          const surge = getDynamicSurchargeRate(dt, 'privado'); // tiempo/día, NO segmento
+          const total = round(explicit * (1 + surge)) + originSurcharge;
+          const { platformFee, providerAmount } = this.feeSplit(total);
+          return {
+            total, currency, base: explicit, platformFee, providerAmount,
+            listVersion: svcList?.version ?? listVersion,
+            breakdown: { basePrice: explicit, timeSurchargeRate: surge, originSurcharge, list: isCorp ? 'empresas' : 'privado' },
+          };
+        }
+
+        // Fallback paridad: deriva de la tabla compartido + fórmula de segmento.
         const perSeat = this.sharedFare(input.origin, input.destination);
         if (perSeat == null) throw new Error(`Sin tarifa para ${input.origin}→${input.destination}`);
-        const veh = (input.vehicleType ?? 'suv') as any;
         const base = getPrivateFare(perSeat, veh);
         const r = this.pricing.calcIntercityFare({
-          basePrice: base,
-          mode: 'privado',
-          serviceDateTime: dt,
-          clientSegment: segment,
-          originSurcharge: input.originSurcharge ?? 0,
+          basePrice: base, mode: 'privado', serviceDateTime: dt,
+          clientSegment: segment, originSurcharge,
         });
         return {
           total: r.total, currency, base, platformFee: r.platformFee,
           providerAmount: r.providerAmount, listVersion,
           breakdown: {
-            basePrice: base,
-            timeSurchargeRate: r.timeSurchargeRate,
-            clientSurchargeRate: r.clientSurchargeRate,
-            originSurcharge: r.originSurcharge,
+            basePrice: base, timeSurchargeRate: r.timeSurchargeRate,
+            clientSurchargeRate: r.clientSurchargeRate, originSurcharge: r.originSurcharge, list: 'compartido(derivado)',
           },
         };
       }
 
-      // ── Urbano on-demand (paridad: calcTransport con surge dinámico) ──────────
+      // ── Urbano / ride-sharing inmediato — reglas propias (base+km+min + surge) ─
+      // Usa los `rates` de la lista 'urbano' si existe (editable en vivo); si no,
+      // fallback exacto a calcTransport (RATES del código) = paridad.
       case 'urban_ride': {
         const surge = 1 + getDynamicSurchargeRate(dt, 'privado');
+        const rt = (this.listFor('urbano') as any)?.rates?.transport;
+        if (rt && typeof rt.baseFare === 'number') {
+          const km = input.distanceKm ?? 0;
+          const min = input.durationMinutes ?? 0;
+          const total = round((rt.baseFare + km * rt.perKm + min * rt.perMinute) * surge);
+          const { platformFee, providerAmount } = this.feeSplit(total, rt.platformFeePct ?? PLATFORM_FEE_SHARED);
+          return {
+            total, currency, base: total, platformFee, providerAmount,
+            listVersion: this.listFor('urbano')?.version ?? listVersion,
+            breakdown: { baseFare: rt.baseFare, perKm: rt.perKm, perMinute: rt.perMinute, surgeMultiplier: surge },
+          };
+        }
         const r = this.pricing.calculate({
           serviceType: 'transport',
           distanceKm: input.distanceKm ?? 0,
