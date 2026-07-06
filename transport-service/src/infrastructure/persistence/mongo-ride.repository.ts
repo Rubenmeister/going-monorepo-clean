@@ -131,6 +131,16 @@ export class MongoRideRepository implements IRideRepository {
     return docs.map((doc) => this.mapToEntity(doc));
   }
 
+  async findActiveByUserId(userId: string): Promise<any | null> {
+    const doc = await this.rideModel
+      .findOne({
+        userId,
+        status: { $in: ['requested', 'scheduled', 'accepted', 'arriving', 'started'] },
+      })
+      .sort({ requestedAt: -1 });
+    return doc ? this.mapToEntity(doc) : null;
+  }
+
   async update(id: string, updates: any): Promise<any> {
     const doc = await this.rideModel.findOneAndUpdate({ rideId: id }, updates, {
       new: true,

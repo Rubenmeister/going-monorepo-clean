@@ -266,6 +266,24 @@ export class RideEventsGateway
         : `${Math.round(etaSeconds / 60)} min`
       : null;
 
+    // Persistir la última posición + ETA en el doc del viaje (fire-and-forget)
+    // para que otros servicios lo consulten por REST — ej. el asistente de
+    // soporte respondiendo "¿dónde está mi conductor?" / "¿cuánto falta?".
+    this.rideModel
+      .updateOne(
+        { _id: rideId },
+        {
+          $set: {
+            lastDriverLat: lat,
+            lastDriverLng: lng,
+            lastDriverEtaSeconds: etaSeconds ?? null,
+            lastDriverDistanceKm: distanceToPickupKm ?? null,
+            lastLocationAt: new Date(),
+          },
+        },
+      )
+      .catch((e) => this.logger.warn(`persist driver pos ride=${rideId}: ${e.message}`));
+
     // Notificaciones de proximidad — cada umbral se emite solo una vez por viaje.
     const distanceMeters = distanceToPickupKm != null ? distanceToPickupKm * 1000 : null;
 

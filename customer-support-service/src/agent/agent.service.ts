@@ -158,13 +158,28 @@ const CONSULTAR_TOOL_OPENAI = {
   },
 };
 
-// Mismas 4 herramientas en formato Anthropic (name + description + input_schema).
+// Herramienta de VIAJE ACTIVO del usuario autenticado (estado + ETA). El viaje
+// se resuelve por la sesión (token del usuario), NO por args del modelo.
+const ACTIVE_RIDE_TOOL_OPENAI = {
+  type: 'function' as const,
+  function: {
+    name: 'get_my_active_ride',
+    description:
+      'Consulta el VIAJE ACTIVO de la persona usuaria autenticada: estado, si ya tiene conductora o conductor asignado, y el ETA/"cuánto falta" si el conductor ya reporta ubicación. ' +
+      'Úsala cuando pregunten por SU viaje en curso: "¿dónde está mi conductor?", "¿cuánto falta?", "¿ya viene?", "¿me aceptaron el viaje?", "estado de mi viaje". ' +
+      'NO necesita parámetros (el viaje se resuelve por la sesión). Si no hay sesión o no hay viaje activo, la herramienta lo indica y debes decirlo con naturalidad.',
+    parameters: { type: 'object', properties: {}, required: [] },
+  },
+};
+
+// Herramientas en formato Anthropic (name + description + input_schema).
 // Se derivan de las defs OpenAI para no duplicar los esquemas → una sola fuente.
 const ANTHROPIC_TOOLS: Anthropic.Tool[] = [
   GET_QUOTE_TOOL_OPENAI,
   RENTAL_TOOL_OPENAI,
   SHIPPING_TOOL_OPENAI,
   CONSULTAR_TOOL_OPENAI,
+  ACTIVE_RIDE_TOOL_OPENAI,
 ].map((t) => ({
   name: t.function.name,
   description: t.function.description,
@@ -212,6 +227,7 @@ export class AgentService {
     systemPrompt: string,
     history: { role: 'user' | 'assistant'; content: string }[],
     userMessage: string,
+    ctx?: { authToken?: string },
   ): Promise<string> {
     const status = this.budget.status();
     const order: ('claude' | 'openai')[] =
@@ -226,8 +242,8 @@ export class AgentService {
       try {
         const text =
           provider === 'claude' && this.anthropic
-            ? await this.generateClaude(systemPrompt, msgs)
-            : await this.generateOpenAI(systemPrompt, msgs);
+            ? await this.generateClaude(systemPrompt, msgs, ctx)
+            : await this.generateOpenAI(systemPrompt, msgs, ctx);
         if (text) return text;
       } catch (err) {
         this.logger.error(`[llm:${provider}] error: ${(err as Error).message} — probando siguiente proveedor`);
@@ -246,6 +262,7 @@ export class AgentService {
   private async generateClaude(
     systemPrompt: string,
     msgs: { role: 'user' | 'assistant'; content: string }[],
+    ctx?: { authToken?: string },
   ): Promise<string> {
     const messages: Anthropic.MessageParam[] = msgs.map((m) => ({ role: m.role, content: m.content }));
     for (let round = 0; round < 3; round++) {
@@ -275,11 +292,13 @@ export class AgentService {
       if (resp.stop_reason === 'tool_use' && toolUses.length > 0) {
         // El modelo pidió herramientas: adjuntamos su turno + los tool_result.
         messages.push({ role: 'assistant', content: resp.content });
-        const results: Anthropic.ToolResultBlockParam[] = toolUses.map((tu) => {
-          const result = this.executeTool(tu.name, tu.input as any);
-          this.logger.log(`[claude:tool] ${tu.name}(${JSON.stringify(tu.input)}) → ${JSON.stringify(result).slice(0, 160)}`);
-          return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) };
-        });
+        const results: Anthropic.ToolResultBlockParam[] = await Promise.all(
+          toolUses.map(async (tu) => {
+            const result = await this.executeTool(tu.name, tu.input as any, ctx);
+            this.logger.log(`[claude:tool] ${tu.name}(${JSON.stringify(tu.input)}) → ${JSON.stringify(result).slice(0, 160)}`);
+            return { type: 'tool_result' as const, tool_use_id: tu.id, content: JSON.stringify(result) };
+          }),
+        );
         messages.push({ role: 'user', content: results });
         continue; // siguiente vuelta: el modelo redacta con el resultado
       }
@@ -304,6 +323,7 @@ export class AgentService {
   private async generateOpenAI(
     systemPrompt: string,
     msgs: { role: 'user' | 'assistant'; content: string }[],
+    ctx?: { authToken?: string },
   ): Promise<string> {
     const messages: any[] = [{ role: 'system', content: systemPrompt }, ...msgs];
     for (let round = 0; round < 3; round++) {
@@ -312,7 +332,7 @@ export class AgentService {
         model: OPENAI_MODEL,
         max_completion_tokens: 300,
         messages,
-        tools: [GET_QUOTE_TOOL_OPENAI, RENTAL_TOOL_OPENAI, SHIPPING_TOOL_OPENAI, CONSULTAR_TOOL_OPENAI],
+        tools: [GET_QUOTE_TOOL_OPENAI, RENTAL_TOOL_OPENAI, SHIPPING_TOOL_OPENAI, CONSULTAR_TOOL_OPENAI, ACTIVE_RIDE_TOOL_OPENAI],
         tool_choice: 'auto',
       });
       const u = resp.usage;
@@ -329,7 +349,7 @@ export class AgentService {
           if (tc.type !== 'function') continue;
           let args: any = {};
           try { args = JSON.parse(tc.function.arguments || '{}'); } catch { /* args vacío */ }
-          const result = this.executeTool(tc.function.name, args);
+          const result = await this.executeTool(tc.function.name, args, ctx);
           this.logger.log(`[openai:tool] ${tc.function.name}(${tc.function.arguments}) → ${JSON.stringify(result).slice(0, 160)}`);
           messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
         }
@@ -356,7 +376,7 @@ export class AgentService {
   async respond(
     userId: string,
     userMessage: string,
-    opts?: { lang?: SupportedLang; audience?: Audience },
+    opts?: { lang?: SupportedLang; audience?: Audience; authToken?: string },
   ): Promise<string | null> {
     // ⚠️ AWAIT obligatorio.
     //
@@ -488,7 +508,7 @@ export class AgentService {
 
     let assistantMessage = '';
     try {
-      assistantMessage = await this.generate(systemPrompt, history, userMessage);
+      assistantMessage = await this.generate(systemPrompt, history, userMessage, { authToken: opts?.authToken });
     } catch (error) {
       this.logger.error('LLM error (todos los proveedores fallaron)', error as any);
       return lang === 'en'
@@ -582,7 +602,11 @@ export class AgentService {
    * `functionResponse`). Si falla, devuelve { error } y Gemini compone
    * una disculpa natural.
    */
-  private executeTool(name: string, args: any): any {
+  private async executeTool(
+    name: string,
+    args: any,
+    ctx?: { authToken?: string },
+  ): Promise<any> {
     try {
       switch (name) {
         case 'get_quote':
@@ -593,6 +617,8 @@ export class AgentService {
           return this.toolGetRental(args);
         case 'get_shipping_quote':
           return getShippingQuote(args?.tamano, typeof args?.peso_kg === 'number' ? args.peso_kg : undefined);
+        case 'get_my_active_ride':
+          return await this.toolGetActiveRide(ctx?.authToken);
         default:
           this.logger.warn(`[tools] tool desconocido: ${name}`);
           return { error: `Tool ${name} no implementado` };
@@ -600,6 +626,35 @@ export class AgentService {
     } catch (err) {
       this.logger.error(`[tools] error ejecutando ${name}: ${(err as Error).message}`);
       return { error: (err as Error).message };
+    }
+  }
+
+  /**
+   * get_my_active_ride: consulta el viaje activo del usuario en transport-service
+   * REENVIANDO el JWT del propio usuario (el asistente actúa en su nombre). Sin
+   * token (canales anónimos/WhatsApp) → indica que no hay sesión. transport
+   * resuelve el viaje por @CurrentUser, no confiamos en args del modelo.
+   */
+  private async toolGetActiveRide(authToken?: string): Promise<any> {
+    if (!authToken) {
+      return {
+        autenticado: false,
+        mensaje:
+          'La persona no ha iniciado sesión en este canal, así que no puedo ver su viaje. Pídele que abra la app de Going (donde ya está con su cuenta) para ver el estado en vivo.',
+      };
+    }
+    const base = (process.env.TRANSPORT_SERVICE_URL || 'http://localhost:3002').replace(/\/$/, '');
+    try {
+      const res = await fetch(`${base}/rides/mine/active`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+        signal: AbortSignal.timeout(6000),
+      });
+      if (!res.ok) {
+        return { hasActive: false, error: `transport respondió ${res.status}` };
+      }
+      return await res.json();
+    } catch (e) {
+      return { hasActive: false, error: (e as Error).message };
     }
   }
 

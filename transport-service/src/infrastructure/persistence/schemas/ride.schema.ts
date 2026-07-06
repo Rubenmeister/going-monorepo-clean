@@ -101,6 +101,17 @@ export class RideModelSchema {
   @Prop({ index: true }) paymentCaptureStatus: string;
   /** Momento de la última captura fallida (para el job de reconciliación). */
   @Prop() paymentCaptureFailedAt: Date;
+
+  // ── Última posición/ETA del conductor (persistida desde el gateway WS) ──────
+  // El gateway ya calcula el ETA real en cada ping de `driver:location`, pero
+  // solo en memoria. Se persiste aquí para que OTROS servicios (ej. el asistente
+  // de soporte: "¿dónde está mi conductor?") lo consulten por REST. Escritura
+  // fire-and-forget desde el gateway; puede quedar rezagada unos segundos.
+  @Prop() lastDriverLat: number;
+  @Prop() lastDriverLng: number;
+  @Prop() lastDriverEtaSeconds: number;
+  @Prop() lastDriverDistanceKm: number;
+  @Prop() lastLocationAt: Date;
 }
 
 export type RideDocument = RideModelSchema & Document;

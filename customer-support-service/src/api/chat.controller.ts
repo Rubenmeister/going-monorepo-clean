@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, Req, UseGuards, ForbiddenException } from '@nestjs/common';
 import { AgentService } from '../agent/agent.service';
 import { ConversationService } from '../agent/conversation.service';
 import { JwtAuthGuard, AdminGuard, CurrentUser, AuthUser } from '../infrastructure/auth/jwt.guard';
@@ -25,6 +25,7 @@ export class ChatController {
   @Post('message')
   async sendMessage(
     @CurrentUser() caller: AuthUser,
+    @Req() req: { headers: { authorization?: string } },
     @Body() body: { userId: string; message: string },
   ) {
     const { userId, message } = body;
@@ -35,7 +36,10 @@ export class ChatController {
     // Audiencia por rol del JWT: si quien escribe es conductora o conductor,
     // el asistente usa el prompt de soporte a conductores.
     const audience = caller.roles?.includes('driver') ? ('driver' as const) : undefined;
-    const reply = await this.agentService.respond(userId, message, audience ? { audience } : undefined);
+    // Reenviamos el JWT del usuario para que el asistente pueda consultar SU
+    // viaje activo en transport (tool get_my_active_ride) en su nombre.
+    const authToken = req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    const reply = await this.agentService.respond(userId, message, { audience, authToken });
     const conv = await this.conversationService.getOrCreate(userId);
     return {
       reply,

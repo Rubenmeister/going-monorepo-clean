@@ -197,6 +197,65 @@ export class RideController {
   }
 
   /**
+   * GET /api/rides/mine/active — viaje activo del pasajero autenticado.
+   * Lo consume el asistente de soporte ("¿dónde está mi conductor?" /
+   * "¿cuánto falta?") con el JWT del propio usuario. Devuelve estado + ETA si
+   * el conductor ya reporta ubicación (persistida por el gateway WS).
+   * Va ANTES de `:rideId` (ruta de 2 segmentos, no colisiona, pero por claridad).
+   */
+  @Get('mine/active')
+  @SkipThrottle()
+  async getMyActiveRide(@CurrentUser() user: AuthUser): Promise<any> {
+    const ride = await this.rideRepo.findActiveByUserId(user.id);
+    if (!ride) return { hasActive: false };
+
+    const status: string = ride.status;
+    const statusText =
+      (
+        {
+          requested: 'Buscando conductora o conductor disponible.',
+          scheduled: 'Viaje reservado (programado). Aún no se asigna conductor.',
+          accepted: 'Tu conductora o conductor aceptó y va en camino a recogerte.',
+          arriving: 'Tu conductora o conductor está llegando al punto de recogida.',
+          started: 'El viaje está en curso.',
+        } as Record<string, string>
+      )[status] ?? status;
+
+    // ETA: usar la última posición persistida solo si es fresca (< 2 min).
+    let eta: { seconds: number; text: string; distanceKm: number | null } | null = null;
+    const fresh =
+      ride.lastLocationAt &&
+      Date.now() - new Date(ride.lastLocationAt).getTime() < 120_000;
+    if (fresh && ride.lastDriverEtaSeconds != null) {
+      const s = ride.lastDriverEtaSeconds as number;
+      eta = {
+        seconds: s,
+        text: s < 60 ? 'menos de 1 minuto' : `${Math.round(s / 60)} min`,
+        distanceKm:
+          ride.lastDriverDistanceKm != null
+            ? Math.round((ride.lastDriverDistanceKm as number) * 10) / 10
+            : null,
+      };
+    }
+
+    return {
+      hasActive: true,
+      ride: {
+        rideId: String(ride._id),
+        status,
+        statusText,
+        serviceType: ride.serviceType ?? null,
+        modalidad: ride.modalidad ?? null,
+        pickup: ride.pickupLocation?.address ?? null,
+        dropoff: ride.dropoffLocation?.address ?? null,
+        hasDriver: !!ride.driverId,
+        scheduledAt: ride.scheduledAt ?? null,
+        eta, // null si aún no hay ubicación del conductor o está rezagada
+      },
+    };
+  }
+
+  /**
    * Get ride details
    * GET /api/rides/:rideId
    */

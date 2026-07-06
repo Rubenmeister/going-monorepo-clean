@@ -87,6 +87,21 @@ export class MongooseRideRepository implements IRideRepository {
     return docs.map((d) => this._toRideData(d));
   }
 
+  /**
+   * Viaje activo (no terminal) más reciente del pasajero. Devuelve el doc CRUDO
+   * (lean) para conservar los campos `lastDriver*` (posición/ETA) que el mapper
+   * `_toRideData` no expone — los usa el endpoint de "viaje activo" del asistente.
+   */
+  async findActiveByUserId(userId: string): Promise<any | null> {
+    return this.model
+      .findOne({
+        userId,
+        status: { $in: ['requested', 'scheduled', 'accepted', 'arriving', 'started'] },
+      })
+      .sort({ requestedAt: -1 })
+      .lean();
+  }
+
   async update(id: string, data: any): Promise<any> {
     const doc = await this.model
       .findByIdAndUpdate(id, { $set: data }, { new: true })

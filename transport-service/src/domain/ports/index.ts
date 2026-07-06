@@ -555,6 +555,8 @@ export interface IRideRepository {
   findByUserId(userId: string, limit?: number): Promise<any[]>;
   findByDriverId(driverId: string, limit?: number): Promise<any[]>;
   findActiveByDriverId(driverId: string): Promise<any[]>;
+  /** Viaje activo (no terminal) del pasajero, doc crudo con lastDriver* para ETA. */
+  findActiveByUserId(userId: string): Promise<any | null>;
   update(id: string, ride: any): Promise<any>;
   findRecent(limit: number): Promise<any[]>;
   findByStatus(status: string, limit?: number, excludeDriverId?: string): Promise<any[]>;
