@@ -104,7 +104,7 @@ packagingOptions {
         applicationId 'com.going.userapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 77
+        versionCode 80
         versionName "2.0.0"
     }
     signingConfigs {
