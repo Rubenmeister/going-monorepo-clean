@@ -88,20 +88,27 @@ export class UnifiedSearchUseCase {
       case 'urban': {
         // Ride-hailing urbano con tarifa dinámica (hora pico / feriado / noche).
         const surgeMultiplier = 1 + getDynamicSurchargeRate(dateTime, 'privado');
-        const fare = this.pricing.calculate({
+        const localFare = this.pricing.calculate({
           serviceType: 'transport',
           distanceKm: cls.distanceKm,
           durationMinutes: cls.estimatedDurationMinutes,
           surgeMultiplier,
         });
+        // F2c: precio de la lista 'urbano' del motor (rates editables en vivo) con
+        // fallback al cálculo local (RATES de libs/pricing).
+        const urbanPrice = (await this.pricingClient.fullPrice(
+          { serviceType: 'urban_ride', distanceKm: cls.distanceKm, durationMinutes: cls.estimatedDurationMinutes, dateTime: dateTime.toISOString() },
+          () => localFare.total,
+          `urban ${cls.originLabel}`,
+        )) ?? localFare.total;
         onDemandOptions.push({
           serviceType: 'urban_ride',
           label: 'Going',
           description: `Viaje en ${cls.originLabel} · ${cls.distanceKm} km aprox.`,
-          price: fare.total,
-          currency: fare.currency,
+          price: urbanPrice,
+          currency: localFare.currency,
           estimatedEtaMinutes: cls.estimatedDurationMinutes,
-          breakdown: { ...fare.breakdown, surgeMultiplier },
+          breakdown: { ...localFare.breakdown, surgeMultiplier },
         });
         if (temporalPreference === 'scheduled') {
           notices.push(
@@ -171,21 +178,34 @@ export class UnifiedSearchUseCase {
           );
         } else {
           const privateBase = getPrivateFare(sharedPerSeat, vehicleType);
-          const fare = this.pricing.calcIntercityFare({
+          const localFare = this.pricing.calcIntercityFare({
             basePrice: privateBase,
             mode: 'privado',
             serviceDateTime: dateTime,
             clientSegment,
           });
+          // F2c: precio privado COMPLETO del motor — usa la lista 'privado' (o
+          // 'empresas' si el segmento es corporativo/agencia), editable en vivo,
+          // con fallback al cálculo local.
+          const privatePrice = (await this.pricingClient.fullPrice(
+            {
+              serviceType: 'intercity_private',
+              origin: cls.originCity, destination: cls.destinationCity,
+              vehicleType, segment: clientSegment, dateTime: dateTime.toISOString(),
+              originSurcharge: 0,
+            },
+            () => localFare.total,
+            `private ${cls.originLabel}->${cls.destinationLabel} ${clientSegment}`,
+          )) ?? localFare.total;
           onDemandOptions.push({
             serviceType: 'intercity_private_immediate',
             label: 'Intercity Privado',
             description: `${cls.originLabel} → ${cls.destinationLabel} · vehículo dedicado (${vehicleType.toUpperCase()})`,
-            price: fare.total,
-            currency: fare.currency,
+            price: privatePrice,
+            currency: localFare.currency,
             estimatedEtaMinutes: cls.estimatedDurationMinutes,
             vehicleType,
-            breakdown: fare.breakdown,
+            breakdown: localFare.breakdown,
           });
         }
 

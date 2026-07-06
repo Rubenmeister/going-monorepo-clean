@@ -56,4 +56,38 @@ export class PricingClient {
       return local;
     }
   }
+
+  /**
+   * Precio COMPLETO del motor para un serviceType (intercity_private, urban_ride,
+   * etc.) → el motor aplica su lista de servicio (privado/empresas/urbano) + surge.
+   * `localFallback` = el cálculo actual de libs/pricing. Devuelve el total del
+   * motor, o el local si el motor no responde. `label` solo para el shadow-log.
+   */
+  async fullPrice(
+    body: Record<string, unknown>,
+    localFallback: () => number | null,
+    label = '',
+  ): Promise<number | null> {
+    const local = localFallback();
+    if (!this.enabled) return local;
+    try {
+      const res = await fetch(`${this.baseUrl}/price`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(this.timeoutMs),
+      });
+      if (!res.ok) throw new Error(`/price ${res.status}`);
+      const data = (await res.json()) as { total?: number; error?: string };
+      const remote = typeof data?.total === 'number' ? data.total : null;
+      if (remote == null) return local;
+      if (local != null && remote !== local) {
+        this.logger.warn(`[pricing-drift] ${label}: motor=${remote} local=${local} (usando motor)`);
+      }
+      return remote;
+    } catch (e) {
+      this.logger.debug(`pricing fullPrice fallback ${label}: ${(e as Error).message}`);
+      return local;
+    }
+  }
 }
