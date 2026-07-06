@@ -1082,6 +1082,72 @@ export class AuthController {
     };
   }
 
+  // ─── Direcciones guardadas (Casa/Trabajo/favoritos) ────────────────────────
+  /**
+   * GET /auth/me/saved-addresses — direcciones guardadas del usuario.
+   * Fuente única (Atlas) para web + móvil; reemplaza el localStorage/AsyncStorage
+   * que antes divergía entre clientes.
+   */
+  @Get('me/saved-addresses')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async getSavedAddresses(@CurrentUser('userId') userId: UUID) {
+    const u = await this.userModel
+      .findOne({ id: userId })
+      .select('savedAddresses')
+      .lean();
+    return { savedAddresses: (u?.savedAddresses as unknown[]) ?? [] };
+  }
+
+  /**
+   * PUT /auth/me/saved-addresses — reemplaza la lista completa. El cliente
+   * maneja el array (agregar/editar/quitar) y envía el resultado; se valida y
+   * se topa el tamaño. Solo una "Casa" y un "Trabajo"; favoritos hasta el tope.
+   */
+  @Put('me/saved-addresses')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  async putSavedAddresses(
+    @CurrentUser('userId') userId: UUID,
+    @Body() body: { savedAddresses?: unknown },
+  ) {
+    const MAX = 20;
+    const VALID_TYPES = ['home', 'work', 'favorite'];
+    if (!Array.isArray(body?.savedAddresses)) {
+      throw new BadRequestException('savedAddresses debe ser un arreglo.');
+    }
+    if (body.savedAddresses.length > MAX) {
+      throw new BadRequestException(`Máximo ${MAX} direcciones guardadas.`);
+    }
+    const clean = (body.savedAddresses as any[]).map((raw, i) => {
+      const type = VALID_TYPES.includes(raw?.type) ? raw.type : 'favorite';
+      const label = String(raw?.label ?? '').trim().slice(0, 60);
+      const address = String(raw?.address ?? '').trim().slice(0, 200);
+      const latitude = Number(raw?.latitude);
+      const longitude = Number(raw?.longitude);
+      if (!label || !address || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new BadRequestException(
+          `Dirección #${i + 1} inválida (label, address, latitude y longitude requeridos).`,
+        );
+      }
+      const id = String(raw?.id ?? '').trim() || `${Date.now()}-${i}`;
+      return { id, type, label, address, latitude, longitude };
+    });
+    // Deduplica singletons: solo una Casa y un Trabajo (el primero gana).
+    const seen = new Set<string>();
+    const deduped = clean.filter((a) => {
+      if (a.type === 'favorite') return true;
+      if (seen.has(a.type)) return false;
+      seen.add(a.type);
+      return true;
+    });
+    await this.userModel.updateOne(
+      { id: userId },
+      { $set: { savedAddresses: deduped } },
+    );
+    return { savedAddresses: deduped };
+  }
+
   // ─── Loyalty Points (Tipo B) ───────────────────────────────────────────────
 
   /**

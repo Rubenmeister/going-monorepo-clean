@@ -32,6 +32,22 @@ export class UserModelSchema {
   @Prop({ type: Object, default: {} })
   notificationPreferences?: Record<string, boolean>;
 
+  /**
+   * Direcciones guardadas del usuario (Casa/Trabajo/favoritos como "Mamá") para
+   * reservar semiautomáticamente. Persistidas por cuenta → siguen al usuario
+   * entre dispositivos (web + móvil); antes solo vivían en localStorage /
+   * AsyncStorage de cada cliente y no sincronizaban entre sí.
+   */
+  @Prop({ type: [Object], default: [] })
+  savedAddresses?: Array<{
+    id: string;
+    type: 'home' | 'work' | 'favorite';
+    label: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+  }>;
+
   @Prop([String])
   roles: string[];
 

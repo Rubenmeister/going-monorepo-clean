@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Location } from '@/types';
 import { MapPicker } from './MapPicker';
+import {
+  loadSavedAddresses,
+  upsertSavedAddress,
+  iconForType,
+  type SavedAddress,
+  type SavedAddressType,
+} from '@/app/services/savedAddresses';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -196,13 +203,43 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
     ? '¿De dónde sales?'
     : '¿Hacia dónde vas?');
 
-  /* Cargar guardadas + recientes al montar */
+  const [savedFlash, setSavedFlash] = useState<string | null>(null);
+
+  /* Guardadas (backend, mapeadas) + recientes (localStorage), tope 6. */
+  const buildEntries = (saved: SavedAddress[]): SavedEntry[] => {
+    const savedE: SavedEntry[] = saved.map((a) => ({
+      label: a.label, icon: iconForType(a.type), address: a.address, lat: a.latitude, lon: a.longitude,
+    }));
+    const recent = loadStored('going_recent_addresses');
+    return [...savedE, ...recent.filter(r => !savedE.find(s => s.address === r.address))].slice(0, 6);
+  };
+
+  /* Cargar guardadas (backend, fuente única) + recientes al montar */
   useEffect(() => {
-    const saved   = loadStored('going_saved_addresses');
-    const recent  = loadStored('going_recent_addresses');
-    const merged  = [...saved, ...recent.filter(r => !saved.find(s => s.address === r.address))].slice(0, 6);
-    setSavedEntries(merged);
+    let alive = true;
+    loadSavedAddresses().then((list) => { if (alive) setSavedEntries(buildEntries(list)); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Guardar la ubicación elegida como Casa/Trabajo/favorito (semiautomático). */
+  const handleSaveAs = async (t: SavedAddressType) => {
+    if (!value) return;
+    let label = t === 'home' ? 'Casa' : t === 'work' ? 'Trabajo' : '';
+    if (t === 'favorite') {
+      const name = typeof window !== 'undefined'
+        ? window.prompt('Nombre del lugar (ej. Mamá, Gimnasio):', '')
+        : '';
+      if (!name || !name.trim()) return;
+      label = name.trim().slice(0, 40);
+    }
+    const list = await upsertSavedAddress({
+      type: t, label, address: value.address, latitude: value.lat, longitude: value.lon,
+    });
+    setSavedEntries(buildEntries(list));
+    setSavedFlash(label);
+    setTimeout(() => setSavedFlash(null), 2200);
+  };
 
   /* Close on outside click */
   useEffect(() => {
@@ -482,6 +519,33 @@ export function LocationSelector({ type, value, onChange, placeholder }: Locatio
           </div>
         )}
       </div>
+
+      {/* Guardar la ubicación elegida (Casa/Trabajo/otro) — semiautomático */}
+      {value && !showMap && (
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          {savedFlash ? (
+            <span className="text-xs font-semibold text-green-600">✓ Guardado como {savedFlash}</span>
+          ) : (
+            <>
+              <span className="text-xs text-gray-400">Guardar como:</span>
+              {([
+                { t: 'home' as const, txt: '🏠 Casa' },
+                { t: 'work' as const, txt: '💼 Trabajo' },
+                { t: 'favorite' as const, txt: '⭐ Otro' },
+              ]).map(({ t, txt }) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleSaveAs(t)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:bg-blue-50 hover:border-[#0033A0] hover:text-[#0033A0] transition-colors"
+                >
+                  {txt}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Panel del mapa para fijar el punto exacto (pin arrastrable) */}
       {showMap && (

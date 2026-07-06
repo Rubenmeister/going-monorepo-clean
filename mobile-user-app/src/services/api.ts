@@ -57,6 +57,23 @@ export const authAPI = {
     api.patch('/auth/me', data),
 };
 
+// ── Direcciones guardadas (Casa/Trabajo/favoritos) ───────────────────────────
+/** Shape del backend (/auth/me/saved-addresses) — fuente única, sincroniza web↔móvil. */
+export interface SavedAddressDTO {
+  id: string;
+  type: 'home' | 'work' | 'favorite';
+  label: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+}
+
+export const savedAddressesAPI = {
+  get: () => api.get<{ savedAddresses: SavedAddressDTO[] }>('/auth/me/saved-addresses'),
+  put: (savedAddresses: SavedAddressDTO[]) =>
+    api.put<{ savedAddresses: SavedAddressDTO[] }>('/auth/me/saved-addresses', { savedAddresses }),
+};
+
 // ── Transport ────────────────────────────────────────────────────────────────
 
 /** Punto geográfico (origen / destino) — shape canónico del backend SearchQueryDto. */

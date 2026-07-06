@@ -24,6 +24,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { hapticLight, hapticMedium } from '../../utils/haptics';
+import { useSavedAddressesStore, type SavedAddress, type AddressType } from '../../store/useSavedAddressesStore';
+
+const savedIcon = (t: AddressType): keyof typeof Ionicons.glyphMap =>
+  t === 'home' ? 'home' : t === 'work' ? 'briefcase' : 'star';
 
 MapboxGL.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '');
 
@@ -77,6 +81,11 @@ export function LocationPickerScreen() {
   const [suggestions,  setSuggestions] = useState<any[]>([]);
   const [showSearch,   setShowSearch]  = useState(false);
   const [userLocation, setUserLocation]= useState<[number, number] | null>(null);
+
+  // Direcciones guardadas (Casa/Trabajo/favoritos) — atajo semiautomático.
+  const savedAddresses = useSavedAddressesStore((s) => s.addresses);
+  const loadSaved = useSavedAddressesStore((s) => s.load);
+  useEffect(() => { loadSaved(); }, [loadSaved]);
 
   // Animación del pin al mover el mapa
   const pinY = useRef(new Animated.Value(0)).current;
@@ -147,6 +156,17 @@ export function LocationPickerScreen() {
     Keyboard.dismiss();
     cameraRef.current?.setCamera({ centerCoordinate: newCenter, zoomLevel: 15, animationDuration: 600 });
     hapticLight();
+  };
+
+  // Seleccionar una dirección guardada → confirma de una (semiautomático).
+  const handleSelectSaved = (a: SavedAddress) => {
+    hapticMedium();
+    const result: LocationResult = {
+      address: a.address,
+      latitude: a.latitude,
+      longitude: a.longitude,
+    };
+    navigation.navigate(returnScreen, { [paramKey]: result });
   };
 
   // El mapa se mueve → el pin "flota"
@@ -270,6 +290,25 @@ export function LocationPickerScreen() {
             </TouchableOpacity>
           )}
         </TouchableOpacity>
+
+        {/* Atajos: direcciones guardadas (Casa/Trabajo/favoritos) */}
+        {showSearch && suggestions.length === 0 && searchText.trim().length < 3 && savedAddresses.length > 0 && (
+          <View style={styles.suggestionsBox}>
+            {savedAddresses.slice(0, 5).map((a, i) => (
+              <TouchableOpacity
+                key={a.id}
+                style={[styles.suggestionItem, i < Math.min(savedAddresses.length, 5) - 1 && styles.suggestionDivider]}
+                onPress={() => handleSelectSaved(a)}
+              >
+                <Ionicons name={savedIcon(a.type)} size={16} color={accentColor} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.savedLabel} numberOfLines={1}>{a.label}</Text>
+                  <Text style={styles.suggestionText} numberOfLines={1}>{a.address}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* Sugerencias */}
         {suggestions.length > 0 && (
@@ -419,6 +458,7 @@ const styles = StyleSheet.create({
   },
   suggestionDivider: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   suggestionText: { flex: 1, fontSize: 13, color: '#374151', lineHeight: 18 },
+  savedLabel: { fontSize: 13, fontWeight: '800', color: '#111827', marginBottom: 1 },
 
   // My location button
   myLocationBtn: {

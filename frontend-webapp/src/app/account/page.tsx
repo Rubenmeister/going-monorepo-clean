@@ -12,6 +12,15 @@ import {
 } from '../components/icons';
 import { enablePush } from '../lib/push';
 import { authFetch, clearStoredAuth } from '@/lib/providers/auth-client';
+import { LocationSelector } from '../components/features/ride/LocationSelector';
+import {
+  loadSavedAddresses,
+  upsertSavedAddress,
+  removeSavedAddress,
+  iconForType,
+  type SavedAddressType,
+} from '../services/savedAddresses';
+import type { Location } from '@/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
 
@@ -62,6 +71,19 @@ interface SavedAddress {
   lat?: number;
   lon?: number;
   icon: string;
+  type?: SavedAddressType;
+}
+
+/** Mapea el shape del servicio (backend) al de la UI de esta página. */
+function toUiAddress(a: {
+  id: string; type: SavedAddressType; label: string;
+  address: string; latitude: number; longitude: number;
+}): SavedAddress {
+  return {
+    id: a.id, label: a.label, address: a.address,
+    lat: a.latitude, lon: a.longitude,
+    icon: iconForType(a.type), type: a.type,
+  };
 }
 
 interface ParcelHistory {
@@ -130,6 +152,13 @@ export default function AccountPage() {
   const [addressLoading, setAddressLoading] = useState(false);
   const [deletingMethod,  setDeletingMethod]  = useState<string | null>(null);
   const [deletingAddress, setDeletingAddress] = useState<string | null>(null);
+
+  // ── Agregar dirección (formulario inline) ──
+  const [showAddAddr, setShowAddAddr] = useState(false);
+  const [newAddrLoc, setNewAddrLoc] = useState<Location | null>(null);
+  const [newAddrType, setNewAddrType] = useState<SavedAddressType>('home');
+  const [newAddrLabel, setNewAddrLabel] = useState('');
+  const [savingAddr, setSavingAddr] = useState(false);
 
   // ── Edición de perfil ──
   const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '', email: '' });
@@ -330,20 +359,47 @@ export default function AccountPage() {
 
     if (activeTab === 'addresses' && addresses.length === 0) {
       setAddressLoading(true);
-      try {
-        // Source: localStorage going_saved_addresses (compartido con
-        // envíos/cotizar). Cuando el backend exponga /users/:id/addresses
-        // migramos a eso; por ahora persistir local mantiene UX consistente.
-        const raw = typeof window !== 'undefined' ? localStorage.getItem('going_saved_addresses') : null;
-        const list: SavedAddress[] = raw ? JSON.parse(raw) : [];
-        setAddresses(Array.isArray(list) ? list : []);
-      } catch {
-        setAddresses([]);
-      } finally {
-        setAddressLoading(false);
-      }
+      // Fuente única: backend (/auth/me/saved-addresses) con caché local.
+      // Sincroniza con el móvil y sobrevive reinstalar/limpiar caché.
+      loadSavedAddresses()
+        .then((list) => setAddresses(list.map(toUiAddress)))
+        .catch(() => setAddresses([]))
+        .finally(() => setAddressLoading(false));
     }
   }, [activeTab, auth.user, rides.length, parcels.length, methods.length, addresses.length]);
+
+  // Guarda la dirección del formulario inline (backend + caché).
+  const handleSaveNewAddress = async () => {
+    if (!newAddrLoc) return;
+    setSavingAddr(true);
+    const label = newAddrType === 'home' ? 'Casa'
+      : newAddrType === 'work' ? 'Trabajo'
+      : (newAddrLabel.trim() || 'Lugar');
+    try {
+      const list = await upsertSavedAddress({
+        type: newAddrType, label,
+        address: newAddrLoc.address, latitude: newAddrLoc.lat, longitude: newAddrLoc.lon,
+      });
+      setAddresses(list.map(toUiAddress));
+      setShowAddAddr(false);
+      setNewAddrLoc(null);
+      setNewAddrLabel('');
+      setNewAddrType('home');
+    } finally {
+      setSavingAddr(false);
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    if (!confirm('¿Eliminar esta dirección?')) return;
+    setDeletingAddress(id);
+    try {
+      const list = await removeSavedAddress(id);
+      setAddresses(list.map(toUiAddress));
+    } finally {
+      setDeletingAddress(null);
+    }
+  };
 
   if (!auth.user) {
     return (
@@ -729,10 +785,58 @@ export default function AccountPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">Direcciones guardadas</h2>
-              <button className="text-sm font-bold px-4 py-2 rounded-xl text-white" style={{ backgroundColor: COLORS.brand.red }}>
-                + Agregar
+              <button
+                onClick={() => { setShowAddAddr(v => !v); setNewAddrLoc(null); setNewAddrType('home'); setNewAddrLabel(''); }}
+                className="text-sm font-bold px-4 py-2 rounded-xl text-white"
+                style={{ backgroundColor: COLORS.brand.red }}
+              >
+                {showAddAddr ? 'Cancelar' : '+ Agregar'}
               </button>
             </div>
+
+            {/* Formulario inline para agregar una dirección */}
+            {showAddAddr && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+                <div className="flex gap-2">
+                  {([
+                    { t: 'home' as const, txt: '🏠 Casa' },
+                    { t: 'work' as const, txt: '💼 Trabajo' },
+                    { t: 'favorite' as const, txt: '⭐ Otro' },
+                  ]).map(({ t, txt }) => (
+                    <button key={t} type="button" onClick={() => setNewAddrType(t)}
+                      className={`flex-1 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                        newAddrType === t
+                          ? 'border-[#0033A0] bg-blue-50 text-[#0033A0]'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}>
+                      {txt}
+                    </button>
+                  ))}
+                </div>
+                {newAddrType === 'favorite' && (
+                  <input
+                    type="text" value={newAddrLabel} maxLength={40}
+                    onChange={(e) => setNewAddrLabel(e.target.value)}
+                    placeholder="Nombre del lugar (ej. Mamá, Gimnasio)"
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0033A0]"
+                  />
+                )}
+                <LocationSelector
+                  type="dropoff"
+                  value={newAddrLoc ?? undefined}
+                  onChange={(loc: Location) => setNewAddrLoc(loc)}
+                  placeholder="Busca la dirección…"
+                />
+                <button
+                  onClick={handleSaveNewAddress}
+                  disabled={!newAddrLoc || savingAddr || (newAddrType === 'favorite' && !newAddrLabel.trim())}
+                  className="w-full py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-40"
+                  style={{ backgroundColor: COLORS.brand.blue }}
+                >
+                  {savingAddr ? 'Guardando…' : 'Guardar dirección'}
+                </button>
+              </div>
+            )}
 
             {addressLoading && (
               <div className="bg-white rounded-2xl border border-gray-100 p-8 flex items-center justify-center">
@@ -749,10 +853,11 @@ export default function AccountPage() {
                 <p className="text-gray-400 text-sm mb-5">Guarda tu casa, trabajo u otros lugares frecuentes</p>
                 <div className="flex gap-3 justify-center">
                   {[
-                    { Icon: IconPin,  label: 'Casa' },
-                    { Icon: IconUser, label: 'Trabajo' },
+                    { Icon: IconPin,  label: 'Casa',    t: 'home' as const },
+                    { Icon: IconUser, label: 'Trabajo', t: 'work' as const },
                   ].map(p => (
                     <button key={p.label}
+                      onClick={() => { setNewAddrType(p.t); setNewAddrLabel(''); setNewAddrLoc(null); setShowAddAddr(true); }}
                       className="flex-1 max-w-36 py-3 rounded-xl border-2 border-dashed border-gray-300 text-center hover:border-[#ff4c41] transition-colors text-gray-500 hover:text-[#ff4c41]">
                       <p className="flex justify-center mb-1"><p.Icon size={24} /></p>
                       <p className="text-xs font-semibold mt-1">{p.label}</p>
@@ -772,25 +877,8 @@ export default function AccountPage() {
                   <p className="text-xs text-gray-400 truncate">{addr.address}</p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <button className="text-xs font-semibold hover:underline" style={{ color: COLORS.brand.blue }}>Editar</button>
                   <button
-                    onClick={() => {
-                      if (!confirm('¿Eliminar esta dirección?')) return;
-                      setDeletingAddress(addr.id);
-                      // Direcciones persisten en localStorage hasta que el
-                      // backend exponga /users/:id/addresses. La API
-                      // anterior tiraba 404 y la UI quedaba colgada.
-                      setAddresses(prev => {
-                        const next = prev.filter(x => x.id !== addr.id);
-                        try {
-                          if (typeof window !== 'undefined') {
-                            localStorage.setItem('going_saved_addresses', JSON.stringify(next));
-                          }
-                        } catch { /* localStorage fail-soft */ }
-                        return next;
-                      });
-                      setDeletingAddress(null);
-                    }}
+                    onClick={() => handleDeleteAddress(addr.id)}
                     disabled={deletingAddress === addr.id}
                     className="text-xs text-red-500 font-semibold hover:underline disabled:opacity-40"
                   >
