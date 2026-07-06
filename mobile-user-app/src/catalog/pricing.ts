@@ -17,6 +17,10 @@
 import { CityId, TripMode, VehicleId } from './types';
 import { getFare, getPrivateFare, FARES, type VehicleKey } from './fares';
 import { getExcelFare, getExcelPrivatePrices, type PrivatePrices } from './excel-fares';
+import { motorShared, motorPrivate } from './motorSnapshot';
+
+// Clave de ruta para el snapshot del motor (city IDs → 'origen-destino').
+const motorKey = (a: string, b: string) => `${a}-${b}`.toLowerCase();
 
 // Map de VehicleId (interno mobile) a VehicleKey (canon backend).
 // Mobile no expone minibus por ahora — solo el set que ofrece la app.
@@ -41,13 +45,18 @@ export function calcPrice(city: CityId, vehicleId: VehicleId, mode: TripMode): n
   const fareKey = VEHICLE_TO_FARE_KEY[vehicleId];
 
   if (mode === 'compartido') {
-    // Precio FIJO del Excel (compartido/persona). Fallback: tabla vieja.
+    // F-client: MOTOR primero (Atlas, editable en vivo). Fallback: Excel → tabla vieja.
+    const mo = motorShared(motorKey(city, 'quito'), motorKey('quito', city));
+    if (mo != null) return mo;
     const excel = getExcelFare(city, 'quito');
     if (excel != null) return excel;
     return getFare(city, 'quito') ?? getFare('quito', city) ?? 0;
   }
 
-  // Privado: precio EXPLÍCITO por vehículo del Excel. Fallback: multiplicador viejo.
+  // Privado: MOTOR primero (precio explícito por vehículo). Fallback: Excel → multiplicador.
+  const mp = motorPrivate(motorKey(city, 'quito'), motorKey('quito', city));
+  const mExplicit = mp ? (mp[fareKey] as number | undefined) : undefined;
+  if (mExplicit != null) return mExplicit;
   const priv = getExcelPrivatePrices(city, 'quito');
   const explicit = priv ? priv[fareKey as keyof PrivatePrices] : undefined;
   if (explicit != null) return explicit;

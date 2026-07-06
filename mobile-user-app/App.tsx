@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { RootNavigator } from '@navigation/RootNavigator';
 import { ThemeProvider, useTheme } from './src/theme';
+import { loadMotorSnapshot } from './src/catalog/motorSnapshot';
 
 // NOTA: Sentry quitado temporalmente del bundle para desbloquear el soft launch
 // del 16-jun. @sentry/react-native@8.13 tiene doble registro nativo (Expo
@@ -30,6 +31,11 @@ function StatusBarThemed() {
 }
 
 export default function App() {
+  // Al arrancar, baja el snapshot del MOTOR DE TARIFAS (Atlas) y sobrescribe la
+  // tabla local → el móvil cotiza con los MISMOS precios que el backend (igual
+  // que el webapp). Fire-and-forget; si falla, usa el mirror bundleado.
+  useEffect(() => { loadMotorSnapshot(); }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

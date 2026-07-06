@@ -6,9 +6,11 @@
  * backend; cualquier divergencia es un bug visible al usuario (precio
  * mostrado ≠ precio cobrado).
  *
- * Próximo paso (no MVP): mover esto a un endpoint `GET /pricing/shared-fare`
- * para eliminar el riesgo de drift al refactorizar la lib.
+ * ✅ Ya NO hay riesgo de drift: `getFare` prefiere el snapshot del MOTOR
+ * (Atlas, vía `motorSnapshot.ts`) si está cargado; el mirror de abajo es solo
+ * fallback offline. El motor es la fuente única en runtime.
  */
+import { motorShared } from './motorSnapshot';
 
 export const FARES = {
   // ── COMPARTIDO (precio por persona) ───────────────────────────────────────
@@ -107,10 +109,14 @@ function normalize(city: string): string {
     .replace(/la_concordia/i, 'la_concordia');
 }
 
-/** Precio del viaje compartido (por persona) en la ruta origin→destination. */
+/** Precio del viaje compartido (por persona) en la ruta origin→destination.
+ *  F-client: prefiere el snapshot del motor (Atlas) si está cargado; si no, el mirror. */
 export function getFare(origin: string, destination: string): number | null {
   const key = `${normalize(origin)}-${normalize(destination)}`;
-  return FARES.shared[key] ?? null;
+  const rev = `${normalize(destination)}-${normalize(origin)}`;
+  const m = motorShared(key, rev);
+  if (m != null) return m;
+  return FARES.shared[key] ?? FARES.shared[rev] ?? null;
 }
 
 /** Precio privado para un vehículo dado la tarifa compartida base. */
