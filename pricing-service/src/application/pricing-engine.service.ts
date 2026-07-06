@@ -44,6 +44,10 @@ export interface PriceInput {
   weightKg?: number;
   packageSize?: 'small' | 'medium' | 'large';
   isOverVolume?: boolean;
+  /** Código de promoción (F4-2) — aplica reglas condition:promo_code vigentes. */
+  promoCode?: string;
+  /** Conductor (F4-2) — aplica su precio propio (regla flat_override con tope). */
+  providerId?: string;
 }
 
 export interface PriceResult {
@@ -225,6 +229,13 @@ export class PricingEngineService implements OnModuleInit {
   async price(input: PriceInput): Promise<PriceResult> {
     await this.ensureFresh();
     const dt = input.dateTime ? new Date(input.dateTime) : new Date();
+    const core = await this.priceCore(input, dt);
+    return this.applyPromoProvider(core, input, dt);
+  }
+
+  /** Cálculo base por servicio (paridad). El promo/precio-por-conductor se
+   *  aplica después en applyPromoProvider(). */
+  private async priceCore(input: PriceInput, dt: Date): Promise<PriceResult> {
     const segment = (input.segment ?? 'public') as ClientSegment;
     const listVersion = this.listFor('compartido')?.version ?? null;
     const currency = 'USD';
@@ -352,5 +363,71 @@ export class PricingEngineService implements OnModuleInit {
       default:
         throw new Error(`serviceType no soportado: ${input.serviceType}`);
     }
+  }
+
+  // ── F4-2: precio por conductor + promociones ──────────────────────────────────
+  private ruleRouteMatches(rule: any, input: PriceInput): boolean {
+    const s = rule.scope || {};
+    const norm = (x?: string) => (x ?? '').toLowerCase();
+    if (s.origin && norm(s.origin) !== norm(input.origin)) return false;
+    if (s.destination && norm(s.destination) !== norm(input.destination)) return false;
+    if (s.serviceTypes && !s.serviceTypes.includes(input.serviceType)) return false;
+    if (s.vehicleTypes && input.vehicleType && !s.vehicleTypes.includes(input.vehicleType)) return false;
+    return true;
+  }
+
+  private withinValidity(rule: any, dt: Date): boolean {
+    if (rule.validFrom && dt < new Date(rule.validFrom)) return false;
+    if (rule.validTo && dt > new Date(rule.validTo)) return false;
+    return true;
+  }
+
+  /**
+   * Aplica, sobre el precio ya calculado:
+   *  1. PRECIO POR CONDUCTOR: si viene `providerId` y hay una regla flat_override
+   *     de ese conductor para la ruta → fija su precio, con TOPE ±PROVIDER_CAP.
+   *  2. PROMO: si viene `promoCode` y hay reglas promo_code vigentes → descuento.
+   */
+  private applyPromoProvider(res: PriceResult, input: PriceInput, dt: Date): PriceResult {
+    let total = res.total;
+    const adjustments: Array<Record<string, unknown>> = [];
+    const PROVIDER_CAP = 0.3; // ±30% del precio de plataforma
+
+    if (input.providerId) {
+      const rule = this.rules.find(
+        (r: any) => r.active !== false && r.scope?.providerId === input.providerId &&
+          r.effect?.type === 'flat_override' && this.ruleRouteMatches(r, input) && this.withinValidity(r, dt),
+      ) as any;
+      if (rule) {
+        const min = res.total * (1 - PROVIDER_CAP);
+        const max = res.total * (1 + PROVIDER_CAP);
+        const capped = round(Math.min(max, Math.max(min, Number(rule.effect.value))));
+        adjustments.push({ rule: rule.name, type: 'provider_override', providerId: input.providerId, from: total, to: capped });
+        total = capped;
+      }
+    }
+
+    if (input.promoCode) {
+      for (const r of this.rules as any[]) {
+        if (r.active === false) continue;
+        if (r.condition?.type !== 'promo_code' || r.condition.code !== input.promoCode) continue;
+        if (!this.withinValidity(r, dt)) continue;
+        const e = r.effect || {};
+        let nt = total;
+        if (e.type === 'discount_rate') nt = round(total * (1 - Number(e.value)));
+        else if (e.type === 'multiplier') nt = round(total * Number(e.value));
+        else if (e.type === 'flat_add') nt = round(total + Number(e.value));
+        else continue;
+        adjustments.push({ rule: r.name, type: 'promo', code: input.promoCode, from: total, to: nt });
+        total = Math.max(0, nt);
+      }
+    }
+
+    if (!adjustments.length) return res;
+    const { platformFee, providerAmount } = this.feeSplit(total);
+    return {
+      ...res, total, platformFee, providerAmount,
+      breakdown: { ...res.breakdown, adjustments: JSON.stringify(adjustments) },
+    };
   }
 }

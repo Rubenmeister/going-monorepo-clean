@@ -28,6 +28,8 @@ export class RuleAdminController {
     scope?: Record<string, unknown>;
     condition?: Record<string, unknown>;
     effect?: Record<string, unknown>;
+    validFrom?: string | null;
+    validTo?: string | null;
   }) {
     return this.rules.upsert(body);
   }
