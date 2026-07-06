@@ -30,6 +30,8 @@ export class RuleService {
       scope: d.scope,
       condition: d.condition,
       effect: d.effect,
+      validFrom: d.validFrom,
+      validTo: d.validTo,
     }));
   }
 
@@ -42,6 +44,8 @@ export class RuleService {
     scope?: Record<string, unknown>;
     condition?: Record<string, unknown>;
     effect?: Record<string, unknown>;
+    validFrom?: string | null;
+    validTo?: string | null;
   }) {
     if (!body?.name) throw new BadRequestException('name requerido');
     if (!body.condition || !body.effect) throw new BadRequestException('condition y effect requeridos');
@@ -56,6 +60,9 @@ export class RuleService {
           scope: body.scope ?? {},
           condition: body.condition,
           effect: body.effect,
+          // Vigencia (promos): fechas ISO o null (sin límite).
+          validFrom: body.validFrom ? new Date(body.validFrom) : null,
+          validTo: body.validTo ? new Date(body.validTo) : null,
         },
       },
       { upsert: true, new: true },
