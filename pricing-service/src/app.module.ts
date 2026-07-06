@@ -11,9 +11,11 @@ import {
 } from './infrastructure/schemas/rate-rule.schema';
 import { PricingEngineService } from './application/pricing-engine.service';
 import { FareListService } from './application/fare-list.service';
+import { RuleService } from './application/rule.service';
 import { PriceController } from './api/price.controller';
 import { HealthController } from './api/health.controller';
 import { FareListAdminController } from './api/fare-list-admin.controller';
+import { RuleAdminController } from './api/rule-admin.controller';
 
 @Module({
   imports: [
@@ -40,8 +42,8 @@ import { FareListAdminController } from './api/fare-list-admin.controller';
       { name: RateRule.name, schema: RateRuleSchema },
     ]),
   ],
-  providers: [PricingEngineService, FareListService],
-  controllers: [PriceController, HealthController, FareListAdminController],
+  providers: [PricingEngineService, FareListService, RuleService],
+  controllers: [PriceController, HealthController, FareListAdminController, RuleAdminController],
   exports: [PricingEngineService],
 })
 export class AppModule {}
