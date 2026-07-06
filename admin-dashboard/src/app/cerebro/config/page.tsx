@@ -191,8 +191,8 @@ export default function ConfigPage() {
           <div className="p-5 rounded-xl bg-white border border-gray-200">
             <h2 className="text-base font-bold text-gray-900 mb-2">Estado</h2>
             <p className="text-sm text-gray-500 mb-3">
-              Master switch del razonamiento. Si lo apagás acá, el cron sigue disparando pero salta —
-              ningún ciclo se ejecuta hasta que lo reactivés.
+              Master switch del razonamiento. Si lo apagas acá, el cron sigue disparando pero salta —
+              ningún ciclo se ejecuta hasta que lo reactives.
             </p>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -211,7 +211,7 @@ export default function ConfigPage() {
           <div className="p-5 rounded-xl bg-white border border-gray-200">
             <h2 className="text-base font-bold text-gray-900 mb-2">Modelo y tuning</h2>
             <p className="text-sm text-gray-500 mb-4">
-              Sonnet 4.5 es el default — cambia solo si tenés razón concreta (probar Opus en
+              Sonnet 4.5 es el default — cambia solo si tienes razón concreta (probar Opus en
               eventos críticos, Haiku para cortar costo en runs de baja prioridad).
               Vacío = usa el default del backend.
             </p>
@@ -300,7 +300,7 @@ export default function ConfigPage() {
               <code className="font-mono bg-gray-100 px-1 rounded text-xs">
                 prompt-builder.service.ts
               </code>
-              {' '}(safe fallback). Para custom: pegá texto y guardá.
+              {' '}(safe fallback). Para custom: pega texto y guarda.
             </p>
             <textarea
               value={formPrompt}

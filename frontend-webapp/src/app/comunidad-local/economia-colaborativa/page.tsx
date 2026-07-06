@@ -37,7 +37,7 @@ const goingCards = [
   { emoji: '🚗', title: 'Tu auto genera ingresos', subtitle: 'mientras no lo usas', desc: 'El ecuatoriano promedio usa su auto solo 4% del tiempo. Con Going App, conviertes el 96% de tiempo inactivo en ingreso real.', badge: 'Transporte' },
   { emoji: '🏠', title: 'Tu casa genera ingresos', subtitle: 'como alojamiento', desc: 'Una habitación vacía o una segunda propiedad se convierte en fuente de ingresos recurrentes para huéspedes nacionales e internacionales.', badge: 'Alojamiento' },
   { emoji: '🗺️', title: 'Tu conocimiento genera ingresos', subtitle: 'como guía turístico', desc: 'Conoces tu ciudad, tu cultura, tus senderos. Comparte esa riqueza con viajeros que pagan por experiencias auténticas y locales.', badge: 'Experiencias' },
-  { emoji: '📦', title: 'Tu moto o camioneta', subtitle: 'genera ingresos con envíos', desc: 'La demanda de entregas en Ecuador no para de crecer. Tu vehículo puede trabajar por vos mientras vos decidís cuándo y cómo.', badge: 'Envíos' },
+  { emoji: '📦', title: 'Tu moto o camioneta', subtitle: 'genera ingresos con envíos', desc: 'La demanda de entregas en Ecuador no para de crecer. Tu vehículo puede trabajar por ti mientras tú decides cuándo y cómo.', badge: 'Envíos' },
 ];
 
 const comparison = [
@@ -79,7 +79,7 @@ export default function EconomiaColaborativaPage() {
           <FadeIn>
             <div className="text-center mb-14">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Así de simple funciona</h2>
-              <p className="text-gray-500 text-lg max-w-xl mx-auto">La economía colaborativa no es un concepto abstracto. Es una forma de aprovechar lo que ya tenés.</p>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">La economía colaborativa no es un concepto abstracto. Es una forma de aprovechar lo que ya tienes.</p>
             </div>
           </FadeIn>
           <div className="grid md:grid-cols-3 gap-8">
@@ -161,7 +161,7 @@ export default function EconomiaColaborativaPage() {
             <div className="text-4xl mb-4">🚀</div>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Sé de las primeras familias en sumarte</h2>
             <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              Going App está por arrancar en Ecuador. La economía colaborativa empieza con vos: tu auto, tu espacio,
+              Going App está por arrancar en Ecuador. La economía colaborativa empieza contigo: tu auto, tu espacio,
               tu conocimiento o tu vehículo de carga pueden generar ingresos desde el primer día.
             </p>
             <Link href="/auth/register" className="inline-block text-white font-bold px-8 py-4 rounded-2xl text-lg shadow-lg hover:scale-105 transition-transform" style={{ backgroundColor: '#6366f1' }}>
@@ -176,7 +176,7 @@ export default function EconomiaColaborativaPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <FadeIn>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Empieza a generar ingresos</h2>
-            <p className="text-indigo-100 text-lg mb-10">Sumate desde el arranque y aprovechá la economía colaborativa con Going App</p>
+            <p className="text-indigo-100 text-lg mb-10">Súmate desde el arranque y aprovecha la economía colaborativa con Going App</p>
             <Link href="/auth/register" className="inline-block font-bold px-10 py-4 rounded-2xl text-lg shadow-xl hover:scale-105 transition-transform bg-white" style={{ color: '#6366f1' }}>
               Crear mi cuenta gratis
             </Link>

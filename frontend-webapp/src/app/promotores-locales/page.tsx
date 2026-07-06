@@ -61,10 +61,10 @@ export default function GuiasPage() {
           </div>
           <div className="flex flex-wrap gap-10">
             {[
-              { value: 'Vos diseñás', label: 'tus propios tours' },
-              { value: 'Vos fijás tarifas', label: 'vos ponés el precio' },
+              { value: 'Tú diseñas', label: 'tus propios tours' },
+              { value: 'Tú fijas tarifas', label: 'tú pones el precio' },
               { value: 'Alcance internacional', label: 'viajeras y viajeros del mundo' },
-              { value: 'Empezá sin licencia', label: 'y crecé con nosotros' },
+              { value: 'Empieza sin licencia', label: 'y crece con nosotros' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl font-bold" style={{ color: '#67e8f9' }}>{s.value}</div>

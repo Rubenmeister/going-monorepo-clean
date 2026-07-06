@@ -242,7 +242,7 @@ export interface QuotePhoneError {
   ok: false;
   error: string;
   message: string;
-  /** Sugerencia hablable para que el LLM la lea: "esa ruta aún no la tenemos, ¿querés que te mande opciones por SMS?". */
+  /** Sugerencia hablable para que el LLM la lea: "esa ruta aún no la tenemos, ¿quieres que te mande opciones por SMS?". */
   spoken_suggestion: string;
 }
 

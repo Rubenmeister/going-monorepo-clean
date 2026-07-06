@@ -172,7 +172,7 @@ export function DriverAssistantScreen() {
           <Text style={styles.emergencyTitle}>¿Es una emergencia?</Text>
         </View>
         <Text style={styles.emergencyText}>
-          Si estás en peligro o tenés una situación crítica durante un viaje:
+          Si estás en peligro o tienes una situación crítica durante un viaje:
         </Text>
         <View style={styles.emergencyRow}>
           <Ionicons name="call" size={16} color={COLORS.brandRed} />

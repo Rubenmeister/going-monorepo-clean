@@ -121,7 +121,7 @@ function ResetPasswordForm() {
     <>
       <h1 className="text-2xl font-black text-gray-900 mb-2">Nueva contraseña</h1>
       <p className="text-gray-500 mb-8">
-        Elegí una contraseña fuerte de al menos 12 caracteres.
+        Elige una contraseña fuerte de al menos 12 caracteres.
       </p>
 
       {error && (
@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
           </div>
           <h2 className="text-3xl font-black text-white mb-4">Casi listo</h2>
           <p className="text-blue-200 text-lg leading-relaxed">
-            Estás a un paso de recuperar tu cuenta Going App. Elegí una contraseña que recuerdes.
+            Estás a un paso de recuperar tu cuenta Going App. Elige una contraseña que recuerdes.
           </p>
         </div>
       </div>

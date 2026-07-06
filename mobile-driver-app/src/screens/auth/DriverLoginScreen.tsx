@@ -139,7 +139,7 @@ export function DriverLoginScreen() {
             onPress={() => navigation.navigate('Register')}
           >
             <Text style={styles.registerText}>
-              ¿Querés ser conductora o conductor?{' '}
+              ¿Quieres ser conductora o conductor?{' '}
               <Text style={styles.registerBold}>Regístrate aquí</Text>
             </Text>
           </TouchableOpacity>

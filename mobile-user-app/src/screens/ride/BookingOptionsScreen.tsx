@@ -342,8 +342,8 @@ export function BookingOptionsScreen() {
           <Ionicons name="map-outline" size={48} color={tokens.textSecondary} />
           <Text style={styles.emptyTitle}>Sin opciones disponibles</Text>
           <Text style={styles.emptyMsg}>
-            No encontramos viajes para esta ruta y horario. Probá con otro destino o
-            cambiá la fecha.
+            No encontramos viajes para esta ruta y horario. Prueba con otro destino o
+            cambia la fecha.
           </Text>
         </View>
       )}

@@ -139,7 +139,7 @@ export default function ConductoresPage() {
             </FadeIn>
             <FadeIn delay={200}>
               <p className="text-lg md:text-xl text-gray-300 max-w-xl mb-10 leading-relaxed">
-                Sumate a las primeras conductoras y conductores de Going App en Ecuador. Sin jefes, sin horarios fijos. Vos decidís cuándo y cuánto trabajar.
+                Súmate a las primeras conductoras y conductores de Going App en Ecuador. Sin jefes, sin horarios fijos. Tú decides cuándo y cuánto trabajar.
               </p>
             </FadeIn>
             <FadeIn delay={300}>
@@ -161,7 +161,7 @@ export default function ConductoresPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatCard value="+40%" label="ingresos promedio" />
                 <StatCard value="80%" label="de cada viaje es tuyo" />
-                <StatCard value="Horario libre" label="vos decidís cuándo" />
+                <StatCard value="Horario libre" label="tú decides cuándo" />
               </div>
             </FadeIn>
           </div>
@@ -210,7 +210,7 @@ export default function ConductoresPage() {
                     { icon: '🛡️', text: 'Seguro incluido en cada viaje sin costo adicional.' },
                     { icon: '🏆', text: 'Programa Diamond: acceso a clientes premium con tarifas más altas.' },
                     { icon: '🎓', text: 'Academia Going App gratuita para mejorar tu servicio.' },
-                    { icon: '🤝', text: 'Una red de apoyo de conductoras y conductores que arranca con vos.' },
+                    { icon: '🤝', text: 'Una red de apoyo de conductoras y conductores que arranca contigo.' },
                   ].map((item) => (
                     <li key={item.text} className="flex items-start gap-3">
                       <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
@@ -268,14 +268,14 @@ export default function ConductoresPage() {
         <div className="max-w-5xl mx-auto">
           <FadeIn>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>¿Cómo ganás con Going App?</h2>
-              <p className="text-gray-500">Ganás según tus viajes. Cuanto más manejás, más generás — y vos elegís el ritmo.</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-4" style={{ color: '#1a1a1a' }}>¿Cómo ganas con Going App?</h2>
+              <p className="text-gray-500">Ganas según tus viajes. Cuanto más manejas, más generas — y tú eliges el ritmo.</p>
             </div>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <FadeIn delay={0} direction="up"><EarningsCard icon="💰" title="80% de cada viaje" desc="Vos te quedás con la mayor parte de cada carrera. Sin descuentos sorpresa." /></FadeIn>
-            <FadeIn delay={100} direction="up"><EarningsCard icon="🕐" title="Vos elegís el ritmo" desc="Part-time o full-time, vos decidís. Cuanto más manejás, más generás." highlight /></FadeIn>
-            <FadeIn delay={200} direction="up"><EarningsCard icon="🏢" title="Sumá viajes de empresa" desc="Accedé a clientes corporativos y de turismo para llenar tu agenda." /></FadeIn>
+            <FadeIn delay={0} direction="up"><EarningsCard icon="💰" title="80% de cada viaje" desc="Tú te quedas con la mayor parte de cada carrera. Sin descuentos sorpresa." /></FadeIn>
+            <FadeIn delay={100} direction="up"><EarningsCard icon="🕐" title="Tú eliges el ritmo" desc="Part-time o full-time, tú decides. Cuanto más manejas, más generas." highlight /></FadeIn>
+            <FadeIn delay={200} direction="up"><EarningsCard icon="🏢" title="Suma viajes de empresa" desc="Accede a clientes corporativos y de turismo para llenar tu agenda." /></FadeIn>
           </div>
           <FadeIn delay={300}>
             <div className="text-center rounded-2xl py-4 px-6" style={{ background: '#fff7f7', border: '1px solid #ffd6d4' }}>
@@ -398,7 +398,7 @@ export default function ConductoresPage() {
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Sé de las primeras conductoras y conductores</h2>
             <p className="text-gray-500 leading-relaxed mb-8">
-              Going App está por salir al aire en Ecuador. Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra, desde Quito y el aeropuerto — y vamos llegando a todo el país. Registrate hoy y arrancá con nosotros desde el primer viaje.
+              Going App está por salir al aire en Ecuador. Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra, desde Quito y el aeropuerto — y vamos llegando a todo el país. Regístrate hoy y arranca con nosotros desde el primer viaje.
             </p>
             <Link href="/conductores/registro" className="inline-block px-10 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200 hover:opacity-90 active:scale-95" style={{ background: '#ff4c41', boxShadow: '0 4px 24px rgba(255,76,65,0.35)' }}>
               Quiero sumarme →

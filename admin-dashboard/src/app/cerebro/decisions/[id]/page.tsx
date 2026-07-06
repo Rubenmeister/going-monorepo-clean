@@ -219,8 +219,8 @@ export default function DecisionDetailPage() {
                 <div className="flex-1">
                   <h2 className="text-lg font-bold text-orange-900 mb-1">⏳ Esperando tu aprobación</h2>
                   <p className="text-sm text-orange-800">
-                    Esta decisión es Cat 3 (irreversible / alto costo). El Orchestrator no la ejecuta hasta que vos
-                    apruebes manualmente aquí. Si no decidís, expira solo y queda como{' '}
+                    Esta decisión es Cat 3 (irreversible / alto costo). El Orchestrator no la ejecuta hasta que tú
+                    apruebes manualmente aquí. Si no decides, expira solo y queda como{' '}
                     <code className="font-mono bg-white px-1 rounded">expired</code>.
                   </p>
                   {decision.expiresAt && (

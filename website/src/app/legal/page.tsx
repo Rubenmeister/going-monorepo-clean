@@ -26,7 +26,7 @@ const SECTIONS = [
 
 **Verificación:** Conductoras y conductores pasan validación de documentos, antecedentes y vehículo antes de su primer viaje.
 
-**Seguimiento en vivo:** Podés compartir tu viaje en tiempo real con tus contactos de confianza desde la app.
+**Seguimiento en vivo:** Puedes compartir tu viaje en tiempo real con tus contactos de confianza desde la app.
 
 **Botón SOS:** Disponible durante el viaje activo; avisa a nuestro equipo y permite contactar al ECU 911.
 

@@ -201,7 +201,7 @@ export function SharedRideBookingScreen() {
           // paso de pago (ConfirmRide), nunca una estimación local.
           Alert.alert(
             'No hay viaje compartido directo a ese destino',
-            `Te podemos llevar hasta ${plan.hubLabel} (servicio Compartido). Desde ${plan.hubLabel} son ~${plan.estimatedLastLegMinutes} min en transporte local hasta tu destino (${plan.lastLegKm} km).\n\n¿Querés tomar la opción a ${plan.hubLabel}, o cambiar a viaje Privado puerta a puerta?`,
+            `Te podemos llevar hasta ${plan.hubLabel} (servicio Compartido). Desde ${plan.hubLabel} son ~${plan.estimatedLastLegMinutes} min en transporte local hasta tu destino (${plan.lastLegKm} km).\n\n¿Quieres tomar la opción a ${plan.hubLabel}, o cambiar a viaje Privado puerta a puerta?`,
             [
               { text: 'Cancelar', style: 'cancel' },
               {

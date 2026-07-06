@@ -231,7 +231,7 @@ export function DriverHomeScreen() {
       if (cam.status !== 'granted' || mic.status !== 'granted') {
         Alert.alert(
           'Cámara y micrófono requeridos',
-          'Por tu seguridad y la de las personas pasajeras, los viajes se graban ante una alerta. Activá el permiso de cámara y micrófono para ponerte en línea.'
+          'Por tu seguridad y la de las personas pasajeras, los viajes se graban ante una alerta. Activa el permiso de cámara y micrófono para ponerte en línea.'
         );
         return;
       }

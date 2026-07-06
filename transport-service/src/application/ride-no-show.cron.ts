@@ -17,7 +17,7 @@ import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gatewa
  *     acceptedAt + THRESHOLD_MIN < now AND arrivedAt IS NULL.
  *   - Marca como status='no_show' + cancellationReason='driver_no_show'.
  *   - Emite WS event `ride:driver_no_show` al pasajero — su app debería
- *     mostrar "El conductor no llegó. Pedí otro viaje." con CTA.
+ *     mostrar "El conductor no llegó. Pide otro viaje." con CTA.
  *
  * Phase 2 (futuro, no en este commit):
  *   Auto-rematch: re-dispatcher el mismo ride a otro driver excluyendo

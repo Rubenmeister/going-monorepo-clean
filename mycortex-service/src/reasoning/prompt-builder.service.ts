@@ -102,7 +102,7 @@ export class PromptBuilderService {
     // Memoria de largo plazo — últimos 4 rollups semanales (Etapa D).
     if (memoryRollups && memoryRollups.length > 0) {
       sections.push('', `# Memoria estratégica (últimas ${memoryRollups.length} semanas)`);
-      sections.push('Usá esta info para detectar patrones recurrentes y calibrar urgencia. Si un type aparece semana tras semana sin solución, escalá. Si un type recurrió y se ejecutó effective, podés bajar urgencia.');
+      sections.push('Usa esta info para detectar patrones recurrentes y calibrar urgencia. Si un type aparece semana tras semana sin solución, escala. Si un type recurrió y se ejecutó effective, puedes bajar urgencia.');
       for (const r of memoryRollups) {
         sections.push(`- ${r.summary}`);
         if (r.byType.length > 0) {
@@ -115,7 +115,7 @@ export class PromptBuilderService {
     }
 
     sections.push('', `# Tu turno`);
-    sections.push('Razoná y propone intenciones siguiendo el formato del system prompt.');
+    sections.push('Razona y propone intenciones siguiendo el formato del system prompt.');
 
     return sections.join('\n');
   }
@@ -267,7 +267,7 @@ export class PromptBuilderService {
     // Lista pending KPIs siempre (info estratégica para MyCortex)
     lines.push('', '### 🔴 KPIs estratégicos pendientes (data source no implementada)');
     lines.push(
-      'Cuando notes que necesitarías estos para razonar mejor, emití una intention',
+      'Cuando notes que necesitarías estos para razonar mejor, emite una intention',
       'human_only proponiendo implementar la data source correspondiente:',
     );
     for (const p of PENDING_KPIS) {
@@ -320,13 +320,13 @@ priorizadas que prevengan problemas ANTES de que ocurran.
 - NO propongas acciones que ningún agente puede ejecutar (ej: "contratar
   más operadores" no es accionable a 30 min — sí es accionable
   "redistribuir operadores existentes a turno X").
-- NO inventes datos que no están en el world snapshot. Si necesitás algo
-  que no tenés, decilo en el reason.
+- NO inventes datos que no están en el world snapshot. Si necesitas algo
+  que no tienes, dilo en el reason.
 - NO uses urgency 1.0 a menos que sea verdaderamente crítico (vidas en
   riesgo, dinero perdiéndose por minuto). 0.7-0.9 = importante;
   0.4-0.6 = útil; 0.0-0.3 = informacional.
 - NO propongas verificaciones genéricas de pipeline / observabilidad /
-  data quality. Asumí que la infra está OK a menos que veas error
+  data quality. Asume que la infra está OK a menos que veas error
   EXPLÍCITO en una anomalía o que un agente esté reportando "failure" en
   status. \`lastRunAt: null\` solo significa que el agente no ha corrido en
   la ventana — puede ser perfectamente normal si su cron es semanal o si
@@ -335,7 +335,7 @@ priorizadas que prevengan problemas ANTES de que ocurran.
 - NO confundas "warm-up del sistema" con "anomalía". Si la mayoría de
   agents tienen \`lastRunAt: null\` Y no hay anomalías críticas reportadas,
   el sistema probablemente está empezando — no propongas acciones de
-  emergencia, solo observá.
+  emergencia, solo observa.
 
 # Contexto de cron natural de cada agente (relevante para interpretar lastRunAt)
 
@@ -352,7 +352,7 @@ de **ops-agent y customer-support-service**. El resto puede tener
 
 # Formato de output (OBLIGATORIO)
 
-Razoná primero en texto plano (3-5 oraciones máximo). Después emití un
+Razona primero en texto plano (3-5 oraciones máximo). Después emite un
 bloque \`\`\`json con un array de intenciones:
 
 \`\`\`json
@@ -370,7 +370,7 @@ bloque \`\`\`json con un array de intenciones:
 \`\`\`
 
 Si no hay intenciones que valgan la pena (sistema healthy, sin patrones
-preocupantes), emití un array vacío \`[]\`. NO inventes intenciones por
+preocupantes), emite un array vacío \`[]\`. NO inventes intenciones por
 inventar.
 
 Máximo 5 intenciones por ciclo. Calidad > cantidad.`;

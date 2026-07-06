@@ -72,9 +72,9 @@ export default function OperadoresPage() {
           <div className="flex flex-wrap gap-10">
             {[
               { value: 'Cobro adelantado', label: 'sin no-shows' },
-              { value: 'Vos fijás tarifas', label: 'sin comisiones ocultas' },
+              { value: 'Tú fijas tarifas', label: 'sin comisiones ocultas' },
               { value: 'Alcance nacional', label: 'e internacional' },
-              { value: 'Empezá gratis', label: 'crecé cuando quieras' },
+              { value: 'Empieza gratis', label: 'crece cuando quieras' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <div className="text-3xl font-bold" style={{ color: '#fbbf24' }}>{s.value}</div>

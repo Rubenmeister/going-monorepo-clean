@@ -68,13 +68,13 @@ export function AssistantScreen() {
       if (!supported) {
         Alert.alert(
           'No se puede llamar',
-          'Tu dispositivo no soporta llamadas telefónicas. Usá WhatsApp o el soporte por chat.',
+          'Tu dispositivo no soporta llamadas telefónicas. Usa WhatsApp o el soporte por chat.',
         );
         return;
       }
       await Linking.openURL(url);
     } catch (err) {
-      Alert.alert('Error', 'No pudimos abrir el marcador. Intentá de nuevo.');
+      Alert.alert('Error', 'No pudimos abrir el marcador. Intenta de nuevo.');
     } finally {
       // Pequeño delay antes de bajar el flag — UX: el botón queda en estado
       // "llamando" mientras el dialer se abre.
@@ -86,7 +86,7 @@ export function AssistantScreen() {
     hapticLight();
     const url = `https://wa.me/${WHATSAPP_PHONE.replace(/\D/g, '')}`;
     Linking.openURL(url).catch(() =>
-      Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegurate de tenerlo instalado.'),
+      Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de tenerlo instalado.'),
     );
   }, []);
 
@@ -106,7 +106,7 @@ export function AssistantScreen() {
         </View>
         <Text style={styles.heroTitle}>Asistente Going App</Text>
         <Text style={styles.heroSubtitle}>
-          Hablá con Going App como con un amigo. Te ayudo con cotizaciones,
+          Habla con Going App como con un amigo. Te ayudo con cotizaciones,
           horarios, rutas y cualquier duda. Estoy disponible 24/7.
         </Text>
       </View>
@@ -199,7 +199,7 @@ export function AssistantScreen() {
           <Text style={styles.infoTextBold}>Privacidad:</Text>{' '}
           Las llamadas con el Asistente Going App se procesan respetando la Ley
           Orgánica de Protección de Datos Personales (LOPDP) del Ecuador. Si
-          activás la función SOS durante un viaje, podemos compartir tu
+          activas la función SOS durante un viaje, podemos compartir tu
           ubicación con tus contactos de confianza.
         </Text>
       </View>

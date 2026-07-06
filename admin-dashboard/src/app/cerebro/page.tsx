@@ -254,7 +254,7 @@ export default function CerebroOverviewPage() {
                   </h2>
                   <p className="text-sm text-gray-500">
                     Estas son las propuestas determinísticas. Para las propuestas IA de
-                    MyCortex, mirá{' '}
+                    MyCortex, mira{' '}
                     <Link href="/cerebro/intentions" className="text-blue-600 hover:underline">
                       Intenciones
                     </Link>

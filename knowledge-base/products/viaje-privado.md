@@ -46,7 +46,7 @@ detalles.
 ## Ventajas
 
 - **Comodidad total** — no esperas otros pasajeros, no compartes ruta.
-- **Horario flexible** — sales cuando vos quieras (inmediato o programado).
+- **Horario flexible** — sales cuando tú quieras (inmediato o programado).
 - **Equipaje sin restricción** — el vehículo es tuyo.
 - **Privacidad** — solo tu grupo.
 - **Precio fijo grupal** — pagas el vehículo, no por persona.

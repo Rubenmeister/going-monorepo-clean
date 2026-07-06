@@ -72,7 +72,7 @@ export class PublicChatController {
       return {
         reply:
           reply ??
-          'Disculpá, no pude procesar tu pregunta. Probá reformularla o contactá soporte: 0984037949',
+          'Disculpa, no pude procesar tu pregunta. Prueba reformularla o contacta soporte: 0984037949',
         state: conv.state,
         priority: conv.priority,
       };
@@ -83,7 +83,7 @@ export class PublicChatController {
       // Fallback resiliente: nunca exponemos errores internos al visitante.
       return {
         reply:
-          'Disculpá, tuvimos un problema técnico. Probá de nuevo en unos minutos, o contactanos al 0984037949.',
+          'Disculpa, tuvimos un problema técnico. Prueba de nuevo en unos minutos, o contáctanos al 0984037949.',
       };
     }
   }

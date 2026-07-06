@@ -121,7 +121,7 @@ export default function EventsPage() {
             Sin eventos {agentFilter !== 'all' ? `de ${agentFilter}` : ''} en este momento.
           </p>
           <p className="text-xs text-gray-500 mt-2">
-            Los agents publican según sus crons naturales. Si recién activaste, esperá
+            Los agents publican según sus crons naturales. Si recién activaste, espera
             algunos minutos.
           </p>
         </div>

@@ -714,7 +714,7 @@ export default function HomePage() {
                     Tracking en vivo
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed">
-                    Mirá tu ruta y la del vehículo en tiempo real. Compartí el viaje
+                    Mira tu ruta y la del vehículo en tiempo real. Comparte el viaje
                     con tus contactos de confianza con un toque.
                   </p>
                 </div>
@@ -775,7 +775,7 @@ export default function HomePage() {
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     Tarjeta de crédito, débito, DeUna, transferencia bancaria.
-                    Pagás como te resulte más cómodo, sin efectivo a bordo.
+                    Pagas como te resulte más cómodo, sin efectivo a bordo.
                   </p>
                 </div>
               </div>

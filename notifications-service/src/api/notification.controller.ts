@@ -94,7 +94,7 @@ export class NotificationController {
     const callerId = caller?.id;
     const roles: string[] = caller?.roles || [];
     if (callerId !== userId && !roles.includes('admin')) {
-      throw new ForbiddenException('No tenés acceso a notificaciones de otro usuario');
+      throw new ForbiddenException('No tienes acceso a notificaciones de otro usuario');
     }
     return this.getUserNotificationsUseCase.execute(userId);
   }
@@ -118,7 +118,7 @@ export class NotificationController {
     const recipientId = (notification.toPrimitives() as any).userId
       || (notification as any).recipientId;
     if (recipientId && recipientId !== callerId && !roles.includes('admin')) {
-      throw new ForbiddenException('No podés marcar como leída la notificación de otro usuario');
+      throw new ForbiddenException('No puedes marcar como leída la notificación de otro usuario');
     }
 
     notification.markAsRead();

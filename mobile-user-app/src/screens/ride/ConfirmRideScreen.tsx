@@ -425,7 +425,7 @@ export function ConfirmRideScreen() {
       if (backendFare != null) setConfirmedFare(backendFare);
       const chargeAmount = backendFare ?? totalAmount;
       if (chargeAmount == null) {
-        throw new Error('No pudimos obtener el monto a cobrar. Probá con pago en efectivo.');
+        throw new Error('No pudimos obtener el monto a cobrar. Prueba con pago en efectivo.');
       }
 
       // 2. Crear intent digital por el monto autoritativo del backend.

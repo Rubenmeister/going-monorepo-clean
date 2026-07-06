@@ -42,7 +42,7 @@ const trafficCards = [
 ];
 
 const economicCards = [
-  { emoji: '🚘', title: 'Conductoras y conductores', desc: 'Vos generás ingresos con tu auto y tu tiempo, con pagos claros y horario libre.' },
+  { emoji: '🚘', title: 'Conductoras y conductores', desc: 'Tú generas ingresos con tu auto y tu tiempo, con pagos claros y horario libre.' },
   { emoji: '🏨', title: 'Hoteles y alojamientos', desc: 'Anfitrionas y anfitriones conectan su espacio con viajeras y viajeros verificados.' },
   { emoji: '🗺️', title: 'Tours y experiencias', desc: 'Guías y operadoras turísticas llegan a viajeras y viajeros que buscan lo auténtico de Ecuador.' },
   { emoji: '🔄', title: 'Economía circular', desc: 'Lo que se mueve en Going App impulsa a otras personas y negocios de la misma ciudad.' },

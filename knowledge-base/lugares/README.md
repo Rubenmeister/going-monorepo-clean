@@ -13,7 +13,7 @@ contexto útil al usuario:
 
 ## Filosofía
 
-- Información **verificada**. Si no estás seguro, dejá "PENDIENTE: verificar".
+- Información **verificada**. Si no estás seguro, deja "PENDIENTE: verificar".
 - Tono cálido pero factual. NO marketing exagerado.
 - **Identidad ecuatoriana orgullosa**: hablamos de nuestro país con
   conocimiento, no como turistas extranjeros.

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 
 const BENEFITS = [
-  { icon: '💰', title: 'Ingresos extras', desc: 'Convertí un espacio que no usás en una fuente de ingresos. Vos fijás el precio según tu espacio y tu zona.' },
+  { icon: '💰', title: 'Ingresos extras', desc: 'Convierte un espacio que no usas en una fuente de ingresos. Tú fijas el precio según tu espacio y tu zona.' },
   { icon: '📅', title: 'Tú controlas tu calendario', desc: 'Bloquea fechas cuando quieras. Sin compromisos fijos ni mínimos de disponibilidad.' },
   { icon: '🛡️', title: 'Pagos seguros', desc: 'Cobras antes de que llegue el huésped. DATAFAST o transferencia directa a tu cuenta.' },
   { icon: '⭐', title: 'Perfil verificado', desc: 'Nuestro equipo verifica tu espacio y documentos. Eso genera confianza y más reservas.' },
@@ -68,7 +68,7 @@ export default function AnfitrionesPage() {
             <div className="flex flex-wrap gap-10 justify-center md:justify-start">
               {[
                 { value: 'Perfil verificado', label: 'genera confianza' },
-                { value: 'Vos ponés el precio', label: 'y tu calendario' },
+                { value: 'Tú pones el precio', label: 'y tu calendario' },
                 { value: 'Pagos seguros', label: 'antes del check-in' },
                 { value: '48 h', label: 'Tiempo de activación' },
               ].map(s => (
@@ -174,7 +174,7 @@ export default function AnfitrionesPage() {
       <div className="py-16 px-6" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-white mb-4">¿Listo para publicar tu espacio?</h2>
-          <p className="text-purple-200 mb-8">Sumate desde el arranque y empezá a generar ingresos con Going App.</p>
+          <p className="text-purple-200 mb-8">Súmate desde el arranque y empieza a generar ingresos con Going App.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?rol=host"
               className="px-8 py-4 rounded-2xl font-bold text-white hover:opacity-90 transition-opacity shadow-lg text-base"

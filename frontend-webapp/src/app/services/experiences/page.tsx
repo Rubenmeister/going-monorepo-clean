@@ -365,7 +365,7 @@ export default function ExperiencesPage() {
             Cada viaje es una historia nueva
           </h2>
           <p className="text-white/70 mb-8 text-lg">
-            Sumate y descubrí Ecuador desde adentro con Going App.
+            Súmate y descubre Ecuador desde adentro con Going App.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

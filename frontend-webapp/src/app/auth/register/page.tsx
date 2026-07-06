@@ -20,7 +20,7 @@ const ROLES = [
 
 const BENEFITS: Record<Role, { icon: string; text: string }[]> = {
   user:     [{ icon:'✓', text:'Reserva transporte al instante' }, { icon:'✓', text:'Reserva experiencias y tours' }, { icon:'✓', text:'Envía paquetes en todo Ecuador' }, { icon:'✓', text:'Alojamiento verificado y seguro' }],
-  driver:   [{ icon:'💰', text:'Ganás el 80% de cada viaje' }, { icon:'⏰', text:'Horario completamente flexible' }, { icon:'📱', text:'App intuitiva y soporte 24/7' }, { icon:'🛡️', text:'Seguro de accidentes incluido' }],
+  driver:   [{ icon:'💰', text:'Ganas el 80% de cada viaje' }, { icon:'⏰', text:'Horario completamente flexible' }, { icon:'📱', text:'App intuitiva y soporte 24/7' }, { icon:'🛡️', text:'Seguro de accidentes incluido' }],
   host:     [{ icon:'🏠', text:'Publica tu espacio en minutos' }, { icon:'📅', text:'Gestiona reservas fácilmente' }, { icon:'💳', text:'Pagos seguros y puntuales' }, { icon:'⭐', text:'Reseñas verificadas' }],
   guide:    [{ icon:'🗺️', text:'Diseña tus propios tours' }, { icon:'🌍', text:'Conecta con viajeros del mundo' }, { icon:'💰', text:'Fija tus propias tarifas' }, { icon:'📚', text:'Academia Going App gratuita' }],
   operator: [{ icon:'🎒', text:'Ofrece aventuras y expediciones' }, { icon:'📋', text:'Gestión de grupos y reservas' }, { icon:'🤝', text:'Alianzas con hoteles y guías' }, { icon:'📈', text:'Analytics y ganancias' }],

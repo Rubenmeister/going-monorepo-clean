@@ -95,7 +95,7 @@ Como titular de los datos, puedes en cualquier momento:
 5. **Portabilidad:** recibir tus datos en formato estructurado.
 6. **Revocar** consentimientos que hayas dado.
 
-**Cómo ejercer estos derechos:** escribí a `privacidad@goingec.com` con copia
+**Cómo ejercer estos derechos:** escribe a `privacidad@goingec.com` con copia
 de tu cédula. Tenemos hasta 15 días hábiles para responder.
 
 ## Cookies y trackers en sitios web
@@ -109,7 +109,7 @@ al menos **15 días** de anticipación por email.
 
 ## Reclamos
 
-Si consideras que Going violó tu privacidad, podés:
+Si consideras que Going violó tu privacidad, puedes:
 
 1. Escribirnos a `privacidad@goingec.com`
 2. Acudir a la **Superintendencia de Protección de Datos Personales** del

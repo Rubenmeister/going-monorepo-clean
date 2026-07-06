@@ -39,7 +39,7 @@ correo, pagues como pagues.
   con recargo)
 - Cualquier descuento (promociones, primera vez, corporativo)
 
-Si el precio te parece distinto al esperado, podés revisar el desglose en la
+Si el precio te parece distinto al esperado, puedes revisar el desglose en la
 sección "Detalles del viaje" en la app.
 
 ## ¿Qué pasa si mi tarjeta falla?

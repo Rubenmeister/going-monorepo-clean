@@ -107,7 +107,7 @@ export function SupportScreen() {
         <View style={styles.assistantBannerBody}>
           <Text style={styles.assistantBannerTitle}>Asistente Going App</Text>
           <Text style={styles.assistantBannerSub}>
-            Llamá y hablá con nuestro AI o un operador humano · 24/7
+            Llama y habla con nuestro AI o un operador humano · 24/7
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color="#fff" />

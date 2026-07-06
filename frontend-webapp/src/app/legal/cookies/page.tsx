@@ -42,7 +42,7 @@ export default function CookiesPage() {
 
             <h3 className="font-semibold text-gray-800 mb-2 mt-4">2.1 Cookies estrictamente necesarias</h3>
             <p className="mb-3">
-              Son imprescindibles para que el sitio funcione. Sin ellas no podés iniciar sesión ni
+              Son imprescindibles para que el sitio funcione. Sin ellas no puedes iniciar sesión ni
               reservar viajes. <strong>No requieren tu consentimiento</strong> y no pueden desactivarse.
             </p>
             <div className="overflow-x-auto -mx-2 mb-4">
@@ -76,7 +76,7 @@ export default function CookiesPage() {
 
             <h3 className="font-semibold text-gray-800 mb-2 mt-4">2.2 Cookies de funcionalidad</h3>
             <p className="mb-3">
-              Mejoran tu experiencia pero no son indispensables. Las podés desactivar.
+              Mejoran tu experiencia pero no son indispensables. Las puedes desactivar.
             </p>
             <div className="overflow-x-auto -mx-2 mb-4">
               <table className="min-w-full text-sm border border-gray-200 rounded-lg">
@@ -153,7 +153,7 @@ export default function CookiesPage() {
               </li>
               <li>
                 <strong>Google Cloud / Firebase</strong> (autenticación opcional con cuenta Google) —
-                solo si elegís ingresar con Google. Su política está en{' '}
+                solo si eliges ingresar con Google. Su política está en{' '}
                 <a
                   href="https://policies.google.com/privacy"
                   target="_blank"
@@ -169,16 +169,16 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-xl font-bold text-gray-900 mb-3">4. ¿Cómo gestionar las cookies?</h2>
             <p className="mb-3">
-              Tenés varias formas de controlar las cookies:
+              Tienes varias formas de controlar las cookies:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <strong>Banner de cookies en el sitio:</strong> al ingresar por primera vez, podés
+                <strong>Banner de cookies en el sitio:</strong> al ingresar por primera vez, puedes
                 aceptar o rechazar las cookies opcionales (las estrictamente necesarias no se pueden
                 rechazar porque sin ellas el sitio no funciona).
               </li>
               <li>
-                <strong>Configuración del navegador:</strong> podés borrar todas las cookies de un
+                <strong>Configuración del navegador:</strong> puedes borrar todas las cookies de un
                 sitio o de tu historial en cualquier momento desde la configuración de tu navegador
                 (Chrome, Safari, Firefox, Edge u otro). Ten en cuenta que al borrar las cookies
                 tendrás que iniciar sesión nuevamente.

@@ -20,7 +20,7 @@ navegador para recordar información entre visitas.
 
 ### Esenciales (no requieren consentimiento)
 
-Son necesarias para que el sitio funcione. Sin ellas, no podés iniciar
+Son necesarias para que el sitio funcione. Sin ellas, no puedes iniciar
 sesión ni reservar un viaje.
 
 | Cookie | Propósito | Duración |
@@ -57,7 +57,7 @@ consentimiento.
 1. **Banner inicial:** al entrar por primera vez al sitio, te mostramos un
    banner para que decidas qué cookies aceptas. Las esenciales no se pueden
    desactivar (sin ellas el sitio no funciona).
-2. **Configuración del navegador:** podés borrar cookies en cualquier
+2. **Configuración del navegador:** puedes borrar cookies en cualquier
    momento desde la configuración de tu navegador.
 3. **Modo incógnito:** no guarda cookies entre sesiones.
 

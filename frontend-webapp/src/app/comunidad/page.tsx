@@ -69,7 +69,7 @@ const COMMUNITY_ROLES = [
     role: 'Conductoras y conductores',
     emoji: '🚗',
     desc: 'Profesionales del volante que eligen trabajar con tecnología. Horario flexible, pagos claros y una red de apoyo real.',
-    highlights: ['80% de cada viaje es tuyo', 'Flexibilidad total de horario', 'Capacitación y certificación', 'Comunidad que arranca con vos'],
+    highlights: ['80% de cada viaje es tuyo', 'Flexibilidad total de horario', 'Capacitación y certificación', 'Comunidad que arranca contigo'],
     cta: 'Unirme como conductora/conductor',
     href: '/conductores',
     color: '#16a34a',
@@ -251,7 +251,7 @@ export default function ComunidadPage() {
             <h2 className="text-4xl font-black text-gray-900 mb-4">Sé parte de la comunidad desde el día uno</h2>
             <p className="text-gray-500 text-lg leading-relaxed mb-8">
               Going App está por salir al aire en Ecuador. Empezamos con 3 rutas — Riobamba, Santo Domingo e Ibarra,
-              desde Quito y el aeropuerto — y vamos llegando a todo el país. Sumate y crezcamos juntos.
+              desde Quito y el aeropuerto — y vamos llegando a todo el país. Súmate y crezcamos juntos.
             </p>
             <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg bg-white border border-gray-200 hover:shadow-md transition-all">
               Unirme a la comunidad →

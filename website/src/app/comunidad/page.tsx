@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Comunidad Going App — Viajeras y Viajeros, Conductoras y Conductores de Ecuador',
-  description: 'Sumate a la comunidad de Going App Ecuador. Pasajeras y pasajeros, conductoras y conductores, y anfitriones que construyen una mejor movilidad.',
+  description: 'Súmate a la comunidad de Going App Ecuador. Pasajeras y pasajeros, conductoras y conductores, y anfitriones que construyen una mejor movilidad.',
 };
 
 export default function ComunidadPage() {
@@ -61,10 +61,10 @@ export default function ComunidadPage() {
               Genera ingresos<br />manejando Going App
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
-              Sumate a las primeras conductoras y conductores de Going App. Vos elegís tus horarios, tus rutas y cuánto querés ganar.
+              Súmate a las primeras conductoras y conductores de Going App. Tú eliges tus horarios, tus rutas y cuánto quieres ganar.
             </p>
             <div className="space-y-3 mb-8">
-              {['✅ Vos decidís tus horarios y rutas', '✅ Pagos semanales puntuales', '✅ Soporte 24/7 y comunidad de conductoras y conductores', '✅ App fácil de usar, sin complicaciones'].map(b => (
+              {['✅ Tú decides tus horarios y rutas', '✅ Pagos semanales puntuales', '✅ Soporte 24/7 y comunidad de conductoras y conductores', '✅ App fácil de usar, sin complicaciones'].map(b => (
                 <p key={b} className="text-[14px] text-gray-700 font-semibold">{b}</p>
               ))}
             </div>

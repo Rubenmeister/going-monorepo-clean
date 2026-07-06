@@ -109,7 +109,7 @@ export function HybridModeBanner() {
               await driverHybridAPI.cancel();
               await fetchState();
             } catch (err) {
-              Alert.alert('Error', 'No se pudo salir del modo. Reintentá.');
+              Alert.alert('Error', 'No se pudo salir del modo. Reintenta.');
             } finally {
               setLoading(false);
             }
