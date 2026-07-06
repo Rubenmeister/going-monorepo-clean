@@ -1,116 +1,82 @@
-# Política de Privacidad de Going
+# Privacidad y tratamiento de datos de Going
 
-> ⚠️ **PLANTILLA — pendiente revisión legal antes del lanzamiento.**
->
-> Esta política está modelada según las exigencias de la LOPDP Ecuador. El
-> contenido específico debe ser auditado por abogado / DPO antes de publicar.
+Cuando usas Going, nos confías tus datos personales. Este aviso resume qué datos
+recopilamos, para qué los usamos, con quién los compartimos y qué derechos tienes.
+Aplica a pasajeras/pasajeros, conductoras/conductores, destinatarios de envíos,
+anfitrionas/anfitriones y operadoras/operadores locales.
 
-**Última actualización:** PENDIENTE
-**Versión:** 0.1 (borrador inicial)
-**DPO (Delegado de Protección de Datos):** privacidad@goingec.com
+## Responsable del tratamiento
 
----
+- **Responsable:** GoingApp (THORN AI Technologies), Quito, Ecuador.
+- **Delegada/o de Protección de Datos:** legal@goingec.com
 
-## Quién recolecta tus datos
+## Qué datos recopilamos
 
-**Responsable:** THORN AI TECHNOLOGIES (operador de Going)
-**Domicilio:** Quito, Ecuador
-**Contacto privacidad:** privacidad@goingec.com
+**Que tú nos proporcionas:**
+- Cuenta: nombre, correo, teléfono, contraseña, dirección, foto de perfil,
+  información de pago o bancaria, configuración y programa de fidelidad.
+- Conductoras/conductores: seguro y datos del vehículo, contactos de emergencia,
+  certificados de aptitud y verificación de antecedentes (licencia, historial).
+- Verificación de identidad: cédula, pasaporte o licencia y selfies.
+- Contenido: chats, grabaciones de llamadas de soporte, valoraciones y comentarios.
+- Viaje/itinerario en Going Transfer.
 
-## Qué datos recolectamos
+**Que se generan con el uso:**
+- Ubicación (precisa o aproximada) durante el viaje o pedido.
+- Transacciones: tipo de servicio, fecha/hora, direcciones, distancia, pago.
+- Uso, dispositivo (modelo, IP, sistema operativo) y comunicaciones entre usuarios.
 
-### Datos que TÚ nos proporcionas
+**De otras fuentes:** programa de recomendaciones, socios de pago, proveedores de
+verificación de identidad y antecedentes, aseguradoras, fuentes públicas.
 
-- Nombre, apellido, fecha de nacimiento (al registrarte)
-- Email, número de celular
-- Cédula de identidad o RUC (cuando aplique para facturación)
-- Datos de método de pago (procesados por pasarelas certificadas — Going no
-  almacena el número de tarjeta completo)
-- Contacto de emergencia (opcional)
-- Foto de perfil (opcional)
+## Para qué usamos los datos
 
-### Datos generados por el uso de la app
+1. **Prestar el servicio:** crear cuentas, asignar conductor, calcular tarifa,
+   procesar pagos, tracking y recibos.
+2. **Seguridad y fraude:** verificar identidad (incluido reconocimiento facial en
+   algunas regiones), detectar conducción insegura y prevenir cuentas fraudulentas.
+3. **Soporte al usuario:** investigar y resolver incidentes.
+4. **Investigación y desarrollo:** mejorar y crear funciones.
+5. **Comunicación entre usuarios** (conductor ↔ pasajero).
+6. **Marketing** (personalizable) y comunicaciones no promocionales (encuestas).
+7. **Cumplimiento legal:** atender reclamaciones, disputas y requerimientos.
 
-- Ubicación GPS durante viajes activos (con tu autorización explícita)
-- Historial de viajes (origen, destino, vehículo, conductor, monto, fecha)
-- Calificaciones que das o recibes
-- Conversaciones con soporte (chat texto y, cuando autorices, grabaciones
-  de voz para mejorar el servicio)
-- Datos técnicos del dispositivo (modelo, sistema operativo, versión de la
-  app — para soporte técnico)
+## Con quién compartimos los datos
 
-### Datos que NO recolectamos
+- **Otros usuarios:** nombre, valoración y ubicaciones de recogida/destino con la
+  conductora o conductor; nombre y vehículo de la conductora o conductor con el
+  pasajero.
+- **Servicios de emergencia:** ubicación y datos del viaje, si lo activas.
+- **Aseguradoras** ante una reclamación.
+- **Proveedores:** pagos, verificación de identidad/antecedentes, nube, Google
+  (Maps), soporte, marketing y análisis.
+- **Empresas** (Going para Empresas) y subsidiarias/filiales de Going.
+- **Autoridades** cuando lo exige la ley o un proceso legal.
 
-- Contactos de tu teléfono (Going no accede a tu agenda)
-- Galería de fotos completa (solo la foto que tú subas)
-- Información de tarjetas que no usas en Going
-- Datos biométricos (no usamos Face ID/Touch ID más allá del autenticador
-  del propio sistema operativo)
+**Nunca vendemos tus datos** fuera de estos usos declarados.
 
-## Para qué usamos tus datos
+## Cookies
 
-1. **Operar el servicio:** matching con conductores, cálculo de tarifa,
-   procesamiento de pago, tracking.
-2. **Seguridad:** verificación de identidad, fraude, SOS.
-3. **Soporte:** atender consultas y resolver incidentes.
-4. **Facturación electrónica** según exigencias del SRI.
-5. **Mejorar el servicio:** análisis agregado (no individual) de patrones de
-   uso.
-6. **Comunicaciones:** notificaciones del viaje (siempre), promociones
-   (solo si las aceptás).
+Going y sus socios usan cookies para autenticar usuarios, recordar preferencias,
+medir campañas y analizar tráfico. Ver `legal/cookies.md`.
 
-**Nunca vendemos tus datos a terceros.**
+## Conservación y eliminación
 
-## Con quién compartimos tus datos
+- Datos de cuenta: mientras la cuenta esté activa.
+- Datos con fines fiscales: hasta 7 años.
+- Solicitudes de conductor incompletas: 1 año; rechazadas: 7 años.
+- Puedes solicitar la eliminación de tu cuenta desde el menú Privacidad de la app
+  o el sitio web. Los datos de pasajeros suelen borrarse en 90 días, salvo que la
+  ley o una disputa exija conservarlos.
 
-- **Conductoras/conductores:** lo mínimo necesario para hacer el viaje
-  (nombre + dirección de pickup). Se borra de su lado al terminar el viaje.
-- **Pasarelas de pago:** Datafast, DeUna, procesadora de tarjetas — solo lo
-  que necesitan para cobrar.
-- **Autoridades:** cuando hay orden judicial o requerimiento legítimo de
-  autoridad competente.
-- **Proveedores de infraestructura:** Google Cloud, MongoDB Atlas, Mapbox,
-  Twilio, OpenAI — todos bajo contrato de confidencialidad y procesamiento
-  de datos.
+## Tus derechos
 
-## Cuánto tiempo guardamos tus datos
+Tienes derecho a **acceder, rectificar, eliminar, oponerte, limitar el
+tratamiento y portar** tus datos, y a **revocar** consentimientos. También puedes
+oponerte a decisiones basadas únicamente en tratamiento automatizado y presentar
+una reclamación ante la Autoridad de Protección de Datos de Ecuador.
 
-- **Datos de cuenta:** mientras la cuenta esté activa + 5 años después del
-  cierre (por exigencias contables y fiscales).
-- **Historial de viajes:** 5 años (facturación SRI).
-- **Conversaciones con soporte:** 2 años.
-- **Datos de ubicación de viajes finalizados:** 1 año.
+**Cómo ejercerlos:** desde el menú Cuenta > Configuración > Privacidad de la app,
+el Centro de privacidad web, o escribiendo a **legal@goingec.com**.
 
-PENDIENTE: confirmar plazos con abogado.
-
-## Tus derechos (LOPDP)
-
-Como titular de los datos, puedes en cualquier momento:
-
-1. **Acceder** a tus datos personales.
-2. **Rectificar** datos incorrectos o desactualizados.
-3. **Eliminar** tus datos (derecho al olvido — con excepciones legales como
-   datos fiscales en curso).
-4. **Oponerte** a cierto tratamiento.
-5. **Portabilidad:** recibir tus datos en formato estructurado.
-6. **Revocar** consentimientos que hayas dado.
-
-**Cómo ejercer estos derechos:** escribe a `privacidad@goingec.com` con copia
-de tu cédula. Tenemos hasta 15 días hábiles para responder.
-
-## Cookies y trackers en sitios web
-
-Ver `legal/cookies.md` para el detalle del sitio web Going.
-
-## Cambios a esta política
-
-Going puede actualizar esta política. Cambios materiales se notifican con
-al menos **15 días** de anticipación por email.
-
-## Reclamos
-
-Si consideras que Going violó tu privacidad, puedes:
-
-1. Escribirnos a `privacidad@goingec.com`
-2. Acudir a la **Superintendencia de Protección de Datos Personales** del
-   Ecuador (cuando esté en operación según la LOPDP).
+Esta política puede modificarse; revísala periódicamente.

@@ -355,7 +355,7 @@ export function consultarConocimiento(
 ): { tema: string; contenido: string } | { error: string; temas_disponibles: string[] } {
   const kb = getKnowledgeBase();
   const t = (tema || '').toLowerCase().trim().replace(/\s+/g, '_');
-  const joinDocs = (docs: RawDoc[], max = 6000) =>
+  const joinDocs = (docs: RawDoc[], max = 12000) =>
     docs.map((d) => d.raw).filter(Boolean).join('\n\n---\n\n').slice(0, max);
 
   switch (t) {
