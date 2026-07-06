@@ -14,6 +14,7 @@ import {
   getExcelPrivatePrices,
   type PrivatePrices,
 } from './pricing.service';
+import { PricingClient } from '../infrastructure/pricing-client';
 
 /**
  * FareEngine — motor de precios unificado.
@@ -145,6 +146,7 @@ export class FareEngine {
     @Inject(IRoutingProvider)
     private readonly routingProvider: IRoutingProvider,
     private readonly pricingService: PricingService,
+    private readonly pricingClient: PricingClient,
   ) {}
 
   async quote(input: FareQuoteInput): Promise<FareQuote> {
@@ -184,7 +186,12 @@ export class FareEngine {
         (cls.routeClass === 'intercity' || cls.routeClass === 'airport_corridor')
       ) {
         if (mode === 'compartido') {
-          intercityFixedBase = getExcelFare(cls.originCity, cls.destinationCity);
+          // F2b: tarifa por asiento del motor (editable en vivo, misma que
+          // transport) con fallback al Excel local.
+          intercityFixedBase = await this.pricingClient.sharedFare(
+            cls.originCity, cls.destinationCity,
+            () => getExcelFare(cls.originCity, cls.destinationCity),
+          );
         } else {
           // Privado: precio del vehículo pedido (default SUV si no se especifica).
           const veh = (input.vehicleType ?? 'suv') as keyof PrivatePrices;
