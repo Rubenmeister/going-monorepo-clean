@@ -422,7 +422,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
       // Precio garantizado del Excel: lo mandamos SIEMPRE (inmediato y reserva)
       // para que la pantalla "Buscando conductor" y el cobro muestren el MISMO
       // precio que vio el pasajero al cotizar — no el estimado por distancia.
-      localFare != null ? localFare : undefined,
+      // En 'próximamente' no hay precio → undefined.
+      (!coveragePreview && localFare != null) ? localFare : undefined,
     );
   };
 
@@ -440,9 +441,11 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
    */
   const carpoolBlocked = mode === 'compartido' && scheduledDate && noTimeMatch && !selectedSlot;
   // El backend marcó la ruta fuera de cobertura → no permitir reservar.
-  // 'route_not_yet' informa pero no bloquea (puede haber tarifa local válida).
   const coverageBlocked = coverageStatus === 'out_of_coverage';
-  const canConfirm    = hasValidRoute && localFare !== null && !loading && !!scheduleOk && !carpoolBlocked && !coverageBlocked;
+  // 'route_not_yet' (próximamente): informa y DEJA SEGUIR, pero SIN precio
+  // (aún no operamos la ruta → no cotizamos). No exige localFare para confirmar.
+  const coveragePreview = coverageStatus === 'route_not_yet';
+  const canConfirm    = hasValidRoute && !loading && !!scheduleOk && !carpoolBlocked && !coverageBlocked && (coveragePreview || localFare !== null);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -816,7 +819,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
       )}
 
       {/* ── TARIFA ─────────────────────────────────────────────────────── */}
-      {hasValidRoute && (
+      {/* En 'próximamente' NO mostramos precio (aún no operamos la ruta). */}
+      {hasValidRoute && !coveragePreview && (
         localFare !== null ? (
           <div className={`border rounded-2xl p-4 ${fareFixed ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
             <div className="flex items-center justify-between">
@@ -880,6 +884,8 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
             ? 'Selecciona desde la lista'
             : coverageBlocked
               ? 'Ruta fuera de cobertura'
+              : coveragePreview
+              ? 'Continuar · te avisaremos'
               : !localFare
               ? 'Calculando tarifa…'
               : isScheduled
