@@ -182,17 +182,43 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   const vehicleType: VehicleType = SIMPLE_VEHICLES[simpleVehicle].vehicleForPax(passengers);
   const vehicleConfig = VEHICLE_TYPES[vehicleType];
 
-  // Pre-fill desde URL params
+  // Pre-fill desde URL params (deep-link "home → reservar").
   useEffect(() => {
     const from = searchParams.get('from');
     const to   = searchParams.get('to');
     const date = searchParams.get('date');
     const time = searchParams.get('time');
     const seats = searchParams.get('seats');
-    if (from && !pickupLocation)  setPickupLocation({ address: from, lat: 0, lon: 0 });
-    if (to   && !dropoffLocation) setDropoffLocation({ address: to,  lat: 0, lon: 0 });
-    if (date) { setScheduledDate(date); setIsScheduled(true); }
-    if (time) { setScheduledTime(time); setIsScheduled(true); }
+
+    // El home pasa NOMBRES (from=Ibarra&to=Quito), no coords → sin geocodificar
+    // queda lat:0 y no cotiza ni evalúa cobertura hasta reseleccionar. Resolvemos
+    // las coords reales con Mapbox; si falla, queda lat:0 (aparece el hint de
+    // "selecciona las ciudades" — sin regresión).
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
+    const geocode = async (name: string): Promise<{ lat: number; lon: number } | null> => {
+      if (!token) return null;
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(name)}.json`
+          + `?country=ec&language=es&limit=1&access_token=${token}`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const j = await res.json();
+        const c = j.features?.[0]?.center;
+        return Array.isArray(c) && c.length === 2 ? { lat: c[1], lon: c[0] } : null;
+      } catch { return null; }
+    };
+
+    if (from && !pickupLocation) {
+      setPickupLocation({ address: from, lat: 0, lon: 0 });
+      geocode(from).then((c) => { if (c) setPickupLocation({ address: from, lat: c.lat, lon: c.lon }); });
+    }
+    if (to && !dropoffLocation) {
+      setDropoffLocation({ address: to, lat: 0, lon: 0 });
+      geocode(to).then((c) => { if (c) setDropoffLocation({ address: to, lat: c.lat, lon: c.lon }); });
+    }
+    if (date && time) { setScheduledDate(date); setScheduledTime(time); setIsScheduled(true); }
+    else if (date) { setScheduledDate(date); }
+    else if (time) { setScheduledTime(time); }
     if (seats) { const n = parseInt(seats, 10); if (n >= 1 && n <= 20) setPassengers(n); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
