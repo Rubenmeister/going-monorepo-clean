@@ -5,6 +5,7 @@ import {
   PricingService,
   getPrivateFare,
   getDynamicSurchargeRate,
+  isEcuadorHoliday,
   CARPOOL_SEATING,
   type ClientSegment,
 } from 'pricing';
@@ -12,6 +13,10 @@ import {
   RateFareList,
   RateFareListDocument,
 } from '../infrastructure/schemas/rate-fare-list.schema';
+import {
+  RateRule,
+  RateRuleDocument,
+} from '../infrastructure/schemas/rate-rule.schema';
 // Snapshot inicial (paridad con libs/pricing FARES). Se siembra en Atlas solo si
 // la colección está vacía (primer deploy); luego manda lo que haya en Atlas.
 import fareSeed from '../seed/fare-list.json';
@@ -68,6 +73,8 @@ export class PricingEngineService implements OnModuleInit {
   private readonly pricing = new PricingService();
   // Una lista activa POR servicio (compartido/privado/empresas/urbano).
   private lists: Record<string, RateFareListDocument> = {};
+  // Reglas activas (recargos día/hora/feriado/promo) — F4, editables en Atlas.
+  private rules: RateRuleDocument[] = [];
   private loadedAt = 0;
   private readonly TTL_MS = 60_000;
 
@@ -79,6 +86,8 @@ export class PricingEngineService implements OnModuleInit {
   constructor(
     @InjectModel(RateFareList.name)
     private readonly listModel: Model<RateFareListDocument>,
+    @InjectModel(RateRule.name)
+    private readonly ruleModel: Model<RateRuleDocument>,
   ) {}
 
   async onModuleInit() {
@@ -117,15 +126,70 @@ export class PricingEngineService implements OnModuleInit {
         if (!map[svc]) map[svc] = d; // la de mayor versión gana (sort desc)
       }
       this.lists = map;
+      // Reglas activas (F4) — ordenadas por prioridad asc.
+      this.rules = await this.ruleModel
+        .find({ active: true })
+        .sort({ priority: 1 })
+        .lean<RateRuleDocument[]>();
       this.loadedAt = Date.now();
       const summary = Object.entries(map)
         .map(([s, d]) => `${s} v${d.version}`)
         .join(', ');
-      if (docs.length) this.logger.log(`Listas activas: ${summary}`);
+      if (docs.length) this.logger.log(`Listas activas: ${summary} | ${this.rules.length} reglas`);
       else this.logger.warn('No hay rate_fare_list activa en Atlas');
     } catch (e) {
       this.logger.warn(`refresh() falló: ${(e as Error).message}`);
     }
+  }
+
+  // ── Evaluador de reglas de recargo (F4) — replica getDynamicSurchargeRate ─────
+  private conditionMatches(cond: any, dt: Date): boolean {
+    if (!cond) return false;
+    switch (cond.type) {
+      case 'always':
+        return true;
+      case 'time_window': {
+        const h = dt.getHours();
+        const from = cond.fromHour ?? 0;
+        const to = cond.toHour ?? 24;
+        return from <= to ? h >= from && h < to : h >= from || h < to; // soporta wrap (22→5)
+      }
+      case 'day_of_week':
+        return Array.isArray(cond.days) && cond.days.includes(dt.getDay());
+      case 'holiday':
+        return isEcuadorHoliday(dt);
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Recargo (0–1) desde las reglas de Atlas para un modo/fecha. Suma entre
+   * grupos distintos; dentro de un grupo aplica el MAYOR (feriado > finde).
+   * Devuelve null si NO hay reglas → el caller usa el fallback de código (paridad).
+   */
+  private surchargeFromRules(dt: Date, mode: string): number | null {
+    if (!this.rules.length) return null;
+    const byGroup: Record<string, number> = {};
+    let any = false;
+    for (const r of this.rules) {
+      const modes = (r as any).scope?.modes;
+      if (modes && !modes.includes(mode)) continue;
+      if ((r as any).effect?.type !== 'surcharge_rate') continue;
+      if (!this.conditionMatches((r as any).condition, dt)) continue;
+      any = true;
+      const g = (r as any).group || (r as any).name;
+      const v = Number((r as any).effect.value) || 0;
+      byGroup[g] = Math.max(byGroup[g] ?? 0, v);
+    }
+    if (!any && !this.rules.some((r) => (r as any).effect?.type === 'surcharge_rate')) return null;
+    return Object.values(byGroup).reduce((a, b) => a + b, 0);
+  }
+
+  /** Recargo dinámico: reglas de Atlas si existen, si no el código (paridad). */
+  private surge(dt: Date, mode: string): number {
+    const fromRules = this.surchargeFromRules(dt, mode);
+    return fromRules != null ? fromRules : getDynamicSurchargeRate(dt, mode as any);
   }
 
   private async ensureFresh() {
@@ -196,7 +260,7 @@ export class PricingEngineService implements OnModuleInit {
         const originSurcharge = input.originSurcharge ?? 0;
 
         if (explicit != null) {
-          const surge = getDynamicSurchargeRate(dt, 'privado'); // tiempo/día, NO segmento
+          const surge = this.surge(dt, 'privado'); // reglas Atlas (o código); NO segmento
           const total = round(explicit * (1 + surge)) + originSurcharge;
           const { platformFee, providerAmount } = this.feeSplit(total);
           return {
@@ -228,7 +292,7 @@ export class PricingEngineService implements OnModuleInit {
       // Usa los `rates` de la lista 'urbano' si existe (editable en vivo); si no,
       // fallback exacto a calcTransport (RATES del código) = paridad.
       case 'urban_ride': {
-        const surge = 1 + getDynamicSurchargeRate(dt, 'privado');
+        const surge = 1 + this.surge(dt, 'privado');
         const rt = (this.listFor('urbano') as any)?.rates?.transport;
         if (rt && typeof rt.baseFare === 'number') {
           const km = input.distanceKm ?? 0;

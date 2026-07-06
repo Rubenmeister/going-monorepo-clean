@@ -14,6 +14,13 @@ export class RateRule {
   @Prop({ required: true }) name!: string;
   @Prop({ default: true, index: true }) active!: boolean;
   @Prop({ default: 100 }) priority!: number;
+  /**
+   * Grupo de exclusividad: dentro de un mismo grupo se aplica solo el recargo
+   * MAYOR entre las reglas que matchean (ej. grupo 'dia': feriado 0.25 gana a
+   * fin de semana 0.10). Entre grupos distintos, los recargos SE SUMAN (ej.
+   * 'tiempo' + 'dia'). Replica getDynamicSurchargeRate de libs/pricing.
+   */
+  @Prop({ default: '' }) group!: string;
 
   /** CUÁNDO aplica (todos opcionales = comodín). */
   @Prop({ type: Object, default: {} }) scope!: Record<string, unknown>;
