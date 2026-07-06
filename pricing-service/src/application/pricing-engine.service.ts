@@ -6,6 +6,7 @@ import {
   PricingService,
   getPrivateFare,
   getDynamicSurchargeRate,
+  getClientSurchargeRate,
   isEcuadorHoliday,
   CARPOOL_SEATING,
   type ClientSegment,
@@ -329,20 +330,21 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
           };
         }
 
-        // Fallback paridad: deriva de la tabla compartido + fórmula de segmento.
+        // Fallback: deriva de la tabla compartido, pero el surge sale de las
+        // REGLAS de Atlas (this.surge) + recargo de segmento. Replica
+        // calcIntercityFare pero editable en vivo (antes usaba el código).
         const perSeat = this.sharedFare(input.origin, input.destination);
         if (perSeat == null) throw new Error(`Sin tarifa para ${input.origin}→${input.destination}`);
         const base = getPrivateFare(perSeat, veh);
-        const r = this.pricing.calcIntercityFare({
-          basePrice: base, mode: 'privado', serviceDateTime: dt,
-          clientSegment: segment, originSurcharge,
-        });
+        const surge = this.surge(dt, 'privado');
+        const segRate = getClientSurchargeRate(segment);
+        const total = round(base * (1 + surge + segRate)) + originSurcharge;
+        const { platformFee, providerAmount } = this.feeSplit(total);
         return {
-          total: r.total, currency, base, platformFee: r.platformFee,
-          providerAmount: r.providerAmount, listVersion,
+          total, currency, base, platformFee, providerAmount, listVersion,
           breakdown: {
-            basePrice: base, timeSurchargeRate: r.timeSurchargeRate,
-            clientSurchargeRate: r.clientSurchargeRate, originSurcharge: r.originSurcharge, list: 'compartido(derivado)',
+            basePrice: base, timeSurchargeRate: surge,
+            clientSurchargeRate: segRate, originSurcharge, list: 'compartido(derivado)',
           },
         };
       }
