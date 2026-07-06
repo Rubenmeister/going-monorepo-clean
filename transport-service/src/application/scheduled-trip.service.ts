@@ -36,6 +36,7 @@ import type {
   ScheduledOption,
   AlternativeSchedule,
 } from '../api/dtos/search-query.dto';
+import { PricingClient } from '../infrastructure/pricing-client';
 
 export interface ReserveSeatInput {
   userId: string;
@@ -81,6 +82,7 @@ export class ScheduledTripService {
     @InjectModel('DriverRatingModel')
     private readonly ratingModel: Model<any>,
     private readonly pricing: PricingService,
+    private readonly pricingClient: PricingClient,
   ) {}
 
   /**
@@ -182,7 +184,9 @@ export class ScheduledTripService {
       })
       .lean()) as any[];
 
-    const perSeat = getFare(originCity, destCity) ?? 0;
+    // F2: precio por asiento del motor de tarifas (editable en vivo), fallback local.
+    const perSeat =
+      (await this.pricingClient.sharedFare(originCity, destCity, () => getFare(originCity, destCity))) ?? 0;
     const routeLabel = `${label(originCity)} → ${label(destCity)}`;
     // Desfase hasta la parada de abordaje del pasajero (parada intermedia).
     const offsetMs =

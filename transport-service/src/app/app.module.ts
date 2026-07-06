@@ -95,6 +95,7 @@ import { RideMatchingService } from '../application/ride-matching.service';
 import { ScheduledRideDispatcherCron } from '../application/scheduled-ride-dispatcher.cron';
 import { ScheduledRideReminderCron } from '../application/scheduled-ride-reminder.cron';
 import { PricingService } from 'pricing';
+import { PricingClient } from '../infrastructure/pricing-client';
 import { TokenService } from '../infrastructure/token.service';
 import { MulterModule } from '@nestjs/platform-express';
 
@@ -194,6 +195,7 @@ import { MulterModule } from '@nestjs/platform-express';
     UnifiedSearchUseCase,
     ScheduledTripService,
     PricingService,
+    PricingClient,
     TwilioProxyService,
     AgoraTokenService,
     DatafastProvider,
