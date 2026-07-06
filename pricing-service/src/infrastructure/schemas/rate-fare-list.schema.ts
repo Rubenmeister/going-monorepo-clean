@@ -14,6 +14,15 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true, collection: 'rate_fare_lists' })
 export class RateFareList {
   @Prop({ required: true }) name!: string;
+  /**
+   * Servicio al que aplica la lista. Hay UNA activa por servicio (las varias
+   * activas a la vez). El motor elige la lista según el viaje:
+   *   compartido → tabla `shared` (por asiento)
+   *   privado    → tabla `privateFares` (por vehículo)
+   *   empresas   → tabla `privateFares` (por vehículo, corporativo)
+   *   urbano     → `rates` (base+km+min) + surge (ride-sharing inmediato)
+   */
+  @Prop({ required: true, default: 'compartido', index: true }) service!: string;
   @Prop({ required: true, default: 1 }) version!: number;
   @Prop({ required: true, default: false, index: true }) active!: boolean;
   @Prop({ default: 'manual' }) source!: string; // 'excel-import' | 'manual'

@@ -14,6 +14,7 @@ import {
 } from '@going-monorepo-clean/domains-payment-application';
 import { PricingService } from './application/pricing.service';
 import { FareEngine } from './application/fare-engine.service';
+import { PricingClient } from './infrastructure/pricing-client';
 import { QuoteStore } from './application/quote-store.service';
 import { LoyaltyClient } from './application/loyalty-client.service';
 import { ProcessPaymentUseCase } from './application/use-cases/process-payment.use-case';
@@ -77,6 +78,7 @@ import {
     HandleStripeEventUseCase,
     // Service-level use cases (use IPaymentRepository + IPayoutRepository + StripeGateway)
     PricingService,
+    PricingClient,
     FareEngine,
     QuoteStore,
     LoyaltyClient,

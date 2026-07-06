@@ -85,14 +85,29 @@ de varios servicios. Eso causó el whack-a-mole de "precio distinto entre pantal
 
 ## 4. Modelo de datos (Atlas, db `going-pricing` o `going-transport`)
 
-### 4.1 `rate_fare_lists` — tablas de tarifas versionadas
+### 4.1 `rate_fare_lists` — tablas de tarifas versionadas, UNA POR SERVICIO
+
+> **Refinamiento (Rubén 5-jul)**: la razón de tener VARIAS listas es que **cada
+> servicio tiene precios diferentes** — compartido, privado, empresas. Por eso
+> cada lista lleva un campo `service` y hay **una activa POR servicio** (las tres
+> activas a la vez, no una sola global). `activate` retira solo las del MISMO
+> servicio. El motor elige la lista según el viaje:
+>   - `shared_seat`/`airport` → lista `compartido` (tabla `shared`, por asiento).
+>   - `intercity_private` público → lista `privado` (tabla `privateFares`, por vehículo).
+>   - `intercity_private` corporativo/agencia → lista `empresas` (tabla `privateFares`).
+> Seed inicial (paridad): compartido = Excel `shared`; privado = Excel `private`;
+> empresas = privado ×1.25 (recargo corporativo actual), luego editable aparte.
+> ⚠️ Para que los consumidores USEN las listas de privado/empresas, transport debe
+> pedir al motor el PRECIO privado completo (hoy transport pide solo la base
+> compartida y deriva privado/corporativo localmente) — es el paso de F2c.
 
 ```jsonc
 {
   "_id": "...",
-  "name": "FARES 2026-07 (Excel founder)",
+  "name": "Privado 2026-07 (Excel founder)",
+  "service": "compartido",        // compartido | privado | empresas | urbano | envio
   "version": 3,
-  "active": true,                 // UNA activa a la vez (la que sirve /price)
+  "active": true,                 // UNA activa POR service (la que sirve /price)
   "source": "excel-import",       // | "manual"
   "importedAt": "2026-07-04T...",
   "createdBy": "ruben",

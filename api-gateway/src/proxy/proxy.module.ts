@@ -203,6 +203,7 @@ export class ProxyModule implements NestModule {
       corporate: this.configService.get<string>('CORPORATE_SERVICE_URL', 'http://localhost:3022'),
       emergency: this.configService.get<string>('EMERGENCY_SERVICE_URL', ''),
       voice:     this.configService.get<string>('VOICE_CALL_SERVICE_URL', ''),
+      pricing:   this.configService.get<string>('PRICING_SERVICE_URL', ''),
     };
 
     this.logger.log(`Proxy ready → auth: ${svc.auth}`);
@@ -265,6 +266,16 @@ export class ProxyModule implements NestModule {
         .apply(makeForwardMiddleware(svc.transport, 'search'))
         .forRoutes({ path: 'search/*path', method: RequestMethod.ALL });
     }
+    // /price — motor de tarifas (pricing-service). PÚBLICO como /search: cotizar
+    // un precio no requiere auth (el webapp/móvil lo usan para mostrar tarifas).
+    // Los /admin/lists del motor NO se exponen por el gateway (se operan con su
+    // token directo / futuro panel).
+    if (svc.pricing) {
+      consumer
+        .apply(makeForwardMiddleware(svc.pricing, 'price'))
+        .forRoutes({ path: 'price', method: RequestMethod.POST });
+    }
+
     // /scheduled-trips/* — reserva de asientos en viajes compartidos (transport-service)
     guard('scheduled-trips', svc.transport);
     // /vehicles/* — admin: lista de vehículos derivada de drivers (transport-service AdminStubsController)

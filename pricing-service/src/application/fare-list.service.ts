@@ -28,57 +28,67 @@ export class FareListService {
   /** Todas las listas (resumen), la activa primero. */
   async list() {
     const docs = await this.model
-      .find({}, { name: 1, version: 1, active: 1, source: 1, updatedAt: 1, shared: 1 })
-      .sort({ active: -1, version: -1 })
+      .find({}, { name: 1, service: 1, version: 1, active: 1, source: 1, updatedAt: 1, shared: 1, privateFares: 1 })
+      .sort({ service: 1, active: -1, version: -1 })
       .lean();
     return docs.map((d: any) => ({
       id: String(d._id),
       name: d.name,
+      service: d.service ?? 'compartido',
       version: d.version,
       active: d.active,
       source: d.source,
-      pairs: Object.keys(d.shared ?? {}).length,
+      pairs: Object.keys(d.shared ?? {}).length || Object.keys(d.privateFares ?? {}).length,
       updatedAt: d.updatedAt,
     }));
   }
 
-  /** Carga una lista nueva. Versión = max+1. Inactiva salvo activate:true. */
+  /** Carga una lista nueva de un servicio. Versión = max de ese servicio +1. */
   async create(input: {
     name: string;
+    service?: string;
     shared?: Record<string, number>;
     privateFares?: Record<string, Record<string, number>>;
+    rates?: Record<string, Record<string, number>>;
     source?: string;
     activate?: boolean;
     createdBy?: string;
   }) {
     if (!input.name) throw new BadRequestException('name requerido');
-    const last = await this.model.findOne({}).sort({ version: -1 }).lean();
+    const service = input.service ?? 'compartido';
+    const last = await this.model.findOne({ service }).sort({ version: -1 }).lean();
     const version = ((last as any)?.version ?? 0) + 1;
     const doc = await this.model.create({
       name: input.name,
+      service,
       version,
       active: false,
       source: input.source ?? 'manual',
       shared: input.shared ?? {},
       privateFares: input.privateFares ?? {},
+      rates: input.rates,
       importedAt: new Date(),
       createdBy: input.createdBy ?? 'admin',
     });
-    this.logger.log(`Lista creada: "${input.name}" v${version} (${Object.keys(input.shared ?? {}).length} pares)`);
+    this.logger.log(`Lista creada: "${input.name}" [${service}] v${version}`);
     if (input.activate) await this.activate(String(doc._id));
-    return { id: String(doc._id), version, active: !!input.activate };
+    return { id: String(doc._id), service, version, active: !!input.activate };
   }
 
-  /** Activa una lista y RETIRA (desactiva) las demás. Refresca el motor. */
+  /** Activa una lista y RETIRA solo las del MISMO servicio. Refresca el motor. */
   async activate(id: string) {
     const target = await this.model.findById(id);
     if (!target) throw new NotFoundException(`Lista ${id} no existe`);
-    await this.model.updateMany({ _id: { $ne: target._id } }, { $set: { active: false } });
+    const service = (target as any).service ?? 'compartido';
+    await this.model.updateMany(
+      { _id: { $ne: target._id }, service },
+      { $set: { active: false } },
+    );
     target.active = true;
     await target.save();
     await this.engine.refresh();
-    this.logger.log(`Lista ACTIVA ahora: "${target.name}" v${target.version} (las demás retiradas)`);
-    return { id, active: true, version: target.version, name: target.name };
+    this.logger.log(`Lista ACTIVA [${service}]: "${target.name}" v${target.version} (retiradas las otras de ${service})`);
+    return { id, service, active: true, version: target.version, name: target.name };
   }
 
   /** Añade/edita rutas y precios en una lista. `remove` quita pares. */
