@@ -62,9 +62,9 @@ medir campañas y analizar tráfico. Ver `legal/cookies.md`.
 
 ## Conservación y eliminación
 
-- Datos de cuenta: mientras la cuenta esté activa.
-- Datos con fines fiscales: hasta 7 años.
-- Solicitudes de conductor incompletas: 1 año; rechazadas: 7 años.
+- Datos de cuenta y de historial de viajes: 5 años (facturación SRI).
+- Datos de soporte: 2 años. Datos de ubicación: 1 año.
+- Solicitudes de conductor incompletas: 1 año; rechazadas: 5 años.
 - Puedes solicitar la eliminación de tu cuenta desde el menú Privacidad de la app
   o el sitio web. Los datos de pasajeros suelen borrarse en 90 días, salvo que la
   ley o una disputa exija conservarlos.
@@ -93,7 +93,7 @@ Esta política puede modificarse; revísala periódicamente.
 
 - **Responsable:** THORN AI TECHNOLOGIES (operador de Going App).
 - **Domicilio:** Quito, Ecuador.
-- **Contacto privacidad:** tec@goingec.com
+- **Contacto privacidad:** legal@goingec.com
 
 ### Qué datos recolectamos
 

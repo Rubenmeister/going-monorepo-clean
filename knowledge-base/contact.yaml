@@ -12,7 +12,7 @@ contact:
     hours:  "24/7 (atención automatizada con escalada a humano)"
 
   # Email general
-  email: soporte@goingec.com
+  email: operaciones@goingec.com
 
   # Email de privacidad / DPO (requerido por LOPDP Ecuador)
   privacy_email: privacidad@goingec.com

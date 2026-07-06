@@ -24,8 +24,8 @@ Mejoran tu experiencia pero no son indispensables.
 Nos ayudan a entender cómo se usa el sitio en agregado. No identifican personas
 individuales.
 
-PENDIENTE: definir qué proveedor de analytics se usará (Google Analytics,
-Plausible, Posthog, etc.) y agregarlo aquí.
+Going usa **Google Analytics** para medir el tráfico y el uso del sitio de forma
+agregada.
 
 ### Publicidad / terceros
 

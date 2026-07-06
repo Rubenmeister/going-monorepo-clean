@@ -86,7 +86,7 @@ PENDIENTE: documentar:
    - Dar estrellas bajas
    - Reportar con motivo específico (lenguaje inapropiado, conducción
      temeraria, vehículo en mal estado, etc.)
-2. También puedes escribir a `soporte@goingec.com` o WhatsApp con el ID del
+2. También puedes escribir a `operaciones@goingec.com` o WhatsApp con el ID del
    viaje y los detalles.
 3. Operaciones Going investiga y, según la gravedad:
    - Llama de atención al conductor

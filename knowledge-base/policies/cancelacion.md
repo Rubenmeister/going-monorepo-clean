@@ -5,9 +5,8 @@
 > **Ventana confirmada por Rubén (jul-2026):** en **viaje programado**, sin costo
 > hasta 1 hora y media (90 minutos) antes del viaje, una vez asignado el
 > conductor. En **viaje inmediato (on-demand)**, el doc curado fija sin costo
-> dentro de los primeros 2 minutos desde la solicitud y antes de que el conductor
-> confirme que va en camino. Pendiente aún: el MONTO de la tarifa de cancelación
-> y la revisión legal final.
+> dentro de los primeros 5 minutos desde la solicitud y antes de que el conductor
+> confirme que va en camino. La tarifa de cancelación es de $2 USD.
 
 ## Cuándo puede cancelar el cliente
 
@@ -22,7 +21,7 @@
 ### Con cargo (cancelación tardía)
 
 - **Menos de 1 hora y media antes** del viaje, con conductora o conductor ya
-  asignado → se cobra una tarifa de cancelación (PENDIENTE: definir monto).
+  asignado → se cobra una tarifa de cancelación de **$2 USD**.
 
 ### Sin reembolso
 

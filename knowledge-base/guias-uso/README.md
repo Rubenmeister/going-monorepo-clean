@@ -88,7 +88,7 @@ La mayor parte del onboarding ya vive en **Academia Going** (`/academy/*`).
 
 ## Si todo falla
 
-Contáctanos por WhatsApp +593 98 403 7949 o `soporte@goingec.com`.
+Contáctanos por WhatsApp +593 98 403 7949 o `operaciones@goingec.com`.
 ```
 
 ### Reglas de estilo

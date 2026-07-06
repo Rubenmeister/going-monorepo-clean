@@ -92,5 +92,5 @@ Tentativamente:
 
 1. Verifica en la app sección **Mis viajes** que no sea un viaje real.
 2. Si no aparece, escribe a soporte: WhatsApp +593 98 403 7949 o
-   soporte@goingec.com con la fecha y monto exacto del cargo.
+   operaciones@goingec.com con la fecha y monto exacto del cargo.
 3. Soporte revisa con la pasarela y resuelve en 48h hábiles.

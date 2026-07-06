@@ -91,7 +91,7 @@ Sí. La app y los agentes de soporte hablan:
 ### ¿Cómo contacto soporte humano?
 
 - **WhatsApp:** +593 98 403 7949
-- **Email:** soporte@goingec.com
+- **Email:** operaciones@goingec.com
 - Chat en la app o en `app.goingec.com` (24/7, escalada a humano si es necesario).
 
 ---
@@ -189,7 +189,7 @@ Sí, desde que arranque la operación en cada ciudad. Tentativamente:
 
 1. Verifica en la app sección **Mis viajes** que no sea un viaje real.
 2. Si no aparece, escribe a soporte: WhatsApp +593 98 403 7949 o
-   soporte@goingec.com con la fecha y monto exacto del cargo.
+   operaciones@goingec.com con la fecha y monto exacto del cargo.
 3. Soporte revisa con la pasarela y resuelve en 48h hábiles.
 
 ---
@@ -275,7 +275,7 @@ Sí. Todos los vehículos Going App tienen seguro completo al día. Consulta:
    - Dar estrellas bajas.
    - Reportar con motivo específico (lenguaje inapropiado, conducción temeraria,
      vehículo en mal estado, etc.).
-2. También puedes escribir a `soporte@goingec.com` o WhatsApp con el ID del
+2. También puedes escribir a `operaciones@goingec.com` o WhatsApp con el ID del
    viaje y los detalles.
 3. Operaciones Going investiga y, según la gravedad:
    - Llamada de atención al conductor.

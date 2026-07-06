@@ -10,15 +10,15 @@
 
 **Sin costo (cancelación temprana)**
 
-- **Viaje inmediato (on-demand):** dentro de los primeros 2 minutos desde que se
+- **Viaje inmediato (on-demand):** dentro de los primeros 5 minutos desde que se
   solicita el viaje y antes de que el conductor confirme que va en camino al
   pickup.
 - **Viaje programado:** hasta 90 minutos antes de la hora pactada.
 
 **Con cargo parcial (cancelación tardía)**
 
-- **Viaje inmediato:** después de los 2 minutos o cuando el conductor ya está en
-  camino al pickup → se cobra una tarifa de cancelación mínima.
+- **Viaje inmediato:** después de los 5 minutos o cuando el conductor ya está en
+  camino al pickup → se cobra una tarifa de cancelación de **$2 USD**.
 - **Viaje programado:** menos de 90 minutos antes → se cobra una tarifa
   proporcional mínima.
 

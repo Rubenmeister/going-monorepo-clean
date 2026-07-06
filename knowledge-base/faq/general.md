@@ -86,6 +86,6 @@ Sí. La app y los agentes de soporte hablan:
 ## ¿Cómo contacto soporte humano?
 
 - **WhatsApp:** +593 98 403 7949
-- **Email:** soporte@goingec.com
+- **Email:** operaciones@goingec.com
 - **Chat en la app** o en `app.goingec.com` (24/7, escalada a humano si es
   necesario)
