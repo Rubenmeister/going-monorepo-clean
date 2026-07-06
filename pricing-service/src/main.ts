@@ -8,19 +8,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
+    // bodyLimit alto no hace falta; NestJS ya registra el parser JSON. NOTA: no
+    // agregar un addContentTypeParser('application/json') acá — Fastify tira
+    // FST_ERR_CTP_ALREADY_PRESENT y crashea el boot. El 411 de POST sin body es
+    // un caso borde de curl (el panel/fetch mandan body); se documenta el `-d '{}'`.
     new FastifyAdapter({ logger: false })
-  );
-
-  // Tolera POST con body vacío / sin Content-Length (ej. POST /admin/lists/:id/activate
-  // sin cuerpo) → lo trata como {} en vez de 411/400. El panel manda body igual.
-  const fastify = app.getHttpAdapter().getInstance() as any;
-  fastify.addContentTypeParser(
-    'application/json',
-    { parseAs: 'string' },
-    (_req: unknown, body: string, done: (err: Error | null, val?: unknown) => void) => {
-      if (!body) return done(null, {});
-      try { done(null, JSON.parse(body)); } catch (e) { done(e as Error); }
-    },
   );
 
   const port = process.env.PORT || 3011;
