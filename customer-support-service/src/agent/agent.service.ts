@@ -55,8 +55,9 @@ const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 // instruye "llama a get_quote" (PASO 6 / REGLA CRÍTICA), pero antes no existía
 // la tool → el agente prometía cotizar sin poder. Esto la conecta de verdad;
 // el precio sale de toolGetQuote() → @going-platform/going-kb (única fuente).
-// NOTA: Claude usa otro formato (tool_use); pendiente de cablear cuando haya
-// crédito Anthropic. Hoy OpenAI sirve todo, así que la tool va en esa rama.
+// Claude usa otro formato (tool_use / input_schema); ya está cableado en la rama
+// Claude vía ANTHROPIC_TOOLS (derivado de estas defs) — el modelo PRIMARIO también
+// cotiza y consulta la KB en vivo, no solo el fallback OpenAI.
 const GET_QUOTE_TOOL_OPENAI = {
   type: 'function' as const,
   function: {
@@ -157,6 +158,19 @@ const CONSULTAR_TOOL_OPENAI = {
   },
 };
 
+// Mismas 4 herramientas en formato Anthropic (name + description + input_schema).
+// Se derivan de las defs OpenAI para no duplicar los esquemas → una sola fuente.
+const ANTHROPIC_TOOLS: Anthropic.Tool[] = [
+  GET_QUOTE_TOOL_OPENAI,
+  RENTAL_TOOL_OPENAI,
+  SHIPPING_TOOL_OPENAI,
+  CONSULTAR_TOOL_OPENAI,
+].map((t) => ({
+  name: t.function.name,
+  description: t.function.description,
+  input_schema: t.function.parameters as Anthropic.Tool.InputSchema,
+}));
+
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
@@ -210,42 +224,76 @@ export class AgentService {
 
     for (const provider of order) {
       try {
-        if (provider === 'claude' && this.anthropic) {
-          const t0 = Date.now();
-          const resp = await this.anthropic.messages.create({
-            model: CLAUDE_MODEL,
-            max_tokens: 400,
-            // Prompt caching: el system prompt (~6k tokens, estable por
-            // idioma/audiencia) se cachea (ephemeral, TTL ~5min). Las lecturas
-            // de caché cuestan ~10% del input → Claude ~10× más barato en
-            // mensajes seguidos con el mismo prompt.
-            system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
-            messages: msgs.map((m) => ({ role: m.role, content: m.content })),
-          });
-          const text = resp.content
-            .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-            .map((b) => b.text)
-            .join('')
-            .trim();
-          const u: any = resp.usage;
-          const inP = TEXT_PRICING.claude.in;
-          const freshIn = u?.input_tokens || 0;
-          const cacheW = u?.cache_creation_input_tokens || 0; // escritura: 1.25× input
-          const cacheR = u?.cache_read_input_tokens || 0;     // lectura: 0.10× input
-          const cost =
-            freshIn * inP + cacheW * inP * 1.25 + cacheR * inP * 0.1 + (u?.output_tokens || 0) * TEXT_PRICING.claude.out;
-          this.budget.record(cost);
-          this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${freshIn} cacheW=${cacheW} cacheR=${cacheR} out=${u?.output_tokens} ~$${cost.toFixed(4)})`);
-          if (text) return text;
-        } else {
-          const text = await this.generateOpenAI(systemPrompt, msgs);
-          if (text) return text;
-        }
+        const text =
+          provider === 'claude' && this.anthropic
+            ? await this.generateClaude(systemPrompt, msgs)
+            : await this.generateOpenAI(systemPrompt, msgs);
+        if (text) return text;
       } catch (err) {
         this.logger.error(`[llm:${provider}] error: ${(err as Error).message} — probando siguiente proveedor`);
       }
     }
     throw new Error('todos los proveedores LLM fallaron');
+  }
+
+  /**
+   * Claude con tool-use (get_quote, renta, envíos, consultar_conocimiento).
+   * Bucle igual que OpenAI: si el modelo pide una tool, la ejecutamos, le
+   * devolvemos el tool_result y volvemos a llamar para que redacte con el dato
+   * real. Máx 3 vueltas (guard anti-loop). Antes Claude (el PRIMARIO) respondía
+   * SIN tools → no cotizaba ni consultaba la KB salvo que cayera a OpenAI.
+   */
+  private async generateClaude(
+    systemPrompt: string,
+    msgs: { role: 'user' | 'assistant'; content: string }[],
+  ): Promise<string> {
+    const messages: Anthropic.MessageParam[] = msgs.map((m) => ({ role: m.role, content: m.content }));
+    for (let round = 0; round < 3; round++) {
+      const t0 = Date.now();
+      const resp = await this.anthropic!.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 400,
+        // Prompt caching: el system prompt (~6k tokens, estable por idioma/
+        // audiencia) se cachea (ephemeral, TTL ~5min) → Claude ~10× más barato
+        // en mensajes seguidos con el mismo prompt.
+        system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
+        messages,
+        tools: ANTHROPIC_TOOLS,
+      });
+      const u: any = resp.usage;
+      const inP = TEXT_PRICING.claude.in;
+      const freshIn = u?.input_tokens || 0;
+      const cacheW = u?.cache_creation_input_tokens || 0; // escritura: 1.25× input
+      const cacheR = u?.cache_read_input_tokens || 0;     // lectura: 0.10× input
+      const cost =
+        freshIn * inP + cacheW * inP * 1.25 + cacheR * inP * 0.1 + (u?.output_tokens || 0) * TEXT_PRICING.claude.out;
+      this.budget.record(cost);
+
+      const toolUses = resp.content.filter(
+        (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use',
+      );
+      if (resp.stop_reason === 'tool_use' && toolUses.length > 0) {
+        // El modelo pidió herramientas: adjuntamos su turno + los tool_result.
+        messages.push({ role: 'assistant', content: resp.content });
+        const results: Anthropic.ToolResultBlockParam[] = toolUses.map((tu) => {
+          const result = this.executeTool(tu.name, tu.input as any);
+          this.logger.log(`[claude:tool] ${tu.name}(${JSON.stringify(tu.input)}) → ${JSON.stringify(result).slice(0, 160)}`);
+          return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) };
+        });
+        messages.push({ role: 'user', content: results });
+        continue; // siguiente vuelta: el modelo redacta con el resultado
+      }
+
+      const text = resp.content
+        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+        .map((b) => b.text)
+        .join('')
+        .trim();
+      this.logger.log(`[claude] ${text.length} chars en ${Date.now() - t0}ms (in=${freshIn} cacheW=${cacheW} cacheR=${cacheR} out=${u?.output_tokens} ~$${cost.toFixed(4)}) round=${round}`);
+      return text;
+    }
+    this.logger.warn('[claude] máx vueltas de tool alcanzado sin respuesta final');
+    return '';
   }
 
   /**
