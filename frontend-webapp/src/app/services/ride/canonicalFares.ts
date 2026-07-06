@@ -218,12 +218,54 @@ function normalize(city: string): string {
 
 function pair(a: string, b: string): string { return `${normalize(a)}-${normalize(b)}`; }
 
-/** Precio compartido/persona (o null si esa ruta NO tiene compartido). */
-export function getFare(origin: string, destination: string): number | null {
-  return FARES.shared[pair(origin, destination)] ?? FARES.shared[pair(destination, origin)] ?? null;
+// ── Snapshot del MOTOR DE TARIFAS (runtime) ───────────────────────────────────
+// El webapp baja /snapshot al cargar y sobrescribe la tabla local con los datos
+// AUTORITATIVOS del motor (Atlas) → cierra la última divergencia de precios en
+// pantallas. Si el fetch falla, se usa el bundle `FARES` de fallback (offline/robusto).
+let motorShared: Record<string, number> | null = null;
+let motorPrivate: Record<string, PrivatePrices> | null = null;
+
+export function setMotorFares(
+  shared?: Record<string, number> | null,
+  priv?: Record<string, PrivatePrices> | null,
+): void {
+  if (shared && Object.keys(shared).length) motorShared = shared;
+  if (priv && Object.keys(priv).length) motorPrivate = priv;
 }
 
-/** Precios privados por vehículo (o null si la ruta no está en la matriz). */
+/** Baja el snapshot del motor y sobrescribe la tabla local. Fire-and-forget. */
+export async function loadMotorSnapshot(): Promise<boolean> {
+  try {
+    const API = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.goingec.com';
+    const res = await fetch(`${API}/snapshot`, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return false;
+    const d = await res.json() as {
+      compartido?: { shared?: Record<string, number> };
+      privado?: { private?: Record<string, PrivatePrices> };
+    };
+    setMotorFares(d.compartido?.shared, d.privado?.private);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Precio compartido/persona (motor si está, si no el bundle; null si no existe). */
+export function getFare(origin: string, destination: string): number | null {
+  const k1 = pair(origin, destination), k2 = pair(destination, origin);
+  if (motorShared) {
+    const m = motorShared[k1] ?? motorShared[k2];
+    if (m != null) return m;
+  }
+  return FARES.shared[k1] ?? FARES.shared[k2] ?? null;
+}
+
+/** Precios privados por vehículo (motor si está, si no el bundle). */
 export function getPrivatePrices(origin: string, destination: string): PrivatePrices | null {
-  return FARES.private[pair(origin, destination)] ?? FARES.private[pair(destination, origin)] ?? null;
+  const k1 = pair(origin, destination), k2 = pair(destination, origin);
+  if (motorPrivate) {
+    const m = motorPrivate[k1] ?? motorPrivate[k2];
+    if (m != null) return m;
+  }
+  return FARES.private[k1] ?? FARES.private[k2] ?? null;
 }

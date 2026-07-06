@@ -63,6 +63,10 @@ export default function TarifasPage() {
   const [pCode, setPCode] = useState('');
   const [pPct, setPPct] = useState('10');
   const [pUntil, setPUntil] = useState('');
+  // Form cargar lista completa
+  const [bSvc, setBSvc] = useState('compartido');
+  const [bName, setBName] = useState('');
+  const [bText, setBText] = useState('');
 
   const load = useCallback(async (t: string) => {
     setLoading(true); setErr('');
@@ -96,6 +100,41 @@ export default function TarifasPage() {
       await pReq(token, `/lists/${list.id}/fares`, { method: 'PATCH', body: JSON.stringify(body) });
       flash(`Tarifa ${fRoute} guardada en "${list.service}" — aplica en vivo`);
       setFPrice(''); load(token);
+    } catch (e: any) { setErr(e.message); }
+  }
+
+  async function uploadList() {
+    setErr('');
+    if (!bName.trim()) { setErr('Ponle un nombre a la lista'); return; }
+    // Cada línea: compartido → "origen,destino,precio"; privado/empresas →
+    // "origen,destino,vehiculo,precio". Acepta comas O tabs (pegar del Excel).
+    const shared: Record<string, number> = {};
+    const privateFares: Record<string, Record<string, number>> = {};
+    let n = 0, bad = 0;
+    for (const raw of bText.split('\n')) {
+      const line = raw.trim();
+      if (!line) continue;
+      const c = line.split(/[,\t;]/).map((x) => x.trim());
+      if (bSvc === 'compartido') {
+        const [o, d, p] = c;
+        const price = Number(p);
+        if (!o || !d || !p || Number.isNaN(price)) { bad++; continue; }
+        shared[`${o}-${d}`.toLowerCase()] = price; n++;
+      } else {
+        const [o, d, veh, p] = c;
+        const price = Number(p);
+        if (!o || !d || !veh || Number.isNaN(price)) { bad++; continue; }
+        const key = `${o}-${d}`.toLowerCase();
+        (privateFares[key] ??= {})[veh.toLowerCase()] = price; n++;
+      }
+    }
+    if (!n) { setErr('No pude leer filas válidas. Formato: ' + (bSvc === 'compartido' ? 'origen,destino,precio' : 'origen,destino,vehiculo,precio')); return; }
+    try {
+      const body: any = { name: bName.trim(), service: bSvc, activate: true };
+      if (bSvc === 'compartido') body.shared = shared; else body.privateFares = privateFares;
+      await pReq(token, '/lists', { method: 'POST', body: JSON.stringify(body) });
+      flash(`Lista "${bName}" cargada y activada en ${bSvc}: ${n} rutas${bad ? ` (${bad} filas ignoradas)` : ''}`);
+      setBText(''); setBName(''); load(token);
     } catch (e: any) { setErr(e.message); }
   }
 
@@ -187,6 +226,26 @@ export default function TarifasPage() {
               <input value={fPrice} onChange={(e) => setFPrice(e.target.value)} placeholder="$" type="number" className="border rounded-lg px-3 py-2 text-sm w-24" />
               <button onClick={saveFare} className="bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg">Guardar</button>
             </div>
+          </div>
+
+          {/* Cargar lista completa (pegar del Excel) */}
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <p className="text-sm font-bold text-gray-700">Cargar lista completa</p>
+            <p className="text-xs text-gray-400 mb-2">
+              Crea una lista nueva y la activa (retira la anterior de ese servicio). Pega filas — una por línea,
+              separadas por coma o tab (puedes copiar del Excel). Formato:{' '}
+              <span className="font-mono text-gray-600">{bSvc === 'compartido' ? 'origen,destino,precio' : 'origen,destino,vehiculo,precio'}</span>
+            </p>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <select value={bSvc} onChange={(e) => setBSvc(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
+                {SERVICES.filter((s) => s !== 'urbano').map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input value={bName} onChange={(e) => setBName(e.target.value)} placeholder="Nombre de la lista (ej. Tarifas jul-2026)" className="border rounded-lg px-3 py-2 text-sm w-64" />
+            </div>
+            <textarea value={bText} onChange={(e) => setBText(e.target.value)} rows={5}
+              placeholder={bSvc === 'compartido' ? 'ibarra,quito,15\notavalo,quito,9\n…' : 'ibarra,quito,suv,60\nibarra,quito,van,80\n…'}
+              className="border rounded-lg px-3 py-2 text-sm w-full font-mono" />
+            <button onClick={uploadList} className="mt-2 bg-[#0033A0] text-white text-sm font-bold px-4 py-2 rounded-lg">Cargar y activar</button>
           </div>
         </section>
 
