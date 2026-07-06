@@ -472,11 +472,16 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
           r.effect?.type === 'flat_override' && this.ruleRouteMatches(r, input) && this.withinValidity(r, dt),
       ) as any;
       if (rule) {
-        const min = res.total * (1 - PROVIDER_CAP);
-        const max = res.total * (1 + PROVIDER_CAP);
-        const capped = round(Math.min(max, Math.max(min, Number(rule.effect.value))));
-        adjustments.push({ rule: rule.name, type: 'provider_override', providerId: input.providerId, from: total, to: capped });
-        total = capped;
+        // Guard: una regla con effect.value ausente/no numérico (entrada de ops)
+        // haría Number(...) => NaN y propagaría NaN al precio. Se ignora.
+        const v = Number(rule.effect.value);
+        if (Number.isFinite(v)) {
+          const min = res.total * (1 - PROVIDER_CAP);
+          const max = res.total * (1 + PROVIDER_CAP);
+          const capped = round(Math.min(max, Math.max(min, v)));
+          adjustments.push({ rule: rule.name, type: 'provider_override', providerId: input.providerId, from: total, to: capped });
+          total = capped;
+        }
       }
     }
 
@@ -486,10 +491,13 @@ export class PricingEngineService implements OnModuleInit, OnModuleDestroy {
         if (r.condition?.type !== 'promo_code' || r.condition.code !== input.promoCode) continue;
         if (!this.withinValidity(r, dt)) continue;
         const e = r.effect || {};
+        // Guard: value inválido (ausente/no numérico) => NaN. Se ignora la promo.
+        const ev = Number(e.value);
+        if (!Number.isFinite(ev)) continue;
         let nt = total;
-        if (e.type === 'discount_rate') nt = round(total * (1 - Number(e.value)));
-        else if (e.type === 'multiplier') nt = round(total * Number(e.value));
-        else if (e.type === 'flat_add') nt = round(total + Number(e.value));
+        if (e.type === 'discount_rate') nt = round(total * (1 - ev));
+        else if (e.type === 'multiplier') nt = round(total * ev);
+        else if (e.type === 'flat_add') nt = round(total + ev);
         else continue;
         adjustments.push({ rule: r.name, type: 'promo', code: input.promoCode, from: total, to: nt });
         total = Math.max(0, nt);

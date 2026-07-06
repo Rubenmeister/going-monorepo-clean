@@ -269,12 +269,21 @@ export class ScheduledTripService {
     );
     if (!decision.ok) throw new ConflictException(decision.reason);
 
+    // Precio por asiento desde el MOTOR (fuente única, editable en vivo). Si el
+    // motor está caído cae a la tabla local. Sin esto, la reserva cobraría el
+    // bundle y divergiría de lo que `/search` mostró (leído también del motor).
+    const motorPerSeat = await this.pricingClient.sharedFare(
+      input.originCity,
+      input.destCity,
+      () => getFare(input.originCity, input.destCity),
+    );
     const price = this.pricing.calcCarpoolSeats({
       originCity: input.originCity,
       destCity: input.destCity,
       vehicleType: trip.vehicleType as 'suv' | 'suv_xl',
       seats: input.seats,
       frontExclusive: input.wantsFrontExclusive,
+      perSeat: motorPerSeat ?? undefined,
     });
 
     // Bloqueo optimista: solo actualiza si seatsReserved no cambió desde la lectura.

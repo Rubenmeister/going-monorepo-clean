@@ -96,7 +96,14 @@ class RideService {
       pickup:        req.pickup,
       dropoff:       req.dropoff,
       // En reservas el precio mostrado es el fijado (lockedFare); si no, el estimado.
-      estimatedFare: data.lockedFare ?? data.fare?.estimatedTotal ?? estimatedFare,
+      // Fallback a req.lockedFare (lo que el pasajero cotizó y vio) ANTES del
+      // estimado local — ese estimado usa la fórmula privada ×mult y para
+      // compartido/ciudad estaría mal escalado. Último recurso saneado vs NaN.
+      estimatedFare:
+        data.lockedFare ??
+        data.fare?.estimatedTotal ??
+        req.lockedFare ??
+        (Number.isFinite(estimatedFare) ? estimatedFare : 0),
       distance,
       duration,
       status,

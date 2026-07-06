@@ -551,6 +551,13 @@ export class PricingService {
     vehicleType: 'suv' | 'suv_xl';
     seats: number;
     frontExclusive?: boolean;
+    /**
+     * Precio por asiento AUTORITATIVO (motor de tarifas). Si se provee, se usa
+     * en lugar de la tabla local `getFare` → el cobro de la reserva coincide
+     * con lo que muestra `/search` (que también lee del motor). Sin esto, la
+     * reserva cobraría la tabla bundleada y divergiría al editar el motor.
+     */
+    perSeat?: number;
   }): {
     perSeat: number;
     seats: number;
@@ -561,7 +568,10 @@ export class PricingService {
     platformFee: number;
     providerAmount: number;
   } {
-    const perSeat = getFare(params.originCity, params.destCity) ?? 0;
+    const perSeat =
+      params.perSeat != null && Number.isFinite(params.perSeat)
+        ? params.perSeat
+        : getFare(params.originCity, params.destCity) ?? 0;
     const seating = CARPOOL_SEATING[params.vehicleType];
     const frontSurcharge = params.frontExclusive ? seating?.frontSeatSurcharge ?? 0 : 0;
     const seatsSubtotal = round(perSeat * params.seats);

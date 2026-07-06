@@ -385,7 +385,11 @@ export function getFareTable(origin: string, destination: string): string {
 
 export function getFare(origin: string, destination: string): number | null {
   const key = `${normalize(origin)}-${normalize(destination)}`;
-  return (FARES.shared as any)[key] ?? null;
+  const rev = `${normalize(destination)}-${normalize(origin)}`;
+  // Bidireccional: la tarifa compartida es la misma en ambos sentidos. Alinea
+  // este fallback con el motor (`sharedFare` prueba ida y vuelta) y evita que
+  // una ruta cargada en un solo sentido grabe pricePerSeat=0 al materializar.
+  return (FARES.shared as any)[key] ?? (FARES.shared as any)[rev] ?? null;
 }
 
 function normalize(city: string): string {

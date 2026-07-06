@@ -267,6 +267,11 @@ function RideRequestFormInner({ defaultMode }: { defaultMode?: TransportMode }) 
   //  - HORARIOS compartidos: solo en 'compartido' con fecha elegida.
   // 'ciudad' es ride-hailing inmediato → no consulta cobertura programada.
   useEffect(() => {
+    // Al cambiar ruta/fecha/modo, el horario elegido antes ya no aplica: limpiar
+    // el slot para no reservar el viaje equivocado (su scheduledTripId es de la
+    // ruta anterior). Este efecto NO depende de scheduledTime/selectedSlot, así
+    // que seleccionar un horario no lo vuelve a disparar (no se auto-limpia).
+    setSelectedSlot(null);
     const isIntercity = mode === 'privado' || mode === 'compartido';
     const shouldFetch =
       isIntercity && hasValidRoute && (mode === 'privado' || !!scheduledDate);
