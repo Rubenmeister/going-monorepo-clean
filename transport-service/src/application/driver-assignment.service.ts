@@ -94,6 +94,51 @@ export class DriverAssignmentService {
   }
 
   /**
+   * DECISIÓN de confirmación día-anterior para un viaje con `currentDriverId`.
+   * Fuente ÚNICA que comparten el cron y el endpoint de verificación:
+   *   - 'keep'     → el conductor sigue comprometido al corredor/hora (definitivo = el mismo).
+   *   - 'reassign' → se ausentó (ya no está entre los candidatos) → mejor alterno.
+   *   - 'none'     → nadie comprometido al corredor/hora (no se puede confirmar).
+   */
+  async confirmDecision(
+    corridorId: string,
+    departureAt: Date,
+    currentDriverId: string,
+  ): Promise<{
+    action: 'keep' | 'reassign' | 'none';
+    currentDriverId: string;
+    stillCommitted: boolean;
+    chosenDriverId: string | null;
+    best: ScoredDriver | null;
+    candidateCount: number;
+  }> {
+    const preview = await this.previewAssignment(corridorId, departureAt);
+    const stillCommitted = preview.ranked.some((r) => r.driverId === currentDriverId);
+
+    let action: 'keep' | 'reassign' | 'none';
+    let chosenDriverId: string | null;
+    if (stillCommitted) {
+      action = 'keep';
+      chosenDriverId = currentDriverId;
+    } else if (preview.best) {
+      action = 'reassign';
+      chosenDriverId = preview.best.driverId;
+    } else {
+      action = 'none';
+      chosenDriverId = null;
+    }
+
+    return {
+      action,
+      currentDriverId,
+      stillCommitted,
+      chosenDriverId,
+      best: preview.best,
+      candidateCount: preview.count,
+    };
+  }
+
+  /**
    * Reúne los candidatos (conductores comprometidos al corredor cerca de la
    * hora) con sus insumos de scoring. Devuelve null si el corredor es
    * desconocido; [] si no hay ningún conductor con agenda para esa ventana.

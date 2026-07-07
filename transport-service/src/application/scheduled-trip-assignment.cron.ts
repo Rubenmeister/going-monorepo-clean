@@ -106,31 +106,30 @@ export class ScheduledTripAssignmentCron {
   }
 
   private async confirmOne(trip: ScheduledTripDocument, now: Date): Promise<void> {
-    // Candidatos comprometidos al corredor a esa hora (mismo scorer del preview).
-    const preview = await this.assignment.previewAssignment(
+    // Decisión única (misma que expone el endpoint de verificación).
+    const decision = await this.assignment.confirmDecision(
       trip.corridorId,
       trip.departureAt,
+      trip.driverId,
     );
-    const stillCommitted = preview.ranked.some((r) => r.driverId === trip.driverId);
 
-    let assignedId = trip.driverId;
-    let reassigned = false;
+    if (decision.action === 'none') {
+      // Nadie comprometido al corredor: no se puede confirmar. Se deja SIN
+      // marcar (el próximo tick reintenta) y se alerta para revisión manual.
+      this.logger.warn(
+        `[assign-cron] trip=${String(trip._id).slice(0, 8)} ${trip.corridorId} ` +
+          `@${trip.departureAt.toISOString()}: conductor ${trip.driverId} ausente y SIN alterno comprometido`,
+      );
+      return;
+    }
 
-    if (!stillCommitted) {
-      if (!preview.best) {
-        // Nadie comprometido al corredor: no se puede confirmar. Se deja SIN
-        // marcar (el próximo tick reintenta) y se alerta para revisión manual.
-        this.logger.warn(
-          `[assign-cron] trip=${String(trip._id).slice(0, 8)} ${trip.corridorId} ` +
-            `@${trip.departureAt.toISOString()}: conductor ${trip.driverId} ausente y SIN alterno comprometido`,
-        );
-        return;
-      }
-      assignedId = preview.best.driverId;
-      reassigned = true;
+    const assignedId = decision.chosenDriverId as string;
+    const reassigned = decision.action === 'reassign';
+
+    if (reassigned) {
       this.logger.log(
         `[assign-cron] trip=${String(trip._id).slice(0, 8)} REASIGNA ${trip.driverId} → ${assignedId} ` +
-          `(ausencia; score=${preview.best.score})`,
+          `(ausencia; score=${decision.best?.score})`,
       );
     }
 
