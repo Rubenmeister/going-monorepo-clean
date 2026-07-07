@@ -224,6 +224,7 @@ export class MongooseRideRepository implements IRideRepository {
       fare: doc.fare,
       finalFare: doc.finalFare,
       status: doc.status,
+      rejectedByDriverIds: doc.rejectedByDriverIds ?? [],
       requestedAt: doc.requestedAt,
       acceptedAt: doc.acceptedAt,
       startedAt: doc.startedAt,
