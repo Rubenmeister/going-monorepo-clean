@@ -90,4 +90,42 @@ export class AssignmentAdminController {
 
     return this.assignment.confirmDecision(corridorId, when, currentDriverId);
   }
+
+  /**
+   * GET /admin/assignment/private-preview?pickupLat=&pickupLng=&dropoffLat=&dropoffLng=&at=&currentDriverId=
+   *
+   * Camino PRIVADO completo: deriva el corredor desde las coordenadas del viaje
+   * y muestra la decisión del cron día-anterior. `corridorNull` = ruta urbana o
+   * fuera de corredor → ese viaje va por realtime, no por el motor de agendas.
+   */
+  @Get('private-preview')
+  async privatePreview(
+    @CurrentUser() user: AuthUser,
+    @Query('pickupLat') pickupLat?: string,
+    @Query('pickupLng') pickupLng?: string,
+    @Query('dropoffLat') dropoffLat?: string,
+    @Query('dropoffLng') dropoffLng?: string,
+    @Query('at') at?: string,
+    @Query('currentDriverId') currentDriverId?: string,
+  ) {
+    this.assertAdmin(user);
+
+    const nums = [pickupLat, pickupLng, dropoffLat, dropoffLng].map((n) => Number(n));
+    if (nums.some((n) => !Number.isFinite(n))) {
+      throw new BadRequestException('pickupLat/pickupLng/dropoffLat/dropoffLng son requeridos y numéricos');
+    }
+    const when = at ? new Date(at) : new Date();
+    if (Number.isNaN(when.getTime())) throw new BadRequestException(`Fecha inválida: ${at}`);
+
+    const corridor = this.assignment.resolveCorridorForCoords(nums[0], nums[1], nums[2], nums[3]);
+    if (!corridor) {
+      return { corridorNull: true, reason: 'urbano o fuera de corredor → va por realtime', decision: null };
+    }
+    const decision = await this.assignment.confirmDecision(
+      corridor.corridorId,
+      when,
+      currentDriverId ?? '',
+    );
+    return { corridorNull: false, corridor, decision };
+  }
 }
