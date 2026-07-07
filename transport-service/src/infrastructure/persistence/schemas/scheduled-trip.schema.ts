@@ -49,6 +49,16 @@ export class ScheduledTripModel {
   /** open | full | closed | cancelled */
   @Prop({ default: 'open', index: true }) status: string;
 
+  /**
+   * Cuándo se CONFIRMÓ al conductor definitivo (cron día-anterior). Idempotencia:
+   * una vez seteado, el cron no lo vuelve a confirmar. null = aún preliminar.
+   */
+  @Prop({ index: true }) driverConfirmedAt: Date;
+  /** Si el confirmado día-anterior reemplazó al preliminar (ausencia). */
+  @Prop() reassignedAt: Date;
+  /** driverId preliminar antes de una reasignación (traza). */
+  @Prop() previousDriverId: string;
+
   @Prop({ type: [Object], default: [] }) reservations: SeatReservation[];
 
   // ── Envíos a bordo (el flujo de envío se conecta en su fase) ───────────────

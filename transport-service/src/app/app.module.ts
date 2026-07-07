@@ -96,6 +96,7 @@ import { DriverComplianceCronService } from '../application/driver-compliance.cr
 import { RideMatchingService } from '../application/ride-matching.service';
 import { ScheduledRideDispatcherCron } from '../application/scheduled-ride-dispatcher.cron';
 import { ScheduledRideReminderCron } from '../application/scheduled-ride-reminder.cron';
+import { ScheduledTripAssignmentCron } from '../application/scheduled-trip-assignment.cron';
 import { PricingService } from 'pricing';
 import { PricingClient } from '../infrastructure/pricing-client';
 import { TokenService } from '../infrastructure/token.service';
@@ -232,6 +233,7 @@ import { MulterModule } from '@nestjs/platform-express';
     RideMatchingService,
     ScheduledRideDispatcherCron,
     ScheduledRideReminderCron,
+    ScheduledTripAssignmentCron,
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,
     DeleteDriverBaseUseCase,

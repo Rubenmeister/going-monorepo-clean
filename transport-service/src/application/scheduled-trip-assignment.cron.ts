@@ -1,0 +1,225 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import axios from 'axios';
+import {
+  ScheduledTripModel,
+  ScheduledTripDocument,
+  SeatReservation,
+} from '../infrastructure/persistence/schemas/scheduled-trip.schema';
+import { DriverAssignmentService } from './driver-assignment.service';
+import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
+
+/**
+ * ScheduledTripAssignmentCron — CONFIRMA el conductor definitivo de los viajes
+ * COMPARTIDOS el día anterior a la salida (modelo Rubén 6/7-jul).
+ *
+ * Un `scheduled_trip` ya nace con `driverId` (el de la agenda que lo
+ * materializó). Este cron NO elige de cero: la noche previa
+ *   1. confirma al conductor del viaje (marca driverConfirmedAt), y
+ *   2. SOLO si ese conductor ya no está comprometido al corredor a esa hora
+ *      (se ausentó → quitó el slot de su agenda), REASIGNA al mejor alterno
+ *      usando el scorer único (DriverAssignmentService).
+ * Regla: "debería ser el mismo desde un inicio; en caso de ausencia se le daría
+ * al nuevo".
+ *
+ * Basta ≥1 reserva: aunque no se haya llenado el cupo, el sistema ya designa
+ * conductor y avisa a AMBOS (pasajera/o y conductora/or) que hay conductor para
+ * el recorrido — sin esperar a última hora.
+ *
+ * Additive + apagado por defecto: no toca el flujo de 90 min (comunicación).
+ * Toggle (env):
+ *   SCHEDULED_ASSIGNMENT_ENABLED   default 'false' (opt-IN — se prende tras verificar)
+ *   ASSIGNMENT_LEAD_HOURS          default 24  → confirmar viajes que salen dentro de N horas
+ *   NOTIFICATIONS_SERVICE_URL      S2S push (best-effort; sin config, solo WS + log)
+ *   INTERNAL_SERVICE_TOKEN         token role=system para el S2S
+ */
+@Injectable()
+export class ScheduledTripAssignmentCron {
+  private readonly logger = new Logger(ScheduledTripAssignmentCron.name);
+
+  constructor(
+    private readonly config: ConfigService,
+    @InjectModel(ScheduledTripModel.name)
+    private readonly tripModel: Model<ScheduledTripDocument>,
+    private readonly assignment: DriverAssignmentService,
+    private readonly eventsGateway: RideEventsGateway,
+  ) {}
+
+  private isEnabled(): boolean {
+    // Opt-IN: nace apagado. Se prende con SCHEDULED_ASSIGNMENT_ENABLED=true
+    // una vez verificado el motor con datos reales.
+    return this.config.get<string>('SCHEDULED_ASSIGNMENT_ENABLED') === 'true';
+  }
+
+  private leadHours(): number {
+    const v = parseInt(this.config.get<string>('ASSIGNMENT_LEAD_HOURS') ?? '24', 10);
+    return Number.isFinite(v) && v >= 1 ? v : 24;
+  }
+
+  /**
+   * Cada 30 min: confirma el conductor de los compartidos que salen dentro de la
+   * ventana (día anterior) y todavía no fueron confirmados. 30 min da prontitud
+   * para reservas de última hora sin castigar la DB (la asignación PRELIMINAR ya
+   * vive en el trip desde la reserva; esto solo confirma/reasigna).
+   */
+  @Cron(CronExpression.EVERY_30_MINUTES, { name: 'scheduled-trip-assignment' })
+  async confirmUpcomingSharedTrips(): Promise<void> {
+    if (!this.isEnabled()) return;
+
+    const now = new Date();
+    const horizon = new Date(now.getTime() + this.leadHours() * 3_600_000);
+
+    let trips: ScheduledTripDocument[];
+    try {
+      trips = await this.tripModel
+        .find({
+          departureAt: { $gt: now, $lte: horizon },
+          status: { $in: ['open', 'full'] },
+          seatsReserved: { $gt: 0 },
+          $or: [{ driverConfirmedAt: { $exists: false } }, { driverConfirmedAt: null }],
+        })
+        .limit(200)
+        .exec();
+    } catch (e) {
+      this.logger.error(`[assign-cron] query falló: ${(e as Error).message}`);
+      return;
+    }
+
+    if (!trips.length) return;
+    this.logger.log(
+      `[assign-cron] ${trips.length} viaje(s) compartido(s) por confirmar (lead=${this.leadHours()}h)`,
+    );
+
+    for (const trip of trips) {
+      try {
+        await this.confirmOne(trip, now);
+      } catch (e) {
+        this.logger.error(
+          `[assign-cron] trip=${String(trip._id).slice(0, 8)} falló: ${(e as Error).message}`,
+        );
+        // Un fallo no aborta el tick.
+      }
+    }
+  }
+
+  private async confirmOne(trip: ScheduledTripDocument, now: Date): Promise<void> {
+    // Candidatos comprometidos al corredor a esa hora (mismo scorer del preview).
+    const preview = await this.assignment.previewAssignment(
+      trip.corridorId,
+      trip.departureAt,
+    );
+    const stillCommitted = preview.ranked.some((r) => r.driverId === trip.driverId);
+
+    let assignedId = trip.driverId;
+    let reassigned = false;
+
+    if (!stillCommitted) {
+      if (!preview.best) {
+        // Nadie comprometido al corredor: no se puede confirmar. Se deja SIN
+        // marcar (el próximo tick reintenta) y se alerta para revisión manual.
+        this.logger.warn(
+          `[assign-cron] trip=${String(trip._id).slice(0, 8)} ${trip.corridorId} ` +
+            `@${trip.departureAt.toISOString()}: conductor ${trip.driverId} ausente y SIN alterno comprometido`,
+        );
+        return;
+      }
+      assignedId = preview.best.driverId;
+      reassigned = true;
+      this.logger.log(
+        `[assign-cron] trip=${String(trip._id).slice(0, 8)} REASIGNA ${trip.driverId} → ${assignedId} ` +
+          `(ausencia; score=${preview.best.score})`,
+      );
+    }
+
+    // Persiste la confirmación (idempotente: driverConfirmedAt filtra el reintento).
+    const update: Record<string, unknown> = {
+      driverId: assignedId,
+      driverConfirmedAt: now,
+    };
+    if (reassigned) {
+      update.previousDriverId = trip.driverId;
+      update.reassignedAt = now;
+    }
+    await this.tripModel.updateOne({ _id: trip._id }, { $set: update }).exec();
+
+    await this.notifyAssigned(trip, assignedId, reassigned);
+  }
+
+  /** Avisa a AMBOS: pasajera/os con reserva y la conductora/or asignada/o. */
+  private async notifyAssigned(
+    trip: ScheduledTripDocument,
+    driverId: string,
+    reassigned: boolean,
+  ): Promise<void> {
+    const tripId = String(trip._id);
+    const passengers = [
+      ...new Set((trip.reservations ?? []).map((r: SeatReservation) => r.userId).filter(Boolean)),
+    ];
+
+    // 1) WebSocket best-effort (app abierta lo recibe al instante).
+    try {
+      this.eventsGateway['server']?.to(`trip:${tripId}`).emit('trip:driver_assigned', {
+        tripId,
+        driverId,
+        corridorId: trip.corridorId,
+        departureAt: trip.departureAt,
+        reassigned,
+        message: 'Ya tienes conductora o conductor asignado para tu recorrido.',
+      });
+    } catch (e) {
+      this.logger.warn(`[assign-cron] WS trip=${tripId.slice(0, 8)}: ${(e as Error).message}`);
+    }
+
+    // 2) Push S2S (canal confiable del día anterior). Best-effort.
+    const url = this.config.get<string>('NOTIFICATIONS_SERVICE_URL');
+    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+    if (!url || !token) return; // Sin config, el cron solo loggea + WS.
+
+    const headers = { Authorization: `Bearer ${token}` };
+    const data = { tripId, driverId, corridorId: trip.corridorId, departureAt: trip.departureAt };
+
+    // Pasajera/os
+    for (const userId of passengers) {
+      await axios
+        .post(
+          `${url}/notifications/send`,
+          {
+            userId,
+            type: 'trip_driver_assigned',
+            title: 'Conductora o conductor asignado',
+            body: 'Ya designamos quién te lleva en tu viaje compartido. Verás sus datos en la app.',
+            data,
+          },
+          { headers, timeout: 5000 },
+        )
+        .catch((err) =>
+          this.logger.warn(`[assign-cron] push pasajero ${userId}: ${err?.message ?? err}`),
+        );
+    }
+
+    // Conductora/or
+    await axios
+      .post(
+        `${url}/notifications/send`,
+        {
+          userId: driverId,
+          type: 'trip_driver_assigned',
+          title: 'Tienes un viaje asignado',
+          body: 'Se te asignó un viaje compartido para tu recorrido. Revisa los detalles en la app.',
+          data,
+        },
+        { headers, timeout: 5000 },
+      )
+      .catch((err) =>
+        this.logger.warn(`[assign-cron] push conductor ${driverId}: ${err?.message ?? err}`),
+      );
+
+    this.logger.log(
+      `[assign-cron] trip=${tripId.slice(0, 8)} confirmado → ${driverId} ` +
+        `(${passengers.length} pasajero(s)${reassigned ? ', REASIGNADO' : ''})`,
+    );
+  }
+}
