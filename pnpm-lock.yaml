@@ -202,8 +202,8 @@ importers:
         specifier: ~14.2.35
         version: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.97.3)
       nodemailer:
-        specifier: ^6.9.16
-        version: 6.10.1
+        specifier: ^7.0.11
+        version: 7.0.13
       openid-client:
         specifier: ^5.7.1
         version: 5.7.1
@@ -959,8 +959,8 @@ importers:
         specifier: ^8.1.1
         version: 8.23.0(snappy@7.3.3)
       nodemailer:
-        specifier: ^6.9.9
-        version: 6.10.1
+        specifier: ^7.0.11
+        version: 7.0.13
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -1217,8 +1217,8 @@ importers:
         specifier: ^4.7.0
         version: 4.11.0(encoding@0.1.13)
       nodemailer:
-        specifier: ^6.9.14
-        version: 6.10.1
+        specifier: ^7.0.11
+        version: 7.0.13
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1745,8 +1745,8 @@ importers:
         specifier: ^6.10.0
         version: 6.20.0(snappy@7.3.3)
       nodemailer:
-        specifier: ^6.9.14
-        version: 6.10.1
+        specifier: ^7.0.11
+        version: 7.0.13
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -13611,8 +13611,8 @@ packages:
     resolution: {integrity: sha512-LN4fydt9TqhZhThkZIVQnF9cwjU3qmUH9h78Mx/K7d3VvfRqqwthLwJEUOEL0QPZ0XQmNN7be5Ggit5+4dq3Bw==}
     engines: {node: '>=0.12.0'}
 
-  nodemailer@6.10.1:
-    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
+  nodemailer@7.0.13:
+    resolution: {integrity: sha512-PNDFSJdP+KFgdsG3ZzMXCgquO7I6McjY2vlqILjtJd0hy8wEvtugS9xKRF2NWlPNGxvLCXlTNIae4serI7dinw==}
     engines: {node: '>=6.0.0'}
 
   nopt@5.0.0:
@@ -30679,7 +30679,7 @@ snapshots:
 
   node-stream-zip@1.15.0: {}
 
-  nodemailer@6.10.1: {}
+  nodemailer@7.0.13: {}
 
   nopt@5.0.0:
     dependencies:
