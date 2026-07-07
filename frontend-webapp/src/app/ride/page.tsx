@@ -363,12 +363,14 @@ function RidePageInner() {
     }
   }, [activeRide, step]);
 
-  /* Mover a confirmación (resumen + QR) cuando el viaje se completa */
+  /* Día de la salida: al COMPLETARSE el viaje (ya hubo conductor real) el
+   * pasajero pasa a CALIFICAR. (El pago del programado ya ocurrió al reservar;
+   * el receipt/QR se ve durante el viaje.) */
   useEffect(() => {
     if (activeRide?.status === 'completed' && step === 'tracking') {
-      setStep('confirmation');
+      setStep(activeRide.driverInfo ? 'rating' : 'confirmation');
     }
-  }, [activeRide?.status, step]);
+  }, [activeRide?.status, activeRide?.driverInfo, step]);
 
   /* Entrada a la vista EN VIVO desde el banner "tu viaje está en curso"
    * (/ride?track=<rideId>): carga el viaje activo del backend y entra directo

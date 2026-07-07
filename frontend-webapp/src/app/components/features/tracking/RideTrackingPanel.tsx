@@ -45,6 +45,8 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
 
   const [proxyNumber,   setProxyNumber]   = useState<string | null>(null);
   const [driverArrived, setDriverArrived] = useState(false);
+  const [proximityMsg,  setProximityMsg]  = useState<string | null>(null);
+  const [liveEta,       setLiveEta]       = useState<string | null>(null);
   const [verified,      setVerified]      = useState(false);
   const [showShare,     setShowShare]     = useState(false);
   const [showStopInput, setShowStopInput] = useState(false);
@@ -86,6 +88,20 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
     'ride:driver_arrived': useCallback(() => {
       setDriverArrived(true);
       setShowVerify(true);
+      setProximityMsg(null);
+      setLiveEta(null);
+    }, []),
+    // Alertas de proximidad (10 y 3 min antes) + ETA en vivo del conductor.
+    'ride:driver_proximity': useCallback((data: unknown) => {
+      const d = data as { message?: string };
+      if (d?.message) setProximityMsg(d.message);
+    }, []),
+    'ride:eta_update': useCallback((data: unknown) => {
+      const d = data as { etaText?: string; etaSeconds?: number };
+      const text =
+        d?.etaText ??
+        (d?.etaSeconds != null ? `${Math.max(1, Math.round(d.etaSeconds / 60))} min` : null);
+      if (text) setLiveEta(text);
     }, []),
     'ride:fare_updated': useCallback((data: unknown) => {
       const d = data as { totalFare: number };
@@ -353,6 +369,18 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
       {/* ══ NÚMERO PROXY (conductor asignado) ══ */}
       {proxyNumber && (status === 'accepted' || status === 'in_progress') && (
         <PhoneCard number={proxyNumber} />
+      )}
+
+      {/* ══ PROXIMIDAD / ETA EN VIVO ══ */}
+      {!driverArrived && (proximityMsg || liveEta) && status !== 'pending' && (
+        <div className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold"
+             style={{ backgroundColor: '#ECFDF5', color: '#065F46' }}>
+          <span>🚗</span>
+          <span className="flex-1">{proximityMsg ?? 'Tu conductora o conductor está en camino.'}</span>
+          {liveEta && (
+            <span className="font-black whitespace-nowrap">{liveEta}</span>
+          )}
+        </div>
       )}
 
       {/* ══ INFO DEL CONDUCTOR ══ */}

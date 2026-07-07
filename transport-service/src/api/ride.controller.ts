@@ -327,10 +327,37 @@ export class RideController {
         dropoffCoords: this.coordsOf(ride.dropoffLocation),
         hasDriver: !!ride.driverId,
         driver, // null si aún no hay conductor asignado
+        communication: this.communicationBlock(ride.scheduledAt, ride.channelOpenedAt, status),
         scheduledAt: ride.scheduledAt ?? null,
         eta, // null si aún no hay ubicación del conductor o está rezagada
       },
     };
+  }
+
+  /**
+   * Ventana de COMUNICACIÓN (modelo Rubén): el canal conductor↔pasajero se abre
+   * 90 min antes de la salida (o si el viaje ya está en curso). Antes de eso el
+   * pasajero ve al conductor asignado pero NO puede llamar/chatear todavía.
+   */
+  private communicationBlock(
+    scheduledAt: Date | null | undefined,
+    channelOpenedAt: Date | null | undefined,
+    status: string,
+  ): { open: boolean; channelOpenedAt: string | null; opensInMinutes: number | null } {
+    const liveStates = ['accepted', 'arriving', 'started'];
+    if (channelOpenedAt || liveStates.includes(status)) {
+      return {
+        open: true,
+        channelOpenedAt: channelOpenedAt ? new Date(channelOpenedAt).toISOString() : null,
+        opensInMinutes: 0,
+      };
+    }
+    if (scheduledAt) {
+      const minsUntil = (new Date(scheduledAt).getTime() - Date.now()) / 60_000;
+      if (minsUntil <= 90) return { open: true, channelOpenedAt: null, opensInMinutes: 0 };
+      return { open: false, channelOpenedAt: null, opensInMinutes: Math.round(minsUntil - 90) };
+    }
+    return { open: false, channelOpenedAt: null, opensInMinutes: null };
   }
 
   /** Enriquece una reserva compartida (scheduled_trips) con conductor + salida. */
@@ -359,6 +386,7 @@ export class RideController {
         dropoffCoords: null,
         hasDriver: !!trip.driverId,
         driver,
+        communication: this.communicationBlock(trip.departureAt, null, trip.status),
         scheduledAt: trip.departureAt ?? null,
         eta: null,
       },
