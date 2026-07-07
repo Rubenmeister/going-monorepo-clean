@@ -47,6 +47,10 @@ import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DriverRatingModel, DriverRatingDocument } from './driver.controller';
+import {
+  ScheduledTripModel,
+  ScheduledTripDocument,
+} from '../infrastructure/persistence/schemas/scheduled-trip.schema';
 import { v4 as uuidv4 } from 'uuid';
 
 /** Shape del JWT payload inyectado por @CurrentUser() */
@@ -85,6 +89,8 @@ export class RideController {
     private readonly httpService: HttpService,
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
+    @InjectModel(ScheduledTripModel.name)
+    private readonly scheduledTripModel: Model<ScheduledTripDocument>,
     private readonly assignment: DriverAssignmentService,
     private readonly config: ConfigService,
   ) {}
@@ -257,8 +263,17 @@ export class RideController {
   @SkipThrottle()
   async getMyActiveRide(@CurrentUser() user: AuthUser): Promise<any> {
     const ride = await this.rideRepo.findActiveByUserId(user.id);
-    if (!ride) return { hasActive: false };
+    if (ride) return this.enrichActiveRide(ride);
 
+    // Sin ride activo → ¿tiene una reserva COMPARTIDA próxima? (vive en scheduled_trips)
+    const trip = await this.findUpcomingSharedTrip(user.id);
+    if (trip) return this.enrichSharedTrip(trip);
+
+    return { hasActive: false };
+  }
+
+  /** Enriquece un ride (privado/urbano) con coords + conductor + ubicación viva. */
+  private async enrichActiveRide(ride: any): Promise<any> {
     const status: string = ride.status;
     const statusText =
       (
@@ -273,10 +288,10 @@ export class RideController {
 
     // ETA: usar la última posición persistida solo si es fresca (< 2 min).
     let eta: { seconds: number; text: string; distanceKm: number | null } | null = null;
-    const fresh =
+    const freshLoc =
       ride.lastLocationAt &&
       Date.now() - new Date(ride.lastLocationAt).getTime() < 120_000;
-    if (fresh && ride.lastDriverEtaSeconds != null) {
+    if (freshLoc && ride.lastDriverEtaSeconds != null) {
       const s = ride.lastDriverEtaSeconds as number;
       eta = {
         seconds: s,
@@ -288,21 +303,156 @@ export class RideController {
       };
     }
 
+    const driver = await this.buildDriverBlock(ride.driverId, {
+      vehicleType: ride.serviceType,
+      lat: freshLoc ? ride.lastDriverLat : null,
+      lng: freshLoc ? ride.lastDriverLng : null,
+      confirmedAt: ride.driverConfirmedAt ?? null,
+      preliminaryAt: ride.preliminaryAssignedAt ?? null,
+    });
+
     return {
       hasActive: true,
       ride: {
         rideId: String(ride._id),
+        kind: 'ride',
         status,
         statusText,
         serviceType: ride.serviceType ?? null,
         modalidad: ride.modalidad ?? null,
+        // pickup/dropoff = dirección (string, compat); *Coords = {lat,lng} para el mapa.
         pickup: ride.pickupLocation?.address ?? null,
         dropoff: ride.dropoffLocation?.address ?? null,
+        pickupCoords: this.coordsOf(ride.pickupLocation),
+        dropoffCoords: this.coordsOf(ride.dropoffLocation),
         hasDriver: !!ride.driverId,
+        driver, // null si aún no hay conductor asignado
         scheduledAt: ride.scheduledAt ?? null,
         eta, // null si aún no hay ubicación del conductor o está rezagada
       },
     };
+  }
+
+  /** Enriquece una reserva compartida (scheduled_trips) con conductor + salida. */
+  private async enrichSharedTrip(trip: any): Promise<any> {
+    const driver = await this.buildDriverBlock(trip.driverId, {
+      vehicleType: trip.vehicleType,
+      lat: null,
+      lng: null,
+      confirmedAt: trip.driverConfirmedAt ?? null,
+      preliminaryAt: null,
+    });
+    return {
+      hasActive: true,
+      ride: {
+        rideId: String(trip._id),
+        kind: 'shared_trip',
+        status: trip.status,
+        statusText: trip.driverConfirmedAt
+          ? 'Viaje compartido con conductora o conductor confirmado.'
+          : 'Viaje compartido reservado. Confirmamos conductor el día anterior.',
+        serviceType: trip.vehicleType ?? null,
+        modalidad: 'compartido',
+        pickup: trip.originCity ?? null,
+        dropoff: trip.destinationCity ?? null,
+        pickupCoords: null,
+        dropoffCoords: null,
+        hasDriver: !!trip.driverId,
+        driver,
+        scheduledAt: trip.departureAt ?? null,
+        eta: null,
+      },
+    };
+  }
+
+  /** {lat,lng} desde un pickup/dropoffLocation heterogéneo; null si no hay coords. */
+  private coordsOf(loc: any): { lat: number; lng: number } | null {
+    const l = loc ?? {};
+    const lat = l.latitude ?? l.lat;
+    const lng = l.longitude ?? l.lng ?? l.lon;
+    return lat != null && lng != null ? { lat, lng } : null;
+  }
+
+  /**
+   * Arma el bloque del conductor: nombre (going-users.users, best-effort),
+   * rating (driver_ratings), tipo de vehículo, ubicación viva y estado de
+   * asignación (confirmado/preliminar). Devuelve null si no hay driverId.
+   */
+  private async buildDriverBlock(
+    driverId: string | undefined,
+    extra: {
+      vehicleType?: string;
+      lat?: number | null;
+      lng?: number | null;
+      confirmedAt?: Date | null;
+      preliminaryAt?: Date | null;
+    },
+  ): Promise<any | null> {
+    if (!driverId) return null;
+    const [rating, name] = await Promise.all([
+      this.avgDriverRating(driverId),
+      this.lookupDriverName(driverId),
+    ]);
+    const hasLoc = extra.lat != null && extra.lng != null;
+    return {
+      driverId,
+      name,
+      rating,
+      vehicleType: extra.vehicleType ?? null,
+      location: hasLoc ? { lat: extra.lat, lng: extra.lng } : null,
+      confirmed: !!extra.confirmedAt,
+      preliminary: !extra.confirmedAt && !!extra.preliminaryAt,
+    };
+  }
+
+  /** Promedio de calificación del conductor (driver_ratings). null si no tiene. */
+  private async avgDriverRating(driverId: string): Promise<number | null> {
+    try {
+      const rows = (await this.ratingModel.aggregate([
+        { $match: { driverId } },
+        { $group: { _id: '$driverId', avg: { $avg: '$rating' } } },
+      ])) as Array<{ avg: number }>;
+      return rows[0]?.avg != null ? Math.round(rows[0].avg * 10) / 10 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Nombre del conductor desde going-users.users (best-effort, cross-DB). */
+  private async lookupDriverName(driverId: string): Promise<string | null> {
+    try {
+      const usersDb = this.ratingModel.db.useDb('going-users', { useCache: true });
+      const doc = await usersDb
+        .collection('users')
+        .findOne(
+          { $or: [{ id: driverId }, { _id: driverId as any }] },
+          { projection: { firstName: 1, lastName: 1 } },
+        );
+      if (!doc) return null;
+      const n = [doc.firstName, doc.lastName].filter(Boolean).join(' ').trim();
+      return n || null;
+    } catch {
+      return null; // best-effort: la tarjeta funciona sin nombre
+    }
+  }
+
+  /** Reserva compartida próxima del pasajero (scheduled_trips, ≤48h). */
+  private async findUpcomingSharedTrip(userId: string): Promise<any | null> {
+    try {
+      const now = new Date();
+      const horizon = new Date(now.getTime() + 48 * 3_600_000);
+      return await this.scheduledTripModel
+        .findOne({
+          'reservations.userId': userId,
+          status: { $in: ['open', 'full'] },
+          departureAt: { $gt: now, $lte: horizon },
+        })
+        .sort({ departureAt: 1 })
+        .lean()
+        .exec();
+    } catch {
+      return null;
+    }
   }
 
   /**
