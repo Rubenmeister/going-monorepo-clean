@@ -3,9 +3,9 @@
 import { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRideStore } from '../stores/rideStore';
+import { useRideStore, type Ride } from '../stores/rideStore';
 import { useMonorepoApp } from '@going-monorepo-clean/frontend-providers';
-import { getStoredToken } from '@/lib/providers/auth-client';
+import { getStoredToken, authFetch } from '@/lib/providers/auth-client';
 import { COLORS } from '../components/design-tokens';
 import { IconUsers, IconVan, IconPackage, IconArrowRight } from '../components/icons';
 import { StaticRouteMap } from '../components/features/tracking/StaticRouteMap';
@@ -296,7 +296,7 @@ function RidePageInner() {
   const router             = useRouter();
   const searchParams       = useSearchParams();
   const { auth }           = useMonorepoApp();
-  const { activeRide, clearRide, resetForRetry } = useRideStore();
+  const { activeRide, clearRide, resetForRetry, setActiveRide } = useRideStore();
 
   // Tipo de servicio inicial leído de la URL (?type=shared|van|city) para que
   // "Reservar/Cotizar" desde el home lleve DIRECTO al formulario, sin volver a
@@ -369,6 +369,47 @@ function RidePageInner() {
       setStep('confirmation');
     }
   }, [activeRide?.status, step]);
+
+  /* Entrada a la vista EN VIVO desde el banner "tu viaje está en curso"
+   * (/ride?track=<rideId>): carga el viaje activo del backend y entra directo
+   * al paso 'tracking'. En el modelo programado, el día del viaje el pasajero
+   * llega aquí para ver a su conductor acercarse, verificar, viajar y calificar. */
+  useEffect(() => {
+    const trackId = searchParams.get('track');
+    if (!trackId || activeRide) return;
+    let alive = true;
+    (async () => {
+      try {
+        const API = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await authFetch(`${API}/rides/mine/active`, { method: 'GET' });
+        if (!res.ok || !alive) return;
+        const d = await res.json();
+        if (!d?.hasActive || !d.ride || !alive) return;
+        const r = d.ride;
+        const statusMap: Record<string, Ride['status']> = {
+          accepted: 'accepted', arriving: 'accepted', started: 'in_progress',
+          requested: 'pending', scheduled: 'reserved',
+        };
+        setActiveRide({
+          tripId: r.rideId,
+          passengerId: '',
+          driverId: r.hasDriver ? 'assigned' : undefined,
+          pickup: { address: r.pickup || 'Origen', lat: 0, lon: 0 },
+          dropoff: { address: r.dropoff || 'Destino', lat: 0, lon: 0 },
+          estimatedFare: 0,
+          distance: 0,
+          duration: 0,
+          status: statusMap[r.status] || 'accepted',
+          createdAt: new Date(),
+        });
+        setStep('tracking');
+      } catch {
+        /* sin viaje activo o error → se queda en el formulario normal */
+      }
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCancelRide         = () => { clearRide(); setStep('request'); setServiceMode(null); };
   const handleConfirmationContinue = () => setStep('payment');

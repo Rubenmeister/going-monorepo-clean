@@ -11,6 +11,7 @@ import { GlobalErrorNotification } from './components/GlobalErrorNotification';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ClientOnly } from './ClientOnly';
 import SupportChat from './components/ui/SupportChat';
+import { ActiveRideBanner } from './components/features/ride/ActiveRideBanner';
 
 /**
  * Rutas "de app" (usuario autenticado, flujos funcionales).
@@ -93,6 +94,10 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       )}
       <ClientOnly>
         <SupportChat />
+      </ClientOnly>
+      {/* Banner "tu viaje está en curso" — punto de entrada a la vista en vivo. */}
+      <ClientOnly>
+        <ActiveRideBanner />
       </ClientOnly>
     </>
   );
