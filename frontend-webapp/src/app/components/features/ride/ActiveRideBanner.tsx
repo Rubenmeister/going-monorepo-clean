@@ -26,6 +26,9 @@ interface ActiveRide {
   status: string;
   statusText?: string;
   eta?: { text?: string | null } | null;
+  hasDriver?: boolean;
+  driver?: { name?: string | null } | null;
+  scheduledAt?: string | null;
 }
 
 export function ActiveRideBanner() {
@@ -42,7 +45,14 @@ export function ActiveRideBanner() {
       const res = await authFetch(`${API_URL}/rides/mine/active`, { method: 'GET' });
       if (!res.ok) return;
       const d = await res.json();
-      if (d?.hasActive && d.ride && LIVE_STATUSES.has(d.ride.status)) setRide(d.ride);
+      const r = d?.ride;
+      const isLive = r && LIVE_STATUSES.has(r.status);
+      // Día-anterior: conductor asignado a un viaje aún futuro (aparece en la app
+      // del pasajero desde que se confirma, no solo el día del viaje).
+      const isUpcomingWithDriver =
+        r && !isLive && r.hasDriver && r.scheduledAt &&
+        new Date(r.scheduledAt).getTime() > Date.now();
+      if (d?.hasActive && (isLive || isUpcomingWithDriver)) setRide(r);
       else setRide(null);
     } catch {
       /* offline / sin sesión → no molestar */
@@ -58,7 +68,19 @@ export function ActiveRideBanner() {
   // Ya estás en la vista en vivo → no dupliques el banner encima.
   if (!ride || pathname?.startsWith('/ride')) return null;
 
+  const isLive = LIVE_STATUSES.has(ride.status);
   const etaText = ride.eta?.text;
+  const driverName = ride.driver?.name?.trim();
+  const whenText = !isLive && ride.scheduledAt
+    ? new Date(ride.scheduledAt).toLocaleString('es-EC', {
+        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+      })
+    : null;
+
+  const title = isLive ? 'Tu viaje está en curso' : 'Conductora o conductor asignado';
+  const subtitle = isLive
+    ? `${etaText ? `Llega en ${etaText} · ` : ''}Toca para seguir en vivo`
+    : `${driverName ? `${driverName} · ` : ''}${whenText ?? ''} · Toca para ver`;
 
   return (
     <button
@@ -66,14 +88,12 @@ export function ActiveRideBanner() {
       onClick={() => router.push(`/ride?track=${ride.rideId}`)}
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl text-white active:scale-[0.98] transition-transform max-w-[92vw]"
       style={{ background: 'linear-gradient(135deg, #0033A0, #ff4c41)' }}
-      aria-label="Seguir tu viaje en vivo"
+      aria-label={isLive ? 'Seguir tu viaje en vivo' : 'Ver tu viaje próximo'}
     >
-      <span className="text-xl flex-shrink-0">🚗</span>
+      <span className="text-xl flex-shrink-0">{isLive ? '🚗' : '📅'}</span>
       <div className="text-left min-w-0">
-        <p className="text-sm font-black leading-tight">Tu viaje está en curso</p>
-        <p className="text-xs opacity-90 truncate">
-          {etaText ? `Tu conductora o conductor llega en ${etaText} · ` : ''}Toca para seguir en vivo
-        </p>
+        <p className="text-sm font-black leading-tight">{title}</p>
+        <p className="text-xs opacity-90 truncate">{subtitle}</p>
       </div>
       <span className="ml-1 font-black flex-shrink-0">→</span>
     </button>
