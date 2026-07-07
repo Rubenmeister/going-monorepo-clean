@@ -11,6 +11,7 @@ import {
 import { deriveTripSeedsForDate, type DriverAgenda } from './scheduled-trip.logic';
 import {
   pickBestDriver,
+  scoreDrivers,
   type DriverCandidate,
   type ScoredDriver,
 } from './driver-scoring';
@@ -49,6 +50,58 @@ export class DriverAssignmentService {
     corridorId: string,
     scheduledAt: Date,
   ): Promise<ScoredDriver | null> {
+    const candidates = await this.gatherCandidates(corridorId, scheduledAt);
+    if (candidates === null || candidates.length === 0) return null;
+
+    const best = pickBestDriver(candidates);
+    if (best) {
+      this.logger.log(
+        `[assign] ${corridorId} @${scheduledAt.toISOString()} → ${best.driverId} ` +
+          `(score=${best.score}, viajes=${best.tripsToday}, ★${best.rating.toFixed(1)}, ` +
+          `de ${candidates.length} candidato(s))`,
+      );
+    }
+    return best;
+  }
+
+  /**
+   * Vista previa read-only: qué decidiría el scorer para `corridorId` cerca de
+   * `scheduledAt`, con TODOS los candidatos rankeados (no solo el mejor). Sirve
+   * para verificar el motor con datos reales ANTES de automatizar la asignación.
+   */
+  async previewAssignment(
+    corridorId: string,
+    scheduledAt: Date,
+  ): Promise<{
+    corridorId: string;
+    corridorKnown: boolean;
+    scheduledAt: string;
+    count: number;
+    best: ScoredDriver | null;
+    ranked: ScoredDriver[];
+  }> {
+    const known = !!CORRIDORS_BY_ID[corridorId];
+    const candidates = await this.gatherCandidates(corridorId, scheduledAt);
+    const ranked = candidates ? scoreDrivers(candidates) : [];
+    return {
+      corridorId,
+      corridorKnown: known,
+      scheduledAt: scheduledAt.toISOString(),
+      count: ranked.length,
+      best: ranked[0] ?? null,
+      ranked,
+    };
+  }
+
+  /**
+   * Reúne los candidatos (conductores comprometidos al corredor cerca de la
+   * hora) con sus insumos de scoring. Devuelve null si el corredor es
+   * desconocido; [] si no hay ningún conductor con agenda para esa ventana.
+   */
+  private async gatherCandidates(
+    corridorId: string,
+    scheduledAt: Date,
+  ): Promise<DriverCandidate[] | null> {
     const corridor = CORRIDORS_BY_ID[corridorId];
     if (!corridor) {
       this.logger.warn(`[assign] corredor desconocido: ${corridorId}`);
@@ -63,7 +116,7 @@ export class DriverAssignmentService {
       slots: any[];
       vehicleType?: string;
     }>;
-    if (agendas.length === 0) return null;
+    if (agendas.length === 0) return [];
 
     // 2) Materializa las salidas de ese día y quédate con las cercanas a la hora
     //    pedida (ventana ±45 min → tolerante a redondeos/desfases menores).
@@ -81,7 +134,7 @@ export class DriverAssignmentService {
       (s) => Math.abs(s.departureAt.getTime() - scheduledAt.getTime()) <= windowMs,
     );
     const driverIds = [...new Set(committed.map((s) => s.driverId))];
-    if (driverIds.length === 0) return null;
+    if (driverIds.length === 0) return [];
 
     // 3) Insumos del scoring: equidad (viajes del día) + rating.
     const [tripsToday, ratings] = await Promise.all([
@@ -89,23 +142,13 @@ export class DriverAssignmentService {
       this.avgRatings(driverIds),
     ]);
 
-    const candidates: DriverCandidate[] = driverIds.map((id) => ({
+    return driverIds.map((id) => ({
       driverId: id,
       tripsToday: tripsToday[id] ?? 0,
       rating: ratings[id] ?? 4.5,
       distanceKm: null, // v1: proximidad inherente al corredor comprometido
       available: true, // v1: comprometido = disponible (refinar: online/no doble-booked)
     }));
-
-    const best = pickBestDriver(candidates);
-    if (best) {
-      this.logger.log(
-        `[assign] ${corridorId} @${scheduledAt.toISOString()} → ${best.driverId} ` +
-          `(score=${best.score}, viajes=${best.tripsToday}, ★${best.rating.toFixed(1)}, ` +
-          `de ${driverIds.length} candidato(s))`,
-      );
-    }
-    return best;
   }
 
   /** Viajes ya asignados a cada conductor ese día (factor de EQUIDAD). */

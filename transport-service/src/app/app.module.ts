@@ -89,6 +89,7 @@ import { ScheduledTripController } from '../api/scheduled-trip.controller';
 import { AdminStubsController } from '../api/admin-stubs.controller';
 import { ScheduledTripService } from '../application/scheduled-trip.service';
 import { DriverAssignmentService } from '../application/driver-assignment.service';
+import { AssignmentAdminController } from '../api/assignment-admin.controller';
 import { DriverHybridTransitionCronService } from '../application/driver-hybrid-transition.cron';
 import { RideNoShowCronService } from '../application/ride-no-show.cron';
 import { DriverComplianceCronService } from '../application/driver-compliance.cron';
@@ -179,6 +180,7 @@ import { MulterModule } from '@nestjs/platform-express';
     AdminStubsController,
     DriverHybridController,
     DriverComplianceAdminController,
+    AssignmentAdminController,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
