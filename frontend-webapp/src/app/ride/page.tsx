@@ -393,14 +393,28 @@ function RidePageInner() {
         setActiveRide({
           tripId: r.rideId,
           passengerId: '',
-          driverId: r.hasDriver ? 'assigned' : undefined,
-          pickup: { address: r.pickup || 'Origen', lat: 0, lon: 0 },
-          dropoff: { address: r.dropoff || 'Destino', lat: 0, lon: 0 },
+          driverId: r.driver?.driverId ?? (r.hasDriver ? 'assigned' : undefined),
+          pickup: { address: r.pickup || 'Origen', lat: r.pickupCoords?.lat ?? 0, lon: r.pickupCoords?.lng ?? 0 },
+          dropoff: { address: r.dropoff || 'Destino', lat: r.dropoffCoords?.lat ?? 0, lon: r.dropoffCoords?.lng ?? 0 },
           estimatedFare: 0,
           distance: 0,
           duration: 0,
           status: statusMap[r.status] || 'accepted',
           createdAt: new Date(),
+          scheduledAt: r.scheduledAt ? new Date(r.scheduledAt) : undefined,
+          // Tarjeta del conductor (motor de asignación día-anterior / realtime):
+          driverInfo: r.driver
+            ? {
+                name: r.driver.name || 'Conductora o conductor asignado',
+                rating: r.driver.rating ?? 0,
+                photo: '',
+                vehicle: r.driver.vehicleType || '',
+                licensePlate: '',
+              }
+            : undefined,
+          driverLocation: r.driver?.location
+            ? { address: '', lat: r.driver.location.lat, lon: r.driver.location.lng }
+            : undefined,
         });
         setStep('tracking');
       } catch {
