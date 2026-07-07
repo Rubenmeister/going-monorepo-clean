@@ -115,6 +115,34 @@ export class ScheduledRideDispatcherCron {
   private async openChannelAndMatch(ride: any): Promise<void> {
     const now = new Date();
 
+    // CASO A — el motor día-anterior YA asignó conductor (driverConfirmedAt):
+    // NO se re-matchea. Los 90 min sirven SOLO para abrir la comunicación
+    // conductor↔pasajero sobre el conductor ya asignado (modelo Rubén).
+    if (ride.driverConfirmedAt) {
+      await this.rideRepo.update(ride.id, {
+        status: 'accepted', // conductor ya asignado por agenda
+        acceptedAt: ride.acceptedAt ?? now,
+        channelOpenedAt: now,
+      });
+      try {
+        this.eventsGateway['server']?.to(`ride:${ride.id}`).emit('ride:channel_opened', {
+          rideId: ride.id,
+          driverId: ride.driverId,
+          message: 'Ya puedes comunicarte con tu conductora o conductor para el viaje.',
+          scheduledAt: ride.scheduledAt,
+          timestamp: now.toISOString(),
+        });
+      } catch (e) {
+        this.logger.warn(`[scheduled] WS channel_opened ride=${ride.id}: ${(e as Error).message}`);
+      }
+      this.logger.log(
+        `[scheduled] ride=${String(ride.id).slice(0, 8)} canal abierto (conductor ${ride.driverId} ya asignado, SIN matching)`,
+      );
+      return;
+    }
+
+    // CASO B — sin conductor asignado (urbano programado / privado sin corredor /
+    // fallback): flujo normal de búsqueda de conductor en la ventana.
     // 1. Marca idempotente ANTES de disparar: si otro pod ya lo tomó, el
     //    update siguiente igual es inofensivo, pero esto reduce la ventana.
     await this.rideRepo.update(ride.id, {

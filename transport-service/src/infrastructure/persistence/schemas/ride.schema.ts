@@ -40,6 +40,18 @@ export class RideModelSchema {
    */
   @Prop() lockedFare: number;
   /**
+   * Asignación por AGENDAS (privado intercity, motor día-anterior):
+   * `preliminaryAssignedAt` = instante en que se asignó un conductor tentativo
+   * al reservar; `driverConfirmedAt` = instante en que se confirmó el definitivo
+   * (o se reasignó por ausencia) el día anterior; `previousDriverId` = conductor
+   * previo a una reasignación (traza). Mientras `driverConfirmedAt` sea null el
+   * conductor asignado es preliminar. Estos campos marcan que el viaje YA tiene
+   * conductor por agenda → el dispatcher de 90 min NO re-matchea, solo comunica.
+   */
+  @Prop({ index: true }) driverConfirmedAt: Date;
+  @Prop() preliminaryAssignedAt: Date;
+  @Prop() previousDriverId: string;
+  /**
    * Marca de idempotencia: instante en que el cron disparó el matching de
    * este viaje programado. Mientras sea null el viaje sigue "en agenda".
    * Evita doble-dispatch si el cron corre en varios pods.

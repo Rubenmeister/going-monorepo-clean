@@ -39,6 +39,8 @@ import { AgoraTokenService } from '../infrastructure/agora-token.service';
 import { TokenService } from '../infrastructure/token.service';
 import { MatchAvailableDriversUseCase } from '@going-monorepo-clean/domains-transport-application';
 import { RideMatchingService } from '../application/ride-matching.service';
+import { DriverAssignmentService } from '../application/driver-assignment.service';
+import { ConfigService } from '@nestjs/config';
 import { RideDispatchGateway } from '../infrastructure/gateways/ride-dispatch.gateway';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
 import { PaymentGatewayService } from '../infrastructure/payment/payment-gateway.service';
@@ -83,6 +85,8 @@ export class RideController {
     private readonly httpService: HttpService,
     @InjectModel(DriverRatingModel.name)
     private readonly ratingModel: Model<DriverRatingDocument>,
+    private readonly assignment: DriverAssignmentService,
+    private readonly config: ConfigService,
   ) {}
 
   /**
@@ -135,6 +139,21 @@ export class RideController {
         `[scheduled] ride ${ride.rideId} reservado para ${scheduledAt!.toISOString()} ` +
           `(lockedFare=${dto.lockedFare ?? 'n/a'}) — matching diferido`,
       );
+
+      // PRELIMINAR (motor de agendas, privado intercity): si la ruta cae en un
+      // corredor, asigna ya un conductor tentativo de las agendas para que el
+      // pasajero lo vea al reservar. El definitivo se confirma el día anterior
+      // (PrivateRideAssignmentCron); si se ausenta, se reasigna. Best-effort:
+      // no bloquea la respuesta ni rompe la reserva si falla. Toggle opt-in.
+      // (compartido no pasa por aquí — usa /scheduled-trips/reserve. Los urbanos
+      // sin corredor los descarta resolveCorridorForCoords → no-op.)
+      if (this.config.get<string>('PRIVATE_ASSIGNMENT_ENABLED') === 'true') {
+        void this.assignPreliminaryDriver(ride, scheduledAt!, dto).catch((e) =>
+          this.logger.warn(
+            `[scheduled] preliminar ride ${ride.rideId} falló: ${(e as Error).message}`,
+          ),
+        );
+      }
       return ride;
     }
 
@@ -151,6 +170,37 @@ export class RideController {
     });
 
     return ride;
+  }
+
+  /**
+   * Asigna un conductor PRELIMINAR (motor de agendas) a un privado intercity
+   * recién reservado, para que el pasajero lo vea de una. Si la ruta es urbana
+   * o no cae en un corredor, no hace nada (va por realtime). Best-effort.
+   */
+  private async assignPreliminaryDriver(
+    ride: any,
+    scheduledAt: Date,
+    dto: RequestRideDto,
+  ): Promise<void> {
+    const corridor = this.assignment.resolveCorridorForCoords(
+      dto.pickupLatitude,
+      dto.pickupLongitude,
+      dto.dropoffLatitude,
+      dto.dropoffLongitude,
+    );
+    if (!corridor) return; // urbano / sin corredor → realtime, sin preliminar
+    const driver = await this.assignment.pickDriverForCorridor(
+      corridor.corridorId,
+      scheduledAt,
+    );
+    if (!driver) return; // nadie comprometido aún → el cron día-anterior reintenta
+    await this.rideRepo.update(ride.rideId, {
+      driverId: driver.driverId,
+      preliminaryAssignedAt: new Date(),
+    });
+    this.logger.log(
+      `[scheduled] ride ${ride.rideId} preliminar → ${driver.driverId} (${corridor.corridorId})`,
+    );
   }
 
   /**

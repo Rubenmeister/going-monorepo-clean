@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CORRIDORS_BY_ID } from 'pricing';
+import { CORRIDORS_BY_ID, resolveCityWithBuffer, findCorridorForCities } from 'pricing';
 import { DriverScheduleModel } from '../api/driver-schedule.controller';
 import { DriverRatingModel, DriverRatingDocument } from '../api/driver.controller';
 import {
@@ -136,6 +136,34 @@ export class DriverAssignmentService {
       best: preview.best,
       candidateCount: preview.count,
     };
+  }
+
+  /**
+   * Deriva el corredor intercity de un viaje PUNTO-A-PUNTO (privado) desde sus
+   * coordenadas: ciudad de origen + destino (centroides con buffer) →
+   * `findCorridorForCities`. Devuelve null si es urbano o no cae en un corredor
+   * definido (esos viajes NO usan el motor de agendas — van por realtime).
+   */
+  resolveCorridorForCoords(
+    pickupLat: number,
+    pickupLng: number,
+    dropoffLat: number,
+    dropoffLng: number,
+  ): { corridorId: string; originCityId: string; destCityId: string } | null {
+    if (
+      !Number.isFinite(pickupLat) ||
+      !Number.isFinite(pickupLng) ||
+      !Number.isFinite(dropoffLat) ||
+      !Number.isFinite(dropoffLng)
+    ) {
+      return null;
+    }
+    const o = resolveCityWithBuffer(pickupLat, pickupLng);
+    const d = resolveCityWithBuffer(dropoffLat, dropoffLng);
+    if (!o || !d || o.id === d.id) return null;
+    const corridor = findCorridorForCities(o.id, d.id);
+    if (!corridor) return null;
+    return { corridorId: corridor.id, originCityId: o.id, destCityId: d.id };
   }
 
   /**
