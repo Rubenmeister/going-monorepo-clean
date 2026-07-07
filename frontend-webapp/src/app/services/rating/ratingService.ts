@@ -3,22 +3,51 @@
  */
 
 import type { RatingSubmission, RatingResponse } from '@/types';
+import { authFetch } from '@/lib/providers/auth-client';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 class RatingService {
   /**
-   * Submit a ride rating
-   * TODO: Integrate with API
+   * Envía la calificación del pasajero al conductor al backend real.
+   * POST /rides/:rideId/rate (JWT del pasajero → @CurrentUser).
+   * ANTES era un MOCK: devolvía success sin llamar a ningún endpoint, así que
+   * la calificación se perdía en silencio aunque el endpoint ya existía.
    */
   async submitRating(submission: RatingSubmission): Promise<RatingResponse> {
-    // Mock API call
-    // const response = await apiClient.post('/ratings', submission);
-    // return response.data;
+    // Las 3 categorías (limpieza/comunicación/conducción) se codifican como tags
+    // para no perderlas — el endpoint guarda tags[] además del rating global.
+    const c = submission.categories;
+    const tags = [
+      c.cleanliness ? `limpieza:${c.cleanliness}` : null,
+      c.communication ? `comunicacion:${c.communication}` : null,
+      c.driving ? `conduccion:${c.driving}` : null,
+    ].filter(Boolean) as string[];
 
-    return {
-      success: true,
-      message: 'Rating submitted successfully',
-      ratingId: `RATING-${Date.now()}`,
-    };
+    try {
+      const res = await authFetch(`${API_URL}/rides/${submission.rideId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          driverId: submission.driverId,
+          rating: submission.overallRating,
+          thumbsUp: submission.overallRating >= 4,
+          comment: submission.review || undefined,
+          tags,
+        }),
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        return { success: false, message: msg || `Error ${res.status} al enviar la calificación` };
+      }
+      const data = await res.json().catch(() => ({}) as any);
+      return { success: true, message: 'Calificación enviada', ratingId: data?.rideId ?? submission.rideId };
+    } catch (e) {
+      return {
+        success: false,
+        message: e instanceof Error ? e.message : 'No se pudo enviar la calificación',
+      };
+    }
   }
 
   /**
