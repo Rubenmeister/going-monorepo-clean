@@ -57,6 +57,8 @@ export class ExpoPushService {
     try {
       const response = await fetch(this.EXPO_PUSH_URL, {
         method: 'POST',
+        // Timeout: sin esto, un Expo degradado colgaba el envío indefinidamente (#28).
+        signal: AbortSignal.timeout(5000),
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',

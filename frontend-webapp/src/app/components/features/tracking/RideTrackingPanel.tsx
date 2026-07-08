@@ -519,6 +519,7 @@ export function RideTrackingPanel({ onCompleted, onCancelled, onRetrySame, onSwi
           rideId={rideId}
           driverInfo={activeRide.driverInfo}
           onVerified={() => { setVerified(true); setShowVerify(false); }}
+          onReport={() => { setShowVerify(false); setShowSos(true); }}
         />
       )}
 
@@ -912,11 +913,12 @@ function DriverCard({ info }: { info: { name: string; rating: number; vehicle: s
 
 /* ── Modal de verificación de identidad ── */
 function VerificationModal({
-  rideId, driverInfo, onVerified,
+  rideId, driverInfo, onVerified, onReport,
 }: {
   rideId: string;
   driverInfo?: { name: string; vehicle: string; licensePlate: string };
   onVerified: () => void;
+  onReport?: () => void;
 }) {
   const [step, setStep] = useState<'driver' | 'phone'>('driver');
   const [phoneConfirmed, setPhoneConfirmed] = useState(false);
@@ -956,7 +958,7 @@ function VerificationModal({
               El código coincide → Continuar
             </button>
             <button
-              onClick={() => {}}
+              onClick={() => onReport?.()}
               className="w-full py-2.5 text-xs text-red-500 font-medium hover:underline"
             >
               El código no coincide — Reportar problema
