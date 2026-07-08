@@ -73,6 +73,7 @@ export class PrivateRideAssignmentCron {
           scheduledAt: { $gt: now, $lte: horizon },
           $or: [{ driverConfirmedAt: { $exists: false } }, { driverConfirmedAt: null }],
         })
+        .sort({ scheduledAt: 1 })
         .limit(200)
         .exec();
     } catch (e) {
@@ -139,7 +140,14 @@ export class PrivateRideAssignmentCron {
       update.previousDriverId = currentDriverId;
       update.reassignedAt = now;
     }
-    await this.rideModel.updateOne({ _id: ride._id }, { $set: update }).exec();
+    // CAS atómico: confirma solo si sigue sin confirmar (anti-duplicado multi-pod, #14).
+    const res = await this.rideModel
+      .updateOne(
+        { _id: ride._id, $or: [{ driverConfirmedAt: { $exists: false } }, { driverConfirmedAt: null }] },
+        { $set: update },
+      )
+      .exec();
+    if (res.modifiedCount !== 1) return;
 
     this.logger.log(
       `[priv-assign] ride=${String(ride._id).slice(0, 8)} ${corridor.corridorId} → ${assignedId} ` +

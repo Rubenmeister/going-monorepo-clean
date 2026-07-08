@@ -58,6 +58,10 @@ export class RideEventsGateway
   private readonly threeMinNotified = new Set<string>();
   private readonly arrivedNotified  = new Set<string>();
 
+  // driverId → timer de "offline" tras desconexión. Se cancela si reconecta
+  // dentro de la ventana (evita falso 'conductor offline', #19).
+  private readonly disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
   // rideId → posición actual del conductor
   private readonly driverPositions = new Map<string, {
     driverId: string;
@@ -74,6 +78,26 @@ export class RideEventsGateway
     destLat: number;   destLng: number;
     totalKm: number;
   }>();
+
+  // Cota dura de estado en memoria: sin evento de cancelación, un viaje que no
+  // termina por 'driver:completed' dejaba basura para siempre (fuga → OOM, #18).
+  private static readonly MAX_TRACKED_RIDES = 5000;
+
+  /** Libera TODO el estado en memoria de un viaje (fin, cancelación o evicción). */
+  private clearRideState(rideId: string): void {
+    this.driverPositions.delete(rideId);
+    this.rideRoutes.delete(rideId);
+    this.tenMinNotified.delete(rideId);
+    this.threeMinNotified.delete(rideId);
+    this.arrivedNotified.delete(rideId);
+  }
+
+  /** Si el tracking excede la cota, desaloja el viaje más antiguo (insertion order). */
+  private evictOldestIfNeeded(): void {
+    if (this.driverPositions.size <= RideEventsGateway.MAX_TRACKED_RIDES) return;
+    const oldest = this.driverPositions.keys().next().value;
+    if (oldest) this.clearRideState(oldest);
+  }
 
   constructor(
     private readonly jwtService: JwtService,
@@ -121,6 +145,13 @@ export class RideEventsGateway
         const payload = this.jwtService.verify(token);
         client.data.userId = payload.sub;
         client.data.role   = payload.roles?.[0] ?? 'user';
+        // Reconexión dentro de la ventana → cancela el timer de "offline" (#19).
+        const pending = this.disconnectTimers.get(payload.sub);
+        if (pending) {
+          clearTimeout(pending);
+          this.disconnectTimers.delete(payload.sub);
+          this.logger.log(`Driver ${payload.sub} reconectó — timer offline cancelado`);
+        }
       }
       this.logger.log(`Client connected: ${client.id} user=${client.data.userId ?? 'anonymous'}`);
     } catch {
@@ -151,11 +182,14 @@ export class RideEventsGateway
             `Driver ${driverId} disconnected with active ride ${activeRide.id}. Passenger notified.`
           );
 
-          // Set 30-second timeout to check if driver reconnects
-          setTimeout(async () => {
+          // Set 30-second timeout to check if driver reconnects. Se guarda por
+          // driverId para poder cancelarlo si el conductor reconecta (#19).
+          const timer = setTimeout(async () => {
+            this.disconnectTimers.delete(driverId);
             try {
               const ride = await this.rideRepository.findById(activeRide.id);
-              // Only emit offline event if ride is still active after 30s
+              // Solo emitir offline si el viaje sigue activo Y el conductor NO
+              // reconectó (si reconectó, el timer ya se habría cancelado).
               if (
                 ride &&
                 ride.status !== 'completed' &&
@@ -177,6 +211,7 @@ export class RideEventsGateway
               );
             }
           }, 30000);
+          this.disconnectTimers.set(driverId, timer);
         }
       } catch (err) {
         this.logger.error(
@@ -247,12 +282,13 @@ export class RideEventsGateway
   ) {
     const { rideId, lat, lng, heading, speed } = data;
 
-    // Guardar última posición en memoria
+    // Guardar última posición en memoria (con cota dura anti-fuga)
     this.driverPositions.set(rideId, {
       driverId:  client.data.userId ?? 'unknown',
       lat, lng, heading, speed,
       updatedAt: new Date(),
     });
+    this.evictOldestIfNeeded();
 
     // Calcular ETA REAL al punto de recogida.
     // Antes: hardcoded 500m / speed (mal — daba ETA fijo independiente de la
@@ -432,12 +468,7 @@ export class RideEventsGateway
       cashConfirmed?: boolean;
     },
   ) {
-    this.driverPositions.delete(data.rideId);
-    this.rideRoutes.delete(data.rideId);
-    // Cleanup proximity flags para liberar memoria
-    this.tenMinNotified.delete(data.rideId);
-    this.threeMinNotified.delete(data.rideId);
-    this.arrivedNotified.delete(data.rideId);
+    this.clearRideState(data.rideId);
 
     const completedAt = new Date();
 

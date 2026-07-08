@@ -81,6 +81,7 @@ export class ScheduledTripAssignmentCron {
           seatsReserved: { $gt: 0 },
           $or: [{ driverConfirmedAt: { $exists: false } }, { driverConfirmedAt: null }],
         })
+        .sort({ departureAt: 1 })
         .limit(200)
         .exec();
     } catch (e) {
@@ -130,6 +131,7 @@ export class ScheduledTripAssignmentCron {
           driverConfirmedAt: { $ne: null },
           $or: [{ channelOpenedAt: { $exists: false } }, { channelOpenedAt: null }],
         })
+        .sort({ departureAt: 1 })
         .limit(200)
         .exec();
     } catch (e) {
@@ -140,9 +142,14 @@ export class ScheduledTripAssignmentCron {
 
     for (const trip of trips) {
       try {
-        await this.tripModel
-          .updateOne({ _id: trip._id }, { $set: { channelOpenedAt: now } })
+        // CAS: abre el canal SOLO si nadie lo abrió (evita push duplicado multi-pod).
+        const res = await this.tripModel
+          .updateOne(
+            { _id: trip._id, $or: [{ channelOpenedAt: { $exists: false } }, { channelOpenedAt: null }] },
+            { $set: { channelOpenedAt: now } },
+          )
           .exec();
+        if (res.modifiedCount !== 1) continue;
         const passengers = [
           ...new Set(
             (trip.reservations ?? []).map((r: SeatReservation) => r.userId).filter(Boolean),
@@ -231,7 +238,15 @@ export class ScheduledTripAssignmentCron {
       update.previousDriverId = trip.driverId;
       update.reassignedAt = now;
     }
-    await this.tripModel.updateOne({ _id: trip._id }, { $set: update }).exec();
+    // CAS atómico: confirma SOLO si sigue sin confirmar. Si otro pod ganó la
+    // carrera (modifiedCount 0), NO se vuelve a notificar (#14 anti-duplicado).
+    const res = await this.tripModel
+      .updateOne(
+        { _id: trip._id, $or: [{ driverConfirmedAt: { $exists: false } }, { driverConfirmedAt: null }] },
+        { $set: update },
+      )
+      .exec();
+    if (res.modifiedCount !== 1) return;
 
     await this.notifyAssigned(trip, assignedId, reassigned);
   }

@@ -224,15 +224,21 @@ export class DriverAssignmentService {
     }));
   }
 
+  // Ecuador es UTC-5 fijo (sin horario de verano). El "día" para equidad debe
+  // ser el día calendario de Ecuador, no la medianoche UTC del pod (#34).
+  private static readonly ECU_OFFSET_MS = 5 * 60 * 60 * 1000;
+
   /** Viajes ya asignados a cada conductor ese día (factor de EQUIDAD). */
   private async tripsTodayByDriver(
     driverIds: string[],
     date: Date,
   ): Promise<Record<string, number>> {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
+    // Medianoche de Ecuador expresada como instante UTC real.
+    const OFF = DriverAssignmentService.ECU_OFFSET_MS;
+    const local = new Date(date.getTime() - OFF);
+    const localMidnight = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate());
+    const start = new Date(localMidnight + OFF);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
     try {
       const rows = (await this.rideModel.aggregate([
         {
