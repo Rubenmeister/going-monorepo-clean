@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
 import { jwtDecode } from 'jwt-decode';
+import * as jwt from 'jsonwebtoken';
 import { ITokenService } from '@going-monorepo-clean/domains-user-core';
 import { UUID } from '@going-monorepo-clean/shared-domain';
 
@@ -61,12 +62,15 @@ export class JwtTokenService implements ITokenService {
     // token se firma con RS256 (los servicios lo verifican con la PÚBLICA, no
     // pueden forjar). Si no está, se mantiene HS256 (actual) → rollout controlado
     // por la presencia de la env, sin cambio de código para el flip.
+    // NOTA: se firma con jsonwebtoken CRUDO (no this.jwtService) porque NestJS
+    // JwtService resuelve la clave como `options.secret || module.secret || ...`,
+    // y el módulo está registrado con `secret: JWT_SECRET` → ese secreto simétrico
+    // SIEMPRE gana sobre un privateKey por-llamada → "must be an asymmetric key".
     const rs256Private = process.env.RS256_PRIVATE_KEY;
     const token = rs256Private
-      ? this.jwtService.sign(payload, {
-          expiresIn: this.accessTokenExpiration as any,
+      ? jwt.sign(payload, rs256Private.replace(/\\n/g, '\n'), {
           algorithm: 'RS256',
-          privateKey: rs256Private.replace(/\\n/g, '\n'),
+          expiresIn: this.accessTokenExpiration as any,
         })
       : this.jwtService.sign(payload, {
           expiresIn: this.accessTokenExpiration as any,
@@ -102,10 +106,9 @@ export class JwtTokenService implements ITokenService {
     if (header?.alg === 'RS256') {
       const pub = process.env.RS256_PUBLIC_KEY;
       if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
-      return this.jwtService.verify(token, {
-        publicKey: pub.replace(/\\n/g, '\n'),
-        algorithms: ['RS256'],
-      } as any);
+      // jsonwebtoken CRUDO: JwtService antepone el module.secret simétrico y
+      // rechazaría el RS256 (ver nota en generateAccessToken).
+      return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
     }
     return this.jwtService.verify(token);
   }

@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as jwt from 'jsonwebtoken';
 import {
   ICorporateUser,
   LoginRequestDTO,
@@ -275,10 +276,8 @@ export class CorporateAuthService implements ICorporateAuthService {
           ? (() => {
               const pub = process.env.RS256_PUBLIC_KEY;
               if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
-              return this.jwtService.verify(token, {
-                publicKey: pub.replace(/\\n/g, '\n'),
-                algorithms: ['RS256'],
-              } as any);
+              // jsonwebtoken CRUDO: JwtService antepone el module.secret simétrico.
+              return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
             })()
           : this.jwtService.verify(token);
       return { valid: true, payload };

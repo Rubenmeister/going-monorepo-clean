@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import * as jwt from 'jsonwebtoken';
 import { IUserRepository } from '@going-monorepo-clean/domains-user-core';
 import { AccountLockoutService } from '../application/account-lockout.service';
 
@@ -49,10 +50,10 @@ export class AdminController {
     if (header?.alg === 'RS256') {
       const pub = process.env.RS256_PUBLIC_KEY;
       if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
-      return this.jwtService.verify(token, {
-        publicKey: pub.replace(/\\n/g, '\n'),
+      // jsonwebtoken CRUDO: JwtService antepone el module.secret simétrico.
+      return jwt.verify(token, pub.replace(/\\n/g, '\n'), {
         algorithms: ['RS256'],
-      } as any) as Record<string, any>;
+      }) as Record<string, any>;
     }
     return this.jwtService.verify(token) as Record<string, any>;
   }

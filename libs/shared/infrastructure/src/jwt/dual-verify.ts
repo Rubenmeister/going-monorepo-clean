@@ -1,5 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import * as jwt from 'jsonwebtoken';
 
 /**
  * dualVerifyToken — verifica un JWT aceptando HS256 (secreto compartido, actual)
@@ -18,10 +19,10 @@ export function dualVerifyToken(
   if (alg === 'RS256') {
     const pub = config.get<string>('RS256_PUBLIC_KEY');
     if (!pub) throw new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada');
-    return jwtService.verify(token, {
-      publicKey: pub.replace(/\\n/g, '\n'),
-      algorithms: ['RS256'],
-    } as any);
+    // jsonwebtoken CRUDO: NestJS JwtService resuelve la clave como
+    // `options.secret || module.secret || options.publicKey`, y el módulo se
+    // registra con `secret` (JWT_SECRET) → el simétrico gana y rechaza el RS256.
+    return jwt.verify(token, pub.replace(/\\n/g, '\n'), { algorithms: ['RS256'] });
   }
   return jwtService.verify(token, {
     secret: config.getOrThrow<string>('JWT_SECRET'),
