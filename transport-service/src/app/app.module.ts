@@ -99,6 +99,7 @@ import { ScheduledRideDispatcherCron } from '../application/scheduled-ride-dispa
 import { ScheduledRideReminderCron } from '../application/scheduled-ride-reminder.cron';
 import { ScheduledTripAssignmentCron } from '../application/scheduled-trip-assignment.cron';
 import { PrivateRideAssignmentCron } from '../application/private-ride-assignment.cron';
+import { OutboxNotifier } from '../application/outbox-notifier.service';
 import { PricingService } from 'pricing';
 import { PricingClient } from '../infrastructure/pricing-client';
 import { TokenService } from '../infrastructure/token.service';
@@ -239,6 +240,7 @@ import { MulterModule } from '@nestjs/platform-express';
     ScheduledRideReminderCron,
     ScheduledTripAssignmentCron,
     PrivateRideAssignmentCron,
+    OutboxNotifier,
     AssignDriverBaseUseCase,
     UpdateDriverBaseUseCase,
     DeleteDriverBaseUseCase,

@@ -87,8 +87,12 @@ export class RideMatchingService {
     const offered = new Set<string>();
     let attempt = 0;
 
+    try {
     while (true) {
       attempt++;
+      // Renueva el LEASE de búsqueda (#9): mientras este pod busca, el viaje no
+      // se considera huérfano. Si el pod muere, el lease vence y el watchdog re-despacha.
+      await this.setSearchLease(params.rideId);
 
       // Si el viaje dejó de necesitar conductor (aceptado/cancelado), salimos.
       const ride = await this.safeFindRide(params.rideId);
@@ -196,6 +200,33 @@ export class RideMatchingService {
         message: `No encontramos conductora o conductor disponible tras ${mins} min de búsqueda. Intenta de nuevo en unos minutos.`,
         timestamp: new Date().toISOString(),
       });
+    } finally {
+      // Limpia el lease en TODA salida normal (aceptado / sin conductor / cancelado).
+      // Solo un crash del pod deja el lease sin limpiar → el watchdog lo recupera.
+      await this.clearSearchLease(params.rideId);
+    }
+  }
+
+  private static readonly SEARCH_LEASE_MS = 4 * 60 * 1000; // > una iteración completa
+
+  /** Renueva el lease de búsqueda hacia el futuro (best-effort). */
+  private async setSearchLease(rideId: string): Promise<void> {
+    try {
+      await this.rideRepo.update(rideId, {
+        searchingUntil: new Date(Date.now() + RideMatchingService.SEARCH_LEASE_MS),
+      });
+    } catch {
+      /* best-effort: el lease es una optimización de recuperación, no bloquea la búsqueda */
+    }
+  }
+
+  /** Limpia el lease (búsqueda terminada normalmente → no es huérfana). */
+  private async clearSearchLease(rideId: string): Promise<void> {
+    try {
+      await this.rideRepo.update(rideId, { searchingUntil: null });
+    } catch {
+      /* best-effort */
+    }
   }
 
   /**

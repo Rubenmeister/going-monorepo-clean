@@ -567,6 +567,12 @@ export interface IRideRepository {
    */
   findChannelsToClose?(cutoff: Date, limit?: number): Promise<any[]>;
   /**
+   * Búsquedas de conductor HUÉRFANAS (auditoría #9): viajes en 'requested' con un
+   * lease `searchingUntil` vencido (el pod que buscaba murió). El watchdog las
+   * re-despacha. Opcional en el port (mock parcial).
+   */
+  findStaleSearches?(now: Date, limit?: number): Promise<any[]>;
+  /**
    * Compare-and-swap atómico: asigna el conductor SOLO si el viaje sigue en
    * 'requested'. Devuelve el viaje actualizado, o null si otro conductor ya lo
    * tomó (evita doble-aceptación bajo concurrencia).

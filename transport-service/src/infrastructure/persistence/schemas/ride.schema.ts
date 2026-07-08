@@ -58,6 +58,14 @@ export class RideModelSchema {
    */
   @Prop() matchDispatchedAt: Date;
   /**
+   * LEASE de búsqueda en vivo (auditoría #9): mientras un pod busca conductor
+   * (runSearchWindow), renueva este instante hacia el futuro. Al terminar
+   * (aceptado/sin conductor/cancelado) se limpia a null. Si el pod muere a mitad,
+   * queda un valor PASADO sin limpiar → el watchdog detecta la búsqueda huérfana
+   * (status='requested' + searchingUntil<now≠null) y la re-despacha.
+   */
+  @Prop({ index: true }) searchingUntil: Date;
+  /**
    * Instante en que se abrió el canal conductor↔pasajero. El canal vive desde
    * aquí hasta CHANNEL_CLOSE_AFTER_MINUTES después de completedAt.
    */

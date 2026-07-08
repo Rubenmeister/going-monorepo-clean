@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import axios from 'axios';
 import {
   ScheduledTripModel,
   ScheduledTripDocument,
@@ -11,6 +10,7 @@ import {
 } from '../infrastructure/persistence/schemas/scheduled-trip.schema';
 import { DriverAssignmentService } from './driver-assignment.service';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
+import { OutboxNotifier } from './outbox-notifier.service';
 
 /**
  * ScheduledTripAssignmentCron — CONFIRMA el conductor definitivo de los viajes
@@ -46,6 +46,7 @@ export class ScheduledTripAssignmentCron {
     private readonly tripModel: Model<ScheduledTripDocument>,
     private readonly assignment: DriverAssignmentService,
     private readonly eventsGateway: RideEventsGateway,
+    private readonly outbox: OutboxNotifier,
   ) {}
 
   private isEnabled(): boolean {
@@ -166,29 +167,16 @@ export class ScheduledTripAssignmentCron {
         } catch {
           /* best-effort */
         }
-        // Push S2S a ambos
-        const url = this.config.get<string>('NOTIFICATIONS_SERVICE_URL');
-        const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
-        if (url && token) {
-          const headers = { Authorization: `Bearer ${token}` };
-          const data = { tripId: String(trip._id), driverId: trip.driverId };
-          for (const userId of [...passengers, trip.driverId].filter(Boolean)) {
-            await axios
-              .post(
-                `${url}/notifications/send`,
-                {
-                  userId,
-                  type: 'trip_channel_opened',
-                  title: 'Comunicación disponible',
-                  body: 'Tu viaje compartido sale pronto. Ya puedes comunicarte en la app.',
-                  data,
-                },
-                { headers, timeout: 5000 },
-              )
-              .catch((err) =>
-                this.logger.warn(`[assign-cron] push canal ${userId}: ${err?.message ?? err}`),
-              );
-          }
+        // Push a ambos vía OUTBOX (reintento + dead-letter, #16).
+        const data = { tripId: String(trip._id), driverId: trip.driverId };
+        for (const userId of [...passengers, trip.driverId].filter(Boolean)) {
+          await this.outbox.enqueue({
+            userId,
+            type: 'trip_channel_opened',
+            title: 'Comunicación disponible',
+            body: 'Tu viaje compartido sale pronto. Ya puedes comunicarte en la app.',
+            data,
+          });
         }
         this.logger.log(
           `[assign-cron] trip=${String(trip._id).slice(0, 8)} canal abierto (${passengers.length} pasajero(s))`,
@@ -276,49 +264,26 @@ export class ScheduledTripAssignmentCron {
       this.logger.warn(`[assign-cron] WS trip=${tripId.slice(0, 8)}: ${(e as Error).message}`);
     }
 
-    // 2) Push S2S (canal confiable del día anterior). Best-effort.
-    const url = this.config.get<string>('NOTIFICATIONS_SERVICE_URL');
-    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
-    if (!url || !token) return; // Sin config, el cron solo loggea + WS.
-
-    const headers = { Authorization: `Bearer ${token}` };
+    // 2) Push vía OUTBOX (persistido + reintento + dead-letter, #16). Esta
+    //    notificación es importante (idempotente: no se re-emite) → no puede
+    //    perderse por un blip de notifications-service.
     const data = { tripId, driverId, corridorId: trip.corridorId, departureAt: trip.departureAt };
-
-    // Pasajera/os
     for (const userId of passengers) {
-      await axios
-        .post(
-          `${url}/notifications/send`,
-          {
-            userId,
-            type: 'trip_driver_assigned',
-            title: 'Conductora o conductor asignado',
-            body: 'Ya designamos quién te lleva en tu viaje compartido. Verás sus datos en la app.',
-            data,
-          },
-          { headers, timeout: 5000 },
-        )
-        .catch((err) =>
-          this.logger.warn(`[assign-cron] push pasajero ${userId}: ${err?.message ?? err}`),
-        );
+      await this.outbox.enqueue({
+        userId,
+        type: 'trip_driver_assigned',
+        title: 'Conductora o conductor asignado',
+        body: 'Ya designamos quién te lleva en tu viaje compartido. Verás sus datos en la app.',
+        data,
+      });
     }
-
-    // Conductora/or
-    await axios
-      .post(
-        `${url}/notifications/send`,
-        {
-          userId: driverId,
-          type: 'trip_driver_assigned',
-          title: 'Tienes un viaje asignado',
-          body: 'Se te asignó un viaje compartido para tu recorrido. Revisa los detalles en la app.',
-          data,
-        },
-        { headers, timeout: 5000 },
-      )
-      .catch((err) =>
-        this.logger.warn(`[assign-cron] push conductor ${driverId}: ${err?.message ?? err}`),
-      );
+    await this.outbox.enqueue({
+      userId: driverId,
+      type: 'trip_driver_assigned',
+      title: 'Tienes un viaje asignado',
+      body: 'Se te asignó un viaje compartido para tu recorrido. Revisa los detalles en la app.',
+      data,
+    });
 
     this.logger.log(
       `[assign-cron] trip=${tripId.slice(0, 8)} confirmado → ${driverId} ` +

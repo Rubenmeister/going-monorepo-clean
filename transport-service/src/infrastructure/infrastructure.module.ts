@@ -15,6 +15,7 @@ import { DriverDocumentModel, DriverDocumentSchema, DriverRatingModel, DriverRat
 import { DriverScheduleModel, DriverScheduleSchema } from '../api/driver-schedule.controller';
 import { ScheduledTripModel, ScheduledTripSchema } from './persistence/schemas/scheduled-trip.schema';
 import { DriverVehicleModel, DriverVehicleSchema } from './persistence/schemas/driver-vehicle.schema';
+import { NotificationOutboxModel, NotificationOutboxSchema } from './persistence/schemas/notification-outbox.schema';
 
 @Global()
 @Module({
@@ -29,6 +30,7 @@ import { DriverVehicleModel, DriverVehicleSchema } from './persistence/schemas/d
       { name: DriverScheduleModel.name, schema: DriverScheduleSchema },
       { name: ScheduledTripModel.name, schema: ScheduledTripSchema },
       { name: DriverVehicleModel.name, schema: DriverVehicleSchema },
+      { name: NotificationOutboxModel.name, schema: NotificationOutboxSchema },
     ]),
   ],
   providers: [

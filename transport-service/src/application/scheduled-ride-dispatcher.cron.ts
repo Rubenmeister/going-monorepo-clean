@@ -310,4 +310,47 @@ export class ScheduledRideDispatcherCron {
       return false;
     }
   }
+
+  /**
+   * WATCHDOG de búsquedas huérfanas (auditoría #9): la búsqueda de conductor
+   * (runSearchWindow) corre en memoria del pod. Si el pod muere/redespliega a
+   * mitad, el viaje queda en 'requested' sin nadie buscando. Cada minuto este
+   * cron detecta esos viajes (lease `searchingUntil` vencido) y RE-DESPACHA el
+   * matching desde un pod vivo. El re-dispatch renueva el lease de una, así que
+   * el siguiente tick ya no lo ve huérfano.
+   */
+  @Cron(CronExpression.EVERY_MINUTE, { name: 'search-watchdog' })
+  async recoverStaleSearches(): Promise<void> {
+    if (!this.isEnabled()) return;
+    if (typeof this.rideRepo.findStaleSearches !== 'function') return;
+
+    let stale: any[];
+    try {
+      stale = await this.rideRepo.findStaleSearches(new Date(), 50);
+    } catch (e) {
+      this.logger.error(`[watchdog] findStaleSearches falló: ${(e as Error).message}`);
+      return;
+    }
+    if (!stale || stale.length === 0) return;
+
+    this.logger.warn(`[watchdog] ${stale.length} búsqueda(s) huérfana(s) → re-despachando`);
+    for (const ride of stale) {
+      try {
+        const pickup = ride.pickupLocation ?? {};
+        const dropoff = ride.dropoffLocation ?? {};
+        this.rideMatching.dispatchMatching({
+          rideId: ride.id,
+          pickupLatitude: pickup.latitude ?? pickup.lat ?? 0,
+          pickupLongitude: pickup.longitude ?? pickup.lon ?? pickup.lng ?? 0,
+          dropoffLatitude: dropoff.latitude ?? dropoff.lat ?? 0,
+          dropoffLongitude: dropoff.longitude ?? dropoff.lon ?? dropoff.lng ?? 0,
+          vehicleType: ride.serviceType || 'ANY',
+          isCorporate: ride.paymentMethod === 'corporate',
+        });
+        this.logger.log(`[watchdog] ride=${String(ride.id).slice(0, 8)} re-despachado`);
+      } catch (e) {
+        this.logger.error(`[watchdog] re-dispatch ride=${ride.id} falló: ${(e as Error).message}`);
+      }
+    }
+  }
 }

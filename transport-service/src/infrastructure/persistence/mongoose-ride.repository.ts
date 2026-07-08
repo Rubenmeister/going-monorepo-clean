@@ -149,6 +149,18 @@ export class MongooseRideRepository implements IRideRepository {
     return docs.map((d) => this._toRideData(d));
   }
 
+  async findStaleSearches(now: Date, limit = 50): Promise<any[]> {
+    const docs = await this.model
+      .find({
+        status: 'requested',
+        searchingUntil: { $ne: null, $lt: now },
+      })
+      .sort({ searchingUntil: 1 })
+      .limit(limit)
+      .lean();
+    return docs.map((d) => this._toRideData(d));
+  }
+
   async findChannelsToClose(cutoff: Date, limit = 100): Promise<any[]> {
     const docs = await this.model
       .find({
@@ -256,6 +268,7 @@ export class MongooseRideRepository implements IRideRepository {
       preliminaryAssignedAt: doc.preliminaryAssignedAt,
       previousDriverId: doc.previousDriverId,
       matchDispatchedAt: doc.matchDispatchedAt,
+      searchingUntil: doc.searchingUntil,
       channelOpenedAt: doc.channelOpenedAt,
       channelClosedAt: doc.channelClosedAt,
       pickupToken: doc.pickupToken,

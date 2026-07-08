@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import axios from 'axios';
 import {
   RideModelSchema,
   RideDocument,
 } from '../infrastructure/persistence/schemas/ride.schema';
 import { DriverAssignmentService } from './driver-assignment.service';
 import { RideEventsGateway } from '../infrastructure/gateways/ride-events.gateway';
+import { OutboxNotifier } from './outbox-notifier.service';
 
 /**
  * PrivateRideAssignmentCron — asigna/confirma el conductor DEFINITIVO de los
@@ -46,6 +46,7 @@ export class PrivateRideAssignmentCron {
     private readonly rideModel: Model<RideDocument>,
     private readonly assignment: DriverAssignmentService,
     private readonly eventsGateway: RideEventsGateway,
+    private readonly outbox: OutboxNotifier,
   ) {}
 
   private isEnabled(): boolean {
@@ -178,46 +179,23 @@ export class PrivateRideAssignmentCron {
       this.logger.warn(`[priv-assign] WS ride=${rideId.slice(0, 8)}: ${(e as Error).message}`);
     }
 
-    // 2) Push S2S best-effort.
-    const url = this.config.get<string>('NOTIFICATIONS_SERVICE_URL');
-    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
-    if (!url || !token) return;
-
-    const headers = { Authorization: `Bearer ${token}` };
+    // 2) Push vía OUTBOX (persistido + reintento + dead-letter, #16).
     const data = { rideId, driverId, scheduledAt: ride.scheduledAt };
-
     if (ride.userId) {
-      await axios
-        .post(
-          `${url}/notifications/send`,
-          {
-            userId: ride.userId,
-            type: 'ride_driver_assigned',
-            title: 'Conductora o conductor asignado',
-            body: 'Ya designamos quién te lleva en tu viaje. Verás sus datos en la app.',
-            data,
-          },
-          { headers, timeout: 5000 },
-        )
-        .catch((err) =>
-          this.logger.warn(`[priv-assign] push pasajero ${ride.userId}: ${err?.message ?? err}`),
-        );
+      await this.outbox.enqueue({
+        userId: ride.userId,
+        type: 'ride_driver_assigned',
+        title: 'Conductora o conductor asignado',
+        body: 'Ya designamos quién te lleva en tu viaje. Verás sus datos en la app.',
+        data,
+      });
     }
-
-    await axios
-      .post(
-        `${url}/notifications/send`,
-        {
-          userId: driverId,
-          type: 'ride_driver_assigned',
-          title: 'Tienes un viaje asignado',
-          body: 'Se te asignó un viaje para tu recorrido. Revisa los detalles en la app.',
-          data,
-        },
-        { headers, timeout: 5000 },
-      )
-      .catch((err) =>
-        this.logger.warn(`[priv-assign] push conductor ${driverId}: ${err?.message ?? err}`),
-      );
+    await this.outbox.enqueue({
+      userId: driverId,
+      type: 'ride_driver_assigned',
+      title: 'Tienes un viaje asignado',
+      body: 'Se te asignó un viaje para tu recorrido. Revisa los detalles en la app.',
+      data,
+    });
   }
 }
