@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 import { firstValueFrom } from 'rxjs';
 import { ITokenManager } from '@going-monorepo-clean/domains-user-core';
+import { dualVerifyToken } from '@going-monorepo-clean/shared-infrastructure';
 
 @WebSocketGateway({
   cors: {
@@ -77,12 +78,10 @@ export class TrackingGateway
         return;
       }
 
-      // Verify JWT signature and expiration
+      // Verify JWT signature and expiration (dual HS256/RS256, auditoría #13)
       let payload: any;
       try {
-        payload = this.jwtService.verify(token, {
-          secret: this.configService.get('JWT_SECRET'),
-        });
+        payload = dualVerifyToken(this.jwtService, this.configService, token);
       } catch (error) {
         this.logger.warn(
           `WebSocket connection rejected: Invalid JWT token (${client.id}): ${

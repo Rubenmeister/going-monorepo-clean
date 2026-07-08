@@ -10,6 +10,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { dualVerifyToken } from '@going-monorepo-clean/shared-infrastructure';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RideModelSchema, RideDocument } from '../persistence/schemas/ride.schema';
@@ -101,6 +103,7 @@ export class RideEventsGateway
 
   constructor(
     private readonly jwtService: JwtService,
+    private readonly config: ConfigService,
     @InjectModel(RideModelSchema.name)
     private readonly rideModel: Model<RideDocument>,
     @InjectModel(DriverRatingModel.name)
@@ -142,7 +145,7 @@ export class RideEventsGateway
         (client.handshake.headers?.authorization as string)?.replace('Bearer ', '');
 
       if (token) {
-        const payload = this.jwtService.verify(token);
+        const payload = dualVerifyToken(this.jwtService, this.config, token);
         client.data.userId = payload.sub;
         client.data.role   = payload.roles?.[0] ?? 'user';
         // Reconexión dentro de la ventana → cancela el timer de "offline" (#19).

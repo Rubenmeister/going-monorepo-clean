@@ -23,6 +23,7 @@ export {
 } from './strategies/base-jwt.strategy';
 
 // Re-export existing services
+export { dualVerifyToken } from './jwt/dual-verify';
 export { CircuitBreaker, CircuitBreakerFactory } from './services/circuit-breaker.service';
 export { RedisPoolService } from './services/redis-pool.service';
 export { TokenBucketService } from './services/token-bucket.service';
