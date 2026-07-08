@@ -81,3 +81,18 @@ PaymentSchema.index({ status: 1, paymentMethod: 1 });
 PaymentSchema.index({ createdAt: 1, status: 1, driverId: 1 }); // For revenue reports
 PaymentSchema.index({ amount: -1 });
 PaymentSchema.index({ completedAt: -1 }); // For completed payments queries
+
+// Idempotencia por viaje (auditoría B1 #6/#7): a lo sumo UN pago activo por tripId.
+// Cierra el TOCTOU de complete-ride bajo multi-pod (dos cierres concurrentes del
+// mismo viaje ya no crean dos Payment). Parcial: excluye 'failed' para permitir
+// reintento legítimo tras un pago fallido.
+PaymentSchema.index(
+  { tripId: 1 },
+  {
+    unique: true,
+    name: 'tripId_unique_active',
+    partialFilterExpression: {
+      status: { $in: ['pending', 'processing', 'completed', 'refunded'] },
+    },
+  },
+);

@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { IPaymentRepository } from '../../domain/ports';
 import { StripeGateway } from '../../infrastructure/gateways/stripe.gateway';
 import { PricingService, ServiceType } from '../pricing.service';
+import { WalletService } from '../wallet.service';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -13,7 +14,8 @@ export class ProcessPaymentUseCase {
   constructor(
     @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
     private stripeGateway: StripeGateway,
-    private pricingService: PricingService
+    private pricingService: PricingService,
+    private walletService: WalletService
   ) {}
 
   async execute(input: {
@@ -84,9 +86,33 @@ export class ProcessPaymentUseCase {
     // para que el conductor reciba su 80% en el payout semanal.
     // Datafast y DeUna: el checkoutId/orderId se maneja en el controller,
     // aquí solo se registra el intento — se completa vía webhook.
+    // Wallet (auditoría B1 #6): DEBITAR el saldo del pasajero antes de completar.
+    // Antes se marcaba 'completed' sin mover el saldo → viajes gratis con wallet.
+    // debit() es atómico (condicionado a saldo suficiente) e idempotente por ref
+    // (reintentos del mismo pago no doble-debitan). Si no hay saldo, el pago falla.
+    if (input.paymentMethod === 'wallet') {
+      try {
+        await this.walletService.debit(
+          input.passengerId,
+          input.amount,
+          `Pago viaje ${input.tripId}`,
+          `pay:${payment.id}`,
+        );
+      } catch (e) {
+        await this.paymentRepository.update(payment.id, {
+          status: 'failed',
+          failureReason: (e as Error).message || 'Débito de wallet falló',
+        });
+        throw e;
+      }
+      return await this.paymentRepository.update(payment.id, {
+        status: 'completed',
+        completedAt: new Date(),
+      });
+    }
+
     if (
       input.paymentMethod === 'cash' ||
-      input.paymentMethod === 'wallet' ||
       input.paymentMethod === 'corporate'
     ) {
       return await this.paymentRepository.update(payment.id, {

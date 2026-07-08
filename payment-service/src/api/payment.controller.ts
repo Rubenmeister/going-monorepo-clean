@@ -1,6 +1,6 @@
 import {
   Controller, Post, Body, BadRequestException, UseGuards,
-  Inject, ServiceUnavailableException, Logger,
+  Inject, ServiceUnavailableException, Logger, Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -148,11 +148,17 @@ export class PaymentController {
    */
   @Post('quote/confirm')
   @UseGuards(AuthGuard('jwt'))
-  async confirmQuote(@Body() body: { quoteId: string; userId?: string }) {
+  async confirmQuote(
+    @Body() body: { quoteId: string; userId?: string },
+    @Req() req: any,
+  ) {
     if (!body?.quoteId) {
       throw new BadRequestException('quoteId requerido');
     }
-    const stored = await this.quoteStore.claim(body.quoteId, body.userId);
+    // Ownership del JWT, NO del body (auditoría B1): antes se pasaba body.userId,
+    // así que omitirlo saltaba el binding del quote a su dueño.
+    const jwtUserId = req?.user?.id ?? req?.user?.userId;
+    const stored = await this.quoteStore.claim(body.quoteId, jwtUserId);
     if (!stored) {
       throw new BadRequestException(
         'Quote inválido o expirado. Re-cotiza el viaje antes de confirmar.',

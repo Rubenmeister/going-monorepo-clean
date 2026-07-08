@@ -8,11 +8,13 @@ import {
   Inject,
   UseGuards,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { IPaymentRepository, IPayoutRepository } from '../../domain/ports';
 import { ProcessPaymentUseCase } from '../../application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from '../../application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from '../../application/use-cases/create-payout.use-case';
+import { TransportClient } from '../../application/transport-client.service';
 import { JwtAuthGuard, CurrentUser } from '../driver-earnings.controller';
 import { InternalServiceGuard } from '../../infrastructure/auth/internal-service.guard';
 
@@ -34,6 +36,7 @@ export class PaymentOperationsController {
     private processPaymentUseCase: ProcessPaymentUseCase,
     private completeRideUseCase: CompleteRideUseCase,
     private createPayoutUseCase: CreatePayoutUseCase,
+    private transportClient: TransportClient,
     @Inject(IPaymentRepository) private paymentRepository: IPaymentRepository,
     @Inject(IPayoutRepository) private payoutRepository: IPayoutRepository
   ) {}
@@ -75,7 +78,43 @@ export class PaymentOperationsController {
     // Un admin sí puede procesar en nombre de otro (admin-dashboard).
     const isAdmin = user?.roles?.includes('admin');
     const passengerId = isAdmin && dto.passengerId ? dto.passengerId : user.id;
-    const payment = await this.processPaymentUseCase.execute({ ...dto, passengerId });
+
+    // Anti-fabricación (auditoría B1 #1): NO se confía en amount ni driverId del
+    // body. Para usuarios normales se consulta a transport el contexto AUTORITATIVO
+    // del viaje (tarifa, conductor, pasajero real) y se DERIVA de ahí. Antes un
+    // usuario cualquiera podía POST /payments/process con amount:9999 y driverId
+    // arbitrario y crear un pago 'completed' acreditando 80% al driver elegido.
+    let amount = dto.amount;
+    let driverId = dto.driverId;
+    if (!isAdmin) {
+      if (!dto.tripId) {
+        throw new BadRequestException('tripId requerido');
+      }
+      const ctx = await this.transportClient.getPaymentContext(dto.tripId);
+      if (!ctx) {
+        throw new BadRequestException('No se pudo validar el viaje para este pago');
+      }
+      // El usuario autenticado debe ser el pasajero real del viaje.
+      if (ctx.passengerId !== user.id) {
+        throw new ForbiddenException('No eres el pasajero de este viaje');
+      }
+      if (!ctx.driverId) {
+        throw new BadRequestException('El viaje aún no tiene conductor asignado');
+      }
+      if (!(ctx.amount > 0)) {
+        throw new BadRequestException('El viaje no tiene una tarifa válida');
+      }
+      // Fuente de verdad: transport. Se ignora lo que vino en el body.
+      amount = ctx.amount;
+      driverId = ctx.driverId;
+    }
+
+    const payment = await this.processPaymentUseCase.execute({
+      ...dto,
+      passengerId,
+      amount,
+      driverId,
+    });
 
     return {
       statusCode: HttpStatus.CREATED,

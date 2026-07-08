@@ -151,13 +151,12 @@ export class QuoteStore implements OnModuleDestroy {
       return null;
     }
 
-    if (
-      expectedUserId &&
-      stored.userId &&
-      expectedUserId !== stored.userId
-    ) {
+    // Ownership fail-closed (auditoría B1): si el quote TIENE dueño, quien lo
+    // reclama debe coincidir. Antes se exigía que expectedUserId estuviera
+    // presente para comparar, así que omitir userId en el body saltaba el check.
+    if (stored.userId && expectedUserId !== stored.userId) {
       this.logger.warn(
-        `Quote ${quoteId} pertenece a user ${stored.userId} pero lo reclama ${expectedUserId}`,
+        `Quote ${quoteId} pertenece a user ${stored.userId} pero lo reclama ${expectedUserId ?? '(sin userId)'}`,
       );
       return null;
     }

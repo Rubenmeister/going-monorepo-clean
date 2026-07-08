@@ -17,6 +17,7 @@ import { FareEngine } from './application/fare-engine.service';
 import { PricingClient } from './infrastructure/pricing-client';
 import { QuoteStore } from './application/quote-store.service';
 import { LoyaltyClient } from './application/loyalty-client.service';
+import { TransportClient } from './application/transport-client.service';
 import { ProcessPaymentUseCase } from './application/use-cases/process-payment.use-case';
 import { CompleteRideUseCase } from './application/use-cases/complete-ride.use-case';
 import { CreatePayoutUseCase } from './application/use-cases/create-payout.use-case';
@@ -82,6 +83,7 @@ import {
     FareEngine,
     QuoteStore,
     LoyaltyClient,
+    TransportClient,
     ProcessPaymentUseCase,
     CompleteRideUseCase,
     CreatePayoutUseCase,

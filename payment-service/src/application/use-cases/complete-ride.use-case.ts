@@ -133,6 +133,12 @@ export class CompleteRideUseCase {
       );
 
       if (existingPayout) {
+        // Idempotencia (auditoría B1 #7): si este payment.id ya está contabilizado
+        // en el payout de la semana, NO volver a sumarlo — evita doble payout si
+        // dos complete-ride concurrentes del mismo viaje pasan el check de findByTrip.
+        if ((existingPayout.transactionIds || []).includes(payment.id)) {
+          return;
+        }
         // Acumula el delta (puede restar, p. ej. comisión de efectivo).
         await this.payoutRepository.update(existingPayout.id, {
           amount: existingPayout.amount + delta,

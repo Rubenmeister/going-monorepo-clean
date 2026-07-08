@@ -61,6 +61,7 @@ import { ZoneController } from '../api/zone.controller';
 import { DriverBaseController } from '../api/driver-base.controller';
 import { TransportController } from '../api/transport.controller';
 import { RideController } from '../api/ride.controller';
+import { RideInternalController } from '../api/ride-internal.controller';
 import { HealthController } from '../api/health.controller';
 import { TwilioProxyService } from '../infrastructure/twilio-proxy.service';
 import { AgoraTokenService } from '../infrastructure/agora-token.service';
@@ -172,6 +173,7 @@ import { MulterModule } from '@nestjs/platform-express';
     AppController,
     TransportController,
     RideController,
+    RideInternalController,
     HealthController,
     PaymentController,
     DriverController,

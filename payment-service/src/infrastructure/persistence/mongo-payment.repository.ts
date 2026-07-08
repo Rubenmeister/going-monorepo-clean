@@ -20,24 +20,35 @@ export class MongoPaymentRepository implements IPaymentRepository {
   ) {}
 
   async create(payment: any): Promise<any> {
-    const created = await this.paymentModel.create({
-      paymentId: payment.id,
-      tripId: payment.tripId,
-      passengerId: payment.passengerId,
-      driverId: payment.driverId,
-      amount: payment.amount,
-      platformFee: payment.platformFee || 0,
-      driverAmount: payment.driverAmount || 0,
-      currency: payment.currency || 'USD',
-      paymentMethod: payment.paymentMethod,
-      status: payment.status || 'pending',
-      transactionId: payment.transactionId,
-      serviceCharge: payment.serviceCharge || 0,
-      tax: payment.tax || 0,
-      metadata: payment.metadata || {},
-    });
+    try {
+      const created = await this.paymentModel.create({
+        paymentId: payment.id,
+        tripId: payment.tripId,
+        passengerId: payment.passengerId,
+        driverId: payment.driverId,
+        amount: payment.amount,
+        platformFee: payment.platformFee || 0,
+        driverAmount: payment.driverAmount || 0,
+        currency: payment.currency || 'USD',
+        paymentMethod: payment.paymentMethod,
+        status: payment.status || 'pending',
+        transactionId: payment.transactionId,
+        serviceCharge: payment.serviceCharge || 0,
+        tax: payment.tax || 0,
+        metadata: payment.metadata || {},
+      });
 
-    return this.mapToEntity(created);
+      return this.mapToEntity(created);
+    } catch (e: any) {
+      // Idempotencia por viaje (auditoría B1 #6): el índice único parcial
+      // tripId_unique_active rechaza un 2º pago activo del mismo viaje bajo
+      // multi-pod. En ese caso devolvemos el pago ya existente en vez de romper.
+      if (e?.code === 11000) {
+        const existing = await this.paymentModel.findOne({ tripId: payment.tripId });
+        if (existing) return this.mapToEntity(existing);
+      }
+      throw e;
+    }
   }
 
   async findById(id: string): Promise<any> {
