@@ -35,6 +35,19 @@ export class AssignmentAdminController {
     if (!roles.includes('admin')) {
       throw new ForbiddenException('Solo administradores pueden ver la asignación');
     }
+    // Defensa en profundidad (auditoría #45): si hay allowlist server-side de IDs
+    // admin, el claim de rol NO basta — el userId debe estar en la lista. Si la
+    // env no está, se mantiene el comportamiento actual (fallback-seguro).
+    const allow = (process.env.ADMIN_USER_IDS ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (allow.length > 0) {
+      const uid = (user as any).id ?? (user as any).userId;
+      if (!uid || !allow.includes(String(uid))) {
+        throw new ForbiddenException('Cuenta no autorizada para administración');
+      }
+    }
   }
 
   /**

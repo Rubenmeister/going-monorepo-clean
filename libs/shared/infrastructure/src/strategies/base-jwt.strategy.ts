@@ -63,10 +63,33 @@ export class BaseJwtStrategy extends PassportStrategy(Strategy) {
         (req: any) => req?.cookies?.accessToken ?? null,
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
-      // Fija el algoritmo aceptado: sin esto, un token forjado con otro alg podría
-      // colar (confusión de algoritmo). Interino hasta migrar a RS256 (auditoría #13).
-      algorithms: ['HS256'],
+      // DUAL-VERIFY (auditoría #13): acepta HS256 (secreto compartido, actual) Y
+      // RS256 (clave PÚBLICA, futuro). Backward-compatible: hoy todos los tokens
+      // son HS256 → cero cambio funcional. Cuando user-auth empiece a firmar RS256
+      // (clave privada), estos servicios ya los verifican con la pública sin poder
+      // EMITIR. `algorithms` fija los permitidos → no hay confusión de algoritmo.
+      algorithms: ['HS256', 'RS256'],
+      secretOrKeyProvider: (
+        _request: unknown,
+        rawJwt: string,
+        done: (err: Error | null, key?: string) => void,
+      ) => {
+        try {
+          const header = JSON.parse(
+            Buffer.from(String(rawJwt).split('.')[0] ?? '', 'base64url').toString('utf8'),
+          );
+          if (header?.alg === 'RS256') {
+            const pub = configService.get<string>('RS256_PUBLIC_KEY');
+            if (!pub) {
+              return done(new Error('Token RS256 pero RS256_PUBLIC_KEY no configurada'));
+            }
+            return done(null, pub.replace(/\\n/g, '\n'));
+          }
+          return done(null, configService.getOrThrow<string>('JWT_SECRET'));
+        } catch (e) {
+          return done(e as Error);
+        }
+      },
     });
   }
 
