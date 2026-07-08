@@ -31,7 +31,11 @@ export class Payment {
 
   @Prop({
     required: true,
-    enum: ['card', 'wallet', 'cash'],
+    // auditoría B1: faltaban corporate/datafast/deuna — el código los usa (7/16/11
+    // ocurrencias) y mongoose valida el enum al crear → el Payment de esos métodos
+    // NO persistía (en corporate el error lo tragaba el try/catch de transport →
+    // payout del conductor sin registrar). Bug latente hasta que se ejerzan.
+    enum: ['card', 'wallet', 'cash', 'corporate', 'datafast', 'deuna'],
     index: true,
   })
   paymentMethod: string;
@@ -68,8 +72,8 @@ export class Payment {
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 // Single field indexes
-PaymentSchema.index({ tripId: 1 });
-PaymentSchema.index({ paymentMethod: 1 });
+// (tripId y paymentMethod ya tienen índice vía @Prop({ index: true }); no se
+//  redeclaran aquí para no disparar el warning de índice duplicado de Mongoose.)
 
 // Compound indexes for common queries
 PaymentSchema.index({ passengerId: 1, createdAt: -1 });
