@@ -33,21 +33,18 @@ substitutions:
   _EXTRA_SECRETS: ''
 
 steps:
-  # Step -1: Pre-pull latest image for Docker layer cache (best-effort).
-  # Si la imagen no existe (primer build), || exit 0 evita romper el pipeline.
-  # Acelera builds subsiguientes 30-50% al reusar layers.
-  - name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - 'docker pull gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest || exit 0'
-
-  # Step 0: Build Docker image con --cache-from para reusar layers
+  # Step 0: Build Docker image — SIN cache de capas (build determinista).
+  # Se quitó el `docker pull :latest` + `--cache-from` porque el cache clásico
+  # de Cloud Build (sin BUILDKIT_INLINE_CACHE) es no-determinista: el matching
+  # de capas por comando/parent puede reusar un bundle viejo de libs/source, y
+  # un deploy con la imagen equivocada es un riesgo de confiabilidad que no vale
+  # los ~2 min ahorrados. Cada build parte de cero → reproducible 100%.
+  # (auditoría #13 / Bloque 0). Si algún día se quiere velocidad, migrar a
+  # BuildKit con --build-arg BUILDKIT_INLINE_CACHE=1 (cache content-correcto).
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      - '--cache-from'
-      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '--no-cache'
       - '--build-arg'
       - 'SERVICE_NAME=${_SERVICE_NAME}'
       - '-t'
