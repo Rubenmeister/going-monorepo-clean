@@ -12,6 +12,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   Logger,
   UploadedFile,
   UseInterceptors,
@@ -518,9 +519,16 @@ export class RideController {
    * GET /api/rides/:rideId
    */
   @Get(':rideId')
-  async getRide(@Param('rideId') rideId: string): Promise<any> {
+  async getRide(
+    @Param('rideId') rideId: string,
+    @CurrentUser() user: AuthUser,
+  ): Promise<any> {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    // Solo partes del viaje (o admin): el doc trae tokens de entrega/verificación y PII.
+    if (ride.userId !== user.id && ride.driverId !== user.id && user.role !== 'admin') {
+      throw new ForbiddenException('No autorizado para este viaje');
+    }
     return ride;
   }
 
@@ -830,8 +838,17 @@ export class RideController {
   @Put(':rideId/complete')
   async completeRide(
     @Param('rideId') rideId: string,
-    @Body() dto: CompleteRideDto
+    @Body() dto: CompleteRideDto,
+    @CurrentUser() user: AuthUser,
   ): Promise<any> {
+    // Solo la conductora o el conductor del viaje (o admin) puede completarlo y
+    // disparar el cobro real. Sin esto, cualquier cuenta cerraba/cobraba viajes ajenos.
+    const target = await this.rideRepo.findById(rideId);
+    if (!target) throw new NotFoundException(`Ride ${rideId} not found`);
+    if (target.driverId !== user.id && user.role !== 'admin') {
+      throw new ForbiddenException('Solo la conductora o el conductor del viaje puede completarlo');
+    }
+
     const completeResult = await this.completeRideUseCase.execute({
       rideId,
       distanceKm:      dto.distanceKm,
@@ -947,8 +964,14 @@ export class RideController {
   @UseGuards(JwtAuthGuard)
   async getDriverRideHistory(
     @Param('driverId') driverId: string,
+    @CurrentUser() user: AuthUser,
     @Query('limit') limit?: number
   ): Promise<any[]> {
+    // Cada quien ve solo SU historial (o admin cualquiera). Antes se exponía el
+    // historial + PII de cualquier conductor por su id.
+    if (driverId !== user.id && user.role !== 'admin') {
+      throw new ForbiddenException('Solo puedes ver tu propio historial');
+    }
     const rides = await this.rideRepo.findByDriverId(driverId, limit ? Number(limit) : 20);
     return rides;
   }
@@ -966,6 +989,14 @@ export class RideController {
     @Param('rideId') rideId: string,
     @CurrentUser() currentUser: AuthUser,
   ) {
+    // Solo pasajera/o o conductora/or del viaje (o admin) pueden entrar al canal
+    // de voz. Sin esto, con un rideId ajeno se emitía un token PUBLISHER → escucha
+    // e inyección de audio en llamadas de terceros (eavesdropping).
+    const ride = await this.rideRepo.findById(rideId);
+    if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+    if (ride.userId !== currentUser.id && ride.driverId !== currentUser.id && currentUser.role !== 'admin') {
+      throw new ForbiddenException('No autorizado para la llamada de este viaje');
+    }
     const uid = currentUser?.id ? parseInt(currentUser.id.replace(/\D/g, '').slice(0, 8), 10) || 0 : 0;
     return this.agoraToken.generateToken(rideId, uid, 'publisher');
   }
@@ -987,6 +1018,11 @@ export class RideController {
   ): Promise<{ proxyNumber: string; masked: boolean }> {
     const trip = await this.rideRepo.findById(rideId);
     if (!trip) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    // Solo partes del viaje (o admin): la sesión proxy conecta dos teléfonos reales.
+    if (trip.userId !== currentUser.id && trip.driverId !== currentUser.id && currentUser.role !== 'admin') {
+      throw new ForbiddenException('No autorizado para la llamada de este viaje');
+    }
 
     // Intentar obtener/crear sesión proxy
     let session = this.twilioProxy.getSession(rideId);
@@ -1019,10 +1055,17 @@ export class RideController {
   @Put(':rideId/cancel')
   async cancelRide(
     @Param('rideId') rideId: string,
-    @Body('reason') reason: string
+    @Body('reason') reason: string,
+    @CurrentUser() user: AuthUser,
   ): Promise<any> {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
+
+    // Solo pasajera/o, conductora/or del viaje o admin pueden cancelar (y anular
+    // el pago). Sin esto, cualquier cuenta cancelaba viajes ajenos (griefing/DoS).
+    if (ride.userId !== user.id && ride.driverId !== user.id && user.role !== 'admin') {
+      throw new ForbiddenException('No autorizado para cancelar este viaje');
+    }
 
     if (ride.status === 'completed')
       throw new BadRequestException('No se puede cancelar un viaje completado');
@@ -1259,7 +1302,6 @@ export class RideController {
    * Body: { driverId, rating, thumbsUp, tags?, comment?, tip?, passengerName? }
    */
   @Post(':rideId/rate')
-  @SkipThrottle()
   async rateDriver(
     @Param('rideId')         rideId: string,
     @CurrentUser()           user: AuthUser,
@@ -1276,13 +1318,28 @@ export class RideController {
     const ride = await this.rideRepo.findById(rideId);
     if (!ride) throw new NotFoundException(`Ride ${rideId} not found`);
 
+    // Antifraude de reputación: solo la pasajera/o del viaje califica, solo al
+    // conductor REAL del viaje, y solo si el viaje ya terminó. Antes cualquiera
+    // podía inflar/hundir el rating de cualquier conductor.
+    if (ride.userId !== user.id) {
+      throw new ForbiddenException('Solo puedes calificar tus propios viajes');
+    }
+    if (ride.status !== 'completed') {
+      throw new BadRequestException('Solo se califica un viaje completado');
+    }
+    const driverId = ride.driverId;
+    if (!driverId) {
+      throw new BadRequestException('Este viaje no tiene conductor asignado');
+    }
+
     const rating = Math.max(1, Math.min(5, Math.round(body.rating)));
 
-    // Upsert — un pasajero solo puede calificar una vez por viaje
+    // Upsert — un pasajero solo puede calificar una vez por viaje. Se usa el
+    // driverId REAL del viaje (no el del body, manipulable).
     await this.ratingModel.findOneAndUpdate(
-      { driverId: body.driverId, passengerId: user.id, rideId },
+      { driverId, passengerId: user.id, rideId },
       {
-        driverId:      body.driverId,
+        driverId,
         passengerId:   user.id,
         rideId,
         rating,
@@ -1293,7 +1350,7 @@ export class RideController {
       { upsert: true },
     );
 
-    this.logger.log(`Passenger ${user.id} rated driver ${body.driverId} → ${rating}★ (ride ${rideId})`);
+    this.logger.log(`Passenger ${user.id} rated driver ${driverId} → ${rating}★ (ride ${rideId})`);
 
     return { ok: true, rideId, rating };
   }
