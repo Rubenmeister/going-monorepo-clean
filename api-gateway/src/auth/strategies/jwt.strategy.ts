@@ -35,7 +35,28 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         (req: any) => req?.cookies?.accessToken ?? null,
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+      // DUAL-VERIFY HS256/RS256 (auditoría #13): el api-gateway es el gatekeeper
+      // HTTP — sin esto rechazaba los tokens RS256 antes de reenviar al backend.
+      algorithms: ['HS256', 'RS256'],
+      secretOrKeyProvider: (
+        _req: any,
+        rawJwt: string,
+        done: (err: Error | null, key?: string) => void,
+      ) => {
+        try {
+          const header = JSON.parse(
+            Buffer.from(String(rawJwt).split('.')[0] ?? '', 'base64url').toString('utf8'),
+          );
+          if (header?.alg === 'RS256') {
+            const pub = configService.get<string>('RS256_PUBLIC_KEY');
+            if (!pub) return done(new Error('RS256_PUBLIC_KEY no configurada'));
+            return done(null, pub.replace(/\\n/g, '\n'));
+          }
+          return done(null, configService.getOrThrow<string>('JWT_SECRET'));
+        } catch (e) {
+          return done(e as Error);
+        }
+      },
       passReqToCallback: true,
     });
   }
