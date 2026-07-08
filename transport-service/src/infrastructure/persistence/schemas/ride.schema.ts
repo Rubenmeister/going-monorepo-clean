@@ -128,3 +128,14 @@ export class RideModelSchema {
 
 export type RideDocument = RideModelSchema & Document;
 export const RideSchema = SchemaFactory.createForClass(RideModelSchema);
+
+// Índices para las queries calientes (crones cada minuto + endpoints). Sin esto
+// eran COLLSCAN + sort en memoria sobre toda la colección `rides` (auditoría #8/11/12).
+// - dispatcher/reminder/private-cron: {status, scheduledAt}
+RideSchema.index({ status: 1, scheduledAt: 1 });
+// - no-show detector / pending / findByStatus: {status}
+RideSchema.index({ status: 1 });
+// - historial del pasajero: {userId, requestedAt desc}
+RideSchema.index({ userId: 1, requestedAt: -1 });
+// - historial del conductor: {driverId, requestedAt desc}
+RideSchema.index({ driverId: 1, requestedAt: -1 });

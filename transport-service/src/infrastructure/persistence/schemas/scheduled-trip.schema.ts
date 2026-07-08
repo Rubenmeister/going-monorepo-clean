@@ -80,3 +80,11 @@ ScheduledTripSchema.index(
   { driverId: 1, corridorId: 1, departureAt: 1 },
   { unique: true },
 );
+
+// Índices para las queries calientes (auditoría #30/35/37):
+// - tarjeta de viaje activo del pasajero (findUpcomingSharedTrip, multikey):
+ScheduledTripSchema.index({ 'reservations.userId': 1, status: 1, departureAt: 1 });
+// - materialización/búsqueda por corredor (scheduled-trip.service):
+ScheduledTripSchema.index({ corridorId: 1, status: 1, departureAt: 1 });
+// - crones de asignación/canal por ventana de salida:
+ScheduledTripSchema.index({ status: 1, departureAt: 1 });

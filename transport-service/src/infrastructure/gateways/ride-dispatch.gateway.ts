@@ -18,14 +18,41 @@ import { ExpoPushService } from '../services/expo-push.service';
 export class RideDispatchGateway {
   private readonly logger = new Logger(RideDispatchGateway.name);
   private readonly notificationsUrl: string;
+  private readonly internalToken?: string;
 
   constructor(
     private readonly config: ConfigService,
     private readonly expoPush: ExpoPushService,
   ) {
-    this.notificationsUrl =
-      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') ||
-      'http://localhost:3008';
+    this.notificationsUrl = (
+      this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || 'http://localhost:3008'
+    ).replace(/\/$/, '');
+    this.internalToken = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+  }
+
+  /**
+   * POST S2S al notifications-service con la ruta REAL (/notifications/send, sin
+   * prefijo global) + token de servicio + timeout. Antes se usaba
+   * /api/notifications/send SIN token → 404/401 siempre. Best-effort.
+   */
+  private async postNotification(payload: Record<string, unknown>): Promise<void> {
+    if (!this.internalToken) {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN ausente — push S2S omitido');
+      return;
+    }
+    try {
+      await fetch(`${this.notificationsUrl}/notifications/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.internalToken}`,
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch (e) {
+      this.logger.warn(`push S2S falló: ${(e as Error)?.message ?? e}`);
+    }
   }
 
   async broadcastRideMatches(
@@ -63,19 +90,13 @@ export class RideDispatchGateway {
       // Canal 2: notifications-service HTTP — historial + fallback redundante
       const notifSends = driverIds.map((driverId) => {
         const payload = buildPayload(String(driverId));
-        return fetch(`${this.notificationsUrl}/api/notifications/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: driverId,
-            title: payload.title,
-            body: payload.body,
-            channel: 'PUSH',
-            data: payload.data,
-          }),
-        }).catch((e) =>
-          this.logger.warn(`notifications-service push to ${driverId} failed: ${e.message}`)
-        );
+        return this.postNotification({
+          userId: driverId,
+          title: payload.title,
+          body: payload.body,
+          channel: 'PUSH',
+          data: payload.data,
+        });
       });
 
       await Promise.allSettled([...expoSends, ...notifSends]);
@@ -163,26 +184,22 @@ export class RideDispatchGateway {
       );
 
       const sends = driverIds.map(driverId =>
-        fetch(`${this.notificationsUrl}/api/notifications/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId:  driverId,
-            title:   '⚡ Viaje oportunista disponible',
-            body:    `${rideInfo.origin} → ${rideInfo.destination} · $${rideInfo.estimatedFare.toFixed(0)} · El primero en aceptar lo toma`,
-            channel: 'PUSH',
-            data: {
-              type:          'OPPORTUNISTIC_RIDE',
-              rideId,
-              city,
-              origin:        rideInfo.origin,
-              destination:   rideInfo.destination,
-              distanceKm:    rideInfo.distanceKm,
-              estimatedFare: rideInfo.estimatedFare,
-              expiresIn:     30, // segundos para aceptar
-            },
-          }),
-        }).catch(e => this.logger.warn(`Push oportunista a ${driverId} falló: ${e.message}`))
+        this.postNotification({
+          userId:  driverId,
+          title:   '⚡ Viaje oportunista disponible',
+          body:    `${rideInfo.origin} → ${rideInfo.destination} · $${rideInfo.estimatedFare.toFixed(0)} · El primero en aceptar lo toma`,
+          channel: 'PUSH',
+          data: {
+            type:          'OPPORTUNISTIC_RIDE',
+            rideId,
+            city,
+            origin:        rideInfo.origin,
+            destination:   rideInfo.destination,
+            distanceKm:    rideInfo.distanceKm,
+            estimatedFare: rideInfo.estimatedFare,
+            expiresIn:     30, // segundos para aceptar
+          },
+        })
       );
 
       await Promise.allSettled(sends);
@@ -212,15 +229,11 @@ export class RideDispatchGateway {
         : `${tripInfo.route} · Salida a las ${tripInfo.departureTime}. Prepárate.`;
 
       const sends = userIds.map(userId =>
-        fetch(`${this.notificationsUrl}/api/notifications/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId, title, body,
-            channel: 'PUSH',
-            data: { type: `TRIP_REMINDER_${type.toUpperCase()}`, rideId, ...tripInfo },
-          }),
-        }).catch(() => {})
+        this.postNotification({
+          userId, title, body,
+          channel: 'PUSH',
+          data: { type: `TRIP_REMINDER_${type.toUpperCase()}`, rideId, ...tripInfo },
+        })
       );
 
       await Promise.allSettled(sends);

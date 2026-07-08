@@ -251,7 +251,7 @@ export class ScheduledRideDispatcherCron {
   }
 
   private notificationsUrl(): string {
-    return (this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || 'http://localhost:3005').replace(/\/$/, '');
+    return (this.config.get<string>('NOTIFICATIONS_SERVICE_URL') || 'http://localhost:3008').replace(/\/$/, '');
   }
 
   private async remindBucket(field: string, fromMin: number, toMin: number, title: string): Promise<void> {
@@ -266,13 +266,18 @@ export class ScheduledRideDispatcherCron {
 
     for (const ride of due) {
       try {
-        // Marca idempotente ANTES de enviar (evita duplicados multi-pod).
+        // CLAIM idempotente: marca antes de enviar (evita que otro pod duplique).
         await this.rideRepo.update(ride.id, { [field]: new Date() });
         const mins = ride.scheduledAt
           ? Math.max(1, Math.round((new Date(ride.scheduledAt).getTime() - Date.now()) / 60_000))
           : toMin;
         const body = `Tu viaje reservado sale en ~${mins} min.`;
-        await this.sendReminderPush(ride.userId, title, body, ride.id);
+        const sent = await this.sendReminderPush(ride.userId, title, body, ride.id);
+        // Si la entrega falló, RELEASE (desmarca) para reintentar en el próximo
+        // tick — antes se marcaba y se perdía el recordatorio para siempre (#10).
+        if (!sent) {
+          await this.rideRepo.update(ride.id, { [field]: null });
+        }
         try {
           this.eventsGateway['server']?.to(`ride:${ride.id}`).emit('ride:reminder', {
             rideId: ride.id, minutes: mins, title, body,
@@ -284,16 +289,31 @@ export class ScheduledRideDispatcherCron {
     }
   }
 
-  private async sendReminderPush(userId: string, title: string, body: string, rideId: string): Promise<void> {
-    if (!userId) return;
+  /** Envía el push; devuelve true SOLO si la entrega fue aceptada (res.ok). */
+  private async sendReminderPush(userId: string, title: string, body: string, rideId: string): Promise<boolean> {
+    if (!userId) return false;
+    const token = this.config.get<string>('INTERNAL_SERVICE_TOKEN');
+    if (!token) {
+      this.logger.warn('[reminder] INTERNAL_SERVICE_TOKEN ausente — push omitido');
+      return false;
+    }
     try {
-      await fetch(`${this.notificationsUrl()}/api/notifications/send`, {
+      // Ruta REAL /notifications/send (sin /api) + token; fetch NO rechaza en
+      // 4xx/5xx → hay que verificar res.ok explícitamente.
+      const res = await fetch(`${this.notificationsUrl()}/notifications/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, title, body, channel: 'PUSH', data: { type: 'ride_reminder', rideId } }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ userId, type: 'ride_reminder', title, body, channel: 'PUSH', data: { type: 'ride_reminder', rideId } }),
+        signal: AbortSignal.timeout(5000),
       });
+      if (!res.ok) {
+        this.logger.warn(`[reminder] push user=${userId} → HTTP ${res.status}`);
+        return false;
+      }
+      return true;
     } catch (e) {
       this.logger.warn(`[reminder] push a user=${userId} falló: ${(e as Error).message}`);
+      return false;
     }
   }
 }

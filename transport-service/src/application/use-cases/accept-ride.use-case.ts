@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { IRideRepository } from '../../domain/ports';
 
 /**
@@ -7,6 +7,8 @@ import { IRideRepository } from '../../domain/ports';
  */
 @Injectable()
 export class AcceptRideUseCase {
+  private readonly logger = new Logger(AcceptRideUseCase.name);
+
   constructor(
     @Inject('IRideRepository')
     private readonly rideRepo: IRideRepository
@@ -24,18 +26,29 @@ export class AcceptRideUseCase {
       throw new Error(`Ride is already ${existing.status}`);
     }
 
-    // Push notification to passenger that driver was assigned
-    const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
-    fetch(`${notifUrl}/api/notifications/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: updated.userId,
-        title: '🚗 ¡Conductor asignado!',
-        body: 'Un conductor aceptó tu viaje y está en camino',
-        data: { rideId: updated.id, actionUrl: '/transport' }
-      }),
-    }).catch(() => {}); // non-blocking
+    // Push al pasajero: conductor asignado. Ruta REAL /notifications/send (el
+    // notifications-service no tiene prefijo global) + token S2S; antes usaba
+    // /api/notifications/send SIN token → 404/401 siempre (push nunca llegaba).
+    const notifUrl = (process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3008').replace(/\/$/, '');
+    const notifToken = process.env.INTERNAL_SERVICE_TOKEN;
+    if (notifToken) {
+      fetch(`${notifUrl}/notifications/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${notifToken}` },
+        body: JSON.stringify({
+          userId: updated.userId,
+          type: 'ride_driver_accepted',
+          title: '🚗 ¡Conductor asignado!',
+          body: 'Un conductor aceptó tu viaje y está en camino',
+          data: { rideId: updated.id, actionUrl: '/transport' },
+        }),
+        signal: AbortSignal.timeout(5000),
+      }).catch((err) =>
+        this.logger.warn(`push accept ride ${updated.id}: ${err?.message ?? err}`),
+      ); // non-blocking
+    } else {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN ausente — push de accept omitido');
+    }
 
     return {
       rideId: updated.id,

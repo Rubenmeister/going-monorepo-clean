@@ -93,11 +93,19 @@ export class RideEventsGateway
   // ─── Push Notification Helper ──────────────────────────────────────────────
 
   private sendPushNotification(userId: string, title: string, body: string, data?: Record<string, string>): void {
-    const notifUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
-    fetch(`${notifUrl}/api/notifications/send`, {
+    // Ruta REAL /notifications/send (sin /api) + token S2S + timeout. Antes
+    // /api/notifications/send SIN token → 404/401 siempre.
+    const notifUrl = (process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3008').replace(/\/$/, '');
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (!token) {
+      this.logger.warn('INTERNAL_SERVICE_TOKEN ausente — push omitido');
+      return;
+    }
+    fetch(`${notifUrl}/notifications/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ userId, title, body, data: data ?? {} }),
+      signal: AbortSignal.timeout(5000),
     }).catch(e => this.logger.warn(`Push notification failed for ${userId}: ${e.message}`));
   }
 

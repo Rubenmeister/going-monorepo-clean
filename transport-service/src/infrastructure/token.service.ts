@@ -96,6 +96,14 @@ export class TokenService {
   }
 
   private secret(): string {
-    return process.env.JWT_SECRET ?? 'going-token-secret-fallback';
+    // Fail-closed: sin JWT_SECRET NO se firman tokens con un secreto adivinable
+    // (antes caía a 'going-token-secret-fallback', público en el repo → forjable).
+    const s = process.env.JWT_SECRET;
+    if (!s) {
+      throw new Error('JWT_SECRET no configurado — no se pueden firmar tokens de viaje');
+    }
+    return s;
+    // Nota (auditoría #32): el HMAC se trunca a 64 bits en sign(); ampliarlo
+    // invalidaría tokens en vuelo (pickup/delivery/share) → cambio diferido.
   }
 }
